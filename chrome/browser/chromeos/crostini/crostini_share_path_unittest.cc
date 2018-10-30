@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -30,49 +29,28 @@
 
 namespace crostini {
 
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
-
 class CrostiniSharePathTest : public testing::Test {
  public:
-  void SharePathSuccessStartTerminaVmCallback(CrostiniResult result) {
-    EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
-    EXPECT_EQ(result, CrostiniResult::SUCCESS);
-
-    SharePath(profile(), "success", share_path_, true,
-              base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                             base::Unretained(this), true, true,
-                             &vm_tools::seneschal::SharePathRequest::DOWNLOADS,
-                             "path", true, "", run_loop()->QuitClosure()));
-  }
-
-  void SharePathErrorSeneschalStartTerminaVmCallback(CrostiniResult result) {
-    EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
-    EXPECT_EQ(result, CrostiniResult::SUCCESS);
-
-    SharePath(profile(), "error-seneschal", share_path_, true,
-              base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                             base::Unretained(this), true, true,
-                             &vm_tools::seneschal::SharePathRequest::DOWNLOADS,
-                             "path", false, "test failure",
-                             run_loop()->QuitClosure()));
-  }
+  const bool PERSIST_YES = true;
+  const bool PERSIST_NO = false;
+  enum class Persist { NO, YES };
+  enum class SeneschalClientCalled { NO, YES };
+  enum class Success { NO, YES };
 
   void SharePathCallback(
-      bool expected_persist,
-      bool expected_seneschal_client_called,
+      Persist expected_persist,
+      SeneschalClientCalled expected_seneschal_client_called,
       const vm_tools::seneschal::SharePathRequest::StorageLocation*
           expected_seneschal_storage_location,
       std::string expected_seneschal_path,
-      bool expected_success,
+      Success expected_success,
       std::string expected_failure_reason,
       base::OnceClosure closure,
       bool success,
       std::string failure_reason) {
     const base::ListValue* prefs =
         profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
-    if (expected_persist) {
+    if (expected_persist == Persist::YES) {
       EXPECT_EQ(prefs->GetSize(), 1U);
       std::string share_path;
       prefs->GetString(0, &share_path);
@@ -81,14 +59,14 @@ class CrostiniSharePathTest : public testing::Test {
       EXPECT_EQ(prefs->GetSize(), 0U);
     }
     EXPECT_EQ(fake_seneschal_client_->share_path_called(),
-              expected_seneschal_client_called);
-    if (expected_seneschal_client_called) {
+              expected_seneschal_client_called == SeneschalClientCalled::YES);
+    if (expected_seneschal_client_called == SeneschalClientCalled::YES) {
       EXPECT_EQ(fake_seneschal_client_->last_request().storage_location(),
                 *expected_seneschal_storage_location);
       EXPECT_EQ(fake_seneschal_client_->last_request().shared_path().path(),
                 expected_seneschal_path);
     }
-    EXPECT_EQ(success, expected_success);
+    EXPECT_EQ(success, expected_success == Success::YES);
     EXPECT_EQ(failure_reason, expected_failure_reason);
     std::move(closure).Run();
   }
@@ -131,13 +109,6 @@ class CrostiniSharePathTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kCrostiniFiles);
 
-    // Fake that this is a real ChromeOS system in order to use TestingProfile
-    // /tmp path for Downloads rather than the current Linux user $HOME.
-    // SetChromeOSVersionInfoForTest() must not be called until D-Bus is
-    // initialized with fake clients, and then it must be cleared in TearDown()
-    // before D-Bus is re-initialized for the next test.
-    base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-
     // Setup for DriveFS.
     features_.InitAndEnableFeature(chromeos::features::kDriveFs);
     user_manager.AddUser(AccountId::FromUserEmailGaiaId(
@@ -161,9 +132,6 @@ class CrostiniSharePathTest : public testing::Test {
   void TearDown() override {
     run_loop_.reset();
     profile_.reset();
-    // Clear SetChromeOSVersionInfoForTest() so D-Bus will use fake clients
-    // again in the next test.
-    base::SysInfo::SetChromeOSVersionInfoForTest("", base::Time());
   }
 
  protected:
@@ -189,114 +157,117 @@ class CrostiniSharePathTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrostiniSharePathTest);
 };
 
-TEST_F(CrostiniSharePathTest, Success) {
-  vm_tools::concierge::StartVmResponse start_vm_response;
-  start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
-  start_vm_response.mutable_vm_info()->set_seneschal_server_handle(123);
-  fake_concierge_client_->set_start_vm_response(start_vm_response);
-
-  CrostiniManager::GetForProfile(profile())->StartTerminaVm(
-      "success", share_path_,
-      base::BindOnce(
-          &CrostiniSharePathTest::SharePathSuccessStartTerminaVmCallback,
-          base::Unretained(this)));
-  run_loop()->Run();
-}
-
 TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
-  SharePath(profile(), "vm-running", downloads_, false,
+  SharePath(profile(), "vm-running", downloads_, PERSIST_NO,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                           base::Unretained(this), false, true,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::YES,
                            &vm_tools::seneschal::SharePathRequest::DOWNLOADS,
-                           "", true, "", run_loop()->QuitClosure()));
+                           "", Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
-  SharePath(profile(), "vm-running", share_path_, false,
-            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                           base::Unretained(this), false, true,
-                           &vm_tools::seneschal::SharePathRequest::DOWNLOADS,
-                           "path", true, "", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", share_path_, PERSIST_NO,
+            base::BindOnce(
+                &CrostiniSharePathTest::SharePathCallback,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
+                &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "path",
+                Success::YES, "", run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, SuccessPersist) {
+  SharePath(
+      profile(), "vm-running", share_path_, PERSIST_YES,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::YES,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "path",
+                     Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
-  SharePath(
-      profile(), "vm-running", drivefs_.Append("root").Append("my"), false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, true,
-                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
-                     "my", true, "", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", drivefs_.Append("root").Append("my"),
+            PERSIST_NO,
+            base::BindOnce(
+                &CrostiniSharePathTest::SharePathCallback,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
+                &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE, "my",
+                Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
-  SharePath(
-      profile(), "vm-running", drivefs_.Append("root"), false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, true,
-                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
-                     "", true, "", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", drivefs_.Append("root"), PERSIST_NO,
+            base::BindOnce(
+                &CrostiniSharePathTest::SharePathCallback,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
+                &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE, "",
+                Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
-  SharePath(
-      profile(), "vm-running", drivefs_, false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path is not allowed", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", drivefs_, PERSIST_NO,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path is not allowed", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
   SharePath(profile(), "vm-running",
-            drivefs_.Append("team_drives").Append("team"), false,
+            drivefs_.Append("team_drives").Append("team"), PERSIST_NO,
             base::BindOnce(
                 &CrostiniSharePathTest::SharePathCallback,
-                base::Unretained(this), false, true,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
                 &vm_tools::seneschal::SharePathRequest::DRIVEFS_TEAM_DRIVES,
-                "team", true, "", run_loop()->QuitClosure()));
+                "team", Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
-  SharePath(
-      profile(), "vm-running", drivefs_.Append("Computers").Append("pc"), false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, true,
-                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
-                     "pc", true, "", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", drivefs_.Append("Computers").Append("pc"),
+            PERSIST_NO,
+            base::BindOnce(
+                &CrostiniSharePathTest::SharePathCallback,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
+                &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS, "pc",
+                Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
-  SharePath(
-      profile(), "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),
-      false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path is not allowed", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running",
+            drivefs_.Append(".Trash").Append("in-the-trash"), PERSIST_NO,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path is not allowed", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SuccessRemovable) {
   SharePath(profile(), "vm-running", base::FilePath("/media/removable/MyUSB"),
-            false,
-            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                           base::Unretained(this), false, true,
-                           &vm_tools::seneschal::SharePathRequest::REMOVABLE,
-                           "MyUSB", true, "", run_loop()->QuitClosure()));
+            PERSIST_NO,
+            base::BindOnce(
+                &CrostiniSharePathTest::SharePathCallback,
+                base::Unretained(this), Persist::NO, SeneschalClientCalled::YES,
+                &vm_tools::seneschal::SharePathRequest::REMOVABLE, "MyUSB",
+                Success::YES, "", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, FailRemovableRoot) {
-  SharePath(
-      profile(), "vm-running", base::FilePath("/media/removable"), false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path is not allowed", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", base::FilePath("/media/removable"),
+            PERSIST_NO,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path is not allowed", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
@@ -311,49 +282,68 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
   share_path_response.set_failure_reason("test failure");
   fake_seneschal_client_->set_share_path_response(share_path_response);
 
-  CrostiniManager::GetForProfile(profile())->StartTerminaVm(
-      "error-seneschal", share_path_,
-      base::BindOnce(
-          &CrostiniSharePathTest::SharePathErrorSeneschalStartTerminaVmCallback,
-          base::Unretained(this)));
+  SharePath(
+      profile(), "error-seneschal", share_path_, PERSIST_YES,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::YES,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "path",
+                     Success::NO, "test failure", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
   const base::FilePath path("not/absolute/dir");
-  SharePath(
-      profile(), "vm-running", path, true,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path must be absolute", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", path, PERSIST_YES,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path must be absolute", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorReferencesParent) {
   const base::FilePath path("/path/../references/parent");
-  SharePath(
-      profile(), "vm-running", path, false,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path must be absolute", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", path, PERSIST_NO,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path must be absolute", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
   const base::FilePath path("/not/under/downloads");
-  SharePath(
-      profile(), "vm-running", path, true,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                     base::Unretained(this), false, false, nullptr, "", false,
-                     "Path is not allowed", run_loop()->QuitClosure()));
+  SharePath(profile(), "vm-running", path, PERSIST_YES,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                           "Path is not allowed", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorVmNotRunning) {
-  SharePath(profile(), "error-vm-not-running", share_path_, true,
-            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                           base::Unretained(this), true, false, nullptr, "",
-                           false, "VM not running", run_loop()->QuitClosure()));
+TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
+  SharePath(
+      profile(), "vm-to-be-started", share_path_, PERSIST_YES,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::YES,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "path",
+                     Success::YES, "", run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, SharePathErrorVmCouldNotBeStarted) {
+  vm_tools::concierge::StartVmResponse start_vm_response;
+  start_vm_response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
+  fake_concierge_client_->set_start_vm_response(start_vm_response);
+
+  SharePath(
+      profile(), "error-vm-could-not-be-started", share_path_, PERSIST_YES,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::YES,
+                     SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                     "VM could not be started", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 

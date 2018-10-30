@@ -37,6 +37,26 @@ void OnSeneschalSharePathResponse(
                           response.value().failure_reason());
 }
 
+void OnVmRestartedForSeneschal(
+    Profile* profile,
+    std::string vm_name,
+    const base::FilePath path,
+    base::OnceCallback<void(bool, std::string)> callback,
+    vm_tools::seneschal::SharePathRequest request,
+    crostini::CrostiniResult result) {
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
+  base::Optional<vm_tools::concierge::VmInfo> vm_info =
+      crostini_manager->GetVmInfo(std::move(vm_name));
+  if (!vm_info) {
+    std::move(callback).Run(false, "VM could not be started");
+    return;
+  }
+  request.set_handle(vm_info->seneschal_server_handle());
+  chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
+      request, base::BindOnce(&OnSeneschalSharePathResponse, std::move(path),
+                              std::move(callback)));
+}
+
 void CallSeneschalSharePath(
     Profile* profile,
     std::string vm_name,
@@ -129,19 +149,23 @@ void CallSeneschalSharePath(
     shared_paths->Append(std::make_unique<base::Value>(path.value()));
   }
 
-  // VM must be running.
-  // TODO(joelhockey): Start VM if not currently running.
+  request.mutable_shared_path()->set_path(relative_path.value());
+  request.mutable_shared_path()->set_writable(true);
+
+  // Restart VM if not currently running.
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   base::Optional<vm_tools::concierge::VmInfo> vm_info =
-      crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(
-          std::move(vm_name));
+      crostini_manager->GetVmInfo(vm_name);
   if (!vm_info) {
-    std::move(callback).Run(false, "VM not running");
+    crostini_manager->RestartCrostini(
+        vm_name, crostini::kCrostiniDefaultContainerName,
+        base::BindOnce(&OnVmRestartedForSeneschal, profile, std::move(vm_name),
+                       std::move(path), std::move(callback),
+                       std::move(request)));
     return;
   }
 
   request.set_handle(vm_info->seneschal_server_handle());
-  request.mutable_shared_path()->set_path(relative_path.value());
-  request.mutable_shared_path()->set_writable(true);
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request, base::BindOnce(&OnSeneschalSharePathResponse, std::move(path),
                               std::move(callback)));
