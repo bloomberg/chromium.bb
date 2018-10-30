@@ -1587,6 +1587,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr/VrDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/VrIntentDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",
+  "java/src/org/chromium/chrome/browser/vr/ArDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateFallback.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateProvider.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateProviderFallback.java",

@@ -21,6 +21,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
@@ -35,6 +36,7 @@ import java.lang.annotation.RetentionPolicy;
  * Provides ARCore classes access to java-related app functionality.
  */
 @JNINamespace("vr")
+@UsedByReflection("ArDelegate.java")
 public class ArCoreJavaUtils {
     private static final int MIN_SDK_VERSION = Build.VERSION_CODES.O;
     private static final String AR_CORE_PACKAGE = "com.google.ar.core";
@@ -62,6 +64,11 @@ public class ArCoreJavaUtils {
     private long mNativeArCoreJavaUtils;
     private boolean mAppInfoInitialized;
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
+
+    @UsedByReflection("ArDelegate.java")
+    /* package */ static void installArCoreDeviceProviderFactory() {
+        nativeInstallArCoreDeviceProviderFactory();
+    }
 
     /**
      * Gets the current application context.
@@ -239,6 +246,7 @@ public class ArCoreJavaUtils {
         }
     }
 
+    private static native void nativeInstallArCoreDeviceProviderFactory();
     private native void nativeOnRequestInstallArModuleResult(
             long nativeArCoreJavaUtils, boolean success);
     private native void nativeOnRequestInstallSupportedArCoreCanceled(long nativeArCoreJavaUtils);
