@@ -23,10 +23,6 @@
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
-#if BUILDFLAG(ENABLE_ARCORE)
-#include "device/vr/android/arcore/arcore_device_provider_factory.h"
-#endif
-
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::AttachCurrentThread;
@@ -51,24 +47,6 @@ device::GvrDelegateProvider*
 VrShellDelegateProviderFactory::CreateGvrDelegateProvider() {
   return VrShellDelegate::CreateVrShellDelegate();
 }
-
-#if BUILDFLAG(ENABLE_ARCORE)
-class ArCoreDeviceProviderFactoryImpl
-    : public device::ArCoreDeviceProviderFactory {
- public:
-  ArCoreDeviceProviderFactoryImpl() = default;
-  ~ArCoreDeviceProviderFactoryImpl() override = default;
-  std::unique_ptr<device::VRDeviceProvider> CreateDeviceProvider() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArCoreDeviceProviderFactoryImpl);
-};
-
-std::unique_ptr<device::VRDeviceProvider>
-ArCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
-  return std::make_unique<device::ArCoreDeviceProvider>();
-}
-#endif
 
 }  // namespace
 
@@ -350,13 +328,6 @@ static void JNI_VrShellDelegate_OnLibraryAvailable(
     const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
       std::make_unique<VrShellDelegateProviderFactory>());
-
-#if BUILDFLAG(ENABLE_ARCORE)
-  // TODO(https://crbug.com/837965): Move this to an ARCore-specific location
-  // with similar timing (occurs before XRRuntimeManager is initialized).
-  device::ArCoreDeviceProviderFactory::Install(
-      std::make_unique<ArCoreDeviceProviderFactoryImpl>());
-#endif
 }
 
 static void JNI_VrShellDelegate_RegisterVrAssetsComponent(

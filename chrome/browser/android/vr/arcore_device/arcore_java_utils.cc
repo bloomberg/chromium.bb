@@ -7,15 +7,37 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/vr/android/arcore/arcore_device_provider_factory.h"
 #include "jni/ArCoreJavaUtils_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 namespace vr {
+
+namespace {
+
+class ArCoreDeviceProviderFactoryImpl
+    : public device::ArCoreDeviceProviderFactory {
+ public:
+  ArCoreDeviceProviderFactoryImpl() = default;
+  ~ArCoreDeviceProviderFactoryImpl() override = default;
+  std::unique_ptr<device::VRDeviceProvider> CreateDeviceProvider() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArCoreDeviceProviderFactoryImpl);
+};
+
+std::unique_ptr<device::VRDeviceProvider>
+ArCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
+  return std::make_unique<device::ArCoreDeviceProvider>();
+}
+
+}  // namespace
 
 ArCoreJavaUtils::ArCoreJavaUtils(device::ArCoreDevice* arcore_device)
     : arcore_device_(arcore_device) {
@@ -106,6 +128,13 @@ bool ArCoreJavaUtils::EnsureLoaded() {
 ScopedJavaLocalRef<jobject> ArCoreJavaUtils::GetApplicationContext() {
   JNIEnv* env = AttachCurrentThread();
   return Java_ArCoreJavaUtils_getApplicationContext(env);
+}
+
+static void JNI_ArCoreJavaUtils_InstallArCoreDeviceProviderFactory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& clazz) {
+  device::ArCoreDeviceProviderFactory::Install(
+      std::make_unique<ArCoreDeviceProviderFactoryImpl>());
 }
 
 }  // namespace vr
