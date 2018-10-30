@@ -49,6 +49,21 @@ class BASE_EXPORT ConvertableToTraceFormat {
   // appended.
   virtual void AppendAsTraceFormat(std::string* out) const = 0;
 
+  // Append the class info directly into the Perfetto-defined proto
+  // format; this is attempted first and if this returns true,
+  // AppendAsTraceFormat is not called. The ProtoAppender interface
+  // acts as a bridge to avoid proto/Perfetto dependencies in base.
+  class BASE_EXPORT ProtoAppender {
+   public:
+    virtual ~ProtoAppender() = default;
+
+    virtual void AddBuffer(uint8_t* begin, uint8_t* end) = 0;
+    // Copy all of the previous buffers registered with AddBuffer
+    // into the proto, with the given |field_id|.
+    virtual size_t Finalize(uint32_t field_id) = 0;
+  };
+  virtual bool AppendToProto(ProtoAppender* appender);
+
   virtual void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
   std::string ToString() const {
@@ -146,7 +161,7 @@ class BASE_EXPORT TraceEvent {
   const char* arg_name(size_t index) const { return arg_names_[index]; }
   const TraceValue& arg_value(size_t index) const { return arg_values_[index]; }
 
-  const ConvertableToTraceFormat* arg_convertible_value(size_t index) const {
+  ConvertableToTraceFormat* arg_convertible_value(size_t index) {
     return convertable_values_[index].get();
   }
 

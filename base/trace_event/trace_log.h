@@ -185,7 +185,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);
 
-  typedef void (*AddTraceEventOverrideCallback)(const TraceEvent&);
+  typedef void (*AddTraceEventOverrideCallback)(TraceEvent*);
   typedef void (*OnFlushCallback)();
   // The callback will be called up until the point where the flush is
   // finished, i.e. must be callable until OutputCallback is called with

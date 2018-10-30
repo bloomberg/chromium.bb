@@ -36,7 +36,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void SetDouble(const char* name, double value);
   void SetBoolean(const char* name, bool value);
   void SetString(const char* name, base::StringPiece value);
-  void SetValue(const char* name, const TracedValue& value);
+  void SetValue(const char* name, TracedValue* value);
   void BeginDictionary(const char* name);
   void BeginArray(const char* name);
 
@@ -45,7 +45,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void SetDoubleWithCopiedName(base::StringPiece name, double value);
   void SetBooleanWithCopiedName(base::StringPiece name, bool value);
   void SetStringWithCopiedName(base::StringPiece name, base::StringPiece value);
-  void SetValueWithCopiedName(base::StringPiece name, const TracedValue& value);
+  void SetValueWithCopiedName(base::StringPiece name, TracedValue* value);
   void BeginDictionaryWithCopiedName(base::StringPiece name);
   void BeginArrayWithCopiedName(base::StringPiece name);
 
@@ -58,23 +58,73 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 
   // ConvertableToTraceFormat implementation.
   void AppendAsTraceFormat(std::string* out) const override;
+  bool AppendToProto(ProtoAppender* appender) override;
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
-  // DEPRECATED: do not use, here only for legacy reasons. These methods causes
-  // a copy-and-translation of the base::Value into the equivalent TracedValue.
-  // TODO(primiano): migrate the (three) existing clients to the cheaper
-  // SetValue(TracedValue) API. crbug.com/495628.
-  void SetValue(const char* name, std::unique_ptr<base::Value> value);
-  void SetBaseValueWithCopiedName(base::StringPiece name,
-                                  const base::Value& value);
-  void AppendBaseValue(const base::Value& value);
+  // A custom serialization class can be supplied by implementing the
+  // Writer interface and supplying a factory class to SetWriterFactoryCallback.
+  // Primarily used by Perfetto to write TracedValues directly into its proto
+  // format, which lets us do a direct memcpy() in AppendToProto() rather than
+  // a JSON serialization step in AppendAsTraceFormat.
+  class BASE_EXPORT Writer {
+   public:
+    virtual ~Writer() = default;
+
+    virtual void BeginArray() = 0;
+    virtual void BeginDictionary() = 0;
+    virtual void EndDictionary() = 0;
+    virtual void EndArray() = 0;
+
+    // These methods assume that |name| is a long lived "quoted" string.
+    virtual void SetInteger(const char* name, int value) = 0;
+    virtual void SetDouble(const char* name, double value) = 0;
+    virtual void SetBoolean(const char* name, bool value) = 0;
+    virtual void SetString(const char* name, base::StringPiece value) = 0;
+    virtual void SetValue(const char* name, Writer* value) = 0;
+    virtual void BeginDictionary(const char* name) = 0;
+    virtual void BeginArray(const char* name) = 0;
+
+    // These, instead, can be safely passed a temporary string.
+    virtual void SetIntegerWithCopiedName(base::StringPiece name,
+                                          int value) = 0;
+    virtual void SetDoubleWithCopiedName(base::StringPiece name,
+                                         double value) = 0;
+    virtual void SetBooleanWithCopiedName(base::StringPiece name,
+                                          bool value) = 0;
+    virtual void SetStringWithCopiedName(base::StringPiece name,
+                                         base::StringPiece value) = 0;
+    virtual void SetValueWithCopiedName(base::StringPiece name,
+                                        Writer* value) = 0;
+    virtual void BeginDictionaryWithCopiedName(base::StringPiece name) = 0;
+    virtual void BeginArrayWithCopiedName(base::StringPiece name) = 0;
+
+    virtual void AppendInteger(int) = 0;
+    virtual void AppendDouble(double) = 0;
+    virtual void AppendBoolean(bool) = 0;
+    virtual void AppendString(base::StringPiece) = 0;
+
+    virtual void AppendAsTraceFormat(std::string* out) const = 0;
+
+    virtual bool AppendToProto(ProtoAppender* appender);
+
+    virtual void EstimateTraceMemoryOverhead(
+        TraceEventMemoryOverhead* overhead) = 0;
+
+    virtual std::unique_ptr<base::Value> ToBaseValue() const = 0;
+
+    virtual bool IsPickleWriter() const = 0;
+    virtual bool IsProtoWriter() const = 0;
+  };
+
+  typedef std::unique_ptr<Writer> (*WriterFactoryCallback)(size_t capacity);
+  static void SetWriterFactoryCallback(WriterFactoryCallback callback);
 
   // Public for tests only.
   std::unique_ptr<base::Value> ToBaseValue() const;
 
  private:
-  Pickle pickle_;
+  std::unique_ptr<Writer> writer_;
 
 #ifndef NDEBUG
   // In debug builds checks the pairings of {Start,End}{Dictionary,Array}

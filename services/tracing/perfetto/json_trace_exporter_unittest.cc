@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -577,6 +578,127 @@ TEST_F(JSONTraceExporterTest, TestEventWithConvertableArgs) {
 
   EXPECT_EQ("conv_value1", trace_event->GetKnownArgAsString("foo1"));
   EXPECT_EQ("conv_value2", trace_event->GetKnownArgAsString("foo2"));
+}
+
+TEST_F(JSONTraceExporterTest, TestEventWithTracedValueArg) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+  auto* new_trace_event =
+      trace_packet_proto.mutable_chrome_events()->add_trace_events();
+  SetTestPacketBasicData(new_trace_event);
+
+  auto* new_arg = new_trace_event->add_args();
+  new_arg->set_name("foo1");
+  auto* traced_value = new_arg->mutable_traced_value();
+  traced_value->add_dict_keys("bool");
+  traced_value->add_dict_values()->set_bool_value(true);
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+  auto* trace_event = ValidateAndGetBasicTestPacket();
+
+  auto arg_value = trace_event->GetKnownArgAsValue("foo1");
+  EXPECT_EQ(true, arg_value->FindKey("bool")->GetBool());
+}
+
+TEST_F(JSONTraceExporterTest, TracedValueFlatDictionary) {
+  perfetto::protos::ChromeTracedValue traced_value;
+
+  {
+    traced_value.add_dict_keys("bool");
+    traced_value.add_dict_values()->set_bool_value(true);
+  }
+
+  {
+    traced_value.add_dict_keys("double");
+    traced_value.add_dict_values()->set_double_value(8.0);
+  }
+
+  {
+    traced_value.add_dict_keys("int");
+    traced_value.add_dict_values()->set_int_value(2014);
+  }
+
+  {
+    traced_value.add_dict_keys("string");
+    traced_value.add_dict_values()->set_string_value("bar");
+  }
+
+  std::string json;
+  AppendProtoDictAsJSON(&json, traced_value);
+
+  EXPECT_EQ("{\"bool\":true,\"double\":8.0,\"int\":2014,\"string\":\"bar\"}",
+            json);
+}
+
+TEST_F(JSONTraceExporterTest, TracedValueHierarchy) {
+  perfetto::protos::ChromeTracedValue traced_value;
+
+  {
+    traced_value.add_dict_keys("a1");
+    auto* a1_array = traced_value.add_dict_values();
+    a1_array->set_nested_type(perfetto::protos::ChromeTracedValue::ARRAY);
+
+    a1_array->add_array_values()->set_int_value(1);
+    a1_array->add_array_values()->set_bool_value(true);
+
+    auto* sub_dict = a1_array->add_array_values();
+    sub_dict->set_nested_type(perfetto::protos::ChromeTracedValue::DICT);
+    sub_dict->add_dict_keys("i2");
+    sub_dict->add_dict_values()->set_int_value(3);
+  }
+
+  {
+    traced_value.add_dict_keys("b0");
+    traced_value.add_dict_values()->set_bool_value(true);
+  }
+
+  {
+    traced_value.add_dict_keys("d0");
+    traced_value.add_dict_values()->set_double_value(6.0);
+  }
+
+  {
+    traced_value.add_dict_keys("a1");
+    auto* dict1_subdict = traced_value.add_dict_values();
+    dict1_subdict->set_nested_type(perfetto::protos::ChromeTracedValue::DICT);
+
+    dict1_subdict->add_dict_keys("dict2");
+    auto* dict2_sub_sub_dict = dict1_subdict->add_dict_values();
+    dict2_sub_sub_dict->set_nested_type(
+        perfetto::protos::ChromeTracedValue::DICT);
+
+    dict2_sub_sub_dict->add_dict_keys("b2");
+    dict2_sub_sub_dict->add_dict_values()->set_bool_value(true);
+
+    dict1_subdict->add_dict_keys("i1");
+    dict1_subdict->add_dict_values()->set_int_value(2014);
+
+    dict1_subdict->add_dict_keys("s1");
+    dict1_subdict->add_dict_values()->set_string_value("foo");
+  }
+
+  {
+    traced_value.add_dict_keys("i0");
+    traced_value.add_dict_values()->set_int_value(2014);
+  }
+
+  {
+    traced_value.add_dict_keys("s0");
+    traced_value.add_dict_values()->set_string_value("foo");
+  }
+
+  std::string json;
+  AppendProtoDictAsJSON(&json, traced_value);
+
+  EXPECT_EQ(
+      "{\"a1\":[1,true,{\"i2\":3}],\"b0\":true,\"d0\":6.0,\"a1\":{\"dict2\":{"
+      "\"b2\":true},\"i1\":2014,\"s1\":\"foo\"},\"i0\":2014,\"s0\":\"foo\"}",
+      json);
 }
 
 }  // namespace tracing

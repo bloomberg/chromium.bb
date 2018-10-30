@@ -342,7 +342,7 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
     const {
   auto value = std::make_unique<base::trace_event::TracedValue>();
   auto traced_conditions = activation_conditions.ToTracedValue();
-  value->SetValue("activation_conditions", *traced_conditions);
+  value->SetValue("activation_conditions", traced_conditions.get());
   value->SetString("activation_level",
                    StreamToString(activation_options.activation_level));
   value->SetDouble("performance_measurement_rate",

@@ -95,40 +95,6 @@ TEST(TraceEventArgumentTest, LongStrings) {
             json);
 }
 
-TEST(TraceEventArgumentTest, PassBaseValue) {
-  Value int_value(42);
-  Value bool_value(true);
-  Value double_value(42.0f);
-
-  auto dict_value = std::make_unique<DictionaryValue>();
-  dict_value->SetBoolean("bool", true);
-  dict_value->SetInteger("int", 42);
-  dict_value->SetDouble("double", 42.0f);
-  dict_value->SetString("string", std::string("a") + "b");
-  dict_value->SetString("string", std::string("a") + "b");
-
-  auto list_value = std::make_unique<ListValue>();
-  list_value->AppendBoolean(false);
-  list_value->AppendInteger(1);
-  list_value->AppendString("in_list");
-  list_value->Append(std::move(dict_value));
-
-  std::unique_ptr<TracedValue> value(new TracedValue());
-  value->BeginDictionary("outer_dict");
-  value->SetValue("inner_list", std::move(list_value));
-  value->EndDictionary();
-
-  dict_value.reset();
-  list_value.reset();
-
-  std::string json;
-  value->AppendAsTraceFormat(&json);
-  EXPECT_EQ(
-      "{\"outer_dict\":{\"inner_list\":[false,1,\"in_list\",{\"bool\":true,"
-      "\"double\":42.0,\"int\":42,\"string\":\"ab\"}]}}",
-      json);
-}
-
 TEST(TraceEventArgumentTest, PassTracedValue) {
   auto dict_value = std::make_unique<TracedValue>();
   dict_value->SetInteger("a", 1);
@@ -139,7 +105,7 @@ TEST(TraceEventArgumentTest, PassTracedValue) {
   nested_dict_value->AppendString("foo");
   nested_dict_value->EndArray();
 
-  dict_value->SetValue("e", *nested_dict_value);
+  dict_value->SetValue("e", nested_dict_value.get());
 
   // Check the merged result.
   std::string json;

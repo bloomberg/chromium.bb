@@ -7,12 +7,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-
-#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -23,7 +22,61 @@
 
 using TraceEvent = base::trace_event::TraceEvent;
 
+namespace tracing {
+
 namespace {
+
+void AppendProtoArrayAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& array);
+
+void AppendProtoValueAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& value) {
+  base::trace_event::TraceEvent::TraceValue json_value;
+  if (value.has_int_value()) {
+    json_value.as_int = value.int_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+  } else if (value.has_double_value()) {
+    json_value.as_double = value.double_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
+  } else if (value.has_bool_value()) {
+    json_value.as_bool = value.bool_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+  } else if (value.has_string_value()) {
+    json_value.as_string = value.string_value().c_str();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
+  } else if (value.has_nested_type()) {
+    if (value.nested_type() == perfetto::protos::ChromeTracedValue::ARRAY) {
+      AppendProtoArrayAsJSON(out, value);
+      return;
+    } else if (value.nested_type() ==
+               perfetto::protos::ChromeTracedValue::DICT) {
+      AppendProtoDictAsJSON(out, value);
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+void AppendProtoArrayAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& array) {
+  out->append("[");
+
+  bool is_first_entry = true;
+  for (auto& value : array.array_values()) {
+    if (!is_first_entry) {
+      out->append(",");
+    } else {
+      is_first_entry = false;
+    }
+
+    AppendProtoValueAsJSON(out, value);
+  }
+
+  out->append("]");
+}
+
 const char* GetStringFromStringTable(
     const std::unordered_map<int, std::string>& string_table,
     int index) {
@@ -193,6 +246,13 @@ void OutputJSONFromTraceEventProto(
       *out += arg.json_value();
       continue;
     }
+
+    if (arg.has_traced_value()) {
+      AppendProtoDictAsJSON(out, arg.traced_value());
+      continue;
+    }
+
+    NOTREACHED();
   }
 
   *out += "}}";
@@ -200,7 +260,24 @@ void OutputJSONFromTraceEventProto(
 
 }  // namespace
 
-namespace tracing {
+void AppendProtoDictAsJSON(std::string* out,
+                           const perfetto::protos::ChromeTracedValue& dict) {
+  out->append("{");
+
+  DCHECK_EQ(dict.dict_keys_size(), dict.dict_values_size());
+  for (int i = 0; i < dict.dict_keys_size(); ++i) {
+    if (i != 0) {
+      out->append(",");
+    }
+
+    base::EscapeJSONString(dict.dict_keys(i), true, out);
+    out->append(":");
+
+    AppendProtoValueAsJSON(out, dict.dict_values(i));
+  }
+
+  out->append("}");
+}
 
 JSONTraceExporter::JSONTraceExporter(const std::string& config,
                                      perfetto::TracingService* service)

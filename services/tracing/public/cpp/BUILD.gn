@@ -26,6 +26,8 @@ component("cpp") {
 
   if (is_mac || is_linux || is_android || is_win) {
     sources += [
+      "perfetto/heap_scattered_stream_delegate.cc",
+      "perfetto/heap_scattered_stream_delegate.h",
       "perfetto/producer_client.cc",
       "perfetto/producer_client.h",
       "perfetto/shared_memory.cc",
@@ -34,9 +36,12 @@ component("cpp") {
       "perfetto/task_runner.h",
       "perfetto/trace_event_data_source.cc",
       "perfetto/trace_event_data_source.h",
+      "perfetto/traced_value_proto_writer.cc",
+      "perfetto/traced_value_proto_writer.h",
     ]
 
     deps = [
+      "//third_party/perfetto/include/perfetto/protozero:protozero",
       "//third_party/perfetto/protos/perfetto/trace/chrome:minimal_complete_lite",
     ]
 
