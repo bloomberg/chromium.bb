@@ -578,7 +578,7 @@ JSONObject* AutoLogger::LogItemWithParams(const String& name) {
 }
 
 LoggingCanvas::LoggingCanvas()
-    : InterceptingCanvasBase(0, 0), log_(JSONArray::Create()) {}
+    : InterceptingCanvasBase(999999, 999999), log_(JSONArray::Create()) {}
 
 void LoggingCanvas::onDrawPaint(const SkPaint& paint) {
   AutoLogger logger(this);

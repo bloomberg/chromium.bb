@@ -75,6 +75,9 @@ inline bool operator!=(const PropertyTreeState& a, const PropertyTreeState& b) {
   return !(a == b);
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const PropertyTreeState&);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PROPERTY_TREE_STATE_H_

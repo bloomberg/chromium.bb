@@ -225,20 +225,20 @@ class PLATFORM_EXPORT DisplayItem {
 
 // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category)                           \
-  static bool Is##Category##Type(Type type) {                       \
+  static constexpr bool Is##Category##Type(Type type) {             \
     return type >= k##Category##First && type <= k##Category##Last; \
   }                                                                 \
   bool Is##Category() const { return Is##Category##Type(GetType()); }
 
-#define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                \
-  static Type PaintPhaseTo##Category##Type(PaintPhase paint_phase) {  \
-    static_assert(                                                    \
-        k##Category##PaintPhaseLast - k##Category##PaintPhaseFirst == \
-            kPaintPhaseMax,                                           \
-        "Invalid paint-phase-based category " #Category               \
-        ". See comments of DisplayItem::Type");                       \
-    return static_cast<Type>(static_cast<int>(paint_phase) +          \
-                             k##Category##PaintPhaseFirst);           \
+#define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                         \
+  static constexpr Type PaintPhaseTo##Category##Type(PaintPhase paint_phase) { \
+    static_assert(                                                             \
+        k##Category##PaintPhaseLast - k##Category##PaintPhaseFirst ==          \
+            kPaintPhaseMax,                                                    \
+        "Invalid paint-phase-based category " #Category                        \
+        ". See comments of DisplayItem::Type");                                \
+    return static_cast<Type>(static_cast<int>(paint_phase) +                   \
+                             k##Category##PaintPhaseFirst);                    \
   }
 
   DEFINE_CATEGORY_METHODS(Drawing)
@@ -307,6 +307,10 @@ inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {
 inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b) {
   return !(a == b);
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, DisplayItem::Type);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DisplayItem::Id&);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DisplayItem&);
 
 }  // namespace blink
 

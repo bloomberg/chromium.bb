@@ -26,8 +26,8 @@ String PaintChunk::ToString() const {
   String ret_val = String::Format(
       "PaintChunk(begin=%zu, end=%zu, id=%s cacheable=%d props=(%s) bounds=%s "
       "known_to_be_opaque=%d",
-      begin_index, end_index, id.ToString().Ascii().data(), is_cacheable,
-      properties.ToString().Ascii().data(), bounds.ToString().Ascii().data(),
+      begin_index, end_index, id.ToString().Utf8().data(), is_cacheable,
+      properties.ToString().Utf8().data(), bounds.ToString().Utf8().data(),
       known_to_be_opaque);
   if (hit_test_data) {
     ret_val.append(String::Format(
@@ -37,17 +37,17 @@ String PaintChunk::ToString() const {
         hit_test_data->touch_action_rects.size(),
         HitTestRect::GetBounds(hit_test_data->touch_action_rects)
             .ToString()
-            .Ascii()
+            .Utf8()
             .data(),
         hit_test_data->wheel_event_handler_region.size(),
         HitTestRect::GetBounds(hit_test_data->wheel_event_handler_region)
             .ToString()
-            .Ascii()
+            .Utf8()
             .data(),
         hit_test_data->non_fast_scrollable_region.size(),
         HitTestRect::GetBounds(hit_test_data->non_fast_scrollable_region)
             .ToString()
-            .Ascii()
+            .Utf8()
             .data()));
   } else {
     ret_val.append(")");
@@ -56,7 +56,7 @@ String PaintChunk::ToString() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const PaintChunk& chunk) {
-  return os << chunk.ToString().Utf8().data();
+  return os << chunk.ToString().Utf8().data() << "\n";
 }
 
 }  // namespace blink

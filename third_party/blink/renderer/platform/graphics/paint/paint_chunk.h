@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <memory>
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
@@ -116,17 +117,6 @@ struct PLATFORM_EXPORT PaintChunk {
   bool client_is_just_created : 1;
 
   String ToString() const;
-
-  bool operator==(const PaintChunk& rhs) const {
-    return begin_index == rhs.begin_index && end_index == rhs.end_index &&
-           id == rhs.id && properties == rhs.properties &&
-           is_cacheable == rhs.is_cacheable &&
-           ((!hit_test_data && !rhs.hit_test_data) ||
-            (hit_test_data && rhs.hit_test_data &&
-             *hit_test_data == *rhs.hit_test_data));
-  }
-
-  bool operator!=(const PaintChunk& rhs) const { return !(*this == rhs); }
 
  private:
   std::unique_ptr<HitTestData> hit_test_data;
