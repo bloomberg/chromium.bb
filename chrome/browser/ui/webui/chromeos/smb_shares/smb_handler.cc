@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/chromeos/smb_handler.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 
 #include <string>
 #include <utility>
@@ -11,10 +11,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
-namespace settings {
+namespace smb_dialog {
 
 namespace {
 
@@ -115,6 +114,5 @@ void SmbHandler::HandleGatherSharesResponse(
   FireWebUIListener("on-shares-found", BuildShareList(shares_gathered));
 }
 
-
-}  // namespace settings
+}  // namespace smb_dialog
 }  // namespace chromeos
