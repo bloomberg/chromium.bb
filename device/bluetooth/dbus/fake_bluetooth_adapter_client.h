@@ -49,8 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   std::vector<dbus::ObjectPath> GetAdapters() override;
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void StartDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
-                      ErrorCallback error_callback) override;
+                      ResponseCallback callback) override;
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      const base::Closure& callback,
                      ErrorCallback error_callback) override;
