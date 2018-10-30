@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 
 // Coordinator that displays a SadTab view.
 @interface SadTabLegacyCoordinator : NSObject<SadTabTabHelperDelegate>
@@ -18,7 +19,7 @@
 @property(nonatomic, weak) UIViewController* baseViewController;
 
 // The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 @end
 

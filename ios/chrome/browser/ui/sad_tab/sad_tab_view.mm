@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -59,6 +58,8 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 @interface SadTabView ()
 
+// YES if the SadTab UI is displayed in Off The Record browsing mode.
+@property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;
 // Container view that displays all other subviews.
 @property(nonatomic, readonly, strong) UIView* containerView;
 // Displays the Sad Tab face.
@@ -77,8 +78,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 // The bounds of |containerView|, with a height updated to CGFLOAT_MAX to allow
 // text to be laid out using as many lines as necessary.
 @property(nonatomic, readonly) CGRect containerBounds;
-// Allows this view to perform navigation actions such as reloading.
-@property(nonatomic, readonly) web::NavigationManager* navigationManager;
 
 // Subview layout methods.  Must be called in the following order, as subsequent
 // layouts reference the values set in previous functions.
@@ -115,7 +114,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
                         forLinkText:(nonnull NSString*)linkText;
 
 // The action selector for |_actionButton|.
-- (void)handleActionButtonTapped:(id)sender;
+- (void)handleActionButtonTapped;
 
 // Returns the desired background color.
 + (UIColor*)sadTabBackgroundColor;
@@ -126,6 +125,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 @implementation SadTabView
 
+@synthesize offTheRecord = _offTheRecord;
 @synthesize imageView = _imageView;
 @synthesize containerView = _containerView;
 @synthesize titleLabel = _titleLabel;
@@ -134,16 +134,14 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 @synthesize footerLabelLinkController = _footerLabelLinkController;
 @synthesize actionButton = _actionButton;
 @synthesize mode = _mode;
-@synthesize navigationManager = _navigationManager;
-@synthesize dispatcher = _dispatcher;
-@synthesize actionDelegate = _actionDelegate;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithMode:(SadTabViewMode)mode
-           navigationManager:(web::NavigationManager*)navigationManager {
+                offTheRecord:(BOOL)offTheRecord {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     _mode = mode;
-    _navigationManager = navigationManager;
+    _offTheRecord = offTheRecord;
     self.backgroundColor = [[self class] sadTabBackgroundColor];
   }
   return self;
@@ -228,17 +226,13 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
           [[NSMutableAttributedString alloc]
               initWithString:feedbackIntroductionString];
 
-      BOOL isAlreadyInIncognitoMode =
-          _navigationManager
-              ? _navigationManager->GetBrowserState()->IsOffTheRecord()
-              : NO;
       NSMutableArray* stringsArray = [NSMutableArray
           arrayWithObjects:l10n_util::GetNSString(
                                IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
                            l10n_util::GetNSString(
                                IDS_SAD_TAB_RELOAD_RESTART_DEVICE),
                            nil];
-      if (!isAlreadyInIncognitoMode) {
+      if (!self.offTheRecord) {
         NSString* incognitoSuggestionString =
             l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO);
         [stringsArray insertObject:incognitoSuggestionString atIndex:0];
@@ -308,9 +302,8 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   _footerLabelLinkController = [[LabelLinkController alloc]
       initWithLabel:label
              action:^(const GURL& URL) {
-               OpenNewTabCommand* command =
-                   [OpenNewTabCommand commandWithURLFromChrome:URL];
-               [weakSelf.dispatcher openURLInNewTab:command];
+               [weakSelf.delegate sadTabView:weakSelf
+                   showSuggestionsPageWithURL:URL];
              }];
 
   _footerLabelLinkController.linkFont =
@@ -408,7 +401,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     [_actionButton setTitleColor:[UIColor whiteColor]
                         forState:UIControlStateNormal];
     [_actionButton addTarget:self
-                      action:@selector(handleActionButtonTapped:)
+                      action:@selector(handleActionButtonTapped)
             forControlEvents:UIControlEventTouchUpInside];
   }
   return _actionButton;
@@ -556,20 +549,19 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 #pragma mark Util
 
-- (void)handleActionButtonTapped:(id)sender {
+- (void)handleActionButtonTapped {
   switch (self.mode) {
     case SadTabViewMode::RELOAD:
       UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabReloadHistogramKey,
                                 ui_metrics::SadTabEvent::BUTTON_CLICKED,
                                 ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
-      self.navigationManager->Reload(web::ReloadType::NORMAL, true);
+      [self.delegate sadTabViewReload:self];
       break;
     case SadTabViewMode::FEEDBACK: {
-      DCHECK(self.actionDelegate);
       UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabFeedbackHistogramKey,
                                 ui_metrics::SadTabEvent::BUTTON_CLICKED,
                                 ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
-      [self.actionDelegate showReportAnIssue];
+      [self.delegate sadTabViewShowReportAnIssue:self];
       break;
     }
   };
