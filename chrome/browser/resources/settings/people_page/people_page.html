@@ -227,8 +227,9 @@
         </template>
 </if>
 
-        <template is="dom-if" if="[[isAdvancedSyncSettingsVisible_(
-            syncStatus, unifiedConsentEnabled_)]]">
+        <template is="dom-if"
+            if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
+                syncStatus, unifiedConsentEnabled_)]]">
           <div class$="settings-box two-line
                   [[getSyncStatusClass_(syncStatus)]]"
               on-click="onSyncTap_" id="sync-status"
@@ -335,13 +336,14 @@
 
       </neon-animatable>
       <template is="dom-if" route-path="/syncSetup"
-          no-search="[[!isAdvancedSyncSettingsVisible_(
+          no-search="[[!isAdvancedSyncSettingsSearchable_(
               syncStatus, unifiedConsentEnabled_)]]">
         <settings-subpage
-            associated-control="[[$$('#sync-status')]]"
+            associated-control="[[getAdvancedSyncSettingsAssociatedControl_(
+                unifiedConsentEnabled_)]]"
             page-title="$i18n{syncPageTitle}"
             learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}"
-            no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus,
+            no-search$="[[!isAdvancedSyncSettingsSearchable_(syncStatus,
                 unifiedConsentEnabled_)]]">
           <settings-sync-page
 <if expr="not chromeos">
