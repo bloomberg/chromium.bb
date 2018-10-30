@@ -22,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -51,12 +53,17 @@ public class NotificationsPreferencesTest {
                 NotificationsPreferences.class.getName());
     }
 
+    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+    // clang-format off
     @Test
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
     @CommandLineFlags.Add("enable-features=ContentSuggestionsNotifications")
+    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testContentSuggestionsToggle() {
+        // clang-format on
+
         final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
         final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
                 NotificationsPreferences.PREF_SUGGESTIONS);
@@ -89,12 +96,17 @@ public class NotificationsPreferencesTest {
         mScreenShooter.shoot("ContentSuggestionsToggle");
     }
 
+    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+    // clang-format off
     @Test
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
     @CommandLineFlags.Add("disable-features=NTPArticleSuggestions")
+    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testToggleDisabledWhenSuggestionsDisabled() {
+        // clang-format on
+
         PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
         ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
                 NotificationsPreferences.PREF_SUGGESTIONS);
@@ -105,12 +117,16 @@ public class NotificationsPreferencesTest {
         mScreenShooter.shoot("ToggleDisabledWhenSuggestionsDisabled");
     }
 
-
+    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+    // clang-format off
     @Test
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
+    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testLinkToWebsiteNotifications() {
+        // clang-format on
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -142,11 +158,16 @@ public class NotificationsPreferencesTest {
         return preferences.getFragmentForTest();
     }
 
+    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+    // clang-format off
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
+    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testWebsiteNotificationsSummary() {
+        // clang-format on
+
         final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
@@ -165,6 +186,20 @@ public class NotificationsPreferencesTest {
                 Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
             }
         });
+    }
+
+    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+    // clang-format off
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
+    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+    public void prefHiddenWhenOnFeed() {
+        // clang-format on
+
+        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        Assert.assertNull(fragment.findPreference(NotificationsPreferences.PREF_SUGGESTIONS));
     }
 
     /** Gets the summary text that should be used for site specific notifications. */

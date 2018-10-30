@@ -139,7 +139,8 @@ public class NewTabPageTest {
     private static final String TEST_FEED =
             UrlUtils.getIsolatedTestFilePath("/chrome/test/data/android/feed/hello_world.gcl.bin");
 
-    private boolean mInterestFeedEnabled;
+    // Anything not parameterized runs with Feed disabled.
+    private boolean mInterestFeedEnabled = false;
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;
@@ -151,19 +152,17 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
     public void setupInterestFeed(boolean interestFeedEnabled) {
         mInterestFeedEnabled = interestFeedEnabled;
-        if (mInterestFeedEnabled) {
-            Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-        } else {
-            Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-        }
     }
 
     @Before
     public void setUp() throws Exception {
         if (mInterestFeedEnabled) {
+            Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
             TestNetworkClient client = new TestNetworkClient();
             client.setNetworkResponseFile(TEST_FEED);
             FeedProcessScopeFactory.setTestNetworkClient(client);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
         }
         mActivityTestRule.startMainActivityWithURL("about:blank");
 
