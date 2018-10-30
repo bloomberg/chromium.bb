@@ -155,13 +155,15 @@ class PaymentsClientTest : public testing::Test {
   }
 
   // Issue a GetUploadDetails request.
-  void StartGettingUploadDetails() {
+  void StartGettingUploadDetails(
+      PaymentsClient::MigrationSource migration_source =
+          PaymentsClient::MigrationSource::UNKNOWN_MIGRATION_SOURCE) {
     client_->GetUploadDetails(
         BuildTestProfiles(), kAllDetectableValues, std::vector<const char*>(),
         "language-LOCALE",
         base::BindOnce(&PaymentsClientTest::OnDidGetUploadDetails,
                        weak_ptr_factory_.GetWeakPtr()),
-        /*billable_service_number=*/12345);
+        /*billable_service_number=*/12345, migration_source);
   }
 
   // Issue an UploadCard request. This requires an OAuth token before starting
@@ -442,6 +444,30 @@ TEST_F(PaymentsClientTest,
   EXPECT_TRUE(!GetUploadData().empty());
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
+}
+
+TEST_F(PaymentsClientTest,
+       GetDetailsIncludesCheckoutFlowMigrationSourceInRequest) {
+  StartGettingUploadDetails(PaymentsClient::MigrationSource::CHECKOUT_FLOW);
+
+  // Verify that the correct migration source was included in the request.
+  EXPECT_TRUE(GetUploadData().find("CHECKOUT_FLOW") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest,
+       GetDetailsIncludesSettingsPageMigrationSourceInRequest) {
+  StartGettingUploadDetails(PaymentsClient::MigrationSource::SETTINGS_PAGE);
+
+  // Verify that the correct migration source was included in the request.
+  EXPECT_TRUE(GetUploadData().find("SETTINGS_PAGE") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsIncludesUnknownMigrationSourceInRequest) {
+  StartGettingUploadDetails();
+
+  // Verify that the absence of a migration source results in UNKNOWN.
+  EXPECT_TRUE(GetUploadData().find("UNKNOWN_MIGRATION_SOURCE") !=
+              std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
