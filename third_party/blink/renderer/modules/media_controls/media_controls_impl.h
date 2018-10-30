@@ -128,12 +128,17 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ToggleTextTrackList();
   void ShowTextTrackAtIndex(unsigned);
   void DisableShowingTextTracks();
+  bool TextTrackListIsWanted();
 
   // Returns the label for the track when a valid track is passed in and "Off"
   // when the parameter is null.
   String GetTextTrackLabel(TextTrack*) const;
 
   // Methods related to the overflow menu.
+  void OpenOverflowMenu();
+  void CloseOverflowMenu();
+  bool OverflowMenuIsWanted();
+
   void ToggleOverflowMenu();
   bool OverflowMenuVisible();
 

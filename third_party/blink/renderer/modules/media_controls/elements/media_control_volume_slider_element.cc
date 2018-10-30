@@ -10,16 +10,11 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_consts.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
-
-namespace {
-
-const char kClosedCSSClass[] = "closed";
-
-}  // anonymous namespace
 
 MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(
     MediaControlsImpl& media_controls)

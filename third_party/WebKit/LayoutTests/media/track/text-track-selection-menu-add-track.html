@@ -11,6 +11,7 @@
 async_test(function(t) {
     var trackCueText = "Bonjour";
     var video = document.querySelector("video");
+    enableTestMode(video);
 
     video.oncanplaythrough = t.step_func(function() {
         var track = video.addTextTrack("captions", "French", "fr");

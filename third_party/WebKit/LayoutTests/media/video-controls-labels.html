@@ -11,6 +11,7 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
+    enableTestMode(video);
 
     video.oncanplaythrough = t.step_func(function() {
       clickCaptionButton(video, t.step_func_done(function() {

@@ -10,6 +10,7 @@
 <script>
 async_test(t => {
   var video = document.querySelector('video');
+  enableTestMode(video);
 
   video.oncanplaythrough = t.step_func(_ => {
     assert_true(isClosedCaptionsButtonEnabled(video));

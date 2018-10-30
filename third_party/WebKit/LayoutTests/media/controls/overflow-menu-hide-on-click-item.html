@@ -8,6 +8,7 @@
 async_test(t => {
   const video = document.querySelector('video');
   video.src = '../content/test.ogv';
+  enableTestMode(video);
   const track = video.addTextTrack('captions');
 
   video.onloadeddata = t.step_func(() => {
