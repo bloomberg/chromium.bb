@@ -319,6 +319,33 @@ static int compute_global_motion_feature_based(
   return 0;
 }
 #else
+// Computes the components of the system of equations used to solve for
+// a flow vector. This includes:
+// 1.) The hessian matrix for optical flow. This matrix is in the
+// form of:
+//
+//       M = |sum(dx * dx)  sum(dx * dy)|
+//           |sum(dx * dy)  sum(dy * dy)|
+//
+// 2.)   b = |sum(dx * dt)|
+//           |sum(dy * dt)|
+// Where the sums are computed over a square window of PATCH_SIZE.
+static INLINE void compute_flow_system(const double *dx, const double *dy,
+                                       const double *dt, int stride, double *M,
+                                       double *b) {
+  for (int i = 0; i < PATCH_SIZE; i++) {
+    for (int j = 0; j < PATCH_SIZE; j++) {
+      M[0] += dx[i * stride + j] * dx[i * stride + j];
+      M[1] += dx[i * stride + j] * dy[i * stride + j];
+      M[3] += dy[i * stride + j] * dy[i * stride + j];
+
+      b[0] += dx[i * stride + j] * dt[i * stride + j];
+      b[1] += dy[i * stride + j] * dt[i * stride + j];
+    }
+  }
+  M[2] = M[1];
+}
+
 // Compute an image gradient using a sobel filter.
 // If dir == 1, compute the x gradient. If dir == 0, compute y. This function
 // assumes the images have been padded so that they can be processed in units
