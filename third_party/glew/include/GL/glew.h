@@ -310,6 +310,8 @@ typedef struct __GLsync *GLsync;
 
 typedef char GLchar;
 
+typedef void *GLeglImageOES; /* GL_EXT_EGL_image_storage */
+
 #define GL_ZERO 0
 #define GL_FALSE 0
 #define GL_LOGIC_OP 0x0BF1
@@ -3408,9 +3410,9 @@ GLEW_VAR_EXPORT GLboolean __GLEW_KHR_debug;
 /* GLEW version info */
 
 /*
-VERSION 2.1.0
+VERSION 2.2.0
 VERSION_MAJOR 2
-VERSION_MINOR 1
+VERSION_MINOR 2
 VERSION_MICRO 0
 */
 

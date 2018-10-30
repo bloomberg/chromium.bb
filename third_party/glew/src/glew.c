@@ -727,6 +727,36 @@ GLboolean __GLEW_ARB_vertex_array_object = GL_FALSE;
 GLboolean __GLEW_KHR_debug = GL_FALSE;
 
 static const char * _glewExtensionLookup[] = {
+#ifdef GL_ARB_copy_buffer
+  "GL_ARB_copy_buffer",
+#endif
+#ifdef GL_ARB_draw_elements_base_vertex
+  "GL_ARB_draw_elements_base_vertex",
+#endif
+#ifdef GL_ARB_framebuffer_object
+  "GL_ARB_framebuffer_object",
+#endif
+#ifdef GL_ARB_map_buffer_range
+  "GL_ARB_map_buffer_range",
+#endif
+#ifdef GL_ARB_provoking_vertex
+  "GL_ARB_provoking_vertex",
+#endif
+#ifdef GL_ARB_sync
+  "GL_ARB_sync",
+#endif
+#ifdef GL_ARB_texture_multisample
+  "GL_ARB_texture_multisample",
+#endif
+#ifdef GL_ARB_uniform_buffer_object
+  "GL_ARB_uniform_buffer_object",
+#endif
+#ifdef GL_ARB_vertex_array_object
+  "GL_ARB_vertex_array_object",
+#endif
+#ifdef GL_KHR_debug
+  "GL_KHR_debug",
+#endif
 #ifdef GL_VERSION_1_2
   "GL_VERSION_1_2",
 #endif
@@ -781,43 +811,44 @@ static const char * _glewExtensionLookup[] = {
 #ifdef GL_VERSION_4_6
   "GL_VERSION_4_6",
 #endif
-#ifdef GL_ARB_copy_buffer
-  "GL_ARB_copy_buffer",
-#endif
-#ifdef GL_ARB_draw_elements_base_vertex
-  "GL_ARB_draw_elements_base_vertex",
-#endif
-#ifdef GL_ARB_framebuffer_object
-  "GL_ARB_framebuffer_object",
-#endif
-#ifdef GL_ARB_map_buffer_range
-  "GL_ARB_map_buffer_range",
-#endif
-#ifdef GL_ARB_provoking_vertex
-  "GL_ARB_provoking_vertex",
-#endif
-#ifdef GL_ARB_sync
-  "GL_ARB_sync",
-#endif
-#ifdef GL_ARB_texture_multisample
-  "GL_ARB_texture_multisample",
-#endif
-#ifdef GL_ARB_uniform_buffer_object
-  "GL_ARB_uniform_buffer_object",
-#endif
-#ifdef GL_ARB_vertex_array_object
-  "GL_ARB_vertex_array_object",
-#endif
-#ifdef GL_KHR_debug
-  "GL_KHR_debug",
-#endif
   NULL
 };
+
 
 /* Detected in the extension string or strings */
 static GLboolean  _glewExtensionString[28];
 /* Detected via extension string or experimental mode */
 static GLboolean* _glewExtensionEnabled[] = {
+#ifdef GL_ARB_copy_buffer
+  &__GLEW_ARB_copy_buffer,
+#endif
+#ifdef GL_ARB_draw_elements_base_vertex
+  &__GLEW_ARB_draw_elements_base_vertex,
+#endif
+#ifdef GL_ARB_framebuffer_object
+  &__GLEW_ARB_framebuffer_object,
+#endif
+#ifdef GL_ARB_map_buffer_range
+  &__GLEW_ARB_map_buffer_range,
+#endif
+#ifdef GL_ARB_provoking_vertex
+  &__GLEW_ARB_provoking_vertex,
+#endif
+#ifdef GL_ARB_sync
+  &__GLEW_ARB_sync,
+#endif
+#ifdef GL_ARB_texture_multisample
+  &__GLEW_ARB_texture_multisample,
+#endif
+#ifdef GL_ARB_uniform_buffer_object
+  &__GLEW_ARB_uniform_buffer_object,
+#endif
+#ifdef GL_ARB_vertex_array_object
+  &__GLEW_ARB_vertex_array_object,
+#endif
+#ifdef GL_KHR_debug
+  &__GLEW_KHR_debug,
+#endif
 #ifdef GL_VERSION_1_2
   &__GLEW_VERSION_1_2,
 #endif
@@ -872,38 +903,9 @@ static GLboolean* _glewExtensionEnabled[] = {
 #ifdef GL_VERSION_4_6
   &__GLEW_VERSION_4_6,
 #endif
-#ifdef GL_ARB_copy_buffer
-  &__GLEW_ARB_copy_buffer,
-#endif
-#ifdef GL_ARB_draw_elements_base_vertex
-  &__GLEW_ARB_draw_elements_base_vertex,
-#endif
-#ifdef GL_ARB_framebuffer_object
-  &__GLEW_ARB_framebuffer_object,
-#endif
-#ifdef GL_ARB_map_buffer_range
-  &__GLEW_ARB_map_buffer_range,
-#endif
-#ifdef GL_ARB_provoking_vertex
-  &__GLEW_ARB_provoking_vertex,
-#endif
-#ifdef GL_ARB_sync
-  &__GLEW_ARB_sync,
-#endif
-#ifdef GL_ARB_texture_multisample
-  &__GLEW_ARB_texture_multisample,
-#endif
-#ifdef GL_ARB_uniform_buffer_object
-  &__GLEW_ARB_uniform_buffer_object,
-#endif
-#ifdef GL_ARB_vertex_array_object
-  &__GLEW_ARB_vertex_array_object,
-#endif
-#ifdef GL_KHR_debug
-  &__GLEW_KHR_debug,
-#endif
   NULL
 };
+
 static GLboolean _glewInit_GL_VERSION_1_2 ();
 static GLboolean _glewInit_GL_VERSION_1_3 ();
 static GLboolean _glewInit_GL_VERSION_1_4 ();
@@ -1681,7 +1683,7 @@ static GLenum GLEWAPIENTRY glewContextInit ()
   else
   {
     GLEW_VERSION_4_6   = ( major > 4 )                 || ( major == 4 && minor >= 6 ) ? GL_TRUE : GL_FALSE;
-    GLEW_VERSION_4_5   = GLEW_VERSION_4_4   == GL_TRUE || ( major == 4 && minor >= 5 ) ? GL_TRUE : GL_FALSE;
+    GLEW_VERSION_4_5   = GLEW_VERSION_4_6   == GL_TRUE || ( major == 4 && minor >= 5 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_4   = GLEW_VERSION_4_5   == GL_TRUE || ( major == 4 && minor >= 4 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_3   = GLEW_VERSION_4_4   == GL_TRUE || ( major == 4 && minor >= 3 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_2   = GLEW_VERSION_4_3   == GL_TRUE || ( major == 4 && minor >= 2 ) ? GL_TRUE : GL_FALSE;
@@ -2280,9 +2282,9 @@ const GLubyte * GLEWAPIENTRY glewGetString (GLenum name)
   static const GLubyte* _glewString[] =
   {
     (const GLubyte*)NULL,
-    (const GLubyte*)"2.1.0",
+    (const GLubyte*)"2.2.0",
     (const GLubyte*)"2",
-    (const GLubyte*)"1",
+    (const GLubyte*)"2",
     (const GLubyte*)"0"
   };
   const size_t max_string = sizeof(_glewString)/sizeof(*_glewString) - 1;
