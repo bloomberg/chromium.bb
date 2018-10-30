@@ -81,9 +81,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   // This version of AddChild will not propagate floats/out_of_flow.
   // Use the AddChild(NGLayoutResult) variant if NGLayoutResult is available.
-  virtual NGContainerFragmentBuilder& AddChild(
-      scoped_refptr<const NGPhysicalFragment>,
-      const NGLogicalOffset&);
+  NGContainerFragmentBuilder& AddChild(scoped_refptr<const NGPhysicalFragment>,
+                                       const NGLogicalOffset&);
 
   const ChildrenVector& Children() const { return children_; }
 
@@ -218,6 +217,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // convert to physical offsets until layout of all children has been
   // determined.
   OffsetVector offsets_;
+
+  // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
+  // a virtual function call.
+  NGBreakTokenVector child_break_tokens_;
+  NGBreakTokenVector inline_break_tokens_;
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
