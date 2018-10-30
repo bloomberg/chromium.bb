@@ -68,6 +68,7 @@ ThemePainter::ThemePainter() = default;
 #define COUNT_APPEARANCE(doc, feature) \
   UseCounter::Count(doc, WebFeature::kCSSValueAppearance##feature##Rendered)
 
+// Returns true; Needs CSS painting and/or PaintBorderOnly().
 bool ThemePainter::Paint(const LayoutObject& o,
                          const PaintInfo& paint_info,
                          const IntRect& r) {
@@ -226,6 +227,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
   return true;
 }
 
+// Returns true; Needs CSS border painting.
 bool ThemePainter::PaintBorderOnly(const Node* node,
                                    const ComputedStyle& style,
                                    const PaintInfo& paint_info,
@@ -261,21 +263,30 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
     case kSearchFieldPart:
     case kListboxPart:
       return true;
-    case kCheckboxPart:
-    case kRadioPart:
-    case kPushButtonPart:
-    case kSquareButtonPart:
     case kButtonPart:
+    case kCheckboxPart:
+    case kInnerSpinButtonPart:
     case kMenulistPart:
-    case kMeterPart:
     case kProgressBarPart:
+    case kPushButtonPart:
+    case kRadioPart:
+    case kSearchFieldCancelButtonPart:
     case kSliderHorizontalPart:
-    case kSliderVerticalPart:
     case kSliderThumbHorizontalPart:
     case kSliderThumbVerticalPart:
-    case kSearchFieldCancelButtonPart:
+    case kSliderVerticalPart:
+    case kSquareButtonPart:
+      // Supported appearance values don't need CSS border painting.
+      return false;
     default:
-      break;
+      if (node) {
+        UseCounter::Count(
+            node->GetDocument(),
+            WebFeature::kCSSValueAppearanceNoImplementationSkipBorder);
+      }
+      // TODO(tkent): Should do CSS border painting for non-supported
+      // appearance values.
+      return false;
   }
 
   return false;
