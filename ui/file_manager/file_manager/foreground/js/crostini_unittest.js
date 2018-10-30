@@ -7,8 +7,9 @@ window.metrics = {
 };
 
 window.loadTimeData = {
-  getBoolean: function() {
-    return true;
+  data: {'DRIVE_FS_ENABLED': false},
+  getBoolean: function(key) {
+    return this.data[key];
   }
 };
 
@@ -46,28 +47,39 @@ function testIsPathShared() {
 function testCanSharePath() {
   Crostini.IS_CROSTINI_FILES_ENABLED = true;
 
-  const mockFileSystem = new MockFileSystem('volumeId');
+  const mockFileSystem = new MockFileSystem('test');
   const root = new MockDirectoryEntry(mockFileSystem, '/');
   const rootFile = new MockEntry(mockFileSystem, '/file');
   const rootFolder = new MockDirectoryEntry(mockFileSystem, '/folder');
   const fooFile = new MockEntry(mockFileSystem, '/foo/file');
   const fooFolder = new MockDirectoryEntry(mockFileSystem, '/foo/folder');
 
-  assertFalse(Crostini.canSharePath(root, true, volumeManager));
-  assertFalse(Crostini.canSharePath(root, false, volumeManager));
-  assertFalse(Crostini.canSharePath(rootFile, true, volumeManager));
-  assertFalse(Crostini.canSharePath(rootFile, false, volumeManager));
-  assertFalse(Crostini.canSharePath(rootFolder, true, volumeManager));
-  assertFalse(Crostini.canSharePath(rootFolder, false, volumeManager));
-  assertFalse(Crostini.canSharePath(fooFile, true, volumeManager));
-  assertFalse(Crostini.canSharePath(fooFile, false, volumeManager));
-  assertFalse(Crostini.canSharePath(fooFolder, true, volumeManager));
-  assertFalse(Crostini.canSharePath(fooFolder, false, volumeManager));
-
-  for (type in Crostini.VALID_ROOT_TYPES_FOR_SHARE) {
+  window.loadTimeData.data['DRIVE_FS_ENABLED'] = false;
+  const disallowed = new Map(Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE);
+  disallowed['test'] = 'test';
+  for (let type in disallowed) {
     volumeManagerRootType = type;
     assertFalse(Crostini.canSharePath(root, true, volumeManager));
     assertFalse(Crostini.canSharePath(root, false, volumeManager));
+    assertFalse(Crostini.canSharePath(rootFile, true, volumeManager));
+    assertFalse(Crostini.canSharePath(rootFile, false, volumeManager));
+    assertFalse(Crostini.canSharePath(rootFolder, true, volumeManager));
+    assertFalse(Crostini.canSharePath(rootFolder, false, volumeManager));
+    assertFalse(Crostini.canSharePath(fooFile, true, volumeManager));
+    assertFalse(Crostini.canSharePath(fooFile, false, volumeManager));
+    assertFalse(Crostini.canSharePath(fooFolder, true, volumeManager));
+    assertFalse(Crostini.canSharePath(fooFolder, false, volumeManager));
+  }
+
+  window.loadTimeData.data['DRIVE_FS_ENABLED'] = true;
+  const allowed = new Map([
+    ...Crostini.VALID_ROOT_TYPES_FOR_SHARE,
+    ...Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE
+  ]);
+  for (let type in allowed) {
+    volumeManagerRootType = type;
+    assertTrue(Crostini.canSharePath(root, true, volumeManager));
+    assertTrue(Crostini.canSharePath(root, false, volumeManager));
     assertFalse(Crostini.canSharePath(rootFile, true, volumeManager));
     assertTrue(Crostini.canSharePath(rootFile, false, volumeManager));
     assertTrue(Crostini.canSharePath(rootFolder, true, volumeManager));

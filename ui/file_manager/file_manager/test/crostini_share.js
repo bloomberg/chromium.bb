@@ -75,6 +75,13 @@ crostiniShare.testSharePathShown = (done) => {
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
   const menuShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const downloadsDirTree = '#directory-tree [volume-type-icon="downloads"]';
+  const removableVolumeRoot = '#directory-tree [volume-type-icon="removable"]';
+  const menuShareWithLinuxDirTree =
+      '#directory-tree-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const menuShareWithLinuxVolumeRoot = '#roots-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"]:not([hidden]):not([disabled])';
   let alreadySharedPhotosDir;
 
   test.setupAndWaitUntilReady()
@@ -106,10 +113,29 @@ crostiniShare.testSharePathShown = (done) => {
       })
       .then(() => {
         // Right-click 'Downloads' directory.
-        // Check 'Share with Linux' is not shown in menu.
+        // Check 'Share with Linux' is shown in menu.
         assertTrue(
             test.fakeMouseRightClick(downloads), 'right-click downloads');
-        return test.waitForElement(menuNoShareWithLinux);
+        return test.waitForElement(menuShareWithLinux);
+      })
+      .then(() => {
+        // Right-click 'Downloads' directory in directory tree.
+        // Check 'Share with Linux' is shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick(downloadsDirTree), 'downloads dirtree');
+        return test.waitForElement(menuShareWithLinuxDirTree);
+      })
+      .then(() => {
+        // Select removable root.
+        test.mountRemovable();
+        return test.waitForElement(removableVolumeRoot);
+      })
+      .then(() => {
+        // Right-click 'MyUSB' removable root.
+        // Check 'Share with Linux' is shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick(removableVolumeRoot), 'removable root');
+        return test.waitForElement(menuShareWithLinuxVolumeRoot);
       })
       .then(() => {
         // Select 'Linux files' in directory tree to show dir A in file list.

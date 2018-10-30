@@ -16,12 +16,22 @@ Crostini.IS_CROSTINI_FILES_ENABLED = false;
  * @private {!Map<VolumeManagerCommon.RootType, string>}
  */
 Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
+  [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
+  [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
+]);
+
+/**
+ * Can be collapsed into VALD_ROOT_TYPES_FOR_SHARE once
+ * DriveFS flag is removed.
+ * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
+ * histogram_suffix.
+ * @private {!Map<VolumeManagerCommon.RootType, string>}
+ */
+Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
-  [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
   [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
-  [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
 ]);
 
 /** @private {string} */
@@ -53,6 +63,7 @@ Crostini.registerSharedPath = function(entry, volumeManager) {
 
   // Record UMA.
   let suffix = Crostini.VALID_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
+      Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
       Crostini.UMA_ROOT_TYPE_OTHER;
   metrics.recordSmallCount(
       'CrostiniSharedPaths.Depth.' + suffix,
@@ -118,19 +129,15 @@ Crostini.canSharePath = function(entry, persist, volumeManager) {
   if (!Crostini.IS_CROSTINI_FILES_ENABLED)
     return false;
 
-  // Root of volume not allowed.
-  if (entry.fullPath === '/')
-    return false;
-
   // Only directories for persistent shares.
   if (persist && !entry.isDirectory)
     return false;
 
   // Allow Downloads, and Drive if DriveFS is enabled.
   const rootType = volumeManager.getLocationInfo(entry).rootType;
-  return rootType === VolumeManagerCommon.RootType.DOWNLOADS ||
+  return Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
-       Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType));
+       Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(rootType));
 };
 
 /**
