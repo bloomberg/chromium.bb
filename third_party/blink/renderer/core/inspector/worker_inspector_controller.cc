@@ -32,10 +32,10 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
+#include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -70,7 +70,10 @@ WorkerInspectorController::WorkerInspectorController(
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
     mojom::blink::DevToolsAgentRequest agent_request,
     mojom::blink::DevToolsAgentHostPtrInfo host_ptr_info)
-    : debugger_(debugger), thread_(thread), probe_sink_(new CoreProbeSink()) {
+    : debugger_(debugger),
+      thread_(thread),
+      inspected_frames_(nullptr),
+      probe_sink_(new CoreProbeSink()) {
   probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
     worker_devtools_token_ = thread->GetDevToolsWorkerToken();
@@ -82,7 +85,8 @@ WorkerInspectorController::WorkerInspectorController(
       Platform::Current()->GetIOTaskRunner();
   if (!parent_devtools_token_.is_empty() && io_task_runner) {
     // There may be no io task runner in unit tests.
-    agent_ = new DevToolsAgent(this, std::move(inspector_task_runner),
+    agent_ = new DevToolsAgent(this, inspected_frames_.Get(), probe_sink_.Get(),
+                               std::move(inspector_task_runner),
                                std::move(io_task_runner));
     agent_->BindRequest(std::move(host_ptr_info), std::move(agent_request),
                         thread->GetTaskRunner(TaskType::kInternalInspector));
@@ -96,38 +100,26 @@ WorkerInspectorController::~WorkerInspectorController() {
   TraceEvent::RemoveEnabledStateObserver(this);
 }
 
-InspectorSession* WorkerInspectorController::AttachSession(
-    InspectorSession::Client* session_client,
-    mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
-  if (!sessions_.size())
+void WorkerInspectorController::AttachSession(DevToolsSession* session,
+                                              bool restore) {
+  if (!session_count_)
     thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
-
-  bool should_reattach = !reattach_session_state.is_null();
-
-  InspectedFrames* inspected_frames = new InspectedFrames(nullptr);
-  InspectorSession* inspector_session = new InspectorSession(
-      session_client, probe_sink_.Get(), inspected_frames, 0,
-      debugger_->GetV8Inspector(), debugger_->ContextGroupId(thread_),
-      std::move(reattach_session_state));
-  inspector_session->Append(
-      new InspectorLogAgent(thread_->GetConsoleMessageStorage(), nullptr,
-                            inspector_session->V8Session()));
+  session->ConnectToV8(debugger_->GetV8Inspector(),
+                       debugger_->ContextGroupId(thread_));
+  session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
+                                        nullptr, session->V8Session()));
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
     DCHECK(scope->EnsureFetcher());
-    inspector_session->Append(new InspectorNetworkAgent(
-        inspected_frames, scope, inspector_session->V8Session()));
-    inspector_session->Append(new InspectorEmulationAgent(nullptr));
+    session->Append(new InspectorNetworkAgent(inspected_frames_.Get(), scope,
+                                              session->V8Session()));
+    session->Append(new InspectorEmulationAgent(nullptr));
   }
-
-  if (should_reattach)
-    inspector_session->Restore();
-  sessions_.insert(inspector_session);
-  return inspector_session;
+  ++session_count_;
 }
 
-void WorkerInspectorController::DetachSession(InspectorSession* session) {
-  sessions_.erase(session);
-  if (!sessions_.size())
+void WorkerInspectorController::DetachSession(DevToolsSession*) {
+  --session_count_;
+  if (!session_count_)
     thread_->GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
 
@@ -181,8 +173,8 @@ void WorkerInspectorController::EmitTraceEvent() {
 
 void WorkerInspectorController::Trace(blink::Visitor* visitor) {
   visitor->Trace(agent_);
+  visitor->Trace(inspected_frames_);
   visitor->Trace(probe_sink_);
-  visitor->Trace(sessions_);
 }
 
 }  // namespace blink

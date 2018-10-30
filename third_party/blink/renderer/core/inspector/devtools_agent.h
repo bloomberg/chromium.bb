@@ -13,14 +13,16 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
+class CoreProbeSink;
+class DevToolsSession;
 class ExecutionContext;
+class InspectedFrames;
 class InspectorTaskRunner;
 class WorkerThread;
 
@@ -31,10 +33,8 @@ class CORE_EXPORT DevToolsAgent
   class Client {
    public:
     virtual ~Client() {}
-    virtual InspectorSession* AttachSession(
-        InspectorSession::Client*,
-        mojom::blink::DevToolsSessionStatePtr reattach_session_state) = 0;
-    virtual void DetachSession(InspectorSession*) = 0;
+    virtual void AttachSession(DevToolsSession*, bool restore) = 0;
+    virtual void DetachSession(DevToolsSession*) = 0;
     virtual void InspectElement(const WebPoint&) = 0;
     virtual void DebuggerTaskStarted() = 0;
     virtual void DebuggerTaskFinished() = 0;
@@ -42,6 +42,8 @@ class CORE_EXPORT DevToolsAgent
 
   static DevToolsAgent* From(ExecutionContext*);
   DevToolsAgent(Client*,
+                InspectedFrames*,
+                CoreProbeSink*,
                 scoped_refptr<InspectorTaskRunner> inspector_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~DevToolsAgent() override;
@@ -63,7 +65,7 @@ class CORE_EXPORT DevToolsAgent
   virtual void Trace(blink::Visitor*);
 
  private:
-  class Session;
+  friend class DevToolsSession;
 
   // mojom::blink::DevToolsAgent implementation.
   void AttachDevToolsSession(
@@ -90,7 +92,9 @@ class CORE_EXPORT DevToolsAgent
   mojo::AssociatedBinding<mojom::blink::DevToolsAgent> associated_binding_;
   mojom::blink::DevToolsAgentHostPtr host_ptr_;
   mojom::blink::DevToolsAgentHostAssociatedPtr associated_host_ptr_;
-  HeapHashSet<Member<Session>> sessions_;
+  Member<InspectedFrames> inspected_frames_;
+  Member<CoreProbeSink> probe_sink_;
+  HeapHashSet<Member<DevToolsSession>> sessions_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   HashMap<WorkerThread*, std::unique_ptr<WorkerData>>
