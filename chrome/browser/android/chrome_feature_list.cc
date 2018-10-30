@@ -90,8 +90,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
     &kChromeDuetFeature,
-    &kChromeHomeSwipeLogic,
-    &kChromeHomeSwipeLogicVelocity,
     &kChromeSmartSelection,
     &kChromeMemexFeature,
     &kCommandLineOnNonRooted,
@@ -244,12 +242,6 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
 
 const base::Feature kChromeDuetFeature{"ChromeDuet",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeSwipeLogicVelocity{
-    "ChromeHomeSwipeLogicVelocity", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeMemexFeature{"ChromeMemex",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

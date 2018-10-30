@@ -416,14 +416,6 @@ const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
      switches::reader_mode_heuristics::kAllArticles},
 };
 
-const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kChromeHomeSwipeLogicRestrictArea,
-     switches::kChromeHomeSwipeLogicType, "restrict-area"},
-    {flag_descriptions::kChromeHomeSwipeLogicVelocity,
-     switches::kChromeHomeSwipeLogicType, "velocity"},
-};
-
 const FeatureEntry::Choice kForceUpdateMenuTypeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUpdateMenuTypeNone, switches::kForceUpdateMenuType,
@@ -2085,9 +2077,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-duet", flag_descriptions::kChromeDuetName,
      flag_descriptions::kChromeDuetDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeDuetFeature)},
-    {"chrome-home-swipe-logic", flag_descriptions::kChromeHomeSwipeLogicName,
-     flag_descriptions::kChromeHomeSwipeLogicDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kChromeHomeSwipeLogicChoices)},
     {"enable-chrome-memex", flag_descriptions::kChromeMemexName,
      flag_descriptions::kChromeMemexDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeMemexFeature)},

@@ -2215,12 +2215,6 @@ const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
 
-const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
-const char kChromeHomeSwipeLogicDescription[] =
-    "Various swipe logic options for Chrome Home for sheet expansion.";
-const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
-const char kChromeHomeSwipeLogicVelocity[] = "Velocity suppression model";
-
 const char kChromeMemexName[] = "Chrome Memex";
 const char kChromeMemexDescription[] =
     "Enables Chrome Memex homepage on Android. Restricted to opted-in "

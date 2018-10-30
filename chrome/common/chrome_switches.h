@@ -225,7 +225,6 @@ extern const char kLocalNtpReload[];
 
 #if defined(OS_ANDROID)
 extern const char kAuthAndroidNegotiateAccountType[];
-extern const char kChromeHomeSwipeLogicType[];
 extern const char kDisableContextualSearch[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableContextualSearch[];
