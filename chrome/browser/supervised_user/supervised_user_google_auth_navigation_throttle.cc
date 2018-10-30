@@ -8,13 +8,13 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
@@ -133,9 +133,8 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
     content::WebContents* web_contents = navigation_handle()->GetWebContents();
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    AccountInfo account_info = signin_manager->GetAuthenticatedAccountInfo();
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+    AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     ReauthenticateChildAccount(
         web_contents, account_info.email,
         base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::
