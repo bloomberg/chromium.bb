@@ -17,7 +17,7 @@ class DataUseAscriber;
 
 class ChromeDataUseMeasurement : public DataUseMeasurement {
  public:
-  static std::unique_ptr<ChromeDataUseMeasurement> CreateForNetworkService();
+  static ChromeDataUseMeasurement* GetInstance();
 
   ChromeDataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,

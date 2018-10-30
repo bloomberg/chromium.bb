@@ -61,10 +61,6 @@ class ComponentUpdateService;
 class SupervisedUserWhitelistInstaller;
 }
 
-namespace data_use_measurement {
-class ChromeDataUseMeasurement;
-}
-
 namespace extensions {
 class EventRouterForwarder;
 }
@@ -292,9 +288,6 @@ class BrowserProcess {
   CachedDefaultWebClientState() = 0;
 
   virtual prefs::InProcessPrefServiceFactory* pref_service_factory() const = 0;
-
-  virtual data_use_measurement::ChromeDataUseMeasurement*
-  data_use_measurement() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

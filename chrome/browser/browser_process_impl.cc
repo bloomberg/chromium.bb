@@ -41,7 +41,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_auto_opener.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
@@ -921,16 +920,6 @@ BrowserProcessImpl::CachedDefaultWebClientState() {
 prefs::InProcessPrefServiceFactory* BrowserProcessImpl::pref_service_factory()
     const {
   return pref_service_factory_.get();
-}
-
-data_use_measurement::ChromeDataUseMeasurement*
-BrowserProcessImpl::data_use_measurement() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!data_use_measurement_) {
-    data_use_measurement_ = data_use_measurement::ChromeDataUseMeasurement::
-        CreateForNetworkService();
-  }
-  return data_use_measurement_.get();
 }
 
 // static

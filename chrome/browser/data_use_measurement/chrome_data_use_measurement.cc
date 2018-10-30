@@ -21,9 +21,15 @@
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/features.h"
 
+using content::BrowserThread;
+
 namespace data_use_measurement {
 
 namespace {
+// Global instance to be used when network service is enabled, this will never
+// be deleted. When network service is disabled, this should always be null.
+ChromeDataUseMeasurement* g_chrome_data_use_measurement = nullptr;
+
 void UpdateMetricsUsagePrefs(int64_t total_bytes,
                              bool is_cellular,
                              bool is_metrics_service_usage) {
@@ -54,17 +60,20 @@ void UpdateMetricsUsagePrefsOnUIThread(int64_t total_bytes,
 }  // namespace
 
 // static
-std::unique_ptr<ChromeDataUseMeasurement>
-ChromeDataUseMeasurement::CreateForNetworkService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+ChromeDataUseMeasurement* ChromeDataUseMeasurement::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
   // Do not create when NetworkService is disabled, since data use of URLLoader
   // is reported via the network delegate callbacks.
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
 
-  return std::make_unique<ChromeDataUseMeasurement>(
-      nullptr, nullptr, content::GetNetworkConnectionTracker());
+  if (!g_chrome_data_use_measurement) {
+    g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
+        nullptr, nullptr, content::GetNetworkConnectionTracker());
+  }
+  return g_chrome_data_use_measurement;
 }
 
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
@@ -93,7 +102,6 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
     int64_t recv_bytes,
     int64_t sent_bytes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // Negative byte numbres is not a critical problem (i.e. should have no security implications) but
   // is not expected. TODO(rajendrant): remove these DCHECKs or consider using uint in Mojo instead.

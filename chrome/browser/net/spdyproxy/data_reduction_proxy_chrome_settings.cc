@@ -226,8 +226,9 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
               url_loader_factory, ui_task_runner),
           g_browser_process->network_quality_tracker(),
           content::GetNetworkConnectionTracker(),
-          g_browser_process->data_use_measurement(), ui_task_runner,
-          io_data->io_task_runner(), db_task_runner, commit_delay);
+          data_use_measurement::ChromeDataUseMeasurement::GetInstance(),
+          ui_task_runner, io_data->io_task_runner(), db_task_runner,
+          commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(data_reduction_proxy_enabled_pref_name_,
                                      profile_prefs, io_data,
