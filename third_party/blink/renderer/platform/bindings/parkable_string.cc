@@ -4,15 +4,23 @@
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace blink {
 
@@ -24,6 +32,8 @@ void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
 
 void AsanPoisonString(const String& string) {
 #if defined(ADDRESS_SANITIZER)
+  if (string.IsNull())
+    return;
   // Since |string| is not deallocated, it remains in the per-thread
   // AtomicStringTable, where its content can be accessed for equality
   // comparison for instance, triggering a poisoned memory access.
@@ -31,23 +41,47 @@ void AsanPoisonString(const String& string) {
   if (string.Impl()->IsAtomic())
     return;
 
-  const void* start = string.Is8Bit()
-                          ? static_cast<const void*>(string.Characters8())
-                          : static_cast<const void*>(string.Characters16());
-  ASAN_POISON_MEMORY_REGION(start, string.CharactersSizeInBytes());
+  ASAN_POISON_MEMORY_REGION(string.Bytes(), string.CharactersSizeInBytes());
 #endif  // defined(ADDRESS_SANITIZER)
 }
 
 void AsanUnpoisonString(const String& string) {
 #if defined(ADDRESS_SANITIZER)
-  const void* start = string.Is8Bit()
-                          ? static_cast<const void*>(string.Characters8())
-                          : static_cast<const void*>(string.Characters16());
-  ASAN_UNPOISON_MEMORY_REGION(start, string.CharactersSizeInBytes());
+  if (string.IsNull())
+    return;
+
+  ASAN_UNPOISON_MEMORY_REGION(string.Bytes(), string.CharactersSizeInBytes());
 #endif  // defined(ADDRESS_SANITIZER)
 }
 
 }  // namespace
+
+// Created and destroyed on the same thread, accessed on a background thread as
+// well. |string|'s reference counting is *not* thread-safe, hence |string|'s
+// reference count must *not* change on the background thread.
+struct CompressionTaskParams final {
+  CompressionTaskParams(
+      scoped_refptr<ParkableStringImpl> string,
+      const void* data,
+      size_t size,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner)
+      : string(string),
+        data(data),
+        size(size),
+        callback_task_runner(std::move(callback_task_runner)) {
+    DCHECK(IsMainThread());
+  }
+
+  ~CompressionTaskParams() { DCHECK(IsMainThread()); }
+
+  const scoped_refptr<ParkableStringImpl> string;
+  const void* data;
+  const size_t size;
+  const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner;
+
+  DISALLOW_COPY_AND_ASSIGN(CompressionTaskParams);
+  CompressionTaskParams(CompressionTaskParams&&) = delete;
+};
 
 // Valid transitions are:
 // 1. kUnparked -> kParkingInProgress: Parking started asynchronously
@@ -65,9 +99,7 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
       lock_depth_(0),
       state_(State::kUnparked),
       string_(std::move(impl)),
-#if DCHECK_IS_ON()
-      parked_string_(),
-#endif
+      compressed_(nullptr),
       may_be_parked_(parkable == ParkableState::kParkable),
       is_8bit_(string_.Is8Bit()),
       length_(string_.length())
@@ -137,12 +169,15 @@ bool ParkableStringImpl::Park() {
   MutexLocker locker(mutex_);
   DCHECK(may_be_parked_);
   if (state_ == State::kUnparked && CanParkNow()) {
+    // |string_|'s data should not be touched except in the compression task.
     AsanPoisonString(string_);
-    auto task_runner = Platform::Current()->CurrentThread()->GetTaskRunner();
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ParkableStringImpl::OnParkingCompleteOnMainThread,
-                       this));
+    // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
+    auto params = std::make_unique<CompressionTaskParams>(
+        this, string_.Bytes(), string_.CharactersSizeInBytes(),
+        Platform::Current()->CurrentThread()->GetTaskRunner());
+    background_scheduler::PostOnBackgroundThread(
+        FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
+                                   WTF::Passed(std::move(params))));
     state_ = State::kParkingInProgress;
   }
 
@@ -169,21 +204,51 @@ void ParkableStringImpl::Unpark() {
   if (state_ != State::kParked)
     return;
 
-#if DCHECK_IS_ON()
-  string_ = parked_string_;
-  parked_string_ = String();
-#endif
+  TRACE_EVENT1("blink", "ParkableStringImpl::Unpark", "size",
+               CharactersSizeInBytes());
+  DCHECK(compressed_);
+
+  base::StringPiece compressed_string_piece(
+      reinterpret_cast<const char*>(compressed_->data()),
+      compressed_->size() * sizeof(uint8_t));
+  String uncompressed;
+  base::StringPiece uncompressed_string_piece;
+  size_t size = CharactersSizeInBytes();
+  if (is_8bit()) {
+    LChar* data;
+    uncompressed = String::CreateUninitialized(length(), data);
+    uncompressed_string_piece =
+        base::StringPiece(reinterpret_cast<const char*>(data), size);
+  } else {
+    UChar* data;
+    uncompressed = String::CreateUninitialized(length(), data);
+    uncompressed_string_piece =
+        base::StringPiece(reinterpret_cast<const char*>(data), size);
+  }
+
+  // If decompression fails, this is either because:
+  // 1. The output buffer is too small
+  // 2. Compressed data is corrupted
+  // 3. Cannot allocate memory in zlib
+  //
+  // (1-2) are data corruption, and (3) is OOM. In all cases, we cannot recover
+  // the string we need, nothing else to do than to abort.
+  CHECK(compression::GzipUncompress(compressed_string_piece,
+                                    uncompressed_string_piece));
+  compressed_ = nullptr;
+  string_ = uncompressed;
   state_ = State::kUnparked;
 
   bool backgrounded =
       ParkableStringManager::Instance().IsRendererBackgrounded();
   RecordParkingAction(backgrounded ? ParkingAction::kUnparkedInBackground
                                    : ParkingAction::kUnparkedInForeground);
-  auto& manager = ParkableStringManager::Instance();
-  manager.OnUnparked(this, string_.Impl());
+  ParkableStringManager::Instance().OnUnparked(this, string_.Impl());
 }
 
-void ParkableStringImpl::OnParkingCompleteOnMainThread() {
+void ParkableStringImpl::OnParkingCompleteOnMainThread(
+    std::unique_ptr<CompressionTaskParams> params,
+    std::unique_ptr<Vector<uint8_t>> compressed) {
   MutexLocker locker(mutex_);
   DCHECK_EQ(State::kParkingInProgress, state_);
   // Between |Park()| and now, things may have happened:
@@ -197,24 +262,53 @@ void ParkableStringImpl::OnParkingCompleteOnMainThread() {
   // Finally, since this is a distinct task from any one that can call
   // |ToString()|, the invariant that the pointer stays valid until the next
   // task is preserved.
-  if (CanParkNow()) {
+  if (CanParkNow() && compressed) {
     RecordParkingAction(ParkingAction::kParkedInBackground);
     state_ = State::kParked;
     ParkableStringManager::Instance().OnParked(this, string_.Impl());
-#if DCHECK_IS_ON()
-    AsanUnpoisonString(string_);  // Will touch the string below.
-    parked_string_ = string_.IsolatedCopy();
-    // Poison the previous allocation.
-    // |string_| is kept to make sure the memory is not reused.
-    const void* data = is_8bit()
-                           ? static_cast<const void*>(string_.Characters8())
-                           : static_cast<const void*>(string_.Characters16());
-    memset(const_cast<void*>(data), 0xcc, string_.CharactersSizeInBytes());
-#endif  // DCHECK_IS_ON()
-    AsanPoisonString(string_);
+
+    compressed_ = std::move(compressed);
+    // Must unpoison the memory before releasing it.
+    AsanUnpoisonString(string_);
+    string_ = String();
   } else {
     state_ = State::kUnparked;
   }
+}
+
+// static
+void ParkableStringImpl::CompressInBackground(
+    std::unique_ptr<CompressionTaskParams> params) {
+  TRACE_EVENT1("blink", "ParkableStringImpl::CompressInBackground", "size",
+               params->size);
+
+  // Compression touches the string.
+  AsanUnpoisonString(params->string->string_);
+  base::StringPiece data(reinterpret_cast<const char*>(params->data),
+                         params->size);
+  std::string compressed_string;
+  bool ok = compression::GzipCompress(data, &compressed_string);
+
+  std::unique_ptr<Vector<uint8_t>> compressed = nullptr;
+  if (ok && compressed_string.size() < params->size) {
+    compressed = std::make_unique<Vector<uint8_t>>();
+    compressed->Append(
+        reinterpret_cast<const uint8_t*>(compressed_string.c_str()),
+        compressed_string.size());
+  }
+  AsanPoisonString(params->string->string_);
+
+  auto* task_runner = params->callback_task_runner.get();
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBind(
+          [](std::unique_ptr<CompressionTaskParams> params,
+             std::unique_ptr<Vector<uint8_t>> compressed) {
+            auto* string = params->string.get();
+            string->OnParkingCompleteOnMainThread(std::move(params),
+                                                  std::move(compressed));
+          },
+          WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed))));
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {

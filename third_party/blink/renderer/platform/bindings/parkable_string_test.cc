@@ -9,7 +9,6 @@
 #include <thread>
 #include <vector>
 
-#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -26,23 +25,18 @@ String MakeLargeString() {
   return String(String(data.data(), data.size()).ReleaseImpl());
 }
 
-void RunPostedTasks() {
-  base::RunLoop run_loop;
-  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-      FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
-}
-
-bool ParkAndWait(const ParkableString& string) {
-  bool return_value = string.Impl()->Park();
-  RunPostedTasks();
-  return return_value;
-}
-
 }  // namespace
 
 class ParkableStringTest : public ::testing::Test {
  protected:
+  void RunPostedTasks() { scoped_task_environment_.RunUntilIdle(); }
+
+  bool ParkAndWait(const ParkableString& string) {
+    bool return_value = string.Impl()->Park();
+    RunPostedTasks();
+    return return_value;
+  }
+
   void SetUp() override {
     ParkableStringManager::Instance().SetRendererBackgrounded(false);
     scoped_feature_list_.InitAndEnableFeature(
@@ -354,5 +348,20 @@ TEST_F(ParkableStringTest, AsanPoisoningTest) {
   EXPECT_DEATH(EXPECT_NE(0, data[10]), "");
 }
 #endif  // defined(ADDRESS_SANITIZER)
+
+TEST_F(ParkableStringTest, Compression) {
+  ParkableString parkable(MakeLargeString().Impl());
+  ParkableStringImpl* impl = parkable.Impl();
+  EXPECT_TRUE(impl->Park());
+  EXPECT_FALSE(impl->is_parked());
+  RunPostedTasks();
+
+  EXPECT_TRUE(impl->is_parked());
+  EXPECT_TRUE(impl->compressed_);
+  EXPECT_LT(impl->compressed_->size(), impl->CharactersSizeInBytes());
+  parkable.ToString();
+  EXPECT_FALSE(impl->is_parked());
+  EXPECT_EQ(nullptr, impl->compressed_);
+}
 
 }  // namespace blink

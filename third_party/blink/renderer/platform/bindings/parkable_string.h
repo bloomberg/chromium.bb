@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -31,6 +32,8 @@
 // used to gather statistics.
 
 namespace blink {
+
+struct CompressionTaskParams;
 
 // A parked string is parked by calling |Park()|, and unparked by calling
 // |ToString()| on a parked string.
@@ -85,7 +88,15 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // and the return value is valid as long as the mutex is held.
   bool CanParkNow() const;
   void Unpark();
-  void OnParkingCompleteOnMainThread();
+  // Called on the main thread after compression is done.
+  // |params| is the same as the one passed to |CompressInBackground()|,
+  // |compressed| is the compressed data, nullptr if compression failed.
+  void OnParkingCompleteOnMainThread(
+      std::unique_ptr<CompressionTaskParams> params,
+      std::unique_ptr<Vector<uint8_t>> compressed);
+
+  // Background thread.
+  static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
 
   Mutex mutex_;  // protects lock_depth_.
   int lock_depth_;
@@ -93,9 +104,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Main thread only.
   State state_;
   String string_;
-#if DCHECK_IS_ON()
-  String parked_string_;
-#endif
+  std::unique_ptr<Vector<uint8_t>> compressed_;
 
   const bool may_be_parked_;
   const bool is_8bit_;
@@ -119,6 +128,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableSimple);
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableMultiple);
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, AsanPoisoning);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, Compression);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringImpl);
 };
 
