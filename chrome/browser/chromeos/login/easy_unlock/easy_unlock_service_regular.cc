@@ -381,25 +381,6 @@ void EasyUnlockServiceRegular::HandleUserReauth(
       base::ThreadTaskRunnerHandle::Get().get()));
 }
 
-void EasyUnlockServiceRegular::OpenSetupAppAfterReauth(
-    const UserContext& user_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  HandleUserReauth(user_context);
-
-  // Use this opportunity to clear the crytohome keys if it was not already
-  // cleared earlier.
-  const base::ListValue* devices = GetRemoteDevices();
-  if (!devices || devices->empty()) {
-    EasyUnlockKeyManager* key_manager =
-        UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
-    key_manager->RefreshKeys(
-        user_context, base::ListValue(),
-        base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   EasyUnlockScreenlockStateHandler::NO_PAIRING));
-  }
-}
-
 void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
     EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
     bool success) {
