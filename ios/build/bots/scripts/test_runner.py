@@ -1033,9 +1033,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     '''Performs setup actions which must occur prior to every test launch.'''
     super(WprProxySimulatorTestRunner, self).set_up()
 
-    cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
-
-    self.copy_trusted_certificate(cert_path)
     self.proxy_start()
 
   def tear_down(self):
@@ -1068,6 +1065,12 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       # TODO(crbug.com/812705): Implement test sharding for unit tests.
       # TODO(crbug.com/812712): Use thread pool for DeviceTestRunner as well.
 
+      # Create a simulator for these tests, and prepare it with the
+      # certificate needed for HTTPS proxying.
+      udid = self.getSimulator()
+      cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
+      self.copy_trusted_certificate(cert_path)
+
       # General algorithm explanation (will clean up later)
       # For each recipe in the test folder, if there is a matching replay,
       # Run the test suite on it (similar to how SimulatorTestRunner does)
@@ -1097,7 +1100,8 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
           recipe_cmd = [
             self.iossim_path, '-d', self.platform, '-s',
             self.version, '-t', 'AutofillAutomationTestCase', '-c',
-            '-autofillautomation={}'.format(recipePath)
+            '-autofillautomation={}'.format(recipePath),
+            '-u', udid,
           ]
           for env_var in self.env_vars:
             recipe_cmd.extend(['-e', env_var])
@@ -1170,6 +1174,8 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         else:
           print 'No matching replay file for recipe {}'.format(
               recipePath)
+
+      self.deleteSimulator(udid)
 
     # iossim can return 5 if it exits noncleanly even if all tests passed.
     # Therefore we cannot rely on process exit code to determine success.
