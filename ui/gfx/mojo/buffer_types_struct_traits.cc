@@ -28,14 +28,13 @@ bool StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
   return data.ReadUsage(&out->usage) && data.ReadFormat(&out->format);
 }
 
+#if defined(OS_LINUX)
 std::vector<mojo::ScopedHandle>
 StructTraits<gfx::mojom::NativePixmapHandleDataView, gfx::NativePixmapHandle>::
     fds(const gfx::NativePixmapHandle& pixmap_handle) {
   std::vector<mojo::ScopedHandle> handles;
-#if defined(OS_LINUX)
   for (const base::FileDescriptor& fd : pixmap_handle.fds)
     handles.emplace_back(mojo::WrapPlatformFile(fd.fd));
-#endif  // defined(OS_LINUX)
   return handles;
 }
 
@@ -43,7 +42,6 @@ bool StructTraits<
     gfx::mojom::NativePixmapHandleDataView,
     gfx::NativePixmapHandle>::Read(gfx::mojom::NativePixmapHandleDataView data,
                                    gfx::NativePixmapHandle* out) {
-#if defined(OS_LINUX)
   mojo::ArrayDataView<mojo::ScopedHandle> handles_data_view;
   data.GetFdsDataView(&handles_data_view);
   for (size_t i = 0; i < handles_data_view.size(); ++i) {
@@ -56,10 +54,8 @@ bool StructTraits<
     out->fds.push_back(base::FileDescriptor(platform_file, auto_close));
   }
   return data.ReadPlanes(&out->planes);
-#else
-  return false;
-#endif
 }
+#endif  // defined(OS_LINUX)
 
 gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     gfx::mojom::GpuMemoryBufferHandleDataView,
@@ -71,16 +67,13 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     case gfx::SHARED_MEMORY_BUFFER:
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewSharedMemoryHandle(
           std::move(handle.region));
-    case gfx::NATIVE_PIXMAP: {
+    case gfx::NATIVE_PIXMAP:
 #if defined(OS_LINUX)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewNativePixmapHandle(
           handle.native_pixmap_handle);
 #else
-      static base::NoDestructor<gfx::NativePixmapHandle> pixmap_handle;
-      return gfx::mojom::GpuMemoryBufferPlatformHandle::NewNativePixmapHandle(
-          *pixmap_handle);
+      break;
 #endif
-    }
     case gfx::IO_SURFACE_BUFFER:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewMachPort(
@@ -151,17 +144,14 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->type = gfx::SHARED_MEMORY_BUFFER;
       out->region = std::move(platform_handle->get_shared_memory_handle());
       return true;
+#if defined(OS_LINUX)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::
         NATIVE_PIXMAP_HANDLE:
-#if defined(OS_LINUX)
       out->type = gfx::NATIVE_PIXMAP;
       out->native_pixmap_handle = platform_handle->get_native_pixmap_handle();
       return true;
-#else
-      return false;
-#endif
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::MACH_PORT: {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
       out->type = gfx::IO_SURFACE_BUFFER;
       mach_port_t mach_port;
       MojoResult unwrap_result = mojo::UnwrapMachPort(
@@ -170,11 +160,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
         return false;
       out->mach_port.reset(mach_port);
       return true;
-#else
-      return false;
-#endif
     }
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::DXGI_HANDLE: {
       out->type = gfx::DXGI_SHARED_HANDLE;
       HANDLE handle;
@@ -185,8 +172,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->dxgi_handle = IPC::PlatformFileForTransit(handle);
       return true;
     }
-#endif
-#if defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::
         ANDROID_HARDWARE_BUFFER_HANDLE: {
       out->type = gfx::ANDROID_HARDWARE_BUFFER;
