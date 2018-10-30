@@ -91,7 +91,7 @@ def MakeDeterministic(objdata):
   for i in range(0, coff_header.NumberOfSections):
     section_header = SECTIONHEADER.unpack_from(
         objdata, offset=COFFHEADER.size() + i * SECTIONHEADER.size())
-    assert not section_header[0].startswith('/')  # Support only short names.
+    assert not section_header[0].startswith('/')  # Support short names only.
     section_headers.append(section_header)
 
     if section_header.Name == '.debug$S':
@@ -102,7 +102,6 @@ def MakeDeterministic(objdata):
   data_start = COFFHEADER.size() + len(section_headers) * SECTIONHEADER.size()
 
   # Verify the .debug$S section looks like we expect.
-  # have their data before the .debug$S's section data.
   assert section_headers[debug_section_index].Name == '.debug$S'
   assert section_headers[debug_section_index].VirtualSize == 0
   assert section_headers[debug_section_index].VirtualAddress == 0
@@ -207,8 +206,8 @@ def MakeDeterministic(objdata):
         REL.pack_into(objdata, rel_offset, rel)
 
   # Update symbol table indices in line numbers -- just check they don't exist.
-  for i in range(0, debug_section_index):
-    assert section_headers[i].NumberOfLineNumbers == 0
+  for header in section_headers:
+    assert header.NumberOfLineNumbers == 0
 
   # Now that all indices are updated, remove the symbol table entry refering to
   # .debug$S and its aux entry.
