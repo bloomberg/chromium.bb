@@ -17,6 +17,7 @@ import android.support.annotation.IntDef;
 import dalvik.system.BaseDexClassLoader;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -91,8 +92,10 @@ public class ArCoreJavaUtils {
 
     @CalledByNative
     private static String getArCoreShimLibraryPath() {
-        return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
-                .findLibrary("arcore_sdk_c_minimal");
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
+                    .findLibrary("arcore_sdk_c_minimal");
+        }
     }
 
     private ArCoreJavaUtils(long nativeArCoreJavaUtils) {
