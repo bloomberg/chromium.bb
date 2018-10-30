@@ -14,7 +14,6 @@ typemaps = [
   "//content/common/navigation_params.typemap",
   "//content/common/push_messaging.typemap",
   "//content/common/render_frame_metadata.typemap",
-  "//content/common/service_worker/service_worker_fetch_request.typemap",
   "//content/common/url_loader_factory_bundle.typemap",
   "//content/common/web_preferences.typemap",
   "//content/common/media/media_session.typemap",

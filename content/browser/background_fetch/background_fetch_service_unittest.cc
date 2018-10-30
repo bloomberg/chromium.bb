@@ -24,11 +24,13 @@
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -122,9 +124,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
+    std::vector<blink::mojom::FetchAPIRequestPtr> request_ptr;
+    for (const auto& request : requests) {
+      request_ptr.push_back(
+          mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request));
+    }
     service_->Fetch(
-        service_worker_registration_id, developer_id, requests, options, icon,
-        blink::mojom::BackgroundFetchUkmData::New(),
+        service_worker_registration_id, developer_id, std::move(request_ptr),
+        options, icon, blink::mojom::BackgroundFetchUkmData::New(),
         base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_registration));
@@ -178,9 +185,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     base::AutoReset<bool> hang_registration_creation_for_testing(
         &context_->hang_registration_creation_for_testing_, true);
     base::RunLoop run_loop;
+    std::vector<blink::mojom::FetchAPIRequestPtr> request_ptr;
+    for (const auto& request : requests) {
+      request_ptr.push_back(
+          mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request));
+    }
     service_->Fetch(
-        service_worker_registration_id, developer_id, requests, options, icon,
-        blink::mojom::BackgroundFetchUkmData::New(),
+        service_worker_registration_id, developer_id, std::move(request_ptr),
+        options, icon, blink::mojom::BackgroundFetchUkmData::New(),
         base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_registration));
@@ -198,8 +210,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     base::RunLoop run_loop;
     service_->MatchRequests(
         service_worker_registration_id, developer_id, unique_id,
-        base::nullopt /* request_to_match*/, nullptr /* cache_query_params*/,
-        true /* match_all */,
+        blink::mojom::FetchAPIRequest::New() /* request_to_match*/,
+        nullptr /* cache_query_params*/, true /* match_all */,
         base::BindOnce(&BackgroundFetchServiceTest::DidMatchAllRequests,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_fetches));
@@ -569,12 +581,11 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   MatchAllRequests(service_worker_registration_id, registration.developer_id,
                    registration.unique_id, &fetches);
   ASSERT_EQ(fetches.size(), requests.size());
-
   for (size_t i = 0; i < fetches.size(); ++i) {
-    ASSERT_EQ(fetches[i].request.url, requests[i].url);
-    EXPECT_EQ(fetches[i].request.method, requests[i].method);
+    ASSERT_EQ(fetches[i].request->url, requests[i].url);
+    EXPECT_EQ(fetches[i].request->method, requests[i].method);
 
-    EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request.url);
+    EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request->url);
     EXPECT_EQ(fetches[i].response->response_type,
               network::mojom::FetchResponseType::kDefault);
 
@@ -678,13 +689,13 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
     std::swap(fetches[0], fetches[1]);
 
   for (size_t i = 0; i < fetches.size(); ++i) {
-    ASSERT_EQ(fetches[i].request.url, requests[i].url);
-    EXPECT_EQ(fetches[i].request.method, requests[i].method);
+    ASSERT_EQ(fetches[i].request->url, requests[i].url);
+    EXPECT_EQ(fetches[i].request->method, requests[i].method);
 
     switch (i) {
       case 0:
         EXPECT_EQ(fetches[i].response->status_code, 404);
-        EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request.url);
+        EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request->url);
         EXPECT_EQ(fetches[i].response->response_type,
                   network::mojom::FetchResponseType::kDefault);
         break;

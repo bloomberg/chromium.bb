@@ -9,7 +9,9 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -81,7 +83,8 @@ void MatchRequestsTask::DidGetAllMatchedEntries(
   for (size_t i = 0; i < size; i++) {
     auto& entry = entries[i];
     BackgroundFetchSettledFetch settled_fetch;
-    settled_fetch.request = std::move(*entry.first);
+    settled_fetch.request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(*entry.first);
 
     if (entry.second && entry.second->url_list.empty()) {
       // We didn't process this empty response, so we should expose it

@@ -16,8 +16,10 @@
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -367,7 +369,8 @@ void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
   for (auto& request : requests_) {
     auto operation = blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request = std::move(request);
+    operation->request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
     // Empty response.
     operation->response = blink::mojom::FetchAPIResponse::New();
     operations.push_back(std::move(operation));
