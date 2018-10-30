@@ -77,10 +77,8 @@ camera.views.camera.Layout.cssRules_ =
  * @private
  */
 camera.views.camera.Layout.cssStyle_ = function(selector) {
-  var rule = camera.views.camera.Layout.cssRules_.find(rule => {
-    return rule.selectorText == selector;
-  });
-  return rule.style;
+  return camera.views.camera.Layout.cssRules_.find(
+      (rule) => rule.selectorText == selector).style;
 };
 
 /**

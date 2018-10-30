@@ -49,6 +49,16 @@
     "message": "Recording stopped",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ active",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
   "galleryButton": {
     "message": "Go to gallery",
     "description": "Label for the gallery button."

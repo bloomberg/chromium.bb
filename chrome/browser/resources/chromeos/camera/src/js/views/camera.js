@@ -485,12 +485,15 @@ camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
 
 /**
  * Stops camera and tries to start camera stream again if possible.
+ * @return {!Promise<>} Promise for the start-camera operation.
  * @private
  */
 camera.views.Camera.prototype.stop_ = function() {
   // Wait for ongoing 'start' and 'take' done before restarting camera.
-  Promise.all([this.started_, Promise.resolve(!this.taking || this.endTake_())])
-      .finally(() => {
+  return Promise.all([
+    this.started_,
+    Promise.resolve(!this.taking || this.endTake_())
+  ]).finally(() => {
     this.preview_.stop();
     this.mediaRecorder_ = null;
     this.imageCapture_ = null;
@@ -498,6 +501,7 @@ camera.views.Camera.prototype.stop_ = function() {
     document.body.classList.remove('capturing');
     this.updateControls_();
     this.start_();
+    return this.started_;
   });
 };
 
@@ -524,8 +528,7 @@ camera.views.Camera.prototype.start_ = function() {
       var constraints = candidates[index];
       return navigator.mediaDevices.getUserMedia(constraints).then(
           this.preview_.start.bind(this.preview_)).then(() => {
-        this.options_.updateStreamOptions(constraints, this.preview_.stream);
-        document.body.classList.remove('mode-switching');
+        this.options_.updateValues(constraints, this.preview_.stream);
         document.body.classList.add('capturing');
         this.updateControls_();
         camera.App.onErrorRecovered('no-camera');
