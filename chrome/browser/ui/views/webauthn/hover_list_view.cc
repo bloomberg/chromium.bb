@@ -125,9 +125,6 @@ void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
   auto hover_button =
       CreateHoverButtonForListItem(item_tag, icon, item_text, this);
 
-  if (tags_to_list_item_views_.empty())
-    first_list_item_view_ = hover_button.get();
-
   auto* list_item_view_ptr = hover_button.release();
   AddChildView(list_item_view_ptr);
   auto* separator = AddSeparatorAsChild(this);
@@ -166,10 +163,6 @@ void HoverListView::RemoveListItemView(int item_tag) {
   if (view_it == tags_to_list_item_views_.end())
     return;
 
-  auto* list_item_ptr = view_it->second.item_view;
-  if (list_item_ptr == first_list_item_view_)
-    first_list_item_view_ = nullptr;
-
   RemoveListItemView(view_it->second);
   tags_to_list_item_views_.erase(view_it);
 
@@ -191,11 +184,16 @@ void HoverListView::RemoveListItemView(ListItemViews list_item) {
   RemoveChildView(list_item.separator_view);
 }
 
+views::Button& HoverListView::GetTopListItemView() const {
+  DCHECK(!tags_to_list_item_views_.empty());
+  return *tags_to_list_item_views_.begin()->second.item_view;
+}
+
 void HoverListView::RequestFocus() {
-  if (!first_list_item_view_)
+  if (tags_to_list_item_views_.empty())
     return;
 
-  first_list_item_view_->RequestFocus();
+  GetTopListItemView().RequestFocus();
 }
 
 void HoverListView::OnListItemAdded(int item_tag) {
