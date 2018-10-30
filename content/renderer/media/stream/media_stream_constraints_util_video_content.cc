@@ -314,7 +314,8 @@ VideoCaptureSettings SelectResultFromCandidates(
 
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, candidates.resolution_set(),
-      candidates.frame_rate_set(), capture_params.requested_format);
+      candidates.frame_rate_set(), capture_params.requested_format,
+      true /* enable_rescale */);
 
   return VideoCaptureSettings(std::move(device_id), capture_params,
                               noise_reduction, track_adapter_settings,
