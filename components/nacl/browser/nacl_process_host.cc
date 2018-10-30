@@ -250,7 +250,7 @@ NaClProcessHost::NaClProcessHost(
 
 NaClProcessHost::~NaClProcessHost() {
   // Report exit status only if the process was successfully started.
-  if (!process_->GetData().IsHandleValid()) {
+  if (!process_->GetData().GetProcess().IsValid()) {
     content::ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
     std::string message =
@@ -427,9 +427,9 @@ void NaClProcessHost::OnChannelConnected(int32_t peer_pid) {
 }
 
 #if defined(OS_WIN)
-void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
+void NaClProcessHost::OnProcessLaunchedByBroker(base::Process process) {
   process_launched_by_broker_ = true;
-  process_->SetHandle(handle);
+  process_->SetProcess(std::move(process));
   SetDebugStubPort(nacl::kGdbDebugStubPortUnknown);
   if (!StartWithLaunchedProcess())
     delete this;
@@ -641,11 +641,10 @@ void NaClProcessHost::ReplyToRenderer(
 
   const ChildProcessData& data = process_->GetData();
   SendMessageToRenderer(
-      NaClLaunchResult(ppapi_channel_handle.release(),
-                       trusted_channel_handle.release(),
-                       manifest_service_channel_handle.release(),
-                       base::GetProcId(data.GetHandle()), data.id,
-                       crash_info_shmem_renderer_handle),
+      NaClLaunchResult(
+          ppapi_channel_handle.release(), trusted_channel_handle.release(),
+          manifest_service_channel_handle.release(), data.GetProcess().Pid(),
+          data.id, crash_info_shmem_renderer_handle),
       error_message);
 
   // Now that the crash information shmem handles have been shared with the
@@ -763,8 +762,8 @@ bool NaClProcessHost::StartNaClExecution() {
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
     if (enable_nacl_debug) {
-      base::ProcessId pid = base::GetProcId(process_->GetData().GetHandle());
-      LOG(WARNING) << "nonsfi nacl plugin running in " << pid;
+      LOG(WARNING) << "nonsfi nacl plugin running in "
+                   << process_->GetData().GetProcess().Pid();
     }
   } else {
     params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
@@ -910,9 +909,9 @@ bool NaClProcessHost::StartPPAPIProxy(
   // browser process.
   ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
       ipc_proxy_channel_.get(),  // sender
-      permissions_, process_->GetData().GetHandle(), ipc_proxy_channel_.get(),
-      nacl_host_message_filter_->render_process_id(), render_view_id_,
-      profile_directory_));
+      permissions_, process_->GetData().GetProcess().Handle(),
+      ipc_proxy_channel_.get(), nacl_host_message_filter_->render_process_id(),
+      render_view_id_, profile_directory_));
 
   ppapi::PpapiNaClPluginArgs args;
   args.off_the_record = nacl_host_message_filter_->off_the_record();
@@ -1106,7 +1105,7 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   }
   debug_exception_handler_requested_ = true;
 
-  base::ProcessId nacl_pid = base::GetProcId(process_->GetData().GetHandle());
+  base::ProcessId nacl_pid = process_->GetData().GetProcess().Pid();
   // We cannot use process_->GetData().handle because it does not have
   // the necessary access rights.  We open the new handle here rather
   // than in the NaCl broker process in case the NaCl loader process

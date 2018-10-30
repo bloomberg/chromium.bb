@@ -80,7 +80,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       override;
   void SetName(const base::string16& name) override;
   void SetMetricsName(const std::string& metrics_name) override;
-  void SetHandle(base::ProcessHandle handle) override;
+  void SetProcess(base::Process process) override;
   service_manager::mojom::ServiceRequest TakeInProcessServiceRequest() override;
 
   // ChildProcessHostDelegate implementation:

@@ -40,10 +40,8 @@ void KillPluginOnIOThread(int child_id) {
   while (!iter.Done()) {
     const content::ChildProcessData& data = iter.GetData();
     if (data.id == child_id) {
-      CrashDumpHungChildProcess(data.GetHandle());
-      base::Process process =
-          base::Process::DeprecatedGetProcessFromHandle(data.GetHandle());
-      process.Terminate(content::RESULT_CODE_HUNG, false);
+      CrashDumpHungChildProcess(data.GetProcess().Handle());
+      data.GetProcess().Terminate(content::RESULT_CODE_HUNG, false);
       break;
     }
     ++iter;

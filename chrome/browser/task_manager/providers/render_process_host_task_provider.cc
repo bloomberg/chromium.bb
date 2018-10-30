@@ -82,9 +82,9 @@ void RenderProcessHostTaskProvider::CreateTask(
   // TODO(cburn): plumb out something from RPH so the title can be set here.
   // Create the task and notify the observer.
   ChildProcessData data(content::PROCESS_TYPE_RENDERER);
-  data.SetHandle(host->GetProcess().Handle());
+  data.SetProcess(host->GetProcess().Duplicate());
   data.id = host->GetID();
-  task.reset(new ChildProcessTask(data));
+  task = std::make_unique<ChildProcessTask>(data);
   NotifyObserverTaskAdded(task.get());
 }
 

@@ -316,9 +316,9 @@ void BrowserChildProcessHostImpl::SetMetricsName(
   data_.metrics_name = metrics_name;
 }
 
-void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
+void BrowserChildProcessHostImpl::SetProcess(base::Process process) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_.SetHandle(handle);
+  data_.SetProcess(std::move(process));
 }
 
 service_manager::mojom::ServiceRequest
@@ -360,8 +360,8 @@ ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
   if (!child_process_) {
     // If the delegate doesn't use Launch() helper.
     ChildProcessTerminationInfo info;
-    info.status =
-        base::GetTerminationStatus(data_.GetHandle(), &info.exit_code);
+    info.status = base::GetTerminationStatus(data_.GetProcess().Handle(),
+                                             &info.exit_code);
     return info;
   }
   return child_process_->GetChildTerminationInfo(known_dead);
@@ -438,7 +438,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   // early exit watcher so GetTerminationStatus can close the process handle.
   early_exit_watcher_.StopWatching();
 #endif
-  if (child_process_.get() || data_.GetHandle()) {
+  if (child_process_.get() || data_.GetProcess().IsValid()) {
     ChildProcessTerminationInfo info =
         GetTerminationInfo(true /* known_dead */);
 #if defined(OS_ANDROID)
@@ -605,7 +605,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   early_exit_watcher_.StartWatchingOnce(process.Handle(), this);
 #endif
 
-  data_.SetHandle(process.Handle());
+  data_.SetProcess(process.Duplicate());
   delegate_->OnProcessLaunched();
 
   if (is_channel_connected_) {
