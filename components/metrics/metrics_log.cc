@@ -193,9 +193,18 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   metrics::SystemProfileProto::OS* os = system_profile->mutable_os();
   os->set_name(base::SysInfo::OperatingSystemName());
   os->set_version(base::SysInfo::OperatingSystemVersion());
+
+// On ChromeOS, KernelVersion refers to the Linux kernel version and
+// OperatingSystemVersion refers to the ChromeOS release version.
 #if defined(OS_CHROMEOS)
   os->set_kernel_version(base::SysInfo::KernelVersion());
-#elif defined(OS_ANDROID)
+#elif defined(OS_LINUX)
+  // Linux operating system version is copied over into kernel version to be
+  // consistent.
+  os->set_kernel_version(base::SysInfo::OperatingSystemVersion());
+#endif
+
+#if defined(OS_ANDROID)
   os->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
   std::string package_name = client->GetAppPackageName();

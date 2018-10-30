@@ -157,6 +157,9 @@ TEST_F(MetricsLogTest, BasicRecord) {
 #if defined(OS_CHROMEOS)
   system_profile->mutable_os()->set_kernel_version(
       base::SysInfo::KernelVersion());
+#elif defined(OS_LINUX)
+  system_profile->mutable_os()->set_kernel_version(
+      base::SysInfo::OperatingSystemVersion());
 #elif defined(OS_ANDROID)
   system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
