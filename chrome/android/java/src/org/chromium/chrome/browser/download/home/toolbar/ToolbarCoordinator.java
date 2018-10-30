@@ -105,6 +105,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
                 isLocationEnabled ? R.id.with_settings_search_menu_id : R.id.search_menu_id;
         final int closeMenuId =
                 isLocationEnabled ? R.id.with_settings_close_menu_id : R.id.close_menu_id;
+        final int infoMenuId = R.id.info_menu_id;
 
         mView = (ViewGroup) LayoutInflater.from(context).inflate(
                 R.layout.download_home_toolbar, null);
@@ -131,6 +132,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
                 FadingShadow.POSITION_TOP);
 
         if (!hasCloseButton) mToolbar.removeMenuItem(closeMenuId);
+        mToolbar.removeMenuItem(infoMenuId);
     }
 
     /**

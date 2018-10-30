@@ -15,7 +15,6 @@ import android.widget.FrameLayout;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
-import org.chromium.chrome.browser.download.home.PrefetchStatusProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
@@ -98,7 +97,6 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
             FilterCoordinator.Observer filterObserver,
             DateOrderedListObserver dateOrderedListObserver) {
         mContext = context;
-        PrefetchStatusProvider prefetchProvider = new PrefetchStatusProvider();
 
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
@@ -107,13 +105,11 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         mMediator = new DateOrderedListMediator(provider, this ::startShareIntent, deleteController,
                 selectionDelegate, config, dateOrderedListObserver, model);
 
-        mEmptyCoordinator =
-                new EmptyCoordinator(context, prefetchProvider, mMediator.getEmptySource());
+        mEmptyCoordinator = new EmptyCoordinator(context, mMediator.getEmptySource());
 
         mStorageCoordinator = new StorageCoordinator(context, mMediator.getFilterSource());
 
-        mFilterCoordinator =
-                new FilterCoordinator(context, prefetchProvider, mMediator.getFilterSource());
+        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         mFilterCoordinator.addObserver(mEmptyCoordinator);
