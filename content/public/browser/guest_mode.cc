@@ -14,9 +14,10 @@
 namespace content {
 
 // static
-bool GuestMode::IsCrossProcessFrameGuest(WebContents* web_contents) {
+bool GuestMode::IsCrossProcessFrameGuest(const WebContents* web_contents) {
   BrowserPluginGuest* browser_plugin_guest =
-      static_cast<WebContentsImpl*>(web_contents)->GetBrowserPluginGuest();
+      static_cast<const WebContentsImpl*>(web_contents)
+          ->GetBrowserPluginGuest();
 
   if (!browser_plugin_guest ||
       !browser_plugin_guest->can_use_cross_process_frames()) {

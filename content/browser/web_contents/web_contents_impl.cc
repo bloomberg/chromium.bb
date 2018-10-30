@@ -5417,7 +5417,7 @@ void WebContentsImpl::RemoveBrowserPluginEmbedder() {
     browser_plugin_embedder_.reset();
 }
 
-WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
+WebContentsImpl* WebContentsImpl::GetOuterWebContents() const {
   if (GuestMode::IsCrossProcessFrameGuest(this))
     return node_.outer_web_contents();
 
