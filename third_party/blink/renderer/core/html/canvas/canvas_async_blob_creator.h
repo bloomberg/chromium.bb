@@ -36,18 +36,16 @@ constexpr const char* kRGBA16ImagePixelFormatName = "uint16";
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
  public:
-
   // This enum is used to back an UMA histogram, and should therefore be treated
-  // as append-only.
+  // as append-only. Idle tasks are not implemented for some image types.
   enum IdleTaskStatus {
-    kIdleTaskNotStarted,
-    kIdleTaskStarted,
-    kIdleTaskCompleted,
-    kIdleTaskFailed,
-    kIdleTaskSwitchedToImmediateTask,
-    kIdleTaskNotSupported,  // Idle tasks are not implemented for some image
-                            // types
-    kIdleTaskCount,         // Should not be seen in production
+    kIdleTaskNotStarted = 0,
+    kIdleTaskStarted = 1,
+    kIdleTaskCompleted = 2,
+    kIdleTaskFailed = 3,
+    kIdleTaskSwitchedToImmediateTask = 4,
+    kIdleTaskNotSupported = 5,
+    kMaxValue = kIdleTaskNotSupported,
   };
   enum ToBlobFunctionType {
     kHTMLCanvasToBlobCallback,
