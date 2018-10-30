@@ -14,6 +14,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -59,19 +60,16 @@ gfx::Rect GetAdjustedBoundsByGravity(const gfx::Rect& bounds,
 //   /    \
 //  /BOTTOM
 int GetGravityToClosestEdge(const gfx::Rect& bounds, const gfx::Rect& region) {
-  const int left_edge_dist = bounds.x() - region.x();
-  const int right_edge_dist = region.right() - bounds.right();
-  const int top_edge_dist = bounds.y() - region.y();
-  const int bottom_edge_dist = region.bottom() - bounds.bottom();
-  int minimum_edge_dist = std::min(left_edge_dist, right_edge_dist);
-  minimum_edge_dist = std::min(minimum_edge_dist, top_edge_dist);
-  minimum_edge_dist = std::min(minimum_edge_dist, bottom_edge_dist);
+  const gfx::Insets insets = region.InsetsFrom(bounds);
+  int minimum_edge_dist = std::min(insets.left(), insets.right());
+  minimum_edge_dist = std::min(minimum_edge_dist, insets.top());
+  minimum_edge_dist = std::min(minimum_edge_dist, insets.bottom());
 
-  if (left_edge_dist == minimum_edge_dist) {
+  if (insets.left() == minimum_edge_dist) {
     return GRAVITY_LEFT;
-  } else if (right_edge_dist == minimum_edge_dist) {
+  } else if (insets.right() == minimum_edge_dist) {
     return GRAVITY_RIGHT;
-  } else if (top_edge_dist == minimum_edge_dist) {
+  } else if (insets.top() == minimum_edge_dist) {
     return GRAVITY_TOP;
   } else {
     return GRAVITY_BOTTOM;
