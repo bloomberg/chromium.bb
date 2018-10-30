@@ -324,22 +324,20 @@ void WorkerGlobalScope::TasksWereUnpaused() {
 
 void WorkerGlobalScope::EvaluateClassicScriptPausable(
     const KURL& script_url,
-    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(
-        &WorkerGlobalScope::EvaluateClassicScriptPausable,
-        WrapWeakPersistent(this), script_url, access_control_status,
-        source_code, WTF::Passed(std::move(cached_meta_data)), stack_id));
+    AddPausedCall(WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptPausable,
+                            WrapWeakPersistent(this), script_url, source_code,
+                            WTF::Passed(std::move(cached_meta_data)),
+                            stack_id));
     return;
   }
   ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
   if (debugger)
     debugger->ExternalAsyncTaskStarted(stack_id);
-  EvaluateClassicScript(script_url, access_control_status, source_code,
-                        std::move(cached_meta_data));
+  EvaluateClassicScript(script_url, source_code, std::move(cached_meta_data));
   if (debugger)
     debugger->ExternalAsyncTaskFinished(stack_id);
 }
@@ -384,7 +382,6 @@ void WorkerGlobalScope::ReceiveMessagePausable(
 
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
-    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
@@ -395,8 +392,9 @@ void WorkerGlobalScope::EvaluateClassicScript(
   ReportingProxy().WillEvaluateClassicScript(
       source_code.length(),
       cached_meta_data.get() ? cached_meta_data->size() : 0);
+  // Cross-origin workers are disallowed, so use kSharableCrossOrigin.
   bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, handler, script_url), access_control_status,
+      ScriptSourceCode(source_code, handler, script_url), kSharableCrossOrigin,
       nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
 }
