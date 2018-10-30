@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_notifier.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -40,11 +41,6 @@ class ScreenTimeController : public KeyedService,
   base::TimeDelta GetScreenTimeDuration();
 
  private:
-  // The types of time limit notifications. |SCREEN_TIME| is used when the
-  // the screen time limit is about to be used up, and |BED_TIME| is used when
-  // the bed time is approaching.
-  enum TimeLimitNotificationType { kScreenTime, kBedTime };
-
   // Call time limit processor for new state.
   void CheckTimeLimit(const std::string& source);
 
@@ -61,10 +57,6 @@ class ScreenTimeController : public KeyedService,
   // |next_unlock_time|: When user will be able to unlock the screen, only valid
   //                     when |visible| is true.
   void UpdateTimeLimitsMessage(bool visible, base::Time next_unlock_time);
-
-  // Show a notification indicating the remaining screen time.
-  void ShowNotification(ScreenTimeController::TimeLimitNotificationType type,
-                        const base::TimeDelta& time_remaining);
 
   // Called when the policy of time limits changes.
   void OnPolicyChanged();
@@ -89,14 +81,12 @@ class ScreenTimeController : public KeyedService,
   content::BrowserContext* context_;
   PrefService* pref_service_;
 
-  // Called to show warning and exit notifications.
-  base::OneShotTimer warning_notification_timer_;
-  base::OneShotTimer exit_notification_timer_;
-
-  // Timers that are called when lock screen state change event happens, ie,
-  // bedtime is over or the usage limit ends.
+  // Timer scheduled for when the next lock screen state change event is
+  // expected to happen, e.g. when bedtime is over or the usage limit ends.
   base::OneShotTimer next_state_timer_;
-  base::OneShotTimer reset_screen_time_timer_;
+
+  // Used to set up timers when a time limit is approaching.
+  TimeLimitNotifier time_limit_notifier_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
