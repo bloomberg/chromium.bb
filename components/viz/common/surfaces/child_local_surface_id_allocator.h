@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
 
@@ -40,16 +41,15 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
   const LocalSurfaceId& GenerateId();
 
   const LocalSurfaceId& GetCurrentLocalSurfaceId() const {
-    return current_local_surface_id_;
+    return current_local_surface_id_allocation_.local_surface_id();
   }
 
-  base::TimeTicks allocation_time() const { return allocation_time_; }
+  base::TimeTicks allocation_time() const {
+    return current_local_surface_id_allocation_.allocation_time_;
+  }
 
  private:
-  LocalSurfaceId current_local_surface_id_;
-
-  // The time at which |current_local_surface_id_| was allocated.
-  base::TimeTicks allocation_time_;
+  LocalSurfaceIdAllocation current_local_surface_id_allocation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildLocalSurfaceIdAllocator);
 };
