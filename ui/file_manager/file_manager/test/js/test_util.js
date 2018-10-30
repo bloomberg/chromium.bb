@@ -412,14 +412,14 @@ test.waitForElementLost = function(query) {
  * @param {!Array<!test.TestEntryInfo>} crostini Entries for crostini.
  */
 test.addEntries = function(downloads, drive, crostini) {
-  var fsDownloads = /** @type {MockFileSystem} */ (
+  const fsDownloads = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
           .fileSystem);
   fsDownloads.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(downloads, '/'), true);
 
-  var fsDrive = /** @type {MockFileSystem} */ (
+  const fsDrive = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
           .fileSystem);
@@ -427,7 +427,7 @@ test.addEntries = function(downloads, drive, crostini) {
       test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
   fsDrive.populate(['/team_drives/']);
 
-  var fsCrostini = /** @type {MockFileSystem} */ (
+  const fsCrostini = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .createVolumeInfo(
               VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
@@ -435,6 +435,14 @@ test.addEntries = function(downloads, drive, crostini) {
           .fileSystem);
   fsCrostini.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
+
+  const fsRemovable = /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .createVolumeInfo(
+              VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:MyUSB',
+              'MyUSB')
+          .fileSystem);
+  fsRemovable.populate([], true);
 };
 
 /**
@@ -447,6 +455,24 @@ test.mountCrostini = function() {
     volumeMetadata: {
       volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
       volumeId: 'crostini',
+      isReadOnly: false,
+      iconSet: {},
+      profile: {isCurrentProfile: true, displayName: ''},
+      mountContext: 'user',
+    },
+  });
+};
+
+/**
+ * Sends mount event for crostini volume.
+ */
+test.mountRemovable = function() {
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+    status: 'success',
+    eventType: 'mount',
+    volumeMetadata: {
+      volumeType: VolumeManagerCommon.VolumeType.REMOVABLE,
+      volumeId: 'removable:MyUSB',
       isReadOnly: false,
       iconSet: {},
       profile: {isCurrentProfile: true, displayName: ''},
