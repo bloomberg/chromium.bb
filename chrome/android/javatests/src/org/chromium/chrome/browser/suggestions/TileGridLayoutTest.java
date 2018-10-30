@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.annotation.Nullable;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +49,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -188,7 +188,9 @@ public class TileGridLayoutTest {
         assertTrue(mTab.getNativePage() instanceof NewTabPage);
         NewTabPage ntp = (NewTabPage) mTab.getNativePage();
 
-        RecyclerViewTestUtils.waitForStableRecyclerView(ntp.getNewTabPageView().getRecyclerView());
+        org.chromium.chrome.test.util.ViewUtils.waitForView(
+                (ViewGroup) ntp.getView(), ViewMatchers.withId(R.id.tile_grid_layout));
+
         return ntp;
     }
 
@@ -229,7 +231,7 @@ public class TileGridLayoutTest {
     }
 
     private TileGridLayout getTileGridLayout(NewTabPage ntp) {
-        TileGridLayout tileGridLayout = ntp.getNewTabPageView().findViewById(R.id.tile_grid_layout);
+        TileGridLayout tileGridLayout = ntp.getView().findViewById(R.id.tile_grid_layout);
         assertNotNull("Unable to retrieve the TileGridLayout.", tileGridLayout);
         return tileGridLayout;
     }

@@ -2351,6 +2351,21 @@
             ]
         }
     ],
+    "InterestFeedContentSuggestions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedContentSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "InvalidationsGCMUpstream": [
         {
             "platforms": [
