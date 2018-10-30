@@ -22,7 +22,7 @@ SettingsBasicPageBrowserTest.prototype = {
 };
 
 // http://crbug/738146
-TEST_F('SettingsBasicPageBrowserTest', 'Load', function() {
+TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
   // Assign |self| to |this| instead of binding since 'this' in suite()
   // and test() will be a Mocha 'Suite' or 'Test' instance.
   const self = this;
