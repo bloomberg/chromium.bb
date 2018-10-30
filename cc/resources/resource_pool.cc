@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
@@ -97,6 +98,7 @@ ResourcePool::ResourcePool(
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
       tracing_id_(g_next_tracing_id.GetNext()),
       flush_evicted_resources_deadline_(base::TimeTicks::Max()),
+      clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -388,7 +390,7 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
   // crbug.com/598286.
   CHECK(it->second.get());
 
-  pool_resource->set_last_usage(base::TimeTicks::Now());
+  pool_resource->set_last_usage(clock_->NowTicks());
   in_use_memory_usage_bytes_ -=
       viz::ResourceSizes::UncheckedSizeInBytes<size_t>(pool_resource->size(),
                                                        pool_resource->format());
@@ -468,7 +470,7 @@ void ResourcePool::DeleteResource(std::unique_ptr<PoolResource> resource) {
   --total_resource_count_;
   if (flush_evicted_resources_deadline_ == base::TimeTicks::Max()) {
     flush_evicted_resources_deadline_ =
-        base::TimeTicks::Now() + kDefaultMaxFlushDelay;
+        clock_->NowTicks() + kDefaultMaxFlushDelay;
   }
 }
 
@@ -505,31 +507,27 @@ void ResourcePool::ScheduleEvictExpiredResourcesIn(
 
 void ResourcePool::EvictExpiredResources() {
   evict_expired_resources_pending_ = false;
-  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeTicks current_time = clock_->NowTicks();
 
   EvictResourcesNotUsedSince(current_time - resource_expiration_delay_);
 
   if (unused_resources_.empty() ||
-      flush_evicted_resources_deadline_ < current_time) {
-    flush_evicted_resources_deadline_ = base::TimeTicks::Max();
+      flush_evicted_resources_deadline_ <= current_time) {
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
-    if (context_provider_) {
-      // Flush any ContextGL work as well as any SharedImageInterface work.
-      context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
-      context_provider_->ContextSupport()->FlushPendingWork();
-    }
-    return;
+    FlushEvictedResources();
   }
 
-  // If we still have evictable resources, schedule a call to
-  // EvictExpiredResources for either (a) the time when the LRU buffer expires
-  // or (b) the deadline to explicitly flush previously evicted resources.
-  ScheduleEvictExpiredResourcesIn(
-      std::min(GetUsageTimeForLRUResource() + resource_expiration_delay_,
-               flush_evicted_resources_deadline_) -
-      current_time);
+  if (!unused_resources_.empty()) {
+    // If we still have evictable resources, schedule a call to
+    // EvictExpiredResources for either (a) the time when the LRU buffer expires
+    // or (b) the deadline to explicitly flush previously evicted resources.
+    ScheduleEvictExpiredResourcesIn(
+        std::min(GetUsageTimeForLRUResource() + resource_expiration_delay_,
+                 flush_evicted_resources_deadline_) -
+        current_time);
+  }
 }
 
 void ResourcePool::EvictResourcesNotUsedSince(base::TimeTicks time_limit) {
@@ -553,6 +551,15 @@ base::TimeTicks ResourcePool::GetUsageTimeForLRUResource() const {
   // This is only called when we have at least one evictable resource.
   DCHECK(!busy_resources_.empty());
   return busy_resources_.back()->last_usage();
+}
+
+void ResourcePool::FlushEvictedResources() {
+  flush_evicted_resources_deadline_ = base::TimeTicks::Max();
+  if (context_provider_) {
+    // Flush any ContextGL work as well as any SharedImageInterface work.
+    context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
+    context_provider_->ContextSupport()->FlushPendingWork();
+  }
 }
 
 bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -589,6 +596,7 @@ void ResourcePool::OnMemoryPressure(
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
+      FlushEvictedResources();
       break;
   }
 }
