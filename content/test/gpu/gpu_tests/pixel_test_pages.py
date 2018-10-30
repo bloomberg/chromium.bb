@@ -487,14 +487,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasAccelerated2D',
       test_rect=[0, 0, 360, 200],
-      revision=11,
+      revision=12,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_worker.html',
       base_name + '_OffscreenCanvasAccelerated2DWorker',
       test_rect=[0, 0, 360, 200],
-      revision=11,
+      revision=12,
       browser_args=browser_args),
 
     PixelTestPage(
