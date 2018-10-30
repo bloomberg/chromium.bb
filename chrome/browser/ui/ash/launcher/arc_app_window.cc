@@ -99,8 +99,11 @@ void ArcAppWindow::SetDefaultAppIcon() {
         profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   }
   DCHECK(!image_fetching_);
-  base::AutoReset<bool> auto_image_fetching(&image_fetching_, true);
-  app_icon_loader_->FetchImage(app_shelf_id_.ToString());
+  std::string app_id = app_shelf_id_.ToString();
+  if (app_icon_loader_->CanLoadImageForApp(app_id)) {
+    base::AutoReset<bool> auto_image_fetching(&image_fetching_, true);
+    app_icon_loader_->FetchImage(app_id);
+  }
 }
 
 void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
