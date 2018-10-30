@@ -85,25 +85,5 @@ enum class ExploreSitesRequestStatus {
   // kMaxValue should always be the last type.
   kMaxValue = kShouldSuspendBlockedByAdministrator
 };
-
-// Must be kept in sync with ExploreSitesCatalogError enum in enums.xml.
-// This enum should be treated as append-only.
-enum class ExploreSitesCatalogError {
-  // Catalog parse from protobuf string failed.
-  kParseFailure = 0,
-  // Category with a missing title.
-  kCategoryMissingTitle = 1,
-  // Category with a type enum that this version does not support.
-  kCategoryWithUnknownType = 2,
-  // Category with no sites present.
-  kCategoryWithNoSites = 3,
-  // Site with a malformed or empty URL.
-  kSiteWithBadUrl = 4,
-  // Site with no title.
-  kSiteMissingTitle = 5,
-  // Site with a missing icon.
-  kSiteMissingIcon = 6,
-  kMaxValue = kSiteMissingIcon
-};
 }  // namespace explore_sites
 #endif  // CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_TYPES_H_
