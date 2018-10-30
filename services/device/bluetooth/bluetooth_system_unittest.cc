@@ -230,8 +230,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   }
 
   void StartDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
-                      ErrorCallback error_callback) override {
+                      ResponseCallback callback) override {
     NOTIMPLEMENTED();
   }
 
