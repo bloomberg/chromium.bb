@@ -135,12 +135,12 @@ class StaticReader {
    * never called, it's here to match the signature from the Web Standards.
    */
   readEntries(success, error) {
-    let children = this.children_;
+    const children = this.children_;
     // readEntries is suppose to return empty result when there are no more
     // files to return, so we clear the children_ attribute for next call.
     this.children_ = [];
     // Triggers callback asynchronously.
-    setTimeout(children => success(children), 0, children);
+    setTimeout(success, 0, children);
   }
 }
 
