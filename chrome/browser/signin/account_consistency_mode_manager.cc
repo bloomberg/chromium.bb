@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
@@ -127,7 +128,9 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   PrefService* prefs = profile->GetPrefs();
   // Propagate settings changes from the previous launch to the signin-allowed
   // pref.
-  bool signin_allowed = prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup);
+  bool signin_allowed =
+      prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch("disallow-signin");
   prefs->SetBoolean(prefs::kSigninAllowed, signin_allowed);
 
   UMA_HISTOGRAM_BOOLEAN("Signin.SigninAllowed", signin_allowed);

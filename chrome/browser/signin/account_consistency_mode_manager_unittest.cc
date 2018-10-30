@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -114,6 +116,38 @@ TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
         profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be disabled.
     EXPECT_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+              manager.GetAccountConsistencyMethod());
+  }
+}
+
+// The command line switch "disallow-signin" only affects the current run.
+TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
+  ScopedAccountConsistencyDice scoped_dice;
+  content::TestBrowserThreadBundle test_thread_bundle;
+  TestingProfile profile;
+
+  {
+    // With the switch, signin is disallowed.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        "disallow-signin");
+    AccountConsistencyModeManager manager(&profile);
+    EXPECT_FALSE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    EXPECT_TRUE(
+        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+    // Dice should be disabled.
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+              manager.GetAccountConsistencyMethod());
+  }
+
+  {
+    // Remove the switch, signin is allowed again.
+    AccountConsistencyModeManager manager(&profile);
+    EXPECT_TRUE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    EXPECT_TRUE(
+        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+    // Dice should be enabled.
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
 }
