@@ -215,11 +215,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         self.assertEqual(host.user.opened_urls, [abspath_to_uri(MockHost().platform, '/tmp/layout-test-results/results.html')])
 
-    def test_batch_size(self):
-        batch_tests_run = get_test_batches(['--batch-size', '2'])
-        for batch in batch_tests_run:
-            self.assertTrue(len(batch) <= 2, '%s had too many tests' % ', '.join(batch))
-
     def test_max_locked_shards(self):
         # Tests for the default of using one locked shard even in the case of more than one child process.
         _, regular_output, _ = logging_run(['--debug-rwt-logging', '--jobs', '2'], shared_port=False)
