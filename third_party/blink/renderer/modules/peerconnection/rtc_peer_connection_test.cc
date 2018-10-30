@@ -646,4 +646,101 @@ TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForComplexUnifiedPlan) {
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
+// Test that simple Plan B is considered safe regardless of configurations.
+TEST(DeduceSdpUsageCategory, SimplePlanBIsAlwaysSafe) {
+  // If the default is Plan B.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If sdpSemantics is explicitly set to Plan B.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             true, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that simple Unified Plan is considered safe regardless of
+// configurations.
+TEST(DeduceSdpUsageCategory, SimpleUnifiedPlanIsAlwaysSafe) {
+  // If the default is Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If sdpSemantics is explicitly set to Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   true, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that complex SDP is always unsafe when relying on default sdpSemantics.
+TEST(DeduceSdpUsageCategory, ComplexSdpIsAlwaysUnsafeWithDefaultSdpSemantics) {
+  // If the default is Plan B and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Plan B and the SDP is complex Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If the default is Unified Plan and the SDP is complex UNified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             false, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that when sdpSemantics is explicitly set, complex SDP is safe if it is
+// of the same format and unsafe if the format is different.
+TEST(DeduceSdpUsageCategory, ComplexSdpIsSafeIfMatchingExplicitSdpSemantics) {
+  // If sdpSemantics is explicitly set to Plan B and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan and the SDP is complex
+  // Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             true, webrtc::SdpSemantics::kUnifiedPlan));
+  // If the sdpSemantics is explicitly set to Plan B but the SDP is complex
+  // Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             true, webrtc::SdpSemantics::kPlanB));
+  // If the sdpSemantics is explicitly set to Unified Plan but the SDP is
+  // complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   true, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
 }  // namespace blink
