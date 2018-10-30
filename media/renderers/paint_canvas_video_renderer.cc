@@ -207,6 +207,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
   unsigned source_texture = 0;
+  gfx::ColorSpace color_space_for_skia;
   if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
     // TODO(dcastagna): At the moment Skia doesn't support targets different
     // than GL_TEXTURE_2D.  Avoid this copy once
@@ -221,6 +222,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_texture =
         gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+    color_space_for_skia = video_frame->ColorSpace();
   }
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
@@ -235,7 +237,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
       GrMipMapped::kNo, source_texture_info);
   return SkImage::MakeFromAdoptedTexture(
       context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType);
+      kRGBA_8888_SkColorType, kPremul_SkAlphaType,
+      color_space_for_skia.ToSkColorSpace());
 }
 
 void VideoFrameCopyTextureOrSubTexture(gpu::gles2::GLES2Interface* gl,
