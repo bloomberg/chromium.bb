@@ -291,17 +291,6 @@ class TestNetworkingCastPrivateDelegate
     }
   }
 
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    if (fail_) {
-      failure_callback.Run(kFailure);
-    } else {
-      success_callback.Run("encrypted_credentials");
-    }
-  }
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
                             const DataCallback& success_callback,
@@ -493,10 +482,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, VerifyAndEncryptCredentials) {
-  EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, VerifyAndEncryptData) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
@@ -601,11 +586,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, StartActivate) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, VerifyDestination) {
   EXPECT_FALSE(RunNetworkingSubtest("verifyDestination")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail,
-                       VerifyAndEncryptCredentials) {
-  EXPECT_FALSE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, VerifyAndEncryptData) {

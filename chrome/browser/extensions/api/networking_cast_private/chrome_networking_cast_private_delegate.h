@@ -30,11 +30,6 @@ class ChromeNetworkingCastPrivateDelegate
   void VerifyDestination(std::unique_ptr<Credentials> credentials,
                          const VerifiedCallback& success_callback,
                          const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override;
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
                             const DataCallback& success_callback,

@@ -896,15 +896,6 @@ var availableTests = [
         assertTrue(isValid);
       }));
   },
-  function verifyAndEncryptCredentials() {
-    var network_guid = 'stub_wifi2_guid';
-    chrome.networkingPrivate.verifyAndEncryptCredentials(
-      verificationProperties,
-      network_guid,
-      callbackPass(function(result) {
-        assertEq('encrypted_credentials', result);
-      }));
-  },
   function verifyAndEncryptData() {
     chrome.networkingPrivate.verifyAndEncryptData(
       verificationProperties,

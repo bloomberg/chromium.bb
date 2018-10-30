@@ -42,15 +42,6 @@ class TestNetworkingCastPrivateDelegate
     success_callback.Run(true);
   }
 
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    AssertCredentials(*credentials);
-    success_callback.Run("encrypted_credentials");
-  }
-
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
                             const DataCallback& success_callback,

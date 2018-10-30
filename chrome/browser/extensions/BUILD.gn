@@ -252,7 +252,6 @@ jumbo_static_library("extensions") {
     "api/metrics_private/chrome_metrics_private_delegate.h",
     "api/module/module.cc",
     "api/module/module.h",
-    "api/networking_private/networking_private_credentials_getter_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.h",
     "api/networking_private/networking_private_ui_delegate_factory_impl.cc",
@@ -1051,9 +1050,6 @@ jumbo_static_library("extensions") {
       "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
       "api/networking_cast_private/networking_cast_private_api.cc",
       "api/networking_cast_private/networking_cast_private_api.h",
-      "api/networking_private/networking_private_credentials_getter.h",
-      "api/networking_private/networking_private_credentials_getter_mac.cc",
-      "api/networking_private/networking_private_credentials_getter_win.cc",
     ]
     deps += [ "//components/wifi" ]
   }

@@ -99,10 +99,6 @@ var availableTests = [
     chrome.networkingPrivate.verifyDestination(
         verificationProperties, callbackPass(callbackResult));
   },
-  function verifyAndEncryptCredentials() {
-    chrome.networkingPrivate.verifyAndEncryptCredentials(
-        verificationProperties, kGuid, callbackPass(callbackResult));
-  },
   function verifyAndEncryptData() {
     chrome.networkingPrivate.verifyAndEncryptData(
         verificationProperties, 'data', callbackPass(callbackResult));
