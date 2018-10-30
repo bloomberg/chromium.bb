@@ -118,13 +118,6 @@ struct LayoutBoxRareData {
   LayoutRect previous_physical_content_box_rect_;
   LayoutRect previous_physical_layout_overflow_rect_;
 
-  // Used by LocalFrameView::ScrollIntoView. When the scroll is sequenced
-  // rather than instantly performed, we need the pending_offset_to_scroll
-  // to calculate the next rect_to_scroll as if the scroll has been performed.
-  // TODO(sunyunjia): We should get rid of this variable and move the next
-  // rect_to_scroll calculation into ScrollRectToVisible. crbug.com/741830
-  LayoutSize pending_offset_to_scroll_;
-
   // Used by CSSLayoutDefinition::Instance::Layout. Represents the script
   // object for this box that web developers can query style, and perform
   // layout upon. Only created if IsCustomItem() is true.
@@ -844,11 +837,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return rare_data_ ? rare_data_->offset_to_next_page_ : LayoutUnit();
   }
   void SetOffsetToNextPage(LayoutUnit);
-
-  LayoutSize PendingOffsetToScroll() const {
-    return rare_data_ ? rare_data_->pending_offset_to_scroll_ : LayoutSize();
-  }
-  void SetPendingOffsetToScroll(LayoutSize);
 
   // Specify which page or column to associate with an offset, if said offset is
   // exactly at a page or column boundary.

@@ -693,13 +693,6 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     absolute_rect_for_parent =
         area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
 
-    // TODO(bokan): This is a hack to reconcile the fact that scrolling a
-    // FrameView pre-RLS and post-RLS resulted in different absolute coordinate
-    // changes to the target. This line and PendingOffsetToScroll can be
-    // removed once RLS is stable. https://crbug.com/823365.
-    if (params.is_for_scroll_sequence)
-      absolute_rect_for_parent.Move(PendingOffsetToScroll());
-
     // If the parent is a local iframe, convert to the absolute coordinate
     // space of its document. For remote frames, this will happen on the other
     // end of the IPC call.
@@ -6000,10 +5993,6 @@ void LayoutBox::ClearCustomLayoutChild() {
     rare_data_->layout_child_->ClearLayoutBox();
 
   rare_data_->layout_child_ = nullptr;
-}
-
-void LayoutBox::SetPendingOffsetToScroll(LayoutSize offset) {
-  EnsureRareData().pending_offset_to_scroll_ = offset;
 }
 
 LayoutRect LayoutBox::DebugRect() const {
