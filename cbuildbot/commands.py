@@ -2861,9 +2861,9 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
     archive_dir: Local directory for hwqual tarball.
     image_dir: Directory containing test image.
   """
-  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  script_dir = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   ssh_private_key = os.path.join(image_dir, constants.TEST_KEY_PRIVATE)
-  cmd = [os.path.join(scripts_dir, 'archive_hwqual'),
+  cmd = [os.path.join(script_dir, 'archive_hwqual'),
          '--from', archive_dir,
          '--image_dir', image_dir,
          '--ssh_private_key', ssh_private_key,
