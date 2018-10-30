@@ -126,7 +126,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 80;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 81;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1584,27 +1584,20 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion77ToCurrent) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
 
-    // Check that the AUTOFILL metadata is still there.
+    // Note: The migration to version 78 (which added the model_type column)
+    // used the wrong integer ID for the model_type. As a consequence, the later
+    // migration to version 81 deletes all the badly-migrated data (at that
+    // point, it'll most likely have been re-downloaded and stored under the
+    // correct ID, so no point in trying to salvage anything). As a consequence,
+    // there should now be no sync metadata in the database.
     sql::Statement s1(connection.GetUniqueStatement(
         "SELECT model_type, storage_key, value FROM autofill_sync_metadata"));
-    ASSERT_TRUE(s1.Step());
-    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
-              s1.ColumnInt(0));
-    EXPECT_EQ("storage_key1", s1.ColumnString(1));
-    EXPECT_EQ("blob1", s1.ColumnString(2));
-    ASSERT_TRUE(s1.Step());
-    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
-              s1.ColumnInt(0));
-    EXPECT_EQ("storage_key2", s1.ColumnString(1));
-    EXPECT_EQ("blob2", s1.ColumnString(2));
+    EXPECT_FALSE(s1.Step());
 
-    // Check that the AUTOFILL model_type_state is still there.
+    // The same applies for model type state.
     sql::Statement s2(connection.GetUniqueStatement(
         "SELECT model_type, value FROM autofill_model_type_state"));
-    ASSERT_TRUE(s2.Step());
-    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
-              s2.ColumnInt(0));
-    EXPECT_EQ("state", s2.ColumnString(1));
+    EXPECT_FALSE(s2.Step());
   }
 }
 
@@ -1685,5 +1678,83 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion79ToCurrent) {
 
     // No more entries expected.
     ASSERT_FALSE(s_profiles.Step());
+  }
+}
+
+TEST_F(WebDatabaseMigrationTest, MigrateVersion80ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_80.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 80, 79));
+
+    sql::Statement s1(connection.GetUniqueStatement(
+        "SELECT model_type, storage_key, value FROM autofill_sync_metadata"));
+    ASSERT_TRUE(s1.Step());
+    // Note: This is the *wrong* ID for AUTOFILL, simulating the botched
+    // migration in version 78. See crbug.com/895826.
+    ASSERT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
+              s1.ColumnInt(0));
+    ASSERT_EQ("storage_key1", s1.ColumnString(1));
+    ASSERT_EQ("blob1", s1.ColumnString(2));
+
+    ASSERT_TRUE(s1.Step());
+    // Note: This is the *correct* ID for AUTOFILL, simulating the data that got
+    // redownloaded after the bad migration, and stored under the correct ID.
+    ASSERT_EQ(syncer::ModelTypeToStableIdentifier(syncer::AUTOFILL),
+              s1.ColumnInt(0));
+    ASSERT_EQ("storage_key2", s1.ColumnString(1));
+    ASSERT_EQ("blob2", s1.ColumnString(2));
+
+    sql::Statement s2(connection.GetUniqueStatement(
+        "SELECT model_type, value FROM autofill_model_type_state"));
+    ASSERT_TRUE(s2.Step());
+    // Like above: Bad value.
+    ASSERT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
+              s2.ColumnInt(0));
+    ASSERT_EQ("state1", s2.ColumnString(1));
+    ASSERT_TRUE(s2.Step());
+    // Good value.
+    ASSERT_EQ(syncer::ModelTypeToStableIdentifier(syncer::AUTOFILL),
+              s2.ColumnInt(0));
+    ASSERT_EQ("state2", s2.ColumnString(1));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // Check that the badly-migrated AUTOFILL data from version 78 is gone, but
+    // the correct redownloaded data is still here.
+    sql::Statement s1(connection.GetUniqueStatement(
+        "SELECT model_type, storage_key, value FROM autofill_sync_metadata"));
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ(syncer::ModelTypeToStableIdentifier(syncer::AUTOFILL),
+              s1.ColumnInt(0));
+    EXPECT_EQ("storage_key2", s1.ColumnString(1));
+    EXPECT_EQ("blob2", s1.ColumnString(2));
+    EXPECT_FALSE(s1.Step());
+
+    // Check that the badly-migrated AUTOFILL model type state from version 78
+    // is gone, but the correct redownloaded state is still here.
+    sql::Statement s2(connection.GetUniqueStatement(
+        "SELECT model_type, value FROM autofill_model_type_state"));
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ(syncer::ModelTypeToStableIdentifier(syncer::AUTOFILL),
+              s2.ColumnInt(0));
+    EXPECT_EQ("state2", s2.ColumnString(1));
+    EXPECT_FALSE(s2.Step());
   }
 }
