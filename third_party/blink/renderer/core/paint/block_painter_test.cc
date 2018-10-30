@@ -568,7 +568,6 @@ TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
               scrolled_hit_test_data)));
 
   const auto& scroller_paint_chunk = paint_chunks[1];
-  // Note that PaintChunk's operator== doesn't check bounds.
   EXPECT_EQ(FloatRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
   // The hit test rect for the scroller itself should not be scrolled.
   EXPECT_FALSE(scroller_paint_chunk.properties.Transform()->ScrollNode());
