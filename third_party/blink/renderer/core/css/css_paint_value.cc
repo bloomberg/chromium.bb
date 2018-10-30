@@ -82,7 +82,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
     return false;
   }
 
-  parsed_input_arguments_ = new CSSStyleValueVector();
+  parsed_input_arguments_ = MakeGarbageCollected<CSSStyleValueVector>();
 
   for (wtf_size_t i = 0; i < argument_variable_data_.size(); ++i) {
     // If we are parsing a paint() function, we must be a secure context.

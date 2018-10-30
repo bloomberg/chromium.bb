@@ -78,7 +78,7 @@ MessageEvent::MessageEvent(const AtomicString& type,
   if (initializer.hasSource() && IsValidSource(initializer.source()))
     source_ = initializer.source();
   if (initializer.hasPorts())
-    ports_ = new MessagePortArray(initializer.ports());
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer.ports());
   if (initializer.hasUserActivation())
     user_activation_ = initializer.userActivation();
   DCHECK(IsValidSource(source_.Get()));

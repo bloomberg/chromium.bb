@@ -120,7 +120,8 @@ bool EventListenerMap::Add(const AtomicString& event_type,
                                  registered_listener);
   }
 
-  entries_.push_back(std::make_pair(event_type, new EventListenerVector));
+  entries_.push_back(
+      std::make_pair(event_type, MakeGarbageCollected<EventListenerVector>()));
   return AddListenerToVector(entries_.back().second.Get(), listener, options,
                              registered_listener);
 }

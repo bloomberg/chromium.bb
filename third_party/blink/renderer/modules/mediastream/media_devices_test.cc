@@ -200,7 +200,7 @@ class MediaDevicesTest : public testing::Test {
  public:
   using MediaDeviceInfos = HeapVector<Member<MediaDeviceInfo>>;
 
-  MediaDevicesTest() : device_infos_(new MediaDeviceInfos) {
+  MediaDevicesTest() : device_infos_(MakeGarbageCollected<MediaDeviceInfos>()) {
     dispatcher_host_ = std::make_unique<MockMediaDevicesDispatcherHost>();
   }
 

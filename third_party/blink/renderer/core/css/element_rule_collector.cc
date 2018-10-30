@@ -84,7 +84,7 @@ void ElementRuleCollector::ClearMatchedRules() {
 
 inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
   if (!style_rule_list_)
-    style_rule_list_ = new StyleRuleList();
+    style_rule_list_ = MakeGarbageCollected<StyleRuleList>();
   return style_rule_list_;
 }
 

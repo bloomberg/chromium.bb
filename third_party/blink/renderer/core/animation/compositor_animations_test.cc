@@ -254,7 +254,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   HeapVector<Member<StringKeyframe>>* CreateCompositableFloatKeyframeVector(
       Vector<double>& values) {
     HeapVector<Member<StringKeyframe>>* frames =
-        new HeapVector<Member<StringKeyframe>>();
+        MakeGarbageCollected<HeapVector<Member<StringKeyframe>>>();
     for (wtf_size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       String value = String::Number(values[i]);
@@ -1679,7 +1679,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   element->SetLayoutObject(layout_object);
 
   Persistent<HeapVector<Member<StringKeyframe>>> key_frames =
-      new HeapVector<Member<StringKeyframe>>;
+      MakeGarbageCollected<HeapVector<Member<StringKeyframe>>>();
   key_frames->push_back(CreateDefaultKeyframe(
       CSSPropertyOpacity, EffectModel::kCompositeReplace, 0.0));
   key_frames->push_back(CreateDefaultKeyframe(

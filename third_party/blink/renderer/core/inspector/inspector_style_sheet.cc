@@ -318,7 +318,8 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
     return;
 
   // FIXME: Use the actual rule type rather than STYLE_RULE?
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
 
   StyleSheetHandler handler(comment_text, document_, source_data);
   CSSParser::ParseDeclarationListForInspector(
@@ -345,7 +346,8 @@ bool VerifyRuleText(Document* document, const String& rule_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = rule_text + " div { " + bogus_property_name + ": none; }";
   StyleSheetHandler handler(text, document, source_data);
   CSSParser::ParseSheetForInspector(ParserContextForDocument(document),
@@ -382,7 +384,8 @@ bool VerifyStyleText(Document* document, const String& text) {
 bool VerifyKeyframeKeyText(Document* document, const String& key_text) {
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@keyframes boguzAnim { " + key_text +
                 " { -webkit-boguz-propertee : none; } }";
   StyleSheetHandler handler(text, document, source_data);
@@ -412,7 +415,8 @@ bool VerifySelectorText(Document* document, const String& selector_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = selector_text + " { " + bogus_property_name + ": none; }";
   StyleSheetHandler handler(text, document, source_data);
   CSSParser::ParseSheetForInspector(ParserContextForDocument(document),
@@ -441,7 +445,8 @@ bool VerifyMediaText(Document* document, const String& media_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@media " + media_text + " { div { " + bogus_property_name +
                 ": none; } }";
   StyleSheetHandler handler(text, document, source_data);
@@ -1410,7 +1415,8 @@ void InspectorStyleSheet::ReplaceText(const SourceRange& range,
 
 void InspectorStyleSheet::InnerSetText(const String& text,
                                        bool mark_as_locally_modified) {
-  CSSRuleSourceDataList* rule_tree = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* rule_tree =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   StyleSheetContents* style_sheet = StyleSheetContents::Create(
       page_style_sheet_->Contents()->ParserContext());
   StyleSheetHandler handler(text, page_style_sheet_->OwnerDocument(),
@@ -1430,7 +1436,7 @@ void InspectorStyleSheet::InnerSetText(const String& text,
   parsed_flat_rules_.clear();
   CollectFlatRules(source_data_sheet, &parsed_flat_rules_);
 
-  source_data_ = new CSSRuleSourceDataList();
+  source_data_ = MakeGarbageCollected<CSSRuleSourceDataList>();
   FlattenSourceData(*rule_tree, source_data_.Get());
   text_ = text;
 
@@ -1948,7 +1954,7 @@ CSSRuleSourceData* InspectorStyleSheetForInlineStyle::RuleSourceData() {
     rule_source_data->rule_body_range.end = 0;
   } else {
     CSSRuleSourceDataList* rule_source_data_result =
-        new CSSRuleSourceDataList();
+        MakeGarbageCollected<CSSRuleSourceDataList>();
     StyleSheetHandler handler(text, &element_->GetDocument(),
                               rule_source_data_result);
     CSSParser::ParseDeclarationListForInspector(

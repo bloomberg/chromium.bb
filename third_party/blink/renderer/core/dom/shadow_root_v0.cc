@@ -125,8 +125,9 @@ inline void DistributionPool::DetachNonDistributedNodes() {
 
 const HeapVector<Member<V0InsertionPoint>>&
 ShadowRootV0::DescendantInsertionPoints() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<V0InsertionPoint>>>,
-                      empty_list, (new HeapVector<Member<V0InsertionPoint>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapVector<Member<V0InsertionPoint>>>, empty_list,
+      (MakeGarbageCollected<HeapVector<Member<V0InsertionPoint>>>()));
   if (descendant_insertion_points_is_valid_)
     return descendant_insertion_points_;
 
@@ -195,8 +196,10 @@ void ShadowRootV0::DidDistributeNode(const Node* node,
                                      V0InsertionPoint* insertion_point) {
   NodeToDestinationInsertionPoints::AddResult result =
       node_to_insertion_points_.insert(node, nullptr);
-  if (result.is_new_entry)
-    result.stored_value->value = new DestinationInsertionPoints;
+  if (result.is_new_entry) {
+    result.stored_value->value =
+        MakeGarbageCollected<DestinationInsertionPoints>();
+  }
   result.stored_value->value->push_back(insertion_point);
 }
 

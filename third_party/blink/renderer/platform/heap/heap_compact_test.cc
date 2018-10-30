@@ -242,7 +242,7 @@ TEST(HeapCompactTest, CompactVector) {
   ClearOutOldGarbage();
 
   IntWrapper* val = IntWrapper::Create(1, VectorsAreCompacted);
-  Persistent<IntVector> vector = new IntVector(10, val);
+  Persistent<IntVector> vector = MakeGarbageCollected<IntVector>(10, val);
   EXPECT_EQ(10u, vector->size());
 
   for (IntWrapper* item : *vector)
@@ -279,7 +279,8 @@ TEST(HeapCompactTest, CompactVectorPartHashMap) {
 
   using IntMapVector = HeapVector<IntMap>;
 
-  Persistent<IntMapVector> int_map_vector = new IntMapVector();
+  Persistent<IntMapVector> int_map_vector =
+      MakeGarbageCollected<IntMapVector>();
   for (size_t i = 0; i < 10; ++i) {
     IntMap map;
     for (wtf_size_t j = 0; j < 10; ++j) {
@@ -409,7 +410,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i);
-    IntVector* vector = new IntVector(19, value);
+    IntVector* vector = MakeGarbageCollected<IntVector>(19, value);
     set->insert(vector);
   }
   EXPECT_EQ(13u, set->size());

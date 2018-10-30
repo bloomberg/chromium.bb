@@ -67,7 +67,7 @@ HeapVector<Member<EventTarget>>& TreeScopeEventContext::EnsureEventPath(
   if (event_path_)
     return *event_path_;
 
-  event_path_ = new HeapVector<Member<EventTarget>>();
+  event_path_ = MakeGarbageCollected<HeapVector<Member<EventTarget>>>();
   LocalDOMWindow* window = path.GetWindowEventContext().Window();
   event_path_->ReserveCapacity(path.size() + (window ? 1 : 0));
 

@@ -1732,7 +1732,7 @@ TEST(IncrementalMarkingTest, NoBackingFreeDuringIncrementalMarking) {
 TEST(IncrementalMarkingTest, DropReferenceWithHeapCompaction) {
   using Store = HeapHashCountedSet<Member<Object>>;
 
-  Persistent<Store> persistent(new Store);
+  Persistent<Store> persistent(new Store());
   persistent->insert(Object::Create());
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   HeapCompact::ScheduleCompactionGCForTesting(true);
@@ -1747,8 +1747,8 @@ TEST(IncrementalMarkingTest, DropReferenceWithHeapCompaction) {
 TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
   using Store = HeapVector<Member<Object>, 2>;
 
-  Persistent<Store> persistent(new Store);
-  Persistent<Store> persistent2(new Store);
+  Persistent<Store> persistent(MakeGarbageCollected<Store>());
+  Persistent<Store> persistent2(MakeGarbageCollected<Store>());
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   HeapCompact::ScheduleCompactionGCForTesting(true);

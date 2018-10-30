@@ -359,7 +359,7 @@ void RuleSet::CompactPendingRules(PendingRuleMap& pending_map,
     Member<HeapVector<Member<const RuleData>>>& rules =
         compact_map.insert(item.key, nullptr).stored_value->value;
     if (!rules) {
-      rules = new HeapVector<Member<const RuleData>>();
+      rules = MakeGarbageCollected<HeapVector<Member<const RuleData>>>();
       rules->ReserveInitialCapacity(pending_rules->size());
     } else {
       rules->ReserveCapacity(pending_rules->size());

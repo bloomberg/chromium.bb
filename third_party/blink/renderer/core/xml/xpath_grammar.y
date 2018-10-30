@@ -272,7 +272,7 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-      $$ = new blink::HeapVector<blink::Member<blink::xpath::Predicate>>;
+      $$ = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Predicate>>>();
       $$->push_back(new blink::xpath::Predicate($1));
     }
     |
@@ -356,7 +356,7 @@ FunctionCall:
 ArgumentList:
     Argument
     {
-      $$ = new blink::HeapVector<blink::Member<blink::xpath::Expression>>;
+      $$ = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Expression>>>();
       $$->push_back($1);
     }
     |

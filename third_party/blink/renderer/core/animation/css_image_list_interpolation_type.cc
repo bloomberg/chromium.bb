@@ -51,7 +51,7 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertNeutral(
 InterpolationValue CSSImageListInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversion_checkers) const {
-  StyleImageList* initial_image_list = new StyleImageList;
+  StyleImageList* initial_image_list = MakeGarbageCollected<StyleImageList>();
   ImageListPropertyFunctions::GetInitialImageList(CssProperty(),
                                                   initial_image_list);
   return MaybeConvertStyleImageList(initial_image_list);
@@ -88,7 +88,8 @@ class InheritedImageListChecker
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    StyleImageList* inherited_image_list = new StyleImageList;
+    StyleImageList* inherited_image_list =
+        MakeGarbageCollected<StyleImageList>();
     ImageListPropertyFunctions::GetImageList(property_, *state.ParentStyle(),
                                              inherited_image_list);
     return inherited_image_list_ == inherited_image_list;
@@ -104,7 +105,7 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertInherit(
   if (!state.ParentStyle())
     return nullptr;
 
-  StyleImageList* inherited_image_list = new StyleImageList();
+  StyleImageList* inherited_image_list = MakeGarbageCollected<StyleImageList>();
   ImageListPropertyFunctions::GetImageList(CssProperty(), *state.ParentStyle(),
                                            inherited_image_list);
   conversion_checkers.push_back(
@@ -159,7 +160,8 @@ PairwiseInterpolationValue CSSImageListInterpolationType::MaybeMergeSingles(
 InterpolationValue
 CSSImageListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  StyleImageList* underlying_image_list = new StyleImageList();
+  StyleImageList* underlying_image_list =
+      MakeGarbageCollected<StyleImageList>();
   ImageListPropertyFunctions::GetImageList(CssProperty(), style,
                                            underlying_image_list);
   return MaybeConvertStyleImageList(underlying_image_list);
@@ -184,7 +186,7 @@ void CSSImageListInterpolationType::ApplyStandardPropertyValue(
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
   DCHECK_EQ(non_interpolable_list.length(), length);
-  StyleImageList* image_list = new StyleImageList(length);
+  StyleImageList* image_list = MakeGarbageCollected<StyleImageList>(length);
   for (wtf_size_t i = 0; i < length; i++) {
     image_list->at(i) = CSSImageInterpolationType::ResolveStyleImage(
         CssProperty(), *interpolable_list.Get(i), non_interpolable_list.Get(i),

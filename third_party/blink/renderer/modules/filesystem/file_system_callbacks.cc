@@ -223,7 +223,7 @@ EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
       success_callback_(success_callback),
       directory_reader_(directory_reader),
       base_path_(base_path),
-      entries_(new HeapVector<Member<Entry>>()) {
+      entries_(MakeGarbageCollected<HeapVector<Member<Entry>>>()) {
   DCHECK(directory_reader_);
 }
 
@@ -240,7 +240,8 @@ void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
 
 void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   directory_reader_->SetHasMoreEntries(has_more);
-  EntryHeapVector* entries = new EntryHeapVector(std::move(*entries_));
+  EntryHeapVector* entries =
+      MakeGarbageCollected<EntryHeapVector>(std::move(*entries_));
 
   if (!success_callback_)
     return;

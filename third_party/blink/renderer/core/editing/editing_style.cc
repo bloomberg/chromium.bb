@@ -970,9 +970,10 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
 
 static const HeapVector<Member<HTMLElementEquivalent>>&
 HtmlElementEquivalents() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<HTMLElementEquivalent>>>,
-                      html_element_equivalents,
-                      (new HeapVector<Member<HTMLElementEquivalent>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapVector<Member<HTMLElementEquivalent>>>,
+      html_element_equivalents,
+      (MakeGarbageCollected<HeapVector<Member<HTMLElementEquivalent>>>()));
   if (!html_element_equivalents->size()) {
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
         CSSPropertyFontWeight, CSSValueBold, html_names::kBTag));
@@ -1023,9 +1024,10 @@ bool EditingStyle::ConflictsWithImplicitStyleOfElement(
 
 static const HeapVector<Member<HTMLAttributeEquivalent>>&
 HtmlAttributeEquivalents() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<HTMLAttributeEquivalent>>>,
-                      html_attribute_equivalents,
-                      (new HeapVector<Member<HTMLAttributeEquivalent>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapVector<Member<HTMLAttributeEquivalent>>>,
+      html_attribute_equivalents,
+      (MakeGarbageCollected<HeapVector<Member<HTMLAttributeEquivalent>>>()));
   if (!html_attribute_equivalents->size()) {
     // elementIsStyledSpanOrHTMLEquivalent depends on the fact each
     // HTMLAttriuteEquivalent matches exactly one attribute of exactly one
