@@ -135,7 +135,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   jboolean ret = Java_VideoCapture_allocate(
       env, j_capture_, params.requested_format.frame_size.width(),
       params.requested_format.frame_size.height(),
-      params.requested_format.frame_rate);
+      params.requested_format.frame_rate, params.enable_face_detection);
   if (!ret) {
     SetErrorState(media::VideoCaptureError::kAndroidFailedToAllocate, FROM_HERE,
                   "failed to allocate");

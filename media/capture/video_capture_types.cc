@@ -72,7 +72,8 @@ bool VideoCaptureFormat::ComparePixelFormatPreference(
 VideoCaptureParams::VideoCaptureParams()
     : buffer_type(VideoCaptureBufferType::kSharedMemory),
       resolution_change_policy(ResolutionChangePolicy::FIXED_RESOLUTION),
-      power_line_frequency(PowerLineFrequency::FREQUENCY_DEFAULT) {}
+      power_line_frequency(PowerLineFrequency::FREQUENCY_DEFAULT),
+      enable_face_detection(false) {}
 
 bool VideoCaptureParams::IsValid() const {
   return requested_format.IsValid() &&
