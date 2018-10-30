@@ -4866,12 +4866,14 @@ void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
 
 void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
     RenderViewHostImpl* source) {
+  // Set |did_first_visually_non_empty_paint_| before notifying observers so
+  // they can see that CompletedFirstVisuallyNonEmptyPaint() is true.
+  did_first_visually_non_empty_paint_ = true;
+
   // TODO(nick): When this is ported to FrameHostMsg_, we should only listen if
   // |source| is the main frame.
   for (auto& observer : observers_)
     observer.DidFirstVisuallyNonEmptyPaint();
-
-  did_first_visually_non_empty_paint_ = true;
 
   if (theme_color_ != last_sent_theme_color_) {
     // Theme color should have updated by now if there was one.
