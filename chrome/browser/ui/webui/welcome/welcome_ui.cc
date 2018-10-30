@@ -32,6 +32,10 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 const bool kIsBranded =
 #if defined(GOOGLE_CHROME_BUILD)
@@ -181,6 +185,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                  IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X);
     html_source->AddResourcePath("images/set_as_default_illustration_2x.png",
                                  IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X);
+
+#if defined(OS_WIN)
+    html_source->AddBoolean(
+        "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
+#endif
 
     // Add the shared bookmark handler for onboarding modules.
     web_ui->AddMessageHandler(

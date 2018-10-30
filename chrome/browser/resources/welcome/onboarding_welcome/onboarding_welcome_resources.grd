@@ -145,10 +145,12 @@
                  type="chrome_html" />
       <structure name="IDR_NUX_SET_AS_DEFAULT_HTML"
                  file="set_as_default\nux_set_as_default.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true"/>
       <structure name="IDR_NUX_SET_AS_DEFAULT_JS"
                  file="set_as_default\nux_set_as_default.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true"/>
       <structure name="IDR_NUX_SET_AS_DEFAULT_PROXY_HTML"
                  file="set_as_default\nux_set_as_default_proxy.html"
                  type="chrome_html" />
