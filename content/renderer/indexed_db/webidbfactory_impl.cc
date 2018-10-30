@@ -2,19 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
+#include "content/renderer/indexed_db/webidbfactory_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
+#include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
+#include "content/renderer/storage_util.h"
+#include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 
-namespace blink {
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabase;
+using blink::WebIDBDatabaseCallbacks;
+using blink::WebSecurityOrigin;
+using blink::WebString;
+using blink::mojom::IDBCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
+using blink::mojom::IDBFactoryPtrInfo;
 
-WebIDBFactoryImpl::WebIDBFactoryImpl(
-    mojom::blink::IDBFactoryPtrInfo factory_info)
+namespace content {
+
+WebIDBFactoryImpl::WebIDBFactoryImpl(IDBFactoryPtrInfo factory_info)
     : factory_(std::move(factory_info)) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
@@ -27,7 +37,7 @@ void WebIDBFactoryImpl::GetDatabaseInfo(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr);
   factory_->GetDatabaseInfo(GetCallbacksProxy(std::move(callbacks_impl)),
-                            origin);
+                            url::Origin(origin));
 }
 
 void WebIDBFactoryImpl::GetDatabaseNames(
@@ -38,7 +48,7 @@ void WebIDBFactoryImpl::GetDatabaseNames(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr);
   factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks_impl)),
-                             origin);
+                             url::Origin(origin));
 }
 
 void WebIDBFactoryImpl::Open(
@@ -54,10 +64,9 @@ void WebIDBFactoryImpl::Open(
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
           base::WrapUnique(database_callbacks));
-  DCHECK(!name.IsNull());
   factory_->Open(GetCallbacksProxy(std::move(callbacks_impl)),
                  GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
-                 origin, name, version, transaction_id);
+                 url::Origin(origin), name.Utf16(), version, transaction_id);
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(
@@ -69,27 +78,25 @@ void WebIDBFactoryImpl::DeleteDatabase(
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr);
-  DCHECK(!name.IsNull());
-  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks_impl)), origin,
-                           name, force_close);
+  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks_impl)),
+                           url::Origin(origin), name.Utf16(), force_close);
 }
 
-mojom::blink::IDBCallbacksAssociatedPtrInfo
-WebIDBFactoryImpl::GetCallbacksProxy(
+IDBCallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
+  IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }
 
-mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo
+IDBDatabaseCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
     std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
-  mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
+  IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }
 
-}  // namespace blink
+}  // namespace content

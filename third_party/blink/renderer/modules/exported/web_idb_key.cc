@@ -68,23 +68,6 @@ double WebIDBKeyView::Number() const {
   return private_->Number();
 }
 
-size_t WebIDBKeyView::SizeEstimate() const {
-  // TODO(cmp): Ensure |private_| can never be null.
-  //
-  // SizeEstimate() can be called when |private_| is null.  That happens if and
-  // only if the |WebIDBKey| instance is created using WebIDBKey::CreateNull().
-  //
-  // Eventually, WebIDBKey::CreateNull() will change so that case will lead to
-  // a non-null |private_|.  At that time, this null check can change to a
-  // DCHECK that |private_| is not null and the special null case handling can
-  // be removed.
-  if (this->IsNull()) {
-    return IDBKey::kIDBKeyOverheadSize;
-  }
-
-  return private_->SizeEstimate();
-}
-
 WebIDBKey WebIDBKey::CreateArray(WebVector<WebIDBKey> array) {
   IDBKey::KeyArray keys;
   keys.ReserveCapacity(SafeCast<wtf_size_t>(array.size()));
@@ -126,13 +109,6 @@ WebIDBKey::WebIDBKey(std::unique_ptr<IDBKey> idb_key) noexcept
     : private_(std::move(idb_key)) {}
 WebIDBKey& WebIDBKey::operator=(std::unique_ptr<IDBKey> idb_key) noexcept {
   private_ = std::move(idb_key);
-  return *this;
-}
-
-WebIDBKey::WebIDBKey(const WebIDBKey& rkey)
-    : private_(IDBKey::Clone(rkey.private_)) {}
-WebIDBKey& WebIDBKey::operator=(const WebIDBKey& rkey) {
-  private_ = IDBKey::Clone(rkey.private_);
   return *this;
 }
 

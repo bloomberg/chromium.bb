@@ -23,10 +23,10 @@ namespace {
 // Very rough estimate of minimum key size overhead.
 const size_t kOverheadSize = 16;
 
-size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
+static size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
   size_t size(0);
-  for (const auto& key : keys)
-    size += key.size_estimate();
+  for (size_t i = 0; i < keys.size(); ++i)
+    size += keys[i].size_estimate();
   return size;
 }
 

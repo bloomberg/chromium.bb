@@ -23,17 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
-
-#include <bitset>
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/public/platform/web_common.h"
+
+#include <bitset>
 
 namespace blink {
 
@@ -42,22 +41,22 @@ class WebIDBCallbacks;
 class WebIDBKeyPath;
 class WebIDBKeyRange;
 
-class MODULES_EXPORT WebIDBDatabase {
+class WebIDBDatabase {
  public:
   virtual ~WebIDBDatabase() = default;
 
   virtual void CreateObjectStore(long long transaction_id,
                                  long long object_store_id,
-                                 const String& name,
+                                 const WebString& name,
                                  const WebIDBKeyPath&,
                                  bool auto_increment) = 0;
   virtual void DeleteObjectStore(long long transaction_id,
                                  long long object_store_id) = 0;
   virtual void RenameObjectStore(long long transaction_id,
                                  long long object_store_id,
-                                 const String& name) = 0;
+                                 const WebString& name) = 0;
   virtual void CreateTransaction(long long id,
-                                 const Vector<int64_t>& scope,
+                                 const WebVector<long long>& scope,
                                  WebIDBTransactionMode) = 0;
   virtual void Close() = 0;
   virtual void VersionChangeIgnored() = 0;
@@ -68,7 +67,7 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void CreateIndex(long long transaction_id,
                            long long object_store_id,
                            long long index_id,
-                           const String& name,
+                           const WebString& name,
                            const WebIDBKeyPath&,
                            bool unique,
                            bool multi_entry) = 0;
@@ -78,7 +77,7 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void RenameIndex(long long transaction_id,
                            long long object_store_id,
                            long long index_id,
-                           const String& new_name) = 0;
+                           const WebString& new_name) = 0;
 
   static const long long kMinimumIndexId = 30;
 
@@ -90,7 +89,7 @@ class MODULES_EXPORT WebIDBDatabase {
       bool values,
       const std::bitset<kWebIDBOperationTypeCount>& operation_types) = 0;
   virtual void RemoveObservers(
-      const Vector<int32_t>& observer_ids_to_remove) = 0;
+      const WebVector<int32_t>& observer_ids_to_remove) = 0;
   virtual void Get(long long transaction_id,
                    long long object_store_id,
                    long long index_id,
@@ -107,18 +106,18 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void Put(long long transaction_id,
                    long long object_store_id,
                    const WebData& value,
-                   const Vector<WebBlobInfo>&,
+                   const WebVector<WebBlobInfo>&,
                    WebIDBKeyView primary_key,
                    WebIDBPutMode,
                    WebIDBCallbacks*,
-                   const Vector<WebIDBIndexKeys>&) = 0;
+                   const WebVector<WebIDBIndexKeys>&) = 0;
   virtual void SetIndexKeys(long long transaction_id,
                             long long object_store_id,
                             WebIDBKeyView primary_key,
-                            const Vector<WebIDBIndexKeys>&) = 0;
+                            const WebVector<WebIDBIndexKeys>&) = 0;
   virtual void SetIndexesReady(long long transaction_id,
                                long long object_store_id,
-                               const Vector<int64_t>& index_ids) = 0;
+                               const WebVector<long long>& index_ids) = 0;
   virtual void OpenCursor(long long transaction_id,
                           long long object_store_id,
                           long long index_id,
@@ -150,4 +149,4 @@ class MODULES_EXPORT WebIDBDatabase {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_

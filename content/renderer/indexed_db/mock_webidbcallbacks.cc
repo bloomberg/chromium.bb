@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
+#include "content/renderer/indexed_db/mock_webidbcallbacks.h"
 
-namespace blink {
+namespace content {
 
 MockWebIDBCallbacks::MockWebIDBCallbacks() {}
 
@@ -36,4 +36,4 @@ void MockWebIDBCallbacks::OnSuccess(
   DoOnSuccess(values);
 }
 
-}  // namespace blink
+}  // namespace content
