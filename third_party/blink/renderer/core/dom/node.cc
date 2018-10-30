@@ -2573,7 +2573,9 @@ void Node::DispatchSimulatedClick(Event* underlying_event,
 
 void Node::DispatchInputEvent() {
   // Legacy 'input' event for forms set value and checked.
-  DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::input));
+  Event* event = Event::CreateBubble(EventTypeNames::input);
+  event->SetComposed(true);
+  DispatchScopedEvent(*event);
 }
 
 void Node::DefaultEventHandler(Event& event) {
