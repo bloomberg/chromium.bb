@@ -112,6 +112,18 @@ using web::test::ElementSelector;
 @interface AutomationActionSelectDropdown : AutomationAction
 @end
 
+// An action that loads a web page.
+// This is recorded in tandem with the actions that cause loads to
+// occur (i.e. clicking on a link); therefore, this action is
+// a no-op when replaying.
+// We assume this action has a format resembling:
+// {
+//   "url": "www.google.com",
+//   "type": "loadPage"
+// }
+@interface AutomationActionLoadPage : AutomationAction
+@end
+
 @implementation AutomationAction
 
 + (instancetype)actionWithValueDictionary:
@@ -134,6 +146,7 @@ using web::test::ElementSelector;
     @"autofill" : [AutomationActionAutofill class],
     @"validateField" : [AutomationActionValidateField class],
     @"select" : [AutomationActionSelectDropdown class],
+    @"loadPage" : [AutomationActionLoadPage class],
     // More to come.
   };
 
@@ -243,6 +256,14 @@ using web::test::ElementSelector;
 - (void)execute {
   web::test::ElementSelector selector = [self selectorForTarget];
   [self tapOnTarget:selector];
+}
+
+@end
+
+@implementation AutomationActionLoadPage
+
+- (void)execute {
+  // loadPage is a no-op action - perform nothing
 }
 
 @end
