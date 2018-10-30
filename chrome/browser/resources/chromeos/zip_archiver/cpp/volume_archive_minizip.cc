@@ -389,20 +389,20 @@ bool VolumeArchiveMinizip::SeekHeader(const std::string& path_name) {
   // Directories cannot be encrypted with the basic zip encrytion algorithm.
   if (((raw_file_info.flag & 1) != 0) && !is_directory) {
     do {
-      if (password_cache_ == nullptr) {
+      if (!password_cache_) {
         // Save passphrase for upcoming file requests.
         password_cache_ = reader()->Passphrase();
-        // check if |password_cache_| is nullptr in case when user clicks Cancel
-        if (password_cache_ == nullptr) {
+        // check if |password_cache_| is empty in case when user clicks Cancel
+        if (!password_cache_) {
           return false;
         }
       }
 
-      open_result =
-          unzOpenCurrentFilePassword(zip_file_, password_cache_.get()->c_str());
+      open_result = unzOpenCurrentFilePassword(zip_file_,
+                                               password_cache_.value().c_str());
 
       // If password is incorrect then password cache ought to be reseted.
-      if (open_result == UNZ_BADPASSWORD && password_cache_ != nullptr)
+      if (open_result == UNZ_BADPASSWORD)
         password_cache_.reset();
 
     } while (open_result == UNZ_BADPASSWORD);

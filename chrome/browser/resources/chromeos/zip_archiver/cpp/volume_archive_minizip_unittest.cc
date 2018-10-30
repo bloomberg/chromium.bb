@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
@@ -23,6 +24,8 @@
 #include "third_party/minizip/src/ioapi.h"
 
 namespace {
+
+constexpr char kEncryptedZipPassphrase[] = "test123";
 
 class TestVolumeReader : public VolumeReader {
  public:
@@ -40,15 +43,20 @@ class TestVolumeReader : public VolumeReader {
     return file_.Seek(whence, offset);
   }
 
-  std::unique_ptr<std::string> Passphrase() override { return nullptr; }
+  base::Optional<std::string> Passphrase() override { return passphrase_; }
 
   int64_t offset() override { return Seek(0, base::File::FROM_CURRENT); }
 
   int64_t archive_size() override { return file_.GetLength(); }
 
+  void set_passphrase(base::Optional<std::string> passphrase) {
+    passphrase_ = std::move(passphrase);
+  }
+
  private:
   base::File file_;
   std::vector<char> buffer_;
+  base::Optional<std::string> passphrase_;
 };
 
 class VolumeArchiveMinizipTest : public testing::Test {
@@ -82,6 +90,13 @@ struct FileInfo {
   const char* md5_sum;
 };
 const std::map<std::string, FileInfo> kSmallZipFiles = {
+    {"file1", {15, false, 1407912954, "b4d9b82bb1cd97aa6191843149df18e6"}},
+    {"file2", {33, false, 1407912974, "b864e9456deb246b018c49ef831f7ca7"}},
+    {"dir/", {0, true, 1407913020, nullptr}},
+    {"dir/file3", {56, false, 1407913020, "bffbca4992b32db8ed72bfc2c88e7f11"}},
+};
+
+const std::map<std::string, FileInfo> kEncryptedZipFiles = {
     {"file1", {15, false, 1407912954, "b4d9b82bb1cd97aa6191843149df18e6"}},
     {"file2", {33, false, 1407912974, "b864e9456deb246b018c49ef831f7ca7"}},
     {"dir/", {0, true, 1407913020, nullptr}},
@@ -161,6 +176,53 @@ TEST_F(VolumeArchiveMinizipTest, Read) {
 
   for (auto it : kSmallZipFiles) {
     EXPECT_TRUE(archive.SeekHeader(it.first));
+    if (it.second.is_directory)
+      continue;
+
+    base::MD5Context ctx;
+    base::MD5Init(&ctx);
+    const char* buffer = nullptr;
+    int64_t offset = 0;
+    while (offset < it.second.size) {
+      int64_t read = archive.ReadData(offset, it.second.size - offset, &buffer);
+      ASSERT_GT(read, 0);
+      EXPECT_LE(read, it.second.size - offset);
+      base::MD5Update(&ctx, base::StringPiece(buffer, read));
+      offset += read;
+    }
+    EXPECT_EQ(it.second.size, offset);
+    EXPECT_EQ(0, archive.ReadData(offset, 1, &buffer));
+
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &ctx);
+    std::string md5_sum = base::MD5DigestToBase16(digest);
+    EXPECT_EQ(md5_sum, it.second.md5_sum);
+  }
+}
+
+TEST_F(VolumeArchiveMinizipTest, Encrypted) {
+  std::unique_ptr<TestVolumeReader> reader =
+      std::make_unique<TestVolumeReader>(GetTestZipPath("encrypted.zip"));
+  reader->set_passphrase(
+      base::make_optional<std::string>(kEncryptedZipPassphrase));
+  VolumeArchiveMinizip archive(std::move(reader));
+  ASSERT_TRUE(archive.Init(""));
+
+  for (auto it : kEncryptedZipFiles) {
+    EXPECT_TRUE(archive.SeekHeader(it.first));
+    std::string file_path;
+    bool is_utf8 = false;
+    int64_t size = -1;
+    bool is_directory = false;
+    time_t mod_time = 0;
+    auto result = archive.GetCurrentFileInfo(&file_path, &is_utf8, &size,
+                                             &is_directory, &mod_time);
+    EXPECT_EQ(result, VolumeArchive::RESULT_SUCCESS);
+    EXPECT_EQ(file_path, it.first);
+    EXPECT_EQ(size, it.second.size);
+    EXPECT_EQ(is_directory, it.second.is_directory);
+    EXPECT_EQ(mod_time, it.second.mod_time);
+
     if (it.second.is_directory)
       continue;
 

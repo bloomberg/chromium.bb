@@ -9,10 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 #include "third_party/minizip/src/unzip.h"
 #include "third_party/minizip/src/zip.h"
-
-#include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 
 // Defines an implementation of VolumeArchive that wraps all minizip
 // operations.
@@ -149,7 +149,7 @@ class VolumeArchiveMinizip : public VolumeArchive {
   bool decompressed_error_;
 
   // The password cache to access password protected files.
-  std::unique_ptr<std::string> password_cache_;
+  base::Optional<std::string> password_cache_;
 };
 
 #endif  // CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_

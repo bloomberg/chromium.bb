@@ -212,15 +212,14 @@ void VolumeReaderJavaScriptStream::SetRequestId(const std::string& request_id) {
   request_id_ = request_id;
 }
 
-std::unique_ptr<std::string> VolumeReaderJavaScriptStream::Passphrase() {
-  std::unique_ptr<std::string> result;
+base::Optional<std::string> VolumeReaderJavaScriptStream::Passphrase() {
   // The error is not recoverable. Once passphrase fails to be provided, it is
   // never asked again. Note, that still users are able to retry entering the
   // password, unless they click Cancel.
   {
     base::AutoLock al(shared_state_lock_);
     if (passphrase_error_) {
-      return result;
+      return {};
     }
   }
 
@@ -232,10 +231,10 @@ std::unique_ptr<std::string> VolumeReaderJavaScriptStream::Passphrase() {
   // TODO(amistry): Handle spurious wakeups.
   available_passphrase_cond_.Wait();
 
-  if (!passphrase_error_)
-    result.reset(new std::string(available_passphrase_));
+  if (passphrase_error_)
+    return {};
 
-  return result;
+  return base::make_optional<std::string>(available_passphrase_);
 }
 
 void VolumeReaderJavaScriptStream::RequestChunk(int64_t length) {
