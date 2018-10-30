@@ -373,7 +373,8 @@ TEST(CTAPResponseTest, TestMakeCredentialNoneAttestationResponse) {
       FidoTransportProtocol::kUsbHumanInterfaceDevice,
       test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
-  make_credential_response->EraseAttestationStatement();
+  make_credential_response->EraseAttestationStatement(
+      AttestationObject::AAGUID::kErase);
   EXPECT_THAT(make_credential_response->GetCBOREncodedAttestationObject(),
               ::testing::ElementsAreArray(test_data::kNoneAttestationResponse));
 }

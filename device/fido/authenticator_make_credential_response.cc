@@ -78,8 +78,9 @@ AuthenticatorMakeCredentialResponse::GetCBOREncodedAttestationObject() const {
   return attestation_object_.SerializeToCBOREncodedBytes();
 }
 
-void AuthenticatorMakeCredentialResponse::EraseAttestationStatement() {
-  attestation_object_.EraseAttestationStatement();
+void AuthenticatorMakeCredentialResponse::EraseAttestationStatement(
+    AttestationObject::AAGUID erase_aaguid) {
+  attestation_object_.EraseAttestationStatement(erase_aaguid);
 }
 
 bool AuthenticatorMakeCredentialResponse::IsSelfAttestation() {

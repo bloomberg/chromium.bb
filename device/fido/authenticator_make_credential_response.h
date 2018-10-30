@@ -44,10 +44,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
 
   std::vector<uint8_t> GetCBOREncodedAttestationObject() const;
 
-  // Replaces the attestation statement with a “none” attestation and removes
-  // AAGUID from authenticator data section.
+  // Replaces the attestation statement with a “none” attestation, and removes
+  // AAGUID from authenticator data section unless |preserve_aaguid| is true.
   // https://w3c.github.io/webauthn/#createCredential
-  void EraseAttestationStatement();
+  void EraseAttestationStatement(AttestationObject::AAGUID erase_aaguid);
 
   // Returns true if the attestation is a "self" attestation, i.e. is just the
   // private key signing itself to show that it is fresh and the AAGUID is zero.

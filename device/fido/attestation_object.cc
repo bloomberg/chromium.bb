@@ -29,17 +29,22 @@ std::vector<uint8_t> AttestationObject::GetCredentialId() const {
   return authenticator_data_.GetCredentialId();
 }
 
-void AttestationObject::EraseAttestationStatement() {
+void AttestationObject::EraseAttestationStatement(
+    AttestationObject::AAGUID erase_aaguid) {
   attestation_statement_ = std::make_unique<NoneAttestationStatement>();
-  authenticator_data_.DeleteDeviceAaguid();
+  if (erase_aaguid == AAGUID::kErase) {
+    authenticator_data_.DeleteDeviceAaguid();
+  }
 
 // Attested credential data is optional section within authenticator data. But
 // if present, the first 16 bytes of it represents a device AAGUID which must
-// be set to zeros for none attestation statement format.
+// be set to zeros for none attestation statement format, unless explicitly
+// requested otherwise (we make an exception for platform authenticators).
 #if DCHECK_IS_ON()
   if (!authenticator_data_.attested_data())
     return;
-  DCHECK(authenticator_data_.attested_data()->IsAaguidZero());
+  DCHECK(erase_aaguid == AAGUID::kInclude ||
+         authenticator_data_.attested_data()->IsAaguidZero());
 #endif
 }
 

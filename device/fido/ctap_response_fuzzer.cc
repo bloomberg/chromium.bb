@@ -35,14 +35,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto response = device::ReadCTAPMakeCredentialResponse(
       FidoTransportProtocol::kUsbHumanInterfaceDevice, input);
   if (response)
-    response->EraseAttestationStatement();
+    response->EraseAttestationStatement(AttestationObject::AAGUID::kErase);
 
   response = device::AuthenticatorMakeCredentialResponse::
       CreateFromU2fRegisterResponse(
           FidoTransportProtocol::kUsbHumanInterfaceDevice,
           relying_party_id_hash, input);
   if (response)
-    response->EraseAttestationStatement();
+    response->EraseAttestationStatement(AttestationObject::AAGUID::kErase);
 
   device::ReadCTAPGetAssertionResponse(input);
   std::vector<uint8_t> u2f_response_data(data, data + size);

@@ -345,11 +345,17 @@ void AppendUniqueTransportsFromCertificate(
   }
 }
 
+enum class AttestationErasureOption {
+  kIncludeAttestation,
+  kEraseAttestationButIncludeAaguid,
+  kEraseAttestationAndAaguid,
+};
+
 blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
     device::AuthenticatorMakeCredentialResponse response_data,
-    bool preserve_attestation) {
+    AttestationErasureOption attestation_erasure) {
   auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -391,8 +397,17 @@ CreateMakeCredentialResponse(
     }
   }
 
-  if (!preserve_attestation) {
-    response_data.EraseAttestationStatement();
+  switch (attestation_erasure) {
+    case AttestationErasureOption::kIncludeAttestation:
+      break;
+    case AttestationErasureOption::kEraseAttestationButIncludeAaguid:
+      response_data.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kInclude);
+      break;
+    case AttestationErasureOption::kEraseAttestationAndAaguid:
+      response_data.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kErase);
+      break;
   }
   response->attestation_object =
       response_data.GetCBOREncodedAttestationObject();
@@ -853,13 +868,24 @@ void AuthenticatorImpl::OnRegisterResponse(
         return;
       }
 
-      const bool include_attestation = response_data->IsSelfAttestation();
+      AttestationErasureOption attestation_erasure =
+          AttestationErasureOption::kEraseAttestationAndAaguid;
+      if (response_data->IsSelfAttestation()) {
+        attestation_erasure = AttestationErasureOption::kIncludeAttestation;
+      } else if (transport_used == device::FidoTransportProtocol::kInternal) {
+        // Contrary to what the WebAuthn spec says, for internal (platform)
+        // authenticators we do not erase the AAGUID from authenticatorData,
+        // even if requested attestationConveyancePreference is "none".
+        attestation_erasure =
+            AttestationErasureOption::kEraseAttestationButIncludeAaguid;
+      }
+
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateMakeCredentialResponse(std::move(client_data_json_),
                                        std::move(*response_data),
-                                       include_attestation),
+                                       attestation_erasure),
           Focus::kDoCheck);
       return;
   }
@@ -891,14 +917,15 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 
   UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
                             AttestationPromptResult::kAllowed);
-  bool include_attestation = true;
+  AttestationErasureOption attestation_erasure =
+      AttestationErasureOption::kIncludeAttestation;
 
   // The check for IsAttestationCertificateInappropriatelyIdentifying is
   // performed after the permissions prompt, even though we know the answer
-  // before, because this still effectively discloses the make & model of the
-  // authenticator: If an RP sees a "none" attestation from Chrome after
-  // requesting direct attestation then it knows that it was one of the tokens
-  // with inappropriate certs.
+  // before, because this still effectively discloses the make & model of
+  // the authenticator: If an RP sees a "none" attestation from Chrome after
+  // requesting direct attestation then it knows that it was one of the
+  // tokens with inappropriate certs.
   if (response_data.IsAttestationCertificateInappropriatelyIdentifying() &&
       !request_delegate_->ShouldPermitIndividualAttestation(
           relying_party_id_)) {
@@ -910,14 +937,14 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     // The only way to get the underlying attestation will be to list the RP ID
     // in the enterprise policy, because that enables the individual attestation
     // bit in the register request and permits individual attestation generally.
-    include_attestation = false;
+    attestation_erasure = AttestationErasureOption::kEraseAttestationAndAaguid;
   }
 
   InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
                            blink::mojom::AuthenticatorStatus::SUCCESS,
                            CreateMakeCredentialResponse(
                                std::move(client_data_json_),
-                               std::move(response_data), include_attestation),
+                               std::move(response_data), attestation_erasure),
                            Focus::kDoCheck);
 }
 
