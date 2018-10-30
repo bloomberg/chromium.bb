@@ -78,6 +78,12 @@ AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 
+// A property key to indicate that a window should be in immersive mode when the
+// window enters the fullscreen mode. The immersive fullscreen mode is slightly
+// different from the normal fullscreen mode by allowing the user to reveal the
+// top portion of the window through a touch / mouse gesture.
+AURA_EXPORT extern const WindowProperty<bool>* const kImmersiveFullscreenKey;
+
 // A property key to store the minimum size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
 

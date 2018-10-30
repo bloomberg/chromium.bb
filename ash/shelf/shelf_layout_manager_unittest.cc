@@ -15,7 +15,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -340,14 +339,14 @@ class ShelfLayoutManagerTest : public AshTestBase {
   void LockScreen() {
     mojom::SessionInfoPtr info = mojom::SessionInfo::New();
     info->state = session_manager::SessionState::LOCKED;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+    ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
   // Turn off the lock screen.
   void UnlockScreen() {
     mojom::SessionInfoPtr info = mojom::SessionInfo::New();
     info->state = session_manager::SessionState::ACTIVE;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+    ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
   int64_t GetPrimaryDisplayId() {
@@ -461,7 +460,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   widget->SetFullscreen(true);
   wm::WindowState* window_state = wm::GetWindowState(window);
   window_state->SetHideShelfWhenFullscreen(false);
-  window->SetProperty(kImmersiveIsActive, true);
+  window_state->SetInImmersiveFullscreen(true);
   layout_manager->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
@@ -1750,7 +1749,7 @@ TEST_F(ShelfLayoutManagerNonHomeLauncherTest,
   const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&event);
   window_state->SetHideShelfWhenFullscreen(false);
-  window->SetProperty(kImmersiveIsActive, true);
+  window_state->SetInImmersiveFullscreen(true);
   GetShelfLayoutManager()->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
