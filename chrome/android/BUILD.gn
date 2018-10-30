@@ -1010,7 +1010,7 @@ template("chrome_shared_library") {
     }
 
     if (chromium_linker_supported && use_lld) {
-      configs += [ "//build/config/android:lld_pack_relocations_with_relr" ]
+      configs += [ "//build/config/android:lld_pack_relocations" ]
     }
     if (chromium_linker_supported && target_cpu != "mipsel" &&
         target_cpu != "mipsel64") {
@@ -1273,7 +1273,7 @@ shared_library("chrome_sync_shell") {
     "//components/sync:test_support_fake_server_android",
   ]
   if (chromium_linker_supported && use_lld) {
-    configs += [ "//build/config/android:lld_pack_relocations_with_relr" ]
+    configs += [ "//build/config/android:lld_pack_relocations" ]
   }
   if (enable_vr) {
     sources += [ "../browser/android/vr/register_jni.cc" ]
