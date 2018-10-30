@@ -249,11 +249,25 @@ void CheckField(const std::vector<FormFieldData>& fields,
     EXPECT_EQ(*element_value, field_it->value);
 }
 
+// Describes the |form_data| including field values and names. Use this in
+// SCOPED_TRACE if other logging messages might refer to the form.
+testing::Message DescribeFormData(const FormData& form_data) {
+  testing::Message result;
+  result << "Form contains " << form_data.fields.size() << " fields:\n";
+  for (const FormFieldData& field : form_data.fields) {
+    result << "type=" << field.form_control_type << ", name=" << field.name
+           << ", value=" << field.value
+           << ", unique id=" << field.unique_renderer_id << "\n";
+  }
+  return result;
+}
+
 // Check that the information distilled from |form_data| into |password_form| is
 // matching |expectations|.
 void CheckPasswordFormFields(const PasswordForm& password_form,
                              const FormData& form_data,
                              const ParseResultIds& expectations) {
+  SCOPED_TRACE(DescribeFormData(form_data));
   CheckField(form_data.fields, expectations.username_id,
              password_form.username_element, &password_form.username_value,
              "username");
