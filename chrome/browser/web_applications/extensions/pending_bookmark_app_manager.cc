@@ -141,9 +141,6 @@ void PendingBookmarkAppManager::SetTimerForTesting(
   timer_ = std::move(timer);
 }
 
-// Returns (as the base::Optional part) whether or not there is already a known
-// extension for the given ID. The bool inside the base::Optional is, when
-// known, whether the extension is installed (true) or uninstalled (false).
 base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
     const std::string& extension_id) {
   if (ExtensionRegistry::Get(profile_)->GetExtensionById(
@@ -169,6 +166,12 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
 
     const web_app::PendingAppManager::AppInfo& app_info =
         front->task->app_info();
+
+    if (app_info.always_update) {
+      StartInstallationTask(std::move(front));
+      return;
+    }
+
     base::Optional<std::string> extension_id =
         extension_ids_map_.LookupExtensionId(app_info.url);
 
@@ -189,25 +192,29 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
         }
       }
     }
-
-    current_task_and_callback_ = std::move(front);
-
-    CreateWebContentsIfNecessary();
-    Observe(web_contents_.get());
-
-    content::NavigationController::LoadURLParams load_params(
-        current_task_and_callback_->task->app_info().url);
-    load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-    web_contents_->GetController().LoadURLWithParams(load_params);
-    timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
-        base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
-                       weak_ptr_factory_.GetWeakPtr()));
+    StartInstallationTask(std::move(front));
     return;
   }
 
   web_contents_.reset();
+}
+
+void PendingBookmarkAppManager::StartInstallationTask(
+    std::unique_ptr<TaskAndCallback> task) {
+  DCHECK(!current_task_and_callback_);
+  current_task_and_callback_ = std::move(task);
+
+  CreateWebContentsIfNecessary();
+  Observe(web_contents_.get());
+
+  content::NavigationController::LoadURLParams load_params(
+      current_task_and_callback_->task->app_info().url);
+  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+  web_contents_->GetController().LoadURLWithParams(load_params);
+  timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
+      base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {

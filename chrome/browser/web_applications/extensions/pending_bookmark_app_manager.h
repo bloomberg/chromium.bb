@@ -62,10 +62,16 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
  private:
   struct TaskAndCallback;
 
+  // Returns (as the base::Optional part) whether or not there is already a
+  // known extension for the given ID. The bool inside the base::Optional is,
+  // when known, whether the extension is installed (true) or uninstalled
+  // (false).
   base::Optional<bool> IsExtensionPresentAndInstalled(
       const std::string& extension_id);
 
   void MaybeStartNextInstallation();
+
+  void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
   void CreateWebContentsIfNecessary();
 

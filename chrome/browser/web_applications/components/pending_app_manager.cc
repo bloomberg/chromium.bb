@@ -17,6 +17,7 @@ const bool PendingAppManager::AppInfo::kDefaultCreateShortcuts = true;
 const bool PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall =
     false;
 const bool PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck = false;
+const bool PendingAppManager::AppInfo::kDefaultAlwaysUpdate = false;
 const bool PendingAppManager::AppInfo::kDefaultRequireManifest = false;
 
 PendingAppManager::AppInfo::AppInfo(GURL url,
@@ -25,6 +26,7 @@ PendingAppManager::AppInfo::AppInfo(GURL url,
                                     bool create_shortcuts,
                                     bool override_previous_user_uninstall,
                                     bool bypass_service_worker_check,
+                                    bool always_update,
                                     bool require_manifest)
     : url(std::move(url)),
       launch_container(launch_container),
@@ -32,6 +34,7 @@ PendingAppManager::AppInfo::AppInfo(GURL url,
       create_shortcuts(create_shortcuts),
       override_previous_user_uninstall(override_previous_user_uninstall),
       bypass_service_worker_check(bypass_service_worker_check),
+      always_update(always_update),
       require_manifest(require_manifest) {}
 
 PendingAppManager::AppInfo::AppInfo(PendingAppManager::AppInfo&& other) =

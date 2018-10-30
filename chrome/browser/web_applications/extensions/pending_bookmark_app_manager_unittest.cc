@@ -569,6 +569,46 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ConcurrentCallsSameApp) {
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
 
+TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  auto get_always_update_info = []() {
+    return web_app::PendingAppManager::AppInfo(
+        GURL(kFooWebAppUrl), web_app::LaunchContainer::kWindow,
+        web_app::InstallSource::kExternalPolicy,
+        web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
+        web_app::PendingAppManager::AppInfo::
+            kDefaultOverridePreviousUserUninstall,
+        web_app::PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck,
+        true /* always_update */);
+  };
+  pending_app_manager->Install(
+      get_always_update_info(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_EQ(1u, installation_task_run_count());
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  pending_app_manager->Install(
+      get_always_update_info(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  // The app is reinstalled even though it is already installed.
+  EXPECT_EQ(1u, installation_task_run_count());
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
 TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
   pending_app_manager->Install(
