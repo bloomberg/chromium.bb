@@ -554,18 +554,19 @@ test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
   test.inputText = test.util.sync.inputText.bind(null, window);
   test.selectFile = test.util.sync.selectFile.bind(null, window);
 
+  const downloadsElement = '#directory-tree [volume-type-icon="downloads"]';
+
   return test.loadData()
       .then(() => {
         test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
-        return test.waitForElement(
-            '#directory-tree [volume-type-icon="downloads"]');
+        return test.waitForElement(downloadsElement);
       })
       .then((downloadsIcon) => {
-        // Click Downloads, or refresh button if already on Downloads.
-        assertTrue(test.fakeMouseClick(
-            downloadsIcon.parentElement.hasAttribute('selected') ?
-                '#refresh-button' :
-                '#directory-tree [volume-type-icon="downloads"]'));
+        // Click Downloads if not already on Downloads, then refresh button.
+        if (!downloadsIcon.parentElement.hasAttribute('selected')) {
+          assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
+        }
+        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
         return test.waitForFiles(
             test.TestEntryInfo.getExpectedRows(entriesDownloads));
       });
