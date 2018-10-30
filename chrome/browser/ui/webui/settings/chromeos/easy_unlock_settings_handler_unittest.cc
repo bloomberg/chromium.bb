@@ -56,7 +56,6 @@ class FakeEasyUnlockService : public EasyUnlockService {
  private:
   Type GetType() const override { return TYPE_REGULAR; }
   AccountId GetAccountId() const override { return EmptyAccountId(); }
-  void LaunchSetup() override {}
   void ClearPermitAccess() override {}
 
   const base::ListValue* GetRemoteDevices() const override { return nullptr; }

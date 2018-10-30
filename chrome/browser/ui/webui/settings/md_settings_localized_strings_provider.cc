@@ -1114,7 +1114,6 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
-      {"easyUnlockSetupButton", IDS_SETTINGS_EASY_UNLOCK_SETUP},
       // Easy Unlock turn-off dialog.
       {"easyUnlockTurnOffButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF},
       {"easyUnlockTurnOffOfflineTitle",

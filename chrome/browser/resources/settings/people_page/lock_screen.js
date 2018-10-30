@@ -405,11 +405,6 @@ Polymer({
         easyUnlockEnabled && this.showEasyUnlockTurnOffDialog_;
   },
 
-  /** @private */
-  onEasyUnlockSetupTap_: function() {
-    this.easyUnlockBrowserProxy_.startTurnOnFlow();
-  },
-
   /**
    * @param {!Event} e
    * @private

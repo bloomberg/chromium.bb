@@ -371,25 +371,6 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
                    account_info.gaia);
 }
 
-void EasyUnlockServiceRegular::LaunchSetup() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  LogToggleFeature(SmartLockToggleFeature::ENABLE);
-
-  // Force the user to reauthenticate by showing a modal overlay (similar to the
-  // lock screen). The password obtained from the reauth is cached for a short
-  // period of time and used to create the cryptohome keys for sign-in.
-  if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
-    OpenSetupApp();
-  } else {
-    bool reauth_success = EasyUnlockReauth::ReauthForUserContext(
-        base::Bind(&EasyUnlockServiceRegular::OpenSetupAppAfterReauth,
-                   weak_ptr_factory_.GetWeakPtr()));
-    if (!reauth_success)
-      OpenSetupApp();
-  }
-}
-
 void EasyUnlockServiceRegular::HandleUserReauth(
     const UserContext& user_context) {
   // Cache the user context for the next X minutes, so the user doesn't have to
@@ -404,8 +385,6 @@ void EasyUnlockServiceRegular::OpenSetupAppAfterReauth(
     const UserContext& user_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   HandleUserReauth(user_context);
-
-  OpenSetupApp();
 
   // Use this opportunity to clear the crytohome keys if it was not already
   // cleared earlier.

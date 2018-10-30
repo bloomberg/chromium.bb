@@ -191,12 +191,6 @@
           multideviceSettingsEnabled_, easyUnlockAllowed_,
           easyUnlockInLegacyHostMode_)]]">
             <div class="separator"></div>
-            <template is="dom-if" if="[[!easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockSetup" class="secondary-button"
-                  on-click="onEasyUnlockSetupTap_">
-                $i18n{easyUnlockSetupButton}
-              </paper-button>
-            </template>
             <template is="dom-if" if="[[easyUnlockEnabled_]]">
               <paper-button id="easyUnlockTurnOff" class="secondary-button"
                   on-click="onEasyUnlockTurnOffTap_">

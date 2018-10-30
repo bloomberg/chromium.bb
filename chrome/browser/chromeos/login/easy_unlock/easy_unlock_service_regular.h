@@ -92,7 +92,6 @@ class EasyUnlockServiceRegular
       override;
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
-  void LaunchSetup() override;
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
   void SetRemoteDevices(const base::ListValue& devices) override;

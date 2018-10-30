@@ -18,11 +18,6 @@ cr.define('settings', function() {
     getEnabledStatus() {}
 
     /**
-     * Starts the Easy Unlock setup flow.
-     */
-    startTurnOnFlow() {}
-
-    /**
      * Returns the Easy Unlock turn off flow status.
      * @return {!Promise<string>}
      */
@@ -46,11 +41,6 @@ cr.define('settings', function() {
     /** @override */
     getEnabledStatus() {
       return cr.sendWithPromise('easyUnlockGetEnabledStatus');
-    }
-
-    /** @override */
-    startTurnOnFlow() {
-      chrome.send('easyUnlockStartTurnOnFlow');
     }
 
     /** @override */

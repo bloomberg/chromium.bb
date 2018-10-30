@@ -297,10 +297,6 @@ bool EasyUnlockService::IsInLegacyHostMode() const {
   return false;
 }
 
-void EasyUnlockService::OpenSetupApp() {
-  app_manager_->LaunchSetup();
-}
-
 void EasyUnlockService::SetHardlockState(
     EasyUnlockScreenlockStateHandler::HardlockState state) {
   const AccountId& account_id = GetAccountId();
