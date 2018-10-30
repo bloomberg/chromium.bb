@@ -8,17 +8,24 @@ import("//testing/test.gni")
 
 generate_jni("jni_sample_header") {
   sources = [
+    "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java",
     "java/src/org/chromium/example/jni_generator/SampleForTests.java",
   ]
   jni_package = "example"
 }
 
 android_library("jni_sample_java") {
-  java_files =
-      [ "java/src/org/chromium/example/jni_generator/SampleForTests.java" ]
+  java_files = [
+    "java/src/org/chromium/example/jni_generator/SampleForTests.java",
+    "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java",
+  ]
+
   deps = [
     "//base:base_java",
+    "//base:jni_processor_annotations_java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library("jni_annotation_sample_java") {

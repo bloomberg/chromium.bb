@@ -73,7 +73,7 @@ public class JniProcessor extends AbstractProcessor {
     private static MessageDigest sNativeMethodHashFunction;
 
     // If true, native methods in GEN_JNI will be named as a hash of their descriptor.
-    private static final boolean USE_HASH_FOR_METHODS = true;
+    private static final boolean USE_HASH_FOR_METHODS = false;
 
     // Limits the number characters of the Base64 encoded hash
     // of the method descriptor used as name of the generated

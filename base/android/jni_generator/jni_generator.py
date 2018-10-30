@@ -6,8 +6,10 @@
 """Extracts native methods from a Java file and generates the JNI bindings.
 If you change this, please run and update the tests."""
 
+import base64
 import collections
 import errno
+import md5
 import optparse
 import os
 import re
@@ -26,7 +28,6 @@ sys.path.append(BUILD_ANDROID_GYP)
 
 from util import build_utils
 
-
 # Match single line comments, multiline comments, character literals, and
 # double-quoted strings.
 _COMMENT_REMOVER_REGEX = re.compile(
@@ -44,6 +45,34 @@ _EXTRACT_NATIVES_REGEX = re.compile(
 _MAIN_DEX_REGEX = re.compile(
     r'^\s*(?:@(?:\w+\.)*\w+\s+)*@MainDex\b',
     re.MULTILINE)
+
+# 'Proxy' native methods are declared in an @JniStaticNatives interface without
+# a native qualifier and indicate that the JNI annotation processor should
+# generate code to link between the equivalent native method as if it were
+# declared statically.
+# Under the hood the annotation processor generates the actual native method
+# declaration in another another class (org.chromium.base.natives.GEN_JNI)
+# but generates wrapper code so it can be called through the declaring class.
+NATIVE_PROXY_CLASS_NAME = 'GEN_JNI'
+NATIVE_PROXY_PACKAGE_NAME = 'org/chromium/base/natives'
+NATIVE_PROXY_QUALIFIED_NAME = '%s/%s' % (NATIVE_PROXY_PACKAGE_NAME,
+                                         NATIVE_PROXY_CLASS_NAME)
+
+# Matches on method declarations unlike _EXTRACT_NATIVES_REGEX
+# doesn't require name to be prefixed with native, and does not
+# require a native qualifier.
+_EXTRACT_METHODS_REGEX = re.compile(
+    r'(?P<qualifiers>'
+    r'((public|private|static|final|abstract|protected|native)\s*)*)\s+'
+    r'(?P<return_type>\S*)\s+'
+    r'(?P<name>\w+)\((?P<params>.*?)\);',
+    flags=re.MULTILINE)
+
+_NATIVE_PROXY_EXTRACTION_REGEX = re.compile(
+    r'@JniStaticNatives\s*interface\s*'
+    r'(?P<interface_name>\w*)\s*(?P<interface_body>{(\s*.*)+?\s*})')
+
+
 
 # Use 100 columns rather than 80 because it makes many lines more readable.
 _WRAP_LINE_LENGTH = 100
@@ -86,6 +115,8 @@ class NativeMethod(object):
     self.return_type = kwargs['return_type']
     self.name = kwargs['name']
     self.params = kwargs['params']
+    self.is_proxy = kwargs.get('is_proxy', False)
+    self.proxy_name = kwargs.get('proxy_name', self.name)
     if self.params:
       assert type(self.params) is list
       assert type(self.params[0]) is Param
@@ -489,15 +520,14 @@ def IsMainDexJavaClass(contents):
   return bool(_MAIN_DEX_REGEX.search(contents))
 
 
-def GetBinaryClassName(fully_qualified_class):
-  """Returns a string concatenating the Java package and class."""
+def EscapeClassName(fully_qualified_class):
+  """Returns an escaped string concatenating the Java package and class."""
   escaped = fully_qualified_class.replace('_', '_1')
   return escaped.replace('/', '_').replace('$', '_00024')
 
-
 def GetRegistrationFunctionName(fully_qualified_class):
   """Returns the register name with a given class."""
-  return 'RegisterNative_' + GetBinaryClassName(fully_qualified_class)
+  return 'RegisterNative_' + EscapeClassName(fully_qualified_class)
 
 
 def GetStaticCastForReturnType(return_type):
@@ -776,6 +806,65 @@ class JNIFromJavaP(object):
     return jni_from_javap
 
 
+class NativeProxyHelpers(object):
+  MAX_CHARS_FOR_HASHED_NATIVE_METHODS = 8
+  ESCAPED_NATIVE_PROXY_CLASS = EscapeClassName(NATIVE_PROXY_QUALIFIED_NAME)
+
+  @staticmethod
+  def CreateHashedMethodName(fully_qualified_class_name, method_name):
+    m = md5.new()
+    descriptor = EscapeClassName(fully_qualified_class_name + '/' + method_name)
+
+    m.update(descriptor)
+    hash = m.digest()
+    hashed_name = ('M' + base64.b64encode(hash, altchars='$_')).rstrip('=')
+    return hashed_name[0:NativeProxyHelpers.MAX_CHARS_FOR_HASHED_NATIVE_METHODS]
+
+  @staticmethod
+  def CreateProxyMethodName(fully_qualified_class, old_name, use_hash=False):
+    """Returns the literal method name for the corresponding proxy method"""
+    if use_hash:
+      hashed_name = NativeProxyHelpers.CreateHashedMethodName(
+          fully_qualified_class, old_name)
+      return EscapeClassName(hashed_name)
+
+    # The annotation processor currently uses a method name
+    # org_chromium_example_foo_method_1name escaping _ to _1
+    # and then using the appending the method name to the qualified
+    # class. Since we need to escape underscores for jni to work
+    # we need to double escape _1 to _11
+    # This is the literal name of the GEN_JNI it still needs to be escaped once.
+    return EscapeClassName(fully_qualified_class + '/' + old_name)
+
+  @staticmethod
+  def ExtractStaticProxyNatives(fully_qualified_class,
+                                contents,
+                                ptr_type,
+                                use_hash=False):
+    methods = []
+    for match in _NATIVE_PROXY_EXTRACTION_REGEX.finditer(contents):
+      interface_body = match.group('interface_body')
+      for method in _EXTRACT_METHODS_REGEX.finditer(interface_body):
+        name = method.group('name')
+        params = JniParams.Parse(method.group('params'))
+        return_type = method.group('return_type')
+
+        unescaped_proxy_name = NativeProxyHelpers.CreateProxyMethodName(
+            fully_qualified_class, name, use_hash)
+        native = NativeMethod(
+            static=True,
+            java_class_name=None,
+            return_type=return_type,
+            name=name,
+            params=params,
+            is_proxy=True,
+            proxy_name=unescaped_proxy_name,
+            ptr_type=ptr_type)
+        methods.append(native)
+
+    return methods
+
+
 class JNIFromJavaSource(object):
   """Uses the given java source file to generate the JNI header file."""
 
@@ -786,6 +875,11 @@ class JNIFromJavaSource(object):
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
     natives = ExtractNatives(contents, options.ptr_type)
     called_by_natives = ExtractCalledByNatives(self.jni_params, contents)
+
+    natives += NativeProxyHelpers.ExtractStaticProxyNatives(
+        fully_qualified_class, contents, options.ptr_type,
+        options.use_proxy_hash)
+
     if len(natives) == 0 and len(called_by_natives) == 0:
       raise SyntaxError('Unable to find any JNI methods for %s.' %
                         fully_qualified_class)
@@ -821,19 +915,28 @@ class HeaderFileGeneratorHelper(object):
     Returns:
       A string with the stub function name (used by the JVM).
     """
-    template = Template("Java_${JAVA_NAME}_native${NAME}")
+    if native.is_proxy:
+      method_name = EscapeClassName(native.proxy_name)
+      return 'Java_%s_%s' % (EscapeClassName(NATIVE_PROXY_QUALIFIED_NAME),
+                             method_name)
+
+    template = Template('Java_${JAVA_NAME}_native${NAME}')
 
     java_name = self.fully_qualified_class
     if native.java_class_name:
       java_name += '$' + native.java_class_name
 
-    values = {'NAME': native.name,
-              'JAVA_NAME': GetBinaryClassName(java_name)}
+    values = {'NAME': native.name, 'JAVA_NAME': EscapeClassName(java_name)}
     return template.substitute(values)
 
   def GetUniqueClasses(self, origin):
-    ret = {self.class_name: self.fully_qualified_class}
+    ret = {}
     for entry in origin:
+      if isinstance(entry, NativeMethod) and entry.is_proxy:
+        ret[NATIVE_PROXY_CLASS_NAME] = NATIVE_PROXY_QUALIFIED_NAME
+        continue
+      ret[self.class_name] = self.fully_qualified_class
+
       class_name = self.class_name
       jni_class_path = self.fully_qualified_class
       if entry.java_class_name:
@@ -858,10 +961,13 @@ const char kClassPath_${JAVA_CLASS}[] = \
 
     for full_clazz in classes.itervalues():
       values = {
-          'JAVA_CLASS': GetBinaryClassName(full_clazz),
+          'JAVA_CLASS': EscapeClassName(full_clazz),
           'JNI_CLASS_PATH': full_clazz,
       }
-      ret += [template.substitute(values)]
+      # Since all proxy methods use the same class, defining this in every
+      # header file would result in duplicated extern initializations.
+      if full_clazz != NATIVE_PROXY_QUALIFIED_NAME:
+        ret += [template.substitute(values)]
 
     class_getter = """\
 #ifndef ${JAVA_CLASS}_clazz_defined
@@ -884,9 +990,12 @@ JNI_REGISTRATION_EXPORT std::atomic<jclass> g_${JAVA_CLASS}_clazz(nullptr);
 
     for full_clazz in classes.itervalues():
       values = {
-          'JAVA_CLASS': GetBinaryClassName(full_clazz),
+          'JAVA_CLASS': EscapeClassName(full_clazz),
       }
-      ret += [template.substitute(values)]
+      # Since all proxy methods use the same class, defining this in every
+      # header file would result in duplicated extern initializations.
+      if full_clazz != NATIVE_PROXY_QUALIFIED_NAME:
+        ret += [template.substitute(values)]
 
     return ''.join(ret)
 
@@ -1032,7 +1141,15 @@ $METHOD_STUBS
     if native.java_class_name is not None:
       # Inner class
       class_name = native.java_class_name
-    return "JNI_%s_%s" % (class_name, native.name)
+
+    method_name = native.name
+    if native.is_proxy:
+      # proxy methods don't have a native prefix so the first letter is
+      # lowercase. But we still want the CPP declaration to use upper camel case
+      # for the method name.
+      method_name = method_name[0].upper() + method_name[1:]
+
+    return 'JNI_%s_%s' % (class_name, method_name)
 
   def GetNativeStub(self, native):
     is_method = native.type == 'method'
@@ -1059,6 +1176,7 @@ $METHOD_STUBS
     profiling_entered_native = ''
     if self.options.enable_profiling:
       profiling_entered_native = '  JNI_LINK_SAVED_FRAME_POINTER;\n'
+
     values = {
         'RETURN': return_type,
         'RETURN_DECLARATION': return_declaration,
@@ -1188,7 +1306,7 @@ ${TRACE_EVENT}\
     java_name_full = java_class.replace('/', '.') + '.' + jni_name
     return {
         'JAVA_CLASS_ONLY': java_class_only,
-        'JAVA_CLASS': GetBinaryClassName(java_class),
+        'JAVA_CLASS': EscapeClassName(java_class),
         'RETURN_TYPE': return_type,
         'OPTIONAL_ERROR_RETURN': optional_error_return,
         'RETURN_DECLARATION': return_declaration,
@@ -1390,6 +1508,11 @@ See SampleForTests.java for more details.
                            help='Add additional profiling instrumentation.')
   option_parser.add_option('--enable_tracing', action='store_true',
                            help='Add TRACE_EVENTs to generated functions.')
+  option_parser.add_option(
+      '--use_proxy_hash',
+      action='store_true',
+      help='Hashes the native declaration of methods used '
+      'in an @JniNatives interface')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,
