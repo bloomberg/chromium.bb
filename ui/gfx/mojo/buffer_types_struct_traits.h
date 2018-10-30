@@ -189,6 +189,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
   }
 };
 
+#if defined(OS_LINUX)
 template <>
 struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
                     gfx::NativePixmapPlane> {
@@ -217,14 +218,6 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
 template <>
 struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
                     gfx::NativePixmapHandle> {
-  static bool IsNull(const gfx::NativePixmapHandle& handle) {
-#if defined(OS_LINUX)
-    return false;
-#else
-    // NativePixmapHandle are not used on non-linux platforms.
-    return true;
-#endif
-  }
   static std::vector<mojo::ScopedHandle> fds(
       const gfx::NativePixmapHandle& pixmap_handle);
 
@@ -236,6 +229,7 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
   static bool Read(gfx::mojom::NativePixmapHandleDataView data,
                    gfx::NativePixmapHandle* out);
 };
+#endif  // defined(OS_LINUX)
 
 template <>
 struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
