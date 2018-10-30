@@ -105,6 +105,7 @@ include_rules = [
   "+rlz/buildflags",
   "+services/identity/public",
   "+services/metrics/public",
+  "+services/metrics/public/cpp",
   "+services/network/network_change_manager.h",
   "+services/network/public/mojom",
   "+services/network/public/cpp",

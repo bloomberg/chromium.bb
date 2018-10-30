@@ -5202,6 +5202,19 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="IOS.FindInPageSearchMatches">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    Logged when the FindInPage returns a user search request result.
+  </summary>
+  <metric name="HasMatches">
+    <summary>
+      True if there were matches.
+    </summary>
+  </metric>
+</event>
+
 <event name="IOS.URLMismatchInLegacyAndSlimNavigationManager">
   <owner>eugenebut@chromium.org</owner>
   <owner>danyao@chromium.org</owner>
