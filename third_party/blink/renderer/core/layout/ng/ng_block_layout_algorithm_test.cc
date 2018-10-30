@@ -39,7 +39,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     scoped_refptr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
-    return ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
+    return ToNGPhysicalBoxFragment(result->PhysicalFragment());
   }
 
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {

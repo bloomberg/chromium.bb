@@ -62,7 +62,7 @@ void LayoutNGMixin<Base>::ResetNGInlineNodeData() {
 template <typename Base>
 const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (cached_result_)
-    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment().get());
+    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment());
   return nullptr;
 }
 

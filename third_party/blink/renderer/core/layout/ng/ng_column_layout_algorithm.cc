@@ -116,8 +116,8 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
-      scoped_refptr<const NGPhysicalBoxFragment> column(
-          ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
+      const NGPhysicalBoxFragment* column =
+          ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
       NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
       container_builder_.AddChild(*result, logical_offset);

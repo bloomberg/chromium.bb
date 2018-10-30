@@ -362,7 +362,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     layout_result = GenerateFragment(descendant.node, container_info,
                                      block_estimate, node_position);
 
-    DCHECK(layout_result->PhysicalFragment().get());
+    DCHECK(layout_result->PhysicalFragment());
     NGFragment fragment(descendant_writing_mode,
                         *layout_result->PhysicalFragment());
 

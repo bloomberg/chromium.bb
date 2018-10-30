@@ -52,8 +52,8 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                            break_token.get());
     scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
-    scoped_refptr<const NGPhysicalBoxFragment> page(
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
+    const NGPhysicalBoxFragment* page =
+        ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
     container_builder_.AddChild(*result, page_offset);
 

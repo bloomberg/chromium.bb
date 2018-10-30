@@ -115,7 +115,7 @@ class NGInlineNodeTest : public NGLayoutTest {
             .Layout();
 
     const NGPhysicalLineBoxFragment* line =
-        ToNGPhysicalLineBoxFragment(result->PhysicalFragment().get());
+        ToNGPhysicalLineBoxFragment(result->PhysicalFragment());
     for (const auto& child : line->Children()) {
       fragments_out->push_back(ToNGPhysicalTextFragment(child.get()));
     }

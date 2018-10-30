@@ -52,22 +52,19 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGInlineChildLayoutContext context;
   scoped_refptr<NGLayoutResult> layout_result =
       inline_node.Layout(constraint_space, nullptr, &context);
-  auto* line1 =
-      ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment().get());
+  auto* line1 = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
 
   // Perform 2nd layout with the break token from the 1st line.
   scoped_refptr<NGLayoutResult> layout_result2 =
       inline_node.Layout(constraint_space, line1->BreakToken(), &context);
-  auto* line2 =
-      ToNGPhysicalLineBoxFragment(layout_result2->PhysicalFragment().get());
+  auto* line2 = ToNGPhysicalLineBoxFragment(layout_result2->PhysicalFragment());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Perform 3rd layout with the break token from the 2nd line.
   scoped_refptr<NGLayoutResult> layout_result3 =
       inline_node.Layout(constraint_space, line2->BreakToken(), &context);
-  auto* line3 =
-      ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment().get());
+  auto* line3 = ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 }
 
@@ -188,8 +185,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<NGLayoutResult> layout_result = block_node.Layout(space);
 
-  auto* block_box =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
+  auto* block_box = ToNGPhysicalBoxFragment(layout_result->PhysicalFragment());
   EXPECT_TRUE(layout_result->BfcBlockOffset().has_value());
   EXPECT_EQ(0, layout_result->BfcBlockOffset().value());
   EXPECT_EQ(0, layout_result->BfcLineOffset());
@@ -223,8 +219,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   scoped_refptr<NGLayoutResult> layout_result =
       inline_node.Layout(space, nullptr, &context);
 
-  auto* line =
-      ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment().get());
+  auto* line = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
   EXPECT_EQ(LayoutUnit(96), line->Size().height);
   NGPhysicalOffset img_offset = line->Children()[0].Offset();
   EXPECT_EQ(LayoutUnit(0), img_offset.top);
