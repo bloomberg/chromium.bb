@@ -214,6 +214,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return type >= UnitType::kDotsPerPixel &&
            type <= UnitType::kDotsPerCentimeter;
   }
+  bool IsResolution() const { return IsResolution(GetType()); }
   static bool IsFlex(UnitType unit) { return unit == UnitType::kFraction; }
   bool IsFlex() const { return IsFlex(GetType()); }
 

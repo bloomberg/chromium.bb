@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+PASS <length> values are computed correctly for divWithFontSizeSet
+PASS <length-percentage> values are computed correctly for divWithFontSizeSet
+PASS <length># values are computed correctly for divWithFontSizeSet
+PASS <length-percentage># values are computed correctly for divWithFontSizeSet
+PASS <length>+ values are computed correctly for divWithFontSizeSet
+PASS <length-percentage>+ values are computed correctly for divWithFontSizeSet
+PASS <transform-function> values are computed correctly for divWithFontSizeSet
+PASS <integer> values are computed correctly for divWithFontSizeSet
+PASS <integer>+ values are computed correctly for divWithFontSizeSet
+PASS <color> values are computed correctly for divWithFontSizeSet
+PASS ident values that look like color keywords are not converted to colorsdivWithFontSizeSet
+PASS <angle> values computed correctly for divWithFontSizeSet
+PASS <time> values computed correctly for divWithFontSizeSet
+PASS <resolution> values computed correctly for divWithFontSizeSet
+FAIL <resolution> values with calc() computed correctly for divWithFontSizeSet assert_equals: expected "2dppx" but got "0dppx"
+PASS <length> values are computed correctly for divWithFontSizeInherited
+PASS <length-percentage> values are computed correctly for divWithFontSizeInherited
+PASS <length># values are computed correctly for divWithFontSizeInherited
+PASS <length-percentage># values are computed correctly for divWithFontSizeInherited
+PASS <length>+ values are computed correctly for divWithFontSizeInherited
+PASS <length-percentage>+ values are computed correctly for divWithFontSizeInherited
+PASS <transform-function> values are computed correctly for divWithFontSizeInherited
+PASS <integer> values are computed correctly for divWithFontSizeInherited
+PASS <integer>+ values are computed correctly for divWithFontSizeInherited
+PASS <color> values are computed correctly for divWithFontSizeInherited
+PASS ident values that look like color keywords are not converted to colorsdivWithFontSizeInherited
+PASS <angle> values computed correctly for divWithFontSizeInherited
+PASS <time> values computed correctly for divWithFontSizeInherited
+PASS <resolution> values computed correctly for divWithFontSizeInherited
+FAIL <resolution> values with calc() computed correctly for divWithFontSizeInherited assert_equals: expected "2dppx" but got "0dppx"
+Harness: the test ran to completion.
+
