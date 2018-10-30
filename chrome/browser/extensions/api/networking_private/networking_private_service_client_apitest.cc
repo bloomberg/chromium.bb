@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -56,15 +55,6 @@ class TestNetworkingCastPrivateDelegate
                          const FailureCallback& failure_callback) override {
     AssertCredentials(*credentials);
     success_callback.Run(true);
-  }
-
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    AssertCredentials(*credentials);
-    success_callback.Run("encrypted_credentials");
   }
 
   void VerifyAndEncryptData(const std::string& data,
@@ -253,11 +243,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
                        VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
-                       VerifyAndEncryptCredentials) {
-  EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,

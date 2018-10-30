@@ -1987,7 +1987,6 @@ test("browser_tests") {
     if (is_win) {
       sources += [
         "../browser/browser_switcher/browser_switcher_service_browsertest.cc",
-        "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
         "../browser/printing/pdf_to_emf_converter_browsertest.cc",
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",

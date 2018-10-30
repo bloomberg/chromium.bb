@@ -71,16 +71,6 @@ class NetworkingCastPrivateDelegate {
                                  const FailureCallback& failure_callback) = 0;
 
   // Verifies that data provided in |credentials| authenticates a cast device.
-  // If the device is verified as a cast device, it fetches credentials of the
-  // network identified with |network_guid| and returns the network credentials
-  // encrypted with a public key derived from |credentials|.
-  virtual void VerifyAndEncryptCredentials(
-      const std::string& network_guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& encrypted_credetials_callback,
-      const FailureCallback& failure_callback) = 0;
-
-  // Verifies that data provided in |credentials| authenticates a cast device.
   // If the device is verified as a cast device, it returns |data| encrypted
   // with a public key derived from |credentials|.
   virtual void VerifyAndEncryptData(

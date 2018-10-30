@@ -37,28 +37,6 @@ class NetworkingCastPrivateVerifyDestinationFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingCastPrivateVerifyDestinationFunction);
 };
 
-class NetworkingCastPrivateVerifyAndEncryptCredentialsFunction
-    : public UIThreadExtensionFunction {
- public:
-  NetworkingCastPrivateVerifyAndEncryptCredentialsFunction() {}
-  DECLARE_EXTENSION_FUNCTION(
-      "networking.castPrivate.verifyAndEncryptCredentials",
-      NETWORKINGCASTPRIVATE_VERIFYANDENCRYPTCREDENTIALS);
-
- protected:
-  ~NetworkingCastPrivateVerifyAndEncryptCredentialsFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
-  void Success(const std::string& result);
-  void Failure(const std::string& error);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      NetworkingCastPrivateVerifyAndEncryptCredentialsFunction);
-};
-
 class NetworkingCastPrivateVerifyAndEncryptDataFunction
     : public UIThreadExtensionFunction {
  public:
