@@ -63,6 +63,10 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const ::media::AudioParameters& params,
       const std::string& device_id,
       const ::media::AudioManager::LogCallback& log_callback) override;
+  ::media::AudioOutputStream* MakeBitstreamOutputStream(
+      const ::media::AudioParameters& params,
+      const std::string& device_id,
+      const ::media::AudioManager::LogCallback& log_callback) override;
   ::media::AudioInputStream* MakeLinearInputStream(
       const ::media::AudioParameters& params,
       const std::string& device_id,

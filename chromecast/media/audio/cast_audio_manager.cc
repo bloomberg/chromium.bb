@@ -10,11 +10,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
+#include "build/build_config.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#if defined(OS_ANDROID)
+#include "media/audio/android/audio_track_output_stream.h"
+#endif  // defined(OS_ANDROID)
 
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
@@ -158,6 +163,20 @@ CmaBackendFactory* CastAudioManager::cma_backend_factory() {
         this, GetConnector(), params,
         GetMixerServiceConnectionFactoryForOutputStream(params));
   }
+}
+
+::media::AudioOutputStream* CastAudioManager::MakeBitstreamOutputStream(
+    const ::media::AudioParameters& params,
+    const std::string& device_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
+#if defined(OS_ANDROID)
+  DCHECK(params.IsBitstreamFormat());
+  return new ::media::AudioTrackOutputStream(this, params);
+#else
+  NOTREACHED() << " Not implemented on non-android platform.";
+  return ::media::AudioManagerBase::MakeBitstreamOutputStream(params, device_id,
+                                                              log_callback);
+#endif  // defined(OS_ANDROID)
 }
 
 ::media::AudioInputStream* CastAudioManager::MakeLinearInputStream(

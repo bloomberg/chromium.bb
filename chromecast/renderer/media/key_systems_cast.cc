@@ -112,7 +112,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 };
 #endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#if BUILDFLAG(USE_CHROMECAST_CDMS)
 SupportedCodecs GetCastEmeSupportedCodecs() {
   SupportedCodecs codecs = ::media::EME_CODEC_AAC | ::media::EME_CODEC_AVC1 |
                            ::media::EME_CODEC_VP9_PROFILE0 |
@@ -218,7 +218,7 @@ void AddChromecastKeySystems(
         key_systems_properties,
     bool enable_persistent_license_support,
     bool force_software_crypto) {
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#if BUILDFLAG(USE_CHROMECAST_CDMS)
   AddCmaKeySystems(key_systems_properties, enable_persistent_license_support);
 #elif defined(OS_ANDROID)
   AddCastAndroidKeySystems(key_systems_properties);
