@@ -54,6 +54,12 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // "record-until-full" mode will be used.
 const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 
+// If supplied, will enable Perfetto startup tracing and stream the
+// output to the given file.
+// TODO(oysteine): Remove once Perfetto starts early enough after
+// process startup to be able to replace the legacy startup tracing.
+const char kPerfettoOutputFile[] = "perfetto-output-file";
+
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
 
