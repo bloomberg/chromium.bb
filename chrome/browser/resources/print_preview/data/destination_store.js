@@ -196,7 +196,7 @@ cr.define('print_preview', function() {
 
       /**
        * Used to fetch cloud-based print destinations.
-       * @private {cloudprint.CloudPrintInterface}
+       * @private {cloudprint.CloudPrintInterfaceJS}
        */
       this.cloudPrintInterface_ = null;
 
@@ -643,7 +643,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sets the destination store's Google Cloud Print interface.
-     * @param {!cloudprint.CloudPrintInterface} cloudPrintInterface Interface
+     * @param {!cloudprint.CloudPrintInterfaceJS} cloudPrintInterface Interface
      *     to set.
      */
     setCloudPrintInterface(cloudPrintInterface) {

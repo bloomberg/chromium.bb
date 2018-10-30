@@ -26,7 +26,7 @@ cr.define('cloudprint', function() {
 
   const CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
 
-  class CloudPrintInterface extends cr.EventTarget {
+  class CloudPrintInterfaceJS extends cr.EventTarget {
     /**
      * API to the Google Cloud Print service.
      * @param {string} baseUrl Base part of the Google Cloud Print service URL
@@ -403,8 +403,7 @@ cr.define('cloudprint', function() {
     onAccessTokenReady_(request, accessToken) {
       assert(request.origin == print_preview.DestinationOrigin.DEVICE);
       if (accessToken) {
-        request.xhr.setRequestHeader(
-            'Authorization', 'Bearer ' + accessToken);
+        request.xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
         this.sendRequest_(request);
       } else {  // No valid token.
         // Without abort status does not exist.
@@ -745,7 +744,7 @@ cr.define('cloudprint', function() {
 
   // Export
   return {
-    CloudPrintInterface: CloudPrintInterface,
+    CloudPrintInterfaceJS: CloudPrintInterfaceJS,
     CloudPrintRequest: CloudPrintRequest,
   };
 });
