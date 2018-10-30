@@ -3398,10 +3398,6 @@ const char kMultiDeviceApiDescription[] =
     "ability to connect to other devices associated the logged-in Google "
     "account.";
 
-const char kNativeSmbName[] = "Native Smb Client";
-const char kNativeSmbDescription[] =
-    "If enabled, allows connections to an smb filesystem via Files app";
-
 const char kNetworkPortalNotificationName[] =
     "Notifications about captive portals";
 const char kNetworkPortalNotificationDescription[] =

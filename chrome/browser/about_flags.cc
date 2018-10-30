@@ -3710,12 +3710,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClipboardContentSettingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClipboardContentSetting)},
 
-#if defined(OS_CHROMEOS)
-    {"native-smb", flag_descriptions::kNativeSmbName,
-     flag_descriptions::kNativeSmbDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNativeSmb)},
-#endif  // defined(OS_CHROMEOS)
-
     {"enable-modern-media-controls",
      flag_descriptions::kUseModernMediaControlsName,
      flag_descriptions::kUseModernMediaControlsDescription, kOsAll,
