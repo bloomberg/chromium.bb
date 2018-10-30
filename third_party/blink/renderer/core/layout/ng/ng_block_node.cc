@@ -779,7 +779,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   const ComputedStyle& style = Style();
   NGConstraintSpace constraint_space =
       space_builder.SetIsNewFormattingContext(true)
-          .SetIsShrinkToFit(true)
+          .SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
           .SetAvailableSize(parent_constraint_space.AvailableSize())
           .SetPercentageResolutionSize(
               parent_constraint_space.PercentageResolutionSize())

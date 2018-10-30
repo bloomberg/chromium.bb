@@ -12,17 +12,6 @@
 
 namespace blink {
 
-bool ShouldShrinkToFit(const ComputedStyle& parent_style,
-                       const ComputedStyle& style) {
-  // Whether the child and the containing block are parallel to each other.
-  // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow = IsParallelWritingMode(
-      parent_style.GetWritingMode(), style.GetWritingMode());
-
-  return style.Display() == EDisplay::kInlineBlock || style.IsFloating() ||
-         !is_in_parallel_flow;
-}
-
 bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   DCHECK(offset);
   if (clearance_offset > offset->block_offset) {

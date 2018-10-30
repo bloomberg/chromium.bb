@@ -13,14 +13,7 @@
 
 namespace blink {
 
-class ComputedStyle;
 struct NGBfcOffset;
-
-// Whether child's constraint space should shrink to its intrinsic width.
-// This is needed for buttons, select, input, floats and orthogonal children.
-// See LayoutBox::sizesLogicalWidthToFitContent for the rationale behind this.
-bool ShouldShrinkToFit(const ComputedStyle& parent_style,
-                       const ComputedStyle& style);
 
 // Adjusts {@code offset} to the clearance line.
 CORE_EXPORT bool AdjustToClearance(LayoutUnit clearance_offset,

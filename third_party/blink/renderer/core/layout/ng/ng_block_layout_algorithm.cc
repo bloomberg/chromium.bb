@@ -1912,12 +1912,16 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     writing_mode = Style().GetWritingMode();
   } else {
     const ComputedStyle& child_style = child.Style();
+    writing_mode = child_style.GetWritingMode();
+    bool is_shrink_to_fit =
+        !IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
+                               writing_mode) &&
+        child_style.LogicalWidth().IsAuto();
     LayoutUnit child_clearance_offset =
         exclusion_space_.ClearanceOffset(child_style.Clear());
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
-    space_builder.SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style));
+    space_builder.SetIsShrinkToFit(is_shrink_to_fit);
     space_builder.SetTextDirection(child_style.Direction());
-    writing_mode = child_style.GetWritingMode();
 
     // PositionListMarker() requires a first line baseline.
     if (container_builder_.UnpositionedListMarker()) {

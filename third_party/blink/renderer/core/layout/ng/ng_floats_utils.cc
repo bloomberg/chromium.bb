@@ -87,7 +87,7 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
       .SetAvailableSize(float_available_size)
       .SetReplacedPercentageResolutionSize(float_replaced_percentage_size)
       .SetIsNewFormattingContext(true)
-      .SetIsShrinkToFit(true)
+      .SetIsShrinkToFit(style.LogicalWidth().IsAuto())
       .SetTextDirection(style.Direction())
       .ToConstraintSpace(style.GetWritingMode());
 }
