@@ -121,6 +121,8 @@ message DeviceRegisterRequest {
     // mandatory, but it failed and we are doing a fallback to manual
     // enrollment.
     FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK = 11;
+    // Enrollment triggered by USB pre-configuration
+    FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT = 12;
   };
 
   // Indicates the registration flavor. This is passed to the server FYI when
