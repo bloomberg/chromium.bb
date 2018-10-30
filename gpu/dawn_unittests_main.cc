@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 namespace {
 
@@ -22,10 +21,8 @@ int RunHelper(base::TestSuite* test_suite) {
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
-  sh::Initialize();
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
-  sh::Finalize();
   return rt;
 }
