@@ -30,8 +30,18 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
+    # https://crbug.com/899919
+    'SessionHandlingTest.testGetSessions',
+    'SessionHandlingTest.testQuitASessionMoreThanOnce',
+    'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
+    'ZChromeStartRetryCountTest.testChromeStartRetryCount',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
+    # https://crbug.com/899919
+    'SessionHandlingTest.testGetSessions',
+    'SessionHandlingTest.testQuitASessionMoreThanOnce',
+    'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
+    'ZChromeStartRetryCountTest.testChromeStartRetryCount',
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://crbug.com/868599
@@ -39,6 +49,12 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'WindowTest.testCanMaximizeTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
     'WindowTest.testCanMaximizeTheWindow',
+
+    # https://crbug.com/899919
+    'SessionHandlingTest.testGetSessions',
+    'SessionHandlingTest.testQuitASessionMoreThanOnce',
+    'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
+    'ZChromeStartRetryCountTest.testChromeStartRetryCount',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
