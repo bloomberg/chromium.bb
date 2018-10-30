@@ -635,19 +635,6 @@ function onDeleteCustomLinkDone(success) {
 
 
 /**
- * Callback for embeddedSearch.newTabPage.ondoesurlresolve. Called when we
- * determine if a custom link URL can resolve. Notifies the edit custom link
- * dialog with the result.
- * @param {boolean} resolves True if the URL can resolve.
- */
-function onDoesUrlResolve(resolves) {
-  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
-      .contentWindow.postMessage(
-          {cmd: 'doesUrlResolve', resolves: resolves}, '*');
-}
-
-
-/**
  * Shows the Most Visited pop-up notification and triggers a delay to hide it.
  * The message will be set to |msg|.
  * @param {string} msg The notification message.
@@ -1112,7 +1099,6 @@ function init() {
       ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
       ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
       ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
-      ntpApiHandle.doesurlresolve = onDoesUrlResolve;
     }
 
     if (configData.isCustomBackgroundsEnabled ||
