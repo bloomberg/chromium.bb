@@ -43,7 +43,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(const NGLayoutResult&);
   ~NGLayoutResult();
 
-  scoped_refptr<const NGPhysicalFragment> PhysicalFragment() const {
+  const NGPhysicalFragment* PhysicalFragment() const {
     return root_fragment_.get();
   }
   NGPhysicalOffset Offset() const { return root_fragment_.Offset(); }

@@ -214,7 +214,7 @@ LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
       unpositioned_float);
   DCHECK(unpositioned_float->layout_result);
 
-  const auto& fragment = unpositioned_float->layout_result->PhysicalFragment();
+  const auto* fragment = unpositioned_float->layout_result->PhysicalFragment();
   DCHECK(fragment);
   DCHECK(!fragment->BreakToken() || fragment->BreakToken()->IsFinished());
 

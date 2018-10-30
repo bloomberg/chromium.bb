@@ -37,9 +37,8 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
 
   scoped_refptr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, space).Layout();
-  return std::make_pair(
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().get()),
-      std::move(space));
+  return std::make_pair(ToNGPhysicalBoxFragment(result->PhysicalFragment()),
+                        std::move(space));
 }
 
 scoped_refptr<const NGPhysicalBoxFragment>

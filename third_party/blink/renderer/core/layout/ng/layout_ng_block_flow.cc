@@ -70,7 +70,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
     descendant.node.UseOldOutOfFlowPositioning();
 
   const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
+      ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
   // This object has already been positioned in legacy layout by our containing
   // block. Copy the position and place the fragment.
@@ -241,8 +241,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
+  const NGPhysicalBoxFragment* fragment =
+      ToNGPhysicalBoxFragment(result->PhysicalFragment());
   DCHECK_GT(fragment->Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose

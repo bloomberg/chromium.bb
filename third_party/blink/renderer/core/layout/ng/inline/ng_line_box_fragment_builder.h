@@ -121,8 +121,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     bool HasBidiLevel() const { return bidi_level != 0xff; }
     bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
     const NGPhysicalFragment* PhysicalFragment() const {
-      return layout_result ? layout_result->PhysicalFragment().get()
-                           : fragment.get();
+      return layout_result ? layout_result->PhysicalFragment() : fragment.get();
     }
   };
 
