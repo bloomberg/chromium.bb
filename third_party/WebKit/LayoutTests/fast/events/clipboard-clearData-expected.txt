@@ -2,7 +2,6 @@ Tests clipboard.clearData()
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS testDataTransfer.clearData(null) did not throw exception.
 PASS testDataTransfer.getData("text") is "sample"
 PASS testDataTransfer.getData("url") is "http://www.google.com/"

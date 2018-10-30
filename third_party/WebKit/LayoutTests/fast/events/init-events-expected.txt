@@ -2,7 +2,6 @@ This tests the init functions for all the event DOM classes that have them.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS testInitEvent('', '"a", false, false').type is 'a'
 PASS testInitEvent('', 'null, false, false').type is 'null'
 PASS testInitEvent('', '"a", false, false').bubbles is false

@@ -2,7 +2,6 @@ This test checks that moving an element with an event handler from one window (F
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.scrollEventHandlerCount(document) is 0
 PASS internals.scrollEventHandlerCount(document) is 1
 PASS successfullyParsed is true

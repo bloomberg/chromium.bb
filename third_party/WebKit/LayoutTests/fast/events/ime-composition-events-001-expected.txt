@@ -2,7 +2,6 @@ This tests that calling input-method functions sends Composition Events and Text
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS event.type is "compositionstart"
 PASS event.data is ""
 PASS event.type is "compositionupdate"
@@ -54,4 +53,5 @@ PASS test.value is "I made a pen"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

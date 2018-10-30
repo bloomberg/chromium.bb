@@ -4,7 +4,6 @@ This tests tabbing to an image map link where the map might not have a renderer 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.activeElement.id is 'area1'
 PASS successfullyParsed is true
 

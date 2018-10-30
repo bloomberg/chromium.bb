@@ -3,9 +3,9 @@ This test should trigger 'window.onerror' inside the sandboxed iframe, and succe
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS message is "Uncaught ReferenceError: hahaha_good_luck_finding_me is not defined"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

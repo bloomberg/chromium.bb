@@ -1,12 +1,11 @@
-
 Verifies mouse event co-ordinates from a tap in an iframe that changes position on each mouse event
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Sending GestureTapDown to 25,25
 Sending GestureShowPress
 Sending GestureTap
+
 
 Received mousemove in child frame with currentOffset=0 expectedOffset=0
 PASS event.screenX is 25
@@ -22,6 +21,7 @@ PASS event.clientX is >= targetRect.left
 PASS targetRect.bottom is >= event.clientY
 PASS event.clientY is >= targetRect.top
 
+
 Received mousedown in child frame with currentOffset=5 expectedOffset=5
 PASS event.screenX is 25
 PASS event.screenY is 25
@@ -36,6 +36,7 @@ PASS event.clientX is >= targetRect.left
 PASS targetRect.bottom is >= event.clientY
 PASS event.clientY is >= targetRect.top
 
+
 Received mouseup in child frame with currentOffset=10 expectedOffset=10
 PASS event.screenX is 25
 PASS event.screenY is 25
@@ -49,6 +50,7 @@ PASS targetRect.right is >= event.clientX
 PASS event.clientX is >= targetRect.left
 PASS targetRect.bottom is >= event.clientY
 PASS event.clientY is >= targetRect.top
+
 
 Received click in child frame with currentOffset=15 expectedOffset=10
 PASS event.screenX is 25

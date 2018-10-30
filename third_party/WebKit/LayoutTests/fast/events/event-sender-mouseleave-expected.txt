@@ -5,6 +5,8 @@ PASS box.offsetTop + 10 is lastMouseY
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 Test that a mouse leave event is triggered when the OS tells us the mouse has left without changing position.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 ===== doubleClickAction with initial state=[] =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
@@ -15,6 +16,7 @@ TEST COMPLETE
 11. targetDiv received mouseout buttons: 0
 12. targetDiv received mouseleave buttons: 0
 
+
 ===== clickAction with initial state=[rightButton] =====
 1. targetDiv received mouseover buttons: 2
 2. targetDiv received mouseenter buttons: 2
@@ -24,6 +26,7 @@ TEST COMPLETE
 6. targetDiv received click buttons: 2
 7. targetDiv received mouseout buttons: 2
 8. targetDiv received mouseleave buttons: 2
+
 
 ===== clickAction with initial state=[middleButton,rightButton] =====
 1. targetDiv received mouseover buttons: 6
@@ -35,12 +38,14 @@ TEST COMPLETE
 7. targetDiv received mouseout buttons: 6
 8. targetDiv received mouseleave buttons: 6
 
+
 ===== moveAction with initial state=[leftButton,middleButton,rightButton] =====
 1. targetDiv received mouseover buttons: 7
 2. targetDiv received mouseenter buttons: 7
 3. targetDiv received mousemove buttons: 7
 4. targetDiv received mouseout buttons: 7
 5. targetDiv received mouseleave buttons: 7
+
 
 ===== rightClickAction with initial state=[] and showContextMenuOnMouseUp=false =====
 1. targetDiv received mouseover buttons: 0
@@ -52,6 +57,7 @@ TEST COMPLETE
 7. targetDiv received mouseout buttons: 0
 8. targetDiv received mouseleave buttons: 0
 
+
 ===== rightClickAction with initial state=[] and showContextMenuOnMouseUp=true =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
@@ -62,6 +68,7 @@ TEST COMPLETE
 7. targetDiv received mouseout buttons: 0
 8. targetDiv received mouseleave buttons: 0
 
+
 ===== wheelAction with initial state=[leftButton,rightButton] =====
 1. targetDiv received mouseover buttons: 3
 2. targetDiv received mouseenter buttons: 3
@@ -69,6 +76,7 @@ TEST COMPLETE
 4. targetDiv received mousewheel buttons: 3
 5. targetDiv received mouseout buttons: 3
 6. targetDiv received mouseleave buttons: 3
+
 
 ===== doubleTapAction with initial state=[] =====
 1. targetDiv received mouseover buttons: 0
@@ -86,6 +94,7 @@ TEST COMPLETE
 13. targetDiv received mouseout buttons: 0
 14. targetDiv received mouseleave buttons: 0
 
+
 ===== tapAction with initial state=[] =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
@@ -96,6 +105,7 @@ TEST COMPLETE
 7. targetDiv received mouseout buttons: 0
 8. targetDiv received mouseleave buttons: 0
 
+
 ===== longPressAction with initial state=[] and showContextMenuOnMouseUp=false =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
@@ -104,7 +114,9 @@ TEST COMPLETE
 5. targetDiv received mouseout buttons: 0
 6. targetDiv received mouseleave buttons: 0
 
+
 ===== longPressAction with initial state=[] and showContextMenuOnMouseUp=true =====
+
 
 ===== longTapAction with initial state=[] and showContextMenuOnMouseUp=false =====
 1. targetDiv received mouseover buttons: 0
@@ -114,6 +126,7 @@ TEST COMPLETE
 5. targetDiv received mouseout buttons: 0
 6. targetDiv received mouseleave buttons: 0
 
+
 ===== longTapAction with initial state=[] and showContextMenuOnMouseUp=true =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
@@ -121,6 +134,7 @@ TEST COMPLETE
 4. targetDiv received contextmenu buttons: 0
 5. targetDiv received mouseout buttons: 0
 6. targetDiv received mouseleave buttons: 0
+
 
 ===== dragDropAction with initial state=[] =====
 1. dragImg received mouseover buttons: 0
@@ -148,6 +162,7 @@ TEST COMPLETE
 23. targetDiv received mouseout buttons: 0
 24. targetDiv received mouseleave buttons: 0
 
+
 ===== dragDropAction with initial state=[rightButton] =====
 1. dragImg received mouseover buttons: 2
 2. dragImg received mouseenter buttons: 2
@@ -173,6 +188,7 @@ TEST COMPLETE
 22. dragImg received dragend buttons: 0
 23. targetDiv received mouseout buttons: 2
 24. targetDiv received mouseleave buttons: 2
+
 
 ===== dragDropAction with initial state=[middleButton,rightButton] =====
 1. dragImg received mouseover buttons: 6

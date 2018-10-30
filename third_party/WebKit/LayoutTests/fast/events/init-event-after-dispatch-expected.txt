@@ -6,4 +6,3 @@ Received an event, type is load
 Target is [object HTMLDocument]
 Trying to change the type to unload
 Event type is now load
-

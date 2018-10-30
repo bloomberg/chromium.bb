@@ -2,12 +2,16 @@ To manually test, drag 'Drag Me' to 'Drop Here' and drop. Several lines that say
 
 Drag Me
 Drop Here
-Drag handler: 
-Drop handler: 
+Drag handler:
+Legacy
+DataTransferItemList
+Drop handler:
+Legacy
+DataTransferItemList
+
 Tests drag'n drop and well as DataTransferItemList
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 Running test with Legacy drag handler and Legacy drop handler
 PASS testDataTransfer.types.length is 4

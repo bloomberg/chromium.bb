@@ -10,6 +10,7 @@ PASS targetDiv.innerText is "TEST"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 TEST
 TEST
 TEST

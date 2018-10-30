@@ -2,7 +2,6 @@ Checks that DataTransferItemList.remove() is working
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 * copy event
 PASS dataTansferItemList.length is 4
 PASS dataTansferItemList[0].type is "text/plain"

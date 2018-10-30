@@ -4,5 +4,6 @@ Drag Me
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Started drag.
 PASS Ended drag.

@@ -2,7 +2,6 @@ This tests the constructor for the WebGLContextEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new WebGLContextEvent('eventType').bubbles is false
 PASS new WebGLContextEvent('eventType').cancelable is false
 PASS new WebGLContextEvent('eventType').statusMessage is ""

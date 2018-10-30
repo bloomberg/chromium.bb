@@ -2,7 +2,6 @@ Tests that properties passed to events are not garbage collected prematurely.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS event[prop] is "foo"
 PASS event[prop] is "foo"
 PASS event[prop] is "foo"

@@ -2,7 +2,6 @@ Verifies that the element receiving the :active style is the same as the element
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Sending gestureTapDown
 PASS getHoverActiveState(target) is "default"
 Sending gestureShowPress

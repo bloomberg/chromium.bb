@@ -2,7 +2,6 @@ This is a regression test for crbug.com/400476. It should not crash and then bra
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 [object Window]
 PASS totally did not crash.
 PASS successfullyParsed is true

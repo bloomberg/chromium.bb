@@ -2,10 +2,10 @@ Verifies that deleting the element being tapped during the event sequence doesn'
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Sending GestureTapDown
 Sending GestureShowPress
 Sending GestureTap

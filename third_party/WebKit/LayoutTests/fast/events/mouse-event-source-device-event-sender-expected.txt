@@ -2,7 +2,6 @@ Test that mouse events from real mouse device should have a sourceCapabilities a
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 mousemove
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false

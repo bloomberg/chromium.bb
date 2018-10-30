@@ -1,4 +1,5 @@
 Click inside this div
+
 Clicking 1 times
 [Mouse Down] Button: 0 Click Count: 1
 [Mouse Up] Button: 0 Click Count: 1

@@ -6,6 +6,7 @@ This test verifies the hit test regions are updated correctly when composited la
 
 [object HTMLDivElement]: #document scrolling (175, 175, 100, 100)
 
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

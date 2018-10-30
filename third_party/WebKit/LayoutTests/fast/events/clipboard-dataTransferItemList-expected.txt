@@ -1,11 +1,15 @@
 To manually test, press your browser shortcut for copy and then for paste. Several lines that say 'PASS' should appear below.
 
-Copy handler: 
-Paste handler: 
+Copy handler:
+Legacy
+DataTransferItemList
+Paste handler:
+Legacy
+DataTransferItemList
+
 Tests copy / paste and DataTransferItemList
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 Running test with Legacy copy handler and Legacy paste handler
 PASS testDataTransfer.getData("custom-data") is "hello world"

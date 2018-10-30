@@ -2,13 +2,12 @@ Tests to ensure that touch events are delivered to an input element with type=ra
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
-
 PASS slider.value is "50"
 PASS slider.value is "0"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

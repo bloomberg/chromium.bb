@@ -2,7 +2,9 @@ Absolute
 Relative
 Fixed
 x	x
+
 Table Content
+	
 In Columns
 Transformed
 In RTL overflow

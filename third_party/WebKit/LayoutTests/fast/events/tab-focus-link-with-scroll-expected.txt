@@ -2,7 +2,6 @@ This tests that the scroll should be happened on moving the focus to out of visi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.activeElement.id is 'tab1'
 PASS document.activeElement.id is 'tab2'
 PASS document.activeElement.id is 'tab3'
@@ -11,6 +10,7 @@ PASS document.body.clientHeight is document.scrollingElement.scrollHeight - wind
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Tab1
 Tab2
 Tab3

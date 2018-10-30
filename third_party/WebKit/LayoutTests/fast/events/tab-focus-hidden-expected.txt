@@ -2,7 +2,9 @@ Layout test for https://bugs.webkit.org/show_bug.cgi?id=27099
 
 Div 0
 Div 2
+Div 3
 Div 5
+
 Result
 
 PASS - Div 0

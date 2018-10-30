@@ -2,8 +2,8 @@ Verifies that pointercancel events are fired correctly on touch.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 --- single drag tests ---
+
 
 -- preventDefault on none, without notifyStartOfTouchScroll --
 Received pointerover, pointerId=2
@@ -21,6 +21,7 @@ Received pointerout, pointerId=2
 Received pointerleave, pointerId=2
 Received touchend, touchIds=0
 
+
 -- preventDefault on pointermove, without notifyStartOfTouchScroll --
 Received pointerover, pointerId=3
 Received pointerenter, pointerId=3
@@ -37,6 +38,7 @@ Received pointerout, pointerId=3
 Received pointerleave, pointerId=3
 Received touchend, touchIds=0
 
+
 -- preventDefault on none, with notifyStartOfTouchScroll --
 Received pointerover, pointerId=4
 Received pointerenter, pointerId=4
@@ -50,6 +52,7 @@ Received pointerleave, pointerId=4
 Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
+
 
 -- preventDefault on pointermove, with notifyStartOfTouchScroll --
 Received pointerover, pointerId=5
@@ -65,7 +68,9 @@ Received touchmove, touchIds=0
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
+
 --- multi drag tests ---
+
 
 -- preventDefault on none, without notifyStartOfTouchScroll --
 Received pointerover, pointerId=6
@@ -109,6 +114,7 @@ Received pointerout, pointerId=9
 Received pointerleave, pointerId=9
 Received touchend, touchIds=0123
 
+
 -- preventDefault on none, with notifyStartOfTouchScroll --
 Received pointerover, pointerId=10
 Received pointerenter, pointerId=10
@@ -141,7 +147,9 @@ Received touchstart, touchIds=3
 Received touchmove, touchIds=0123
 Received touchend, touchIds=0123
 
+
 --- multi cancel tests ---
+
 
 Received pointerover, pointerId=13
 Received pointerenter, pointerId=13
@@ -167,6 +175,7 @@ Received pointercancel, pointerId=14
 Received pointerout, pointerId=14
 Received pointerleave, pointerId=14
 Received touchcancel, touchIds=01
+
 
 PASS successfullyParsed is true
 

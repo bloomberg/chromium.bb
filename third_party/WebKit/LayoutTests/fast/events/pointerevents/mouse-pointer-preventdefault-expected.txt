@@ -2,7 +2,6 @@ Verifies the effect of pointer event prevent-default on following pointer & mous
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 --- test with preventDefault on none ---
 - start with mouse outside target -
 - move into target & click -
@@ -39,6 +38,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 29. target received mouseout
 30. target received mouseleave
 
+
 --- test with preventDefault on pointerdown ---
 - start with mouse outside target -
 - move into target & click -
@@ -68,6 +68,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 22. target received pointerleave
 23. target received mouseout
 24. target received mouseleave
+
 
 --- test with preventDefault on pointerup ---
 - start with mouse outside target -
@@ -105,6 +106,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 29. target received mouseout
 30. target received mouseleave
 
+
 --- test with preventDefault on pointerenter ---
 - start with mouse outside target -
 - move into target & click -
@@ -140,6 +142,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 28. target received pointerleave
 29. target received mouseout
 30. target received mouseleave
+
 
 --- test with preventDefault on pointerleave ---
 - start with mouse outside target -
@@ -177,6 +180,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 29. target received mouseout
 30. target received mouseleave
 
+
 --- test with preventDefault on pointerover ---
 - start with mouse outside target -
 - move into target & click -
@@ -212,6 +216,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 28. target received pointerleave
 29. target received mouseout
 30. target received mouseleave
+
 
 --- test with preventDefault on pointerout ---
 - start with mouse outside target -
@@ -249,6 +254,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 29. target received mouseout
 30. target received mouseleave
 
+
 --- test with preventDefault on pointermove ---
 - start with mouse outside target -
 - move into target & click -
@@ -284,6 +290,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 28. target received pointerleave
 29. target received mouseout
 30. target received mouseleave
+
 
 PASS successfullyParsed is true
 

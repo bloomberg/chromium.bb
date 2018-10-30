@@ -1,8 +1,6 @@
-
 Verifies that a tap occurring in a scrolled iframe has the correct co-ordinates
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 Sending GestureTapDown to 30,27
 Sending GestureShowPress

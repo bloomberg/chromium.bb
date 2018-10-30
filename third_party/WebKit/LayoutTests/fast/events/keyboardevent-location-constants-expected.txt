@@ -2,7 +2,6 @@ Tests that the DOM_KEY_LOCATION_* constants are defined on KeyboardEvent
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS KeyboardEvent.DOM_KEY_LOCATION_STANDARD is 0x00
 PASS KeyboardEvent.DOM_KEY_LOCATION_LEFT is 0x01
 PASS KeyboardEvent.DOM_KEY_LOCATION_RIGHT is 0x02
