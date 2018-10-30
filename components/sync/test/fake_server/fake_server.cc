@@ -458,6 +458,11 @@ void FakeServer::EnableStrongConsistencyWithConflictDetectionModel() {
   loopback_server_->EnableStrongConsistencyWithConflictDetectionModel();
 }
 
+void FakeServer::SetMaxGetUpdatesBatchSize(int batch_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->SetMaxGetUpdatesBatchSize(batch_size);
+}
+
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();

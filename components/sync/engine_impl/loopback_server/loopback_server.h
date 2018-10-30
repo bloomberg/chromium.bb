@@ -56,6 +56,11 @@ class LoopbackServer {
   // Enables strong consistency model (i.e. server detects conflicts).
   void EnableStrongConsistencyWithConflictDetectionModel();
 
+  // Sets a maximum batch size for GetUpdates requests.
+  void SetMaxGetUpdatesBatchSize(int batch_size) {
+    max_get_updates_batch_size_ = batch_size;
+  }
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
@@ -197,6 +202,8 @@ class LoopbackServer {
   int64_t version_;
 
   int64_t store_birthday_;
+
+  int max_get_updates_batch_size_ = 1000000;
 
   EntityMap entities_;
   std::map<ModelType, std::string> top_level_permanent_item_ids_;

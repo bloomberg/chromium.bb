@@ -87,9 +87,10 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     CreateTypeRoot(&trans);
   }
 
-  UpdateSyncEntities(&trans, applicable_updates,
-                     /*is_initial_sync=*/dir_->HasEmptyDownloadProgress(type_),
-                     status);
+  UpdateSyncEntities(
+      &trans, applicable_updates,
+      /*is_initial_sync=*/!dir_->InitialSyncEndedForType(&trans, type_),
+      status);
 
   if (IsValidProgressMarker(progress_marker)) {
     ExpireEntriesIfNeeded(&trans, progress_marker);

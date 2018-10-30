@@ -14,7 +14,7 @@ namespace syncer {
 namespace {
 
 const char kModelTypeEntityChangeHistogramPrefix[] =
-    "Sync.ModelTypeEntityChange2.";
+    "Sync.ModelTypeEntityChange3.";
 
 // Values corrospond to a UMA histogram, do not modify, or delete any values.
 // Add new values only directly before COUNT.

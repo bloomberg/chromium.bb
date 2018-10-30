@@ -75,21 +75,23 @@ class UpdateSieve {
   }
 
   // Determines whether the server should send an |entity| to the client as
-  // part of a GetUpdatesResponse. Update internal tracking of max versions as a
-  // side effect which will later be used to set response progress markers.
-  bool ClientWantsItem(const LoopbackServerEntity& entity) {
+  // part of a GetUpdatesResponse.
+  bool ClientWantsItem(const LoopbackServerEntity& entity) const {
     ModelType type = entity.GetModelType();
-    // Return only requested datatypes, which makes sure we don't add new
-    // entries to |response_version_map_|, which would otherwise send
-    // unnecessary (and unrequested) progress markers in the response.
     auto it = request_version_map_.find(type);
     if (it == request_version_map_.end())
       return false;
-    DCHECK_NE(0U, request_version_map_.count(type));
-    int64_t version = entity.GetVersion();
+    DCHECK_NE(0U, response_version_map_.count(type));
+    return it->second < entity.GetVersion();
+  }
+
+  // Updates internal tracking of max versions to later be used to set response
+  // progress markers.
+  void UpdateProgressMarker(const LoopbackServerEntity& entity) {
+    DCHECK(ClientWantsItem(entity));
+    ModelType type = entity.GetModelType();
     response_version_map_[type] =
-        std::max(response_version_map_[type], version);
-    return it->second < version;
+        std::max(response_version_map_[type], entity.GetVersion());
   }
 
  private:
@@ -135,6 +137,11 @@ class UpdateSieve {
   // send progress markers back to the client.
   ModelTypeToVersionMap response_version_map_;
 };
+
+bool SortByVersion(const LoopbackServerEntity* lhs,
+                   const LoopbackServerEntity* rhs) {
+  return lhs->GetVersion() < rhs->GetVersion();
+}
 
 }  // namespace
 
@@ -296,8 +303,6 @@ void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
     sync_pb::GetUpdatesResponse* response) {
-  // TODO(pvalenzuela): Implement batching instead of sending all information
-  // at once.
   response->set_changes_remaining(0);
 
   auto sieve = std::make_unique<UpdateSieve>(get_updates);
@@ -310,18 +315,36 @@ bool LoopbackServer::HandleGetUpdatesRequest(
     return false;
   }
 
-  bool send_encryption_keys_based_on_nigori = false;
-  for (const auto& kv : entities_) {
-    const LoopbackServerEntity& entity = *kv.second;
-    if (sieve->ClientWantsItem(entity)) {
-      sync_pb::SyncEntity* response_entity = response->add_entries();
-      entity.SerializeAsProto(response_entity);
+  std::vector<const LoopbackServerEntity*> wanted_entities;
+  for (const auto& id_and_entity : entities_) {
+    if (sieve->ClientWantsItem(*id_and_entity.second)) {
+      wanted_entities.push_back(id_and_entity.second.get());
+    }
+  }
 
-      if (entity.GetModelType() == syncer::NIGORI) {
-        send_encryption_keys_based_on_nigori =
-            response_entity->specifics().nigori().passphrase_type() ==
-            sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
-      }
+  int max_batch_size = max_get_updates_batch_size_;
+  if (get_updates.batch_size() > 0)
+    max_batch_size = std::min(max_batch_size, get_updates.batch_size());
+
+  if (static_cast<int>(wanted_entities.size()) > max_batch_size) {
+    response->set_changes_remaining(wanted_entities.size() - max_batch_size);
+    std::partial_sort(wanted_entities.begin(),
+                      wanted_entities.begin() + max_batch_size,
+                      wanted_entities.end(), SortByVersion);
+    wanted_entities.resize(max_batch_size);
+  }
+
+  bool send_encryption_keys_based_on_nigori = false;
+  for (const LoopbackServerEntity* entity : wanted_entities) {
+    sieve->UpdateProgressMarker(*entity);
+
+    sync_pb::SyncEntity* response_entity = response->add_entries();
+    entity->SerializeAsProto(response_entity);
+
+    if (entity->GetModelType() == syncer::NIGORI) {
+      send_encryption_keys_based_on_nigori =
+          response_entity->specifics().nigori().passphrase_type() ==
+          sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
     }
   }
 
