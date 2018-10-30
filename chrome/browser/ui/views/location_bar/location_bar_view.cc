@@ -291,29 +291,6 @@ int LocationBarView::GetBorderRadius() const {
       views::EMPHASIS_MAXIMUM, size());
 }
 
-SkColor LocationBarView::GetSecurityChipColor(
-    security_state::SecurityLevel security_level) const {
-  // Only used in ChromeOS.
-  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
-    return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-
-  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
-  if (security_level == security_state::EV_SECURE ||
-      security_level == security_state::SECURE) {
-    state = OmniboxPartState::CHIP_SECURE;
-  } else if (security_level == security_state::DANGEROUS) {
-    state = OmniboxPartState::CHIP_DANGEROUS;
-  }
-
-  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
-                         state);
-}
-
-SkColor LocationBarView::GetIconInkDropColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-}
-
 std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
     SkColor background_color,
     SkColor stroke_color,
@@ -351,36 +328,6 @@ void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
 
 void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
-}
-
-bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
-  DCHECK(contents);
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  if (!entry)
-    return false;
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-
-  DCHECK(GetWidget());
-  views::BubbleDialogDelegateView* bubble =
-      PageInfoBubbleView::CreatePageInfoBubble(
-          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
-          contents, entry->GetVirtualURL(), security_info);
-  bubble->SetHighlightedButton(location_icon_view());
-  bubble->GetWidget()->Show();
-
-  // When the user opens the page info bubble, we also expose the full URL,
-  // temporarily disabling Steady State Elisions and Query in Omnibox.
-  // We are currently gating this behavior on the Query in Omnibox flag, since
-  // it's still under active experimentation.
-  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
-    omnibox_view()->model()->Unelide(true /* exit_query_in_omnibox */);
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -434,10 +381,8 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   int leading_width = 0;
   if (ShouldShowKeywordBubble()) {
     // The selected keyword view can collapse completely.
-  } else if (ShouldShowLocationIconText()) {
-    leading_width =
-        location_icon_view_->GetMinimumSizeForLabelText(GetLocationIconText())
-            .width();
+  } else if (location_icon_view_->ShouldShowText()) {
+    leading_width = location_icon_view_->GetMinimumLabelTextWidth();
   } else {
     leading_width = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
                     location_icon_view_->GetMinimumSize().width();
@@ -528,7 +473,6 @@ void LocationBarView::Layout() {
   // label/chip.
   const double kLeadingDecorationMaxFraction = 0.5;
 
-  location_icon_view_->SetLabel(base::string16());
   if (ShouldShowKeywordBubble()) {
     location_icon_view_->SetVisible(false);
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
@@ -548,8 +492,7 @@ void LocationBarView::Layout() {
         selected_keyword_view_->ResetImage();
       }
     }
-  } else if (ShouldShowLocationIconText()) {
-    location_icon_view_->SetLabel(GetLocationIconText());
+  } else if (location_icon_view_->ShouldShowText()) {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
                                       kLeadingDecorationMaxFraction,
                                       edge_padding, location_icon_view_);
@@ -651,7 +594,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
     return;
 
   RefreshBackground();
-  RefreshLocationIcon();
+  location_icon_view_->Update();
   RefreshClearAllButtonIcon();
   SchedulePaint();
 }
@@ -665,6 +608,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
 
   RefreshPageActionIconViews();
+  location_icon_view_->Update();
 
   if (star_view_) {
     // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
@@ -676,11 +620,7 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
 
-  location_icon_view_->SetTextVisibility(
-      ShouldShowLocationIconText(),
-      !contents && ShouldAnimateLocationIconTextVisibilityChange());
   OnChanged();  // NOTE: Calls Layout().
-  last_update_security_level_ = GetToolbarModel()->GetSecurityLevel(false);
 }
 
 void LocationBarView::ResetTabState(WebContents* contents) {
@@ -728,7 +668,7 @@ WebContents* LocationBarView::GetWebContents() {
 // LocationBarView, public ContentSettingImageView::Delegate implementation:
 
 SkColor LocationBarView::GetContentSettingInkDropColor() const {
-  return GetIconInkDropColor();
+  return GetLocationIconInkDropColor();
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
@@ -744,7 +684,7 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 // LocationBarView, public PageActionIconView::Delegate implementation:
 
 SkColor LocationBarView::GetPageActionInkDropColor() const {
-  return GetIconInkDropColor();
+  return GetLocationIconInkDropColor();
 }
 
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
@@ -829,27 +769,6 @@ void LocationBarView::RefreshBackground() {
   omnibox_view_->EmphasizeURLComponents();
 
   SchedulePaint();
-}
-
-void LocationBarView::RefreshLocationIcon() {
-  // Cancel any previous outstanding icon requests, as they are now outdated.
-  icon_fetch_weak_ptr_factory_.InvalidateWeakPtrs();
-
-  security_state::SecurityLevel security_level =
-      GetToolbarModel()->GetSecurityLevel(false);
-
-  gfx::ImageSkia icon = omnibox_view_->GetIcon(
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetSecurityChipColor(security_level),
-      base::BindOnce(&LocationBarView::OnLocationIconFetched,
-                     icon_fetch_weak_ptr_factory_.GetWeakPtr()));
-
-  location_icon_view_->SetImage(icon);
-  location_icon_view_->Update();
-}
-
-void LocationBarView::OnLocationIconFetched(const gfx::Image& image) {
-  location_icon_view_->SetImage(image.AsImageSkia());
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
@@ -938,57 +857,8 @@ void LocationBarView::RefreshFocusRing() {
   focus_ring_->SetPath(path);
 }
 
-base::string16 LocationBarView::GetLocationIconText() const {
-  if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
-    return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-
-  if (GetToolbarModel()->GetURL().SchemeIs(url::kFileScheme))
-    return l10n_util::GetStringUTF16(IDS_OMNIBOX_FILE);
-
-  if (delegate_->GetWebContents()) {
-    // On ChromeOS, this can be called using web_contents from
-    // SimpleWebViewDialog::GetWebContents() which always returns null.
-    // TODO(crbug.com/680329) Remove the null check and make
-    // SimpleWebViewDialog::GetWebContents return the proper web contents
-    // instead.
-    const base::string16 extension_name =
-        extensions::ui_util::GetEnabledExtensionNameForUrl(
-            GetToolbarModel()->GetURL(),
-            delegate_->GetWebContents()->GetBrowserContext());
-    if (!extension_name.empty())
-      return extension_name;
-  }
-
-  return GetToolbarModel()->GetSecureVerboseText();
-}
-
 bool LocationBarView::ShouldShowKeywordBubble() const {
   return omnibox_view_->model()->is_keyword_selected();
-}
-
-bool LocationBarView::ShouldShowLocationIconText() const {
-  const auto* toolbar_model = GetToolbarModel();
-  if (!toolbar_model->input_in_progress()) {
-    const GURL& url = toolbar_model->GetURL();
-    if (url.SchemeIs(content::kChromeUIScheme) ||
-        url.SchemeIs(extensions::kExtensionScheme) ||
-        url.SchemeIs(url::kFileScheme))
-      return true;
-  }
-
-  return !toolbar_model->GetSecureVerboseText().empty();
-}
-
-bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
-  using SecurityLevel = security_state::SecurityLevel;
-  SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
-  // transition can look confusing/messy.
-  if (level == SecurityLevel::DANGEROUS &&
-      last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
-    return false;
-  return level == SecurityLevel::DANGEROUS ||
-         level == SecurityLevel::HTTP_SHOW_WARNING;
 }
 
 OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
@@ -1241,8 +1111,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 // LocationBarView, private OmniboxEditController implementation:
 
 void LocationBarView::OnChanged() {
-  RefreshLocationIcon();
-  location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
+  location_icon_view_->Update();
   clear_all_button_->SetVisible(GetToolbarModel()->input_in_progress() &&
                                 !omnibox_view_->text().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
@@ -1316,7 +1185,100 @@ void LocationBarView::OnTouchUiChanged() {
     view->SetFontList(font_list);
   if (save_credit_card_icon_view_)
     save_credit_card_icon_view_->SetFontList(font_list);
-  RefreshLocationIcon();
+  location_icon_view_->Update();
   Layout();
   SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, LocationBarIconView::Delegate implementation:
+
+bool LocationBarView::IsEditingOrEmpty() {
+  return omnibox_view() && omnibox_view()->IsEditingOrEmpty();
+}
+
+void LocationBarView::OnLocationIconPressed(const ui::MouseEvent& event) {
+  if (event.IsOnlyMiddleMouseButton() &&
+      ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
+    base::string16 text;
+    ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_SELECTION,
+                                                   &text);
+    text = OmniboxView::SanitizeTextForPaste(text);
+
+    if (!GetOmniboxView()->model()->CanPasteAndGo(text)) {
+      return;
+    }
+
+    GetOmniboxView()->model()->PasteAndGo(text, event.time_stamp());
+  }
+}
+
+void LocationBarView::OnLocationIconDragged(const ui::MouseEvent& event) {
+  GetOmniboxView()->CloseOmniboxPopup();
+}
+
+SkColor LocationBarView::GetSecurityChipColor(
+    security_state::SecurityLevel security_level) const {
+  // Only used in ChromeOS.
+  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
+    return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+
+  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
+  if (security_level == security_state::EV_SECURE ||
+      security_level == security_state::SECURE) {
+    state = OmniboxPartState::CHIP_SECURE;
+  } else if (security_level == security_state::DANGEROUS) {
+    state = OmniboxPartState::CHIP_DANGEROUS;
+  }
+
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
+                         state);
+}
+
+bool LocationBarView::ShowPageInfoDialog() {
+  WebContents* contents = GetWebContents();
+  if (!contents)
+    return false;
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  if (!entry)
+    return false;
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+
+  DCHECK(GetWidget());
+  views::BubbleDialogDelegateView* bubble =
+      PageInfoBubbleView::CreatePageInfoBubble(
+          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
+          contents, entry->GetVirtualURL(), security_info);
+  bubble->SetHighlightedButton(location_icon_view());
+  bubble->GetWidget()->Show();
+
+  // When the user opens the page info bubble, we also expose the full URL,
+  // temporarily disabling Steady State Elisions and Query in Omnibox.
+  // We are currently gating this behavior on the Query in Omnibox flag, since
+  // it's still under active experimentation.
+  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
+    omnibox_view()->model()->Unelide(true /* exit_query_in_omnibox */);
+
+  return true;
+}
+
+gfx::ImageSkia LocationBarView::GetLocationIcon(
+    LocationIconView::Delegate::IconFetchedCallback on_icon_fetched) const {
+  return omnibox_view() ? omnibox_view()->GetIcon(
+                              GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                              GetSecurityChipColor(
+                                  GetToolbarModel()->GetSecurityLevel(false)),
+                              std::move(on_icon_fetched))
+                        : gfx::ImageSkia();
+}
+
+SkColor LocationBarView::GetLocationIconInkDropColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }

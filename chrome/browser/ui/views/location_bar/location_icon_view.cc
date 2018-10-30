@@ -4,16 +4,21 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
+#include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/toolbar_model.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -21,8 +26,8 @@
 using content::WebContents;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
-                                   LocationBarView* location_bar)
-    : IconLabelBubbleView(font_list), location_bar_(location_bar) {
+                                   Delegate* delegate)
+    : IconLabelBubbleView(font_list), delegate_(delegate) {
   label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   set_id(VIEW_ID_LOCATION_ICON);
   Update();
@@ -37,23 +42,14 @@ gfx::Size LocationIconView::GetMinimumSize() const {
 }
 
 bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyMiddleMouseButton() &&
-      ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
-    base::string16 text;
-    ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::CLIPBOARD_TYPE_SELECTION, &text);
-    text = OmniboxView::SanitizeTextForPaste(text);
-    OmniboxEditModel* model = location_bar_->GetOmniboxView()->model();
-    if (model->CanPasteAndGo(text))
-      model->PasteAndGo(text, event.time_stamp());
-  }
+  delegate_->OnLocationIconPressed(event);
 
   IconLabelBubbleView::OnMousePressed(event);
   return true;
 }
 
 bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
-  location_bar_->GetOmniboxView()->CloseOmniboxPopup();
+  delegate_->OnLocationIconDragged(event);
   return IconLabelBubbleView::OnMouseDragged(event);
 }
 
@@ -65,8 +61,8 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return location_bar_->GetSecurityChipColor(
-      location_bar_->GetToolbarModel()->GetSecurityLevel(false));
+  return delegate_->GetSecurityChipColor(
+      delegate_->GetToolbarModel()->GetSecurityLevel(false));
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
@@ -76,36 +72,33 @@ bool LocationIconView::ShouldShowSeparator() const {
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
     return false;
 
-  return !location_bar_->GetOmniboxView()->IsEditingOrEmpty();
+  return !delegate_->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShouldShowExtraEndSpace() const {
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
     return false;
 
-  return location_bar_->GetOmniboxView()->IsEditingOrEmpty();
+  return delegate_->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {
-  auto* contents = location_bar_->GetWebContents();
-  if (!contents)
-    return false;
-  return location_bar_->ShowPageInfoDialog(contents);
+  return delegate_->ShowPageInfoDialog();
 }
 
 SkColor LocationIconView::GetInkDropBaseColor() const {
-  return location_bar_->GetIconInkDropColor();
+  return delegate_->GetLocationIconInkDropColor();
 }
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty()) {
+  if (delegate_->IsEditingOrEmpty()) {
     node_data->role = ax::mojom::Role::kImage;
     node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_SEARCH_ICON));
     return;
   }
 
   security_state::SecurityLevel security_level =
-      location_bar_->GetToolbarModel()->GetSecurityLevel(false);
+      delegate_->GetToolbarModel()->GetSecurityLevel(false);
   if (label()->text().empty() && (security_level == security_state::EV_SECURE ||
                                   security_level == security_state::SECURE)) {
     node_data->AddStringAttribute(
@@ -122,9 +115,10 @@ bool LocationIconView::IsBubbleShowing() const {
          PageInfoBubbleView::BUBBLE_NONE;
 }
 
-gfx::Size LocationIconView::GetMinimumSizeForLabelText(
-    const base::string16& text) const {
+int LocationIconView::GetMinimumLabelTextWidth() const {
   int width = 0;
+
+  base::string16 text = GetText();
   if (text == label()->text()) {
     // Optimize this common case by not creating a new label.
     // GetPreferredSize is not dependent on the label's current
@@ -134,12 +128,64 @@ gfx::Size LocationIconView::GetMinimumSizeForLabelText(
     views::Label label(text, {font_list()});
     width = label.GetPreferredSize().width();
   }
-  return GetMinimumSizeForPreferredSize(GetSizeForLabelWidth(width));
+  return GetMinimumSizeForPreferredSize(GetSizeForLabelWidth(width)).width();
 }
 
-void LocationIconView::SetTextVisibility(bool should_show,
-                                         bool should_animate) {
-  if (!should_animate)
+bool LocationIconView::ShouldShowText() const {
+  const auto* toolbar_model = delegate_->GetToolbarModel();
+
+  if (!toolbar_model->input_in_progress()) {
+    const GURL& url = toolbar_model->GetURL();
+    if (url.SchemeIs(content::kChromeUIScheme) ||
+        url.SchemeIs(extensions::kExtensionScheme) ||
+        url.SchemeIs(url::kFileScheme))
+      return true;
+  }
+
+  return !toolbar_model->GetSecureVerboseText().empty();
+}
+
+base::string16 LocationIconView::GetText() const {
+  if (delegate_->GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
+    return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+
+  if (delegate_->GetToolbarModel()->GetURL().SchemeIs(url::kFileScheme))
+    return l10n_util::GetStringUTF16(IDS_OMNIBOX_FILE);
+
+  if (delegate_->GetWebContents()) {
+    // On ChromeOS, this can be called using web_contents from
+    // SimpleWebViewDialog::GetWebContents() which always returns null.
+    // TODO(crbug.com/680329) Remove the null check and make
+    // SimpleWebViewDialog::GetWebContents return the proper web contents
+    // instead.
+    const base::string16 extension_name =
+        extensions::ui_util::GetEnabledExtensionNameForUrl(
+            delegate_->GetToolbarModel()->GetURL(),
+            delegate_->GetWebContents()->GetBrowserContext());
+    if (!extension_name.empty())
+      return extension_name;
+  }
+
+  return delegate_->GetToolbarModel()->GetSecureVerboseText();
+}
+
+bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
+  using SecurityLevel = security_state::SecurityLevel;
+  SecurityLevel level = delegate_->GetToolbarModel()->GetSecurityLevel(false);
+  // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
+  // transition can look confusing/messy.
+  if (level == SecurityLevel::DANGEROUS &&
+      last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
+    return false;
+  return (level == SecurityLevel::DANGEROUS ||
+          level == SecurityLevel::HTTP_SHOW_WARNING);
+}
+
+void LocationIconView::UpdateTextVisibility() {
+  SetLabel(GetText());
+
+  bool should_show = ShouldShowText();
+  if (!ShouldAnimateTextVisibilityChange())
     ResetSlideAnimation(should_show);
   else if (should_show)
     AnimateIn(base::nullopt);
@@ -150,13 +196,34 @@ void LocationIconView::SetTextVisibility(bool should_show,
   OnNativeThemeChanged(GetNativeTheme());
 }
 
+void LocationIconView::UpdateIcon() {
+  // Cancel any previous outstanding icon requests, as they are now outdated.
+  icon_fetch_weak_ptr_factory_.InvalidateWeakPtrs();
+
+  gfx::ImageSkia icon = delegate_->GetLocationIcon(
+      base::BindOnce(&LocationIconView::OnIconFetched,
+                     icon_fetch_weak_ptr_factory_.GetWeakPtr()));
+
+  SetImage(icon);
+}
+
+void LocationIconView::OnIconFetched(const gfx::Image& image) {
+  SetImage(image.AsImageSkia());
+}
+
 void LocationIconView::Update() {
+  UpdateTextVisibility();
+  UpdateIcon();
+
+  bool is_editing_or_empty = delegate_->IsEditingOrEmpty();
+  // The tooltip should be shown if we are not editing or empty.
+  show_tooltip_ = !is_editing_or_empty;
+
   // If the omnibox is empty or editing, the user should not be able to left
   // click on the icon. As such, the icon should not show a highlight or be
   // focusable. Note: using the middle mouse to copy-and-paste should still
   // work on the icon.
-  if (location_bar_->GetOmniboxView() &&
-      location_bar_->GetOmniboxView()->IsEditingOrEmpty()) {
+  if (is_editing_or_empty) {
     SetInkDropMode(InkDropMode::OFF);
     SetFocusBehavior(FocusBehavior::NEVER);
     return;
@@ -169,10 +236,13 @@ void LocationIconView::Update() {
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
+
+  last_update_security_level_ =
+      delegate_->GetToolbarModel()->GetSecurityLevel(false);
 }
 
 bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
-  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
+  if (delegate_->IsEditingOrEmpty())
     return false;
 
   if (event.IsMouseEvent()) {
