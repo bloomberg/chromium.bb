@@ -13357,7 +13357,7 @@
       'tags': ['admin-sharing'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report OS and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Version Information''',
@@ -13377,7 +13377,7 @@
       'tags': ['admin-sharing'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Policy Information''',
@@ -13397,7 +13397,7 @@
       'tags': ['admin-sharing'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report Machine Identification information''',
@@ -13417,7 +13417,7 @@
       'tags': ['admin-sharing'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report User Identification information''',
