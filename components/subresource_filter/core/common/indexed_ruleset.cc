@@ -52,7 +52,7 @@ VerifyStatus GetVerifyStatus(const uint8_t* buffer,
 
 // RulesetIndexer --------------------------------------------------------------
 
-const int RulesetIndexer::kIndexedFormatVersion = 24;
+const int RulesetIndexer::kIndexedFormatVersion = 25;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without

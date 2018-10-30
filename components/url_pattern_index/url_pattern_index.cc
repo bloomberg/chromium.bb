@@ -183,7 +183,7 @@ class UrlRuleFlatBufferConverter {
 
     // TODO(crbug.com/884063): Lower case case-insensitive patterns here if we
     // want to support case-insensitive rules for subresource filter.
-    auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
+    auto url_pattern_offset = builder->CreateSharedString(rule_.url_pattern());
 
     return flat::CreateUrlRule(
         *builder, options_, element_types_, activation_types_,
