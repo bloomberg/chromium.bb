@@ -17,34 +17,18 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 
-bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
-  return disposition == WindowOpenDisposition::NEW_POPUP ||
-         disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-         disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-         disposition == WindowOpenDisposition::NEW_WINDOW;
-}
+namespace {
 
-bool MaybeBlockPopup(content::WebContents* web_contents,
-                     const base::Optional<GURL>& opener_url,
-                     NavigateParams* params,
-                     const content::OpenURLParams* open_url_params,
-                     const blink::mojom::WindowFeatures& window_features) {
-  DCHECK(web_contents);
-  DCHECK(!open_url_params ||
-         open_url_params->user_gesture == params->user_gesture);
-
-  PopupBlockerTabHelper::LogAction(PopupBlockerTabHelper::Action::kInitiated);
-  const bool user_gesture = params->user_gesture;
-
+// If the popup should be blocked, returns the reason why it was blocked.
+// Otherwise returns kNotBlocked.
+PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
+                                const base::Optional<GURL>& opener_url,
+                                bool user_gesture,
+                                const content::OpenURLParams* open_url_params) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
-    return false;
+    return PopupBlockType::kNotBlocked;
   }
-
-  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
-  if (!popup_blocker)
-    return false;
-
   // If an explicit opener is not given, use the current committed load in this
   // web contents. This is because A page can't spawn popups (or do anything
   // else, either) until its load commits, so when we reach here, the popup was
@@ -60,21 +44,46 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
       HostContentSettingsMapFactory::GetForProfile(profile)->GetContentSetting(
           url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string()) ==
           CONTENT_SETTING_ALLOW) {
-    return false;
+    return PopupBlockType::kNotBlocked;
   }
 
-  PopupBlockType block_type = PopupBlockType::kNoGesture;
-  if (user_gesture) {
-    auto* safe_browsing_blocker =
-        SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents);
-    if (!safe_browsing_blocker ||
-        !safe_browsing_blocker->ShouldApplyStrongPopupBlocker(
-            open_url_params)) {
-      return false;
-    }
-    block_type = PopupBlockType::kAbusive;
-  }
+  if (!user_gesture)
+    return PopupBlockType::kNoGesture;
 
-  popup_blocker->AddBlockedPopup(params, window_features, block_type);
-  return true;
+  auto* safe_browsing_blocker =
+      SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents);
+  if (safe_browsing_blocker &&
+      safe_browsing_blocker->ShouldApplyStrongPopupBlocker(open_url_params)) {
+    return PopupBlockType::kAbusive;
+  }
+  return PopupBlockType::kNotBlocked;
+}
+
+}  // namespace
+
+bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
+  return disposition == WindowOpenDisposition::NEW_POPUP ||
+         disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_WINDOW;
+}
+
+bool MaybeBlockPopup(content::WebContents* web_contents,
+                     const base::Optional<GURL>& opener_url,
+                     NavigateParams* params,
+                     const content::OpenURLParams* open_url_params,
+                     const blink::mojom::WindowFeatures& window_features) {
+  DCHECK(web_contents);
+  DCHECK(!open_url_params ||
+         open_url_params->user_gesture == params->user_gesture);
+  PopupBlockerTabHelper::LogAction(PopupBlockerTabHelper::Action::kInitiated);
+
+  PopupBlockType block_type = ShouldBlockPopup(
+      web_contents, opener_url, params->user_gesture, open_url_params);
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
+  if (popup_blocker && block_type != PopupBlockType::kNotBlocked) {
+    popup_blocker->AddBlockedPopup(params, window_features, block_type);
+    return true;
+  }
+  return false;
 }
