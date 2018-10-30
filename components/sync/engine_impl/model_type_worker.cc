@@ -359,7 +359,9 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
 void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only ever be called after one PassiveApplyUpdates.
-  DCHECK(model_type_state_.initial_sync_done());
+  DCHECK(model_type_state_.initial_sync_done())
+      << "ApplyUpdates() called without initial sync being done for "
+      << ModelTypeToString(type_);
   // Download cycle is done, pass all updates to the processor.
   ApplyPendingUpdates();
 }
@@ -367,7 +369,9 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
 void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called at the end of the very first download cycle.
-  DCHECK(!model_type_state_.initial_sync_done());
+  DCHECK(!model_type_state_.initial_sync_done())
+      << "PassiveApplyUpdates() called after initial sync has been done for "
+      << ModelTypeToString(type_);
   // Indicate to the processor that the initial download is done. The initial
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.
