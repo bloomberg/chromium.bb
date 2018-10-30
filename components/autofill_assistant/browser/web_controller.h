@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 
@@ -68,9 +69,9 @@ class WebController {
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
-  // Fill the address form given by |selectors| with the given address |guid| in
-  // personal data manager.
-  virtual void FillAddressForm(const std::string& guid,
+  // Fill the address form given by |selectors| with the given address
+  // |profile|.
+  virtual void FillAddressForm(const autofill::AutofillProfile* profile,
                                const std::vector<std::string>& selectors,
                                base::OnceCallback<void(bool)> callback);
 
@@ -164,7 +165,7 @@ class WebController {
     ~FillFormInputData();
 
     // Data for filling address form.
-    std::string autofill_data_guid;
+    std::unique_ptr<autofill::AutofillProfile> profile;
 
     // Data for filling card form.
     std::unique_ptr<autofill::CreditCard> card;

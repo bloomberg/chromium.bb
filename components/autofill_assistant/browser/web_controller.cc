@@ -518,11 +518,12 @@ void WebController::OnFocusElement(
   OnResult(true, std::move(callback));
 }
 
-void WebController::FillAddressForm(const std::string& guid,
+void WebController::FillAddressForm(const autofill::AutofillProfile* profile,
                                     const std::vector<std::string>& selectors,
                                     base::OnceCallback<void(bool)> callback) {
   auto data_to_autofill = std::make_unique<FillFormInputData>();
-  data_to_autofill->autofill_data_guid = guid;
+  data_to_autofill->profile =
+      std::make_unique<autofill::AutofillProfile>(*profile);
   FindElement(selectors,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForFillingForm,
@@ -581,8 +582,8 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
         autofill::kNoQueryId, form_data, form_field, *data_to_autofill->card,
         data_to_autofill->cvc);
   } else {
-    driver->autofill_manager()->FillProfileForm(
-        data_to_autofill->autofill_data_guid, form_data, form_field);
+    driver->autofill_manager()->FillProfileForm(*data_to_autofill->profile,
+                                                form_data, form_field);
   }
 
   OnResult(true, std::move(callback));

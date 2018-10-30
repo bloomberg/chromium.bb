@@ -218,9 +218,12 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
       .WillOnce(Return(autofill_profile_guid_));
 
   // Autofill succeeds.
+  const auto* expected_profile =
+      personal_data_manager_->GetProfileByGUID(autofill_profile_guid_);
+  ASSERT_TRUE(expected_profile);
   EXPECT_CALL(
       mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+      OnFillAddressForm(expected_profile, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
@@ -246,9 +249,12 @@ TEST_F(AutofillActionTest, FallbackFails) {
       .WillOnce(Return(autofill_profile_guid_));
 
   // Autofill succeeds.
+  const auto* expected_profile =
+      personal_data_manager_->GetProfileByGUID(autofill_profile_guid_);
+  ASSERT_TRUE(expected_profile);
   EXPECT_CALL(
       mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+      OnFillAddressForm(expected_profile, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
@@ -283,11 +289,13 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
       .WillOnce(Return(autofill_profile_guid_));
-
+  const auto* expected_profile =
+      personal_data_manager_->GetProfileByGUID(autofill_profile_guid_);
+  ASSERT_TRUE(expected_profile);
   // Autofill succeeds.
   EXPECT_CALL(
       mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+      OnFillAddressForm(expected_profile, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   {

@@ -226,8 +226,11 @@ void AutofillAction::OnWaitForElement(const std::string& guid,
     return;
   }
 
+  const autofill::AutofillProfile* profile =
+      delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
+  DCHECK(profile);
   delegate->FillAddressForm(
-      guid, selectors_,
+      profile, selectors_,
       base::BindOnce(&AutofillAction::OnFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), guid, delegate));
 }
