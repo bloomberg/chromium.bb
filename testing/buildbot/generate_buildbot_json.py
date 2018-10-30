@@ -756,9 +756,6 @@ class BBJSONGenerator(object):
     is then applied to every dimension set in the test.
 
     """
-    # TODO(martiniss): Maybe make lists extend, possibly on a case by case
-    # basis. Motivation is 'args', where you want a common base, and then
-    # different mixins adding different sets of args.
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
 
@@ -776,6 +773,23 @@ class BBJSONGenerator(object):
       # test['swarming'], but should update it).
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
+
+    if '$mixin_append' in mixin:
+      # Values specified under $mixin_append should be appended to existing
+      # lists, rather than replacing them.
+      mixin_append = mixin['$mixin_append']
+      for key in mixin_append:
+        new_test.setdefault(key, [])
+        if not isinstance(mixin_append[key], list):
+          raise BBGenErr(
+              'Key "' + key + '" in $mixin_append must be a list.')
+        if not isinstance(new_test[key], list):
+          raise BBGenErr(
+              'Cannot apply $mixin_append to non-list "' + key + '".')
+        new_test[key].extend(mixin_append[key])
+      if 'args' in mixin_append:
+        new_test['args'] = self.maybe_fixup_args_array(new_test['args'])
+      del mixin['$mixin_append']
 
     new_test.update(mixin)
 
