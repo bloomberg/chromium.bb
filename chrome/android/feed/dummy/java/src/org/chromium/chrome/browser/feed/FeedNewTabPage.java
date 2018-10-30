@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -22,5 +23,10 @@ public class FeedNewTabPage extends NewTabPage {
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost, tabModelSelector);
+    }
+
+    @VisibleForTesting
+    public static boolean isDummy() {
+        return true;
     }
 }
