@@ -536,6 +536,7 @@ void ArcNotificationContentView::HideCopiedSurface() {
 
   // Re-install the mask since the custom mask is unset by
   // |::wm::RecreateLayers()| in |ShowCopiedSurface()| method.
+  mask_insets_.reset();
   UpdateMask();
 }
 
