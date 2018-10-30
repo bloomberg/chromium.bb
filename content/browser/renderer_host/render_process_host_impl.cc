@@ -1280,9 +1280,11 @@ void AddCorbExceptionForPluginOnUIThread(int process_id) {
   process->CleanupCorbExceptionForPluginUponDestruction();
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    static NetworkServiceCrashHandlerId s_crash_handler_id;
-    if (s_crash_handler_id.is_null()) {
-      s_crash_handler_id = RegisterNetworkServiceCrashHandler(
+    static base::NoDestructor<
+        std::unique_ptr<base::CallbackList<void()>::Subscription>>
+        s_crash_handler_subscription;
+    if (!*s_crash_handler_subscription) {
+      *s_crash_handler_subscription = RegisterNetworkServiceCrashHandler(
           base::BindRepeating(&OnNetworkServiceCrashForCorb));
     }
 

@@ -336,9 +336,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Register 2 crash handlers.
   int counter1 = 0;
   int counter2 = 0;
-  NetworkServiceCrashHandlerId handler_id1 = RegisterNetworkServiceCrashHandler(
+  auto handler1 = RegisterNetworkServiceCrashHandler(
       base::BindRepeating(&IncrementInt, base::Unretained(&counter1)));
-  NetworkServiceCrashHandlerId handler_id2 = RegisterNetworkServiceCrashHandler(
+  auto handler2 = RegisterNetworkServiceCrashHandler(
       base::BindRepeating(&IncrementInt, base::Unretained(&counter2)));
 
   // Crash the NetworkService process.
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   EXPECT_TRUE(network_context.is_bound());
 
   // Unregister one of the handlers.
-  UnregisterNetworkServiceCrashHandler(handler_id2);
+  handler2.reset();
 
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
@@ -373,9 +373,6 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Verify only the first crash handler executed.
   EXPECT_EQ(2, counter1);
   EXPECT_EQ(1, counter2);
-
-  // Test cleanup.
-  UnregisterNetworkServiceCrashHandler(handler_id1);
 }
 
 // Make sure |StoragePartitionImpl::GetNetworkContext()| returns valid interface

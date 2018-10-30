@@ -56,11 +56,9 @@ void BindNetworkChangeManagerRequest(
   GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
-using CrashHandlersMap =
-    std::map<NetworkServiceCrashHandlerId, base::RepeatingClosure>;
-CrashHandlersMap& GetCrashHandlersMap() {
-  static base::NoDestructor<CrashHandlersMap> s_map;
-  return *s_map;
+base::CallbackList<void()>& GetCrashHandlersList() {
+  static base::NoDestructor<base::CallbackList<void()>> s_list;
+  return *s_list;
 }
 
 void OnNetworkServiceCrash() {
@@ -68,10 +66,7 @@ void OnNetworkServiceCrash() {
   DCHECK(g_network_service_ptr);
   DCHECK(g_network_service_ptr->is_bound());
   DCHECK(g_network_service_ptr->encountered_error());
-  for (const auto& it : GetCrashHandlersMap()) {
-    const base::RepeatingClosure& handler = it.second;
-    handler.Run();
-  }
+  GetCrashHandlersList().Notify();
 }
 
 }  // namespace
@@ -161,30 +156,15 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
   return g_network_service_ptr->get();
 }
 
-NetworkServiceCrashHandlerId RegisterNetworkServiceCrashHandler(
-    base::RepeatingClosure handler) {
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!handler.is_null());
 
-  static int next_handler_id = 1;
-  NetworkServiceCrashHandlerId handler_id =
-      NetworkServiceCrashHandlerId::FromUnsafeValue(next_handler_id++);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return GetCrashHandlersList().Add(std::move(handler));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CrashHandlersMap& map = GetCrashHandlersMap();
-    map[handler_id] = std::move(handler);
-  }
-
-  return handler_id;
-}
-
-void UnregisterNetworkServiceCrashHandler(
-    NetworkServiceCrashHandlerId handler_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CrashHandlersMap& map = GetCrashHandlersMap();
-    map.erase(handler_id);
-  }
+  return nullptr;
 }
 
 network::NetworkService* GetNetworkServiceImpl() {
