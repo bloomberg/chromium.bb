@@ -56,7 +56,7 @@ message RequestInfo {
 
 // Metrics for a single pageload.
 message PageloadMetrics {
-  // Next ID: 31
+  // Next ID: 32
   reserved 3;
 
   // The possible effective connection type values.
@@ -251,4 +251,8 @@ message PageloadMetrics {
 
   // The number of scroll events that happened on the page.
   optional uint32 scroll_count = 30;
+
+  // The release channel of this Chrome instance, e.g.: "stable", "beta", "dev",
+  // "canary", "unknown".
+  optional string channel = 31;
 }
