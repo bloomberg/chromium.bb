@@ -489,7 +489,73 @@ bool FingerprintMismatch(String old_sdp, String new_sdp) {
                            new_fingerprint_end - new_fingerprint_pos);
 }
 
+enum class SdpFormat {
+  kSimple,
+  kComplexPlanB,
+  kComplexUnifiedPlan,
+};
+
+base::Optional<SdpFormat> DeduceSdpFormat(const String& type,
+                                          const String& sdp) {
+  std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
+      webrtc::CreateSessionDescription(type.Utf8().data(), sdp.Utf8().data(),
+                                       nullptr));
+  if (!session_description)
+    return base::nullopt;
+  size_t num_audio_mlines = 0u;
+  size_t num_video_mlines = 0u;
+  size_t num_audio_tracks = 0u;
+  size_t num_video_tracks = 0u;
+  for (const cricket::ContentInfo& content :
+       session_description->description()->contents()) {
+    cricket::MediaType media_type = content.media_description()->type();
+    size_t num_tracks = std::max(static_cast<size_t>(1u),
+                                 content.media_description()->streams().size());
+    if (media_type == cricket::MEDIA_TYPE_AUDIO) {
+      ++num_audio_mlines;
+      num_audio_tracks += num_tracks;
+    } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
+      ++num_video_mlines;
+      num_video_tracks += num_tracks;
+    }
+  }
+  if (num_audio_mlines <= 1u && num_audio_tracks <= 1u &&
+      num_video_mlines <= 1u && num_video_tracks <= 1u) {
+    return SdpFormat::kSimple;
+  }
+  if ((num_audio_mlines == 1u && num_audio_tracks > 1u) ||
+      (num_video_mlines == 1u && num_video_tracks > 1u)) {
+    return SdpFormat::kComplexPlanB;
+  }
+  DCHECK(num_audio_mlines > 1u || num_audio_tracks > 1u ||
+         num_video_mlines > 1u || num_video_tracks > 1u);
+  return SdpFormat::kComplexUnifiedPlan;
+}
+
 }  // namespace
+
+SdpUsageCategory DeduceSdpUsageCategory(const String& sdp_type,
+                                        const String& sdp,
+                                        bool sdp_semantics_specified,
+                                        webrtc::SdpSemantics sdp_semantics) {
+  auto sdp_format = DeduceSdpFormat(sdp_type, sdp);
+  if (!sdp_format)
+    return SdpUsageCategory::kUnknown;
+  switch (*sdp_format) {
+    case SdpFormat::kSimple:
+      return SdpUsageCategory::kSafe;
+    case SdpFormat::kComplexPlanB:
+      return (sdp_semantics_specified &&
+              sdp_semantics == webrtc::SdpSemantics::kPlanB)
+                 ? SdpUsageCategory::kSafe
+                 : SdpUsageCategory::kUnsafe;
+    case SdpFormat::kComplexUnifiedPlan:
+      return (sdp_semantics_specified &&
+              sdp_semantics == webrtc::SdpSemantics::kUnifiedPlan)
+                 ? SdpUsageCategory::kSafe
+                 : SdpUsageCategory::kUnsafe;
+  }
+}
 
 RTCPeerConnection::EventWrapper::EventWrapper(Event* event,
                                               BoolFunction function)
@@ -855,31 +921,43 @@ bool RTCPeerConnection::ShouldShowComplexPlanBSdpWarning(
     return false;
   if (!session_description_init.hasType() || !session_description_init.hasSdp())
     return false;
-  std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
-      webrtc::CreateSessionDescription(
-          session_description_init.type().Utf8().data(),
-          session_description_init.sdp().Utf8().data(), nullptr));
-  if (!session_description)
+  auto sdp_format = DeduceSdpFormat(session_description_init.type(),
+                                    session_description_init.sdp());
+  if (!sdp_format)
     return false;
-  size_t num_audio_mlines = 0u;
-  size_t num_video_mlines = 0u;
-  size_t num_audio_tracks = 0u;
-  size_t num_video_tracks = 0u;
-  for (const cricket::ContentInfo& content :
-       session_description->description()->contents()) {
-    cricket::MediaType media_type = content.media_description()->type();
-    size_t num_tracks = std::max(static_cast<size_t>(1u),
-                                 content.media_description()->streams().size());
-    if (media_type == cricket::MEDIA_TYPE_AUDIO) {
-      ++num_audio_mlines;
-      num_audio_tracks += num_tracks;
-    } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
-      ++num_video_mlines;
-      num_video_tracks += num_tracks;
+  return *sdp_format == SdpFormat::kComplexPlanB;
+}
+
+void RTCPeerConnection::ReportSetSdpUsage(
+    SetSdpOperationType operation_type,
+    const RTCSessionDescriptionInit& session_description_init) const {
+  SdpUsageCategory sdp_usage = DeduceSdpUsageCategory(
+      session_description_init.type(), session_description_init.sdp(),
+      sdp_semantics_specified_, sdp_semantics_);
+  if (session_description_init.type() == "offer") {
+    switch (operation_type) {
+      case SetSdpOperationType::kSetLocalDescription:
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebRTC.PeerConnection.SdpComplexUsage.SetLocalOffer", sdp_usage);
+        break;
+      case SetSdpOperationType::kSetRemoteDescription:
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebRTC.PeerConnection.SdpComplexUsage.SetRemoteOffer", sdp_usage);
+        break;
+    }
+  } else if (session_description_init.type() == "answer" ||
+             session_description_init.type() == "pranswer") {
+    switch (operation_type) {
+      case SetSdpOperationType::kSetLocalDescription:
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebRTC.PeerConnection.SdpComplexUsage.SetLocalAnswer", sdp_usage);
+        break;
+      case SetSdpOperationType::kSetRemoteDescription:
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebRTC.PeerConnection.SdpComplexUsage.SetRemoteAnswer", sdp_usage);
+        break;
     }
   }
-  return (num_audio_mlines == 1u && num_audio_tracks > 1u) ||
-         (num_video_mlines == 1u && num_video_tracks > 1u);
 }
 
 ScriptPromise RTCPeerConnection::setLocalDescription(
@@ -890,6 +968,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
         GetExecutionContext(),
         WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
   }
+  ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
+                    session_description_init);
   String sdp;
   DOMException* exception = checkSdpForStateErrors(
       ExecutionContext::From(script_state), session_description_init, &sdp);
@@ -915,6 +995,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
         GetExecutionContext(),
         WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
   }
+  ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
+                    session_description_init);
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -985,6 +1067,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
         GetExecutionContext(),
         WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
   }
+  ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
+                    session_description_init);
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
@@ -1012,6 +1096,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
         GetExecutionContext(),
         WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
   }
+  ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
+                    session_description_init);
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -2086,10 +2172,16 @@ void RTCPeerConnection::RegisterTrack(MediaStreamTrack* track) {
 }
 
 void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
+  SdpUsageCategory sdp_usage = DeduceSdpUsageCategory(
+      desc.type(), desc.sdp(), sdp_semantics_specified_, sdp_semantics_);
   if (desc.type() == "offer") {
     last_offer_ = desc.sdp();
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebRTC.PeerConnection.SdpComplexUsage.CreateOffer", sdp_usage);
   } else if (desc.type() == "answer") {
     last_answer_ = desc.sdp();
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebRTC.PeerConnection.SdpComplexUsage.CreateAnswer", sdp_usage);
   }
 }
 
