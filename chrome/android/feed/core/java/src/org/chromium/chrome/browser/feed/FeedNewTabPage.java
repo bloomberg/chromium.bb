@@ -197,7 +197,8 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
-            return !mMediator.getTouchEnabled() || mFakeboxDelegate.isUrlBarFocused()
+            return (mMediator != null && !mMediator.getTouchEnabled())
+                    || (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused())
                     || super.onInterceptTouchEvent(ev);
         }
     }
