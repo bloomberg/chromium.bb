@@ -57,6 +57,12 @@ acl_sets {
 }
 """
 
+def buildJobName(build_config):
+  if 'schedule_branch' in build_config:
+    return '%s-%s' % (build_config.schedule_branch, build_config.name)
+  else:
+    return build_config.name
+
 
 def genSchedulerJob(build_config):
   """Generate the luci scheduler job for a given build config.
@@ -67,12 +73,11 @@ def genSchedulerJob(build_config):
   Returns:
     Multiline string to include in the luci scheduler configuration.
   """
+  job_name = buildJobName(build_config)
   if 'schedule_branch' in build_config:
     branch = build_config.schedule_branch
-    job_name = '%s-%s' % (branch, build_config.name)
   else:
     branch = 'master'
-    job_name = build_config.name
 
   tags = {
       'cbb_branch': branch,
@@ -181,7 +186,7 @@ def genLuciSchedulerConfig(site_config, branch_config):
       for gitiles_url, ref_list in config.triggered_gitiles:
         gitiles_key = (gitiles_url, tuple(ref_list))
         trigger_collection.setdefault(gitiles_key, set())
-        trigger_collection[gitiles_key].add(config.name)
+        trigger_collection[gitiles_key].add(buildJobName(config))
 
   # Populate triggers.
   triggers = []
