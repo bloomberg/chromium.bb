@@ -108,6 +108,8 @@ source_set("tests") {
     sources += [
       "perfetto/json_trace_exporter_unittest.cc",
       "perfetto/perfetto_integration_unittest.cc",
+      "perfetto/test_utils.cc",
+      "perfetto/test_utils.h",
     ]
 
     deps += [
