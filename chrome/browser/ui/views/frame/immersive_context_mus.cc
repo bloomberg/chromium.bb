@@ -31,8 +31,6 @@ void ImmersiveContextMus::OnEnteringOrExitingImmersive(
       controller->widget()->GetNativeWindow()->GetRootWindow();
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
   window->SetProperty(ash::kHideShelfWhenFullscreenKey, !entering);
-  // Update the window's immersive mode state for the window manager.
-  window->SetProperty(aura::client::kImmersiveFullscreenKey, entering);
 }
 
 gfx::Rect ImmersiveContextMus::GetDisplayBoundsInScreen(views::Widget* widget) {

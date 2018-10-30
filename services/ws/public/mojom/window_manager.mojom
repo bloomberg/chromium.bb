@@ -97,11 +97,6 @@ interface WindowManager {
   const string kFrameActiveColor_Property = "prop:frame-active-color";
   const string kFrameInactiveColor_Property = "prop:frame-inactive-color";
 
-  // If true, when a window is in in fullscreen mode, the user cannot reveal
-  // the top portion of the window through a touch / mouse gesture.
-  // Type: bool.
-  const string kImmersiveFullscreen_Property = "prop:immersive-fullscreen";
-
   // The window's minimum size as defined by its content. Maps to
   // aura::client::kMinimumSize_Property. Type: gfx::Size.
   const string kMinimumSize_Property = "prop:minimum-size";

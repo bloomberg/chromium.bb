@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "base/command_line.h"
@@ -64,7 +65,7 @@ void ToggleFullscreen() {
 bool IsInImmersive(aura::Window* window) {
   aura::Window* toplevel =
       features::IsUsingWindowService() ? window->GetRootWindow() : window;
-  return toplevel->GetProperty(aura::client::kImmersiveFullscreenKey);
+  return toplevel->GetProperty(ash::kImmersiveIsActive);
 }
 
 }  // namespace

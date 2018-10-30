@@ -27,8 +27,6 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   wm::WindowState* window_state = wm::GetWindowState(window);
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
   window_state->SetHideShelfWhenFullscreen(!entering);
-  // Update the window's immersive mode state for the window manager.
-  window_state->SetInImmersiveFullscreen(entering);
 
   for (aura::Window* root_window : Shell::GetAllRootWindows())
     Shelf::ForWindow(root_window)->UpdateVisibilityState();
