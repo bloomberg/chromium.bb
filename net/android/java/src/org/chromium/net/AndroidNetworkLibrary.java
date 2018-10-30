@@ -27,6 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
 
 import java.io.FileDescriptor;
@@ -51,8 +52,8 @@ import java.util.List;
 /**
  * This class implements net utilities required by the net component.
  */
+@MainDex
 class AndroidNetworkLibrary {
-
     private static final String TAG = "AndroidNetworkLibrary";
 
     // Cached Method for LinkProperties.isPrivateDnsActive().
