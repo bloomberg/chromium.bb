@@ -67,8 +67,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const blink::WebMediaStream& web_stream,
-      base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
-          create_submitter_callback,
+      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
       blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 

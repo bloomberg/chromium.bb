@@ -91,6 +91,13 @@ class MediaFactory {
   // interface provider is bound.
   void SetupMojo();
 
+  // Creates the VideoFrameSubmitter and its task_runner based on the current
+  // SurfaceLayerMode;
+  std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
+      scoped_refptr<base::SingleThreadTaskRunner>*
+          video_frame_compositor_task_runner,
+      const cc::LayerTreeSettings& settings);
+
   // Creates a new WebMediaPlayer for the given |source| (either a stream or
   // URL). All pointers other than |initial_cdm| are required to be non-null.
   // The created player serves and is directed by the |client| (e.g.

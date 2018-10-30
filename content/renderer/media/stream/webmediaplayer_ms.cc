@@ -269,8 +269,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     CreateSurfaceLayerBridgeCB create_bridge_callback,
-    base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
-        create_submitter_callback,
+    std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
     blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
@@ -293,13 +292,10 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       volume_multiplier_(1.0),
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
-      create_submitter_callback_(create_submitter_callback),
+      submitter_(std::move(submitter)),
       surface_layer_mode_(surface_layer_mode) {
   DVLOG(1) << __func__;
   DCHECK(client);
-  // We currently do not support on demand switching to use surface layer.
-  DCHECK(surface_layer_mode_ !=
-         blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand);
   DCHECK(delegate_);
   delegate_id_ = delegate_->AddObserver(this);
 
@@ -357,7 +353,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   compositor_ = new WebMediaPlayerMSCompositor(
       compositor_task_runner_, io_task_runner_, web_stream_,
-      create_submitter_callback_, surface_layer_mode_, AsWeakPtr());
+      std::move(submitter_), surface_layer_mode_, AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -673,6 +669,9 @@ void WebMediaPlayerMS::SetVolume(double volume) {
 
 void WebMediaPlayerMS::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
+  if (!bridge_)
+    ActivateSurfaceLayerForVideo();
+
   DCHECK(bridge_);
 
   const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
@@ -1101,6 +1100,44 @@ void WebMediaPlayerMS::OnFrameSinkDestroyed() {
   bridge_->ClearSurfaceId();
 }
 
+void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
+  // Note that we might or might not already be in VideoLayer mode.
+  DCHECK(!bridge_);
+
+  // If we're in VideoLayer mode, then get rid of the layer.
+  if (video_layer_) {
+    client_->SetCcLayer(nullptr);
+    video_layer_ = nullptr;
+  }
+
+  bridge_ = std::move(create_bridge_callback_)
+                .Run(this, compositor_->GetUpdateSubmissionStateCallback());
+  bridge_->CreateSurfaceLayer();
+  bridge_->SetContentsOpaque(opaque_);
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
+          bridge_->GetSurfaceId(), video_rotation_, IsInPictureInPicture(),
+          opaque_,
+          media::BindToCurrentLoop(base::BindRepeating(
+              &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
+
+  // If the element is already in Picture-in-Picture mode, it means that it
+  // was set in this mode prior to this load, with a different
+  // WebMediaPlayerImpl. The new player needs to send its id, size and
+  // surface id to the browser process to make sure the states are properly
+  // updated.
+  // TODO(872056): the surface should be activated but for some reason, it
+  // does not. It is possible that this will no longer be needed after 872056
+  // is fixed.
+  if (client_->DisplayType() ==
+      WebMediaPlayer::DisplayType::kPictureInPicture) {
+    OnSurfaceIdUpdated(bridge_->GetSurfaceId());
+  }
+}
+
 void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;
@@ -1110,21 +1147,7 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   OnOpacityChanged(is_opaque);
 
   if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
-    DCHECK(!bridge_);
-
-    bridge_ = std::move(create_bridge_callback_)
-                  .Run(this, compositor_->GetUpdateSubmissionStateCallback());
-    bridge_->CreateSurfaceLayer();
-    bridge_->SetContentsOpaque(opaque_);
-
-    compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
-            bridge_->GetSurfaceId(), video_rotation, IsInPictureInPicture(),
-            opaque_,
-            media::BindToCurrentLoop(base::BindRepeating(
-                &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
+    ActivateSurfaceLayerForVideo();
   }
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);

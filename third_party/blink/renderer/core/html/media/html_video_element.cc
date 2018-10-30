@@ -732,12 +732,6 @@ bool HTMLVideoElement::HasPictureInPictureCustomControls() const {
   return !pip_custom_controls_.empty();
 }
 
-bool HTMLVideoElement::UsesSurfaceLayer() const {
-  return GetWebMediaPlayer() &&
-         GetWebMediaPlayer()->GetVideoSurfaceLayerMode() !=
-             WebMediaPlayer::SurfaceLayerMode::kNever;
-}
-
 void HTMLVideoElement::SetIsEffectivelyFullscreen(
     blink::WebFullscreenVideoStatus status) {
   is_effectively_fullscreen_ =

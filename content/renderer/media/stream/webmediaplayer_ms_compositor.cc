@@ -134,8 +134,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
         video_frame_compositor_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const blink::WebMediaStream& web_stream,
-    base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
-        create_submitter_callback,
+    std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
     blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
     const base::WeakPtr<WebMediaPlayerMS>& player)
     : RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor>(
@@ -153,10 +152,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       weak_ptr_factory_(this) {
   main_message_loop_ = base::MessageLoopCurrent::Get();
 
-  DCHECK(surface_layer_mode !=
-         blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand);
   if (surface_layer_mode != blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
-    submitter_ = create_submitter_callback.Run();
+    submitter_ = std::move(submitter);
 
     video_frame_compositor_task_runner_->PostTask(
         FROM_HERE,
@@ -220,11 +217,21 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     bool is_opaque,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+
+  // If we're switching to |submitter_| from some other client, then tell it.
+  if (video_frame_provider_client_ &&
+      video_frame_provider_client_ != submitter_.get()) {
+    video_frame_provider_client_->StopUsingProvider();
+  }
+
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->SetIsOpaque(is_opaque);
   submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
   video_frame_provider_client_ = submitter_.get();
+
+  if (!stopped_)
+    video_frame_provider_client_->StartRendering();
 }
 
 void WebMediaPlayerMSCompositor::UpdateRotation(media::VideoRotation rotation) {

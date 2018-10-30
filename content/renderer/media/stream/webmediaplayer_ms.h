@@ -93,8 +93,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const blink::WebString& sink_id,
       CreateSurfaceLayerBridgeCB create_bridge_callback,
-      base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
-          create_submitter_callback,
+      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_,
       blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode);
 
   ~WebMediaPlayerMS() override;
@@ -256,6 +255,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   bool IsInPictureInPicture() const;
 
+  // Switch to SurfaceLayer, either initially or from VideoLayer.
+  void ActivateSurfaceLayerForVideo();
+
   // Need repaint due to state change.
   void RepaintInternal();
 
@@ -351,8 +353,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
 
-  base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
-      create_submitter_callback_;
+  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
 
   // Whether the use of a surface layer instead of a video layer is enabled.
   blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode_ =
