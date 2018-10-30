@@ -48,5 +48,12 @@ TEST(CSSPrimitiveValueTest, IsTimeCalc) {
   }
 }
 
+TEST(CSSPrimitiveValueTest, IsResolution) {
+  EXPECT_FALSE(Create({5.0, UnitType::kNumber})->IsResolution());
+  EXPECT_FALSE(Create({5.0, UnitType::kDegrees})->IsResolution());
+  EXPECT_TRUE(Create({5.0, UnitType::kDotsPerPixel})->IsResolution());
+  EXPECT_TRUE(Create({5.0, UnitType::kDotsPerCentimeter})->IsResolution());
+}
+
 }  // namespace
 }  // namespace blink

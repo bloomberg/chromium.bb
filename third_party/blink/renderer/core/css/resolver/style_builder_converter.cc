@@ -1724,6 +1724,12 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       return *CSSPrimitiveValue::Create(primitive_value.ComputeSeconds(),
                                         CSSPrimitiveValue::UnitType::kSeconds);
     }
+
+    if (primitive_value.IsResolution()) {
+      return *CSSPrimitiveValue::Create(
+          primitive_value.ComputeDotsPerPixel(),
+          CSSPrimitiveValue::UnitType::kDotsPerPixel);
+    }
   }
 
   if (value.IsIdentifierValue()) {
