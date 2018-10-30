@@ -161,7 +161,7 @@ cr.define('multidevice_setup', function() {
 
     /** @private */
     onCancelRequested_: function() {
-      this.exitSetupFlow_();
+      this.exitSetupFlow_(false /* didUserCompleteSetup */);
     },
 
     /** @private */
@@ -196,7 +196,7 @@ cr.define('multidevice_setup', function() {
           this.setHostDevice_();
           return;
         case PageName.SUCCESS:
-          this.exitSetupFlow_();
+          this.exitSetupFlow_(true /* didUserCompleteSetup */);
           return;
         case PageName.START:
           if (this.delegate.isPasswordRequiredToSetHost())
@@ -221,7 +221,7 @@ cr.define('multidevice_setup', function() {
             }
 
             if (this.delegate.shouldExitSetupFlowAfterSettingHost()) {
-              this.exitSetupFlow_();
+              this.exitSetupFlow_(true /* didUserCompleteSetup */);
               return;
             }
 
@@ -298,11 +298,11 @@ cr.define('multidevice_setup', function() {
 
     /**
      * Notifies observers that the setup flow has completed.
-     *
+     * @param {boolean} didUserCompleteSetup
      * @private
      */
-    exitSetupFlow_: function() {
-      this.fire('setup-exited');
+    exitSetupFlow_: function(didUserCompleteSetup) {
+      this.fire('setup-exited', {didUserCompleteSetup: didUserCompleteSetup});
     },
   });
 

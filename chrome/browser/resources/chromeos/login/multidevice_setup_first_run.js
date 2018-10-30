@@ -120,9 +120,18 @@ cr.define('multidevice_setup', function() {
       this.$$('#next-button').focus();
     },
 
-    /** @private */
-    onExitRequested_: function() {
-      chrome.send('login.MultiDeviceSetupScreen.userActed', ['setup-finished']);
+    /**
+     * @param {!{detail:{didUserCompleteSetup: boolean}}} event
+     * @private
+     */
+    onExitRequested_: function(event) {
+      if (event.detail.didUserCompleteSetup) {
+        chrome.send(
+            'login.MultiDeviceSetupScreen.userActed', ['setup-accepted']);
+      } else {
+        chrome.send(
+            'login.MultiDeviceSetupScreen.userActed', ['setup-declined']);
+      }
     },
 
     /**

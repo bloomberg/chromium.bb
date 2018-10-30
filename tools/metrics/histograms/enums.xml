@@ -33748,6 +33748,15 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Existing user, new Chromebook added"/>
 </enum>
 
+<enum name="MultiDeviceSetupOOBEUserChoice">
+  <int value="0" label="MULTI_DEVICE_SETUP_OOBE_USER_CHOICE_ACCEPTED">
+    Accepted MultiDevice OOBE Setup.
+  </int>
+  <int value="1" label="MULTI_DEVICE_SETUP_OOBE_USER_CHOICE_DECLINED">
+    Declined MultiDevice OOBE Setup.
+  </int>
+</enum>
+
 <enum name="MultiDisplayModeDisplayCountRanges">
   <summary>
     Defines the ranges in which the number of displays connected in multi

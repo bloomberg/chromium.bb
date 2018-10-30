@@ -2215,6 +2215,7 @@ source_set("unit_tests") {
     "login/quick_unlock/pin_storage_prefs_unittest.cc",
     "login/quick_unlock/quick_unlock_storage_unittest.cc",
     "login/saml/saml_offline_signin_limiter_unittest.cc",
+    "login/screens/multidevice_setup_screen_unittest.cc",
     "login/screens/network_screen_unittest.cc",
     "login/screens/update_screen_unittest.cc",
     "login/signin/merge_session_navigation_throttle_unittest.cc",
