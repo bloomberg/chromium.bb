@@ -16,6 +16,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/tick_clock.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
@@ -264,6 +265,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     return !disallow_non_exact_reuse_;
   }
 
+  // Overrides internal clock for testing purposes.
+  void SetClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourcePoolTest, ReuseResource);
   FRIEND_TEST_ALL_PREFIXES(ResourcePoolTest, ExactRequestsRespected);
@@ -371,6 +375,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   void EvictResourcesNotUsedSince(base::TimeTicks time_limit);
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
+  void FlushEvictedResources();
 
   viz::ClientResourceProvider* const resource_provider_;
   viz::ContextProvider* const context_provider_;
@@ -398,6 +403,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::TimeTicks flush_evicted_resources_deadline_;
+
+  const base::TickClock* clock_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
 
