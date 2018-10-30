@@ -205,7 +205,9 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
       factory_context_;
 };
 
-TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
+// It's flaky on the buildbot, http://crbug.com/761214.
+TEST_F(RendererAudioOutputStreamFactoryIntegrationTest,
+       DISABLED_StreamIntegrationTest) {
   // Sets up the factory on the IO thread and runs client code on the UI thread.
   // Send a sine wave from the client and makes sure it's received by the output
   // stream.
