@@ -208,6 +208,16 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
       box->has_end_edge = true;
     EndBoxState(box, line_box, baseline_type);
   }
+
+  // Up to this point, the offset of inline boxes are stored in placeholder so
+  // that |ApplyBaselineShift()| can compute offset for both children and boxes.
+  // Copy the final offset to |box_data_list_|.
+  for (BoxData& box_data : box_data_list_) {
+    const NGLineBoxFragmentBuilder::Child& placeholder =
+        (*line_box)[box_data.fragment_end];
+    DCHECK(!placeholder.HasFragment());
+    box_data.offset = placeholder.offset;
+  }
 }
 
 void NGInlineLayoutStateStack::EndBoxState(
@@ -341,7 +351,6 @@ void NGInlineLayoutStateStack::PrepareForReorder(
     const NGLineBoxFragmentBuilder::Child& placeholder =
         (*line_box)[box_data.fragment_end];
     DCHECK(!placeholder.HasFragment());
-    box_data.offset = placeholder.offset;
     box_data.box_data_index = placeholder.box_data_index;
   }
 }
