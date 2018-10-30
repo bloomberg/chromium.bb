@@ -8,17 +8,12 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
@@ -46,7 +41,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
-#include "components/search/url_validity_checker_impl.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -56,7 +50,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {
@@ -66,10 +59,6 @@ const char kNtpCustomBackgroundAttributionLine1[] = "attribution_line_1";
 const char kNtpCustomBackgroundAttributionLine2[] = "attribution_line_2";
 const char kNtpCustomBackgroundAttributionActionURL[] =
     "attribution_action_url";
-
-// Time in seconds before the UI add/edit custom link dialog automatically
-// closes. Keep in sync with custom_edit_dialog.js.
-const int kCustomLinkDialogTimeoutSeconds = 2;
 
 base::DictionaryValue GetBackgroundInfoAsDict(
     const GURL& background_url,
@@ -351,45 +340,6 @@ bool InstantService::ResetCustomLinks() {
   return false;
 }
 
-void InstantService::DoesUrlResolve(
-    const GURL& url,
-    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback) {
-  if (!features::IsCustomLinksEnabled())
-    return;
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("ntp_custom_link_checker_request", R"(
-        semantics {
-          sender: "New Tab Page Custom Links"
-          description:
-            "When a user adds/edits a custom link to the New Tab Page without "
-            "specifying the URL scheme, it defaults to HTTPS. This request "
-            "checks if the URL resolves with HTTPS; if not, the URL will "
-            "default to HTTP instead."
-          trigger:
-            "When a user adds/edits a custom link without specifying the URL "
-            "scheme."
-          data: "An HTTP HEAD request to the user specified URL."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "This feature cannot be independently disabled in settings, but it "
-            "is only activated by direct user action. Note: This will be "
-            "disabled if custom links (chrome://flags#ntp-custom-links) is "
-            "disabled."
-          policy_exception_justification:
-            "Not implemented, considered not useful."
-        })");
-
-  UrlValidityChecker* url_checker = GetUrlValidityChecker();
-  url_checker->DoesUrlResolve(
-      url, traffic_annotation,
-      base::BindOnce(&InstantService::OnDoesUrlResolveComplete,
-                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
-}
-
 void InstantService::UpdateThemeInfo() {
   // Initialize |theme_info_| if necessary.
   if (!theme_info_) {
@@ -476,27 +426,6 @@ void InstantService::Shutdown() {
   }
 
   instant_io_context_ = NULL;
-}
-
-void InstantService::OnDoesUrlResolveComplete(
-    const GURL& url,
-    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback,
-    bool resolves,
-    base::TimeDelta duration) {
-  bool timeout = false;
-  if (!resolves) {
-    // Internally update the default "https" scheme to "http" if UI dialog has
-    // already timed out.
-    if (duration >
-        base::TimeDelta::FromSeconds(kCustomLinkDialogTimeoutSeconds)) {
-      GURL::Replacements replacements;
-      replacements.SetSchemeStr(url::kHttpScheme);
-      GURL new_url = url.ReplaceComponents(replacements);
-      UpdateCustomLink(url, new_url, /*new_title=*/std::string());
-      timeout = true;
-    }
-  }
-  std::move(callback).Run(resolves, timeout);
 }
 
 void InstantService::Observe(int type,
@@ -816,17 +745,6 @@ void InstantService::RemoveLocalBackgroundImageCopy() {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
-}
-
-UrlValidityChecker* InstantService::GetUrlValidityChecker() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (url_checker_for_testing_ != nullptr)
-    return url_checker_for_testing_;
-  static base::NoDestructor<UrlValidityCheckerImpl> checker(
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory(),
-      base::DefaultTickClock::GetInstance());
-  return checker.get();
 }
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
