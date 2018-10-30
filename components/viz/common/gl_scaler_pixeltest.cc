@@ -363,6 +363,7 @@ TEST_F(GLScalerPixelTest, Example_ScaleAndExportForScreenVideoCapture) {
   params.scale_to = gfx::Vector2d(1280, 720);
   params.source_color_space = DefaultRGBColorSpace();
   params.output_color_space = DefaultYUVColorSpace();
+  params.enable_precise_color_management = true;
   params.quality = GLScaler::Parameters::Quality::GOOD;
   params.is_flipped_source = true;
   params.flip_output = true;
@@ -372,9 +373,11 @@ TEST_F(GLScalerPixelTest, Example_ScaleAndExportForScreenVideoCapture) {
   ASSERT_TRUE(scaler()->Configure(params));
   EXPECT_STRING_MATCHES(
       u8"Output "
-      u8"← {I422_NV61_MRT/lowp [5120 720] to [1280 720], with color x-form "
+      u8"← {I422_NV61_MRT/mediump [5120 720] to [1280 720], with color x-form "
       u8"to *BT709*, with swizzle(0)} "
-      u8"← {BILINEAR2/lowp+flip_y [2160 1440] to [1280 720]} "
+      u8"← {BILINEAR2/mediump [2160 1440] to [1280 720]} "
+      u8"← {BILINEAR/mediump+flip_y copy, with color x-form *BT709* to "
+      u8"*transfer:1.0000\\*x*} "
       u8"← Source",
       GetScalerString());
 
@@ -448,6 +451,82 @@ TEST_F(GLScalerPixelTest, Example_ScaleAndExportForScreenVideoCapture) {
                   .Compare(expected, actual))
       << "\nActual: " << cc::GetPNGDataUrl(actual)
       << "\nExpected: " << cc::GetPNGDataUrl(expected);
+}
+
+// Performs a scaling-with-gamma-correction experiment to test GLScaler's
+// "precise color management" feature. A 50% scale is executed on the same
+// source image, once with color management turned on, and once with it turned
+// off. The results, each of which should be different, are then examined.
+TEST_F(GLScalerPixelTest, ScalesWithColorManagement) {
+  if (!scaler()->SupportsPreciseColorManagement()) {
+    LOG(WARNING) << "Skipping test due to lack of 16-bit float support.";
+    return;
+  }
+
+  // An image of a raspberry (source:
+  // https://commons.wikimedia.org/wiki/File:Framboise_Margy_3.jpg) has been
+  // transformed in such a way that scaling it by half in both directions will
+  // reveal whether scaling is occurring on linearized color values. When scaled
+  // correctly, the output image should contain a visible raspberry blended
+  // heavily with solid gray. However, if done naively, the output will be a
+  // solid 50% gray. For details, see: http://www.ericbrasseur.org/gamma.html
+  //
+  // Note that the |source| and |expected| images both use the sRGB color space.
+  const SkBitmap source = LoadPNGTestImage("rasp-grayator.png");
+  ASSERT_FALSE(source.isNull());
+  const SkBitmap expected = LoadPNGTestImage("rasp-grayator-half.png");
+  ASSERT_FALSE(expected.isNull());
+  const gfx::Size output_size =
+      gfx::Size(source.width() / 2, source.height() / 2);
+  ASSERT_EQ(gfx::Size(expected.width(), expected.height()), output_size);
+  const SkBitmap expected_naive = AllocateRGBABitmap(output_size);
+  expected_naive.eraseColor(SkColorSetARGB(0xff, 0x7f, 0x7f, 0x7f));
+
+  // Scale the right way: With color management enabled, the raspberry should be
+  // visible in the downscaled result.
+  GLScaler::Parameters params;
+  params.scale_from = gfx::Vector2d(2, 2);
+  params.scale_to = gfx::Vector2d(1, 1);
+  params.source_color_space = gfx::ColorSpace::CreateSRGB();
+  params.enable_precise_color_management = true;
+  params.quality = GLScaler::Parameters::Quality::GOOD;
+  params.is_flipped_source = false;
+  ASSERT_TRUE(scaler()->Configure(params));
+  EXPECT_STRING_MATCHES(
+      u8"Output "
+      u8"← {BILINEAR/mediump [2 2] to [1 1], with color x-form to *BT709*} "
+      u8"← {BILINEAR/mediump copy, with color x-form *BT709* to "
+      u8"*transfer:1.0000\\*x*} "
+      u8"← Source",
+      GetScalerString());
+  const SkBitmap actual =
+      Scale(source, gfx::Vector2d(), gfx::Rect(output_size));
+  constexpr float kAvgAbsoluteErrorLimit = 1.f;
+  constexpr int kMaxAbsoluteErrorLimit = 2;
+  EXPECT_TRUE(cc::FuzzyPixelComparator(
+                  false, 100.f, 0.f,
+                  GetBaselineColorDifference() + kAvgAbsoluteErrorLimit,
+                  GetBaselineColorDifference() + kMaxAbsoluteErrorLimit, 0)
+                  .Compare(expected, actual))
+      << "\nActual: " << cc::GetPNGDataUrl(actual)
+      << "\nExpected (half size): " << cc::GetPNGDataUrl(expected)
+      << "\nOriginal: " << cc::GetPNGDataUrl(source);
+
+  // Scale the naive way: Without color management, expect a solid gray result.
+  params.enable_precise_color_management = false;
+  ASSERT_TRUE(scaler()->Configure(params));
+  EXPECT_EQ(u8"Output ← {BILINEAR/lowp [2 2] to [1 1]} ← Source",
+            GetScalerString());
+  const SkBitmap actual_naive =
+      Scale(source, gfx::Vector2d(), gfx::Rect(output_size));
+  EXPECT_TRUE(cc::FuzzyPixelComparator(
+                  false, 100.f, 0.f,
+                  GetBaselineColorDifference() + kAvgAbsoluteErrorLimit,
+                  GetBaselineColorDifference() + kMaxAbsoluteErrorLimit, 0)
+                  .Compare(expected_naive, actual_naive))
+      << "\nActual: " << cc::GetPNGDataUrl(actual_naive)
+      << "\nExpected (half size): " << cc::GetPNGDataUrl(expected_naive)
+      << "\nOriginal: " << cc::GetPNGDataUrl(source);
 }
 
 #undef EXPECT_STRING_MATCHES

@@ -141,10 +141,13 @@ bool GLScaler::Configure(const Parameters& new_params) {
     }
   }
 
-  // Color space transformation is meaningless when using the deinterleaver.
+  // Color space transformation is meaningless when using the deinterleaver
+  // because it only deals with two color channels. This also means precise
+  // color management must be disabled.
   if (params_.export_format ==
           Parameters::ExportFormat::DEINTERLEAVE_PAIRWISE &&
-      params_.source_color_space != params_.output_color_space) {
+      (params_.source_color_space != params_.output_color_space ||
+       params_.enable_precise_color_management)) {
     NOTIMPLEMENTED();
     return false;
   }
@@ -173,10 +176,33 @@ bool GLScaler::Configure(const Parameters& new_params) {
   }
   chain = MaybeAppendExportStage(gl, std::move(chain), params_.export_format);
 
-  // TODO(crbug.com/870036): Add support for color management (uses half-float
-  // textures).
-  scaling_color_space_ = params_.source_color_space;
-  const GLenum intermediate_texture_type = GL_UNSIGNED_BYTE;
+  // Determine the color space and the data type of the pixels in the
+  // intermediate textures, depending on whether precise color management is
+  // enabled. Note that nothing special need be done here if no scaling will be
+  // performed.
+  GLenum intermediate_texture_type;
+  if (params_.enable_precise_color_management &&
+      params_.scale_from != params_.scale_to) {
+    // Ensure the scaling color space is using a linear transfer function.
+    constexpr auto kLinearFunction = std::make_tuple(1, 0, 1, 0, 0, 0, 1);
+    SkColorSpaceTransferFn fn;
+    if (params_.source_color_space.GetTransferFunction(&fn) &&
+        std::make_tuple(fn.fA, fn.fB, fn.fC, fn.fD, fn.fE, fn.fF, fn.fG) ==
+            kLinearFunction) {
+      scaling_color_space_ = params_.source_color_space;
+    } else {
+      // Use the source color space, but with a linear transfer function.
+      SkMatrix44 to_XYZD50;
+      params_.source_color_space.GetPrimaryMatrix(&to_XYZD50);
+      std::tie(fn.fA, fn.fB, fn.fC, fn.fD, fn.fE, fn.fF, fn.fG) =
+          kLinearFunction;
+      scaling_color_space_ = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
+    }
+    intermediate_texture_type = GL_HALF_FLOAT_OES;
+  } else {
+    scaling_color_space_ = params_.source_color_space;
+    intermediate_texture_type = GL_UNSIGNED_BYTE;
+  }
 
   // Set the shader program on the final stage. Include color space
   // transformation and swizzling, if necessary.
@@ -208,6 +234,30 @@ bool GLScaler::Configure(const Parameters& new_params) {
   }
   // From this point, |input_stage| points to the first ScalerStage (i.e., the
   // one that will be reading from the source).
+
+  // If necessary, prepend an extra "import stage" that color-converts the input
+  // before any scaling occurs. It's important not to merge color space
+  // conversion of the source with any other steps because the texture sampler
+  // must not linearly interpolate until after the colors have been mapped to a
+  // linear color space.
+  if (params_.source_color_space != scaling_color_space_) {
+    input_stage->set_input_stage(std::make_unique<ScalerStage>(
+        gl, Shader::BILINEAR, HORIZONTAL, input_stage->scale_from(),
+        input_stage->scale_from()));
+    input_stage = input_stage->input_stage();
+    transform = gfx::ColorTransform::NewColorTransform(
+        params_.source_color_space, scaling_color_space_,
+        gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+    if (!transform->CanGetShaderSource()) {
+      NOTIMPLEMENTED() << "color transform from "
+                       << params_.source_color_space.ToString() << " to "
+                       << scaling_color_space_.ToString();
+      return false;
+    }
+    input_stage->set_shader_program(
+        GetShaderProgram(input_stage->shader(), intermediate_texture_type,
+                         transform.get(), kNoSwizzle));
+  }
 
   // If the source content is Y-flipped, the input scaler stage will perform
   // math to account for this. It also will flip the content during scaling so
@@ -1518,6 +1568,12 @@ std::ostream& operator<<(std::ostream& out, const GLScaler& scaler) {
     } else {
       out << ' ' << stage->scale_from().ToString() << " to "
           << stage->scale_to().ToString();
+    }
+    if (!stage->input_stage() &&
+        scaler.params_.source_color_space != scaler.scaling_color_space_) {
+      out << ", with color x-form "
+          << scaler.params_.source_color_space.ToString() << " to "
+          << scaler.scaling_color_space_.ToString();
     }
     if (stage == final_stage) {
       if (scaler.params_.output_color_space != scaler.scaling_color_space_) {
