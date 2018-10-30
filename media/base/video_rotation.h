@@ -11,7 +11,7 @@ namespace media {
 
 // Enumeration to represent 90 degree video rotation for MP4 videos
 // where it can be rotated by 90 degree intervals.
-enum VideoRotation {
+enum VideoRotation : int {
   VIDEO_ROTATION_0 = 0,
   VIDEO_ROTATION_90,
   VIDEO_ROTATION_180,
