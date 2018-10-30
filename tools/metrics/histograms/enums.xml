@@ -51671,6 +51671,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Chrome Tab"/>
 </enum>
 
+<enum name="VizHitTestResultsMatchEnums">
+  <int value="0" label="Results do not match"/>
+  <int value="1" label="Results match"/>
+  <int value="2" label="Results changed"/>
+</enum>
+
 <enum name="VoiceInteractionEventSource">
   <int value="0" label="Omnibox"/>
   <int value="1" label="NTP"/>

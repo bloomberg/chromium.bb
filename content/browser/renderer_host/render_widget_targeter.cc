@@ -85,6 +85,13 @@ class TracingUmaTracker {
 
 int TracingUmaTracker::next_id_ = 1;
 
+enum class HitTestResultsMatch {
+  kDoNotMatch = 0,
+  kMatch = 1,
+  kHitTestResultChanged = 2,
+  kMaxValue = kHitTestResultChanged,
+};
+
 RenderWidgetTargetResult::RenderWidgetTargetResult() = default;
 
 RenderWidgetTargetResult::RenderWidgetTargetResult(
@@ -393,17 +400,42 @@ void RenderWidgetTargeter::FoundTarget(
     UMA_HISTOGRAM_COUNTS_100("Event.AsyncTargeting.AsyncClientDepth",
                              async_depth_);
   }
-  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
-      expected_frame_sink_id.is_valid()) {
-    UMA_HISTOGRAM_BOOLEAN("Event.VizHitTestSurfaceLayer.ResultsMatch",
-                          target->GetFrameSinkId() == expected_frame_sink_id);
-    FlushEventQueue(true);
-    return;
-  }
+
   // RenderWidgetHostViewMac can be deleted asynchronously, in which case the
   // View will be valid but there will no longer be a RenderWidgetHostImpl.
   if (!root_view || !root_view->GetRenderWidgetHost())
     return;
+
+  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
+      expected_frame_sink_id.is_valid()) {
+    static const char* kResultsMatchHistogramName =
+        "Event.VizHitTestSurfaceLayer.ResultsMatch";
+    bool results_match = target->GetFrameSinkId() == expected_frame_sink_id;
+    HitTestResultsMatch match_result =
+        HitTestResultsMatch::kHitTestResultChanged;
+    if (results_match) {
+      match_result = HitTestResultsMatch::kMatch;
+    } else {
+      // If the results do not match, it is possible that the hit test data
+      // changed during verification. We do synchronous hit test again to make
+      // sure the result is reliable.
+      RenderWidgetTargetResult result =
+          delegate_->FindTargetSynchronously(root_view, event);
+      if (!result.should_query_view && result.view &&
+          expected_frame_sink_id == result.view->GetFrameSinkId()) {
+        // If the result did not change, it is likely that viz hit test finds
+        // the wrong target.
+        match_result = HitTestResultsMatch::kDoNotMatch;
+      } else {
+        // Hit test data changed, so the result is no longer reliable.
+        match_result = HitTestResultsMatch::kHitTestResultChanged;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION(kResultsMatchHistogramName, match_result,
+                              HitTestResultsMatch::kMaxValue);
+    FlushEventQueue(true);
+    return;
+  }
   delegate_->DispatchEventToTarget(root_view, target, event, latency,
                                    target_location);
   FlushEventQueue(false);
