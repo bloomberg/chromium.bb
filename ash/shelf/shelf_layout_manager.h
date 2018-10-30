@@ -342,6 +342,9 @@ class ASH_EXPORT ShelfLayoutManager
   // the shelf to be autohidden.
   bool IsShelfAutoHideForFullscreenMaximized() const;
 
+  // Returns true if the home gesture handler should handle the event.
+  bool ShouldHomeGestureHandleEvent(float scroll_y) const;
+
   // Gesture related functions:
   bool StartGestureDrag(const ui::GestureEvent& gesture_in_screen);
   void UpdateGestureDrag(const ui::GestureEvent& gesture_in_screen);
