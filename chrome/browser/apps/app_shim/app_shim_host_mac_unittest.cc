@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -63,22 +62,6 @@ class TestingAppShim : public chrome::mojom::AppShim {
   DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
 };
 
-class TestingAppShimHost : public AppShimHost {
- public:
-  TestingAppShimHost(const std::string& app_id,
-                     const base::FilePath& profile_path)
-      : AppShimHost(app_id, profile_path), test_weak_factory_(this) {}
-
-  base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
-    return test_weak_factory_.GetWeakPtr();
-  }
-
- private:
-  ~TestingAppShimHost() override {}
-  base::WeakPtrFactory<TestingAppShimHost> test_weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
-};
-
 class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
   explicit TestingAppShimHostBootstrap(
@@ -92,8 +75,6 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   base::WeakPtr<TestingAppShimHostBootstrap> GetWeakPtr() {
     return test_weak_factory_.GetWeakPtr();
   }
-
-  using AppShimHostBootstrap::LaunchApp;
 
  private:
   base::WeakPtrFactory<TestingAppShimHostBootstrap> test_weak_factory_;
@@ -110,7 +91,7 @@ class AppShimHostTest : public testing::Test,
 
   ~AppShimHostTest() override {
     if (host_)
-      host_->OnAppClosed();
+      delete host_.get();
     DCHECK(!host_);
   }
 
@@ -118,16 +99,17 @@ class AppShimHostTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
-  apps::AppShimHandler::Host* host() { return host_.get(); }
+  TestingAppShimHostBootstrap* host() { return host_.get(); }
+  chrome::mojom::AppShimHostBootstrap* GetBootstrapMojoHost() {
+    return host_.get();
+  }
   chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
-    // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
-    (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapRequest()))
-        ->LaunchApp(mojo::MakeRequest(&host_ptr_),
-                    base::FilePath(kTestProfileDir), kTestAppId, launch_type,
-                    std::vector<base::FilePath>(),
-                    shim_->GetLaunchAppCallback());
+    GetBootstrapMojoHost()->LaunchApp(
+        mojo::MakeRequest(&host_ptr_), base::FilePath(kTestProfileDir),
+        kTestAppId, launch_type, std::vector<base::FilePath>(),
+        shim_->GetLaunchAppCallback());
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
@@ -138,17 +120,13 @@ class AppShimHostTest : public testing::Test,
   void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+  void OnShimLaunch(Host* host,
+                    apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& file) override {
     ++launch_count_;
-    if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
+    if (launch_type == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
-    // Maintain only a weak reference to |host_| because it is owned by itself
-    // and will delete itself upon closing.
-    host_ = (new TestingAppShimHost(bootstrap->GetAppId(),
-                                    bootstrap->GetProfilePath()))
-                ->GetWeakPtr();
-    host_->OnBootstrapConnected(std::move(bootstrap));
-    host_->OnAppLaunchComplete(launch_result_);
+    host->OnAppLaunchComplete(launch_result_);
   }
 
   void OnShimClose(Host* host) override { ++close_count_; }
@@ -174,6 +152,9 @@ class AppShimHostTest : public testing::Test,
   void SetUp() override {
     testing::Test::SetUp();
     shim_.reset(new TestingAppShim());
+    TestingAppShimHostBootstrap* host =
+        new TestingAppShimHostBootstrap(shim_->GetHostBootstrapRequest());
+    host_ = host->GetWeakPtr();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -181,11 +162,9 @@ class AppShimHostTest : public testing::Test,
 
   std::unique_ptr<TestingAppShim> shim_;
 
-  std::unique_ptr<AppShimHostBootstrap> launched_bootstrap_;
-
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
-  base::WeakPtr<TestingAppShimHost> host_;
+  base::WeakPtr<TestingAppShimHostBootstrap> host_;
   chrome::mojom::AppShimHostPtr host_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
@@ -197,12 +176,17 @@ class AppShimHostTest : public testing::Test,
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
-  EXPECT_EQ(kTestAppId, host()->GetAppId());
+  EXPECT_EQ(kTestAppId, host()->GetHostForTesting()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(1, launch_now_count_);
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
+
+  // A second OnAppLaunchComplete is ignored.
+  host()->GetHostForTesting()->OnAppLaunchComplete(
+      apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
+  EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
 
   GetMojoHost()->FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
                           std::vector<base::FilePath>());
@@ -223,7 +207,7 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
-  EXPECT_EQ(kTestAppId, host()->GetAppId());
+  EXPECT_EQ(kTestAppId, host()->GetHostForTesting()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(0, launch_now_count_);

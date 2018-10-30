@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,10 +99,9 @@ TestShimClient::TestShimClient()
 // Browser Test for AppShimHostManager to test IPC interactions across the
 // UNIX domain socket.
 class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
-                                      public apps::AppShimHandler,
-                                      public chrome::mojom::AppShimHost {
+                                      public apps::AppShimHandler {
  public:
-  AppShimHostManagerBrowserTest() : binding_(this) {}
+  AppShimHostManagerBrowserTest() {}
 
  protected:
   // Wait for OnShimLaunch, then send a quit, and wait for the response. Used to
@@ -115,32 +113,23 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimLaunch(apps::AppShimHandler::Host* host,
+                    apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& files) override;
   void OnShimClose(apps::AppShimHandler::Host* host) override {}
   void OnShimFocus(apps::AppShimHandler::Host* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
   void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override {
   }
-  void OnShimQuit(apps::AppShimHandler::Host* host) override {}
+  void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
   std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
   apps::AppShimLaunchType last_launch_type_ = apps::APP_SHIM_LAUNCH_NUM_TYPES;
 
  private:
-  // chrome::mojom::AppShimHost.
-  void FocusApp(apps::AppShimFocusType focus_type,
-                const std::vector<base::FilePath>& files) override {}
-  void SetAppHidden(bool hidden) override {}
-  void QuitApp() override {
-    ++quit_count_;
-    runner_->Quit();
-  }
-
   std::unique_ptr<base::RunLoop> runner_;
-  mojo::Binding<chrome::mojom::AppShimHost> binding_;
-  chrome::mojom::AppShimPtr app_shim_ptr_;
 
   int launch_count_ = 0;
   int quit_count_ = 0;
@@ -157,7 +146,7 @@ void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
   runner_ = std::make_unique<base::RunLoop>();
   test_client_->host()->QuitApp();
   EXPECT_EQ(0, quit_count_);
-  runner_->Run();  // Will stop in QuitApp().
+  runner_->Run();  // Will stop in OnShimQuit().
   EXPECT_EQ(1, quit_count_);
 
   test_client_.reset();
@@ -173,13 +162,19 @@ void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
 }
 
 void AppShimHostManagerBrowserTest::OnShimLaunch(
-    std::unique_ptr<AppShimHostBootstrap> bootstrap) {
+    apps::AppShimHandler::Host* host,
+    apps::AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files) {
+  host->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_SUCCESS);
   ++launch_count_;
-  binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());
-  last_launch_type_ = bootstrap->GetLaunchType();
-  last_launch_files_ = bootstrap->GetLaunchFiles();
+  last_launch_type_ = launch_type;
+  last_launch_files_ = files;
+  runner_->Quit();
+}
 
-  bootstrap->OnLaunchAppSucceeded(mojo::MakeRequest(&app_shim_ptr_));
+void AppShimHostManagerBrowserTest::OnShimQuit(
+    apps::AppShimHandler::Host* host) {
+  ++quit_count_;
   runner_->Quit();
 }
 

@@ -48,13 +48,22 @@ void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
   delete this;
 }
 
-apps::AppShimHandler* AppShimHostBootstrap::GetHandler() {
-  return apps::AppShimHandler::GetForAppMode(app_id_);
-}
-
 chrome::mojom::AppShimHostRequest
 AppShimHostBootstrap::GetLaunchAppShimHostRequest() {
   return std::move(app_shim_host_request_);
+}
+
+apps::AppShimLaunchType AppShimHostBootstrap::GetLaunchType() const {
+  return launch_type_;
+}
+
+const std::vector<base::FilePath>& AppShimHostBootstrap::GetLaunchFiles()
+    const {
+  return files_;
+}
+
+apps::AppShimHandler::Host* AppShimHostBootstrap::GetHostForTesting() {
+  return connected_host_;
 }
 
 void AppShimHostBootstrap::LaunchApp(
@@ -71,8 +80,6 @@ void AppShimHostBootstrap::LaunchApp(
     return;
 
   app_shim_host_request_ = std::move(app_shim_host_request);
-  profile_path_ = profile_dir;
-  app_id_ = app_id;
   launch_type_ = launch_type;
   files_ = files;
   launch_app_callback_ = std::move(callback);
@@ -83,23 +90,13 @@ void AppShimHostBootstrap::LaunchApp(
   has_received_launch_app_ = true;
   std::unique_ptr<AppShimHostBootstrap> deleter(this);
 
-  // |handler| takes ownership of |this| now.
-  apps::AppShimHandler* handler = GetHandler();
-  if (handler)
-    handler->OnShimLaunch(std::move(deleter));
-  // |handler| can only be NULL after AppShimHostManager is destroyed. Since
-  // this only happens at shutdown, do nothing here.
+  // |connected_host_| takes ownership of itself and |this|.
+  connected_host_ = new AppShimHost(app_id, profile_dir);
+  connected_host_->OnBootstrapConnected(std::move(deleter));
 }
 
-void AppShimHostBootstrap::OnLaunchAppSucceeded(
+void AppShimHostBootstrap::OnLaunchAppComplete(
+    apps::AppShimLaunchResult result,
     chrome::mojom::AppShimRequest app_shim_request) {
-  std::move(launch_app_callback_)
-      .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_request));
-}
-
-void AppShimHostBootstrap::OnLaunchAppFailed(apps::AppShimLaunchResult result) {
-  // Because there will be users of the AppShim interface in failure, just
-  // return a dummy request.
-  chrome::mojom::AppShimPtr dummy_ptr;
-  std::move(launch_app_callback_).Run(result, mojo::MakeRequest(&dummy_ptr));
+  std::move(launch_app_callback_).Run(result, std::move(app_shim_request));
 }
