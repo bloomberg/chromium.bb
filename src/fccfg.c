@@ -96,6 +96,20 @@ FcConfigFini (void)
 	FcConfigDestroy (cfg);
 }
 
+static FcChar8 *
+FcConfigRealPath(const FcChar8 *path)
+{
+    char	resolved_name[PATH_MAX+1];
+    char	*resolved_ret;
+
+    if (!path)
+	return NULL;
+
+    resolved_ret = realpath((const char *) path, resolved_name);
+    if (resolved_ret)
+	path = (FcChar8 *) resolved_ret;
+    return FcStrCopyFilename(path);
+}
 
 FcConfig *
 FcConfigCreate (void)
@@ -159,7 +173,7 @@ FcConfigCreate (void)
 
     config->expr_pool = NULL;
 
-    config->sysRoot = NULL;
+    config->sysRoot = FcConfigRealPath((const FcChar8 *) getenv("FONTCONFIG_SYSROOT"));
 
     config->rulesetList = FcPtrListCreate (FcDestroyAsRuleSet);
     if (!config->rulesetList)
@@ -2462,11 +2476,7 @@ FcConfigGetSysRoot (const FcConfig *config)
 	if (!config)
 	    return NULL;
     }
-
-    if (config->sysRoot)
-        return config->sysRoot;
-
-    return (FcChar8 *) getenv ("FONTCONFIG_SYSROOT");
+    return config->sysRoot;
 }
 
 void
@@ -2495,7 +2505,7 @@ FcConfigSetSysRoot (FcConfig      *config,
 
     if (sysroot)
     {
-	s = FcStrCopyFilename (sysroot);
+	s = FcConfigRealPath(sysroot);
 	if (!s)
 	    return;
     }
