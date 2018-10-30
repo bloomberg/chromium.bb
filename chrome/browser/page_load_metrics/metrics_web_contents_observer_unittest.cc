@@ -272,7 +272,8 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
       content::RenderFrameHost* render_frame_host) {
     observer()->OnTimingUpdated(
         render_frame_host, timing, mojom::PageLoadMetadata(),
-        mojom::PageLoadFeatures(), std::vector<mojom::ResourceDataUpdatePtr>());
+        mojom::PageLoadFeatures(), std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::PageRenderData());
   }
 
   void AttachObserver() {

@@ -502,6 +502,10 @@ class PageLoadMetricsObserver {
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
+
+  // Called when the final layout jank score for the session is ready to be
+  // reported (immediately before OnComplete).
+  virtual void OnFinalLayoutStabilityUpdate(float jank_score) {}
 };
 
 }  // namespace page_load_metrics

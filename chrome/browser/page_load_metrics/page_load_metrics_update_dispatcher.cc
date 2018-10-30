@@ -412,7 +412,8 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
+      subframe_metadata_(mojom::PageLoadMetadata::New()),
+      main_frame_render_data_(mojom::PageRenderData::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -466,7 +467,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     const mojom::PageLoadTiming& new_timing,
     const mojom::PageLoadMetadata& new_metadata,
     const mojom::PageLoadFeatures& new_features,
-    const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+    const mojom::PageRenderData& render_data) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -480,9 +482,11 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(new_metadata);
     UpdateMainFrameTiming(new_timing);
+    UpdateMainFrameRenderData(render_data);
   } else {
     UpdateSubFrameMetadata(new_metadata);
     UpdateSubFrameTiming(render_frame_host, new_timing);
+    // TODO: Handle subframe PageRenderData.
   }
   client_->UpdateFeaturesUsage(new_features);
 }
@@ -622,6 +626,14 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
   main_frame_metadata_ = new_metadata.Clone();
   client_->OnMainFrameMetadataChanged();
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
+    const mojom::PageRenderData& render_data) {
+  if (main_frame_render_data_->Equals(render_data))
+    return;
+
+  main_frame_render_data_ = render_data.Clone();
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
