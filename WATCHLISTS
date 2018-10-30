@@ -1191,7 +1191,6 @@
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
                   '|components/cryptauth/'\
-                  '|components/proximity_auth/logging'\
                   '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
     },
     'mus': {
@@ -2277,6 +2276,7 @@
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['darin@chromium.org'],
     'multidevice': ['hansberry+watch-multidevice@chromium.org',
+                    'hsuregan+watch-multidevice@chromium.org',
                     'jhawkins+watch-multidevice@chromium.org',
                     'jlklein+watch-multidevice@chromium.org',
                     'jordynass+watch-multidevice@chromium.org',
@@ -2385,6 +2385,7 @@
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'smartlock': ['hansberry+watch-smartlock@chromium.org',
+                  'hsuregan+watch-multidevice@chromium.org',
                   'jhawkins+watch-smartlock@chromium.org',
                   'jlklein+watch-smartlock@chromium.org',
                   'jordynass+watch-smartlock@chromium.org',
@@ -2423,6 +2424,7 @@
                     'einbinder+watch-test-runner@chromium.org'],
     'tests': [],
     'tether': ['hansberry+watch-tether@chromium.org',
+               'hsuregan+watch-multidevice@chromium.org',
                'jhawkins+watch-tether@chromium.org',
                'jlklein+watch-tether@chromium.org',
                'jordynass+watch-tether@chromium.org',
