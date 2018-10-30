@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 
 class Profile;
 
 namespace nux {
+extern const base::Feature kNuxOnboardingForceEnabled;
+
 bool IsNuxOnboardingEnabled(Profile* profile);
 }  // namespace nux
 

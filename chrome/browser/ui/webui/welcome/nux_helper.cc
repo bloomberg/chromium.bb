@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/common/pref_names.h"
@@ -12,7 +11,7 @@
 namespace nux {
 // This feature flag is used to force the feature to be turned on for non-win
 // and non-branded builds, like with tests or development on other platforms.
-extern const base::Feature kNuxOnboardingForceEnabled{
+const base::Feature kNuxOnboardingForceEnabled = {
     "NuxOnboardingForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsNuxOnboardingEnabled(Profile* profile) {

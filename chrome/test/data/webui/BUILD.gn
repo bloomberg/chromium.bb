@@ -107,6 +107,7 @@ js2gtest("browser_tests_js_webui") {
     sources += [
       "md_user_manager/user_manager_browsertest.js",
       "signin/signin_browsertest.js",
+      "welcome/onboarding_welcome_browsertest.js",
     ]
   }
 

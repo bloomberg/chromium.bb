@@ -241,6 +241,7 @@ MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
 NoBackgroundTasksTest.*
 NTP4WebUITest.*
+OnboardingWelcomeEmailChooserTest.*
 OpenAudioFiles/*
 PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
