@@ -40,11 +40,12 @@ constexpr TimeDelta kMaxFillingDelayForServerPredictions =
     TimeDelta::FromMilliseconds(500);
 
 ValueElementPair PasswordToSave(const PasswordForm& form) {
-  if (form.new_password_element.empty() || form.new_password_value.empty())
+  if (form.new_password_value.empty()) {
+    DCHECK(!form.password_value.empty());
     return {form.password_value, form.password_element};
+  }
   return {form.new_password_value, form.new_password_element};
 }
-
 
 // Copies field properties masks from the form |from| to the form |to|.
 void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
