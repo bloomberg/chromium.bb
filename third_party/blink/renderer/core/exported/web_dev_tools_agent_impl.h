@@ -96,8 +96,10 @@ class CORE_EXPORT WebDevToolsAgentImpl final
                        WorkerClient*);
 
   // DevToolsAgent::Client implementation.
-  void AttachSession(DevToolsSession*, bool restore) override;
-  void DetachSession(DevToolsSession*) override;
+  InspectorSession* AttachSession(
+      InspectorSession::Client*,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
+  void DetachSession(InspectorSession*) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
   void DebuggerTaskStarted() override;
   void DebuggerTaskFinished() override;
@@ -113,10 +115,12 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void DidProcessTask(const base::PendingTask&) override;
 
   Member<DevToolsAgent> agent_;
-  HeapHashMap<Member<DevToolsSession>, Member<InspectorNetworkAgent>>
+  HeapHashSet<Member<InspectorSession>> sessions_;
+  HeapHashMap<Member<InspectorSession>, Member<InspectorNetworkAgent>>
       network_agents_;
-  HeapHashMap<Member<DevToolsSession>, Member<InspectorPageAgent>> page_agents_;
-  HeapHashMap<Member<DevToolsSession>, Member<InspectorOverlayAgent>>
+  HeapHashMap<Member<InspectorSession>, Member<InspectorPageAgent>>
+      page_agents_;
+  HeapHashMap<Member<InspectorSession>, Member<InspectorOverlayAgent>>
       overlay_agents_;
   WorkerClient* worker_client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;

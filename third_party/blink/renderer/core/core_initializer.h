@@ -39,11 +39,11 @@
 
 namespace blink {
 
-class DevToolsSession;
 class Document;
 class HTMLMediaElement;
 class InspectedFrames;
 class InspectorDOMAgent;
+class InspectorSession;
 class LocalFrame;
 class MediaControls;
 class Page;
@@ -94,7 +94,7 @@ class CORE_EXPORT CoreInitializer {
   // These methods typically create agents and append them to a session.
   // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
   // class is a controller/ crbug:731490
-  virtual void InitInspectorAgentSession(DevToolsSession*,
+  virtual void InitInspectorAgentSession(InspectorSession*,
                                          bool,
                                          InspectorDOMAgent*,
                                          InspectedFrames*,

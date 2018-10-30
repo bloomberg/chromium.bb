@@ -208,12 +208,10 @@
         "willSendRequest",
       ]
     },
-    DevToolsSession: {
-      class: "DevToolsSession",
+    InspectorSession: {
       probes: [
         "didStartProvisionalLoad",
         "didFailProvisionalLoad",
-        "didCommitLoad",
       ]
     },
   }

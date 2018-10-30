@@ -60,8 +60,7 @@ def agent_name_to_class(config, agent_name):
 def agent_name_to_include(config, agent_name):
     include_path = agent_config(config, agent_name, "include_path") or config["settings"]["include_path"]
     agent_class = agent_name_to_class(config, agent_name)
-    include_file = os.path.join(include_path, NameStyleConverter(agent_class).to_snake_case() + ".h")
-    return include_file.replace("dev_tools", "devtools")
+    return os.path.join(include_path, NameStyleConverter(agent_class).to_snake_case() + ".h")
 
 
 def initialize_jinja_env(config, cache_dir):

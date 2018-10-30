@@ -47,7 +47,6 @@
 namespace blink {
 
 class CoreProbeSink;
-class InspectedFrames;
 class WorkerThread;
 class WorkerThreadDebugger;
 
@@ -88,8 +87,10 @@ class WorkerInspectorController final
   void EmitTraceEvent();
 
   // DevToolsAgent::Client implementation.
-  void AttachSession(DevToolsSession*, bool restore) override;
-  void DetachSession(DevToolsSession*) override;
+  InspectorSession* AttachSession(
+      InspectorSession::Client*,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
+  void DetachSession(InspectorSession*) override;
   void InspectElement(const WebPoint&) override;
   void DebuggerTaskStarted() override;
   void DebuggerTaskFinished() override;
@@ -97,9 +98,8 @@ class WorkerInspectorController final
   Member<DevToolsAgent> agent_;
   WorkerThreadDebugger* debugger_;
   WorkerThread* thread_;
-  Member<InspectedFrames> inspected_frames_;
   Member<CoreProbeSink> probe_sink_;
-  int session_count_ = 0;
+  HeapHashSet<Member<InspectorSession>> sessions_;
 
   // These fields are set up in the constructor and then read
   // on a random thread from EmitTraceEvent().
