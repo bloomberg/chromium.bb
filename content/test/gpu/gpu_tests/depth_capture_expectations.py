@@ -23,6 +23,11 @@ class DepthCaptureExpectations(GpuTestExpectations):
                ['highsierra', ('intel', 0x0a2e)], bug=824438)
 
     self.Flaky('DepthCapture_depthStreamToRGBAFloatTexture',
+               ['win10', ('nvidia', 0x1cb3)], bug=737410)
+    self.Flaky('DepthCapture_depthStreamToRGBAUint8Texture',
+               ['win10', ('nvidia', 0x1cb3)], bug=737410)
+
+    self.Flaky('DepthCapture_depthStreamToRGBAFloatTexture',
                ['android', ('qualcomm', 'Adreno (TM) 418')], bug=899748)
     self.Flaky('DepthCapture_depthStreamToRGBAUint8Texture',
                ['android', ('qualcomm', 'Adreno (TM) 418')], bug=899748)
