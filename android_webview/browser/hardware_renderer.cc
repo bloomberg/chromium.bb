@@ -164,7 +164,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
-  child_id_ = parent_local_surface_id_allocator_->GenerateId();
+  parent_local_surface_id_allocator_->GenerateId();
+  child_id_ = parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
   surfaces_->AddChildId(viz::SurfaceId(frame_sink_id_, child_id_));
 }
 

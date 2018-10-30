@@ -45,7 +45,7 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
   // provided from an external source.
   void Invalidate();
 
-  const LocalSurfaceId& GenerateId();
+  void GenerateId();
 
   const LocalSurfaceId& GetCurrentLocalSurfaceId() const;
 

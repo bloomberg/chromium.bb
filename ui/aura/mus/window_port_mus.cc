@@ -428,7 +428,9 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
     const gfx::Size& surface_size_in_pixels) {
   if (last_surface_size_in_pixels_ != surface_size_in_pixels ||
       !local_surface_id_.is_valid()) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_.GenerateId();
+    local_surface_id_ =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
     last_surface_size_in_pixels_ = surface_size_in_pixels;
   }
 
@@ -501,7 +503,9 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
 }
 
 void WindowPortMus::AllocateLocalSurfaceId() {
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+  parent_local_surface_id_allocator_.GenerateId();
+  local_surface_id_ =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   UpdatePrimarySurfaceId();
   if (local_layer_tree_frame_sink_)
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
@@ -586,7 +590,9 @@ void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                                float new_device_scale_factor) {
   if (!window_->IsRootWindow() && local_surface_id_.is_valid() &&
       local_layer_tree_frame_sink_) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_.GenerateId();
+    local_surface_id_ =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }
 

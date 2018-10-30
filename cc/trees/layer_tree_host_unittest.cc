@@ -3607,7 +3607,8 @@ class LayerTreeHostInvalidLocalSurfaceIdDefersCommit
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void AllowCommits() override {
-    local_surface_id_ = allocator_.GenerateId();
+    allocator_.GenerateId();
+    local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
     PostSetLocalSurfaceIdToMainThread(local_surface_id_);
   }
 
@@ -8887,14 +8888,16 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
     layer_tree_host()->SetViewportSizeAndScale(
         gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
-    local_surface_id_ = allocator_.GenerateId();
+    allocator_.GenerateId();
+    local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
     PostSetLocalSurfaceIdToMainThread(local_surface_id_);
   }
 
   void DidReceiveCompositorFrameAck() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        local_surface_id_ = allocator_.GenerateId();
+        allocator_.GenerateId();
+        local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
         PostSetLocalSurfaceIdToMainThread(local_surface_id_);
         break;
       case 2:

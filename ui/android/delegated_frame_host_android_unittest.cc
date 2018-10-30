@@ -106,7 +106,8 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
         viz::CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(frame_size), gfx::Rect(frame_size))
             .Build();
-    frame_host_->SubmitCompositorFrame(allocator_.GenerateId(),
+    allocator_.GenerateId();
+    frame_host_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
                                        std::move(frame), base::nullopt);
   }
 
@@ -312,7 +313,8 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest, EmbedWhileHidden) {
     frame_host_->EvictDelegatedFrame();
   }
   EXPECT_FALSE(frame_host_->HasSavedFrame());
-  viz::LocalSurfaceId id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  viz::LocalSurfaceId id = allocator_.GetCurrentLocalSurfaceId();
   gfx::Size size(100, 100);
   frame_host_->WasHidden();
   frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
@@ -327,7 +329,8 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest, EmbedWhileHidden) {
 TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest,
        FullSurfaceCapture) {
   // First embed a surface to make sure we have something to copy from.
-  viz::LocalSurfaceId id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  viz::LocalSurfaceId id = allocator_.GetCurrentLocalSurfaceId();
   gfx::Size size(100, 100);
   frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
 

@@ -420,8 +420,10 @@ TEST_F(FrameSinkManagerTest,
 // next garbage collection.
 TEST_F(FrameSinkManagerTest, EvictSurfaces) {
   ParentLocalSurfaceIdAllocator allocator;
-  LocalSurfaceId local_surface_id1 = allocator.GenerateId();
-  LocalSurfaceId local_surface_id2 = allocator.GenerateId();
+  allocator.GenerateId();
+  LocalSurfaceId local_surface_id1 = allocator.GetCurrentLocalSurfaceId();
+  allocator.GenerateId();
+  LocalSurfaceId local_surface_id2 = allocator.GetCurrentLocalSurfaceId();
   SurfaceId surface_id1(kFrameSinkIdA, local_surface_id1);
   SurfaceId surface_id2(kFrameSinkIdB, local_surface_id2);
 

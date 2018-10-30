@@ -3156,8 +3156,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
 
 TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
   gfx::Size frame_size;
+  parent_local_surface_id_allocator_.GenerateId();
   viz::LocalSurfaceId local_surface_id =
-      parent_local_surface_id_allocator_.GenerateId();
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3187,8 +3188,9 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
     return;
 
   gfx::Size frame_size(100, 100);
+  parent_local_surface_id_allocator_.GenerateId();
   viz::LocalSurfaceId local_surface_id =
-      parent_local_surface_id_allocator_.GenerateId();
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3235,9 +3237,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   gfx::Size size1(100, 100);
   gfx::Size size2(200, 200);
   gfx::Size size3(300, 300);
-  viz::LocalSurfaceId id1 = parent_local_surface_id_allocator_.GenerateId();
-  viz::LocalSurfaceId id2 = parent_local_surface_id_allocator_.GenerateId();
-  viz::LocalSurfaceId id3 = parent_local_surface_id_allocator_.GenerateId();
+  parent_local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id1 =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  parent_local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id2 =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  parent_local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id3 =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
   view_->InitAsChild(nullptr);
@@ -3420,9 +3428,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->CreateNewRendererCompositorFrameSink();
 
   // Submit a frame from the new RendererCompositorFrameSink.
-  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+  parent_local_surface_id_allocator_.GenerateId();
+  view_->SubmitCompositorFrame(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
   view_->RunOnCompositingDidCommit();
 }
 

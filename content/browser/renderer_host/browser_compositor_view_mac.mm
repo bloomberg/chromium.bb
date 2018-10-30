@@ -94,8 +94,9 @@ void BrowserCompositorMac::ClearCompositorFrame() {
 }
 
 bool BrowserCompositorMac::RequestRepaintForTesting() {
+  dfh_local_surface_id_allocator_.GenerateId();
   const viz::LocalSurfaceId& new_local_surface_id =
-      dfh_local_surface_id_allocator_.GenerateId();
+      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   delegated_frame_host_->EmbedSurface(
       new_local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
@@ -153,9 +154,10 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
 
   if (needs_new_surface_id) {
+    dfh_local_surface_id_allocator_.GenerateId();
     GetDelegatedFrameHost()->EmbedSurface(
-        dfh_local_surface_id_allocator_.GenerateId(), dfh_size_dip_,
-        GetDeadlinePolicy(is_resize));
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_size_dip_, GetDeadlinePolicy(is_resize));
   }
 
   if (recyclable_compositor_) {
@@ -432,10 +434,10 @@ BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
 }
 
 const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
-  if (dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid())
-    return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  if (!dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid())
+    dfh_local_surface_id_allocator_.GenerateId();
 
-  return dfh_local_surface_id_allocator_.GenerateId();
+  return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 base::TimeTicks BrowserCompositorMac::GetRendererLocalSurfaceIdAllocationTime()
@@ -445,7 +447,8 @@ base::TimeTicks BrowserCompositorMac::GetRendererLocalSurfaceIdAllocationTime()
 
 const viz::LocalSurfaceId&
 BrowserCompositorMac::AllocateNewRendererLocalSurfaceId() {
-  return dfh_local_surface_id_allocator_.GenerateId();
+  dfh_local_surface_id_allocator_.GenerateId();
+  return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 bool BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(

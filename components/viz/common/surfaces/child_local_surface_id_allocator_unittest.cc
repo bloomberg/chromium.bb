@@ -114,7 +114,8 @@ TEST(ChildLocalSurfaceIdAllocatorTest, UpdateFromParentEmbedTokenChanged) {
   ParentLocalSurfaceIdAllocator parent_allocator2;
   ChildLocalSurfaceIdAllocator child_allocator;
 
-  EXPECT_TRUE(parent_allocator.GenerateId().is_valid());
+  parent_allocator.GenerateId();
+  EXPECT_TRUE(parent_allocator.GetCurrentLocalSurfaceId().is_valid());
   EXPECT_TRUE(child_allocator.UpdateFromParent(
       parent_allocator.GetCurrentLocalSurfaceId(),
       parent_allocator.allocation_time()));

@@ -96,7 +96,9 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   auto root_frame =
       CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
-  SurfaceId root_surface_id(support_->frame_sink_id(), allocator_.GenerateId());
+  allocator_.GenerateId();
+  SurfaceId root_surface_id(support_->frame_sink_id(),
+                            allocator_.GetCurrentLocalSurfaceId());
   support_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
                                   std::move(root_frame));
 
@@ -120,10 +122,12 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
       nullptr, &manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
 
-  LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId child_local_surface_id = allocator_.GetCurrentLocalSurfaceId();
   SurfaceId child_surface_id(child_support->frame_sink_id(),
                              child_local_surface_id);
-  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId root_local_surface_id = allocator_.GetCurrentLocalSurfaceId();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
@@ -204,12 +208,15 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   auto right_support = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
-  LocalSurfaceId left_child_local_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId left_child_local_id = allocator_.GetCurrentLocalSurfaceId();
   SurfaceId left_child_id(left_support->frame_sink_id(), left_child_local_id);
-  LocalSurfaceId right_child_local_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId right_child_local_id = allocator_.GetCurrentLocalSurfaceId();
   SurfaceId right_child_id(right_support->frame_sink_id(),
                            right_child_local_id);
-  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId root_local_surface_id = allocator_.GetCurrentLocalSurfaceId();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {

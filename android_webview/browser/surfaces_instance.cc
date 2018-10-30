@@ -156,7 +156,8 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   if (!root_id_.is_valid() || viewport != surface_size_ ||
       device_scale_factor != device_scale_factor_) {
-    root_id_ = parent_local_surface_id_allocator_->GenerateId();
+    parent_local_surface_id_allocator_->GenerateId();
+    root_id_ = parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
     surface_size_ = viewport;
     device_scale_factor_ = device_scale_factor;
     display_->SetLocalSurfaceId(root_id_, device_scale_factor);

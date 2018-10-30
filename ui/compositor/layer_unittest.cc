@@ -906,7 +906,8 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
 
-  viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
+  allocator.GenerateId();
+  viz::LocalSurfaceId local_surface_id = allocator.GetCurrentLocalSurfaceId();
   viz::SurfaceId surface_id_one(arbitrary_frame_sink, local_surface_id);
   layer->SetShowSurface(surface_id_one, gfx::Size(10, 10), SK_ColorWHITE,
                         cc::DeadlinePolicy::UseDefaultDeadline(), false);
@@ -917,7 +918,8 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
   auto mirror = layer->Mirror();
   EXPECT_FALSE(mirror->StretchContentToFillBounds());
 
-  local_surface_id = allocator.GenerateId();
+  allocator.GenerateId();
+  local_surface_id = allocator.GetCurrentLocalSurfaceId();
   viz::SurfaceId surface_id_two(arbitrary_frame_sink, local_surface_id);
   layer->SetShowSurface(surface_id_two, gfx::Size(10, 10), SK_ColorWHITE,
                         cc::DeadlinePolicy::UseDefaultDeadline(), true);
@@ -1891,18 +1893,22 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   viz::FrameSinkId frame_sink_id(1u, 1u);
   viz::ParentLocalSurfaceIdAllocator allocator;
   before = child->cc_layer_for_testing();
-  child->SetShowSurface(viz::SurfaceId(frame_sink_id, allocator.GenerateId()),
-                        gfx::Size(10, 10), SK_ColorWHITE,
-                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  allocator.GenerateId();
+  child->SetShowSurface(
+      viz::SurfaceId(frame_sink_id, allocator.GetCurrentLocalSurfaceId()),
+      gfx::Size(10, 10), SK_ColorWHITE,
+      cc::DeadlinePolicy::UseDefaultDeadline(), false);
   scoped_refptr<cc::Layer> after = child->cc_layer_for_testing();
   const auto* surface = static_cast<cc::SurfaceLayer*>(after.get());
   EXPECT_TRUE(after.get());
   EXPECT_NE(before.get(), after.get());
   EXPECT_EQ(base::nullopt, surface->deadline_in_frames());
 
-  child->SetShowSurface(viz::SurfaceId(frame_sink_id, allocator.GenerateId()),
-                        gfx::Size(10, 10), SK_ColorWHITE,
-                        cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
+  allocator.GenerateId();
+  child->SetShowSurface(
+      viz::SurfaceId(frame_sink_id, allocator.GetCurrentLocalSurfaceId()),
+      gfx::Size(10, 10), SK_ColorWHITE,
+      cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
   EXPECT_EQ(4u, surface->deadline_in_frames());
 }
 
