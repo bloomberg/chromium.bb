@@ -41,6 +41,10 @@ void CopyTraceEventParameter(char** buffer,
 
 }  // namespace
 
+bool ConvertableToTraceFormat::AppendToProto(ProtoAppender* appender) {
+  return false;
+}
+
 TraceEvent::TraceEvent()
     : duration_(TimeDelta::FromInternalValue(-1)),
       scope_(trace_event_internal::kGlobalScope),

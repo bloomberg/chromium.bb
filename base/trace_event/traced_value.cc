@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <atomic>
 #include <utility>
 
 #include "base/bits.h"
@@ -15,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
+#include "base/trace_event/trace_log.h"
 #include "base/values.h"
 
 namespace base {
@@ -30,6 +32,8 @@ const char kTypeInt = 'i';
 const char kTypeDouble = 'd';
 const char kTypeString = 's';
 const char kTypeCStr = '*';  // only used for key names
+
+std::atomic<TracedValue::WriterFactoryCallback> g_writer_factory_callback;
 
 #ifndef NDEBUG
 const bool kStackTypeDict = false;
@@ -77,14 +81,385 @@ std::string ReadKeyName(PickleIterator& pickle_iterator) {
   DCHECK(res);
   return key_name;
 }
+
+class PickleWriter final : public TracedValue::Writer {
+ public:
+  explicit PickleWriter(size_t capacity) {
+    if (capacity) {
+      pickle_.Reserve(capacity);
+    }
+  }
+
+  bool IsPickleWriter() const override { return true; }
+  bool IsProtoWriter() const override { return false; }
+
+  void SetInteger(const char* name, int value) override {
+    pickle_.WriteBytes(&kTypeInt, 1);
+    pickle_.WriteInt(value);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void SetIntegerWithCopiedName(base::StringPiece name, int value) override {
+    pickle_.WriteBytes(&kTypeInt, 1);
+    pickle_.WriteInt(value);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void SetDouble(const char* name, double value) override {
+    pickle_.WriteBytes(&kTypeDouble, 1);
+    pickle_.WriteDouble(value);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void SetDoubleWithCopiedName(base::StringPiece name, double value) override {
+    pickle_.WriteBytes(&kTypeDouble, 1);
+    pickle_.WriteDouble(value);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void SetBoolean(const char* name, bool value) override {
+    pickle_.WriteBytes(&kTypeBool, 1);
+    pickle_.WriteBool(value);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void SetBooleanWithCopiedName(base::StringPiece name, bool value) override {
+    pickle_.WriteBytes(&kTypeBool, 1);
+    pickle_.WriteBool(value);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void SetString(const char* name, base::StringPiece value) override {
+    pickle_.WriteBytes(&kTypeString, 1);
+    pickle_.WriteString(value);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void SetStringWithCopiedName(base::StringPiece name,
+                               base::StringPiece value) override {
+    pickle_.WriteBytes(&kTypeString, 1);
+    pickle_.WriteString(value);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void SetValue(const char* name, Writer* value) override {
+    DCHECK(value->IsPickleWriter());
+    const PickleWriter* pickle_writer = static_cast<const PickleWriter*>(value);
+
+    BeginDictionary(name);
+    pickle_.WriteBytes(pickle_writer->pickle_.payload(),
+                       static_cast<int>(pickle_writer->pickle_.payload_size()));
+    EndDictionary();
+  }
+
+  void SetValueWithCopiedName(base::StringPiece name, Writer* value) override {
+    DCHECK(value->IsPickleWriter());
+    const PickleWriter* pickle_writer = static_cast<const PickleWriter*>(value);
+
+    BeginDictionaryWithCopiedName(name);
+    pickle_.WriteBytes(pickle_writer->pickle_.payload(),
+                       static_cast<int>(pickle_writer->pickle_.payload_size()));
+    EndDictionary();
+  }
+
+  void BeginArray() override { pickle_.WriteBytes(&kTypeStartArray, 1); }
+
+  void BeginDictionary() override { pickle_.WriteBytes(&kTypeStartDict, 1); }
+
+  void BeginDictionary(const char* name) override {
+    pickle_.WriteBytes(&kTypeStartDict, 1);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void BeginDictionaryWithCopiedName(base::StringPiece name) override {
+    pickle_.WriteBytes(&kTypeStartDict, 1);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void BeginArray(const char* name) override {
+    pickle_.WriteBytes(&kTypeStartArray, 1);
+    WriteKeyNameAsRawPtr(pickle_, name);
+  }
+
+  void BeginArrayWithCopiedName(base::StringPiece name) override {
+    pickle_.WriteBytes(&kTypeStartArray, 1);
+    WriteKeyNameWithCopy(pickle_, name);
+  }
+
+  void EndDictionary() override { pickle_.WriteBytes(&kTypeEndDict, 1); }
+  void EndArray() override { pickle_.WriteBytes(&kTypeEndArray, 1); }
+
+  void AppendInteger(int value) override {
+    pickle_.WriteBytes(&kTypeInt, 1);
+    pickle_.WriteInt(value);
+  }
+
+  void AppendDouble(double value) override {
+    pickle_.WriteBytes(&kTypeDouble, 1);
+    pickle_.WriteDouble(value);
+  }
+
+  void AppendBoolean(bool value) override {
+    pickle_.WriteBytes(&kTypeBool, 1);
+    pickle_.WriteBool(value);
+  }
+
+  void AppendString(base::StringPiece value) override {
+    pickle_.WriteBytes(&kTypeString, 1);
+    pickle_.WriteString(value);
+  }
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    struct State {
+      enum Type { kTypeDict, kTypeArray };
+      Type type;
+      bool needs_comma;
+    };
+
+    auto maybe_append_key_name = [](State current_state, PickleIterator* it,
+                                    std::string* out) {
+      if (current_state.type == State::kTypeDict) {
+        EscapeJSONString(ReadKeyName(*it), true, out);
+        out->append(":");
+      }
+    };
+
+    base::circular_deque<State> state_stack;
+
+    out->append("{");
+    state_stack.push_back({State::kTypeDict});
+
+    PickleIterator it(pickle_);
+    for (const char* type; it.ReadBytes(&type, 1);) {
+      switch (*type) {
+        case kTypeEndDict:
+          out->append("}");
+          state_stack.pop_back();
+          continue;
+
+        case kTypeEndArray:
+          out->append("]");
+          state_stack.pop_back();
+          continue;
+      }
+
+      // Use an index so it will stay valid across resizes.
+      size_t current_state_index = state_stack.size() - 1;
+      if (state_stack[current_state_index].needs_comma) {
+        out->append(",");
+      }
+
+      switch (*type) {
+        case kTypeStartDict: {
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          out->append("{");
+          state_stack.push_back({State::kTypeDict});
+          break;
+        }
+
+        case kTypeStartArray: {
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          out->append("[");
+          state_stack.push_back({State::kTypeArray});
+          break;
+        }
+
+        case kTypeBool: {
+          TraceEvent::TraceValue json_value;
+          CHECK(it.ReadBool(&json_value.as_bool));
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+          break;
+        }
+
+        case kTypeInt: {
+          int value;
+          CHECK(it.ReadInt(&value));
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          TraceEvent::TraceValue json_value;
+          json_value.as_int = value;
+          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+          break;
+        }
+
+        case kTypeDouble: {
+          TraceEvent::TraceValue json_value;
+          CHECK(it.ReadDouble(&json_value.as_double));
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value,
+                                        out);
+          break;
+        }
+
+        case kTypeString: {
+          std::string value;
+          CHECK(it.ReadString(&value));
+          maybe_append_key_name(state_stack[current_state_index], &it, out);
+          TraceEvent::TraceValue json_value;
+          json_value.as_string = value.c_str();
+          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value,
+                                        out);
+          break;
+        }
+
+        default:
+          NOTREACHED();
+      }
+
+      state_stack[current_state_index].needs_comma = true;
+    }
+
+    out->append("}");
+    state_stack.pop_back();
+
+    DCHECK(state_stack.empty());
+  }
+
+  void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) override {
+    overhead->Add(TraceEventMemoryOverhead::kTracedValue,
+                  /* allocated size */
+                  pickle_.GetTotalAllocatedSize(),
+                  /* resident size */
+                  pickle_.size());
+  }
+
+  std::unique_ptr<base::Value> ToBaseValue() const override {
+    base::Value root(base::Value::Type::DICTIONARY);
+    Value* cur_dict = &root;
+    Value* cur_list = nullptr;
+    std::vector<Value*> stack;
+    PickleIterator it(pickle_);
+    const char* type;
+
+    while (it.ReadBytes(&type, 1)) {
+      DCHECK((cur_dict && !cur_list) || (cur_list && !cur_dict));
+      switch (*type) {
+        case kTypeStartDict: {
+          base::Value new_dict(base::Value::Type::DICTIONARY);
+          if (cur_dict) {
+            stack.push_back(cur_dict);
+            cur_dict = cur_dict->SetKey(ReadKeyName(it), std::move(new_dict));
+          } else {
+            cur_list->GetList().push_back(std::move(new_dict));
+            // |new_dict| is invalidated at this point, so |cur_dict| needs to
+            // be reset.
+            cur_dict = &cur_list->GetList().back();
+            stack.push_back(cur_list);
+            cur_list = nullptr;
+          }
+        } break;
+
+        case kTypeEndArray:
+        case kTypeEndDict: {
+          if (stack.back()->is_dict()) {
+            cur_dict = stack.back();
+            cur_list = nullptr;
+          } else if (stack.back()->is_list()) {
+            cur_list = stack.back();
+            cur_dict = nullptr;
+          }
+          stack.pop_back();
+        } break;
+
+        case kTypeStartArray: {
+          base::Value new_list(base::Value::Type::LIST);
+          if (cur_dict) {
+            stack.push_back(cur_dict);
+            cur_list = cur_dict->SetKey(ReadKeyName(it), std::move(new_list));
+            cur_dict = nullptr;
+          } else {
+            cur_list->GetList().push_back(std::move(new_list));
+            stack.push_back(cur_list);
+            // |cur_list| is invalidated at this point by the Append, so it
+            // needs to be reset.
+            cur_list = &cur_list->GetList().back();
+          }
+        } break;
+
+        case kTypeBool: {
+          bool value;
+          CHECK(it.ReadBool(&value));
+          base::Value new_bool(value);
+          if (cur_dict) {
+            cur_dict->SetKey(ReadKeyName(it), std::move(new_bool));
+          } else {
+            cur_list->GetList().push_back(std::move(new_bool));
+          }
+        } break;
+
+        case kTypeInt: {
+          int value;
+          CHECK(it.ReadInt(&value));
+          base::Value new_int(value);
+          if (cur_dict) {
+            cur_dict->SetKey(ReadKeyName(it), std::move(new_int));
+          } else {
+            cur_list->GetList().push_back(std::move(new_int));
+          }
+        } break;
+
+        case kTypeDouble: {
+          double value;
+          CHECK(it.ReadDouble(&value));
+          base::Value new_double(value);
+          if (cur_dict) {
+            cur_dict->SetKey(ReadKeyName(it), std::move(new_double));
+          } else {
+            cur_list->GetList().push_back(std::move(new_double));
+          }
+        } break;
+
+        case kTypeString: {
+          std::string value;
+          CHECK(it.ReadString(&value));
+          base::Value new_str(std::move(value));
+          if (cur_dict) {
+            cur_dict->SetKey(ReadKeyName(it), std::move(new_str));
+          } else {
+            cur_list->GetList().push_back(std::move(new_str));
+          }
+        } break;
+
+        default:
+          NOTREACHED();
+      }
+    }
+    DCHECK(stack.empty());
+    return base::Value::ToUniquePtrValue(std::move(root));
+  }
+
+ private:
+  Pickle pickle_;
+};
+
+std::unique_ptr<TracedValue::Writer> CreateWriter(size_t capacity) {
+  TracedValue::WriterFactoryCallback callback =
+      g_writer_factory_callback.load();
+  if (callback) {
+    return callback(capacity);
+  }
+
+  return std::make_unique<PickleWriter>(capacity);
+}
+
 }  // namespace
+
+bool TracedValue::Writer::AppendToProto(ProtoAppender* appender) {
+  return false;
+}
+
+// static
+void TracedValue::SetWriterFactoryCallback(WriterFactoryCallback callback) {
+  g_writer_factory_callback.store(callback);
+}
 
 TracedValue::TracedValue() : TracedValue(0) {}
 
 TracedValue::TracedValue(size_t capacity) {
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
-  if (capacity)
-    pickle_.Reserve(capacity);
+
+  writer_ = CreateWriter(capacity);
 }
 
 TracedValue::~TracedValue() {
@@ -95,487 +470,143 @@ TracedValue::~TracedValue() {
 
 void TracedValue::SetInteger(const char* name, int value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeInt, 1);
-  pickle_.WriteInt(value);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->SetInteger(name, value);
 }
 
 void TracedValue::SetIntegerWithCopiedName(base::StringPiece name, int value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeInt, 1);
-  pickle_.WriteInt(value);
-  WriteKeyNameWithCopy(pickle_, name);
+  writer_->SetIntegerWithCopiedName(name, value);
 }
 
 void TracedValue::SetDouble(const char* name, double value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeDouble, 1);
-  pickle_.WriteDouble(value);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->SetDouble(name, value);
 }
 
 void TracedValue::SetDoubleWithCopiedName(base::StringPiece name,
                                           double value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeDouble, 1);
-  pickle_.WriteDouble(value);
-  WriteKeyNameWithCopy(pickle_, name);
+  writer_->SetDoubleWithCopiedName(name, value);
 }
 
 void TracedValue::SetBoolean(const char* name, bool value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeBool, 1);
-  pickle_.WriteBool(value);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->SetBoolean(name, value);
 }
 
 void TracedValue::SetBooleanWithCopiedName(base::StringPiece name, bool value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeBool, 1);
-  pickle_.WriteBool(value);
-  WriteKeyNameWithCopy(pickle_, name);
+  writer_->SetBooleanWithCopiedName(name, value);
 }
 
 void TracedValue::SetString(const char* name, base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeString, 1);
-  pickle_.WriteString(value);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->SetString(name, value);
 }
 
 void TracedValue::SetStringWithCopiedName(base::StringPiece name,
                                           base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeString, 1);
-  pickle_.WriteString(value);
-  WriteKeyNameWithCopy(pickle_, name);
+  writer_->SetStringWithCopiedName(name, value);
 }
 
-void TracedValue::SetValue(const char* name, const TracedValue& value) {
+void TracedValue::SetValue(const char* name, TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  BeginDictionary(name);
-  pickle_.WriteBytes(value.pickle_.payload(),
-                     static_cast<int>(value.pickle_.payload_size()));
-  EndDictionary();
+  writer_->SetValue(name, value->writer_.get());
 }
 
 void TracedValue::SetValueWithCopiedName(base::StringPiece name,
-                                         const TracedValue& value) {
+                                         TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  BeginDictionaryWithCopiedName(name);
-  pickle_.WriteBytes(value.pickle_.payload(),
-                     static_cast<int>(value.pickle_.payload_size()));
-  EndDictionary();
+  writer_->SetValueWithCopiedName(name, value->writer_.get());
 }
 
 void TracedValue::BeginDictionary(const char* name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeStartDict, 1);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->BeginDictionary(name);
 }
 
 void TracedValue::BeginDictionaryWithCopiedName(base::StringPiece name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeStartDict, 1);
-  WriteKeyNameWithCopy(pickle_, name);
+  writer_->BeginDictionaryWithCopiedName(name);
 }
 
 void TracedValue::BeginArray(const char* name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeStartArray, 1);
-  WriteKeyNameAsRawPtr(pickle_, name);
+  writer_->BeginArray(name);
 }
 
 void TracedValue::BeginArrayWithCopiedName(base::StringPiece name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeStartArray, 1);
-  WriteKeyNameWithCopy(pickle_, name);
-}
-
-void TracedValue::EndDictionary() {
-  DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  DEBUG_POP_CONTAINER();
-  pickle_.WriteBytes(&kTypeEndDict, 1);
+  writer_->BeginArrayWithCopiedName(name);
 }
 
 void TracedValue::AppendInteger(int value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeInt, 1);
-  pickle_.WriteInt(value);
+  writer_->AppendInteger(value);
 }
 
 void TracedValue::AppendDouble(double value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeDouble, 1);
-  pickle_.WriteDouble(value);
+  writer_->AppendDouble(value);
 }
 
 void TracedValue::AppendBoolean(bool value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeBool, 1);
-  pickle_.WriteBool(value);
+  writer_->AppendBoolean(value);
 }
 
 void TracedValue::AppendString(base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeString, 1);
-  pickle_.WriteString(value);
+  writer_->AppendString(value);
 }
 
 void TracedValue::BeginArray() {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
   DEBUG_PUSH_CONTAINER(kStackTypeArray);
-  pickle_.WriteBytes(&kTypeStartArray, 1);
+  writer_->BeginArray();
 }
 
 void TracedValue::BeginDictionary() {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
-  pickle_.WriteBytes(&kTypeStartDict, 1);
+  writer_->BeginDictionary();
 }
 
 void TracedValue::EndArray() {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
   DEBUG_POP_CONTAINER();
-  pickle_.WriteBytes(&kTypeEndArray, 1);
+  writer_->EndArray();
 }
 
-void TracedValue::SetValue(const char* name,
-                           std::unique_ptr<base::Value> value) {
-  SetBaseValueWithCopiedName(name, *value);
-}
-
-void TracedValue::SetBaseValueWithCopiedName(base::StringPiece name,
-                                             const base::Value& value) {
+void TracedValue::EndDictionary() {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  switch (value.type()) {
-    case base::Value::Type::NONE:
-    case base::Value::Type::BINARY:
-      NOTREACHED();
-      break;
-
-    case base::Value::Type::BOOLEAN: {
-      bool bool_value;
-      value.GetAsBoolean(&bool_value);
-      SetBooleanWithCopiedName(name, bool_value);
-    } break;
-
-    case base::Value::Type::INTEGER: {
-      int int_value;
-      value.GetAsInteger(&int_value);
-      SetIntegerWithCopiedName(name, int_value);
-    } break;
-
-    case base::Value::Type::DOUBLE: {
-      double double_value;
-      value.GetAsDouble(&double_value);
-      SetDoubleWithCopiedName(name, double_value);
-    } break;
-
-    case base::Value::Type::STRING: {
-      const Value* string_value;
-      value.GetAsString(&string_value);
-      SetStringWithCopiedName(name, string_value->GetString());
-    } break;
-
-    case base::Value::Type::DICTIONARY: {
-      const DictionaryValue* dict_value;
-      value.GetAsDictionary(&dict_value);
-      BeginDictionaryWithCopiedName(name);
-      for (DictionaryValue::Iterator it(*dict_value); !it.IsAtEnd();
-           it.Advance()) {
-        SetBaseValueWithCopiedName(it.key(), it.value());
-      }
-      EndDictionary();
-    } break;
-
-    case base::Value::Type::LIST: {
-      const ListValue* list_value;
-      value.GetAsList(&list_value);
-      BeginArrayWithCopiedName(name);
-      for (const auto& base_value : *list_value)
-        AppendBaseValue(base_value);
-      EndArray();
-    } break;
-  }
-}
-
-void TracedValue::AppendBaseValue(const base::Value& value) {
-  DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  switch (value.type()) {
-    case base::Value::Type::NONE:
-    case base::Value::Type::BINARY:
-      NOTREACHED();
-      break;
-
-    case base::Value::Type::BOOLEAN: {
-      bool bool_value;
-      value.GetAsBoolean(&bool_value);
-      AppendBoolean(bool_value);
-    } break;
-
-    case base::Value::Type::INTEGER: {
-      int int_value;
-      value.GetAsInteger(&int_value);
-      AppendInteger(int_value);
-    } break;
-
-    case base::Value::Type::DOUBLE: {
-      double double_value;
-      value.GetAsDouble(&double_value);
-      AppendDouble(double_value);
-    } break;
-
-    case base::Value::Type::STRING: {
-      const Value* string_value;
-      value.GetAsString(&string_value);
-      AppendString(string_value->GetString());
-    } break;
-
-    case base::Value::Type::DICTIONARY: {
-      const DictionaryValue* dict_value;
-      value.GetAsDictionary(&dict_value);
-      BeginDictionary();
-      for (DictionaryValue::Iterator it(*dict_value); !it.IsAtEnd();
-           it.Advance()) {
-        SetBaseValueWithCopiedName(it.key(), it.value());
-      }
-      EndDictionary();
-    } break;
-
-    case base::Value::Type::LIST: {
-      const ListValue* list_value;
-      value.GetAsList(&list_value);
-      BeginArray();
-      for (const auto& base_value : *list_value)
-        AppendBaseValue(base_value);
-      EndArray();
-    } break;
-  }
+  DEBUG_POP_CONTAINER();
+  writer_->EndDictionary();
 }
 
 std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
-  base::Value root(base::Value::Type::DICTIONARY);
-  Value* cur_dict = &root;
-  Value* cur_list = nullptr;
-  std::vector<Value*> stack;
-  PickleIterator it(pickle_);
-  const char* type;
-
-  while (it.ReadBytes(&type, 1)) {
-    DCHECK((cur_dict && !cur_list) || (cur_list && !cur_dict));
-    switch (*type) {
-      case kTypeStartDict: {
-        base::Value new_dict(base::Value::Type::DICTIONARY);
-        if (cur_dict) {
-          stack.push_back(cur_dict);
-          cur_dict = cur_dict->SetKey(ReadKeyName(it), std::move(new_dict));
-        } else {
-          cur_list->GetList().push_back(std::move(new_dict));
-          // |new_dict| is invalidated at this point, so |cur_dict| needs to be
-          // reset.
-          cur_dict = &cur_list->GetList().back();
-          stack.push_back(cur_list);
-          cur_list = nullptr;
-        }
-      } break;
-
-      case kTypeEndArray:
-      case kTypeEndDict: {
-        if (stack.back()->is_dict()) {
-          cur_dict = stack.back();
-          cur_list = nullptr;
-        } else if (stack.back()->is_list()) {
-          cur_list = stack.back();
-          cur_dict = nullptr;
-        }
-        stack.pop_back();
-      } break;
-
-      case kTypeStartArray: {
-        base::Value new_list(base::Value::Type::LIST);
-        if (cur_dict) {
-          stack.push_back(cur_dict);
-          cur_list = cur_dict->SetKey(ReadKeyName(it), std::move(new_list));
-          cur_dict = nullptr;
-        } else {
-          cur_list->GetList().push_back(std::move(new_list));
-          stack.push_back(cur_list);
-          // |cur_list| is invalidated at this point by the Append, so it needs
-          // to be reset.
-          cur_list = &cur_list->GetList().back();
-        }
-      } break;
-
-      case kTypeBool: {
-        bool value;
-        CHECK(it.ReadBool(&value));
-        base::Value new_bool(value);
-        if (cur_dict) {
-          cur_dict->SetKey(ReadKeyName(it), std::move(new_bool));
-        } else {
-          cur_list->GetList().push_back(std::move(new_bool));
-        }
-      } break;
-
-      case kTypeInt: {
-        int value;
-        CHECK(it.ReadInt(&value));
-        base::Value new_int(value);
-        if (cur_dict) {
-          cur_dict->SetKey(ReadKeyName(it), std::move(new_int));
-        } else {
-          cur_list->GetList().push_back(std::move(new_int));
-        }
-      } break;
-
-      case kTypeDouble: {
-        double value;
-        CHECK(it.ReadDouble(&value));
-        base::Value new_double(value);
-        if (cur_dict) {
-          cur_dict->SetKey(ReadKeyName(it), std::move(new_double));
-        } else {
-          cur_list->GetList().push_back(std::move(new_double));
-        }
-      } break;
-
-      case kTypeString: {
-        std::string value;
-        CHECK(it.ReadString(&value));
-        base::Value new_str(std::move(value));
-        if (cur_dict) {
-          cur_dict->SetKey(ReadKeyName(it), std::move(new_str));
-        } else {
-          cur_list->GetList().push_back(std::move(new_str));
-        }
-      } break;
-
-      default:
-        NOTREACHED();
-    }
-  }
-  DCHECK(stack.empty());
-  return base::Value::ToUniquePtrValue(std::move(root));
+  return writer_->ToBaseValue();
 }
 
 void TracedValue::AppendAsTraceFormat(std::string* out) const {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DCHECK_CONTAINER_STACK_DEPTH_EQ(1u);
 
-  struct State {
-    enum Type { kTypeDict, kTypeArray };
-    Type type;
-    bool needs_comma;
-  };
+  writer_->AppendAsTraceFormat(out);
+}
 
-  auto maybe_append_key_name = [](State current_state, PickleIterator* it,
-                                  std::string* out) {
-    if (current_state.type == State::kTypeDict) {
-      EscapeJSONString(ReadKeyName(*it), true, out);
-      out->append(":");
-    }
-  };
-
-  base::circular_deque<State> state_stack;
-
-  out->append("{");
-  state_stack.push_back({State::kTypeDict});
-
-  PickleIterator it(pickle_);
-  for (const char* type; it.ReadBytes(&type, 1);) {
-    switch (*type) {
-      case kTypeEndDict:
-        out->append("}");
-        state_stack.pop_back();
-        continue;
-
-      case kTypeEndArray:
-        out->append("]");
-        state_stack.pop_back();
-        continue;
-    }
-
-    // Use an index so it will stay valid across resizes.
-    size_t current_state_index = state_stack.size() - 1;
-    if (state_stack[current_state_index].needs_comma)
-      out->append(",");
-
-    switch (*type) {
-      case kTypeStartDict: {
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        out->append("{");
-        state_stack.push_back({State::kTypeDict});
-        break;
-      }
-
-      case kTypeStartArray: {
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        out->append("[");
-        state_stack.push_back({State::kTypeArray});
-        break;
-      }
-
-      case kTypeBool: {
-        TraceEvent::TraceValue json_value;
-        CHECK(it.ReadBool(&json_value.as_bool));
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
-        break;
-      }
-
-      case kTypeInt: {
-        int value;
-        CHECK(it.ReadInt(&value));
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::TraceValue json_value;
-        json_value.as_int = value;
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
-        break;
-      }
-
-      case kTypeDouble: {
-        TraceEvent::TraceValue json_value;
-        CHECK(it.ReadDouble(&json_value.as_double));
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
-        break;
-      }
-
-      case kTypeString: {
-        std::string value;
-        CHECK(it.ReadString(&value));
-        maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::TraceValue json_value;
-        json_value.as_string = value.c_str();
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
-        break;
-      }
-
-      default:
-        NOTREACHED();
-    }
-
-    state_stack[current_state_index].needs_comma = true;
-  }
-
-  out->append("}");
-  state_stack.pop_back();
-
-  DCHECK(state_stack.empty());
+bool TracedValue::AppendToProto(ProtoAppender* appender) {
+  return writer_->AppendToProto(appender);
 }
 
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  overhead->Add(TraceEventMemoryOverhead::kTracedValue,
-                /* allocated size */
-                pickle_.GetTotalAllocatedSize(),
-                /* resident size */
-                pickle_.size());
+  writer_->EstimateTraceMemoryOverhead(overhead);
 }
 
 }  // namespace trace_event

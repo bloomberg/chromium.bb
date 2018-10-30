@@ -23,7 +23,7 @@ SubresourceFilterSafeBrowsingClient::CheckResult::ToTracedValue() const {
   auto value = std::make_unique<base::trace_event::TracedValue>();
   value->SetInteger("request_id", request_id);
   value->SetInteger("threat_type", threat_type);
-  value->SetValue("threat_metadata", *threat_metadata.ToTracedValue());
+  value->SetValue("threat_metadata", threat_metadata.ToTracedValue().get());
   value->SetInteger("check_time (us)", check_time.InMicroseconds());
   value->SetBoolean("finished", finished);
   return value;

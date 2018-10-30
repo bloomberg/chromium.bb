@@ -425,34 +425,42 @@ class FrameMetricsTraceData
   FrameMetricsTraceData() = default;
   ~FrameMetricsTraceData() override = default;
 
-  void AppendAsTraceFormat(std::string* out) const override {
-    base::trace_event::TracedValue state;
+  void ToTracedValue(base::trace_event::TracedValue* state) const {
+    state->BeginDictionary("Source");
+    settings.AsValueInto(state);
+    state->EndDictionary();
 
-    state.BeginDictionary("Source");
-    settings.AsValueInto(&state);
-    state.EndDictionary();
+    state->BeginDictionary("Skips");
+    skips.AsValueInto(state);
+    state->EndDictionary();
 
-    state.BeginDictionary("Skips");
-    skips.AsValueInto(&state);
-    state.EndDictionary();
-
-    state.BeginDictionary("Latency");
-    latency.AsValueInto(&state);
-    state.EndDictionary();
+    state->BeginDictionary("Latency");
+    latency.AsValueInto(state);
+    state->EndDictionary();
 
     if (settings.is_frame_latency_speed_on()) {
-      state.BeginDictionary("Speed");
-      speed.AsValueInto(&state);
-      state.EndDictionary();
+      state->BeginDictionary("Speed");
+      speed.AsValueInto(state);
+      state->EndDictionary();
     }
 
     if (settings.is_frame_latency_acceleration_on()) {
-      state.BeginDictionary("Acceleration");
-      acceleration.AsValueInto(&state);
-      state.EndDictionary();
+      state->BeginDictionary("Acceleration");
+      acceleration.AsValueInto(state);
+      state->EndDictionary();
     }
+  }
 
+  void AppendAsTraceFormat(std::string* out) const override {
+    base::trace_event::TracedValue state;
+    ToTracedValue(&state);
     state.AppendAsTraceFormat(out);
+  }
+
+  bool AppendToProto(ProtoAppender* appender) override {
+    base::trace_event::TracedValue state;
+    ToTracedValue(&state);
+    return state.AppendToProto(appender);
   }
 
   void EstimateTraceMemoryOverhead(

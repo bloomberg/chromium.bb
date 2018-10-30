@@ -52,6 +52,7 @@ class PLATFORM_EXPORT TracedValue final
   // ConvertableToTraceFormat
 
   void AppendAsTraceFormat(std::string*) const final;
+  bool AppendToProto(ProtoAppender* appender) final;
   void EstimateTraceMemoryOverhead(
       base::trace_event::TraceEventMemoryOverhead*) final;
 

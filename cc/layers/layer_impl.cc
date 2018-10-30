@@ -789,7 +789,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
                                               *state);
 
   if (debug_info_)
-    state->SetValue("debug_info", *debug_info_);
+    state->SetValue("debug_info", debug_info_);
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

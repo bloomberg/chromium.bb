@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
@@ -153,13 +154,18 @@ class TraceEventDataSource::ThreadLocalEventSink {
   }
 
   void AddConvertableToTraceFormat(
-      const base::trace_event::ConvertableToTraceFormat* value,
+      base::trace_event::ConvertableToTraceFormat* value,
       perfetto::protos::pbzero::ChromeTraceEvent_Arg* arg) {
+    PerfettoProtoAppender proto_appender(arg);
+    if (value->AppendToProto(&proto_appender)) {
+      return;
+    }
+
     std::string json = value->ToString();
     arg->set_json_value(json.c_str());
   }
 
-  void AddTraceEvent(const TraceEvent& trace_event) {
+  void AddTraceEvent(TraceEvent* trace_event) {
     // TODO(oysteine): Adding trace events to Perfetto will
     // stall in some situations, specifically when we overflow
     // the buffer and need to make a sync call to flush it, and we're
@@ -170,7 +176,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // TODO(oysteine): Temporary workaround for a specific trace event
     // which is added while a scheduler lock is held, and will deadlock
     // if Perfetto does a PostTask to commit a finished chunk.
-    if (strcmp(trace_event.name(), "RealTimeDomain::DelayTillNextTask") == 0) {
+    if (strcmp(trace_event->name(), "RealTimeDomain::DelayTillNextTask") == 0) {
       return;
     }
 
@@ -186,17 +192,18 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // If the TRACE_EVENT_FLAG_COPY flag is set, the char* pointers aren't
     // necessarily valid after the TRACE_EVENT* call, and so we need to store
     // the string every time.
-    bool string_table_enabled = !(trace_event.flags() & TRACE_EVENT_FLAG_COPY);
+    bool string_table_enabled = !(trace_event->flags() & TRACE_EVENT_FLAG_COPY);
     if (string_table_enabled) {
-      name_index = GetStringTableIndexForString(trace_event.name());
-      category_name_index = GetStringTableIndexForString(
-          TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
+      name_index = GetStringTableIndexForString(trace_event->name());
+      category_name_index =
+          GetStringTableIndexForString(TraceLog::GetCategoryGroupName(
+              trace_event->category_group_enabled()));
 
       for (int i = 0;
-           i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+           i < base::trace_event::kTraceMaxNumArgs && trace_event->arg_name(i);
            ++i) {
         arg_name_indices[i] =
-            GetStringTableIndexForString(trace_event.arg_name(i));
+            GetStringTableIndexForString(trace_event->arg_name(i));
       }
     }
 
@@ -205,58 +212,58 @@ class TraceEventDataSource::ThreadLocalEventSink {
     if (name_index) {
       new_trace_event->set_name_index(name_index);
     } else {
-      new_trace_event->set_name(trace_event.name());
+      new_trace_event->set_name(trace_event->name());
     }
 
     if (category_name_index) {
       new_trace_event->set_category_group_name_index(category_name_index);
     } else {
-      new_trace_event->set_category_group_name(
-          TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
+      new_trace_event->set_category_group_name(TraceLog::GetCategoryGroupName(
+          trace_event->category_group_enabled()));
     }
 
     new_trace_event->set_timestamp(
-        trace_event.timestamp().since_origin().InMicroseconds());
+        trace_event->timestamp().since_origin().InMicroseconds());
 
-    uint32_t flags = trace_event.flags();
+    uint32_t flags = trace_event->flags();
     new_trace_event->set_flags(flags);
 
     int process_id;
     int thread_id;
     if ((flags & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
-        trace_event.thread_id() != base::kNullProcessId) {
-      process_id = trace_event.thread_id();
+        trace_event->thread_id() != base::kNullProcessId) {
+      process_id = trace_event->thread_id();
       thread_id = -1;
     } else {
       process_id = TraceLog::GetInstance()->process_id();
-      thread_id = trace_event.thread_id();
+      thread_id = trace_event->thread_id();
     }
 
     new_trace_event->set_process_id(process_id);
     new_trace_event->set_thread_id(thread_id);
 
-    char phase = trace_event.phase();
+    char phase = trace_event->phase();
     new_trace_event->set_phase(phase);
 
     for (int i = 0;
-         i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+         i < base::trace_event::kTraceMaxNumArgs && trace_event->arg_name(i);
          ++i) {
-      auto type = trace_event.arg_type(i);
+      auto type = trace_event->arg_type(i);
       auto* new_arg = new_trace_event->add_args();
 
       if (arg_name_indices[i]) {
         new_arg->set_name_index(arg_name_indices[i]);
       } else {
-        new_arg->set_name(trace_event.arg_name(i));
+        new_arg->set_name(trace_event->arg_name(i));
       }
 
       if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
-        AddConvertableToTraceFormat(trace_event.arg_convertible_value(i),
+        AddConvertableToTraceFormat(trace_event->arg_convertible_value(i),
                                     new_arg);
         continue;
       }
 
-      auto& value = trace_event.arg_value(i);
+      auto& value = trace_event->arg_value(i);
       switch (type) {
         case TRACE_VALUE_TYPE_BOOL:
           new_arg->set_bool_value(value.as_bool);
@@ -285,7 +292,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
     }
 
     if (phase == TRACE_EVENT_PHASE_COMPLETE) {
-      int64_t duration = trace_event.duration().InMicroseconds();
+      int64_t duration = trace_event->duration().InMicroseconds();
       if (duration != -1) {
         new_trace_event->set_duration(duration);
       } else {
@@ -295,33 +302,33 @@ class TraceEventDataSource::ThreadLocalEventSink {
         new_trace_event->set_duration(0);
       }
 
-      if (!trace_event.thread_timestamp().is_null()) {
+      if (!trace_event->thread_timestamp().is_null()) {
         int64_t thread_duration =
-            trace_event.thread_duration().InMicroseconds();
+            trace_event->thread_duration().InMicroseconds();
         if (thread_duration != -1) {
           new_trace_event->set_thread_duration(thread_duration);
         }
       }
     }
 
-    if (!trace_event.thread_timestamp().is_null()) {
+    if (!trace_event->thread_timestamp().is_null()) {
       int64_t thread_time_int64 =
-          trace_event.thread_timestamp().since_origin().InMicroseconds();
+          trace_event->thread_timestamp().since_origin().InMicroseconds();
       new_trace_event->set_thread_timestamp(thread_time_int64);
     }
 
-    if (trace_event.scope() != trace_event_internal::kGlobalScope) {
-      new_trace_event->set_scope(trace_event.scope());
+    if (trace_event->scope() != trace_event_internal::kGlobalScope) {
+      new_trace_event->set_scope(trace_event->scope());
     }
 
     if (flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
                  TRACE_EVENT_FLAG_HAS_GLOBAL_ID)) {
-      new_trace_event->set_id(trace_event.id());
+      new_trace_event->set_id(trace_event->id());
     }
 
     if ((flags & TRACE_EVENT_FLAG_FLOW_OUT) ||
         (flags & TRACE_EVENT_FLAG_FLOW_IN)) {
-      new_trace_event->set_bind_id(trace_event.bind_id());
+      new_trace_event->set_bind_id(trace_event->bind_id());
     }
   }
 
@@ -362,7 +369,9 @@ TraceEventDataSource* TraceEventDataSource::GetInstance() {
 }
 
 TraceEventDataSource::TraceEventDataSource()
-    : DataSourceBase(mojom::kTraceEventDataSourceName) {}
+    : DataSourceBase(mojom::kTraceEventDataSourceName) {
+  RegisterTracedValueProtoWriter();
+}
 
 TraceEventDataSource::~TraceEventDataSource() = default;
 
@@ -456,7 +465,7 @@ TraceEventDataSource::CreateThreadLocalEventSink() {
 }
 
 // static
-void TraceEventDataSource::OnAddTraceEvent(const TraceEvent& trace_event) {
+void TraceEventDataSource::OnAddTraceEvent(TraceEvent* trace_event) {
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
 
