@@ -2,6 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   inputText: string,
+ *   cursorPosition: number,
+ *   preventInlineAutocomplete: boolean,
+ *   preferKeyword: boolean,
+ *   pageClassification: number,
+ * }}
+ */
+let QueryInputs;
+
+/**
+ * @typedef {{
+ *   showIncompleteResults: boolean,
+ *   showDetails: boolean,
+ *   showAllProviders: boolean,
+ * }}
+ */
+let DisplayInputs;
+
 class OmniboxInputs extends OmniboxElement {
   /** @return {string} */
   static get is() {
@@ -20,7 +40,7 @@ class OmniboxInputs extends OmniboxElement {
   /** @private */
   setupElementListeners_() {
     const onQueryInputsChanged = this.onQueryInputsChanged_.bind(this);
-    const onDisplayInputsChagned = this.onDisplayInputsChagned_.bind(this);
+    const onDisplayInputsChanged = this.onDisplayInputsChanged_.bind(this);
 
     this.$$('input-text').addEventListener('input', onQueryInputsChanged);
     [
@@ -32,25 +52,33 @@ class OmniboxInputs extends OmniboxElement {
       this.$$('show-incomplete-results'),
       this.$$('show-details'),
       this.$$('show-all-providers'),
-    ].forEach(elem => elem.addEventListener('change', onDisplayInputsChagned));
+    ].forEach(elem => elem.addEventListener('change', onDisplayInputsChanged));
   }
 
   /** @private */
   onQueryInputsChanged_() {
-    this.dispatchEvent(new CustomEvent('query-inputs-changed', {
-      detail: {
-        inputText: this.$$('input-text').value,
-        cursorPosition: this.$$('input-text').selectionEnd,
-        preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
-        preferKeyword: this.$$('prefer-keyword').checked,
-        pageClassification: this.$$('page-classification').checked,
-      }
-    }));
+    /** @type {QueryInputs} */
+    const queryInputs = {
+      inputText: this.$$('input-text').value,
+      cursorPosition: this.$$('input-text').selectionEnd,
+      preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
+      preferKeyword: this.$$('prefer-keyword').checked,
+      pageClassification: this.$$('page-classification').checked,
+    };
+    this.dispatchEvent(
+        new CustomEvent('query-inputs-changed', {detail: queryInputs}));
   }
 
   /** @private */
-  onDisplayInputsChagned_() {
-    this.dispatchEvent(new CustomEvent('display-inputs-changed'));
+  onDisplayInputsChanged_() {
+    /** @type {DisplayInputs} */
+    const displayInputs = {
+      showIncompleteResults: this.$$('show-incomplete-results').checked,
+      showDetails: this.$$('show-details').checked,
+      showAllProviders: this.$$('show-all-providers').checked,
+    };
+    this.dispatchEvent(
+        new CustomEvent('display-inputs-changed', {detail: displayInputs}));
   }
 }
 

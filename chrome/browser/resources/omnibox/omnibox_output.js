@@ -180,14 +180,48 @@ cr.define('omnibox_output', function() {
       super('omnibox-output-template');
     }
 
-    /** @param {Element} element the element to the output */
-    addOutput(element) {
-      this.$$('contents').appendChild(element);
+    /**
+     * @param {QueryInputs} queryInputs
+     * @param {!Array<!mojom.OmniboxResult>} responses
+     * @param {DisplayInputs} displayInputs
+     */
+    refresh(queryInputs, responses, displayInputs) {
+      /** @private {QueryInputs} */
+      this.queryInputs_ = queryInputs;
+      /** @private {!Array<mojom.OmniboxResult>} */
+      this.responses_ = responses;
+      /** @private {DisplayInputs} */
+      this.displayInputs_ = displayInputs;
+
+      this.clearOutput_();
+      if (responses.length) {
+        if (this.displayInputs_.showIncompleteResults)
+          responses.forEach(this.addOutputResultsGroup_.bind(this));
+        else
+          this.addOutputResultsGroup_(responses[responses.length - 1]);
+      }
     }
 
-    clearOutput() {
-      while (this.$$('contents').firstChild)
-        this.$$('contents').removeChild(this.$$('contents').firstChild);
+    /**
+     * @private
+     * @param {!mojom.OmniboxResult} response
+     */
+    addOutputResultsGroup_(response) {
+      this.$$('contents')
+          .appendChild(
+              new OutputResultsGroup(response, this.queryInputs_.cursorPosition)
+                  .render(
+                      this.displayInputs_.showDetails,
+                      this.displayInputs_.showIncompleteResults,
+                      this.displayInputs_.showAllProviders));
+    }
+
+    /** @private */
+    clearOutput_() {
+      let contents = this.$$('contents');
+      // Clears all children.
+      while (contents.firstChild)
+        contents.removeChild(contents.firstChild);
     }
   }
 
@@ -201,11 +235,14 @@ cr.define('omnibox_output', function() {
    * below.
    */
   class OutputResultsGroup {
-    /** @param {!mojom.OmniboxResult} resultsGroup */
-    constructor(resultsGroup) {
+    /**
+     * @param {!mojom.OmniboxResult} resultsGroup
+     * @param {number} cursorPosition
+     */
+    constructor(resultsGroup, cursorPosition) {
       /** @struct */
       this.details = {
-        cursorPosition: 0,
+        cursorPosition,
         time: resultsGroup.timeSinceOmniboxStartedMs,
         done: resultsGroup.done,
         host: resultsGroup.host,
@@ -470,6 +507,5 @@ cr.define('omnibox_output', function() {
   // https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#object-literal-extensions
   return {
     OmniboxOutput: OmniboxOutput,
-    OutputResultsGroup: OutputResultsGroup,
   };
 });

@@ -35,58 +35,42 @@
    */
   class OutputController {
     constructor() {
-      /** @private {!Array<mojom.OmniboxResult>} */
-      this.outputResultsGroups_ = [];
+      /** @private {!Array<!mojom.OmniboxResult>} */
+      this.responses_ = [];
+      /** @private {QueryInputs} */
+      this.queryInputs_ = /** @type {QueryInputs} */ ({});
+      /** @private {DisplayInputs} */
+      this.displayInputs_ = /** @type {DisplayInputs} */ ({});
     }
 
-    clear() {
-      this.outputResultsGroups_ = [];
-      omniboxOutput.clearOutput();
+    /** @param {QueryInputs} queryInputs */
+    updateQueryInputs(queryInputs) {
+      this.queryInputs_ = queryInputs;
+      this.refresh_();
     }
 
-    /*
-     * Adds a new response to the page. If we're not displaying incomplete
-     * results, we clear the page and display only the new result. If we are
-     * displaying incomplete results, then this is more efficient than refresh,
-     * as there's no need to clear and re-add previous results.
-     */
-    /** @param {!mojom.OmniboxResult} response A response from C++ autocomplete controller */
-    add(response) {
-      this.outputResultsGroups_.push(response);
-      if (!omniboxInputs.$$('show-incomplete-results').checked)
-        omniboxOutput.clearOutput();
-      addResultToOutput(
-          this.outputResultsGroups_[this.outputResultsGroups_.length - 1]);
+    /** @param {DisplayInputs} displayInputs */
+    updateDisplayInputs(displayInputs) {
+      this.displayInputs_ = displayInputs;
+      this.refresh_();
     }
 
-    /*
-     * Refreshes all results. We only display the last (most recent) entry
-     * unless incomplete results is enabled.
-     */
-    refresh() {
-      omniboxOutput.clearOutput();
-      if (omniboxInputs.$$('show-incomplete-results').checked) {
-        this.outputResultsGroups_.forEach(addResultToOutput);
-      } else if (this.outputResultsGroups_.length) {
-        addResultToOutput(
-            this.outputResultsGroups_[this.outputResultsGroups_.length - 1]);
-      }
+    clearAutocompleteResponses() {
+      this.responses_ = [];
+      this.refresh_();
     }
-  }
 
-  /**
-   * Appends some human-readable information about the provided
-   * autocomplete result to the HTML node with id omnibox-debug-text.
-   * The current human-readable form is a few lines about general
-   * autocomplete result statistics followed by a table with one line
-   * for each autocomplete match.  The input parameter is an OmniboxResultMojo.
-   */
-  function addResultToOutput(result) {
-    const resultsGroup = new omnibox_output.OutputResultsGroup(result).render(
-        omniboxInputs.$$('show-details').checked,
-        omniboxInputs.$$('show-incomplete-results').checked,
-        omniboxInputs.$$('show-all-providers').checked);
-    omniboxOutput.addOutput(resultsGroup);
+    /** @param {!mojom.OmniboxResult} response */
+    addAutocompleteResponse(response) {
+      this.responses_.push(response);
+      this.refresh_();
+    }
+
+    /** @private */
+    refresh_() {
+      omniboxOutput.refresh(
+          this.queryInputs_, this.responses_, this.displayInputs_);
+    }
   }
 
   class BrowserProxy {
@@ -116,7 +100,6 @@
                 preventInlineAutocomplete,
                 preferKeyword,
                 pageClassification) {
-      outputController.clear();
       // Then, call chrome with a five-element list:
       // - first element: the value in the text box
       // - second element: the location of the cursor in the text box
@@ -131,8 +114,12 @@
           pageClassification);
     }
 
+    // TODO (manukh) rename method to handleNewAutocompleteResponse in order to
+    // keep terminology consistent. Result refers to a single autocomplete
+    // match. Response refers to the data returned from the C++
+    // AutocompleteController.
     handleNewAutocompleteResult(response) {
-      outputController.add(response);
+      outputController.addAutocompleteResponse(response);
     }
   }
 
@@ -149,15 +136,18 @@
     omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
     omniboxOutput =
         /** @type {!omnibox_output.OmniboxOutput} */ ($('omnibox-output'));
-    omniboxInputs.addEventListener('query-inputs-changed', event =>
-        browserProxy.makeRequest(
-            event.detail.inputText,
-            event.detail.cursorPosition,
-            event.detail.preventInlineAutocomplete,
-            event.detail.preferKeyword,
-            event.detail.pageClassification
-        ));
-    omniboxInputs.addEventListener('display-inputs-changed',
-        outputController.refresh.bind(outputController));
+    omniboxInputs.addEventListener('query-inputs-changed', event => {
+      outputController.clearAutocompleteResponses();
+      outputController.updateQueryInputs(event.detail);
+      browserProxy.makeRequest(
+          event.detail.inputText,
+          event.detail.cursorPosition,
+          event.detail.preventInlineAutocomplete,
+          event.detail.preferKeyword,
+          event.detail.pageClassification);
+    });
+    omniboxInputs.addEventListener(
+        'display-inputs-changed',
+        event => outputController.updateDisplayInputs(event.detail));
   });
 })();
