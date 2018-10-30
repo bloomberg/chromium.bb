@@ -935,7 +935,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(kMarkupDeclarationOpenState) {
       if (cc == '-') {
         SegmentedString::LookAheadResult result =
-            source.LookAhead(HTMLTokenizerNames::dashDash);
+            source.LookAhead(html_tokenizer_names::kDashDash);
         if (result == SegmentedString::kDidMatch) {
           source.AdvanceAndASSERT('-');
           source.AdvanceAndASSERT('-');
@@ -945,7 +945,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
           return HaveBufferedCharacterToken();
       } else if (cc == 'D' || cc == 'd') {
         SegmentedString::LookAheadResult result =
-            source.LookAheadIgnoringCase(HTMLTokenizerNames::doctype);
+            source.LookAheadIgnoringCase(html_tokenizer_names::kDoctype);
         if (result == SegmentedString::kDidMatch) {
           AdvanceStringAndASSERTIgnoringCase(source, "doctype");
           HTML_SWITCH_TO(kDOCTYPEState);
@@ -953,7 +953,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
           return HaveBufferedCharacterToken();
       } else if (cc == '[' && ShouldAllowCDATA()) {
         SegmentedString::LookAheadResult result =
-            source.LookAhead(HTMLTokenizerNames::cdata);
+            source.LookAhead(html_tokenizer_names::kCdata);
         if (result == SegmentedString::kDidMatch) {
           AdvanceStringAndASSERT(source, "[CDATA[");
           HTML_SWITCH_TO(kCDATASectionState);
@@ -1132,7 +1132,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
       } else {
         if (cc == 'P' || cc == 'p') {
           SegmentedString::LookAheadResult result =
-              source.LookAheadIgnoringCase(HTMLTokenizerNames::publicString);
+              source.LookAheadIgnoringCase(html_tokenizer_names::kPublic);
           if (result == SegmentedString::kDidMatch) {
             AdvanceStringAndASSERTIgnoringCase(source, "public");
             HTML_SWITCH_TO(kAfterDOCTYPEPublicKeywordState);
@@ -1140,7 +1140,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
             return HaveBufferedCharacterToken();
         } else if (cc == 'S' || cc == 's') {
           SegmentedString::LookAheadResult result =
-              source.LookAheadIgnoringCase(HTMLTokenizerNames::system);
+              source.LookAheadIgnoringCase(html_tokenizer_names::kSystem);
           if (result == SegmentedString::kDidMatch) {
             AdvanceStringAndASSERTIgnoringCase(source, "system");
             HTML_SWITCH_TO(kAfterDOCTYPESystemKeywordState);
