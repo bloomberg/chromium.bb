@@ -345,7 +345,7 @@ TEST(HeapCompactTest, CompactHashPartVector) {
 }
 
 TEST(HeapCompactTest, CompactDeques) {
-  Persistent<IntDeque> deque = new IntDeque;
+  Persistent<IntDeque> deque = MakeGarbageCollected<IntDeque>();
   for (int i = 0; i < 8; ++i) {
     deque->push_front(IntWrapper::Create(i, VectorsAreCompacted));
   }
@@ -362,7 +362,8 @@ TEST(HeapCompactTest, CompactDeques) {
 }
 
 TEST(HeapCompactTest, CompactDequeVectors) {
-  Persistent<HeapDeque<IntVector>> deque = new HeapDeque<IntVector>;
+  Persistent<HeapDeque<IntVector>> deque =
+      MakeGarbageCollected<HeapDeque<IntVector>>();
   for (int i = 0; i < 8; ++i) {
     IntWrapper* value = IntWrapper::Create(i, VectorsAreCompacted);
     IntVector vector = IntVector(8, value);
