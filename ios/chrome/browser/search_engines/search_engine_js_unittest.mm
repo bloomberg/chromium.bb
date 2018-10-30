@@ -98,8 +98,13 @@ TEST_F(SearchEngineJsTest, TestGetOpenSearchDescriptionDocumentUrlSucceed) {
 
   id result = ExecuteJavaScript(
       @"__gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl();");
+
+  ASSERT_TRUE([result isKindOfClass:NSDictionary.class]);
+  NSDictionary* dict = result;
+  ASSERT_EQ(2UL, dict.count);
+  EXPECT_NSEQ(@"https://cs.chromium.org/", dict[@"documentUrl"]);
   EXPECT_NSEQ(@"https://cs.chromium.org/codesearch/first_opensearch.xml",
-              result);
+              dict[@"openSearchUrl"]);
 }
 
 // Tests that __gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl returns

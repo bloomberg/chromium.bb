@@ -27,13 +27,14 @@ __gCrWeb['searchEngine'] = __gCrWeb.searchEngine;
  * Find <link> of OSDD(Open Search Description Document) in document and return
  * it's URL. If multiple OSDDs are found(which should never happen on a sane web
  * site), return the URL of the first OSDD.
- * @return {string|undefined} "href" of OSDD <link>, or undefined if not found.
+ * @return {Object|undefined} Dictionary containing document.URL and "href"
+ *   of OSDD <link>, or undefined if not found.
  */
 __gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl = function() {
   var links = document.getElementsByTagName('link');
   for (var i = 0; i < links.length; ++i) {
     if (links[i].type == 'application/opensearchdescription+xml') {
-      return links[i].href;
+      return {'documentUrl': document.URL, 'openSearchUrl': links[i].href};
     }
   }
 };
