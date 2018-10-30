@@ -330,21 +330,13 @@ void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
       resource_dispatcher_host_delegate_.get());
 }
 
-bool HeadlessContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  return HeadlessBrowserContextImpl::From(browser_context)
-      ->options()
-      ->site_per_process();
-}
-
 bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // TODO(lukasza): https://crbug.com/869494: Instead of overriding
   // ShouldEnableStrictSiteIsolation, //headless should inherit the default
   // site-per-process setting from //content - this way tools (tests, but also
   // production cases like screenshot or pdf generation) based on //headless
   // will use a mode that is actually shipping in Chrome.
-  return false;
+  return browser_->options()->site_per_process;
 }
 
 ::network::mojom::NetworkContextPtr

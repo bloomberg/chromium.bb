@@ -374,12 +374,6 @@ HeadlessBrowserContext::Builder::SetIncognitoMode(bool incognito_mode) {
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetSitePerProcess(bool site_per_process) {
-  options_->site_per_process_ = site_per_process;
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetBlockNewWebContents(
     bool block_new_web_contents) {
   options_->block_new_web_contents_ = block_new_web_contents;

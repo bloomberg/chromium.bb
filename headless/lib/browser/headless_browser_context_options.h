@@ -42,9 +42,6 @@ class HeadlessBrowserContextOptions {
   // See HeadlessBrowser::Options::incognito_mode.
   bool incognito_mode() const;
 
-  // See HeadlessBrowser::Options::site_per_process.
-  bool site_per_process() const;
-
   // See HeadlessBrowser::Options::block_new_web_contents.
   bool block_new_web_contents() const;
 
@@ -77,7 +74,6 @@ class HeadlessBrowserContextOptions {
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
   base::Optional<bool> incognito_mode_;
-  base::Optional<bool> site_per_process_;
   base::Optional<bool> block_new_web_contents_;
   base::Optional<base::RepeatingCallback<void(WebPreferences*)>>
       override_web_preferences_callback_;
