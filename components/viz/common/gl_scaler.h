@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -260,10 +261,12 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
  private:
   friend class GLScalerOverscanPixelTest;
   friend class GLScalerShaderPixelTest;
+  friend VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream&,
+                                                    const GLScaler&);
 
   using GLES2Interface = gpu::gles2::GLES2Interface;
 
-  enum Axis { HORIZONTAL, VERTICAL };
+  enum Axis { HORIZONTAL = 0, VERTICAL = 1 };
 
   // The shaders used by each stage in the scaling pipeline.
   enum class Shader : int8_t {
@@ -370,7 +373,11 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
     void set_input_stage(std::unique_ptr<ScalerStage> stage) {
       input_stage_ = std::move(stage);
     }
+    std::unique_ptr<ScalerStage> take_input_stage() {
+      return std::move(input_stage_);
+    }
 
+    ShaderProgram* shader_program() const { return program_; }
     void set_shader_program(ShaderProgram* program) { program_ = program; }
 
     bool is_flipped_source() const { return is_flipped_source_; }
@@ -428,6 +435,32 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
                                   const gfx::ColorTransform* color_transform,
                                   const GLenum swizzle[2]);
 
+  // Create a scaling chain using the bilinear shaders.
+  static std::unique_ptr<ScalerStage> CreateAGoodScalingChain(
+      gpu::gles2::GLES2Interface* gl,
+      const gfx::Vector2d& scale_from,
+      const gfx::Vector2d& scale_to);
+
+  // Create a scaling chain using the bicubic shaders.
+  static std::unique_ptr<ScalerStage> CreateTheBestScalingChain(
+      gpu::gles2::GLES2Interface* gl,
+      const gfx::Vector2d& scale_from,
+      const gfx::Vector2d& scale_to);
+
+  // Modifies |chain| by appending an export stage, to rearrange the image data
+  // according to the requested |export_format|. In some cases, this will delete
+  // the final stage in |chain| before appending the export stage.
+  static std::unique_ptr<ScalerStage> MaybeAppendExportStage(
+      gpu::gles2::GLES2Interface* gl,
+      std::unique_ptr<ScalerStage> chain,
+      Parameters::ExportFormat export_format);
+
+  // Returns the other of the two axes.
+  static Axis TheOtherAxis(Axis axis);
+
+  // Returns the name of the |shader| in string form, for logging purposes.
+  static const char* GetShaderName(Shader shader);
+
   // Returns true if the given |gl| context mentions all of |names| in its
   // extensions string.
   static bool AreAllGLExtensionsPresent(gpu::gles2::GLES2Interface* gl,
@@ -463,8 +496,15 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // The chain of ScalerStages.
   std::unique_ptr<ScalerStage> chain_;
 
+  // The color space in which the scaling stages operate.
+  gfx::ColorSpace scaling_color_space_;
+
   DISALLOW_COPY_AND_ASSIGN(GLScaler);
 };
+
+// For logging.
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const GLScaler& scaler);
 
 }  // namespace viz
 

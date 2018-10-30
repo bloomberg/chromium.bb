@@ -221,6 +221,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
     "gl_scaler_overscan_pixeltest.cc",
+    "gl_scaler_pixeltest.cc",
     "gl_scaler_shader_pixeltest.cc",
     "gl_scaler_test_util.cc",
     "gl_scaler_test_util.h",

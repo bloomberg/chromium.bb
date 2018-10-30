@@ -4,6 +4,8 @@
 
 #include "components/viz/common/gl_scaler.h"
 
+#include "cc/test/pixel_test.h"
+#include "components/viz/common/gl_scaler_test_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -79,7 +81,12 @@ class MockContextProvider : public ContextProvider {
   }
 };
 
-class GLScalerTest : public testing::Test {};
+class GLScalerTest : public cc::PixelTest {
+ protected:
+  void SetUp() final { cc::PixelTest::SetUpGLWithoutRenderer(false); }
+
+  void TearDown() final { cc::PixelTest::TearDown(); }
+};
 
 TEST_F(GLScalerTest, AddAndRemovesSelfAsContextLossObserver) {
   NiceMock<MockContextProvider> provider;
@@ -93,7 +100,7 @@ TEST_F(GLScalerTest, AddAndRemovesSelfAsContextLossObserver) {
   GLScaler scaler(base::WrapRefCounted(&provider));
 }
 
-TEST_F(GLScalerTest, CleansUpWhenContextIsLost) {
+TEST_F(GLScalerTest, RemovesObserverWhenContextIsLost) {
   NiceMock<MockContextProvider> provider;
   ContextLostObserver* registered_observer = nullptr;
   Sequence s;
@@ -108,9 +115,29 @@ TEST_F(GLScalerTest, CleansUpWhenContextIsLost) {
   Mock::VerifyAndClearExpectations(&provider);
 }
 
+TEST_F(GLScalerTest, StopsScalingWhenContextIsLost) {
+  GLScaler scaler(context_provider());
+
+  // Configure the scaler with default parameters (1:1 scale ratio).
+  ASSERT_TRUE(scaler.Configure(GLScaler::Parameters()));
+
+  // Call Scale() and expect it to return true to indicate the operation
+  // succeeded.
+  GLScalerTestTextureHelper helper(context_provider()->ContextGL());
+  constexpr gfx::Size kSomeSize = gfx::Size(32, 32);
+  const GLuint src_texture = helper.CreateTexture(kSomeSize);
+  const GLuint dest_texture = helper.CreateTexture(kSomeSize);
+  EXPECT_TRUE(scaler.Scale(src_texture, kSomeSize, gfx::Vector2d(),
+                           dest_texture, gfx::Rect(kSomeSize)));
+
+  // After the context is lost, another call to Scale() should return false.
+  static_cast<ContextLostObserver&>(scaler).OnContextLost();
+  EXPECT_FALSE(scaler.Scale(src_texture, kSomeSize, gfx::Vector2d(),
+                            dest_texture, gfx::Rect(kSomeSize)));
+}
+
 TEST_F(GLScalerTest, Configure_RequiresValidScalingVectors) {
-  NiceMock<MockContextProvider> provider;
-  GLScaler scaler(base::WrapRefCounted(&provider));
+  GLScaler scaler(context_provider());
 
   GLScaler::Parameters params;
   EXPECT_TRUE(scaler.Configure(params));
@@ -123,8 +150,7 @@ TEST_F(GLScalerTest, Configure_RequiresValidScalingVectors) {
 }
 
 TEST_F(GLScalerTest, Configure_ResolvesUnspecifiedColorSpaces) {
-  NiceMock<MockContextProvider> provider;
-  GLScaler scaler(base::WrapRefCounted(&provider));
+  GLScaler scaler(context_provider());
 
   // Neither source nor output space specified: Both should resolve to sRGB.
   GLScaler::Parameters params;
@@ -151,8 +177,7 @@ TEST_F(GLScalerTest, Configure_ResolvesUnspecifiedColorSpaces) {
 }
 
 TEST_F(GLScalerTest, Configure_RequiresValidSwizzles) {
-  NiceMock<MockContextProvider> provider;
-  GLScaler scaler(base::WrapRefCounted(&provider));
+  GLScaler scaler(context_provider());
   GLScaler::Parameters params;
 
   // Test that all valid combinations work.
