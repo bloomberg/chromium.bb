@@ -267,7 +267,7 @@ bool WriteFunctionDeclarations(int fd, const CppSymbolTable& table) {
     dprintf(fd, "    const %s& data,\n", cpp_name.c_str());
     dprintf(fd, "    uint8_t* buffer,\n    size_t length);\n");
     dprintf(fd, "ssize_t Decode%s(\n", cpp_name.c_str());
-    dprintf(fd, "    uint8_t* buffer,\n    size_t length,\n");
+    dprintf(fd, "    const uint8_t* buffer,\n    size_t length,\n");
     dprintf(fd, "    %s* data);\n", cpp_name.c_str());
   }
   return true;
@@ -944,7 +944,7 @@ bool WriteDecoders(int fd, const CppSymbolTable& table) {
     }
     std::string cpp_name = ToCamelCase(name);
     dprintf(fd, "\nssize_t Decode%s(\n", cpp_name.c_str());
-    dprintf(fd, "    uint8_t* buffer,\n    size_t length,\n");
+    dprintf(fd, "    const uint8_t* buffer,\n    size_t length,\n");
     dprintf(fd, "    %s* data) {\n", cpp_name.c_str());
     dprintf(fd, "  CborParser parser;\n");
     dprintf(fd, "  CborValue it0;\n");
