@@ -11,7 +11,6 @@
 #include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/flag_warning/flag_warning_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"

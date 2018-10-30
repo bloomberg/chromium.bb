@@ -31,7 +31,6 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/keyboard_brightness/tray_keyboard_brightness.h"
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network.h"
@@ -504,8 +503,6 @@ void SystemTray::UpdateNotificationTrayBubblePosition() {
     height =
         std::max(0, work_area.bottom() - bubble_view->GetBoundsInScreen().y());
   }
-  if (notification_tray_)
-    notification_tray_->SetTrayBubbleHeight(height);
 }
 
 base::string16 SystemTray::GetAccessibleTimeString(

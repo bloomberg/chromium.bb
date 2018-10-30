@@ -15,7 +15,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
-#include "ash/system/message_center/message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/macros.h"
@@ -397,8 +396,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
 // NotifierSettingsView -------------------------------------------------------
 
 NotifierSettingsView::NotifierSettingsView()
-    : title_arrow_(nullptr),
-      quiet_mode_icon_(nullptr),
+    : quiet_mode_icon_(nullptr),
       quiet_mode_toggle_(nullptr),
       header_view_(nullptr),
       top_label_(nullptr),
@@ -602,12 +600,6 @@ bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  if (sender == title_arrow_) {
-    MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
-    center_view->SetSettingsVisible(!center_view->settings_visible());
-    return;
-  }
-
   if (sender == quiet_mode_toggle_) {
     MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->is_on());
     return;

@@ -145,7 +145,6 @@ class MultiDeviceNotificationPresenter;
 class NewWindowController;
 class NightLightController;
 class NoteTakingController;
-class NotificationTray;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
@@ -562,9 +561,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
-
-  // Returns NotificationTray on the primary root window.
-  NotificationTray* GetNotificationTray();
 
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();

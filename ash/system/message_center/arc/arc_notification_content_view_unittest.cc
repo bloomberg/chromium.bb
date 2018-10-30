@@ -18,7 +18,6 @@
 #include "ash/system/message_center/arc/arc_notification_surface_manager_impl.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
-#include "ash/system/message_center/message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -113,8 +112,6 @@ class ArcNotificationContentViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-
-    MessageCenterView::disable_animation_for_testing = true;
 
     wm_helper_ = std::make_unique<exo::WMHelper>(ash::Shell::Get()->aura_env());
     exo::WMHelper::SetInstance(wm_helper_.get());
