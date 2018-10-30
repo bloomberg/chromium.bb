@@ -5720,6 +5720,7 @@ crbug.com/874576 http/tests/images/feature-policy-image-compression-cached-image
 ####crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
 crbug.com/899222 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
 
+
 # Sheriff 2018-10-29
 crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
 crbug.com/899715 [ Linux ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
@@ -5729,3 +5730,5 @@ crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ 
 crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
 crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
 crbug.com/899222 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
+crbug.com/899222 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
+crbug.com/899222 [ Linux Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
