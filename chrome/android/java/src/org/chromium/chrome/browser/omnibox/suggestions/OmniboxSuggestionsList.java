@@ -12,6 +12,9 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
@@ -35,6 +38,9 @@ public class OmniboxSuggestionsList extends ListView {
 
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
+
+    private final OnGlobalLayoutListener mAnchorViewLayoutListener;
+    private final OnLayoutChangeListener mAlignmentViewLayoutListener;
 
     /**
      * Provides the capabilities required to embed the omnibox suggestion list into the UI.
@@ -81,16 +87,40 @@ public class OmniboxSuggestionsList extends ListView {
         refreshPopupBackground();
 
         mAnchorView = mEmbedder.getAnchorView();
+        // Prior to Android M, the contextual actions associated with the omnibox were anchored to
+        // the top of the screen and not a floating copy/paste menu like on newer versions.  As a
+        // result of this, the toolbar is pushed down in these Android versions and we need to
+        // montior those changes to update the positioning of the list.
+        mAnchorViewLayoutListener = new OnGlobalLayoutListener() {
+            private int mOffsetInWindow;
+
+            @Override
+            public void onGlobalLayout() {
+                int offsetInWindow = 0;
+                View currentView = mAnchorView;
+                while (true) {
+                    offsetInWindow += currentView.getTop();
+                    ViewParent parent = currentView.getParent();
+                    if (parent == null || !(parent instanceof View)) break;
+                    currentView = (View) parent;
+                }
+                if (mOffsetInWindow == offsetInWindow) return;
+                mOffsetInWindow = offsetInWindow;
+                requestLayout();
+            }
+        };
+
         mAlignmentView = mEmbedder.getAlignmentView();
         if (mAlignmentView != null) {
-            adjustSidePadding();
-            mAlignmentView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            mAlignmentViewLayoutListener = new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom,
                         int oldLeft, int oldTop, int oldRight, int oldBottom) {
                     adjustSidePadding();
                 }
-            });
+            };
+        } else {
+            mAlignmentViewLayoutListener = null;
         }
     }
 
@@ -163,6 +193,12 @@ public class OmniboxSuggestionsList extends ListView {
         int anchorY = mTempPosition[1];
         int anchorBottomRelativeToContent = anchorY + mAnchorView.getMeasuredHeight();
 
+        // Update the layout params to ensure the parent correctly positions the suggestions under
+        // the anchor view.
+        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        if (layoutParams != null && layoutParams instanceof MarginLayoutParams) {
+            ((MarginLayoutParams) layoutParams).topMargin = anchorBottomRelativeToContent;
+        }
         mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
         int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
         super.onMeasure(
@@ -195,10 +231,24 @@ public class OmniboxSuggestionsList extends ListView {
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mAnchorView.getViewTreeObserver().addOnGlobalLayoutListener(mAnchorViewLayoutListener);
+        if (mAlignmentView != null) {
+            adjustSidePadding();
+            mAlignmentView.addOnLayoutChangeListener(mAlignmentViewLayoutListener);
+        }
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         // Ensure none of the views are reused when re-attaching as the TextViews in the suggestions
         // do not handle it in all cases.  https://crbug.com/851839
         reclaimViews(new ArrayList<>());
+        mAnchorView.getViewTreeObserver().removeOnGlobalLayoutListener(mAnchorViewLayoutListener);
+        if (mAlignmentView != null) {
+            mAlignmentView.removeOnLayoutChangeListener(mAlignmentViewLayoutListener);
+        }
     }
 }

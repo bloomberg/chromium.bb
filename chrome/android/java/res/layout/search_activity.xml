@@ -14,9 +14,7 @@
             android:id="@+id/omnibox_results_container_stub"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/toolbar_height_no_shadow"
             app:layout_anchor="@id/toolbar"
-            app:layout_anchorGravity="start|bottom"
             android:background="@android:color/white"
             android:layout="@layout/omnibox_results_container" />
 
