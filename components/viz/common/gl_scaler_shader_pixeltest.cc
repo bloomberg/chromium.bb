@@ -346,7 +346,7 @@ class GLScalerShaderPixelTest
     // Android seems to have texture sampling and/or readback accuracy issues
     // with these programs that are not at all seen on any of the desktop
     // platforms. Also, versions before Marshmallow seem to have a much larger
-    // accuracy issue with a few of the programs. Thus, use higher thresholds,
+    // accuracy issues with a few of the programs. Thus, use higher thresholds,
     // assuming that the programs are correct if they can pass a much lower
     // threshold on other platforms.
     if (base::android::BuildInfo::GetInstance()->sdk_int() <

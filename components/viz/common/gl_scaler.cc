@@ -4,6 +4,8 @@
 
 #include "components/viz/common/gl_scaler.h"
 
+#include <algorithm>
+#include <array>
 #include <sstream>
 #include <string>
 
@@ -15,6 +17,30 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
+
+namespace {
+
+// The code in GLScaler that computes the ScalerStages is greatly simplified by
+// being able to access the X and Y components by index (instead of
+// Vector2d::x() or Vector2d::y()). Thus, define a helper class to represent the
+// relative size as a 2-element std::array and convert to/from Vector2d.
+struct RelativeSize : public std::array<int, 2> {
+  using std::array<int, 2>::operator[];
+
+  RelativeSize(int width, int height) : std::array<int, 2>{{width, height}} {}
+  explicit RelativeSize(const gfx::Vector2d& v)
+      : std::array<int, 2>{{v.x(), v.y()}} {}
+
+  gfx::Vector2d AsVector2d() const {
+    return gfx::Vector2d((*this)[0], (*this)[1]);
+  }
+};
+
+std::ostream& operator<<(std::ostream& out, const RelativeSize& size) {
+  return (out << size[0] << 'x' << size[1]);
+}
+
+}  // namespace
 
 GLScaler::GLScaler(scoped_refptr<ContextProvider> context_provider)
     : context_provider_(std::move(context_provider)) {
@@ -131,8 +157,74 @@ bool GLScaler::Configure(const Parameters& new_params) {
     }
   }
 
-  // TODO(crbug.com/870036): Build ScalerStage chain (upcoming CL).
+  // Create the chain of ScalerStages. If the quality setting is FAST or there
+  // is no scaling to be done, just create a single stage.
+  std::unique_ptr<ScalerStage> chain;
+  if (params_.quality == Parameters::Quality::FAST ||
+      params_.scale_from == params_.scale_to) {
+    chain = std::make_unique<ScalerStage>(gl, Shader::BILINEAR, HORIZONTAL,
+                                          params_.scale_from, params_.scale_to);
+  } else if (params_.quality == Parameters::Quality::GOOD) {
+    chain = CreateAGoodScalingChain(gl, params_.scale_from, params_.scale_to);
+  } else if (params_.quality == Parameters::Quality::BEST) {
+    chain = CreateTheBestScalingChain(gl, params_.scale_from, params_.scale_to);
+  } else {
+    NOTREACHED();
+  }
+  chain = MaybeAppendExportStage(gl, std::move(chain), params_.export_format);
 
+  // TODO(crbug.com/870036): Add support for color management (uses half-float
+  // textures).
+  scaling_color_space_ = params_.source_color_space;
+  const GLenum intermediate_texture_type = GL_UNSIGNED_BYTE;
+
+  // Set the shader program on the final stage. Include color space
+  // transformation and swizzling, if necessary.
+  std::unique_ptr<gfx::ColorTransform> transform;
+  if (scaling_color_space_ != params_.output_color_space) {
+    transform = gfx::ColorTransform::NewColorTransform(
+        scaling_color_space_, params_.output_color_space,
+        gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+    if (!transform->CanGetShaderSource()) {
+      NOTIMPLEMENTED() << "color transform from "
+                       << scaling_color_space_.ToString() << " to "
+                       << params_.output_color_space.ToString();
+      return false;
+    }
+  }
+  ScalerStage* const final_stage = chain.get();
+  final_stage->set_shader_program(
+      GetShaderProgram(final_stage->shader(), intermediate_texture_type,
+                       transform.get(), params_.swizzle));
+
+  // Set the shader program on all prior stages. These stages are all operating
+  // in the same color space, |scaling_color_space_|.
+  static const GLenum kNoSwizzle[2] = {GL_RGBA, GL_RGBA};
+  ScalerStage* input_stage = final_stage;
+  while (input_stage->input_stage()) {
+    input_stage = input_stage->input_stage();
+    input_stage->set_shader_program(GetShaderProgram(
+        input_stage->shader(), intermediate_texture_type, nullptr, kNoSwizzle));
+  }
+  // From this point, |input_stage| points to the first ScalerStage (i.e., the
+  // one that will be reading from the source).
+
+  // If the source content is Y-flipped, the input scaler stage will perform
+  // math to account for this. It also will flip the content during scaling so
+  // that all following stages may assume the content is not flipped. Then, the
+  // final stage must ensure the final output is correctly flipped-back (or not)
+  // based on what the first stage did PLUS what is being requested by the
+  // client code.
+  if (params_.is_flipped_source) {
+    input_stage->set_is_flipped_source(true);
+    input_stage->set_flip_output(true);
+  }
+  if (input_stage->flip_output() != params_.flip_output) {
+    final_stage->set_flip_output(!final_stage->flip_output());
+  }
+
+  chain_ = std::move(chain);
+  VLOG(2) << __func__ << " built this: " << *this;
   return true;
 }
 
@@ -241,6 +333,287 @@ GLScaler::ShaderProgram* GLScaler::GetShaderProgram(
              .first;
   }
   return &it->second;
+}
+
+// static
+std::unique_ptr<GLScaler::ScalerStage> GLScaler::CreateAGoodScalingChain(
+    gpu::gles2::GLES2Interface* gl,
+    const gfx::Vector2d& scale_from,
+    const gfx::Vector2d& scale_to) {
+  DCHECK(scale_from.x() != 0 && scale_from.y() != 0)
+      << "Bad scale_from: " << scale_from.ToString();
+  DCHECK(scale_to.x() != 0 && scale_to.y() != 0)
+      << "Bad scale_to: " << scale_to.ToString();
+  DCHECK(scale_from != scale_to);
+
+  // The GOOD quality chain performs one bilinear upscale followed by N bilinear
+  // halvings, and does this is both directions. Exception: No upscale is needed
+  // when |scale_from| is a power of two multiple of |scale_to|.
+  //
+  // Since all shaders use bilinear filtering, the heuristics below attempt to
+  // greedily merge steps wherever possible to minimize GPU memory usage and
+  // processing time. This also means that it will be extremely rare for the
+  // stage doing the initial upscale to actually require a larger output texture
+  // than the source texture (a downscale will be merged into the same stage).
+
+  // Determine the initial upscaled-to size, as the minimum number of doublings
+  // to make |scale_to| greater than |scale_from|.
+  const RelativeSize from(scale_from);
+  const RelativeSize to(scale_to);
+  RelativeSize upscale_to = to;
+  for (Axis x_or_y : std::array<Axis, 2>{HORIZONTAL, VERTICAL}) {
+    while (upscale_to[x_or_y] < from[x_or_y]) {
+      upscale_to[x_or_y] *= 2;
+    }
+  }
+
+  // Create the stages in order from first-to-last, taking the greediest path
+  // each time. Something like an A* algorithm would be better for discovering
+  // an optimal sequence of operations, and would allow using the BILINEAR3
+  // shader as well, but the run-time performance to compute the stages would be
+  // too prohibitive.
+  std::unique_ptr<ScalerStage> chain;
+  struct CandidateOp {
+    Shader shader;
+    Axis primary_axis;
+    RelativeSize output_size;
+  };
+  std::vector<CandidateOp> candidates;
+  for (RelativeSize cur = from; cur != to;
+       cur = RelativeSize(chain->scale_to())) {
+    candidates.clear();
+
+    // Determine whether it's possible to do exactly 2 bilinear passes in both
+    // directions.
+    RelativeSize output_size_2x2 = {0, 0};
+    for (Axis x_or_y : std::array<Axis, 2>{VERTICAL, HORIZONTAL}) {
+      if (cur[x_or_y] == from[x_or_y]) {
+        // For the first stage, the 2 bilinear passes must be the initial
+        // upscale followed by one downscale. If there is no initial upscale,
+        // then the 2 passes must both be downscales.
+        if (upscale_to[x_or_y] != from[x_or_y] &&
+            upscale_to[x_or_y] / 2 >= to[x_or_y]) {
+          output_size_2x2[x_or_y] = upscale_to[x_or_y] / 2;
+        } else if (upscale_to[x_or_y] == from[x_or_y] &&
+                   upscale_to[x_or_y] / 4 >= to[x_or_y]) {
+          output_size_2x2[x_or_y] = cur[x_or_y] / 4;
+        }
+      } else {
+        // For all later stages, the 2 bilinear passes must be 2 halvings.
+        if (cur[x_or_y] / 4 >= to[x_or_y]) {
+          output_size_2x2[x_or_y] = cur[x_or_y] / 4;
+        }
+      }
+    }
+    if (output_size_2x2[HORIZONTAL] != 0 && output_size_2x2[VERTICAL] != 0) {
+      candidates.push_back(
+          CandidateOp{Shader::BILINEAR2X2, HORIZONTAL, output_size_2x2});
+    }
+
+    // Determine the valid set of Ops that do 1 to 3 bilinear passes in one
+    // direction and 0 or 1 pass in the other direction.
+    for (Axis x_or_y : std::array<Axis, 2>{VERTICAL, HORIZONTAL}) {
+      // The first bilinear pass in x_or_y must be an upscale or a halving.
+      Shader shader = Shader::BILINEAR;
+      RelativeSize output_size = cur;
+      if (cur[x_or_y] == from[x_or_y] && upscale_to[x_or_y] != from[x_or_y]) {
+        output_size[x_or_y] = upscale_to[x_or_y];
+      } else if (cur[x_or_y] / 2 >= to[x_or_y]) {
+        output_size[x_or_y] /= 2;
+      } else {
+        DCHECK_EQ(cur[x_or_y], to[x_or_y]);
+        continue;
+      }
+
+      // Determine whether 1 or 2 additional passes can be made in the same
+      // direction.
+      if (output_size[x_or_y] / 4 >= to[x_or_y]) {
+        shader = Shader::BILINEAR4;  // 2 more passes == 3 total.
+        output_size[x_or_y] /= 4;
+      } else if (output_size[x_or_y] / 2 >= to[x_or_y]) {
+        shader = Shader::BILINEAR2;  // 1 more pass == 2 total.
+        output_size[x_or_y] /= 2;
+      } else {
+        DCHECK_EQ(output_size[x_or_y], to[x_or_y]);
+      }
+
+      // Determine whether 0 or 1 bilinear passes can be made in the other
+      // direction at the same time.
+      const Axis y_or_x = TheOtherAxis(x_or_y);
+      if (cur[y_or_x] == from[y_or_x] && upscale_to[y_or_x] != from[y_or_x]) {
+        output_size[y_or_x] = upscale_to[y_or_x];
+      } else if (cur[y_or_x] / 2 >= to[y_or_x]) {
+        output_size[y_or_x] /= 2;
+      } else {
+        DCHECK_EQ(cur[y_or_x], to[y_or_x]);
+      }
+
+      candidates.push_back(CandidateOp{shader, x_or_y, output_size});
+    }
+
+    // From the candidates, pick the one that produces the fewest number of
+    // output pixels, and append a new ScalerStage. There are opportunities to
+    // improve the "cost function" here (e.g., pixels in the Y direction
+    // probably cost more to process than pixels in the X direction), but that
+    // would require more research.
+    const auto best_candidate = std::min_element(
+        candidates.begin(), candidates.end(),
+        [](const CandidateOp& a, const CandidateOp& b) {
+          static_assert(sizeof(a.output_size[0]) <= sizeof(int32_t),
+                        "Overflow issue in the math here.");
+          const int64_t cost_of_a =
+              int64_t{a.output_size[HORIZONTAL]} * a.output_size[VERTICAL];
+          const int64_t cost_of_b =
+              int64_t{b.output_size[HORIZONTAL]} * b.output_size[VERTICAL];
+          return cost_of_a < cost_of_b;
+        });
+    DCHECK(best_candidate != candidates.end());
+    DCHECK(cur != best_candidate->output_size)
+        << "Best candidate's output size (" << best_candidate->output_size
+        << ") should not equal the input size.";
+    auto next_stage = std::make_unique<ScalerStage>(
+        gl, best_candidate->shader, best_candidate->primary_axis,
+        cur.AsVector2d(), best_candidate->output_size.AsVector2d());
+    next_stage->set_input_stage(std::move(chain));
+    chain = std::move(next_stage);
+  }
+
+  return chain;
+}
+
+// static
+std::unique_ptr<GLScaler::ScalerStage> GLScaler::CreateTheBestScalingChain(
+    gpu::gles2::GLES2Interface* gl,
+    const gfx::Vector2d& scale_from,
+    const gfx::Vector2d& scale_to) {
+  // The BEST quality chain performs one bicubic upscale followed by N bicubic
+  // halvings, and does this is both directions. Exception: No upscale is needed
+  // when |scale_from| is a power of two multiple of |scale_to|.
+
+  // Determine the initial upscaled-to size, as the minimum number of doublings
+  // to make |scale_to| greater than |scale_from|.
+  const RelativeSize from(scale_from);
+  const RelativeSize to(scale_to);
+  RelativeSize upscale_to = to;
+  for (Axis x_or_y : std::array<Axis, 2>{HORIZONTAL, VERTICAL}) {
+    while (upscale_to[x_or_y] < from[x_or_y]) {
+      upscale_to[x_or_y] *= 2;
+    }
+  }
+
+  // Create the stages in order from first-to-last.
+  RelativeSize cur = from;
+  std::unique_ptr<ScalerStage> chain;
+  for (Axis x_or_y : std::array<Axis, 2>{VERTICAL, HORIZONTAL}) {
+    if (upscale_to[x_or_y] != from[x_or_y]) {
+      RelativeSize next = cur;
+      next[x_or_y] = upscale_to[x_or_y];
+      auto upscale_stage =
+          std::make_unique<ScalerStage>(gl, Shader::BICUBIC_UPSCALE, x_or_y,
+                                        cur.AsVector2d(), next.AsVector2d());
+      upscale_stage->set_input_stage(std::move(chain));
+      chain = std::move(upscale_stage);
+      cur = next;
+    }
+    while (cur[x_or_y] > to[x_or_y]) {
+      RelativeSize next = cur;
+      next[x_or_y] /= 2;
+      auto next_stage =
+          std::make_unique<ScalerStage>(gl, Shader::BICUBIC_HALF_1D, x_or_y,
+                                        cur.AsVector2d(), next.AsVector2d());
+      next_stage->set_input_stage(std::move(chain));
+      chain = std::move(next_stage);
+      cur = next;
+    }
+  }
+  DCHECK_EQ(cur, to);
+
+  return chain;
+}
+
+// static
+std::unique_ptr<GLScaler::ScalerStage> GLScaler::MaybeAppendExportStage(
+    gpu::gles2::GLES2Interface* gl,
+    std::unique_ptr<GLScaler::ScalerStage> chain,
+    GLScaler::Parameters::ExportFormat export_format) {
+  DCHECK(chain);
+
+  if (export_format == Parameters::ExportFormat::INTERLEAVED_QUADS) {
+    return chain;  // No format change.
+  }
+
+  // If the final stage uses the BILINEAR shader that is not upscaling, the
+  // export stage can replace it with no change in the results. Otherwise, a
+  // separate export stage will be appended.
+  gfx::Vector2d scale_from = chain->scale_from();
+  const gfx::Vector2d scale_to = chain->scale_to();
+  if (chain->shader() == Shader::BILINEAR && scale_from.x() >= scale_to.x() &&
+      scale_from.y() >= scale_to.y()) {
+    chain = chain->take_input_stage();
+  } else {
+    scale_from = scale_to;
+  }
+
+  Shader shader = Shader::BILINEAR;
+  scale_from.set_x(scale_from.x() * 4);
+  switch (export_format) {
+    case Parameters::ExportFormat::INTERLEAVED_QUADS:
+      NOTREACHED();
+      break;
+    case Parameters::ExportFormat::CHANNEL_0:
+      shader = Shader::PLANAR_CHANNEL_0;
+      break;
+    case Parameters::ExportFormat::CHANNEL_1:
+      shader = Shader::PLANAR_CHANNEL_1;
+      break;
+    case Parameters::ExportFormat::CHANNEL_2:
+      shader = Shader::PLANAR_CHANNEL_2;
+      break;
+    case Parameters::ExportFormat::CHANNEL_3:
+      shader = Shader::PLANAR_CHANNEL_3;
+      break;
+    case Parameters::ExportFormat::NV61:
+      shader = Shader::I422_NV61_MRT;
+      break;
+    case Parameters::ExportFormat::DEINTERLEAVE_PAIRWISE:
+      shader = Shader::DEINTERLEAVE_PAIRWISE_MRT;
+      // Horizontal scale is only 0.5X, not 0.25X like all the others.
+      scale_from.set_x(scale_from.x() / 2);
+      break;
+  }
+
+  auto export_stage = std::make_unique<ScalerStage>(gl, shader, HORIZONTAL,
+                                                    scale_from, scale_to);
+  export_stage->set_input_stage(std::move(chain));
+  return export_stage;
+}
+
+// static
+GLScaler::Axis GLScaler::TheOtherAxis(GLScaler::Axis x_or_y) {
+  return x_or_y == HORIZONTAL ? VERTICAL : HORIZONTAL;
+}
+
+// static
+const char* GLScaler::GetShaderName(GLScaler::Shader shader) {
+  switch (shader) {
+#define CASE_RETURN_SHADER_STR(x) \
+  case Shader::x:                 \
+    return #x
+    CASE_RETURN_SHADER_STR(BILINEAR);
+    CASE_RETURN_SHADER_STR(BILINEAR2);
+    CASE_RETURN_SHADER_STR(BILINEAR3);
+    CASE_RETURN_SHADER_STR(BILINEAR4);
+    CASE_RETURN_SHADER_STR(BILINEAR2X2);
+    CASE_RETURN_SHADER_STR(BICUBIC_UPSCALE);
+    CASE_RETURN_SHADER_STR(BICUBIC_HALF_1D);
+    CASE_RETURN_SHADER_STR(PLANAR_CHANNEL_0);
+    CASE_RETURN_SHADER_STR(PLANAR_CHANNEL_1);
+    CASE_RETURN_SHADER_STR(PLANAR_CHANNEL_2);
+    CASE_RETURN_SHADER_STR(PLANAR_CHANNEL_3);
+    CASE_RETURN_SHADER_STR(I422_NV61_MRT);
+    CASE_RETURN_SHADER_STR(DEINTERLEAVE_PAIRWISE_MRT);
+#undef CASE_RETURN_SHADER_STR
+  }
 }
 
 // static
@@ -1079,16 +1452,18 @@ gfx::Rect GLScaler::ScalerStage::ToInputRect(gfx::RectF source_rect) const {
     case Shader::PLANAR_CHANNEL_2:
     case Shader::PLANAR_CHANNEL_3:
     case Shader::I422_NV61_MRT:
-      // All of these sample exactly 4x1 source pixels to produce each output
-      // "pixel." There is no overscan.
-      DCHECK_EQ(scale_from_.x(), 4 * scale_to_.x());
+      // All of these sample 4x1 source pixels to produce each output "pixel."
+      // There is no overscan. They can also be combined with a bilinear
+      // downscale, but not an upscale.
+      DCHECK_GE(scale_from_.x(), 4 * scale_to_.x());
       DCHECK_EQ(HORIZONTAL, primary_axis_);
       break;
 
     case Shader::DEINTERLEAVE_PAIRWISE_MRT:
-      // This shader samples exactly 2x1 source pixels to produce each output
-      // "pixel." There is no overscan.
-      DCHECK_EQ(scale_from_.x(), 2 * scale_to_.x());
+      // This shader samples 2x1 source pixels to produce each output "pixel."
+      // There is no overscan. It can also be combined with a bilinear
+      // downscale, but not an upscale.
+      DCHECK_GE(scale_from_.x(), 2 * scale_to_.x());
       DCHECK_EQ(HORIZONTAL, primary_axis_);
       break;
   }
@@ -1111,6 +1486,54 @@ void GLScaler::ScalerStage::EnsureIntermediateTextureDefined(
                     GL_RGBA, program_->texture_type(), nullptr);
     intermediate_texture_size_ = size;
   }
+}
+
+std::ostream& operator<<(std::ostream& out, const GLScaler& scaler) {
+  if (!scaler.chain_) {
+    return (out << "[GLScaler NOT configured]");
+  }
+
+  out << "Output";
+  const GLScaler::ScalerStage* const final_stage = scaler.chain_.get();
+  for (auto* stage = final_stage; stage; stage = stage->input_stage()) {
+    out << u8" ← {" << GLScaler::GetShaderName(stage->shader());
+    if (stage->shader_program()) {
+      switch (stage->shader_program()->texture_type()) {
+        case GL_FLOAT:
+          out << "/highp";
+          break;
+        case GL_HALF_FLOAT_OES:
+          out << "/mediump";
+          break;
+        default:
+          out << "/lowp";
+          break;
+      }
+    }
+    if (stage->flip_output()) {
+      out << "+flip_y";
+    }
+    if (stage->scale_from() == stage->scale_to()) {
+      out << " copy";
+    } else {
+      out << ' ' << stage->scale_from().ToString() << " to "
+          << stage->scale_to().ToString();
+    }
+    if (stage == final_stage) {
+      if (scaler.params_.output_color_space != scaler.scaling_color_space_) {
+        out << ", with color x-form to "
+            << scaler.params_.output_color_space.ToString();
+      }
+      for (int i = 0; i < 2; ++i) {
+        if (scaler.params_.swizzle[i] != GL_RGBA) {
+          out << ", with swizzle(" << i << ')';
+        }
+      }
+    }
+    out << '}';
+  }
+  out << u8" ← Source";
+  return out;
 }
 
 }  // namespace viz
