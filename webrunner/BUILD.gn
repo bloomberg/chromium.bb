@@ -17,7 +17,7 @@ config("webrunner_implementation") {
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
-  sandbox_policy = "app/sandbox_policy"
+  sandbox_policy = "app/web/sandbox_policy"
 }
 
 fuchsia_package_runner("webrunner") {
@@ -30,18 +30,28 @@ fuchsia_package_runner("webrunner") {
       ] ]
 }
 
-executable("webrunner_exe") {
+source_set("webrunner_common") {
   sources = [
-    "app/component_controller_impl.cc",
-    "app/component_controller_impl.h",
-    "app/main.cc",
-    "app/web_content_runner.cc",
-    "app/web_content_runner.h",
+    "app/common/web_component.cc",
+    "app/common/web_component.h",
+    "app/common/web_content_runner.cc",
+    "app/common/web_content_runner.h",
   ]
   deps = [
     ":web_fidl",
     "//base",
     "//url",
+  ]
+}
+
+executable("webrunner_exe") {
+  sources = [
+    "app/web/main.cc",
+  ]
+  deps = [
+    ":web_fidl",
+    ":webrunner_common",
+    "//base",
   ]
 }
 

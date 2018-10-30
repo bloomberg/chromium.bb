@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_APP_COMPONENT_CONTROLLER_IMPL_H_
-#define WEBRUNNER_APP_COMPONENT_CONTROLLER_IMPL_H_
+#ifndef WEBRUNNER_APP_COMMON_WEB_COMPONENT_H_
+#define WEBRUNNER_APP_COMMON_WEB_COMPONENT_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/viewsv1/cpp/fidl.h>
@@ -23,23 +23,34 @@ namespace webrunner {
 
 class WebContentRunner;
 
-// Manages the resources and service bindings for a Runner Component creation
-// request. Each ComponentControllerImpl instance manages its own
-// chromium::web::Frame.
-class ComponentControllerImpl : public fuchsia::sys::ComponentController,
-                                public fuchsia::ui::viewsv1::ViewProvider {
+// Base component implementation for web-based content Runners. Each instance
+// manages the lifetime of its own chromium::web::Frame, including associated
+// resources and service bindings.  Runners for specialized web-based content
+// (e.g. Cast applications) can extend this class to configure the Frame to
+// their needs, publish additional APIs, etc.
+class WebComponent : public fuchsia::sys::ComponentController,
+                     public fuchsia::ui::viewsv1::ViewProvider {
  public:
-  ~ComponentControllerImpl() override;
+  ~WebComponent() override;
 
-  // |runner| must outlive the returned object (normally it owns all
-  // ComponentControllerImpl). It's used by this class to get web::Context
-  // interface.
-  static std::unique_ptr<ComponentControllerImpl> CreateForRequest(
+  // Creates a WebComponent and navigates its Frame to |url|.
+  static std::unique_ptr<WebComponent> ForUrlRequest(
       WebContentRunner* runner,
-      fuchsia::sys::Package package,
+      const GURL& url,
       fuchsia::sys::StartupInfo startup_info,
       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
           controller_request);
+
+ protected:
+  // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
+  // will be published to the service-directory specified in |startup_info|, and
+  // if |controller_request| is valid then it will be bound to this component,
+  // and the component configured to teardown if that channel closes.
+  // |runner| must outlive this component.
+  WebComponent(WebContentRunner* runner,
+               fuchsia::sys::StartupInfo startup_info,
+               fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+                   controller_request);
 
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;
@@ -51,22 +62,20 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
       override;
 
+  // Reports the supplied exit-code and reason to the |controller_binding_| and
+  // requests that the |runner_| delete this component.
+  void DestroyComponent(int termination_exit_code,
+                        fuchsia::sys::TerminationReason reason);
+
+  chromium::web::Frame* frame() { return frame_.get(); }
+  chromium::web::NavigationController* navigation_controller() {
+    return navigation_controller_.get();
+  }
+  base::fuchsia::ServiceDirectory* service_directory() {
+    return service_directory_.get();
+  }
+
  private:
-  explicit ComponentControllerImpl(WebContentRunner* runner);
-
-  // Registers the termination reason for this Component and requests its
-  // termination from the parent WebContentRunner.
-  void RequestTermination(int termination_exit_code,
-                          fuchsia::sys::TerminationReason reason);
-
-  // Binds |this| to a Runner::StartComponent() call. Returns false on failure
-  // (e.g. when the URL in |startup_info| is invalid).
-  bool BindToRequest(fuchsia::sys::Package package,
-                     fuchsia::sys::StartupInfo startup_info,
-                     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-                         controller_request);
-
-  GURL url_;
   WebContentRunner* runner_ = nullptr;
 
   chromium::web::FramePtr frame_;
@@ -88,9 +97,9 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
 
   bool view_is_bound_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ComponentControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebComponent);
 };
 
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_APP_COMPONENT_CONTROLLER_IMPL_H_
+#endif  // WEBRUNNER_APP_COMMON_COMPONENT_CONTROLLER_IMPL_H_
