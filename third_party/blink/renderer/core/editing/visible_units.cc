@@ -1079,8 +1079,8 @@ static VisiblePositionTemplate<Strategy> SkipToEndOfEditingBoundary(
   // That must mean that |pos| is not editable. Return the next position after
   // |pos| that is in the same editable region as this position
   DCHECK(highest_root);
-  return FirstEditableVisiblePositionAfterPositionInRoot(pos.DeepEquivalent(),
-                                                         *highest_root);
+  return CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
+      pos.DeepEquivalent(), *highest_root));
 }
 
 template <typename Strategy>
@@ -1193,8 +1193,8 @@ static VisiblePositionTemplate<Strategy> SkipToStartOfEditingBoundary(
   // That must mean that |pos| is not editable. Return the last position
   // before |pos| that is in the same editable region as this position
   DCHECK(highest_root);
-  return LastEditableVisiblePositionBeforePositionInRoot(pos.DeepEquivalent(),
-                                                         *highest_root);
+  return CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
+      pos.DeepEquivalent(), *highest_root));
 }
 
 template <typename Strategy>

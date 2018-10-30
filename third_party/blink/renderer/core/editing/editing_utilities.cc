@@ -637,22 +637,6 @@ PositionInFlatTree PreviousVisuallyDistinctCandidate(
       position);
 }
 
-VisiblePosition FirstEditableVisiblePositionAfterPositionInRoot(
-    const Position& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      FirstEditablePositionAfterPositionInRoot(position, highest_root));
-}
-
-VisiblePositionInFlatTree FirstEditableVisiblePositionAfterPositionInRoot(
-    const PositionInFlatTree& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      FirstEditablePositionAfterPositionInRoot(position, highest_root));
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
     const PositionTemplate<Strategy>& position,
@@ -712,22 +696,6 @@ PositionInFlatTree FirstEditablePositionAfterPositionInRoot(
     const Node& highest_root) {
   return FirstEditablePositionAfterPositionInRootAlgorithm<
       EditingInFlatTreeStrategy>(position, highest_root);
-}
-
-VisiblePosition LastEditableVisiblePositionBeforePositionInRoot(
-    const Position& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      LastEditablePositionBeforePositionInRoot(position, highest_root));
-}
-
-VisiblePositionInFlatTree LastEditableVisiblePositionBeforePositionInRoot(
-    const PositionInFlatTree& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      LastEditablePositionBeforePositionInRoot(position, highest_root));
 }
 
 template <typename Strategy>
