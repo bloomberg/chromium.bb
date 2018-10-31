@@ -2004,6 +2004,28 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_telemetry_tests',
         },
       },
+      'Linux FYI Experimental Release (NVIDIA)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'swarming': {
+          'dimension_sets': [
+            {
+              # LINUX_QUADRO_P400_EXPERIMENTAL_DRIVER
+              # TODO(jmadill): Update this with new driver. http://crbug.com/887241
+              'gpu': '10de:1cb3-384.90',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        # Currently the experimental driver is identical to the stable
+        # driver. If it's upgraded, change these test_suites to be the same as
+        # 'Linux FYI Release (NVIDIA)'.
+        # TODO(jmadill): Update this to add tests. http://crbug.com/887241
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
       'Linux FYI GPU TSAN Release': {
         # This bot doesn't run any Telemetry-based tests so doesn't
         # need the browser_config parameter.

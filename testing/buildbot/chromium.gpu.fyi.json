@@ -3962,6 +3962,33 @@
       }
     ]
   },
+  "Linux FYI Experimental Release (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "noop_sleep_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      }
+    ]
+  },
   "Linux FYI GPU TSAN Release": {
     "gtest_tests": [
       {
