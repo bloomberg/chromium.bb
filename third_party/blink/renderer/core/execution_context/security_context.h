@@ -154,6 +154,11 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   void SetContentSecurityPolicy(ContentSecurityPolicy*);
 
+  // Determines whether or not the SecurityContext has a customized feature
+  // policy. If this method returns false, |feature_policy_| is reset to a
+  // default value ignoring container, header, and inherited policies.
+  virtual bool HasCustomizedFeaturePolicy() const { return true; }
+
   SandboxFlags sandbox_flags_;
 
  private:

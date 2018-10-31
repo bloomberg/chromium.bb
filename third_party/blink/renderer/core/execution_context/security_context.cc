@@ -115,6 +115,11 @@ void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
     const FeaturePolicy* parent_feature_policy) {
+  if (!HasCustomizedFeaturePolicy()) {
+    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+        nullptr, {}, security_origin_->ToUrlOrigin());
+    return;
+  }
   feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
       parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
   feature_policy_->SetHeaderPolicy(parsed_header);
