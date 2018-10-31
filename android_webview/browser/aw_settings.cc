@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
@@ -18,10 +19,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/gfx/font_render_params.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -243,6 +246,18 @@ void AwSettings::UpdateRendererPreferencesLocked(
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (update_prefs && host)
     host->SyncRendererPrefs();
+
+  if (update_prefs &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // make sure to update accept languages when the network service is enabled
+    AwBrowserContext* aw_browser_context =
+        AwBrowserContext::FromWebContents(web_contents());
+    // AndroidWebview does not use per-site storage partitions.
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(aw_browser_context);
+    storage_partition->GetNetworkContext()->SetAcceptLanguage(
+        prefs->accept_languages);
+  }
 }
 
 void AwSettings::UpdateOffscreenPreRasterLocked(

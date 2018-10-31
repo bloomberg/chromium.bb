@@ -13,9 +13,6 @@
 # https://crbug.com/882650
 -*__multiprocess_mode
 
-# https://crbug.com/893561
--org.chromium.android_webview.test.AcceptLanguageTest.testAcceptLanguage
-
 # https://crbug.com/893563
 -org.chromium.android_webview.test.AwContentsClientFullScreenTest.testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView
 -org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenForNonVideoElementIsSupportedInSoftwareMode
