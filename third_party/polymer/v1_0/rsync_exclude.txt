@@ -35,6 +35,11 @@ iron-autogrow-textarea/*
 paper-input/paper-input.html
 paper-input/paper-textarea.html
 
+# paper-item
+paper-item/all-imports.html
+paper-item/paper-item-body.html
+paper-item/paper-item.html
+
 # paper-spinner
 paper-spinner/paper-spinner.html
 
