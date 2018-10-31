@@ -3926,6 +3926,14 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant. DURATION_SECONDS is a number representing a duration in seconds, which is why it is appended with 's'.">
         Autofill Assistant will stop in <ph name="DURATION_SECONDS">%1$s<ex>3</ex></ph>s…
       </message>
+      <!-- Autofill Assistant preferences -->
+      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
+        Autofill Assistant
+      </message>
+      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SWITCH" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
+        Automate
+      </message>
+
     </messages>
   </release>
 </grit>

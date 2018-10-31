@@ -9,11 +9,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.payments.AutofillAssistantPaymentRequest;
+import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -82,7 +84,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     public static boolean isConfigured(Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
                 && !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
-                            .isEmpty();
+                            .isEmpty()
+                && ContextUtils.getAppSharedPreferences().getBoolean(
+                           AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, false);
     }
 
     /**
