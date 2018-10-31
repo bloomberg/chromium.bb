@@ -88,6 +88,15 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     return !(*this == other);
   }
 
+  // This struct represents the side of a float against the "edge" of a shelf.
+  struct NGShelfEdge {
+    NGShelfEdge(LayoutUnit block_start, LayoutUnit block_end)
+        : block_start(block_start), block_end(block_end) {}
+
+    LayoutUnit block_start;
+    LayoutUnit block_end;
+  };
+
   // The shelf is an internal data-structure representing the bottom of a
   // float. A shelf has a inline-size which is defined by the line_left and
   // line_right members. E.g.
@@ -146,8 +155,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     LayoutUnit line_left;
     LayoutUnit line_right;
 
-    Vector<scoped_refptr<const NGExclusion>, 1> line_left_edges;
-    Vector<scoped_refptr<const NGExclusion>, 1> line_right_edges;
+    Vector<NGShelfEdge, 1> line_left_edges;
+    Vector<NGShelfEdge, 1> line_right_edges;
 
     // shape_exclusions contains all the floats which sit below this shelf. The
     // has_shape_exclusions member will be true if shape_exclusions contains an
@@ -367,5 +376,8 @@ class CORE_EXPORT NGExclusionSpace {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGExclusionSpaceInternal::NGShelfEdge);
 
 #endif  // NGExclusionSpace_h
