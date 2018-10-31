@@ -318,14 +318,14 @@ check_targets = [
 
   # "//third_party/SPIRV-Tools/*",  # 30ish errors
   "//third_party/WebKit/*",
-
-  # "//third_party/abseil-cpp/*",  # 4 errors
+  "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",
   "//third_party/adobe/*",
   "//third_party/afl/*",
   "//third_party/analytics/*",
   "//third_party/android_build_tools/*",
+  "//third_party/android_crazy_linker/*",
   "//third_party/android_data_chart/*",
   "//third_party/android_deps/*",
   "//third_party/android_media/*",
@@ -363,8 +363,7 @@ check_targets = [
   "//third_party/brotli/*",
   "//third_party/bspatch/*",
   "//third_party/byte_buddy/*",
-
-  # "//third_party/cacheinvalidation/*",  # 2 errors
+  "//third_party/cacheinvalidation/*",
   "//third_party/catapult/*",
   "//third_party/cct_dynamic_module/*",
 
@@ -379,7 +378,7 @@ check_targets = [
   "//third_party/colorama/*",
 
   # "//third_party/crashpad/*", 20ish errors
-  # "//third_party/crc32c/*",  10ish errors
+  "//third_party/crc32c/*",
   "//third_party/cros_system_api/*",
   "//third_party/custom_tabs_client/*",
   "//third_party/cython/*",
@@ -402,8 +401,7 @@ check_targets = [
   # "//third_party/ffmpeg/*",  # android_cronet only https://crbug.com/898793
   "//third_party/fips181/*",
   "//third_party/flac/*",
-
-  # "//third_party/flatbuffers/*",  # 1 error
+  "//third_party/flatbuffers/*",
   "//third_party/flot/*",
   "//third_party/fontconfig/*",
   "//third_party/freetype/*",
@@ -454,9 +452,9 @@ check_targets = [
   "//third_party/leveldatabase/*",
   "//third_party/libFuzzer/*",
   "//third_party/libXNVCtrl/*",
+  "//third_party/libaddressinput/*",
 
-  # "//third_party/libaddressinput/*",  # Small errors.
-  # "//third_party/libaom/*",  # Many errors
+  # "//third_party/libaom/*",  # https://crbug.com/899771
   "//third_party/libc++/*",
   "//third_party/libc++abi/*",
   "//third_party/libcxx-pretty-printers/*",
@@ -476,8 +474,7 @@ check_targets = [
   "//third_party/libprotobuf-mutator/*",
   "//third_party/libsecret/*",
   "//third_party/libsrtp/*",
-
-  # "//third_party/libsync/*",  # Small error
+  "//third_party/libsync/*",
   "//third_party/libudev/*",
   "//third_party/libusb/*",
 
@@ -487,8 +484,7 @@ check_targets = [
 
   #"//third_party/libwebp/*",  # Errors: https://crbug.com/800762
   "//third_party/libxml/*",
-
-  # "//third_party/libxslt/*",  # Small error
+  "//third_party/libxslt/*",
   "//third_party/libyuv/*",
   "//third_party/llvm/*",
   "//third_party/llvm-bootstrap/*",
@@ -505,6 +501,7 @@ check_targets = [
   "//third_party/mesa_headers/*",
   "//third_party/metrics_proto/*",
   "//third_party/minigbm/*",
+  "//third_party/minizip/*",
   "//third_party/mocha/*",
   "//third_party/mockito/*",
   "//third_party/modp_b64/*",
@@ -517,8 +514,8 @@ check_targets = [
   "//third_party/nvml/*",
   "//third_party/objenesis/*",
   "//third_party/ocmock/*",
+  "//third_party/openh264/*",
 
-  # "//third_party/openh264/*",  # 1 error WelsCircleQueue.h
   # "//third_party/openmax_dl/*",  # 1 error
   "//third_party/openvr/*",
   "//third_party/opus/*",
@@ -526,7 +523,7 @@ check_targets = [
   "//third_party/ow2_asm/*",
 
   # "//third_party/pdfium/*",  # 3 errors
-  # "//third_party/perfetto/*", # Simple fix: https://crbug.com/898779
+  "//third_party/perfetto/*",
   "//third_party/pexpect/*",
   "//third_party/ply/*",
   "//third_party/polymer/*",
@@ -550,6 +547,7 @@ check_targets = [
   "//third_party/retrolambda/*",
   "//third_party/rnnoise/*",
   "//third_party/robolectric/*",
+  "//third_party/s2cellid/*",
   "//third_party/safe_browsing/*",
   "//third_party/scan-build/*",
 
@@ -599,15 +597,14 @@ check_targets = [
   "//third_party/wtl/*",
   "//third_party/xdg-utils/*",
   "//third_party/xstream/*",
-  "//third_party/xstream/*",
   "//third_party/yara/*",
   "//third_party/yasm/*",
-
-  # "//third_party/zlib/*",  # 15ish errors
+  "//third_party/zlib/*",
   "//third_party/webrtc/*",
   "//third_party/webrtc_overrides/*",
-  "//tools/*",
+  "//third_party/woff2/*",
 
+  "//tools/*",
   "//ui/*",
   "//url/*",
 
