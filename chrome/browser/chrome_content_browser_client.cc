@@ -3679,11 +3679,9 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
 void ChromeContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services,
     content::ServiceManagerConnection* connection) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = ChromeService::GetInstance()->CreateChromeServiceFactory();
-    services->insert(std::make_pair(chrome::mojom::kServiceName, info));
-  }
+  connection->AddServiceRequestHandler(
+      chrome::mojom::kServiceName,
+      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
 
   if (!g_browser_process || g_browser_process->pref_service_factory()) {
     service_manager::EmbeddedServiceInfo info;

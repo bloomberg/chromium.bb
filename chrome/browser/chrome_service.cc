@@ -19,7 +19,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/launchable.h"
@@ -62,6 +62,10 @@ class ChromeService::IOThreadContext : public service_manager::Service {
   }
   ~IOThreadContext() override = default;
 
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request) {
+    service_binding_.Bind(std::move(request));
+  }
+
   void BindConnector(
       service_manager::mojom::ConnectorRequest connector_request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -88,7 +92,8 @@ class ChromeService::IOThreadContext : public service_manager::Service {
   void OnStart() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     DCHECK(connector_request_.is_pending());
-    context()->connector()->BindConnectorRequest(std::move(connector_request_));
+    service_binding_.GetConnector()->BindConnectorRequest(
+        std::move(connector_request_));
   }
 
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
@@ -105,6 +110,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
 
   service_manager::mojom::ConnectorRequest connector_request_;
 
+  service_manager::ServiceBinding service_binding_{this};
   service_manager::BinderRegistry registry_;
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
@@ -150,9 +156,9 @@ ChromeBrowserMainExtraParts* ChromeService::CreateExtraParts() {
   return new ExtraParts;
 }
 
-service_manager::EmbeddedServiceInfo::ServiceFactory
-ChromeService::CreateChromeServiceFactory() {
-  return base::BindRepeating(&ChromeService::CreateChromeServiceWrapper,
+content::ServiceManagerConnection::ServiceRequestHandler
+ChromeService::CreateChromeServiceRequestHandler() {
+  return base::BindRepeating(&ChromeService::BindChromeServiceRequest,
                              base::Unretained(this));
 }
 
@@ -167,9 +173,8 @@ void ChromeService::InitConnector() {
   io_thread_context_->BindConnector(std::move(request));
 }
 
-std::unique_ptr<service_manager::Service>
-ChromeService::CreateChromeServiceWrapper() {
+void ChromeService::BindChromeServiceRequest(
+    service_manager::mojom::ServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return std::make_unique<service_manager::ForwardingService>(
-      io_thread_context_.get());
+  io_thread_context_->BindServiceRequest(std::move(request));
 }

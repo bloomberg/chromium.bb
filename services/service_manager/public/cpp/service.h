@@ -91,7 +91,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   ServiceContext* context() const;
 
  private:
-  friend class ForwardingService;
   friend class ServiceContext;
   friend class TestServiceDecorator;
 
@@ -104,29 +103,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   ServiceContext* service_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
-};
-
-// TODO(rockot): Remove this. It's here to satisfy a few remaining use cases
-// where a Service impl is owned by something other than its ServiceContext.
-class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ForwardingService : public Service {
- public:
-  // |target| must outlive this object.
-  explicit ForwardingService(Service* target);
-  ~ForwardingService() override;
-
-  // Service:
-  void OnStart() override;
-  void OnBindInterface(const BindSourceInfo& source,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  bool OnServiceManagerConnectionLost() override;
-
- private:
-  void SetContext(ServiceContext* context) override;
-
-  Service* const target_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ForwardingService);
 };
 
 }  // namespace service_manager

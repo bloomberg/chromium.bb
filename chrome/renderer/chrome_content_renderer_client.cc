@@ -113,7 +113,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -1069,10 +1068,6 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-void ChromeContentRendererClient::OnStart() {
-  context()->connector()->BindConnectorRequest(std::move(connector_request_));
-}
-
 void ChromeContentRendererClient::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& name,
@@ -1083,10 +1078,7 @@ void ChromeContentRendererClient::OnBindInterface(
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  // In some tests, this may not be configured.
-  if (!connector_)
-    return;
-  connector_->BindInterface(
+  service_binding_.GetConnector()->BindInterface(
       service_manager::Identity(chrome::mojom::kServiceName), interface_name,
       std::move(interface_pipe));
 }
@@ -1714,15 +1706,12 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
 
 void ChromeContentRendererClient::CreateRendererService(
     service_manager::mojom::ServiceRequest service_request) {
-  service_context_ = std::make_unique<service_manager::ServiceContext>(
-      std::make_unique<service_manager::ForwardingService>(this),
-      std::move(service_request));
+  DCHECK(!service_binding_.is_bound());
+  service_binding_.Bind(std::move(service_request));
 }
 
 service_manager::Connector* ChromeContentRendererClient::GetConnector() {
-  if (!connector_)
-    connector_ = service_manager::Connector::Create(&connector_request_);
-  return connector_.get();
+  return service_binding_.GetConnector();
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
