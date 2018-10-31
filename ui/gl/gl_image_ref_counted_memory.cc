@@ -15,9 +15,8 @@
 
 namespace gl {
 
-GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size,
-                                                 unsigned internalformat)
-    : GLImageMemory(size, internalformat) {}
+GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size)
+    : GLImageMemory(size) {}
 
 GLImageRefCountedMemory::~GLImageRefCountedMemory() {}
 

@@ -866,13 +866,11 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
       gfx::RowSizeForBufferFormat(uv_size.width(), gfx::BufferFormat::RG_88, 0);
   std::vector<uint8_t> y_data(y_stride * y_size.height(), 0xff);
   std::vector<uint8_t> uv_data(uv_stride * uv_size.height(), 0xff);
-  scoped_refptr<gl::GLImageRefCountedMemory> y_image(
-      new gl::GLImageRefCountedMemory(y_size, GL_BGRA_EXT));
+  auto y_image = base::MakeRefCounted<gl::GLImageRefCountedMemory>(y_size);
 
   y_image->Initialize(new base::RefCountedBytes(y_data),
                       gfx::BufferFormat::R_8);
-  scoped_refptr<gl::GLImageRefCountedMemory> uv_image(
-      new gl::GLImageRefCountedMemory(uv_size, GL_BGRA_EXT));
+  auto uv_image = base::MakeRefCounted<gl::GLImageRefCountedMemory>(uv_size);
   uv_image->Initialize(new base::RefCountedBytes(uv_data),
                        gfx::BufferFormat::RG_88);
   y_image->SetColorSpace(gfx::ColorSpace::CreateREC709());

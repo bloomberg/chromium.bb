@@ -20,7 +20,7 @@ namespace gl {
 
 class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
  public:
-  GLImageRefCountedMemory(const gfx::Size& size, unsigned internalformat);
+  explicit GLImageRefCountedMemory(const gfx::Size& size);
 
   bool Initialize(base::RefCountedMemory* ref_counted_memory,
                   gfx::BufferFormat format);

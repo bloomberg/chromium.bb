@@ -33,8 +33,7 @@ class GLImageSharedMemoryTestDelegate : public GLImageTestDelegateBase {
         size.width(), size.height(),
         static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)), 0,
         format, color, static_cast<uint8_t*>(shared_memory_mapping.memory()));
-    scoped_refptr<GLImageSharedMemory> image(new GLImageSharedMemory(
-        size, GLImageMemory::GetInternalFormatForTesting(format)));
+    auto image = base::MakeRefCounted<GLImageSharedMemory>(size);
     bool rv = image->Initialize(
         shared_memory_region, gfx::GenericSharedMemoryId(0), format, 0,
         gfx::RowSizeForBufferFormat(size.width(), format, 0));
@@ -101,8 +100,7 @@ class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
         size.width(), size.height(), static_cast<int>(stride), 0,
         gfx::BufferFormat::RGBA_8888, color,
         static_cast<uint8_t*>(shared_memory_mapping.memory()) + buffer_offset);
-    scoped_refptr<GLImageSharedMemory> image(
-        new GLImageSharedMemory(size, GL_RGBA));
+    auto image = base::MakeRefCounted<GLImageSharedMemory>(size);
     bool rv =
         image->Initialize(shared_memory_region, gfx::GenericSharedMemoryId(0),
                           gfx::BufferFormat::RGBA_8888, buffer_offset, stride);

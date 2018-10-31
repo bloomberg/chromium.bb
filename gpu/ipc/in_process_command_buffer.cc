@@ -1015,10 +1015,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
         LOG(ERROR) << "Invalid stride for image.";
         return;
       }
-      unsigned internalformat =
-          gpu::InternalFormatForGpuMemoryBufferFormat(format);
-      scoped_refptr<gl::GLImageSharedMemory> image(
-          new gl::GLImageSharedMemory(size, internalformat));
+      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
       if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                              handle.stride)) {
         LOG(ERROR) << "Failed to initialize image.";

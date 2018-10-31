@@ -31,7 +31,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -729,10 +728,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
         return nullptr;
-      unsigned internalformat =
-          gpu::InternalFormatForGpuMemoryBufferFormat(format);
-      scoped_refptr<gl::GLImageSharedMemory> image(
-          new gl::GLImageSharedMemory(size, internalformat));
+      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
       if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                              handle.stride)) {
         return nullptr;
