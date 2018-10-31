@@ -2934,6 +2934,54 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
         board_configs[board],
     )
 
+  branch_builders = [
+      (None, 'factory-beltino-5140.14.B', ['tricky', 'mccloud']),
+      (None, 'factory-rambi-5517.B', [
+          'squawks', 'clapper', 'glimmer', 'quawks',
+          'enguarde', 'expresso', 'kip', 'swanky', 'winky']),
+      (None, 'factory-nyan-5772.B', [
+          'nyan_big', 'nyan_blaze', 'nyan_kitty']),
+      (None, 'factory-rambi-6420.B', [
+          'enguarde', 'candy', 'banjo',
+          'ninja', 'sumo', 'orco', 'heli', 'gnawty']),
+      (None, 'factory-auron-6459.B', [
+          'auron_paine', 'auron_yuna', 'lulu',
+          'jecht', 'gandof', 'buddy']),
+      (None, 'factory-whirlwind-6509.B', ['whirlwind']),
+      (None, 'factory-veyron-6591.B', [
+          'veyron_jerry', 'veyron_mighty',
+          'veyron_speedy', 'veyron_jaq',
+          'veyron_minnie', 'veyron_mickey']),
+      (None, 'factory-samus-6658.B', ['samus']),
+      (None, 'factory-auron-6772.B', [
+          'jecht', 'guado', 'tidus', 'rikku', 'buddy']),
+      (None, 'factory-whirlwind-6812.41.B', ['whirlwind']),
+      (None, 'factory-arkham-7077.113.B', ['arkham']),
+      (None, 'factory-strago-7458.B', [
+          'cyan', 'celes', 'ultima', 'reks', 'terra', 'edgar',
+          'wizpig', 'setzer', 'banon', 'kefka', 'relm', 'kip']),
+      (None, 'factory-veyron-7505.B', [
+          'veyron_mickey', 'veyron_tiger', 'veyron_fievel', 'veyron_rialto']),
+      (None, 'factory-glados-7657.B', ['glados', 'chell']),
+      (None, 'factory-glados-7828.B', [
+          'glados', 'chell', 'lars',
+          'sentry', 'cave', 'asuka', 'caroline']),
+      (None, 'factory-oak-8182.B', ['elm', 'hana']),
+      (None, 'factory-gru-8652.B', ['kevin']),
+      (None, 'factory-gale-8743.19.B', ['gale']),
+      (None, 'factory-reef-8811.B', ['reef', 'pyro', 'sand', 'snappy']),
+      (None, 'factory-gru-9017.B', ['gru', 'bob']),
+      (None, 'factory-eve-9667.B', ['eve']),
+      (None, 'factory-coral-10122.B', ['coral']),
+      (None, 'factory-fizz-10167.B', ['fizz', 'fizz-accelerator']),
+      (None, 'factory-scarlet-10211.B', ['scarlet']),
+      (None, 'factory-soraka-10323.39.B', ['soraka']),
+      (None, 'factory-poppy-10504.B', ['nautilus']),
+      (None, 'factory-nami-10715.B', ['nami', 'kalista']),
+      (None, 'factory-nocturne-11066.B', ['nocturne']),
+      (None, 'factory-grunt-11164.B', ['grunt']),
+  ]
+
   # Requires that you set boards, and workspace_branch.
   site_config.AddTemplate(
       'factorybranch',
@@ -2948,6 +2996,22 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
   )
+
+  for active, branch, boards in branch_builders:
+    schedule = {}
+    if active:
+      schedule = {
+          'active_waterfall': waterfall.WATERFALL_SWARMING,
+          'schedule': active,
+      }
+
+    site_config.Add(
+        '%s-factorybranch' % branch,
+        site_config.templates.factorybranch,
+        boards=boards,
+        workspace_branch=branch,
+        **schedule
+    )
 
   site_config.Add(
       'prototype-factorybranch',
