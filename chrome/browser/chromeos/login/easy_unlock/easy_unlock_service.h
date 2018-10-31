@@ -53,7 +53,6 @@ class SecureChannelClient;
 
 class EasyUnlockAppManager;
 class EasyUnlockServiceObserver;
-class UserContext;
 
 class EasyUnlockService : public KeyedService {
  public:
@@ -164,10 +163,6 @@ class EasyUnlockService : public KeyedService {
   // Checks the consistency between pairing data and cryptohome keys. Set
   // hardlock state if the two do not match.
   void CheckCryptohomeKeysAndMaybeHardlock();
-
-  // Called when the user reauths (e.g. in chrome://settings) so we can cache
-  // the user context for the setup flow.
-  virtual void HandleUserReauth(const UserContext& user_context);
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
