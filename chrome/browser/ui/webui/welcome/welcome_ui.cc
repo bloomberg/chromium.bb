@@ -9,7 +9,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
@@ -198,15 +197,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
 
     // Add email provider bookmarking onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS)));
+    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>());
     nux::EmailHandler::AddSources(html_source);
 
     // Add google apps bookmarking onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS)));
+    web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
     nux::GoogleAppsHandler::AddSources(html_source);
 
     // Add set-as-default onboarding module.

@@ -13,10 +13,6 @@ namespace content {
 class WebUIDataSource;
 }  // namespace content
 
-namespace favicon {
-class FaviconService;
-}  // namespace favicon
-
 namespace nux {
 
 extern const char* kGoogleAppsInteractionHistogram;
@@ -32,7 +28,7 @@ enum class GoogleAppsInteraction {
 
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
-  explicit GoogleAppsHandler(favicon::FaviconService* favicon_service);
+  GoogleAppsHandler();
   ~GoogleAppsHandler() override;
 
   // WebUIMessageHandler:
@@ -44,10 +40,6 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
 
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source);
-
- private:
-  // Weak reference.
-  favicon::FaviconService* favicon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };

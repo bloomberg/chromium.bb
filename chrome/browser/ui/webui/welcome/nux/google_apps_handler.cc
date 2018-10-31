@@ -8,6 +8,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -54,8 +56,7 @@ const BookmarkItem kGoogleApps[] = {
 
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
-GoogleAppsHandler::GoogleAppsHandler(favicon::FaviconService* favicon_service)
-    : favicon_service_(favicon_service) {}
+GoogleAppsHandler::GoogleAppsHandler() {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -88,11 +89,13 @@ void GoogleAppsHandler::HandleCacheGoogleAppIcon(const base::ListValue* args) {
   // pre-populated bookmarks don't have favicons and look bad. Favicons are
   // updated automatically when a user visits a site.
   GURL app_url = GURL(selectedApp->url);
-  favicon_service_->MergeFavicon(
-      app_url, app_url, favicon_base::IconType::kFavicon,
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          selectedApp->icon),
-      gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
+  FaviconServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->MergeFavicon(
+          app_url, app_url, favicon_base::IconType::kFavicon,
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              selectedApp->icon),
+          gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
 }
 
 void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
