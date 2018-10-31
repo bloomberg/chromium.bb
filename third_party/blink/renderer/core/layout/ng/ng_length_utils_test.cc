@@ -28,7 +28,7 @@ static NGConstraintSpace ConstructConstraintSpace(
 
   return NGConstraintSpaceBuilder(
              writing_mode,
-             /* icb_size */ size.ConvertToPhysical(writing_mode))
+             /* icb_size */ ToNGPhysicalSize(size, writing_mode))
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetIsFixedSizeInline(fixed_inline)

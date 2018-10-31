@@ -158,9 +158,8 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const WritingMode container_writing_mode,
                                const TextDirection container_direction,
                                NGAbsolutePhysicalPosition* position) {
-  NGPhysicalSize percentage_physical =
-      space.PercentageResolutionSize().ConvertToPhysical(
-          space.GetWritingMode());
+  NGPhysicalSize percentage_physical = ToNGPhysicalSize(
+      space.PercentageResolutionSize(), space.GetWritingMode());
   base::Optional<LayoutUnit> margin_left;
   if (!style.MarginLeft().IsAuto())
     margin_left = ResolveMarginPaddingLength(space, style.MarginLeft());
@@ -175,7 +174,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     right = ValueForLength(style.Right(), percentage_physical.width);
   base::Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
+      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
   DCHECK_NE(container_size.width, NGSizeIndefinite);
 
   // Solving the equation:
@@ -321,9 +320,8 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const WritingMode container_writing_mode,
                              const TextDirection container_direction,
                              NGAbsolutePhysicalPosition* position) {
-  NGPhysicalSize percentage_physical =
-      space.PercentageResolutionSize().ConvertToPhysical(
-          space.GetWritingMode());
+  NGPhysicalSize percentage_physical = ToNGPhysicalSize(
+      space.PercentageResolutionSize(), space.GetWritingMode());
 
   base::Optional<LayoutUnit> margin_top;
   if (!style.MarginTop().IsAuto())
@@ -341,7 +339,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   base::Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
+      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
   DCHECK_NE(container_size.height, NGSizeIndefinite);
 
   // Solving the equation:

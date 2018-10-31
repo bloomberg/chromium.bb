@@ -238,7 +238,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        unsigned sub_type)
     : layout_object_(builder->layout_object_),
       style_(builder->style_),
-      size_(builder->size_.ConvertToPhysical(builder->GetWritingMode())),
+      size_(ToNGPhysicalSize(builder->size_, builder->GetWritingMode())),
       break_token_(std::move(builder->break_token_)),
       type_(type),
       sub_type_(sub_type),

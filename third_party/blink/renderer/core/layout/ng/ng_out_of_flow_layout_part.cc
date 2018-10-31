@@ -110,8 +110,8 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
   container_builder_->ComputeInlineContainerFragments(
       &inline_container_fragments, &container_builder_size);
   NGPhysicalSize container_builder_physical_size =
-      container_builder_size.ConvertToPhysical(
-          default_containing_block_.style->GetWritingMode());
+      ToNGPhysicalSize(container_builder_size,
+                       default_containing_block_.style->GetWritingMode());
   // Translate start/end fragments into ContainingBlockInfo.
   for (auto& block_info : inline_container_fragments) {
     // Variables needed to describe ContainingBlockInfo
@@ -300,8 +300,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // and default_container border width.
   NGStaticPosition static_position(descendant.static_position);
   NGPhysicalSize default_containing_block_physical_size =
-      default_containing_block_.content_size.ConvertToPhysical(
-          default_containing_block_.style->GetWritingMode());
+      ToNGPhysicalSize(default_containing_block_.content_size,
+                       default_containing_block_.style->GetWritingMode());
   NGPhysicalOffset default_container_physical_offset =
       container_info.default_container_offset.ConvertToPhysical(
           default_containing_block_.style->GetWritingMode(),
@@ -439,8 +439,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // the constraint space in the descendant's writing mode.
   WritingMode writing_mode(descendant.Style().GetWritingMode());
   NGLogicalSize container_size(
-      container_info.content_size
-          .ConvertToPhysical(default_containing_block_.style->GetWritingMode())
+      ToNGPhysicalSize(container_info.content_size,
+                       default_containing_block_.style->GetWritingMode())
           .ConvertToLogical(writing_mode));
 
   LayoutUnit inline_size =
