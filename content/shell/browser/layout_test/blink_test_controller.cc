@@ -670,6 +670,13 @@ void BlinkTestController::CompositeAllFramesThen(
 
 void BlinkTestController::CompositeNodeQueueThen(
     base::OnceCallback<void()> callback) {
+  // Frames can get freed somewhere else while a CompositeWithRaster is taking
+  // place. Therefore, we need to double-check that this frame pointer is
+  // still valid before using it. To do that, grab the list of all frames
+  // again, and make sure it contains the one we're about to composite.
+  // See crbug.com/899465 for an example of this problem.
+  std::vector<RenderFrameHost*> current_frames(
+      main_window_->web_contents()->GetAllFrames());
   RenderFrameHost* next_node_host;
   do {
     if (composite_all_frames_node_queue_.empty()) {
@@ -680,6 +687,10 @@ void BlinkTestController::CompositeNodeQueueThen(
     next_node_host =
         composite_all_frames_node_queue_.front()->render_frame_host;
     composite_all_frames_node_queue_.pop();
+    if (std::find(current_frames.begin(), current_frames.end(),
+                  next_node_host) == current_frames.end()) {
+      next_node_host = nullptr;  // This one is now gone
+    }
   } while (!next_node_host || !next_node_host->IsRenderFrameLive());
   GetLayoutTestControlPtr(next_node_host)
       ->CompositeWithRaster(
