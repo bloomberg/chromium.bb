@@ -7,6 +7,8 @@
 
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <fuchsia/ui/viewsv1/cpp/fidl.h>
+#include <lib/ui/scenic/cpp/resources.h>
+#include <lib/ui/scenic/cpp/session.h>
 #include <string>
 #include <vector>
 
@@ -18,7 +20,6 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
-#include "ui/ozone/platform/scenic/scenic_session.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
@@ -27,7 +28,6 @@ class ScenicWindowManager;
 class PlatformWindowDelegate;
 
 class OZONE_EXPORT ScenicWindow : public PlatformWindow,
-                                  public ScenicSessionListener,
                                   public fuchsia::ui::viewsv1::ViewListener,
                                   public fuchsia::ui::input::InputListener,
                                   public InputEventDispatcherDelegate {
@@ -42,11 +42,12 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                    view_owner_request);
   ~ScenicWindow() override;
 
-  ScenicSession* scenic_session() { return &scenic_session_; }
-  ScenicSession::ResourceId node_id() const { return node_id_; }
+  scenic::Session* scenic_session() { return &scenic_session_; }
+  const scenic::Node& node() const { return node_; }
 
-  // Sets texture of the window to a scenic resource.
-  void SetTexture(ScenicSession::ResourceId texture);
+  // Sets texture of the window. |image| must be created in scenic_session().
+  void SetTexture(const scenic::Image& image);
+  void SetTexture(uint32_t image_id);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;
@@ -80,10 +81,9 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   void OnEvent(fuchsia::ui::input::InputEvent event,
                OnEventCallback callback) override;
 
-  // ScenicSessionListener interface.
-  void OnScenicError(const std::string& error) override;
-  void OnScenicEvents(
-      const std::vector<fuchsia::ui::scenic::Event>& events) override;
+  // Callbacks for |scenic_session_|.
+  void OnScenicError();
+  void OnScenicEvents(fidl::VectorPtr<fuchsia::ui::scenic::Event> events);
 
   // InputEventDispatcher::Delegate interface.
   void DispatchEvent(ui::Event* event) override;
@@ -106,19 +106,19 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   fidl::Binding<fuchsia::ui::viewsv1::ViewListener> view_listener_binding_;
 
   // Scenic session used for all drawing operations in this View.
-  ScenicSession scenic_session_;
+  scenic::Session scenic_session_;
 
   // Node ID in |scenic_session_| for the parent view.
-  ScenicSession::ResourceId parent_node_id_;
+  scenic::ImportNode parent_node_;
 
   // Node ID in |scenic_session_| for the view.
-  ScenicSession::ResourceId node_id_;
+  scenic::EntityNode node_;
 
-  // Shape and material resource ids for the view in the context of the scenic
-  // session for the window. They are used to set shape and texture for the view
+  // Shape and material resources for the view in the context of
+  // |scenic_session_|. They are used to set shape and texture for the view
   // node.
-  ScenicSession::ResourceId shape_id_;
-  ScenicSession::ResourceId material_id_;
+  scenic::ShapeNode shape_node_;
+  scenic::Material material_;
 
   // The ratio used for translating device-independent coordinates to absolute
   // pixel coordinates.
