@@ -9,13 +9,9 @@ from telemetry.util import wpr_modes
 from measurements import rendering
 from measurements import rendering_util
 
-# TODO(crbug.com/891546): add 'other' to the list.
-RENDERING_THREAD_GROUPS = ['all', 'browser', 'fast_path', 'gpu', 'io', 'raster',
-                           'renderer_compositor', 'renderer_main']
-
-THREAD_TIMES_THREAD_GROUPS = ['GPU', 'IO', 'browser', 'display_compositor',
-                              'other', 'raster', 'renderer_compositor',
-                              'renderer_main', 'total_all', 'total_fast_path']
+RENDERING_THREAD_GROUPS = ['GPU', 'IO', 'browser', 'display_compositor',
+                           'other', 'raster', 'renderer_compositor',
+                           'renderer_main', 'total_all', 'total_fast_path']
 
 class RenderingUnitTest(page_test_test_case.PageTestTestCase):
   """Test for rendering measurement
@@ -36,15 +32,10 @@ class RenderingUnitTest(page_test_test_case.PageTestTestCase):
     self.assertFalse(results.had_failures)
     stat = rendering_util.ExtractStat(results)
 
+    self.assertGreater(stat['frame_times'].count, 1)
+    self.assertGreater(stat['percentage_smooth'].count, 1)
     for thread_group in RENDERING_THREAD_GROUPS:
       # We should have at least two sample values for each metric, since
       # pageset_repeat is 2.
-      histogram_name = 'thread_%s_cpu_time_per_frame_tbmv2' % thread_group
+      histogram_name = 'thread_%s_cpu_time_per_frame' % thread_group
       self.assertGreater(stat[histogram_name].count, 1)
-
-    # Check the existence of some of the legacy metrics.
-    self.assertGreater(stat['frame_times'].count, 1)
-    self.assertGreater(stat['percentage_smooth'].count, 1)
-    for thread_group in THREAD_TIMES_THREAD_GROUPS:
-      self.assertGreater(
-          stat['thread_%s_cpu_time_per_frame' % thread_group].count, 1)
