@@ -5507,7 +5507,8 @@ crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font
 crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
 crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
 
-# ecosystem-infra sheriff 2018-10-16
+# run_web_tests.py crashes content_shell when <link href="about:blank"> is present
+crbug.com/895777 external/wpt/css/css-transforms/text-perspective-001.html [ Pass Crash ]
 crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Crash ]
 
 #Sheriff 2018-10-18
