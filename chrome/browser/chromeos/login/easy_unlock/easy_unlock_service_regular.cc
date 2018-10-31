@@ -360,16 +360,6 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
                    account_info.gaia);
 }
 
-void EasyUnlockServiceRegular::HandleUserReauth(
-    const UserContext& user_context) {
-  // Cache the user context for the next X minutes, so the user doesn't have to
-  // reauth again.
-  short_lived_user_context_.reset(new ShortLivedUserContext(
-      user_context,
-      apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile()),
-      base::ThreadTaskRunnerHandle::Get().get()));
-}
-
 void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
     EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
     bool success) {
@@ -463,7 +453,6 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 }
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
-  short_lived_user_context_.reset();
   pref_manager_.reset();
 
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
@@ -697,10 +686,7 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
   // changes an existing key.
   // Note: We do not show a notification when EasyUnlock is disabled by sync nor
   // if EasyUnlock was enabled through the setup app.
-  bool is_setup_fresh =
-      short_lived_user_context_ && short_lived_user_context_->user_context();
-
-  if (!public_keys_after_sync.empty() && !is_setup_fresh) {
+  if (!public_keys_after_sync.empty()) {
     if (public_keys_before_sync.empty()) {
       if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
           base::FeatureList::IsEnabled(
@@ -814,25 +800,7 @@ EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
 }
 
 void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
-  // If the user reauthed on the settings page, then the UserContext will be
-  // cached.
-  if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
-    // We only sync the remote devices to cryptohome if the user has enabled
-    // EasyUnlock on the login screen.
-    base::ListValue empty_list;
-    const base::ListValue* remote_devices_list = GetRemoteDevices();
-    if (!IsChromeOSLoginEnabled() || !remote_devices_list)
-      remote_devices_list = &empty_list;
-
-    UserSessionManager::GetInstance()->GetEasyUnlockKeyManager()->RefreshKeys(
-        *short_lived_user_context_->user_context(),
-        base::ListValue(remote_devices_list->GetList()),
-        base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
-  } else {
-    CheckCryptohomeKeysAndMaybeHardlock();
-  }
+  CheckCryptohomeKeysAndMaybeHardlock();
 }
 
 cryptauth::RemoteDeviceRefList EasyUnlockServiceRegular::GetUnlockKeys() {

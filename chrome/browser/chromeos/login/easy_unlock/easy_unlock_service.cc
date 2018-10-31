@@ -704,8 +704,6 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
   }
 }
 
-void EasyUnlockService::HandleUserReauth(const UserContext& user_context) {}
-
 void EasyUnlockService::PrepareForSuspend() {
   app_manager_->DisableAppIfLoaded();
   if (screenlock_state_handler_ && screenlock_state_handler_->IsActive())

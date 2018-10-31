@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
-#include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
@@ -111,7 +110,6 @@ class EasyUnlockServiceRegular
 
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
-  void HandleUserReauth(const UserContext& user_context) override;
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncStarted() override;
@@ -150,8 +148,6 @@ class EasyUnlockServiceRegular
   void SetHardlockAfterKeyOperation(
       EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
       bool success);
-
-  std::unique_ptr<ShortLivedUserContext> short_lived_user_context_;
 
   // Returns the CryptAuthEnrollmentManager, which manages the profile's
   // CryptAuth enrollment.

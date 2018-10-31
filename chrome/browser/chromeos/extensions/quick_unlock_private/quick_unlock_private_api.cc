@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
@@ -579,8 +578,6 @@ void QuickUnlockPrivateSetModesFunction::ModeChangeComplete(
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           GetActiveProfile(browser_context()));
   const chromeos::UserContext user_context(*user);
-  chromeos::EasyUnlockService::Get(GetActiveProfile(browser_context()))
-      ->HandleUserReauth(user_context);
 
   Respond(ArgumentList(SetModes::Results::Create()));
 }
