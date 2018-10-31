@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
-#include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -162,8 +161,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
                     "Failed to initialize virtual GL context.";
       return gpu::ContextResult::kFatalFailure;
     }
-
-    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder->AsWeakPtr()));
   }
 
   if (!context->MakeCurrent(surface_.get())) {

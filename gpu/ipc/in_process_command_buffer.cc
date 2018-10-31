@@ -39,7 +39,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
-#include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
@@ -584,9 +583,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                       "Could not make context current.";
         return gpu::ContextResult::kTransientFailure;
       }
-
-      context_->SetGLStateRestorer(
-          new GLStateRestorerImpl(decoder_->AsWeakPtr()));
     } else {
       context_ = real_context;
       DCHECK(context_->IsCurrent(surface_.get()));
