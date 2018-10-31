@@ -9,6 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -57,8 +59,7 @@ constexpr const int kEmailIconSize = 48;  // Pixels.
 static_assert(base::size(kEmail) == (size_t)EmailProviders::kCount,
               "names and histograms must match");
 
-EmailHandler::EmailHandler(favicon::FaviconService* favicon_service)
-    : favicon_service_(favicon_service) {}
+EmailHandler::EmailHandler() {}
 
 EmailHandler::~EmailHandler() {}
 
@@ -89,11 +90,13 @@ void EmailHandler::HandleCacheEmailIcon(const base::ListValue* args) {
   // pre-populated bookmarks don't have favicons and look bad. Favicons are
   // updated automatically when a user visits a site.
   GURL app_url = GURL(selectedEmail->url);
-  favicon_service_->MergeFavicon(
-      app_url, app_url, favicon_base::IconType::kFavicon,
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          selectedEmail->icon),
-      gfx::Size(kEmailIconSize, kEmailIconSize));
+  FaviconServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->MergeFavicon(
+          app_url, app_url, favicon_base::IconType::kFavicon,
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              selectedEmail->icon),
+          gfx::Size(kEmailIconSize, kEmailIconSize));
 }
 
 void EmailHandler::HandleGetEmailList(const base::ListValue* args) {

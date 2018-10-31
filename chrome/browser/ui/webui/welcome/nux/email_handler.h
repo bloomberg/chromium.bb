@@ -13,10 +13,6 @@ namespace content {
 class WebUIDataSource;
 }  // namespace content
 
-namespace favicon {
-class FaviconService;
-}  // namespace favicon
-
 namespace nux {
 
 extern const char* kEmailInteractionHistogram;
@@ -32,7 +28,7 @@ enum class EmailInteraction {
 
 class EmailHandler : public content::WebUIMessageHandler {
  public:
-  explicit EmailHandler(favicon::FaviconService* favicon_service);
+  EmailHandler();
   ~EmailHandler() override;
 
   // WebUIMessageHandler:
@@ -44,10 +40,6 @@ class EmailHandler : public content::WebUIMessageHandler {
 
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source);
-
- private:
-  // Weak reference.
-  favicon::FaviconService* favicon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(EmailHandler);
 };
