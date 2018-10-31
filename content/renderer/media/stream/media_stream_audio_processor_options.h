@@ -131,10 +131,6 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing,
 void ConfigPreAmplifier(webrtc::AudioProcessing::Config* apm_config,
                         base::Optional<double> fixed_gain_factor);
 
-void GetAudioProcessingStats(
-    AudioProcessing* audio_processing,
-    webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
-
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_

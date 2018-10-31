@@ -102,12 +102,6 @@ void AudioServiceAudioProcessorProxy::SetControls(
     aec_dump_message_filter_->AddDelegate(this);
 }
 
-void AudioServiceAudioProcessorProxy::GetStats(AudioProcessorStats* out) {
-  // This is the old GetStats interface from webrtc::AudioProcessorInterface.
-  // It should not be in use by Chrome any longer.
-  NOTREACHED();
-}
-
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 AudioServiceAudioProcessorProxy::GetStats(bool has_remote_tracks) {
   base::AutoLock lock(stats_lock_);
