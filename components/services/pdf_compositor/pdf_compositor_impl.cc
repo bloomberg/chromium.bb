@@ -85,11 +85,10 @@ void PdfCompositorImpl::AddSubframeContent(
 
 void PdfCompositorImpl::CompositePageToPdf(
     uint64_t frame_guid,
-    uint32_t page_num,
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
-  HandleCompositionRequest(frame_guid, page_num, std::move(serialized_content),
+  HandleCompositionRequest(frame_guid, std::move(serialized_content),
                            subframe_content_map, std::move(callback));
 }
 
@@ -98,9 +97,8 @@ void PdfCompositorImpl::CompositeDocumentToPdf(
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
-  HandleCompositionRequest(frame_guid, base::nullopt,
-                           std::move(serialized_content), subframe_content_map,
-                           std::move(callback));
+  HandleCompositionRequest(frame_guid, std::move(serialized_content),
+                           subframe_content_map, std::move(callback));
 }
 
 void PdfCompositorImpl::SetWebContentsURL(const GURL& url) {
@@ -125,8 +123,7 @@ void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
       if (pending_list.empty()) {
         // If the request isn't waiting on any subframes then it is ready.
         // Fulfill the request now.
-        FulfillRequest(request->frame_guid, request->page_number,
-                       std::move(request->serialized_content),
+        FulfillRequest(std::move(request->serialized_content),
                        request->subframe_content_map,
                        std::move(request->callback));
         it = requests_.erase(it);
@@ -171,7 +168,6 @@ void PdfCompositorImpl::CheckFramesForReadiness(
 
 void PdfCompositorImpl::HandleCompositionRequest(
     uint64_t frame_guid,
-    base::Optional<uint32_t> page_num,
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     CompositeToPdfCallback callback) {
@@ -186,8 +182,8 @@ void PdfCompositorImpl::HandleCompositionRequest(
   base::flat_set<uint64_t> pending_subframes;
   if (IsReadyToComposite(frame_guid, subframe_content_map,
                          &pending_subframes)) {
-    FulfillRequest(frame_guid, page_num, std::move(mapping),
-                   subframe_content_map, std::move(callback));
+    FulfillRequest(std::move(mapping), subframe_content_map,
+                   std::move(callback));
     return;
   }
 
@@ -198,13 +194,11 @@ void PdfCompositorImpl::HandleCompositionRequest(
     frame_info_map_[frame_guid] = std::make_unique<FrameInfo>();
 
   requests_.push_back(std::make_unique<RequestInfo>(
-      frame_guid, page_num, std::move(mapping), subframe_content_map,
-      std::move(pending_subframes), std::move(callback)));
+      std::move(mapping), subframe_content_map, std::move(pending_subframes),
+      std::move(callback)));
 }
 
 mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
-    uint64_t frame_guid,
-    base::Optional<uint32_t> page_num,
     base::ReadOnlySharedMemoryMapping shared_mem,
     const ContentToFrameMap& subframe_content_map,
     base::ReadOnlySharedMemoryRegion* region) {
@@ -287,15 +281,12 @@ PdfCompositorImpl::GetDeserializationContext(
 }
 
 void PdfCompositorImpl::FulfillRequest(
-    uint64_t frame_guid,
-    base::Optional<uint32_t> page_num,
     base::ReadOnlySharedMemoryMapping serialized_content,
     const ContentToFrameMap& subframe_content_map,
     CompositeToPdfCallback callback) {
   base::ReadOnlySharedMemoryRegion region;
-  auto status =
-      CompositeToPdf(frame_guid, page_num, std::move(serialized_content),
-                     subframe_content_map, &region);
+  auto status = CompositeToPdf(std::move(serialized_content),
+                               subframe_content_map, &region);
   std::move(callback).Run(status, std::move(region));
 }
 
@@ -313,15 +304,11 @@ PdfCompositorImpl::FrameInfo::FrameInfo() {}
 PdfCompositorImpl::FrameInfo::~FrameInfo() {}
 
 PdfCompositorImpl::RequestInfo::RequestInfo(
-    uint64_t frame_guid,
-    base::Optional<uint32_t> page_num,
     base::ReadOnlySharedMemoryMapping content,
     const ContentToFrameMap& content_info,
     const base::flat_set<uint64_t>& pending_subframes,
     mojom::PdfCompositor::CompositePageToPdfCallback callback)
     : FrameContentInfo(std::move(content), content_info),
-      frame_guid(frame_guid),
-      page_number(page_num),
       pending_subframes(pending_subframes),
       callback(std::move(callback)) {}
 
