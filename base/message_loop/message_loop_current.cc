@@ -22,11 +22,6 @@ base::ThreadLocalPointer<MessageLoop>* GetTLSMessageLoop() {
 
 }  // namespace
 
-// static
-MessageLoop* MessageLoop::GetCurrentDeprecated() {
-  return GetTLSMessageLoop()->Get();
-}
-
 //------------------------------------------------------------------------------
 // MessageLoopCurrent
 
@@ -36,8 +31,18 @@ MessageLoopCurrent MessageLoopCurrent::Get() {
 }
 
 // static
+MessageLoopCurrent MessageLoopCurrent::GetNull() {
+  return MessageLoopCurrent(nullptr);
+}
+
+// static
 bool MessageLoopCurrent::IsSet() {
   return !!GetTLSMessageLoop()->Get();
+}
+
+MessageLoopCurrent& MessageLoopCurrent::operator=(MessageLoop* message_loop) {
+  current_ = message_loop;
+  return *this;
 }
 
 void MessageLoopCurrent::AddDestructionObserver(
@@ -128,6 +133,10 @@ void MessageLoopCurrent::BindToCurrentThreadInternal(MessageLoop* current) {
 void MessageLoopCurrent::UnbindFromCurrentThreadInternal(MessageLoop* current) {
   DCHECK_EQ(current, GetTLSMessageLoop()->Get());
   GetTLSMessageLoop()->Set(nullptr);
+}
+
+bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
+  return current_ == other.current_;
 }
 
 #if !defined(OS_NACL)

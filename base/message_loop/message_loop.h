@@ -132,9 +132,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   ~MessageLoop() override;
 
-  // TODO(gab): Mass migrate callers to MessageLoopCurrent::Get().
-  static MessageLoopCurrent current();
-
   using MessagePumpFactory = std::unique_ptr<MessagePump>();
   // Uses the given base::MessagePumpForUIFactory to override the default
   // MessagePump implementation for 'TYPE_UI'. Returns true if the factory
@@ -225,6 +222,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   friend class MessageLoopCurrent;
   friend class MessageLoopCurrentForIO;
   friend class MessageLoopCurrentForUI;
+  friend class MessageLoopTaskRunnerTest;
   friend class ScheduleWorkTest;
   friend class Thread;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
@@ -245,11 +243,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   static std::unique_ptr<MessageLoop> CreateUnbound(
       Type type,
       MessagePumpFactoryCallback pump_factory);
-
-  // Return the pointer to MessageLoop for internal needs.
-  // All other callers should call MessageLoopCurrent::Get().
-  // TODO(altimin): Remove this.
-  static MessageLoop* GetCurrentDeprecated();
 
   // Sets the ThreadTaskRunnerHandle for the current thread to point to the
   // task runner for this message loop.

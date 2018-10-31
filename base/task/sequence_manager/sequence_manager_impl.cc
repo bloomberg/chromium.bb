@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/rand_util.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_time_observer.h"
@@ -132,7 +133,8 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl>
 SequenceManagerImpl::CreateOnCurrentThread() {
-  auto manager = CreateUnbound(MessageLoop::current());
+  auto manager =
+      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopDeprecated());
   manager->BindToCurrentThread();
   manager->CompleteInitializationOnBoundThread();
   return manager;

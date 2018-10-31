@@ -12,6 +12,7 @@
 #include "base/hash.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
@@ -141,6 +142,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
           video_frame_compositor_task_runner),
       video_frame_compositor_task_runner_(video_frame_compositor_task_runner),
       io_task_runner_(io_task_runner),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       player_(player),
       video_frame_provider_client_(nullptr),
       current_frame_rendered_(false),
@@ -150,8 +152,6 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       stopped_(true),
       render_started_(!stopped_),
       weak_ptr_factory_(this) {
-  main_message_loop_ = base::MessageLoopCurrent::Get();
-
   if (surface_layer_mode != blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
     submitter_ = std::move(submitter);
 
@@ -539,7 +539,7 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
   ignore_result(new_frame->metadata()->GetRotation(
       media::VideoFrameMetadata::ROTATION, &new_frame_video_rotation));
   if (!old_frame) {
-    main_message_loop_->task_runner()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WebMediaPlayerMS::OnFirstFrameReceived, player_,
                        new_frame_video_rotation, new_frame_is_opaque));
@@ -549,24 +549,24 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
   ignore_result(old_frame->metadata()->GetRotation(
       media::VideoFrameMetadata::ROTATION, &old_frame_video_rotation));
   if (new_frame_video_rotation != old_frame_video_rotation) {
-    main_message_loop_->task_runner()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnRotationChanged, player_,
                                   new_frame_video_rotation));
     if (submitter_)
       submitter_->SetRotation(new_frame_video_rotation);
   }
   if (new_frame_is_opaque != media::IsOpaque(old_frame->format())) {
-    main_message_loop_->task_runner()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnOpacityChanged, player_,
                                   new_frame_is_opaque));
     if (submitter_)
       submitter_->SetIsOpaque(new_frame_is_opaque);
   }
   if (old_frame->natural_size() != new_frame->natural_size()) {
-    main_message_loop_->task_runner()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMS::TriggerResize, player_));
   }
-  main_message_loop_->task_runner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
 

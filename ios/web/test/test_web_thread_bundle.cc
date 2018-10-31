@@ -59,15 +59,19 @@ void TestWebThreadBundle::Init(int options) {
               ? base::test::ScopedTaskEnvironment::MainThreadType::IO
               : base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
-  ui_thread_.reset(
-      new TestWebThread(WebThread::UI, base::MessageLoop::current()));
+  // TODO(crbug.com/826465): TestWebThread won't need MessageLoop*
+  // once modernized to match its //content equivalent.
+  ui_thread_.reset(new TestWebThread(
+      WebThread::UI,
+      base::MessageLoopCurrent::Get()->ToMessageLoopDeprecated()));
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
     io_thread_.reset(new TestWebThread(WebThread::IO));
     io_thread_->StartIOThread();
   } else {
-    io_thread_.reset(
-        new TestWebThread(WebThread::IO, base::MessageLoop::current()));
+    io_thread_.reset(new TestWebThread(
+        WebThread::IO,
+        base::MessageLoopCurrent::Get()->ToMessageLoopDeprecated()));
   }
 }
 

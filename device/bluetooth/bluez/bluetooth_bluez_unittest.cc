@@ -11,6 +11,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -224,7 +225,7 @@ class BluetoothBlueZTest : public testing::Test {
   // without using this function.
   void DiscoverDevice(const std::string& address) {
     ASSERT_TRUE(adapter_.get() != nullptr);
-    ASSERT_TRUE(base::MessageLoop::IsSet());
+    ASSERT_TRUE(base::MessageLoopCurrent::IsSet());
     fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
     TestBluetoothAdapterObserver observer(adapter_);

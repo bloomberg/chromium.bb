@@ -334,8 +334,7 @@ bool WebThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
-             base::MessageLoop::current();
+         globals.threads[identifier]->task_runner()->BelongsToCurrentThread();
 }
 
 // static
@@ -357,11 +356,10 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
   if (!g_globals.IsCreated())
     return false;
 
-  base::MessageLoop* cur_message_loop = base::MessageLoop::current();
   WebThreadGlobals& globals = g_globals.Get();
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.threads[i] &&
-        globals.threads[i]->message_loop() == cur_message_loop) {
+        globals.threads[i]->task_runner()->BelongsToCurrentThread()) {
       *identifier = globals.threads[i]->identifier_;
       return true;
     }

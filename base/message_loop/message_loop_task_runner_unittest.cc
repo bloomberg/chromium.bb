@@ -66,12 +66,14 @@ class MessageLoopTaskRunnerTest : public testing::Test {
           deleted_on_(deleted_on),
           destruct_order_(destruct_order) {}
 
-    void RecordRun() { *run_on_ = MessageLoop::current(); }
+    void RecordRun() {
+      *run_on_ = MessageLoopCurrent::Get()->ToMessageLoopDeprecated();
+    }
 
    private:
     friend class RefCountedThreadSafe<LoopRecorder>;
     ~LoopRecorder() {
-      *deleted_on_ = MessageLoop::current();
+      *deleted_on_ = MessageLoopCurrent::Get()->ToMessageLoopDeprecated();
       *destruct_order_ = g_order.GetNext();
     }
 

@@ -179,7 +179,7 @@ class ScheduleWorkTest : public testing::Test {
     if (java_thread_)
       return java_thread_->message_loop();
 #endif
-    return target_->message_loop();
+    return target_->message_loop()->ToMessageLoopDeprecated();
   }
 
  private:

@@ -286,6 +286,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Friends for message_loop() access:
   friend class MessageLoopTaskRunnerTest;
   friend class ScheduleWorkTest;
+  friend class MessageLoopTaskRunnerTest;
 
 #if defined(OS_WIN)
   enum ComStatus {

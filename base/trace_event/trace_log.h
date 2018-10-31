@@ -17,6 +17,8 @@
 #include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
@@ -24,8 +26,6 @@
 #include "build/build_config.h"
 
 namespace base {
-
-class MessageLoop;
 class RefCountedString;
 
 template <typename T>
@@ -521,10 +521,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   ThreadLocalBoolean thread_blocks_message_loop_;
   ThreadLocalBoolean thread_is_in_trace_event_;
 
-  // Contains the message loops of threads that have had at least one event
-  // added into the local event buffer. Not using SingleThreadTaskRunner
-  // because we need to know the life time of the message loops.
-  hash_set<MessageLoop*> thread_message_loops_;
+  // Contains task runners for the threads that have had at least one event
+  // added into the local event buffer.
+  hash_map<int, scoped_refptr<SingleThreadTaskRunner>> thread_task_runners_;
 
   // For events which can't be added into the thread local buffer, e.g. events
   // from threads without a message loop.
