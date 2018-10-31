@@ -347,23 +347,8 @@ class EntryList {
   }
 
   /**
-   * @param {!Entry|!FilesAppEntry} entry that should be removed as
-   * child of this EntryList.
-   * This method is specific to EntryList instance.
-   * @return {boolean} if entry was removed.
-   */
-  removeEntry(entry) {
-    const entryIndex = this.children.indexOf(entry);
-    if (entryIndex !== -1) {
-      this.children.splice(entryIndex, 1);
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * @param {!VolumeInfo} volumeInfo that's desired to be removed.
-   * This method is specific to EntryList instance.
+   * This method is specific to VolumeEntry/EntryList instance.
    * @return {number} index of entry on this EntryList or -1 if not found.
    */
   findIndexByVolumeInfo(volumeInfo) {
@@ -374,7 +359,7 @@ class EntryList {
   /**
    * Removes the first volume with the given type.
    * @param {!VolumeManagerCommon.VolumeType} volumeType desired type.
-   * This method is specific to EntryList instance.
+   * This method is specific to VolumeEntry/EntryList instance.
    * @return {boolean} if entry was removed.
    */
   removeByVolumeType(volumeType) {
@@ -391,7 +376,7 @@ class EntryList {
   /**
    * Removes the first entry that matches the rootType.
    * @param {!VolumeManagerCommon.RootType} rootType to be removed.
-   * This method is specific to EntryList instance.
+   * This method is specific to VolumeEntry/EntryList instance.
    * @return {boolean} if entry was removed.
    */
   removeByRootType(rootType) {
@@ -426,6 +411,12 @@ class VolumeEntry {
      * method calls to it.
      */
     this.volumeInfo_ = volumeInfo;
+
+    /**
+     * @private{!Array<!Entry|!FilesAppEntry>} additional entries that will be
+     * displayed together with this Volume's entries.
+     */
+    this.children_ = [];
 
     /** @type {DirectoryEntry} from Volume's root. */
     this.rootEntry_ = volumeInfo.displayRoot;
@@ -529,7 +520,11 @@ class VolumeEntry {
    * @override
    */
   createReader() {
-    return this.rootEntry_.createReader();
+    const readers = [this.rootEntry_.createReader()];
+    if (this.children_.length)
+      readers.push(new StaticReader(this.children_));
+
+    return new CombinedReaders(readers);
   }
 
   /**
@@ -539,6 +534,66 @@ class VolumeEntry {
    */
   setPrefix(entry) {
     this.volumeInfo_.prefixEntry = entry;
+  }
+
+  /**
+   * @param {!Entry|!FilesAppEntry} entry that should be added as
+   * child of this VolumeEntry.
+   * This method is specific to VolumeEntry instance.
+   */
+  addEntry(entry) {
+    this.children_.push(entry);
+    // Only VolumeEntry can have prefix set becuase it sets on VolumeInfo
+    // which's then used on LocationInfo/LocationLine.
+    if (entry.type_name == 'VolumeEntry') {
+      const volumeEntry = /** @type {VolumeEntry} */ (entry);
+      volumeEntry.setPrefix(this);
+    }
+  }
+
+  /**
+   * @param {!VolumeInfo} volumeInfo that's desired to be removed.
+   * This method is specific to VolumeEntry/EntryList instance.
+   * @return {number} index of entry within VolumeEntry or -1 if not found.
+   */
+  findIndexByVolumeInfo(volumeInfo) {
+    return this.children_.findIndex(
+        childEntry =>
+            /** @type {VolumeEntry} */ (childEntry).volumeInfo === volumeInfo);
+  }
+
+  /**
+   * Removes the first volume with the given type.
+   * @param {!VolumeManagerCommon.VolumeType} volumeType desired type.
+   * This method is specific to VolumeEntry/EntryList instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeByVolumeType(volumeType) {
+    const childIndex = this.children_.findIndex(childEntry => {
+      const entry = /** @type {VolumeEntry} */ (childEntry);
+      return entry.volumeInfo && entry.volumeInfo.volumeType === volumeType;
+    });
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Removes the first entry that matches the rootType.
+   * @param {!VolumeManagerCommon.RootType} rootType to be removed.
+   * This method is specific to VolumeEntry/EntryList instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeByRootType(rootType) {
+    const childIndex = this.children_.findIndex(
+        childEntry => childEntry.rootType === rootType);
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
   }
 }
 

@@ -99,19 +99,9 @@ function testEntryListAddEntry() {
   assertEquals(childEntry, entryList.children[0]);
 }
 
-/** Tests methods to remove entries. */
-function testEntryListRemoveEntry() {
-  const entryList =
-      new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
-
-  const childEntry = fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS);
-  entryList.addEntry(childEntry);
-  assertTrue(entryList.removeEntry(childEntry));
-  assertEquals(0, entryList.children.length);
-}
-
 /**
- * Tests methods findIndexByVolumeInfo, removeByVolumeType, removeByRootType.
+ * Tests EntryList's methods addEntry, findIndexByVolumeInfo,
+ * removeByVolumeType, removeByRootType.
  */
 function testEntryFindIndex() {
   const entryList =
@@ -148,6 +138,50 @@ function testEntryFindIndex() {
   entryList.addEntry(fakeEntry);
   assertTrue(entryList.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
   assertEquals(1, entryList.children.length);
+}
+
+/**
+ * Tests VolumeEntry's methods findIndexByVolumeInfo, removeByVolumeType,
+ * removeByRootType.
+ * @suppress {accessControls} to be able to access private properties.
+ */
+function testVolumeEntryFindIndex() {
+  const fakeRootEntry = createFakeDisplayRoot();
+  const volumeEntry =
+      fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
+
+  const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
+  const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+
+  const fakeEntry = /** @type{!Entry} */ ({
+    isDirectory: true,
+    rootType: VolumeManagerCommon.RootType.CROSTINI,
+    name: 'Linux files',
+    toURL: function() {
+      return 'fake-entry://linux-files';
+    }
+  });
+
+  volumeEntry.addEntry(crostini);
+  volumeEntry.addEntry(android);
+
+  // Test findIndexByVolumeInfo.
+  assertEquals(0, volumeEntry.findIndexByVolumeInfo(crostini.volumeInfo));
+  assertEquals(1, volumeEntry.findIndexByVolumeInfo(android.volumeInfo));
+
+  // Test removeByVolumeType.
+  assertTrue(
+      volumeEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+  assertEquals(1, volumeEntry.children_.length);
+  // Now crostini volume doesn't exist anymore, so should return False.
+  assertFalse(
+      volumeEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+
+  // Test removeByRootType.
+  volumeEntry.addEntry(fakeEntry);
+  assertTrue(
+      volumeEntry.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
+  assertEquals(1, volumeEntry.children_.length);
 }
 
 /** Tests method EntryList.getMetadata. */
@@ -323,10 +357,43 @@ function testVolumeEntry() {
   assertEquals('/fake/full/path', volumeEntry.fullPath);
   assertEquals('fake-filesystem://fake/full/path', volumeEntry.toURL());
   assertEquals('Fake Filesystem', volumeEntry.name);
-  assertEquals('FAKE READER', volumeEntry.createReader());
   assertTrue(volumeEntry.isNativeType);
   assertTrue(volumeEntry.isDirectory);
   assertFalse(volumeEntry.isFile);
+}
+
+function testVolumeEntryCreateReader(testReportCallback) {
+  const fakeRootEntry = createFakeDisplayRoot();
+  fakeRootEntry.createReader = () => new StaticReader(['file1']);
+  const volumeEntry =
+      fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
+  const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
+  const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+
+  volumeEntry.addEntry(crostini);
+  volumeEntry.addEntry(android);
+  const reader = volumeEntry.createReader();
+
+  const readFiles = [];
+  const accumulateResults = (readerResult) => {
+    readerResult.map((f) => readFiles.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults);
+  };
+
+  reader.readEntries(accumulateResults);
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        return readFiles.length >= 3;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(3, readFiles.length);
+        assertEquals('file1', readFiles[0]);
+        assertEquals(crostini, readFiles[1]);
+        assertEquals(android, readFiles[2]);
+      }),
+      testReportCallback);
 }
 
 /**
