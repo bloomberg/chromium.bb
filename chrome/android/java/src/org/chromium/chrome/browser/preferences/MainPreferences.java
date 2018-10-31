@@ -45,6 +45,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_LANGUAGES = "languages";
     public static final String PREF_DOWNLOADS = "downloads";
     public static final String PREF_DEVELOPER = "developer";
+    public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
     public static final String AUTOFILL_GUID = "guid";
     // Needs to be in sync with kSettingsOrigin[] in
@@ -157,6 +158,11 @@ public class MainPreferences extends PreferenceFragment
         // Developer preferences are only shown when the feature is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DEVELOPER_PREFERENCES)) {
             getPreferenceScreen().removePreference(findPreference(PREF_DEVELOPER));
+        }
+
+        // This checks whether Autofill Assistant is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
         }
     }
 
