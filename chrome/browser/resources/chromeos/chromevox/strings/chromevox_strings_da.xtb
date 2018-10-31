@@ -44,6 +44,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1251750620252348585">Næste niveau 6-overskrift</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1286609444451033486">Tryk på søgetasten+mellemrumstasten for at skifte indstilling.</translation>
+<translation id="1291286136605998134">Til/fra-knap</translation>
 <translation id="1319608975892113573">Ingen tidligere blockquotes.</translation>
 <translation id="1321576897702511272">Skjul Hjælp til ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
@@ -269,7 +270,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3232388865800379423">En pop op-knap</translation>
 <translation id="3241052487511142956">Tidligere besøgt link</translation>
 <translation id="3241638166094654466">Celler i hver linje:</translation>
-<translation id="3286372614333682499">portræt</translation>
+<translation id="3286372614333682499">stående</translation>
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
 <translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, markørstyring til brailletekst, valg og meget mere.</translation>
@@ -383,6 +384,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3930498801443296724">Opmærksomhedsskabende citat</translation>
 <translation id="3941269780691800708">Oplæs teksten under markøren.</translation>
 <translation id="3962990492275676168">Start læsning fra nuværende position</translation>
+<translation id="3989324057180830702">tgl btn</translation>
 <translation id="4004802134384979325">markeret</translation>
 <translation id="4006140876663370126">bidl</translation>
 <translation id="4038349100599457191">Månedlig kontrol</translation>

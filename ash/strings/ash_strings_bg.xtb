@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
 <translation id="2790844815106384441">да избира дали уебсайтовете да могат да използват услугите за местоположение, или микрофона, камерата или други функции на устройството;</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
+<translation id="2803734122639935495">За да отключите, въведете паролата си</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Жак за микрофон</translation>
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
+<translation id="5691772641933328258">Отпечатъкът не бе разпознат</translation>
 <translation id="574392208103952083">Среден</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5750765938512549687">Функцията за Bluetooth е изключена</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Разделителната способност е променена</translation>
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Наслагване върху клавиатурата</translation>
 <translation id="6344698853700675736">Превключване на функцията за нощно осветление</translation>
 <translation id="6376931439017688372">Функцията за Bluetooth е включена</translation>
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Установява се връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7868900307798234037">Отключване с отпечатък</translation>
 <translation id="7886169021410746335">да коригира настройките за поверителност.</translation>
 <translation id="7886277072580235377">Сесията ви за интернет ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">„Send an email“ („Изпрати имейл“)</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Профилът се управлява от <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Търсят се мобилни мрежи...</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="7984197416080286869">Твърде много опити за отключване с отпечатък</translation>
 <translation id="7994370417837006925">Централизиран вход</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8029241286966751120">Лупата за увеличаване на целия екран е активирана. За да я изключите, натиснете отново Ctrl + клавиш „Търсене“ + M.</translation>

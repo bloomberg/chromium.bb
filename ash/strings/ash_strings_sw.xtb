@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Inaunganisha upya kwenye <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Chagua ikiwa tovuti zinaweza kutumia huduma za mahali au maikrofoni, kamera au vipengele vingine vya kifaa</translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
+<translation id="2803734122639935495">Weka nenosiri lako ili ufungue</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Pini ya maikrofoni</translation>
 <translation id="5669267381087807207">Inaamilisha</translation>
 <translation id="5673434351075758678">Imebadalisha lugha kutoka "<ph name="FROM_LOCALE" />" kuwa "<ph name="TO_LOCALE" />" baada ya kusawazisha mipangilio yako.</translation>
+<translation id="5691772641933328258">Haikutambua alama ya kidole</translation>
 <translation id="574392208103952083">Wastani</translation>
 <translation id="5744083938413354016">Uburutaji wa kugonga</translation>
 <translation id="5750765938512549687">Bluetooth imezimwa</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Imebadilisha ubora</translation>
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ilizungushwa hadi <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Kuelea kwa kibodi</translation>
 <translation id="6344698853700675736">Washa au Uzime Mwanga wa Usiku</translation>
 <translation id="6376931439017688372">Bluetooth imewashwa</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
@@ -385,6 +386,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7842211907556571265">Inaunganisha kwenye <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ilani: Kipengele cha majaribio</translation>
 <translation id="7846634333498149051">Kibodi</translation>
+<translation id="7868900307798234037">Inafungua kwa kutumia alama ya kidole</translation>
 <translation id="7886169021410746335">Rekebisha mipangilio ya faragha</translation>
 <translation id="7886277072580235377">Kipindi chako cha intaneti kitafutwa ukiondoka kwenye akaunti. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Tuma barua pepe</translation>
@@ -393,6 +395,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="79341161159229895">Akaunti inasimamiwa na <ph name="FIRST_PARENT_EMAIL" /> na <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Inatafuta mitandao ya simu...</translation>
 <translation id="7982789257301363584">Mtandao</translation>
+<translation id="7984197416080286869">Umejaribu kuweka alama ya kidole mara nyingi mno</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8029241286966751120">Umewashwa Kikuzaji cha Skrini nzima . Bonyeza Ctrl+Search+M tena ili ukizime.</translation>

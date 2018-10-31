@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Lefelé nyíl</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 nap}other{# nap}}</translation>
 <translation id="335581015389089642">Beszéd</translation>
+<translation id="3479552764303398839">Ne most</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 nap van hátra}other{# nap van hátra}}</translation>
 <translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">Bal nyíl</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 perc}other{# perc}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 nap és }other{# nap és }}</translation>
+<translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 másodperc van hátra}other{# másodperc van hátra}}</translation>
 <translation id="5941711191222866238">Kicsinyítés</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 óra}other{# óra}}</translation>

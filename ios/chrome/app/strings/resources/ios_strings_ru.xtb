@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Удалить</translation>
 <translation id="132683371494960526">Чтобы изменить родительскую папку, нажмите дважды.</translation>
 <translation id="1340643665687018190">Закрыть меню</translation>
+<translation id="1360432990279830238">Выйти и отключить синхронизацию?</translation>
 <translation id="1375321115329958930">Сайты с сохраненными паролями</translation>
 <translation id="1377255359165588604">Ошибка синхронизации.</translation>
 <translation id="1377321085342047638">Номер карты</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">История</translation>
 <translation id="1657011748321897393">Не удалось опубликовать запись из-за ошибки сети.</translation>
 <translation id="165877110639533037">Нет открытых вкладок</translation>
+<translation id="168715261339224929">Чтобы получить доступ к закладкам на всех ваших устройствах, включите синхронизацию.</translation>
 <translation id="1687475363370981210">Отметить все как прочитанные</translation>
 <translation id="1690731385917361335">Закладок нет</translation>
 <translation id="1700629756560807968">Выбрано закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">Голосовой поиск</translation>
 <translation id="6254066287920239840">Открывать ссылки в приложении, а не в браузере.</translation>
 <translation id="6255097610484507482">Изменение данных кредитной карты</translation>
+<translation id="6303969859164067831">Выйти из аккаунта и отключить синхронизацию</translation>
 <translation id="6308436439357671616">Это нужно, чтобы делать снимки и загружать фотографии</translation>
 <translation id="6324528485781869530">Смена аккаунта</translation>
 <translation id="6324669097367352121">Настройки входа</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">Откр. в режиме инкогнито</translation>
 <translation id="6482629121755362506">Удалено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">За последний час</translation>
+<translation id="6643016212128521049">Очистить</translation>
 <translation id="6656103420185847513">Редактировать папку</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="667999046851023355">Документ</translation>

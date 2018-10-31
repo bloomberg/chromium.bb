@@ -77,6 +77,9 @@
       Katso mahdollisten muuttujien luettelo osoitteesta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jos tätä käytäntöä ei määritetä, välimuistin oletushakemistoa käytetään ja käyttäjä voi ohittaa tämän antamalla komentorivillä komennon --disk-cache-dir.</translation>
+<translation id="113521240853905588">Määrittää kielet, joita <ph name="PRODUCT_OS_NAME" /> voi käyttää ensisijaisina kielinä.
+
+      Jos tämä käytäntö on määritetty, käyttäjä voi lisätä vain tässä luettelossa olevia kieliä ensisijaisten kielten luetteloon. Jos sitä ei ole määritetty tai sen arvo on tyhjä luettelo, mitä tahansa kieliä voidaan valita ensisijaisiksi. Jos käytännön arvona olevassa luettelossa on virheellisiä arvoja, ne ohitetaan. Jos käyttäjä on aiemmin lisännyt ensisijaisia kieliä, joita tämä käytäntö ei salli, kielet poistetaan. Jos käyttäjä valitsi aiemmin, että <ph name="PRODUCT_OS_NAME" /> näytetään kielellä, jota tämä käytäntö ei salli, näyttökieli vaihdetaan sallituksi käyttöliittymäkieleksi käyttäjän seuraavan kirjautumisen yhteydessä. Muuten <ph name="PRODUCT_OS_NAME" /> ottaa käyttöön ensimmäisen käytännössä mainitun, oikein merkityn kielen tai varakielen (tällä hetkellä amerikanenglanti), jos käytännössä on vain virheellisiä kohteita.</translation>
 <translation id="1135264353752122851">Määrittää näppäimistöasettelut, joiden käytön <ph name="PRODUCT_OS_NAME" /> sallii käyttökerroissa.
 
       Jos tämä käytäntö on määritetty, käyttäjä voi valita vain yhden käytännössä määritetyn syöttötavan. Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, käyttäjä voi valita kaikki tuetut syöttötavat. Jos käytäntö ei salli nykyistä syöttötapaa, syöttötavaksi vaihdetaan laitteiston näppäimistöasettelu (jos mahdollista) tai luettelon ensimmäinen kelvollinen kohta. Luettelon kaikki kelpaamattomat tai tukemattomat syöttötavat ohitetaan.</translation>
@@ -611,9 +614,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
           Kaikki Samba- ja Windows-palvelinten viimeaikaiset versiot tukevat NTLMv2:ta. Se pitäisi poistaa käytöstä vain takautuvan yhteensopivuuden vuoksi, sillä tämä heikentää todennuksen turvallisuutta.
 
           Jos tätä käytäntöä ei ole määritetty, sen oletusarvo on tosi ja NTLMv2 on käytössä.</translation>
-<translation id="2598508021807251719">Määrittää kieli- ja maa-asetukset, joilla <ph name="PRODUCT_OS_NAME" /> voidaan näyttää.
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> voidaan määrittää näkymään ainoastaan jollakin tässä käytännössä ilmoitetulla kielellä. Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, <ph name="PRODUCT_OS_NAME" /> voidaan näyttää kaikilla tuetuilla UI-kielillä. Jos käytännön arvoksi on määritetty luettelo, jonka arvot ovat virheellisiä, kaikki virheelliset arvot ohitetaan. Jos <ph name="PRODUCT_OS_NAME" /> on aiemmin määritetty näkymään kielellä, jota käytäntö ei salli, näytettävä UI-kieli vaihdetaan sallittuun kieleen seuraavalla sisäänkirjautumiskerralla. Jos käyttäjä on määrittänyt haluamansa kielet ja jokin niistä sallitaan tässä käytännössä, <ph name="PRODUCT_OS_NAME" /> vaihtaa tähän kieleen. Muussa tapauksessa <ph name="PRODUCT_OS_NAME" /> vaihtaa ensimmäiseen kelvollisen arvoon tai varakieleen (tällä hetkellä Yhdysvaltain englantiin), jos käytännössä on virheellisiä merkintöjä.</translation>
 <translation id="2604182581880595781">Määritä Verkkotiedostojen jakamiseen liittyviä käytäntöjä.</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1084,6 +1084,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Googlen ehdotus-URL-osoitteen voi antaa muodossa <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="3864129983143201415">Määritä käyttökerran hyväksytyt kielet.</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3868347814555911633">Tämä käytäntö toimii vain myyntitilassa.
 
@@ -1744,7 +1745,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5835124959204887277">Määrittää URL-osoitteet ja verkkotunnukset, joista ei näytetä kehotetta suojausavaimen todennusvarmenteen pyynnön yhteydessä. Suojausavain saa lisäksi signaalin, joka kertoo, että yksilöllinen todennus saattaa olla käytössä. Muissa tapauksissa käyttäjä saa kehotteen Chrome 65+:ssa, kun sivusto pyytää suojausavainten todennusta.
 
       URL-osoitteet (esim. https://example.com/joku/polku) vastaavat ainoastaan U2F-sovellustunnuksia. Verkkotunnukset (esim. example.com) vastaavat ainoastaan webauthn RP ‑tunnuksia. Sekä sovellustunnuksen URL-osoitteen että verkkotunnuksen tulee siis olla luettelossa, jotta ne kattavat tietyn sivun U2F- ja webauthn-sovellusliittymän.</translation>
-<translation id="5835412847081687053">Määritä käyttökerran hyväksytyt UI-kieli- ja maa-asetukset</translation>
 <translation id="5836064773277134605">Rajoita etäkäytön isännän käyttämää UDP-porttialuetta</translation>
 <translation id="5862253018042179045">Määritä äänipalautteen käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 

@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Διαγραφή</translation>
 <translation id="132683371494960526">Πατήστε δύο φορές για να αλλάξετε τον γονικό φάκελο.</translation>
 <translation id="1340643665687018190">Κλείσιμο μενού</translation>
+<translation id="1360432990279830238">Αποσύνδεση και απενεργοπ. συγχρονισμού;</translation>
 <translation id="1375321115329958930">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="1377255359165588604">Ο συγχρονισμός σταμάτησε να λειτουργεί.</translation>
 <translation id="1377321085342047638">Αρ.κάρτας</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Ιστορικό</translation>
 <translation id="1657011748321897393">Η κοινοποίηση απέτυχε επειδή δεν έχετε συνδεθεί στο δίκτυο.</translation>
 <translation id="165877110639533037">Δεν υπάρχουν ανοικτές καρτέλες</translation>
+<translation id="168715261339224929">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="1687475363370981210">Επισήμανση όλων ως αναγνωσμένων</translation>
 <translation id="1690731385917361335">Κανένα στοιχείο</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία επιλεγμένα</translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">Φωνητική αναζήτηση</translation>
 <translation id="6254066287920239840">Άνοιγμα συνδέσμων στην εφαρμογή αντί για το πρόγραμμα περιήγησης.</translation>
 <translation id="6255097610484507482">Επεξεργασία πιστωτικής κάρτας</translation>
+<translation id="6303969859164067831">Αποσύνδεση και απενεργοποίηση συγχρονισμού</translation>
 <translation id="6308436439357671616">Σας επιτρέπει να κάνετε λήψη και μεταφόρτωση φωτογραφιών.</translation>
 <translation id="6324528485781869530">Εναλλαγή λογαριασμού συγχρονισμού</translation>
 <translation id="6324669097367352121">Ρυθμίσεις σύνδεσης</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">Άνοιγ. σε καρτ. αν. περ.</translation>
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
 <translation id="6541915733953096570">Τελευταία ώρα</translation>
+<translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6656103420185847513">Επεξεργασία φακέλου</translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="667999046851023355">Έγγραφο</translation>

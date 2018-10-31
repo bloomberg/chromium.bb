@@ -68,6 +68,9 @@
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未设置此政策，则系统将使用默认缓存目录，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
+<translation id="113521240853905588">配置一些可供 <ph name="PRODUCT_OS_NAME" />用作首选语言的语言。
+
+      如果此政策已设置，用户只能将此政策所列语言之一添加到首选语言列表内。如果此政策设为空列表或未设置，用户可将任何语言指定为首选语言。如果此政策设为一个包含无效值的列表，系统会忽略所有无效值。如果用户曾将此政策所不允许的一些语言添加到首选语言列表内，系统会移除相应语言。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的语言之一进行显示，那么当用户下次登录时，显示语言会切换至所允许的某种界面语言。如果是其他情况，<ph name="PRODUCT_OS_NAME" />会切换至此政策所指定的第一个有效值；如果此政策所含的条目都无效，则会切换至后备语言区域（目前为 en-US）。</translation>
 <translation id="1135264353752122851">配置允许在 <ph name="PRODUCT_OS_NAME" />用户会话中使用哪些键盘布局。
 
       如果设置了此政策，用户只能从此政策指定的输入法中选择其一。如果未设置此政策或将此政策设为空列表，用户则可选择任一受支持的输入法。如果此政策不允许使用当前输入法，这一输入法便会切换到硬件键盘布局（如果允许）或此列表中的第一个有效条目。系统将会忽略此列表中所有无效或不受支持的输入法。</translation>
@@ -100,7 +103,7 @@
 
           该值是一个字符串列表；有效的列表项包括：“all”、“PIN”和“FINGERPRINT”。如果向此列表中添加了“all”，即意味着用户可以使用所有快速解锁模式（包括日后会实施的快速解锁模式）。如果未向此列表中添加“all”，则仅能使用此列表中指定的快速解锁模式。
 
-          例如，要想允许每一个快速解锁模式，请使用 ["all"]。要想仅允许 PIN 码解锁模式，请使用 ["PIN"]。要想允许 PIN 码和指纹，请使用 ["PIN", "FINGERPRINT"]。要想停用所有快速解锁模式，请使用 []。
+          例如，要想允许每一种快速解锁模式，请使用 ["all"]。要想仅允许 PIN 码解锁模式，请使用 ["PIN"]。要想允许 PIN 码和指纹，请使用 ["PIN", "FINGERPRINT"]。要想停用所有快速解锁模式，请使用 []。
 
           默认情况下，用户无法在托管设备上使用任何快速解锁模式。</translation>
 <translation id="123081309365616809">允许向设备投射内容</translation>
@@ -578,9 +581,6 @@
           近期推出的所有 Samba 和 Windows 服务器版本都支持 NTLMv2。除非是为了实现向后兼容，否则请勿停用 NTLMv2（因为这样做会降低身份验证的安全性）。
 
           如果未设置此政策，则默认值为 true，且系统会启用 NTLMv2。</translation>
-<translation id="2598508021807251719">配置 <ph name="PRODUCT_OS_NAME" />可以使用哪些语言区域进行显示。
-
-      如果已设置此政策，则用户只能将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策中指定的语言区域之一进行显示。如果此政策设为空列表或未设置，则 <ph name="PRODUCT_OS_NAME" />可以使用所有受支持的界面语言区域进行显示。如果此政策设为一个包含无效值的列表，则系统会忽略所有无效值。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的某种语言区域进行显示，那么当用户下次登录时，相应的显示语言区域将会切换到所允许的某种界面语言区域。如果用户已配置了首选语言区域，并且此政策允许其中的某一种首选语言区域，<ph name="PRODUCT_OS_NAME" />将会切换到此语言区域。否则，<ph name="PRODUCT_OS_NAME" />将会切换到此政策中指定的第一个有效值；如果此政策所含的条目都无效，就会切换到后备语言区域（目前为 en-US）。</translation>
 <translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -943,7 +943,7 @@
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
       如果未配置此政策，系统将为登录屏幕使用平台默认的网站隔离设置。
       </translation>
-<translation id="3748900290998155147">指定是否允许使用唤醒锁定。扩展程序可通过 Power Management Extension API 和 ARC 应用请求使用唤醒锁定。
+<translation id="3748900290998155147">指定是否允许使用唤醒锁定。屏幕唤醒锁定可由扩展程序通过 Power Management Extension API 请求，也可由 ARC 应用请求。
 
           如果将此政策设为 true 或未进行设置，系统就会允许使用唤醒锁定，以便进行电源管理。
 
@@ -980,7 +980,7 @@
 
           如果“EnableMediaRouter”政策设为 false，那么此政策的值将不会发挥任何作用，该工具栏图标将不会显示。</translation>
 <translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
-<translation id="3790085888761753785">如果此设置处于启用状态，用户将能够使用 Smart Lock 登录他们的帐号。一般 Smart Lock 只能让用户解锁屏幕，相较之下这项设置的功能更强大。
+<translation id="3790085888761753785">如果此设置处于启用状态，用户将能够使用 Smart Lock 登录他们的帐号。一般情况下 Smart Lock 只允许用户解锁屏幕，相较之下，这是限制性更低的设置。
 
       如果此设置处于停用状态，用户将不能使用 Smart Lock 登录功能。
 
@@ -1041,6 +1041,7 @@
           您可以按以下格式指定 Google 的搜索建议网址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
 
           仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
+<translation id="3864129983143201415">配置可在用户会话中使用的语言</translation>
 <translation id="3866249974567520381">说明</translation>
 <translation id="3868347814555911633">此策略仅在零售模式下有效。
 
@@ -1695,7 +1696,6 @@
 <translation id="5835124959204887277">指定网址和网域，当相应网站需要取得安全密钥认证证书时，系统将不会显示任何提示。此外，系统还将向安全密钥发送信号，以指明可能会使用个人认证。如果未设置此政策，当网站需要取得安全密钥认证时，Chrome 65+ 将会提示用户。
 
       网址（如 https://example.com/some/path）将仅匹配为 U2F appID。网域（如 example.com）将仅匹配为 webauthn RP ID。因此，要同时涵盖指定网址的 U2F 和 webauthn API，必须同时列出 appID 网址和网域。</translation>
-<translation id="5835412847081687053">配置可在用户会话中使用的界面语言区域</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5862253018042179045">设置登录屏幕上语音反馈辅助功能的默认状态。
 
@@ -2210,7 +2210,7 @@
 <translation id="7167436895080860385">允许用户在密码管理器中显示密码（已弃用）</translation>
 <translation id="7173856672248996428">临时个人资料</translation>
 <translation id="717630378807352957">允许使用配置文件中的所有打印机。</translation>
-<translation id="7176721759719212761">指定是否允许使用屏幕唤醒锁定。扩展程序可通过 Power Management Extension API 和 ARC 应用请求使用屏幕唤醒锁定。
+<translation id="7176721759719212761">指定是否允许使用屏幕唤醒锁定。屏幕唤醒锁定可由扩展程序通过 Power Management Extension API 请求，也可由 ARC 应用请求。
 
           如果将此政策设为 true 或未进行设置，系统就会允许使用屏幕唤醒锁定，以便进行电源管理，但 AllowWakeLocks 设为 false 时除外。
 
@@ -2383,8 +2383,8 @@
 <translation id="7511361072385293666">如果此政策设为 true 或未设置，则允许在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 协议。
       如果此政策设为 false，则禁止使用 QUIC 协议。</translation>
 <translation id="7517845714620372896">指定屏幕亮度百分比。
-          如果设置了此政策，系统会根据政策值调整初始屏幕亮度，但用户稍后可以更改它。自动调节亮度功能在这种情况下会停用。
-          如果未设置此政策，用户屏幕控件和自动调节亮度功能不受影响。
+          如果设置了此政策，系统会根据政策值调整初始屏幕亮度，但用户稍后可以更改亮度。自动调节亮度功能在这种情况下会停用。
+          如果未设置此政策，用户屏幕控制和自动调节亮度功能不受影响。
           应以百分比值（介于 0-100 之间）的形式指定政策值。</translation>
 <translation id="7519251620064708155">允许在这些网站上使用密钥生成功能</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>

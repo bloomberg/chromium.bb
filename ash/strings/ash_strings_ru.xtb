@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
 <translation id="2790844815106384441">Настраивать доступ сайтов к местоположению устройства, его камере, микрофону и другим функциям.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
+<translation id="2803734122639935495">Чтобы разблокировать устройство, введите пароль</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
 <translation id="2825619548187458965">Полка</translation>
 <translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Микрофонный разъем</translation>
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
+<translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="574392208103952083">Средний</translation>
 <translation id="5744083938413354016">Перетаскивание нажатием</translation>
 <translation id="5750765938512549687">Bluetooth выключен</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Разрешение изменено</translation>
 <translation id="6297287540776456956">Чтобы выбрать регион, используйте стилус</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: положение изменено на <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Накладка на клавиатуру</translation>
 <translation id="6344698853700675736">Включить или отключить ночной режим</translation>
 <translation id="6376931439017688372">Bluetooth включен</translation>
 <translation id="639644700271529076">CAPS LOCK отключен</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Подключение к сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="7842569679327885685">Внимание! Экспериментальная функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7868900307798234037">Экран разблокирован с помощью отпечатка пальца</translation>
 <translation id="7886169021410746335">Изменять настройки конфиденциальности.</translation>
 <translation id="7886277072580235377">После выхода из аккаунта данные о ваших действиях в Интернете будут удалены. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Отправить письмо</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Поиск мобильных сетей...</translation>
 <translation id="7982789257301363584">Сеть</translation>
+<translation id="7984197416080286869">Вы сделали слишком много попыток</translation>
 <translation id="7994370417837006925">Множественный вход</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8029241286966751120">Полноэкранная лупа включена. Чтобы отключить ее, нажмите Ctrl + Поиск + M.</translation>

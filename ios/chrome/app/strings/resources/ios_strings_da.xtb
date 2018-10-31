@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
 <translation id="1340643665687018190">Luk menu</translation>
+<translation id="1360432990279830238">Log ud, og deaktiver synkronisering?</translation>
 <translation id="1375321115329958930">Gemte adgangskoder</translation>
 <translation id="1377255359165588604">Synkroniseringen fungerer ikke.</translation>
 <translation id="1377321085342047638">Kortnummer</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1657011748321897393">Deling mislykkedes. Du har ikke forbindelse til netværket.</translation>
 <translation id="165877110639533037">Ingen åbne faner</translation>
+<translation id="168715261339224929">Aktivér synkronisering for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="1687475363370981210">Markér alle som læste</translation>
 <translation id="1690731385917361335">Ingen elementer</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valgt</translation>
@@ -315,6 +317,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6196207969502475924">Talesøgning</translation>
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
+<translation id="6303969859164067831">Log ud, og deaktiver synkronisering</translation>
 <translation id="6308436439357671616">Dette giver dig mulighed for at tage og uploade billeder.</translation>
 <translation id="6324528485781869530">Skift synkroniseringskonto</translation>
 <translation id="6324669097367352121">Loginindstillinger</translation>
@@ -340,6 +343,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6464071786529933911">Åbn i ny inkognitofane</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6541915733953096570">Seneste time</translation>
+<translation id="6643016212128521049">Ryd</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="667999046851023355">Dokument</translation>

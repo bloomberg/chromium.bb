@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
 <translation id="335581015389089642">Озвучить</translation>
+<translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Выберите папку для загрузки</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">Стрелка влево</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 день }one{# день }few{# дня }many{# дней }other{# дня }}</translation>
+<translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Осталась 1 секунда}one{Осталась # секунда}few{Осталось # секунды}many{Осталось # секунд}other{Осталось # секунды}}</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>

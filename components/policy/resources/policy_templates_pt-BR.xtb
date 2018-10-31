@@ -26,10 +26,10 @@
       Esta política afeta os usuários cujo domínio corresponde apenas ao domínio de inscrição do dispositivo. Para todos os outros usuários, os cookies definidos pelo IdP são transferidos para o perfil do usuário somente durante o primeiro login no dispositivo.</translation>
 <translation id="1035385378988781231">Esta política controla se o recurso "Compartilhamento de arquivos de rede" do <ph name="PRODUCT_NAME" /> usará NTLM para a autenticação.
 
-      Quando esta política estiver definida como true, o NTLM será usado para autenticação para compartilhamentos de SMB, se necessário.
-      Quando esta política estiver definida como false, a autenticação NTLM para compartilhamentos de SMB será desativada.
+      Quando esta política estiver definida como true, o NTLM será usado na autenticação para compartilhamentos de PMEs, se necessário.
+      Quando esta política estiver definida como false, a autenticação NTLM para compartilhamentos de PMEs será desativada.
 
-      Quando a política não estiver definida, o padrão será desativado para usuários gerenciados por empresas e ativado para usuários não gerenciados.</translation>
+      Quando a política não estiver definida, o comportamento padrão será desativar o NTLM para usuários gerenciados por empresas e ativá-lo para usuários não gerenciados.</translation>
 <translation id="1040446814317236570">Ativar a retirada de URL PAC (para https://)</translation>
 <translation id="1044878202534415707">Relatórios sobre estatísticas de hardware, como o uso de CPU/RAM.
 
@@ -79,6 +79,9 @@
       Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista de variáveis que podem ser usadas.
 
       Se esta política for deixada sem definição, o diretório de cache padrão será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Configura os idiomas que serão usados como preferidos pelo <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for definida, o usuário só poderá adicionar um dos idiomas mencionados na política à lista de idiomas preferidos. Se esta política não for definida ou for definida como uma lista vazia, o usuário poderá especificar qualquer idioma como preferido. Se esta política for definida como uma lista com valores inválidos, todos os valores inválidos serão ignorados. Se um usuário tiver adicionado anteriormente alguns idiomas não permitidos pela política à lista de idiomas preferidos, eles serão removidos. Se o usuário tiver configurado anteriormente um idioma não permitido pela política para exibição do <ph name="PRODUCT_OS_NAME" />, o idioma de exibição será alternado para um idioma permitido da IU da próxima vez que o usuário fizer login. Caso contrário, o idioma do <ph name="PRODUCT_OS_NAME" /> será alterado para o primeiro valor válido especificado por esta política ou para uma localidade substituta (atualmente en-US), se a política incluir apenas entradas inválidas.</translation>
 <translation id="1135264353752122851">Configura quais layouts de teclado são permitidos para as sessões de usuário do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver configurada, o usuário só poderá selecionar um dos métodos de entrada especificados por ela. Se esta política não estiver configurada ou for configurada como uma lista vazia, o usuário poderá selecionar todos os métodos de entrada compatíveis. Se o método de entrada atual não for permitido por esta política, ele será alterado para o layout de hardware de teclado (se permitido) ou para a primeira entrada válida nesta lista. Todos os métodos de entrada inválidos ou incompatíveis da lista serão ignorados.</translation>
@@ -608,9 +611,6 @@
           Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Esta política só deve ser desativada para compatibilidade com versões anteriores e reduz a segurança da autenticação.
 
           Se esta política não for definida, o padrão será verdadeira, e NTLMv2 será ativada.</translation>
-<translation id="2598508021807251719">Configura as localidades em que o <ph name="PRODUCT_OS_NAME" /> pode ser exibido.
-
-      Se esta política for definida, o usuário só poderá configurar o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma das localidades especificadas por esta política. Se esta política não for definida ou for definida como uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> poderá ser exibido em todas as localidades de IU disponíveis. Se esta política for definida como uma lista com valores inválidos, todos os valores inválidos serão ignorados. Se um usuário tiver configurado anteriormente o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma localidade que não seja permitida por esta política, a localidade de exibição será alternada para uma localidade de IU permitida na próxima vez que o usuário fizer login. Se o usuário tiver configurado localidades preferenciais, e uma delas for permitida por esta política, o <ph name="PRODUCT_OS_NAME" /> será alternado para essa localidade. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> passará para o primeiro valor válido especificado por esta política ou para a localidade substituta (atualmente, en-US) se a política incluir apenas entradas inválidas.</translation>
 <translation id="2604182581880595781">Configurar políticas relacionadas ao Compartilhamento de arquivos de rede.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -641,7 +641,7 @@
 
       Se esta política não for definida, o padrão será "não permitido" para usuários gerenciados e "permitido" para usuários não gerenciados.</translation>
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
-<translation id="2672012807430078509">Controles que ativam o NTLM como protocolo de autenticação para ativações SMB</translation>
+<translation id="2672012807430078509">Controles que ativam o NTLM como protocolo de autenticação para ativações de PMEs</translation>
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
@@ -1017,7 +1017,7 @@
 
       Se esta configuração estiver desativada, os usuários não terão permissão para usar o login do Smart Lock.
 
-      Se esta política não for definida, o padrão será "não permitido" para usuários gerenciados e "permitido" para usuários não gerenciados.</translation>
+      Se esta política não for definida, o comportamento padrão será não permitir o login para usuários gerenciados por empresas e permitir o login para usuários não gerenciados.</translation>
 <translation id="379602782757302612">Permite que você especifique quais extensões os usuários NÃO podem instalar. As extensões já instaladas serão desativadas se estiverem na lista negra, e o usuário não poderá ativá-las novamente. Quando uma extensão desativada por esse motivo é removida da lista negra, ela é reativada automaticamente.
 
           O valor "*" na lista negra significa que todas as extensões foram incluídas nessa lista, a menos que estejam explicitamente mencionadas na lista de permissões.
@@ -1077,6 +1077,7 @@
           A sugestão de URL do Google pode ser especificada como: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
+<translation id="3864129983143201415">Configurar os idiomas permitidos em uma sessão de usuário</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3868347814555911633">Esta política só fica ativada em modo de varejo.
 
@@ -1731,7 +1732,6 @@
 <translation id="5835124959204887277">Especifica os URLs e domínios para os quais nenhuma solicitação será exibida quando os certificados de declaração das chaves de segurança forem solicitados. Além disso, um sinal será enviado para a chave de segurança indicando que a declaração individual pode ser usada. Sem isso, os usuários receberão uma solicitação no Chrome 65 ou versão posterior quando os sites solicitarem a declaração das chaves de segurança.
 
       Os URLs (como https://example.com/algum/caminho) só terão correspondência como U2F appIDs. Os domínios (como example.com) só terão correspondência como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn de um determinado site, tanto o domínio quanto o URL do appID precisarão ser listados.</translation>
-<translation id="5835412847081687053">Configura as localidades de IU permitidas em uma sessão de usuário</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
 

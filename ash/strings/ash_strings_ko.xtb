@@ -112,6 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
 <translation id="2790844815106384441">웹사이트에서 위치 서비스 또는 기기의 마이크, 카메라, 기타 기능을 사용하도록 허용할지 선택합니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
+<translation id="2803734122639935495">잠금 해제하려면 비밀번호를 입력하세요.</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="2844169650293029770">USB-C 기기(좌측 전면 포트)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
+<translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="574392208103952083">보통</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
 <translation id="5750765938512549687">블루투스가 사용 중지됨</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">해상도가 변경됨</translation>
 <translation id="6297287540776456956">스타일러스를 사용하여 영역을 선택하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
-<translation id="632744581670418035">키보드 오버레이</translation>
 <translation id="6344698853700675736">야간 조명 전환</translation>
 <translation id="6376931439017688372">블루투스 사용 중</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" />에 연결 중</translation>
 <translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7846634333498149051">키보드</translation>
+<translation id="7868900307798234037">지문으로 잠금 해제</translation>
 <translation id="7886169021410746335">개인정보 보호 설정 조정</translation>
 <translation id="7886277072580235377">로그아웃하면 인터넷 세션이 삭제됩니다. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">이메일 보내 줘</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">모바일 네트워크 검색 중...</translation>
 <translation id="7982789257301363584">네트워크</translation>
+<translation id="7984197416080286869">지문 인식을 너무 많이 시도함</translation>
 <translation id="7994370417837006925">멀티 로그인</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8029241286966751120">전체화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+M을 누르세요.</translation>

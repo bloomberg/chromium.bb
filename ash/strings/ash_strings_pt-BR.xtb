@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Reconectando-se a <ph name="NAME" /></translation>
 <translation id="2790844815106384441">definir se os sites podem usar os serviços de localização, o microfone, a câmera ou outros recursos do dispositivo;</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
+<translation id="2803734122639935495">Para desbloquear, digite sua senha</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>
+<translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="574392208103952083">Médio</translation>
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
@@ -298,7 +300,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Use a stylus para selecionar uma região</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Sobreposição do teclado</translation>
 <translation id="6344698853700675736">Alternar Modo noturno</translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
@@ -386,6 +387,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7842211907556571265">Conectando-se a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Aviso: recurso experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7868900307798234037">Desbloqueio com impressão digital</translation>
 <translation id="7886169021410746335">ajustar configurações de privacidade.</translation>
 <translation id="7886277072580235377">Sua sessão de Internet será limpa quando você sair. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar um e-mail</translation>
@@ -394,6 +396,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="79341161159229895">Conta gerenciada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Pesquisando redes móveis…</translation>
 <translation id="7982789257301363584">Rede</translation>
+<translation id="7984197416080286869">Muitas tentativas de usar impressão digital</translation>
 <translation id="7994370417837006925">Login múltiplo</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8029241286966751120">Lupa de tela cheia ativada. Pressione Ctrl+Pesquisa+M novamente para desativá-la.</translation>

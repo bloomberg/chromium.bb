@@ -69,6 +69,9 @@
       Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables upate orodha ya aina zinazoweza kutumiwa.
 
       Sera hii isipowekwa saraka ya akiba chaguomsingi itatumiwa na mtumiaji ataweza kuibatilisha kwa amri ya ripoti ya mstari ya '--disk-cache-dir'.</translation>
+<translation id="113521240853905588">Huweka mipangilio ya lugha zinazoweza kutumiwa kama lugha zinazopendelewa na <ph name="PRODUCT_OS_NAME" />.
+
+      Sera hii ikiwekwa, mtumiaji anaweza kuongeza lugha moja pekee kutoka lugha zilizoorodheshwa katika sera hii kwenye orodha ya lugha zinazopendelewa. Sera hii isipowekwa au ikiwekwa kuwa orodha isiyo na kitu, mtumiaji anaweza kubainisha lugha yoyote anayopendelea. Ikiwa sera hii imewekwa kuwa orodha ya thamani zisizo sahihi, thamani zote zisizo sahihi hazitatumiwa. Kama mtumiaji aliweka lugha kadhaa hapo awali ambazo haziruhusiwi na sera hii kwenye orodha ya lugha zinazopendelewa, lugha hizo zitaondolewa. Ikiwa mtumiaji alikuwa ameweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> hapo awali ili ionekane katika mojawapo ya lugha ambazo haziruhusiwi na sera hii, lugha ya kuonyesha itabadilishwa iwe lugha inayoruhusiwa ya kiolesura wakati mtumiaji ataingia tena katika akaunti. Vinginevyo, <ph name="PRODUCT_OS_NAME" /> itatumia thamani sahihi ya kwanza inayobainishwa na sera hii, au lugha chaguomsingi (kwa sasa ni kiingereza cha Marekani), ikiwa sera hii inajumuisha tu thamani zisizo sahihi.</translation>
 <translation id="1135264353752122851">Huweka mipangilio ya miundo wa kibodi ambayo inaruhusiwa katika vipindi vya watumiaji wa <ph name="PRODUCT_OS_NAME" />.
 
       Ikiwa sera hii imewekwa, mtumiaji anaweza tu kuchagua moja ya njia za kuweka data zilizobainishwa na sera hii. Ikiwa sera hii haijawekwa au imewekwa kwenye orodha isiyo na kitu, mtumiaji anaweza kuchagua njia zote zinazotumika za kuweka data. Iwapo njia ya sasa ya kuweka data hairuhusiwi na sera hii, njia hii ya kuweka data itabadilishwa ili kutumia muundo wa kibodi ya maunzi (ikiruhusiwa) au njia ya kwanza ya kuweka data inayoruhusiwa katika orodha hii. Haitazingatia njia zote za kuweka data ambazo hazitumiki au si sahihi, zilizo katika orodha hii.</translation>
@@ -600,9 +603,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Matoleo yote ya hivi majuzi ya seva za Samba na Windows yanatumia NTLMv2. Hali hii inastahili kuzimwa ili matoleo ya awali yaoane pekee na hupunguza usalama wa uthibishaji.
 
           Kama sera hii haijawekwa, sera chaguomsing itakuwa ndivyo na NTLMv2 imewashwa.</translation>
-<translation id="2598508021807251719">Huweka mipangilio ya lugha ambazo huenda zikatumika kuonyesha <ph name="PRODUCT_OS_NAME" />.
-
-      Ikiwa sera hii imewekwa, mtumiaji anaweza tu kuweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> ili ionyeshwe katika mojawapo ya lugha zilizobainishwa kwenye sera hii. Ikiwa sera hii haijawekwa au imewekewa kuwa orodha isiyo na chochote, <ph name="PRODUCT_OS_NAME" /> inaweza kuonyeshwa katika lugha zote zinazotumika. Ikiwa sera hii imewekewa kuwa orodha yenye thamani zisizo sahihi, thamani zote zisizo sahihi zitapuuzwa. Ikiwa mtumiaji aliweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> awali ili ionyeshwe katika lugha isiyokubalika na sera hii, lugha inayotumika kuonyesha itabadilishwa iwe lugha ya kiolesura inayokubalika mtumiaji atakapoingia tena katika akaunti. Ikiwa mtumiaji alikuwa ameweka lugha zinazopendelewa na mojawapo ya lugha zinazopendelewa imeruhusiwa na sera hii, <ph name="PRODUCT_OS_NAME" /> itatumia lugha hii. Vinginevyo, <ph name="PRODUCT_OS_NAME" /> itabadilisha itumie thamani ya kwanza inayoweza kutumika na iliyobainishwa kwenye sera hii au kwenye lugha mbadala (kwa sasa ni en-US), ikiwa sera hii ina maelezo ambayo si sahihi pekee.</translation>
 <translation id="2604182581880595781">Weka mipangilio ya sera zinazohusiana na Faili ya Kushiriki katika Mtandao.</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1090,6 +1090,7 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
            URL ya mapendekezo ya Google inaweza kubainishwa kuwa: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Sera hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
+<translation id="3864129983143201415">Weka mipangilio ya lugha zinazoruhusiwa katika kipindi cha mtumiaji</translation>
 <translation id="3866249974567520381">Maelezo</translation>
 <translation id="3868347814555911633">Sera hii ni amilifu katika modi ya rejareja tu.
 
@@ -1780,7 +1781,6 @@ Sera hii ikiwekwa kuwa ndivyo au isipowekwa, kipindi cha mgeni kinachodhibitiwa 
 <translation id="5835124959204887277">Hubainisha URL na vikoa ambavyo hakuna kidokezo kitakachoonyeshwa wakati vyeti vya ufikiaji uliothibitishwa vinaombwa kutoka Funguo za Usalama. Vile vile, ishara itatumwa kwa Funguo za Usalama inayoonyesha ufikiaji uliothibitishwa wa kibinafsi ambao unaweza kutumiwa. Bila hii, watumiaji watadokezewa katika Chrome 65+ wakati tovuti zinaomba ufikiaji uliothibitishwa wa Funguo za Usalama. 
 
     URL (kama vile https://example.com/some/path) zitalingana kama U2F appIDs pekee. Vikoa (kama vile example.com) vinalingana kama Vitambulisho vya webauthn RP pekee. Ili kushughulikia API zote mbili za U2F na webauthn za tovuti fulani iliyotolewa, ni sharti URL zote mbili za appID na kikoa ziorodheshwe.</translation>
-<translation id="5835412847081687053">Weka mipangilio ya lugha za kiolesura zinazoruhusiwa katika kipindi cha mtumiaji</translation>
 <translation id="5836064773277134605">Zuia masafa ya lango la UDP yaliyotumiwa na mpangishi wa ufikiaji wa mbali</translation>
 <translation id="5862253018042179045">Weka hali ya chaguomsingi ya kipengee cha ufikiaji cha maoni yaliyotamkwa kwenye skrini ya kuingi. 
         Iwapo sera hii imewekwa kuwa kweli, maoni yaliyosemwa yatawashwa skrini ya kuingina katika akaunti itakapoonyeshwa. 
@@ -2491,7 +2491,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Sera hii ikiwekwa kuwa sivyo matumizi ya itifaki ya QUIC hayaruhusiwi.</translation>
 <translation id="7517845714620372896">Hubainisha asilimia ya ung'avu wa skrini.
           Iwapo sera hii imewekwa, ung'avu wa skrini ya mwanzo unabadilishwa uwe thamani ya sera, lakini mtumiaji anaweza kuubadilisha baadaye. Vipengele vya ung'avu wa kiotomatiki huzimwa.
-          Iwapo sera hi haijawekwa, vidhibiti vya skrini ya mtumiaji na vipengele vya ung'avu wa kiotomatiki haviathiriwi.
+          Iwapo sera hii haijawekwa, vidhibiti vya skrini ya mtumiaji na vipengele vya ung'avu wa kiotomatiki haviathiriwi.
           Thamani za sera zinapaswa kubainishwa katika asilimia kati ya 0 na 100.</translation>
 <translation id="7519251620064708155">Ruhusu uundaji ufunguo kwenye tovuti hizi</translation>
 <translation id="7529100000224450960">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zinaruhusiwa kufungua ibukizi.

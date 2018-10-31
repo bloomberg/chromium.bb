@@ -79,6 +79,9 @@
       Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za shranjevanje predpomnjenih datotek in uporabnik ga bo lahko preglasil z zastavico »--disk-cache-dir« v ukazni vrstici.</translation>
+<translation id="113521240853905588">Konfigurira jezike, ki jih je mogoče uporabiti kot prednostne jezike sistema <ph name="PRODUCT_OS_NAME" />.
+
+      Če je ta pravilnik nastavljen, lahko uporabnik na seznam prednostnih jezikov doda samo en jezik, naveden v tem pravilniku. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, lahko uporabnik določi jezike po želji. Če je ta pravilnik nastavljen na seznam neveljavnih vrednosti, so vse neveljavne vrednosti prezrte. Če je uporabnik na seznam prednostnih jezikov dodal nekatere jezike, ki jih ta pravilnik ne dovoljuje, bodo ti odstranjeni. Če je uporabnik konfiguriral sistem <ph name="PRODUCT_OS_NAME" /> tako, da je prikazan v enem od jezikov, ki jih ta pravilnik ne dovoljuje, bo prikazni jezik ob naslednji prijavi uporabnika preklopljen na dovoljen jezik uporabniškega vmesnika. V nasprotnem primeru bo sistem <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali na rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
 <translation id="1135264353752122851">Konfigurira, katere postavitve tipkovnice so dovoljene za uporabniške seje sistema <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen, lahko uporabnik izbere samo enega od načinov vnosa, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, lahko uporabnik izbere vse podprte načine vnosa. Če trenutnega načina vnosa pravilnik ne dovoljuje, bo način vnosa preklopljen na strojno postavitev tipkovnice (če je dovoljena) ali prvi veljaven vnos na tem seznamu. Vsi neveljavni ali nepodprti načini vnosa na tem seznamu bodo prezrti.</translation>
@@ -110,9 +113,9 @@
 <translation id="1223789468190631420">Omogočeno stanje Varnega brskanja za zaupanja vredne vire</translation>
 <translation id="122899932962115297">Seznam dovoljenih, ki upravlja, katere hitre načine odklepanja lahko uporabnik nastavi in uporablja za odklepanje zaklenjenega zaslona.
 
-          Ta vrednost je seznam nizov; veljavni vnosi na seznamu so: »all« (vsi), »PIN« (koda PIN), »FINGERPRINT« (prstni odtis). Če na seznam dodate vnos »all« (vsi), so uporabniku na voljo vsi hitri načini odklepanja, vključno s tistimi, ki bodo uvedeni v prihodnosti. V nasprotnem primeru bodo na voljo samo hitri načini odklepanja s seznama.
+          Ta vrednost je seznam nizov; veljavni vnosi na seznamu so: "all" (vsi), "PIN" (koda PIN), "FINGERPRINT" (prstni odtis). Če na seznam dodate vnos "all" (vsi), so uporabniku na voljo vsi hitri načini odklepanja, vključno s tistimi, ki bodo uvedeni v prihodnosti. V nasprotnem primeru bodo na voljo samo hitri načini odklepanja s seznama.
 
-          Če želite na primer dovoliti vse hitre načine odklepanja, uporabite [»all«] (vsi). Če želite dovoliti samo odklepanje s kodo PIN, uporabite [»PIN«] (koda PIN). Če želite dovoliti odklepanje s kodo PIN in prstnim odtisom, uporabite [»PIN«, »FINGERPRINT«]. Če želite onemogočiti vse hitre načine odklepanja, uporabite [].
+          Če želite na primer dovoliti vse hitre načine odklepanja, uporabite ["all"] (vsi). Če želite dovoliti samo odklepanje s kodo PIN, uporabite ["PIN"] (koda PIN). Če želite dovoliti odklepanje s kodo PIN in prstnim odtisom, uporabite ["PIN", "FINGERPRINT"]. Če želite onemogočiti vse hitre načine odklepanja, uporabite [].
 
           Za upravljane naprave privzeto ni na voljo noben hiter način odklepanja.</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
@@ -630,9 +633,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vse novejše različice strežnikov Samba in Windows podpirajo NTLMv2. To onemogočite samo za združljivost s prejšnjimi različicami, saj je v tem primeru zmanjšana varnost preverjanja pristnosti.
 
           Če ta pravilnik ni nastavljen, se uporabi privzeta vrednost in je preverjanje pristnosti NTLMv2 omogočeno.</translation>
-<translation id="2598508021807251719">Konfigurira jezike, v katerih je lahko prikazan <ph name="PRODUCT_OS_NAME" />.
-
-      Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih uporabniškega vmesnika. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednostmi, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> v preteklosti konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik uporabniškega vmesnika, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
 <translation id="2604182581880595781">Konfiguriranje pravilnikov, povezanih z omrežnimi napravami za skupno rabo datotek.</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1059,7 +1059,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je ta nastavitev onemogočena, uporabnikom ne bo dovoljeno uporabljati prijave s funkcijo Smart Lock.
 
-      Če ta pravilnik ni nastavljen, funkcije privzeto ni dovoljena za uporabnike, ki jih upravlja podjetje, in je dovoljena za uporabnike, ki niso upravljani.</translation>
+      Če ta pravilnik ni nastavljen, funkcija privzeto ni dovoljena za uporabnike, ki jih upravlja podjetje, in je dovoljena za uporabnike, ki niso upravljani.</translation>
 <translation id="379602782757302612">Omogoča izbiro razširitev, ki jih uporabniki NE morejo namestiti. Razširitve, ki so že nameščene, bodo onemogočene, če so na seznamu prepovedanih, in uporabnik jih ne more omogočiti. Ko je razširitev, ki je onemogočena, ker je na seznamu prepovedanih, odstranjena s seznama, je samodejno znova omogočena.
 
          Vrednost »*« na seznamu blokiranih pomeni, da so vse razširitve na seznamu blokirane, razen če so izrecno navedene na seznamu dovoljenih.
@@ -1121,6 +1121,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Googlov URL predloga je mogoče določiti kot: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="3864129983143201415">Konfiguriranje dovoljenih jezikov v uporabniški seji</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
@@ -1164,7 +1165,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
 <translation id="3925020515212192040">Določa seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.
 
-      Vsak seznam elementov pravilnika je predmet z dvema členoma: »share_url« in »mode«. »share_url« mora biti URL datotečnega sredstva v skupni rabi, »mode« pa mora imeti vrednost »drop_down«, ki kaže, da bo »share_url« dodan v spustni meni odkrivanja datotečnih sredstev v skupni rabi.</translation>
+      Vsak seznam elementov pravilnika je predmet z dvema členoma: "share_url" in "mode". "share_url" mora biti URL datotečnega sredstva v skupni rabi, "mode" pa mora imeti vrednost "drop_down", ki kaže, da bo "share_url" dodan v spustni meni odkrivanja datotečnih sredstev v skupni rabi.</translation>
 <translation id="3939893074578116847">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave, tako da lahko
       strežnik zazna, ali ima naprava povezavo.
 
@@ -1819,7 +1820,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5835124959204887277">Določa URL-je in domene, za katere ne bo prikazan poziv, ko so iz varnostnih ključev zahtevana potrditvena potrdila. Poleg tega bo varnostnemu ključu poslan signal, da je posamezno potrditev mogoče uporabiti. Brez tega bo v Chromu 65 in novejših različicah uporabnikom prikazan poziv, ko spletna mesta zahtevajo potrditev varnostnih ključev.
 
       URL-ji (npr. https://example.com/neka/pot) se bodo ujemali samo kot appID-ji U2F. Domene (npr. example.com) se ujemajo samo kot ID-ji za webauthn RP. Če želite, da so za določeno mesto obravnavani tako API-ji za U2F kot za webauthn, je torej treba navesti URL za appID in domeno.</translation>
-<translation id="5835412847081687053">Konfiguriranje dovoljenih jezikov uporabniškega vmesnika v uporabniški seji</translation>
 <translation id="5836064773277134605">Omeji obseg vrat UDP, ki jih uporablja gostitelj oddaljenega dostopa</translation>
 <translation id="5862253018042179045">Nastavitev privzetega stanja funkcije izgovorjave za ljudi s posebnimi potrebami na prijavnem zaslonu.
 
@@ -2537,7 +2537,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7517845714620372896">Določa odstotek svetlosti zaslona.
           Če je ta pravilnik nastavljen, je prvotna svetlost zaslona prilagojena na vrednost v pravilniku, uporabnik pa jo lahko pozneje spremeni. Funkcije samodejnega prilagajanja svetlosti so onemogočene.
-          Če ta pravilnik ni nastavljen, ne vpliva uporabniške kontrolnike za nastavitev zaslona in funkcije samodejnega prilagajanja svetlosti.
+          Če ta pravilnik ni nastavljen, ne vpliva na uporabniške kontrolnike za nastavitev zaslona in funkcije samodejnega prilagajanja svetlosti.
           Vrednosti pravilnika morajo biti navedene v odstotkih, in sicer v obsegu od 0 do 100.</translation>
 <translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.

@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Futa</translation>
 <translation id="132683371494960526">Gusa mara mbili ili ubadilishe folda kuu.</translation>
 <translation id="1340643665687018190">Funga Menyu</translation>
+<translation id="1360432990279830238">Utaondoka na uzime usawazishaji?</translation>
 <translation id="1375321115329958930">Manenosiri Yaliyohifadhiwa</translation>
 <translation id="1377255359165588604">Usawazishaji umeacha kufanya kazi.</translation>
 <translation id="1377321085342047638">Nambari ya Kadi</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1657011748321897393">Kushiriki kulishindwa kwa sababu hujaunganishwa kwenye mtandao.</translation>
 <translation id="165877110639533037">Hakuna Vichupo Vilivyo Wazi</translation>
+<translation id="168715261339224929">Ili upate alamisho kwenye vifaa vyako vyote, washa usawazishaji.</translation>
 <translation id="1687475363370981210">Tia Alama kuwa Umesoma Zote</translation>
 <translation id="1690731385917361335">Hakuna vipengee</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimechaguliwa</translation>
@@ -225,12 +227,12 @@
 
 Data yako imesimbwa kwa njia fiche kwa kauli yako ya siri ya usawazishaji. Iweke ili uanze kusawazisha.</translation>
 <translation id="473775607612524610">Sasisha</translation>
-<translation id="4747097190499141774">Usimbaji fiche wa kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay. Mtu aliye na kauli yako ya siri ndiye tu anayeweza kusoma data yako iliyosimbwa kwa njia fiche. Kauli ya siri haitumwi kwa au kuhifadhiwa na Google. Ukisahau kauli yako ya siri au utake kubadilisha mipangilio hii, utahitaji kuweka upya mipangilio ya kusawazisha. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
+<translation id="4747097190499141774">Usimbaji fiche kwa kutumia kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay. Mtu aliye na kauli yako ya siri pekee ndiye anayeweza kusoma data yako iliyosimbwa kwa njia fiche. Kauli ya siri haitumwi kwa au kuhifadhiwa na Google. Ukisahau kauli yako ya siri au utake kubadilisha mipangilio hii, utahitaji kufanya usawazishaji upya. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Tafuta katika Ukurasa...</translation>
 <translation id="4751645464639803239">Kichupo Fiche Kipya</translation>
-<translation id="4802417911091824046">Usimbaji fiche wa kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay.
+<translation id="4802417911091824046">Usimbaji fiche kwa kutumia kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay.
 
-Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />weka upya mipangilio ya kusawazisha<ph name="END_LINK" /></translation>
+Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Hujasoma makala 1 kwenye Orodha ya Kusoma.</translation>
 <translation id="481968316161811770">Data ya Vidakuzi na Tovuti</translation>
 <translation id="4854345657858711387">Weka Nambari ya Siri</translation>
@@ -315,6 +317,7 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="6196207969502475924">Utafutaji wa Sauti</translation>
 <translation id="6254066287920239840">Hufungua viungo katika programu badala ya kivinjari.</translation>
 <translation id="6255097610484507482">Badilisha Kadi ya Malipo</translation>
+<translation id="6303969859164067831">Ondoka kwenye akaunti na uzime usawazishaji</translation>
 <translation id="6308436439357671616">Hii hukuwezesha kupiga na kupakia picha.</translation>
 <translation id="6324528485781869530">Badilisha Akaunti ya Usawazishaji</translation>
 <translation id="6324669097367352121">Ingia kwenye mipangilio</translation>
@@ -340,6 +343,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6464071786529933911">Fungua katika Kichupo Fiche Kipya</translation>
 <translation id="6482629121755362506">Vifaa <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimefutwa</translation>
 <translation id="6541915733953096570">Saa Moja Iliyopita</translation>
+<translation id="6643016212128521049">Futa</translation>
 <translation id="6656103420185847513">Badilisha Folda</translation>
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="667999046851023355">Hati</translation>

@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">删除</translation>
 <translation id="132683371494960526">点按两次即可更改父文件夹。</translation>
 <translation id="1340643665687018190">关闭菜单</translation>
+<translation id="1360432990279830238">退出帐号并关闭同步功能？</translation>
 <translation id="1375321115329958930">已保存的密码</translation>
 <translation id="1377255359165588604">同步功能已停止工作。</translation>
 <translation id="1377321085342047638">卡号</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1657011748321897393">分享失败，因为您没有连接到网络。</translation>
 <translation id="165877110639533037">没有已打开的标签页</translation>
+<translation id="168715261339224929">要想将您的书签同步到您的所有设备上，请开启同步功能。</translation>
 <translation id="1687475363370981210">全部标为已读</translation>
 <translation id="1690731385917361335">没有书签</translation>
 <translation id="1700629756560807968">已选中<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
@@ -225,10 +227,10 @@
 
 您的数据已使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="473775607612524610">更新</translation>
-<translation id="4747097190499141774">密码加密方式不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="4747097190499141774">密码加密不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在网页中查找…</translation>
 <translation id="4751645464639803239">打开新的无痕式标签页</translation>
-<translation id="4802417911091824046">密码加密方式不包括 Google Pay 中的付款方式和地址。
+<translation id="4802417911091824046">密码加密不包括 Google Pay 中的付款方式和地址。
 
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">阅读清单中有 1 篇未读文章。</translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">语音搜索</translation>
 <translation id="6254066287920239840">在应用（而非浏览器）中打开链接。</translation>
 <translation id="6255097610484507482">修改信用卡</translation>
+<translation id="6303969859164067831">退出帐号并关闭同步功能</translation>
 <translation id="6308436439357671616">这样，您就可以拍摄并上传照片。</translation>
 <translation id="6324528485781869530">切换同步帐号</translation>
 <translation id="6324669097367352121">登录设置</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
+<translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="667999046851023355">文档</translation>

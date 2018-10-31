@@ -24,7 +24,7 @@
       Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió en un dispositiu.
 
       Aquesta política només afecta els usuaris amb dominis que coincideixen amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió al dispositiu.</translation>
-<translation id="1035385378988781231">Aquesta política controla si la funció Ús compartit dels fitxers de la xarxa per a <ph name="PRODUCT_NAME" /> farà servir NTLM per a l'autenticació.
+<translation id="1035385378988781231">Aquesta política controla si la funció Fitxers compartits de la xarxa per a <ph name="PRODUCT_NAME" /> farà servir NTLM per a l'autenticació.
 
       Si aquesta política s'estableix en "true", s'utilitzarà NTLM per a l'autenticació d'usos compartits d'SMB si és necessari.
       Si s'estableix en "false", es desactivarà l'autenticació amb NTLM d'usos compartits d'SMB.
@@ -68,6 +68,9 @@
       Aneu a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
 
       Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Configura els idiomes que <ph name="PRODUCT_OS_NAME" /> pot utilitzar com a preferits.
+
+      Si s'estableix aquesta política, l'usuari només pot afegir a la llista d'idiomes preferits un dels idiomes indicats en aquesta política. Si aquesta política no s'estableix o s'estableix en una llista buida, l'usuari pot especificar qualsevol idioma com a preferit. Si aquesta política s'estableix en una llista amb valors no vàlids, s'ignoraran tots els valors no vàlids. Si un usuari ha afegit prèviament a la llista d'idiomes preferits alguns idiomes que aquesta política no admet, se suprimiran. Si un usuari ha configurat prèviament que <ph name="PRODUCT_OS_NAME" /> es mostri en un dels idiomes que aquesta política no permet, la propera vegada que iniciï la sessió, l'idioma de visualització es canviarà per un idioma d'IU permès. En cas contrari, <ph name="PRODUCT_OS_NAME" /> canviarà al primer valor vàlid que aquesta política especifiqui o bé a una configuració regional alternativa (actualment, en-US) si aquesta política només conté entrades no vàlides.</translation>
 <translation id="1135264353752122851">Configura quines disposicions de teclat s'admeten per a les sessions d'usuari de <ph name="PRODUCT_OS_NAME" />.
 
       Si aquesta política s'estableix, l'usuari només pot seleccionar un dels mètodes d'entrada que especifica la política. Si aquesta política no s'estableix o s'estableix en una llista buida, l'usuari pot seleccionar tots els mètodes d'entrada admesos. Si aquesta política no admet el mètode d'entrada actual, el mètode d'entrada canviarà a la disposició de teclat del maquinari (si es permet) o a la primera entrada vàlida de la llista. S'ignoraran tots els mètodes d'entrada d'aquesta llista que no siguin vàlids o que no s'admetin.</translation>
@@ -498,7 +501,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
 <translation id="2327252517317514801">Defineix els dominis que tenen permís per accedir a G Suite</translation>
 <translation id="237494535617297575">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
-<translation id="2386362615870139244">Permet els bloquejos d'activació de la pantalla</translation>
+<translation id="2386362615870139244">Permet els wake locks de la pantalla</translation>
 <translation id="2411817661175306360">L'advertiment sobre la protecció de contrasenyes està desactivat</translation>
 <translation id="2411919772666155530">Bloqueja les notificacions d'aquests llocs</translation>
 <translation id="2418507228189425036">Desactiva l'emmagatzematge de l'historial del navegador a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció.
@@ -517,11 +520,11 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si no s'estableix aquesta opció, l'usuari pot decidir si vol fer servir aquesta funció o no.
 
       Aquesta configuració s'ha suprimit a la versió 29 i versions posteriors de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2433412232489478893">Aquesta política controla si es permet utilitzar la funció Ús compartit dels fitxers de la xarxa per a <ph name="PRODUCT_NAME" /> als usuaris.
+<translation id="2433412232489478893">Aquesta política controla si es permet utilitzar la funció Fitxers compartits de la xarxa per a <ph name="PRODUCT_NAME" /> als usuaris.
 
-      Si aquesta política no es configura o s'estableix en "true", els usuaris podran fer servir la funció Ús compartit dels fitxers de la xarxa.
+      Si aquesta política no es configura o s'estableix en "true", els usuaris podran fer servir la funció Fitxers compartits de la xarxa.
 
-      Si aquesta política s'estableix en "false", els usuaris no podran fer servir la funció Ús compartit dels fitxers de la xarxa.</translation>
+      Si aquesta política s'estableix en "false", els usuaris no podran fer servir la funció Fitxers compartits de la xarxa.</translation>
 <translation id="2438609638493026652">Permet informar Google d'esdeveniments clau durant la instal·lació d'aplicacions per a Android. Només es capturen esdeveniments si la instal·lació d'aplicacions s'activa mitjançant la política.
 
       Si la política s'estableix en "true", es registren esdeveniments.
@@ -593,9 +596,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
           Totes les versions recents dels servidors de Samba i de Windows admeten NTLMv2. Aquesta política només s'ha de desactivar per permetre la compatibilitat amb versions anteriors i això redueix la seguretat de l'autenticació.
 
           Si aquesta política no s'estableix, l'opció predeterminada és "true" i s'activa l'autenticació NTLMv2.</translation>
-<translation id="2598508021807251719">Estableix les configuracions regionals en què es pot mostrar <ph name="PRODUCT_OS_NAME" />.
-
-      Si aquesta política s'estableix, l'usuari només podrà configurar <ph name="PRODUCT_OS_NAME" /> perquè es mostri en una de les configuracions regionals especificades per aquesta política. Si aquesta política no s'estableix o s'estableix en una llista buida, <ph name="PRODUCT_OS_NAME" /> es podrà mostrar en totes les configuracions regionals admeses per a IU. Si aquesta política s'estableix en una llista amb valors no vàlids, tots els valors no vàlids s'ignoraran. Si un usuari ha configurat prèviament <ph name="PRODUCT_OS_NAME" /> perquè es mostri en un idioma que aquesta política no admet, la configuració regional de visualització canviarà a una configuració regional permesa per a la IU la propera vegada que l'usuari iniciï la sessió. Si l'usuari havia establert configuracions regionals preferides i aquesta política n'admet una, <ph name="PRODUCT_OS_NAME" /> canviarà a aquesta configuració regional. En canvi, si aquesta política només conté entrades no vàlides, <ph name="PRODUCT_OS_NAME" /> canviarà al primer valor vàlid que especifiqui aquesta política o a una configuració regional alternativa (actualment, en-US).</translation>
 <translation id="2604182581880595781">Configura les polítiques relacionades amb la funció Ús compartit dels fitxers de la xarxa.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -680,7 +680,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2823870601012066791">Ubicació del registre de Windows per a clients amb <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
-<translation id="2839294585867804686">Configuració de la funció Ús compartit dels fitxers de la xarxa</translation>
+<translation id="2839294585867804686">Configuració de la funció Fitxers compartits de la xarxa</translation>
 <translation id="2840269525054388612">Especifica les impressores que un usuari pot fer servir.
 
       Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -937,7 +937,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si desactives aquesta opció de configuració, Navegació segura no estarà mai activa.
 
-      Si actives o desactives aquesta opció de configuració, els usuaris no podran canviar ni substituir l'opció de configuració "Activa la protecció contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
+      Si actives o desactives aquesta opció de configuració, els usuaris no podran canviar ni substituir l'opció de configuració "Activa la protecció contra pesca de credencials i programari maliciós" a <ph name="PRODUCT_NAME" />.
 
       Si aquesta política no s'estableix, aquesta opció de configuració s'activarà però l'usuari la podrà canviar.
 
@@ -1062,6 +1062,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           L'URL de suggeriment de Google es pot especificar de la manera següent: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Aquesta política només es respecta si la política DefaultSearchProviderEnabled està activada.</translation>
+<translation id="3864129983143201415">Configura els idiomes permesos en una sessió d'usuari</translation>
 <translation id="3866249974567520381">Descripció</translation>
 <translation id="3868347814555911633">Aquesta política només està activa en mode de venda.
 
@@ -1138,7 +1139,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4020682745012723568">Les aplicacions per a Android no poden accedir a les galetes transferides al perfil de l'usuari.</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
-<translation id="4039085364173654945">Controla si el contingut secundari de tercers en una pàgina pot fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP. Normalment es desactiva com a defensa de pesca (suplantació d'identitat). Si no es defineix aquesta política, aquest paràmetre es desactivarà i el contingut secundari de tercers no podrà fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP.</translation>
+<translation id="4039085364173654945">Controla si el contingut secundari de tercers en una pàgina pot fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP. Normalment es desactiva com a defensa de pesca de credencials. Si no es defineix aquesta política, aquest paràmetre es desactivarà i el contingut secundari de tercers no podrà fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP.</translation>
 <translation id="4056910949759281379">Desactiva el protocol SPDY</translation>
 <translation id="4059515172917655545">Aquesta política controla la disponibilitat dels serveis d'ubicació de Google.
 
@@ -1317,7 +1318,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Mode de processament retroactiu de la política d'usuari</translation>
-<translation id="4554841826517980623">Aquesta política controla si la funció Usos compartits de fitxers de la xarxa per a <ph name="PRODUCT_NAME" /> ha d'utilitzar <ph name="NETBIOS_PROTOCOL" /> per descobrir usos compartits a la xarxa.
+<translation id="4554841826517980623">Aquesta política controla si la funció Fitxers compartits de la xarxa per a <ph name="PRODUCT_NAME" /> ha d'utilitzar <ph name="NETBIOS_PROTOCOL" /> per descobrir usos compartits a la xarxa.
       Si aquesta política s'estableix en "true", la detecció d'usos compartits farà servir el protocol <ph name="NETBIOS_PROTOCOL" /> per detectar usos compartits a la xarxa.
       Si aquesta política s'estableix en "false", la detecció d'usos compartits no farà servir el protocol <ph name="NETBIOS_PROTOCOL" /> per detectar usos compartits.
       Si la política es deixa sense establir, el valor predeterminat es desactivarà per als usuaris gestionats per l'empresa i s'activarà per als usuaris no gestionats.</translation>
@@ -1718,7 +1719,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5835124959204887277">Especifica els URL i els dominis per als quals no es mostrarà cap avís quan se sol·licitin certificats de confirmació de les claus de seguretat. A més, s'enviarà un senyal a la clau de seguretat per indicar que es pot utilitzar una confirmació individual. En cas contrari, els usuaris de Chrome 65 i versions posteriors rebran un avís quan els llocs web sol·licitin una confirmació de les claus de seguretat.
 
       Els URL (com ara https://example.com/un/camí) només s'identifiquen com a appID d'U2F. Els dominis (com ara example.com) només tornaran resultats com a identificadors RP de WebAuthn. Per tant, per permetre alhora les API de WebAuthn i d'U2F en un lloc web determinat, s'ha d'incloure tant el domini com l'URL de WebAuthn.</translation>
-<translation id="5835412847081687053">Estableix les configuracions regionals permeses per a IU en una sessió d'usuari</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
 <translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris de veu a la pantalla d'inici de sessió.
 
@@ -2012,7 +2012,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactiva la sincronització de totes les dades i substitueix RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtra els llocs web de nivell superior amb contingut per a adults (però no els iframes inserits)</translation>
-<translation id="6734521799274931721">Controla si la funció Ús compartit dels fitxers de la xarxa estarà disponible per a Chrome OS</translation>
+<translation id="6734521799274931721">Controla si la funció Fitxers compartits de la xarxa estarà disponible per a Chrome OS</translation>
 <translation id="6735701345096330595">Força l'activació del corrector ortogràfic d'idiomes</translation>
 <translation id="673699536430961464">Aquesta opció de configuració permet que els usuaris canviïn d'un compte de Google a un altre des de l'àrea de contingut de la finestra del navegador després que hagin iniciat la sessió al dispositiu <ph name="PRODUCT_OS_NAME" />.
 
@@ -2199,7 +2199,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7072208053150563108">Freqüència de canvi de la contrasenya de l'ordinador</translation>
 <translation id="7074513465313721551">Configura la llista de dominis en què Navegació segura confiarà. És a dir:
-      Navegació segura no cercarà recursos perillosos (per exemple, programari de pesca, maliciós o no desitjat) si els URL coincideixen amb aquests dominis.
+      Navegació segura no cercarà recursos perillosos (per exemple, programari de pesca de credencials, maliciós o no desitjat) si els URL coincideixen amb aquests dominis.
       El servei de protecció a l'hora de baixar contingut de Navegació segura no revisarà les baixades allotjades en aquests dominis.
       El servei de protecció de contrasenyes de Navegació segura no cercarà la reutilització de contrasenyes si l'URL de la pàgina coincideix amb aquests dominis.
 
@@ -2868,7 +2868,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Els canvis a la política només s'aplicaran mentre ARC no estigui en funcionament (per exemple, mentre s'inicia Chrome OS).</translation>
 <translation id="8615400197788843468">Activa la funció d'inici de sessió restringit de <ph name="PRODUCT_NAME" /> a G Suite i impedeix que els usuaris canviïn aquesta opció.
 
-      Si defineixes aquesta opció, l'usuari només podrà accedir a les aplicacions de Google amb comptes dels dominis especificats. Tingues en compte que, per permetre els comptes de gmail.com/googlemail.com, has d'afegir "consumer_accounts" (sense cometes) a la llista de dominis.
+      Si defineixes aquesta opció, l'usuari només podrà accedir a les aplicacions de Google amb comptes dels dominis especificats. Tingues en compte que, per permetre els comptes de gmail.com o googlemail.com, has d'afegir "consumer_accounts" (sense cometes) a la llista de dominis.
 
       Aquesta opció impedeix que els usuaris iniciïn la sessió i afegeixin un compte secundari en un dispositiu gestionat que requereixi l'autenticació de Google, si aquest compte no s'ha inclòs a la llista anterior de dominis permesos.
 
@@ -2896,7 +2896,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Si aquesta política s'estableix en "PasswordProtectionWarningOff", no es mostrarà cap advertiment sobre la protecció de contrasenyes.
       Si aquesta política s'estableix en "PasswordProtectionWarningOnPasswordReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web que no es trobi a la llista blanca.
-      Si aquesta política s'estableix en "PasswordProtectionWarningOnPhishingReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca.
+      Si aquesta política s'estableix en "PasswordProtectionWarningOnPhishingReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca de credencials.
       Si aquesta política es deixa sense establir, el servei de protecció de contrasenyes només protegirà les contrasenyes de Google, però l'usuari podrà canviar aquesta opció de configuració.</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
 <translation id="867410340948518937">U2F (segon factor universal)</translation>
@@ -2947,7 +2947,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>
 <translation id="8818768076343557335">Prediu les accions de xarxa en qualsevol xarxa que no sigui de telefonia mòbil.
           (A 50 està obsoleta i a 52 se suprimeix. Després de 52, si està establert el valor 1, es tracta com a 0; és a dir, prediu les accions de xarxa en qualsevol connexió de xarxa.)</translation>
-<translation id="8825782996899863372">L'advertiment sobre la protecció de contrasenyes s'activa quan es reutilitza una contrasenya en una pàgina de pesca</translation>
+<translation id="8825782996899863372">L'advertiment sobre la protecció de contrasenyes s'activa quan es reutilitza una contrasenya en una pàgina de pesca de credencials</translation>
 <translation id="8828766846428537606">Configura la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i evita que els usuaris la canviïn. La configuració de la pàgina d'inici dels usuaris només es bloqueja completament si seleccioneu que sigui la pàgina de pestanya nova o si l'establiu perquè sigui un URL que trieu. Si no especifiqueu l'URL de la pàgina d'inici, l'usuari podrà establir la pàgina de pestanya nova com a pàgina d'inici si especifica "chrome://newtab".</translation>
 <translation id="8833109046074170275">Autenticació mitjançant el flux predeterminat de GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> desa les aplicacions i les extensions a la memòria cau perquè diversos usuaris d'un mateix dispositiu les puguin instal·lar. Així, s'evita haver-les de baixar per a cada usuari.

@@ -49,6 +49,7 @@
 <translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
+<translation id="2818397554133737874">‏داده‌های محصول مروراین کاربر از این دستگاه حذف می‌شوند. برای بازیابی داده‌ها، با نام 2$ به سیستم Chromium وارد شوید.</translation>
 <translation id="2847479871509788944">‏حذف از Chromium...</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2898082584336937987">‏Chromium را در تلفنتان نصب کنید. پیامکی به تلفن شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
@@ -97,7 +98,6 @@
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4407044323746248786">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4415566066719264597">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
-<translation id="4421155425831608516">‏سرپرست این دستگاه ورود به سیستم Chromium را غیرفعال کرده است.</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="459535195905078186">‏برنامه‌های Chromium</translation>
@@ -115,6 +115,7 @@
 <translation id="5032989939245619637">‏ذخیره جزئیات در Chromium</translation>
 <translation id="5045248521775609809">‏Chrome را همه‌ جا ببرید</translation>
 <translation id="5116586539350239523">‏Chromium به‌طور امن جزئیات شخصی‌تان را ذخیره خواهد کرد تا نیازی نباشد آن‌ها را دوباره تایپ کنید.</translation>
+<translation id="5181952534059945058">‏این صفحه حافظه خیلی زیادی استفاده می‌کند، به‌همین‌دلیل Chromium برخی از محتوا را پاک کرد.</translation>
 <translation id="5277894862589591112">‏برای اعمال تغییراتتان، Chromium را راه‌اندازی مجدد کنید</translation>
 <translation id="5358375970380395591">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Chromium خود را می‌دهید. داده‌های Chromium شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">‏درحال به‌روزرسانی Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -143,6 +144,7 @@
 <translation id="5902536751647951209">‏گواهینامه احراز هویت تأیید نشد. لطفاً دوباره به سیستم Chromium وارد شوید یا برای دریافت اطلاعات بیشتر با سرپرستتان تماس بگیرید. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، دستگاهتان را دوباره راه‌اندازی کنید.</translation>
 <translation id="5987687638152509985">‏به‌روزرسانی Chromium برای شروع همگام‌سازی</translation>
+<translation id="6013050204643758987">‏ساخت سیستم‌عامل Chromium به‌کمک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگری، مثل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (بتا)<ph name="END_LINK_LINUX_OSS" />، امکان‌پذیر شده است.</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6055895534982063517">‏نسخه جدیدی از Chromium وجود دارد که سریع‌تر از همیشه است.</translation>
 <translation id="6063093106622310249">‏&amp;باز کردن در Chromium</translation>
@@ -189,7 +191,6 @@
 <translation id="7196312274710523067">‏Chromium راه‌اندازی نشد. دوباره امتحان کنید.</translation>
 <translation id="7205698830395646142">‏پنهان در منوی Chromium</translation>
 <translation id="7223968959479464213">‏مدیر فعالیت‌ها - Chromium</translation>
-<translation id="722928257909516027">‏نمایش منوی Chromium</translation>
 <translation id="731644333568559921">‏به‌روزرسانی &amp;سیستم عامل Chromium</translation>
 <translation id="731795002583552498">‏در حال به‌روزرسانی Chromium</translation>
 <translation id="7318036098707714271">‏فایل تنظیمات برگزیده شما خراب یا نامعتبر است. 

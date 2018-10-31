@@ -79,6 +79,9 @@
       Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa listahan ng mga variable na maaaring gamitin.
 
       Kung iniwang hindi nakatakda ang patakarang ito, gagamitin ang default na direktoryo ng cache at magagawa itong i-override ng user gamit ang command line flag na '--disk-cache-dir'.</translation>
+<translation id="113521240853905588">Kino-configure ang mga wikang maaaring gamitin bilang mga mas gustong wika ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung itatakda ang patakarang ito, maaari lang magdagdag ang user ng isa sa mga wikang nakalista sa patakarang ito sa listahan ng mga mas gustong wika. Kung ang wikang ito ay hindi nakatakda o nakatakda sa walang lamang listahan, maaaring tumukoy ang user ng anumang wika, ayon sa mas gusto niya. Kung itatakda ang patakarang ito sa listahang may invalid na value, babalewalain ang lahat ng invalid na value. Kung dati nang nagdagdag ang isang user ng ilang wikang hindi pinapayagan ng patakaran sa listahan ng mga mas gustong wika, aalisin ang mga ito. Kung naunang na-configure ng user ang <ph name="PRODUCT_OS_NAME" /> na maipakita sa isa sa mga wikang hindi pinapayagan ng patakarang ito, ang display na wika ay ililipat sa pinapayagang wika ng UI sa susunod na mag-sign in ang user. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy ng patakarang ito, o sa isang fallback na wika (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="1135264353752122851">Kino-configure kung aling mga layout ng keyboard ang pinapayagan para sa mga session ng user ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung nakatakda ang patakarang ito, makakapili lang ang user ng isa sa mga pamamaraan ng pag-input na natukoy ng patakarang ito. Kung hindi nakatakda ang patakarang ito o nakatakda ito sa isang walang lamang listahan, mapipili ng user ang lahat ng sinusuportahang pamamaraan ng pag-input. Kung hindi pinapayagan ng patakarang ito ang kasalukuyang pamamaraan ng pag-input, malilipat ang pamamaraan ng pag-input sa layout ng hardware na keyboard (kung pinapayagan) o sa unang valid na entry sa listahang ito. Babalewalain ang lahat ng invalid o hindi sinusuportahang pamamaraan ng pag-input sa listahang ito.</translation>
@@ -626,9 +629,6 @@
           Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
 
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
-<translation id="2598508021807251719">Kino-configure ang mga lokal kung saan maaaring ipinapakita ang <ph name="PRODUCT_OS_NAME" />.
-
-      Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isa sa mga lokal na tinukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o itatakda ito sa isang blangkong listahan, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal ng UI. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isang lokal na hindi pinapayagan ng patakarang ito, ililipat ang lokal ng display sa isang pinapayagang lokal ng UI sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at ang isa sa mga piniling lokal ay pinapayagan ng patakarang ito, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy sa patakarang ito, o sa isang fallback na lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1112,6 +1112,7 @@
           Ang suhestyong URL ng Google ay maaaring matukoy bilang: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Kikilalanin lang ang patakaran kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
+<translation id="3864129983143201415">I-configure ang mga pinapayagang wika sa isang session ng user</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
 
@@ -1808,7 +1809,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5835124959204887277">Tumutukoy ng mga URL at domain kung saan walang ipapakitang prompt kapag humiling ng mga certificate ng pagpapatunay mula sa Mga Security Key. Bukod pa rito, may ipapadalang signal sa Security Key na nagsasaad na maaaring gumamit ng indibidwal na pagpapatunay. Kung wala ito, ipo-prompt ang mga user sa Chrome 65+ kapag humiling ang mga site ng pagpapatunay ng Mga Security Key.
 
       Tutugma lang ang mga URL (tulad ng https://example.com/some/path) bilang mga U2F appID. Tutugma lang ang mga domain (tulad ng example.com) bilang mga webauthn RP ID. Samakatuwid, upang masaklaw ang mga U2F at webauthn API para sa isang partikular na site, kailangang parehong ilista ang appID URL at domain.</translation>
-<translation id="5835412847081687053">I-configure ang mga pinapayagang lokal ng UI sa isang session ng user</translation>
 <translation id="5836064773277134605">Paghigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access</translation>
 <translation id="5862253018042179045">Itakda ang default na katayuan ng tampok na pagiging naa-access ng sinasalitang feedback sa screen sa pag-login.
 

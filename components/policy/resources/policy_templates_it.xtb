@@ -68,6 +68,9 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Vai alla pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco delle variabili che possono essere utilizzate.
 
       Se la norma non viene impostata, viene utilizzata la directory della cache predefinita e l'utente può ignorarla con il flag della riga di comando "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Configura le lingue che possono essere utilizzate come lingue preferite di <ph name="PRODUCT_OS_NAME" />.
+
+      Se questa norma viene impostata, l'utente può solo aggiungere una delle lingue elencate in questa norma all'elenco delle lingue preferite. Se questa norma non viene impostata o viene impostata su un elenco vuoto, l'utente può specificare qualsiasi lingua come preferita. Se questa norma viene impostata su un elenco con valori non validi, tutti i valori non validi verranno ignorati. Se un utente ha aggiunto in precedenza all'elenco di lingue preferite alcune lingue non consentite da questa norma, le lingue non consentite verranno rimosse. Se l'utente ha configurato <ph name="PRODUCT_OS_NAME" /> in precedenza per essere visualizzato in una delle lingue non consentite da questa norma, all'accesso successivo la lingua di visualizzazione passerà a una lingua di interfaccia consentita. In caso contrario, <ph name="PRODUCT_OS_NAME" /> passerà al primo valore valido specificato da questa norma o a un'impostazione internazionale di fallback (attualmente inglese, Stati Uniti), se questa norma contiene solo voci non valide.</translation>
 <translation id="1135264353752122851">Consente di configurare i layout da tastiera consentiti per le sessioni utente di <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata, l'utente potrà scegliere soltanto uno dei metodi di immissione specificati al suo interno. Se la norma non viene impostata o viene impostato un elenco vuoto, l'utente potrà selezionare tutti i metodi di immissione supportati. Se il metodo di immissione corrente non è consentito da questa norma, verrà sostituito dal layout della tastiera hardware (se consentito) o dalla prima voce valida di questo elenco. Tutti i metodi di immissione non validi o non supportati di questo elenco verranno ignorati.</translation>
@@ -583,9 +586,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
 
           Se questa norma non viene impostata, l'impostazione predefinita è true e l'autenticazione NTLMv2 è attivata.</translation>
-<translation id="2598508021807251719">Questa norma consente di configurare le impostazioni internazionali che possono essere visualizzate in <ph name="PRODUCT_OS_NAME" />.
-
-      Se questa norma viene impostata, l'utente potrà configurare soltanto una delle impostazioni internazionali di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le impostazioni internazionali dell'interfaccia utente supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato un'impostazione internazionale di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo l'impostazione internazionale visualizzata verrà sostituita con una impostazione internazionale dell'interfaccia utente consentita. Se l'utente aveva configurato delle impostazioni internazionali preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale impostazione internazionale. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato da questa norma oppure, se la norma contiene soltanto voci non valide, verrà usata un'impostazione internazionale di riserva (attualmente en-US).</translation>
 <translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1048,6 +1048,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           L'URL per i suggerimenti di Google può essere specificato come segue: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
+<translation id="3864129983143201415">Configura le lingue consentite in una sessione utente</translation>
 <translation id="3866249974567520381">Descrizione</translation>
 <translation id="3868347814555911633">Questa norma è attiva soltanto in modalità retail.
 
@@ -1698,7 +1699,6 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5835124959204887277">Consente di specificare URL e domini per i quali non verranno mostrati messaggi quando verranno richiesti certificati di attestazione dei token di sicurezza. Verrà inoltre inviato un segnale al token di sicurezza per indicare che potrebbe essere usata la singola attestazione. Senza questo segnale, gli utenti di Chrome 65 e versioni successive riceveranno un messaggio quando i siti richiederanno l'attestazione dei token di sicurezza.
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
-<translation id="5835412847081687053">Configura le impostazioni internazionali UI consentite in una sessione utente</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
 
@@ -2386,7 +2386,7 @@ Questa norma consente agli amministratori di fornire configurazioni delle stampa
 <translation id="7517845714620372896">Consente di specificare la percentuale di luminosità dello schermo.
           Se questa norma viene impostata, la luminosità dello schermo iniziale viene regolata in base al valore della norma, ma l'utente potrà cambiare tale valore in un secondo momento. Le funzionalità relative alla luminosità automatica vengono disattivate.
           Se questa norma non viene impostata, i controlli dello schermo dell'utente e le funzionalità di luminosità automatica rimangono invariati.
-          I valori della norma possono essere percentuali comprese tra 0 e 100.</translation>
+          I valori della norma devono essere specificati in percentuali comprese tra 0 e 100.</translation>
 <translation id="7519251620064708155">Consenti la generazione di chiavi su questi siti</translation>
 <translation id="7529100000224450960">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
@@ -2838,7 +2838,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Se la norma non viene impostata o viene impostata su true, tutti gli utenti potranno utilizzare ARC (a meno che la funzione ARC sia stata disattivata in altri modi).
 
       Le modifiche apportate alla norma verranno applicate soltanto quando ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
-<translation id="8615400197788843468">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+<translation id="8615400197788843468">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> in G Suite e di impedire agli utenti di modificare questa impostazione.
 
       Se l'impostazione viene definita, l'utente potrà accedere alle app Google soltanto usando gli account dei domini specificati (tieni presente che per consentire gli account gmail.com/googlemail.com devi aggiungere "consumer_accounts", senza virgolette, all'elenco di domini).
 

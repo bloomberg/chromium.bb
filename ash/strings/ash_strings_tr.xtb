@@ -112,6 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" /> ile yeniden bağlantı kuruluyor</translation>
 <translation id="2790844815106384441">Web sitelerinin konum hizmetlerini veya cihazınızın mikrofonunu, kamerasını ya da diğer özelliklerini kullanıp kullanamayacağını seçme</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
+<translation id="2803734122639935495">Kilidi açmak için şifrenizi girin</translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
 <translation id="2825619548187458965">Raf</translation>
 <translation id="2844169650293029770">USB-C cihaz (sol ön bağlantı noktası)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Mikrofon jakı</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5673434351075758678">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan dil "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
+<translation id="5691772641933328258">Parmak izi tanınmadı</translation>
 <translation id="574392208103952083">Orta</translation>
 <translation id="5744083938413354016">Dokunarak sürükleme</translation>
 <translation id="5750765938512549687">Bluetooth kapalı</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">Çözünürlük değiştirildi</translation>
 <translation id="6297287540776456956">Alan seçmek için ekran kalemini kullanın</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
-<translation id="632744581670418035">Klavye yer paylaşımı</translation>
 <translation id="6344698853700675736">Gece Işığı'nı aç/kapat</translation>
 <translation id="6376931439017688372">Bluetooth açık</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ağına bağlanılıyor</translation>
 <translation id="7842569679327885685">Uyarı: Deneysel özellik</translation>
 <translation id="7846634333498149051">Klavye</translation>
+<translation id="7868900307798234037">Parmak iziyle kilit açılıyor</translation>
 <translation id="7886169021410746335">Gizlilik ayarlarını yapma</translation>
 <translation id="7886277072580235377">Oturumu kapattığınızda internet oturumunuz temizlenecektir. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-posta gönder</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">Hesap <ph name="FIRST_PARENT_EMAIL" /> ve <ph name="SECOND_PARENT_EMAIL" /> tarafından yönetiliyor</translation>
 <translation id="7977927628060636163">Mobil ağlar aranıyor...</translation>
 <translation id="7982789257301363584">Ağ</translation>
+<translation id="7984197416080286869">Çok fazla parmak izi denemesi yapıldı</translation>
 <translation id="7994370417837006925">Çoklu oturum açma</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="8029241286966751120">Tam Ekran Büyüteci etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>

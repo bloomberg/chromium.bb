@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">מחק</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
 <translation id="1340643665687018190">סגור את התפריט</translation>
+<translation id="1360432990279830238">לצאת ולהשבית את הסנכרון?</translation>
 <translation id="1375321115329958930">סיסמאות שמורות</translation>
 <translation id="1377255359165588604">הסינכרון הפסיק לפעול.</translation>
 <translation id="1377321085342047638">מספר כרטיס</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1657011748321897393">השיתוף נכשל משום שאינך מחובר לרשת.</translation>
 <translation id="165877110639533037">אין כרטיסיות פתוחות</translation>
+<translation id="168715261339224929">כדי שהסימניות שלך יופיעו בכל המכשירים, יש להפעיל סינכרון.</translation>
 <translation id="1687475363370981210">סמן את הכול כ'נקרא'</translation>
 <translation id="1690731385917361335">אין פריטים</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> נבחרו</translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">חיפוש קולי</translation>
 <translation id="6254066287920239840">פתח קישורים באפליקציה ולא בדפדפן.</translation>
 <translation id="6255097610484507482">ערוך כרטיס אשראי</translation>
+<translation id="6303969859164067831">יציאה וכיבוי הסנכרון</translation>
 <translation id="6308436439357671616">אישור זה מאפשר לך לצלם ולעדכן תמונות.</translation>
 <translation id="6324528485781869530">החלפת חשבון לסנכרון</translation>
 <translation id="6324669097367352121">הגדרות כניסה</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
+<translation id="6643016212128521049">נקה</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="667999046851023355">מסמך</translation>

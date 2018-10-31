@@ -81,6 +81,9 @@
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--disk-cache-dir'.</translation>
+<translation id="113521240853905588">Hiermee worden de talen ingesteld die door <ph name="PRODUCT_OS_NAME" /> als voorkeurstaal kunnen worden gebruikt.
+
+      Als dit beleid is ingesteld, kan de gebruiker slechts één van de in dit beleid vermelde talen toevoegen aan de lijst met voorkeurstalen. Als dit beleid niet is ingesteld of op een lege lijst is ingesteld, kan de gebruiker zelf een voorkeurstaal kiezen. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker eerder talen aan de lijst met voorkeurstalen heeft toegevoegd die niet door dit beleid zijn toegestaan, worden deze talen verwijderd. Als de gebruiker <ph name="PRODUCT_OS_NAME" /> eerder heeft geconfigureerd voor weergave in een van de talen die niet door dit beleid zijn toegestaan, wordt de volgende keer dat de gebruiker inlogt een toegestane UI-taal als weergavetaal gebruikt. Anders gebruikt <ph name="PRODUCT_OS_NAME" /> de eerste geldige waarde die is opgegeven in dit beleid, of een reservetaal (momenteel 'en-US'), als dit beleid alleen ongeldige talen bevat.</translation>
 <translation id="1135264353752122851">Configureert welke toetsenbordindelingen zijn toegestaan voor <ph name="PRODUCT_OS_NAME" />-gebruikerssessies.
 
       Als dit beleid is ingesteld, kan de gebruiker alleen een van de invoermethoden selecteren die worden gespecificeerd door dit beleid. Als dit beleid niet is ingesteld of is ingesteld op een lege lijst, kan de gebruiker alle ondersteunde invoermethoden selecteren. Als de huidige invoermethode niet is toegestaan op basis van dit beleid, wordt de invoermethode overgeschakeld naar het hardwaretoetsenbord (indien toegestaan) of het eerste geldige item in deze lijst. Alle ongeldige of niet-ondersteunde invoermethoden in deze lijst worden genegeerd.</translation>
@@ -627,9 +630,6 @@
           Alle recente versies van Samba en Windows-servers ondersteunen NTLMv2. Dit moet alleen worden uitgeschakeld voor achterwaartse compatibiliteit en vermindert de beveiliging van verificatie.
 
           Als dit beleid niet is gedefinieerd, is de standaardwaarde 'waar' en is NTLMv2 ingeschakeld.</translation>
-<translation id="2598508021807251719">Hiermee wordt ingesteld in welke talen <ph name="PRODUCT_OS_NAME" /> kan worden weergegeven.
-
-      Als dit beleid is ingesteld, kan de gebruiker alleen instellen dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een van de talen die is opgenomen in dit beleid. Als dit beleid niet is ingesteld of op een lege lijst is ingesteld, kan <ph name="PRODUCT_OS_NAME" /> worden weergegeven in alle ondersteunde weergavetalen. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker eerder had ingesteld dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een bepaalde taal die niet is toegestaan door dit beleid, wordt de weergavetaal de volgende keer dat de gebruiker inlogt, ingesteld op een taal die wel is toegestaan. Als de gebruiker voorkeurstalen had ingesteld en een van de voorkeurstalen is toegestaan door dit beleid, schakelt <ph name="PRODUCT_OS_NAME" /> over naar deze taal. Als de gebruiker geen voorkeurstalen had ingesteld, schakelt <ph name="PRODUCT_OS_NAME" /> over naar de eerste geldige waarde die door het beleid is bepaald, of anders naar de standaardtaal (momenteel en-US) als het beleid alleen ongeldige talen bevat.</translation>
 <translation id="2604182581880595781">Beleid met betrekking tot Network File Shares configureren.</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
@@ -1113,6 +1113,7 @@
           De suggestie-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="3864129983143201415">Instellen welke talen zijn toegestaan in een gebruikerssessie</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3868347814555911633">Dit beleid is alleen actief in de commerciële modus.
 
@@ -1810,7 +1811,6 @@
 <translation id="5835124959204887277">Specificeert URL's en domeinen waarvoor geen prompt wordt weergegeven wanneer bevestigingscertificaten van beveiligingssleutels wordt aangevraagd. Er wordt bovendien een signaal verzonden naar de beveiligingssleutel dat aangeeft dat afzonderlijke bevestiging mag worden gebruikt. Zonder dit signaal krijgen gebruikers in Chrome 65+ een prompt te zien wanneer sites bevestiging van beveiligingssleutels aanvragen.
 
       URL's (zoals https://example.com/some/path) komen alleen overeen als U2F appID's. Domeinen (zoals example.com) komen alleen overeen als webauthn RP ID's. Dus om zowel de U2F- als webauthn-API voor een bepaalde site te omvatten, moeten zowel de appID-URL als het appID-domein worden vermeld.</translation>
-<translation id="5835412847081687053">Instellen welke weergavetalen zijn toegestaan in een gebruikerssessie</translation>
 <translation id="5836064773277134605">Het UDP-poortbereik beperken dat voor de host voor externe toegang wordt gebruikt</translation>
 <translation id="5862253018042179045">De standaardstatus van de toegankelijkheidsfunctie voor gesproken feedback instellen op het inlogscherm.
 

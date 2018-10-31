@@ -112,6 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" /> に再接続しています</translation>
 <translation id="2790844815106384441">ウェブサイトで位置情報サービスまたは端末のマイクやカメラなどの機能を使用できるように指定する</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
+<translation id="2803734122639935495">ロックを解除するにはパスワードを入力してください</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
 <translation id="2825619548187458965">シェルフ</translation>
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
+<translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5750765938512549687">Bluetooth がオフです</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">解像度が変更されました</translation>
 <translation id="6297287540776456956">タッチペンを使って部分を選択してください</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
-<translation id="632744581670418035">キーボード オーバーレイ</translation>
 <translation id="6344698853700675736">夜間モードをオンまたはオフにします</translation>
 <translation id="6376931439017688372">Bluetooth がオンです</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> に接続しています</translation>
 <translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7846634333498149051">キーボード</translation>
+<translation id="7868900307798234037">指紋によるロック解除</translation>
 <translation id="7886169021410746335">プライバシー設定を調整する</translation>
 <translation id="7886277072580235377">ログアウトするとインターネット セッションは終了します。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">メールを送って</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
+<translation id="7984197416080286869">指紋認証の試行回数が上限を超えています</translation>
 <translation id="7994370417837006925">マルチ ログイン</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="8029241286966751120">拡大鏡（全画面）がオンになっています。オフにするには Ctrl+検索+M キーをもう一度押します。</translation>

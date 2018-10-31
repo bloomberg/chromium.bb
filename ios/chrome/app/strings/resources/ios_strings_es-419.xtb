@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Borrar</translation>
 <translation id="132683371494960526">Presiona dos veces para cambiar la carpeta principal.</translation>
 <translation id="1340643665687018190">Cerrar menú</translation>
+<translation id="1360432990279830238">¿Salir y desactivar la sincronización?</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
 <translation id="1377255359165588604">La sincronización dejó de funcionar.</translation>
 <translation id="1377321085342047638">N. tarjeta</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1657011748321897393">Error al compartir por falta de conexión a la red</translation>
 <translation id="165877110639533037">No hay pestañas abiertas.</translation>
+<translation id="168715261339224929">Activa la sincronización para que tus favoritos estén en todos tus dispositivos.</translation>
 <translation id="1687475363370981210">Marcar todas como leídas</translation>
 <translation id="1690731385917361335">Sin elementos</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
@@ -315,6 +317,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6196207969502475924">Búsqueda por voz</translation>
 <translation id="6254066287920239840">Abre vínculos en la app en lugar de hacerlo en el navegador.</translation>
 <translation id="6255097610484507482">Modificar información de la tarjeta de crédito</translation>
+<translation id="6303969859164067831">Salir y desactivar la sincronización</translation>
 <translation id="6308436439357671616">Te permite tomar fotos y subirlas.</translation>
 <translation id="6324528485781869530">Cambiar cta. de sincronización</translation>
 <translation id="6324669097367352121">Config. acceso</translation>
@@ -340,6 +343,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6541915733953096570">La última hora</translation>
+<translation id="6643016212128521049">Borrar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="667999046851023355">Documento</translation>

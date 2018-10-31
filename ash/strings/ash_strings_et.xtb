@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
 <translation id="2790844815106384441">Valige, kas veebisaidid tohivad kasutada asukohateenuseid ja seadme mikrofoni, kaamerat või muid funktsioone</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
+<translation id="2803734122639935495">Avamiseks sisestage parool</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
@@ -258,6 +259,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5648021990716966815">Mikrofoni pistikupesa</translation>
 <translation id="5669267381087807207">Aktiveerimine</translation>
 <translation id="5673434351075758678">Pärast seadete sünkroonimist lokaadist „<ph name="FROM_LOCALE" />” lokaati „<ph name="TO_LOCALE" />”.</translation>
+<translation id="5691772641933328258">Sõrmejälge ei tuntud ära</translation>
 <translation id="574392208103952083">Keskmine</translation>
 <translation id="5744083938413354016">Puudutusega lohistamine</translation>
 <translation id="5750765938512549687">Bluetooth on välja lülitatud</translation>
@@ -297,7 +299,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6284232397434400372">Eraldusvõimet muudeti</translation>
 <translation id="6297287540776456956">Valige piirkond elektronpliiatsiga</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> vahetati valikule <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Klaviatuuri ülekate</translation>
 <translation id="6344698853700675736">Lüliti Öövalgus</translation>
 <translation id="6376931439017688372">Bluetooth on sisse lülitatud</translation>
 <translation id="639644700271529076">SUURTÄHELUKK on välja lülitatud</translation>
@@ -385,6 +386,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7842211907556571265">Ühenduse loomine võrguga <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Hoiatus: katseline funktsioon</translation>
 <translation id="7846634333498149051">Klaviatuur</translation>
+<translation id="7868900307798234037">Sõrmejäljega avamine</translation>
 <translation id="7886169021410746335">Privaatsusseadete kohandamine</translation>
 <translation id="7886277072580235377">Teie Interneti-seanss kustutatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Saada meil</translation>
@@ -393,6 +395,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="79341161159229895">Kontohaldurid: <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Mobiilsidevõrkude otsimine …</translation>
 <translation id="7982789257301363584">Võrk</translation>
+<translation id="7984197416080286869">Liiga palju sõrmejäljega avamise katseid</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8029241286966751120">Täisekraani luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + M.</translation>

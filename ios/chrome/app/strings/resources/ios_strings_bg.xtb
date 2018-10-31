@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
+<translation id="1360432990279830238">Изход и изключване на синхронизирането?</translation>
 <translation id="1375321115329958930">Запазени пароли</translation>
 <translation id="1377255359165588604">Синхронизирането спря да работи.</translation>
 <translation id="1377321085342047638">№ на картата</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">История</translation>
 <translation id="1657011748321897393">Споделянето не бе успешно, защото нямате връзка с мрежата.</translation>
 <translation id="165877110639533037">Няма отворени раздели</translation>
+<translation id="168715261339224929">Включете синхронизирането, за да получите отметките си на всичките си устройства.</translation>
 <translation id="1687475363370981210">Означаване на всичко като прочетено</translation>
 <translation id="1690731385917361335">Няма елементи</translation>
 <translation id="1700629756560807968">Избрахте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">Гласово търсене</translation>
 <translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
+<translation id="6303969859164067831">Изход от профила и изключване на синхронизирането</translation>
 <translation id="6308436439357671616">Това ви позволява да правите и качвате снимки.</translation>
 <translation id="6324528485781869530">Превключване на профила за синхронизиране</translation>
 <translation id="6324669097367352121">Настройки за вход</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">Отв. в нов раздел „инкогнито“</translation>
 <translation id="6482629121755362506">Изтрихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="6541915733953096570">Последния час</translation>
+<translation id="6643016212128521049">Изчистване</translation>
 <translation id="6656103420185847513">Редактиране на папката</translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="667999046851023355">Документ</translation>

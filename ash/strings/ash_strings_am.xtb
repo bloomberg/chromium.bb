@@ -112,6 +112,7 @@
 <translation id="277257480934873581">ከ<ph name="NAME" /> ጋር ዳግም በማገናኘት ላይ</translation>
 <translation id="2790844815106384441">ድር ጣቢያዎች የአካባቢ አገልግሎቶችን ወይም የመሣሪያውን ማይክሮፎን፣ ካሜራ ወይም ሌሎች ባህሪያት መጠቀም ይችሉ እንደሆነ ይምረጡ</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">ለመክፈት የይለፍ ቃልዎን ያስገቡ</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="2825619548187458965">መደርደሪያ</translation>
 <translation id="2844169650293029770">USB-C መሣሪያ (የግራ ጎን የፊት ወደብ)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">የማይክሮፎን መሰኪያ</translation>
 <translation id="5669267381087807207">በማግበር ላይ</translation>
 <translation id="5673434351075758678">ከ«<ph name="FROM_LOCALE" />» ወደ «<ph name="TO_LOCALE" />» የእርስዎን ቅንብሮች ከማመሳሰል በኋላ።</translation>
+<translation id="5691772641933328258">የጣት አሻራ አልታወቀም</translation>
 <translation id="574392208103952083">መካከለኛ</translation>
 <translation id="5744083938413354016">መታ አድርጎ መጎተት</translation>
 <translation id="5750765938512549687">ብሉቱዝ ጠፍቷል</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">ጥራቱ ተቀይሯል</translation>
 <translation id="6297287540776456956">ክልል ለመምረጥ ስቲለሱን ይጠቀሙ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ወደ <ph name="ROTATION" /> ዞሯል</translation>
-<translation id="632744581670418035">የቁልፍ ሰሌዳ ተደራቢ</translation>
 <translation id="6344698853700675736">የምሽት ብርሃንን ቀያይር</translation>
 <translation id="6376931439017688372">ብሉቱዝ በርቷል</translation>
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">ከ<ph name="NETWORK_NAME" /> ጋር በመገናኘት ላይ...</translation>
 <translation id="7842569679327885685">ማስጠንቀቂያ፦ የሙከራ ባህሪ</translation>
 <translation id="7846634333498149051">የቁልፍ ሰሌዳ</translation>
+<translation id="7868900307798234037">በጣት አሻራ በመክፈት ላይ</translation>
 <translation id="7886169021410746335">የግላዊነት ቅንብሮችን ያስተካክሉ</translation>
 <translation id="7886277072580235377">የእርስዎ የበይነመረብ ክፍለ-ጊዜ ዘግተው ሲወጡ ይጸዳል። <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ኢሜይል ላክ</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">መለያው በ<ph name="FIRST_PARENT_EMAIL" /> እና <ph name="SECOND_PARENT_EMAIL" /> ነው የሚቀናበረው</translation>
 <translation id="7977927628060636163">የተንቀሳቃሽ ስልክ አውታረ መረቦችን በመፈለግ ላይ...</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
+<translation id="7984197416080286869">ከልክ በላይ ብዙ የጣት አሻራ ሙከራዎች</translation>
 <translation id="7994370417837006925">ባለብዙ በመለያ-መግቢያ</translation>
 <translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
 <translation id="8029241286966751120">የሙሉ ማያ ገጽ ማጉያ ነቅቷል። እንዲጠፋ አድርጎ እንደገና ለመቀያየር Ctrl+ፍለጋ+M ይጫኑ።</translation>

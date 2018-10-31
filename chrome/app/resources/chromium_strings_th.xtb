@@ -49,6 +49,7 @@
 <translation id="2718390899429598676">เพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น Chromium จะเข้ารหัสข้อมูลของคุณ</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
+<translation id="2818397554133737874">ระบบจะลบข้อมูลการท่องเว็บของบุคคลนี้ออกจากอุปกรณ์นี้ หากต้องการกู้ข้อมูลคืน ให้ลงชื่อเข้าใช้ Chromium ในชื่อ $2</translation>
 <translation id="2847479871509788944">นำออกจาก Chromium...</translation>
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="2898082584336937987">ติดตั้ง Chromium ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ: <ph name="PHONE_NUMBER" /></translation>
@@ -98,7 +99,6 @@
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4407044323746248786">ออกจาก Chromium ใช่ไหม</translation>
 <translation id="4415566066719264597">ให้ Chromium ทำงานในพื้นหลัง</translation>
-<translation id="4421155425831608516">ผู้ดูแลระบบอุปกรณ์เครื่องนี้ปิดไม่ให้ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="459535195905078186">แอป Chromium</translation>
@@ -116,6 +116,7 @@
 <translation id="5032989939245619637">บันทึกรายละเอียดใน Chromium</translation>
 <translation id="5045248521775609809">ใช้ Chromium ได้ทุกที่</translation>
 <translation id="5116586539350239523">Chromium จะเก็บรายละเอียดส่วนตัวของคุณอย่างปลอดภัย คุณจึงไม่จำเป็นต้องพิมพ์รายละเอียดเหล่านั้นอีกครั้ง</translation>
+<translation id="5181952534059945058">หน้านี้ใช้หน่วยความจำมากเกินไป Chromium จึงนำเนื้อหาบางส่วนออก</translation>
 <translation id="5277894862589591112">เปิด Chromium ขึ้นมาใหม่เพื่อให้การเปลี่ยนแปลงมีผล</translation>
 <translation id="5358375970380395591">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Chromium ของคุณ ข้อมูล Chromium เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">กำลังอัปเดต Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -144,6 +145,7 @@
 <translation id="5902536751647951209">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว รีสตาร์ทอุปกรณ์เพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="5987687638152509985">อัปเดต Chromium เพื่อเริ่มการซิงค์</translation>
+<translation id="6013050204643758987">Chromium OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม เช่นเดียวกับ <ph name="BEGIN_LINK_LINUX_OSS" />Linux (เบต้า)<ph name="END_LINK_LINUX_OSS" /></translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6055895534982063517">มี Chromium รุ่นใหม่ให้ใช้งานแล้วและทำงานได้เร็วกว่าเดิม</translation>
 <translation id="6063093106622310249">&amp;เปิดใน Chromium</translation>
@@ -190,7 +192,6 @@
 <translation id="7196312274710523067">เปิด Chromium ไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="7205698830395646142">ซ่อนในเมนู Chromium</translation>
 <translation id="7223968959479464213">ตัวจัดการงาน - Chromium</translation>
-<translation id="722928257909516027">แสดงเมนู Chromium</translation>
 <translation id="731644333568559921">อัปเดต &amp;Chromium OS</translation>
 <translation id="731795002583552498">กำลังอัปเดต Chromium</translation>
 <translation id="7318036098707714271">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง

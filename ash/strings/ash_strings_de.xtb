@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
 <translation id="2790844815106384441">Auswählen, ob Websites Standortdienste oder das Mikrofon, die Kamera oder andere Funktionen des Geräts verwenden dürfen</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
+<translation id="2803734122639935495">Zum Entsperren Passwort eingeben</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="2844169650293029770">USB-C-Gerät (Port vorne links)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Mikrofonanschluss</translation>
 <translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="5673434351075758678">Nach der Synchronisierung der Einstellungen von "<ph name="FROM_LOCALE" />" zu "<ph name="TO_LOCALE" />" geändert.</translation>
+<translation id="5691772641933328258">Fingerabdruck nicht erkannt</translation>
 <translation id="574392208103952083">Mittel</translation>
 <translation id="5744083938413354016">Antippen und Ziehen</translation>
 <translation id="5750765938512549687">Bluetooth ist deaktiviert</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Auflösung geändert</translation>
 <translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
-<translation id="632744581670418035">Tastatur-Overlay</translation>
 <translation id="6344698853700675736">Nachtlicht aktivieren/deaktivieren</translation>
 <translation id="6376931439017688372">Bluetooth ist aktiviert</translation>
 <translation id="639644700271529076">Feststelltaste Aus</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Verbindung zu <ph name="NETWORK_NAME" /> wird hergestellt</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7868900307798234037">Entsperren mit Fingerabdruck</translation>
 <translation id="7886169021410746335">Datenschutzeinstellungen anpassen</translation>
 <translation id="7886277072580235377">Ihre Internetsitzung wird gelöscht, sobald Sie sich abmelden. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-Mails senden</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Konto verwaltet von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="7984197416080286869">Zu viele Entsperrversuche mit Fingerabdruck</translation>
 <translation id="7994370417837006925">Mehrfachanmeldung</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
 <translation id="8029241286966751120">Vollbildlupe aktiviert. Drücken Sie Strg + Suchtaste + M, um sie zu deaktivieren.</translation>

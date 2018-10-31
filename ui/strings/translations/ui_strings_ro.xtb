@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Săgeată în jos</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{O zi}few{# zile}other{# de zile}}</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3479552764303398839">Nu acum</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{O zi rămasă}few{# zile rămase}other{# de zile rămase}}</translation>
 <translation id="3618849550573277856">Caută „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Selectați un dosar de încărcat</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">Săgeată stânga</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Un min.}few{# min.}other{# min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{O zi și  }few{# zile și  }other{# de zile și  }}</translation>
+<translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>

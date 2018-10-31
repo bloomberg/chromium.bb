@@ -112,6 +112,7 @@
 <translation id="277257480934873581">מתחבר מחדש אל <ph name="NAME" /></translation>
 <translation id="2790844815106384441">יש לקבוע אם אתרים יכולים להשתמש בשירותי מיקום, או במיקרופון, במצלמה ובתכונות נוספות של המכשיר</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
+<translation id="2803734122639935495">כדי לבטל את הנעילה, צריך להזין את הסיסמה שלך</translation>
 <translation id="2819276065543622893">תצא עכשיו מהחשבון.</translation>
 <translation id="2825619548187458965">מדף</translation>
 <translation id="2844169650293029770">‏מכשיר עם יציאת USB-C (יציאה שמאלית-קדמית)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">שקע מיקרופון</translation>
 <translation id="5669267381087807207">מפעיל</translation>
 <translation id="5673434351075758678">מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" אחרי סנכרון ההגדרות.</translation>
+<translation id="5691772641933328258">טביעת האצבע לא זוהתה</translation>
 <translation id="574392208103952083">בינוני</translation>
 <translation id="5744083938413354016">הקשה וגרירה</translation>
 <translation id="5750765938512549687">‏Bluetooth כבוי</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">הרזולוציה השתנתה</translation>
 <translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">שכבת-על של מקלדת</translation>
 <translation id="6344698853700675736">הפעלה או כיבוי של תאורת הלילה</translation>
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
@@ -386,6 +387,7 @@
 <translation id="7842211907556571265">המערכת מתחברת אל <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
 <translation id="7846634333498149051">מקלדת</translation>
+<translation id="7868900307798234037">ביטול נעילה באמצעות טביעת אצבע</translation>
 <translation id="7886169021410746335">התאמת הגדרות הפרטיות</translation>
 <translation id="7886277072580235377">סשן הגלישה שלך יימחק אחרי היציאה. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">שליחת אימייל</translation>
@@ -394,6 +396,7 @@
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">מחפש רשתות סלולריות...</translation>
 <translation id="7982789257301363584">רשת</translation>
+<translation id="7984197416080286869">יותר מדי ניסיונות טביעת אצבע</translation>
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
 <translation id="8000066093800657092">אין רשת</translation>
 <translation id="8029241286966751120">‏הזכוכית המגדלת במסך מלא הופעלה. כדי לכבות אותה יש להקיש שוב על Ctrl+Search+M.</translation>

@@ -112,6 +112,7 @@
 <translation id="277257480934873581">إعادة الاتصال بـ <ph name="NAME" /></translation>
 <translation id="2790844815106384441">اختيار ما إذا كان يمكن لمواقع الويب استخدام خدمات الموقع الجغرافي أو ميكروفون الجهاز أو الكاميرا أو ميزات أخرى</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
+<translation id="2803734122639935495">لفتح القفل، أدخِل كلمة مرورك</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">مقبس الميكروفون</translation>
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5673434351075758678">من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة الإعدادات.</translation>
+<translation id="5691772641933328258">لم يتمّ التعرُّف على البصمة</translation>
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">السحب بعد النقر</translation>
 <translation id="5750765938512549687">تم إيقاف البلوتوث</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">تم تغيير درجة الدقة</translation>
 <translation id="6297287540776456956">استخدام قلم الشاشة لتحديد منطقة</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME" /> إلى <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">تراكب لوحة المفاتيح</translation>
 <translation id="6344698853700675736">تبديل "الإضاءة الليلية"</translation>
 <translation id="6376931439017688372">تم تفعيل البلوتوث</translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">جارٍ الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
+<translation id="7868900307798234037">فتح القفل باستخدام بصمة الإصبع</translation>
 <translation id="7886169021410746335">ضبط إعدادات الخصوصية</translation>
 <translation id="7886277072580235377">سيتم محو جلسة الإنترنت عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">إرسال رسالة إلكترونية</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">يُدير <ph name="FIRST_PARENT_EMAIL" /> و<ph name="SECOND_PARENT_EMAIL" /> الحساب.</translation>
 <translation id="7977927628060636163">جارٍ البحث عن شبكات الجوّال...</translation>
 <translation id="7982789257301363584">الشبكة</translation>
+<translation id="7984197416080286869">أُجريت محاولات كثيرة جدًا لاستخدام بصمة الإصبع</translation>
 <translation id="7994370417837006925">الدخول المتعدد</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8029241286966751120">‏تم تفعيل المكبّر بوضع ملء الشاشة. يمكنك إيقافه بالضغط على Ctrl+Search+M مرة أخرى.</translation>

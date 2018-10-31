@@ -24,10 +24,10 @@
       Dacă această politică este dezactivată sau nu este configurată, cookie-urile setate de furnizorul de identitate sunt transferate în profilul utilizatorului doar la prima sa conectare pe un dispozitiv.
 
       Această politică afectează doar utilizatorii ale căror domenii corespund cu domeniul de înregistrare al dispozitivului. Pentru ceilalți utilizatori, cookie-urile setate de furnizorul de identitate sunt transferate în profilurile acestora doar la prima conectare pe un dispozitiv.</translation>
-<translation id="1035385378988781231">Această politică stabilește dacă funcția Spațiu comun pentru stocare fișiere în rețea pentru <ph name="PRODUCT_NAME" /> va folosi NTLM la autentificare.
+<translation id="1035385378988781231">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> va folosi NTLM la autentificare.
 
-      Când această politică este activată, va fi folosit protocolul NTLM pentru autentificare la spațiul comun pentru stocare SMB dacă este necesar.
-      Când această politică este dezactivată, autentificarea NTLM la spațiul comun pentru stocare SMB va fi dezactivată.
+      Când această politică este activată, va fi folosit protocolul NTLM pentru autentificare la dispozitivele de stocare SMB dacă este necesar.
+      Când această politică este dezactivată, autentificarea NTLM la dispozitivele de stocare SMB va fi dezactivată.
 
       Dacă politica nu este setată, va fi dezactivată prestabilit pentru utilizatorii gestionați de companie și activată pentru utilizatorii negestionați.</translation>
 <translation id="1040446814317236570">Activează eliminarea unor părți din adresele URL pentru PAC (pentru https://)</translation>
@@ -68,6 +68,9 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Pentru a vedea o listă cu variabilele care pot fi folosite, accesează  https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Dacă această politică nu este configurată, va fi folosit directorul prestabilit pentru memoria cache, iar utilizatorul îl va putea modifica folosind semnalizatorul de linie de comandă „--disk-cache-dir”.</translation>
+<translation id="113521240853905588">Configurează limbile care pot fi folosite ca limbi preferate de <ph name="PRODUCT_OS_NAME" />.
+
+      Dacă este setată această politică, utilizatorul poate să adauge doar una dintre limbile înregistrate în această politică la limbile preferate. Dacă această politică nu este setată sau este setată cu o listă goală, utilizatorul poate să specifice orice limbi ca preferate. Dacă această politică este setată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a adăugat anterior unele limbi care nu sunt permise de această politică pe lista limbilor preferate, vor fi eliminate. Dacă utilizatorul a configurat anterior <ph name="PRODUCT_OS_NAME" /> să se afișeze într-una dintre limbile nepermise de această politică, limba de afișare va fi schimbată cu o limbă de IU permisă la următoarea conectare a utilizatorului. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la un cod local alternativ (actualmente, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="1135264353752122851">Configurează aspectele tastaturii permise pentru sesiunile de utilizator în <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este configurată, utilizatorul poate selecta o singură metodă de introducere a textului specificată în această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, utilizatorul poate selecta toate metodele de introducere a textului acceptate. Dacă metoda de introducere a textului actuală nu este permisă de această politică, metoda va fi înlocuită cu aspectul tastaturii hardware (dacă este permis) sau cu prima intrare validă din această listă. Toate metodele de introducere a textului nevalide sau neacceptate din această listă vor fi ignorate.</translation>
@@ -99,9 +102,9 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="1223789468190631420">Navigarea sigură este activată pentru sursele de încredere</translation>
 <translation id="122899932962115297">O listă albă care controlează ce moduri de deblocare rapidă poate să configureze utilizatorul și să folosească pentru a debloca ecranul de blocare.
 
-          Această valoare este o listă de șiruri; intrări valide în listă sunt: „toate”, „PIN”, „AMPRENTĂ”. Dacă se adaugă „toate” în listă, utilizatorul poate folosi toate modurile de deblocare rapidă, inclusiv cele care vor fi implementate în viitor. În caz contrar, vor fi disponibile doar modurile de deblocare rapidă prezente în listă.
+          Această valoare este o listă de șiruri; intrări valide în listă sunt: „all”, „PIN”, „FINGERPRINT”. Dacă se adaugă „all” în listă, utilizatorul poate folosi toate modurile de deblocare rapidă, inclusiv cele care vor fi implementate în viitor. În caz contrar, vor fi disponibile doar modurile de deblocare rapidă prezente în listă.
 
-          De exemplu, pentru a permite toate modurile de deblocare rapidă, folosește [„toate”]. Pentru a permite doar deblocarea cu cod PIN, folosește [„PIN”]. Pentru a permite deblocarea cu cod pin și cu amprentă, folosește [„PIN”, „AMPRENTĂ”]. Pentru a dezactiva toate modurile de deblocare rapidă, folosește [].
+          De exemplu, pentru a permite toate modurile de deblocare rapidă, folosește [„all”]. Pentru a permite doar deblocarea prin PIN, folosește [„PIN”]. Pentru a permite deblocarea prin PIN și amprentă, folosește [„PIN”, „FINGERPRINT”]. Pentru a dezactiva toate modurile de deblocare rapidă, folosește [].
 
           Niciun mod de deblocare rapidă nu este disponibil în mod prestabilit pentru dispozitivele gestionate.</translation>
 <translation id="123081309365616809">Activează proiectarea conținutului pe dispozitiv</translation>
@@ -603,9 +606,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Toate versiunile recente de servere Samba și Windows acceptă autentificarea NTLMv2. Aceasta trebuie dezactivată doar pentru compatibilitate inversă, iar prin dezactivare se reduce siguranța autentificării.
 
           Dacă această politică nu este setată, valoarea standard este „true”, iar autentificarea NTLMv2 este activată.</translation>
-<translation id="2598508021807251719">Configurează codurile locale în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
-
-      Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-unul dintre codurile locale specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate codurile locale IU acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-un cod local care nu este permis de această politică, codul local de afișare va fi înlocuit cu un cod local IU permis la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat codurile locale preferate și unul dintre ele este permis de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la codul local respectiv. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la un cod local alternativ (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="2604182581880595781">Configurează politicile pentru Dispozitive de stocare în rețea.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1076,6 +1076,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Adresa URL pentru sugestiile de la Google poate fi specificată ca: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Această politică este urmată numai dacă politica „DefaultSearchProviderEnabled” este activată.</translation>
+<translation id="3864129983143201415">Configurează limbile permise într-o sesiune a utilizatorului</translation>
 <translation id="3866249974567520381">Descriere</translation>
 <translation id="3868347814555911633">Această politică este activă numai în modul Vânzare.
 
@@ -1117,9 +1118,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă nu este configurată sau este dezactivată, utilizatorii vor putea să transfere fișiere pe Google Drive.</translation>
 <translation id="3915395663995367577">Adresa URL a unui fișier .pac pentru proxy</translation>
-<translation id="3925020515212192040">Specifică o listă de spații comune de stocare preconfigurate în rețea.
+<translation id="3925020515212192040">Specifică o listă de dispozitive de stocare în rețea preconfigurate.
 
-      Fiecare element din lista politicii este un obiect cu doi membri: „share_url” și „mod”. „share_url” trebuie să fie adresa URL a fișierului, iar „mod” trebuie să fie „drop_down”, care indică faptul că „share_url” va fi adăugat în meniul drop-down al descoperirii spațiilor comune de stocare fișiere.</translation>
+      Fiecare element din lista politicii este un obiect cu doi membri: „share_url” și „mode”. „share_url” trebuie să fie adresa URL a dispozitivului, iar „mode” trebuie să fie „drop_down”, care indică faptul că „share_url” va fi adăugat în meniul drop-down al descoperirii dispozitivelor de stocare.</translation>
 <translation id="3939893074578116847">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea
        online, permițând astfel serverului să detecteze dacă dispozitivul este offline.
 
@@ -1266,7 +1267,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
 <translation id="437791893267799639">Politica nu este configurată; nu se permite migrarea datelor și ARC</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
-<translation id="4408428864159735559">Lista spațiilor comune de stocare preconfigurate în rețea.</translation>
+<translation id="4408428864159735559">Lista dispozitivelor de stocare în rețea preconfigurate.</translation>
 <translation id="4410236409016356088">Activează limitarea lățimii de bandă a rețelei</translation>
 <translation id="441217499641439905">Dezactivează Google Drive prin conexiuni mobile în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Dacă dezactivezi această politică, <ph name="PRODUCT_NAME" /> nu mai trimite ocazional interogări către un server Google pentru a prelua un marcaj temporal precis. Dacă politica este activată sau nu este configurată, aceste interogări vor fi activate.</translation>
@@ -1739,7 +1740,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5835124959204887277">Specifică adresele URL și domeniile pentru care nu va fi afișată nicio solicitare atunci când sunt solicitate certificate de atestare de la Cheile de securitate. În plus, va fi transmis un semnal către Cheia de securitate, indicând faptul că poate fi folosită atestarea individuală. Fără aceasta, utilizatorii vor fi atenționați în Chrome 65+ atunci când site-urile necesită atestarea Cheilor de securitate.
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
-<translation id="5835412847081687053">Configurează codurile locale IU permise într-o sesiune a utilizatorului</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 
@@ -2433,7 +2433,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7517845714620372896">Indică procentul luminozității ecranului.
           Când este activată această politică, luminozitatea inițială a ecranului este ajustată la valoarea politicii, însă utilizatorul o poate modifica mai târziu. Funcțiile de luminozitate automată sunt dezactivate.
           Când această politică nu este setată, comenzile utilizatorului pentru ecran și funcțiile de luminozitate automată nu sunt afectate.
-          Valorile politicii trebuie indicate în procente, în intervalul 0-100.</translation>
+          Valorile politicii trebuie indicate în procente, în intervalul 0 – 100.</translation>
 <translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>

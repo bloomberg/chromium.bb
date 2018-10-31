@@ -49,6 +49,7 @@
 <translation id="2718390899429598676">За повишаване на сигурността Chromium ще шифрова данните ви.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
+<translation id="2818397554133737874">Данните за сърфирането на този човек ще бъдат изтрити от устройството. За да ги възстановите, влезте в Chromium като $2.</translation>
 <translation id="2847479871509788944">Премахване от Chromium...</translation>
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="2898082584336937987">Инсталирайте Chromium на телефона си. Ще ви изпратим SMS на него: <ph name="PHONE_NUMBER" /></translation>
@@ -96,7 +97,6 @@
 <translation id="4285930937574705105">Инсталирането не бе успешно поради неизвестна грешка. Ако Chromium понастоящем се изпълнява, моля, затворете го и опитайте отново.</translation>
 <translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
 <translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
-<translation id="4421155425831608516">Функцията за влизане в Chromium е деактивирана от администратора на това устройство.</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
 <translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
 <translation id="459535195905078186">Приложения в Chromium</translation>
@@ -114,6 +114,7 @@
 <translation id="5032989939245619637">Подробностите да се запазват в Chromium</translation>
 <translation id="5045248521775609809">Използвайте Chromium навсякъде</translation>
 <translation id="5116586539350239523">Chromium ще съхранява надеждно личните ви данни, за да не се налага да ги въвеждате отново.</translation>
+<translation id="5181952534059945058">Тази страница използва твърде много памет, така че Chromium премахна част от съдържанието.</translation>
 <translation id="5277894862589591112">За да приложите промените си, рестартирайте Chromium</translation>
 <translation id="5358375970380395591">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -142,6 +143,7 @@
 <translation id="5902536751647951209">Грешка в сертификата за удостоверяване. Моля, влезте отново в Chromium или се свържете с администратора си за повече информация. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Актуализирането почти завърши! Остава само да рестартирате устройството си.</translation>
 <translation id="5987687638152509985">Актуализирайте Chromium, за да стартира синхронизирането</translation>
+<translation id="6013050204643758987">Chromium OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6055895534982063517">Налице е нова версия на Chromium, която е по-бърза от всякога.</translation>
 <translation id="6063093106622310249">&amp;Отваряне в Chromium</translation>
@@ -186,7 +188,6 @@
 <translation id="7196312274710523067">Chromium не можа да се стартира. Опитайте отново.</translation>
 <translation id="7205698830395646142">Скриване в менюто на Chromium</translation>
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
-<translation id="722928257909516027">Показване на менюто на Chromium</translation>
 <translation id="731644333568559921">Актуализиране на &amp;Chromium OS</translation>
 <translation id="731795002583552498">Chromium се актуализира</translation>
 <translation id="7318036098707714271">Файлът с предпочитанията ви е повреден или невалиден. Chromium не може да възстанови настройките ви.</translation>

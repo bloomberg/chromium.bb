@@ -24,9 +24,9 @@
       Cuando se asigna el valor false a esta política o si esta no se configura, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario solo la primera vez que este inicie sesión en un dispositivo.
 
       Esta política afecta a los usuarios cuyo dominio coincida con el dominio de registro del dispositivo. En el caso del resto de usuarios, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario solo la primera vez que inicie sesión en un dispositivo.</translation>
-<translation id="1035385378988781231">Esta política controla si la función Uso compartido de archivos de <ph name="PRODUCT_NAME" /> usará NTLM para la autenticación. 
+<translation id="1035385378988781231">Esta política controla si la función Archivos compartidos de red de <ph name="PRODUCT_NAME" /> usará NTLM para la autenticación. 
 
-      Si se le asigna el valor "True" a esta política, se usará NTLM para la autenticación en sistemas compartidos de SMB, si es necesario.
+      Si se le asigna el valor "True" a esta política, se usará NTLM para la autenticación en sistemas compartidos de SMB en caso de ser necesario.
       Si se le asigna el valor "False", se inhabilitará la autenticación con NTLM en sistemas compartidos de SMB.
       
       Si no se configura esta política, la función se inhabilita para los usuarios administrados por empresas y se habilita para los no administrados.</translation>
@@ -80,6 +80,9 @@
       Para consultar una lista de variables que se pueden utilizar, accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Si no se establece esta política, se utilizará la ruta predeterminada de almacenamiento de los archivos, aunque el usuario podrá anularla con el indicador de línea de comandos "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Permite configurar los idiomas preferidos en <ph name="PRODUCT_OS_NAME" />.
+
+      Si se configura esta política, el usuario solo puede añadir uno de los idiomas indicados en esta política a la lista de idiomas preferidos. Si no se configura o se le asigna una lista vacía, el usuario puede establecer cualquier idioma como preferido. Si se le asigna una lista con valores no válidos, todos ellos serán ignorados. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> para que se mostrase en uno de los idiomas no permitidos por esta política, el idioma de visualización se cambiará a un idioma de interfaz permitido la siguiente vez que el usuario inicie sesión. De lo contrario, <ph name="PRODUCT_OS_NAME" /> cambiará al primer idioma válido definido por esta política o, si la política solo tiene registros no válidos, a una configuración regional de respaldo (actualmente, en-US).</translation>
 <translation id="1135264353752122851">Establece los diseños de teclado que se permiten en las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
 
       Si se habilita esta política, el usuario solo puede seleccionar uno de los métodos de introducción especificados por la política. Si no se habilita o se le asigna una lista vacía, el usuario puede seleccionar todos los métodos de introducción admitidos. Si la política no admite el método de introducción actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida de esta lista. Se ignorarán todos los métodos de introducción no válidos o no admitidos de esta lista.</translation>
@@ -108,7 +111,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       El valor predeterminado es RollbackDisabled.</translation>
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
 <translation id="1223789468190631420">Estado habilitado de Navegación Segura con fuentes de confianza</translation>
-<translation id="122899932962115297">Una lista blanca que controla qué modos de desbloqueo rápido puede configurar el usuario y emplearlos para desbloquear la pantalla. 
+<translation id="122899932962115297">Una lista blanca que controla qué modos de desbloqueo rápido puede configurar y emplear el usuario para desbloquear la pantalla. 
           Este valor es una lista de cadenas. Entre los registros válidos de la lista, se incluyen "all", "PIN" y "FINGERPRINT". Si se añade "all" a la lista, todos los modos de desbloqueo rápido están disponibles para el usuario, incluidos los que se implementarán en el futuro. Si no se añade, solo los modos de desbloqueo rápido incluidos en la lista están disponibles.
           
           Por ejemplo, para permitir todos los modos de desbloqueo rápido, usa ["all"]. Para permitir solo el desbloqueo con el PIN, usa ["PIN"]. Para permitir el desbloqueo con el PIN y la huella digital, usa ["PIN", "FINGERPRINT"]. Para inhabilitar todos los modos de desbloqueo rápido, usa [].
@@ -625,9 +628,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe inhabilitarse para obtener compatibilidad con versiones anteriores, lo cual reduce la seguridad a la hora de autenticarse.
 
           Si no se le asigna ningún valor a esta política, se asignará el valor predeterminado "true" y la autenticación NTLMv2 se habilitará.</translation>
-<translation id="2598508021807251719">Establece las configuraciones regionales en las que puede mostrarse <ph name="PRODUCT_OS_NAME" />.
-
-      Si asigna a esta política una lista de configuraciones regionales, el usuario solo podrá mostrar <ph name="PRODUCT_OS_NAME" /> en una de esas configuraciones. Si no asigna ninguna configuración regional a esta política o le asigna una lista vacía, <ph name="PRODUCT_OS_NAME" /> se podrá mostrar en cualquier configuración de UI admitida. Si se asigna a esta política una lista con configuraciones regionales no válidas, los valores que no sean válidos se ignorarán. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> anteriormente en un idioma no permitido por esta política, la configuración regional se cambiará a otra permitida la próxima vez que el usuario inicie sesión. Si el usuario había establecido configuraciones regionales de preferencia y una de ellas está permitida por esta política, <ph name="PRODUCT_OS_NAME" /> se mostrará en dicha configuración. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará a la primera configuración regional válida especificada por esta política, o bien a una alternativa (actualmente en-US) si ninguna de las entradas de la política es válida.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1011,11 +1011,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
       Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
       </translation>
-<translation id="3748900290998155147">Especifica si se permiten los bloqueos de activación. Las extensiones pueden solicitar los bloqueos de activación a través de la API de extensión de gestión de energía. Las aplicaciones de ARC también pueden solicitarlos.
+<translation id="3748900290998155147">Especifica si se permiten los wake locks. Las extensiones pueden solicitar los wake locks a través de la API de extensión de gestión de energía. Las aplicaciones de ARC también pueden solicitarlos.
 
-          Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los bloqueos de activación son válidos para la administración de energía.
+          Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los wake locks son válidos para la gestión de energía.
 
-          Si se le asigna el valor "False" a esta política, se ignoran las solicitudes de bloqueo de activación.</translation>
+          Si se le asigna el valor "False" a esta política, se ignoran las solicitudes de wake locks.</translation>
 <translation id="3750220015372671395">Bloquear la generación de claves en estos sitios web</translation>
 <translation id="3756011779061588474">Bloquear el modo de desarrollador</translation>
 <translation id="3758089716224084329">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy.
@@ -1115,6 +1115,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Una URL de sugerencias de Google se puede especificar de la siguiente forma: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política solo se aplica si se habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="3864129983143201415">Configurar los idiomas permitidos en una sesión de usuario</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo comercial.
 
@@ -1815,7 +1816,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5835124959204887277">Especifica las URL y los dominios para los que no se muestra ningún mensaje cuando se solicitan certificados de confirmación de las llaves de seguridad. Asimismo, se envía una señal a la llave de seguridad para indicar que es posible que se utilice esa confirmación individual. Sin esta política, se muestra un mensaje a los usuarios de Chrome 65 y versiones posteriores cuando los sitios web soliciten la confirmación de las llaves de seguridad.
 
       Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
-<translation id="5835412847081687053">Configurar las configuraciones regionales de UI permitidas en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de comentarios por voz en la pantalla de inicio de sesión.
 
@@ -2049,7 +2049,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Para controlar los sitios web que permiten contenido Flash, consulta las políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" y "PluginsBlockedForUrls".
 
       Si esta opción está inhabilitada o no se le asigna ningún valor, es posible que se bloquee el contenido poco importante o el contenido Flash de otros orígenes.</translation>
-<translation id="6532769014584932288">Permitir bloqueos de activación</translation>
+<translation id="6532769014584932288">Permitir wake locks</translation>
 <translation id="653608967792832033">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -2355,11 +2355,11 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7167436895080860385">Permitir que los usuarios muestren contraseñas en el Administrador de Contraseñas (obsoleto)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
 <translation id="717630378807352957">Permitir todas las impresoras del archivo de configuración.</translation>
-<translation id="7176721759719212761">Especifica si se permiten los bloqueos de activación de pantalla. Las extensiones pueden solicitar bloqueos de activación de pantalla a través de la API de extensión de gestión de energía. Las aplicaciones de ARC también pueden solicitarlos.
+<translation id="7176721759719212761">Especifica si se permiten los wake locks de pantalla. Las extensiones pueden solicitar wake locks de pantalla a través de la API de extensión de gestión de energía. Las aplicaciones de ARC también pueden solicitarlos.
 
-          Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los bloqueos de activación de pantalla serán válidos para la administración de energía, a no ser que se haya asignado el valor "False" a AllowWakeLocks.
+          Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los wake locks de pantalla serán válidos para la gestión de energía, a no ser que se haya asignado el valor "False" a AllowWakeLocks.
 
-          Si se le asigna el valor "False" a esta política, se disminuirá el nivel de las solicitudes de bloqueo de activación de pantalla y se convertirán en solicitudes de bloqueo de activación del sistema.</translation>
+          Si se le asigna el valor "False" a esta política, se disminuirá el nivel de las solicitudes de wake locks de pantalla y se convertirán en solicitudes de wake locks del sistema.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
@@ -3001,7 +3001,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
 Si configuras esta opción, el usuario solo podrá acceder a las aplicaciones de Google con cuentas de los dominios especificados. Recuerda que para dar permiso a las cuentas de gmail.com/googlemail.com, debes añadir "consumer_accounts" (sin comillas) a la lista de dominios.
 
-Esta opción evitará que el usuario inicie sesión en un dispositivo administrado que requiera la autenticación de Google y añada una cuenta secundaria, si esa cuenta no pertenece a ninguno de los dominios permitidos que se han incluido en la lista anterior.
+Esta opción evitará que el usuario inicie sesión en un dispositivo administrado que requiera la autenticación de Google y añada una cuenta secundaria si esa cuenta no pertenece a ninguno de los dominios permitidos que se han incluido en la lista anterior.
 
 Si no configuras esta opción o no le asignas ningún valor, el usuario puede acceder a G Suite con cualquier cuenta.
 

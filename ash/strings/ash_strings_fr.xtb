@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2790844815106384441">Choisir si les sites Web peuvent utiliser les services de localisation ou le micro, la caméra ou d'autres fonctionnalités de l'appareil</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
+<translation id="2803734122639935495">Pour déverrouiller l'appareil, saisissez votre mot de passe</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">Connecteur micro</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
+<translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="574392208103952083">Moyenne</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5750765938512549687">Bluetooth désactivé</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">Résolution modifiée</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
-<translation id="632744581670418035">Clavier en superposition</translation>
 <translation id="6344698853700675736">Activer/Désactiver Éclairage nocturne</translation>
 <translation id="6376931439017688372">Bluetooth activé</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
+<translation id="7868900307798234037">Déverrouillage en cours avec votre empreinte digitale</translation>
 <translation id="7886169021410746335">Régler les paramètres de confidentialité</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles…</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="7984197416080286869">Trop de tentatives avec votre empreinte digitale</translation>
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8029241286966751120">Le mode Loupe plein écran est activé. Appuyez de nouveau sur Ctrl+Recherche+M pour le désactiver.</translation>

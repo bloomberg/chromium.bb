@@ -79,6 +79,9 @@
       En lista över variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Om den här policyn inte ställs in används standardkatalogen för cacheminnet och användaren kan åsidosätta den med kommandoradsflaggan --disk-cache-dir.</translation>
+<translation id="113521240853905588">Konfigurerar vilka språk som kan användas som föredragna språk <ph name="PRODUCT_OS_NAME" />.
+
+      Om inget anges för denna inställning kan användaren bara lägga till ett av språken i den här principen på listan över föredragna språk. Om principen lämnas utan inställning eller är inställd på en tom lista kan användare ange vilka språk som helst som föredragna. Om principen är inställd på en lista som innehåller ogiltiga värden ignoreras alla ogiltiga värden. Om en användare vid ett tidigare tillfälle har lagt till språk som inte tillåts av principen på listan över föredragna språk tas dessa språk bort. Om användare tidigare har angett att <ph name="PRODUCT_OS_NAME" /> ska visas på ett av språken som inte tillåts av principen byts visningsspråket till ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Annars byter <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet som specificeras av den här principen eller till en reservspråkkod (för närvarande en-US) om den här principen endast innehåller ogiltiga poster.</translation>
 <translation id="1135264353752122851">Principen konfigurerar vilka tangentbordslayouter som är tillåtna för användarsessioner i <ph name="PRODUCT_OS_NAME" />.
 
       När den här principen har ställts in kan användaren bara välja mellan de inmatningsmetoder som angetts i principen. Om principen lämnas utan inställning eller ställs in på en tom lista kan användaren välja mellan alla inmatningsmetoder som stöds. Om den nuvarande inmatningsmetoden inte är tillåten enligt principen ersätts den med maskinvarans tangentbordslayout (om den är tillåten) eller med den första giltiga posten i listan. Alla inmatningsmetoder i listan som är ogiltiga eller inte stöds ignoreras.</translation>
@@ -110,7 +113,7 @@
 <translation id="1223789468190631420">Säker webbläsning aktiverad för betrodda källor</translation>
 <translation id="122899932962115297">En vitlista som styr vilka metoder för snabb upplåsning som användaren kan konfigurera och använda för att låsa upp låsskärmen.
 
-          Värdet är en lista med strängar. Giltiga värden är all, PIN och FINGERPRINT. Om all finns med i listan betyder det att alla metoder för snabb upplåsning är tillgängliga för användaren, även sådana som implementeras i framtiden. Annars är bara de metoder för snabb upplåsning som anges i listan tillgängliga.
+          Värdet är en lista med strängar. Giltiga värden är all, PIN och FINGERPRINT. Om "all" finns med i listan betyder det att alla metoder för snabb upplåsning är tillgängliga för användaren, även sådana som implementeras i framtiden. Annars är bara de metoder för snabb upplåsning som anges i listan tillgängliga.
 
           Exempel: Använd ["all"] om alla metoder för snabb upplåsning ska vara tillåtna. Om bara upplåsning med pinkod ska vara tillåtet använder du ["PIN"]. Om pinkod och fingeravtryck ska vara tillåtet använder du ["PIN", "FINGERPRINT"]. Använd [] om du vill inaktivera alla metoder för snabb upplåsning.
 
@@ -630,9 +633,6 @@
           Alla nyare versioner av Samba- och Windows-servrar har stöd för NTLMv2. Detta bör bara inaktiveras om det krävs för bakåtkompatibilitet eftersom det gör autentiseringen mindre säker.
 
           Om inget värde anges för principen används standardvärdet sant och NTLMv2 aktiveras.</translation>
-<translation id="2598508021807251719">Konfigurerar de språk som <ph name="PRODUCT_OS_NAME" /> får visas på.
-
-      Om principen har ställts in får användaren bara välja någon av de språkkoder som har angetts i principen som visningsspråk i <ph name="PRODUCT_OS_NAME" />. Om principen har lämnats utan inställning eller ställts in på en tom lista kan <ph name="PRODUCT_OS_NAME" /> visas på alla språk som användargränssnittet har stöd för. Om en lista med ogiltiga värden anges för principen ignoreras de ogiltiga värdena. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på en språkkod som inte är tillåten enligt denna princip byts visningsspråket ut mot ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av dem är tillåten enligt denna princip används den språkkoden i <ph name="PRODUCT_OS_NAME" />. I annat fall används det första giltiga värdet i denna princip eller, om principen bara innehåller ogiltiga värden, en standardspråkkod (för närvarande en-US) i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2604182581880595781">Konfigurera principer relaterade till Network File Share.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1015,7 +1015,7 @@
       </translation>
 <translation id="3748900290998155147">Anger om processlås är tillåtna. Tillägg kan begära processlås via tilläggs-API:et för energibesparing och via ARC-appar.
 
-          Om principen är inställd på sant eller har lämnats utan inställning tillåts processlås för energibesparing.
+          Om principen är inställd på sant eller inte har någon inställning tillåts processlås för energibesparing.
 
           Om principen är inställd på falskt ignoreras begäran om processlås.</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
@@ -1117,6 +1117,7 @@
           Googles förslagsadress kan anges så här: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Principen tillämpas bara om principen DefaultSearchProviderEnabled har aktiverats.</translation>
+<translation id="3864129983143201415">Konfigurera de tillåtna språken i en användarsession</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="3868347814555911633">Den här policyn är bara aktiv i återförsäljarläge.
 
@@ -1816,7 +1817,6 @@
 <translation id="5835124959204887277">Anger webbadresser och domäner som det inte visas meddelanden för när attesteringscertifikat begärs från säkerhetsnycklar. Dessutom skickas en signal till säkerhetsnyckeln som indikerar att enskild attestering kan användas. Utan detta meddelas användare i version 65 eller senare av Chrome när webbplatser begär attestering för säkerhetsnycklar.
 
       Webbadresser (som https://example.com/some/path) matchar endast som U2F appID. Domäner (som example.com) matchar endast som WebAuthn RP ID. Därför måste både webbadressen och domänen för appID anges om båda API:erna U2F och WebAuthn ska täcka en viss webbplats.</translation>
-<translation id="5835412847081687053">Konfigurera tillåtna gränssnittsspråk i en användarsession</translation>
 <translation id="5836064773277134605">Begränsa UDP-portintervallet som används av värden för fjärråtkomst</translation>
 <translation id="5862253018042179045">Ställer in standardtillståndet för hjälpmedelsfunktionen talad feedback på inloggningsskärmen.
 

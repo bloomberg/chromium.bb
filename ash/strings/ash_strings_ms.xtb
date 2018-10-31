@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Pilih sama ada tapak web boleh menggunakan perkhidmatan lokasi atau mikrofon, kamera atau ciri peranti yang lain</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">Masukkan kata laluan anda untuk membuka kunci</translation>
 <translation id="2819276065543622893">Anda akan dilog keluar sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Peranti USB-C (port depan sebelah kiri)</translation>
@@ -258,6 +259,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5648021990716966815">Bicu mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
+<translation id="5691772641933328258">Cap jari tidak dikenali</translation>
 <translation id="574392208103952083">Sederhana</translation>
 <translation id="5744083938413354016">Penyeretan ketik</translation>
 <translation id="5750765938512549687">Bluetooth dimatikan</translation>
@@ -297,7 +299,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6284232397434400372">Peleraian ditukar</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Tindanan papan kekunci</translation>
 <translation id="6344698853700675736">Togol Cahaya Malam</translation>
 <translation id="6376931439017688372">Bluetooth dihidupkan</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
@@ -385,6 +386,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7842211907556571265">Menyambung ke <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Amaran: Ciri percubaan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>
+<translation id="7868900307798234037">Membuka kunci dengan cap jari</translation>
 <translation id="7886169021410746335">Laraskan tetapan privasi</translation>
 <translation id="7886277072580235377">Sesi Internet anda akan dipadam bersih apabila anda log keluar. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Hantar e-mel</translation>
@@ -393,6 +395,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Mencari rangkaian mudah alih...</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
+<translation id="7984197416080286869">Terlalu banyak percubaan cap jari</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8029241286966751120">Penggadang Skrin Penuh didayakan. Tekan Ctrl+Cari+M semula untuk mematikannya.</translation>

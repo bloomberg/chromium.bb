@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">I-delete</translation>
 <translation id="132683371494960526">I-double tap upang baguhin ang parent folder.</translation>
 <translation id="1340643665687018190">Isara ang Menu</translation>
+<translation id="1360432990279830238">Mag-sign out at i-off ang pag-sync?</translation>
 <translation id="1375321115329958930">Mga Naka-save na Password</translation>
 <translation id="1377255359165588604">Huminto ang pag-sync.</translation>
 <translation id="1377321085342047638">Numero ng Card</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="1657011748321897393">Nabigo ang pagbabahagi dahil hindi ka nakakonekta sa network.</translation>
 <translation id="165877110639533037">Walang Mga Nakabukas na Tab</translation>
+<translation id="168715261339224929">Upang mailagay ang iyong mga bookmark sa lahat ng device mo, i-on ang sync.</translation>
 <translation id="1687475363370981210">Markahan ang Lahat Bilang Nabasa Na</translation>
 <translation id="1690731385917361335">Walang mga item</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ang napili</translation>
@@ -315,6 +317,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6196207969502475924">Paghahanap gamit ang boses</translation>
 <translation id="6254066287920239840">Buksan ang mga link sa app sa halip na sa browser.</translation>
 <translation id="6255097610484507482">I-edit ang Credit Card</translation>
+<translation id="6303969859164067831">Mag-sign out at i-off ang pag-sync</translation>
 <translation id="6308436439357671616">Binibigyang-daan ka nito upang makakuha at makapag-upload ng mga larawan.</translation>
 <translation id="6324528485781869530">Magpalit ng Account sa Pag-sync</translation>
 <translation id="6324669097367352121">Mga setting sa pag-sign in</translation>
@@ -340,6 +343,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang na-delete</translation>
 <translation id="6541915733953096570">Nakalipas na Oras</translation>
+<translation id="6643016212128521049">I-clear</translation>
 <translation id="6656103420185847513">I-edit ang Folder</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Dokumento</translation>

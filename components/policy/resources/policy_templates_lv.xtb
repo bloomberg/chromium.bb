@@ -68,6 +68,9 @@
       Izmantojamo mainīgo vērtību sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas direktorijs un lietotājs varēs to ignorēt, iestatot komandrindas karodziņu “--disk-cache-dir”.</translation>
+<translation id="113521240853905588">Konfigurē valodas, ko <ph name="PRODUCT_OS_NAME" /> var izmantot kā vēlamās valodas.
+
+      Ja šī politika ir iestatīta, lietotājs var pievienot tikai vienu no šajā politikā norādītajām valodām vēlamo valodu sarakstam. Ja šī politika nav iestatīta vai ir iestatīts tukšs saraksts, lietotājs var norādīt jebkuru valodu kā vēlamo valodu. Ja šai politikai ir iestatīts saraksts ar nederīgām vērtībām, visas nederīgās vērtības tiks ignorētas. Ja lietotājs vēlamo valodu sarakstam iepriekš ir pievienojis valodas, kas politikā nav atļautas, tās tiks noņemtas. Ja lietotājs iepriekš ir konfigurējis <ph name="PRODUCT_OS_NAME" /> parādīšanu valodā, kas šajā politikā nav atļauta, nākamajā pierakstīšanās reizē attēlojuma valoda tiks pārslēgta uz atļautu lietotāja saskarnes valodu. Pretējā gadījumā operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks pārslēgta pirmā derīgā vērtība, kas norādīta politikā, vai, ja politikā ir tikai nederīgi ieraksti, tiks pārslēgta atkāpšanās lokalizācija (pašlaik en-US).</translation>
 <translation id="1135264353752122851">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> lietotāju sesijām.
 
       Ja šī politika ir iestatīta, lietotājs var atlasīt tikai vienu šīs politikas norādīto ievades metodi. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, lietotājs var atlasīt visas atbalstītās ievades metodes. Ja šī politika neatļauj izmantot pašreizējo ievades metodi, ievades metode tiks pārslēgta uz aparatūras tastatūras izkārtojumu (ja tas būs atļauts) vai pirmo derīgo ierakstu sarakstā. Visas nederīgās vai neatbalstītās ievades metodes sarakstā tiks ignorētas.</translation>
@@ -619,9 +622,6 @@
           Visās jaunākajās Samba un Windows serveru versijās NTLMv2 tiek atbalstīta. Tā jāatspējo tikai tad, ja nepieciešama saderība ar vecākām versijām. Atspējošana samazina autentifikācijas drošību.
 
           Ja šai politikai nav iestatīta nekāda vērtība, noklusējums ir “True” un NTLMv2 ir iespējota.</translation>
-<translation id="2598508021807251719">Konfigurē operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlojuma lokalizācijas.
-
-      Ja šī politika ir iestatīta, lietotājs var konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu vienā no šajā rakstā norādītajām lokalizācijām. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, operētājsistēma <ph name="PRODUCT_OS_NAME" /> var tikt attēlota visās atbalstītajās lietotāja saskarnes lokalizācijās. Ja politikai iestatītajā sarakstā ir nederīgas vērtības, tās tiks ignorētas. Ja lietotājs iepriekš konfigurēja operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu lokalizācijā, kas šajā politikā nav atļauta, nākamajā lietotāja pierakstīšanās reizē attēlojuma lokalizācija tiks mainīta uz politikā atļautu lietotāja saskarnes lokalizāciju. Ja lietotājs iepriekš konfigurēja vēlamās lokalizācijas un viena no vēlamajām lokalizācijām ir atļauta šajā politikā, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantota attiecīgā lokalizācija. Ja vēlamā lokalizācija nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tika izmantota pirmā derīgā politikā norādītā vērtība vai atkāpšanās lokalizācija (šobrīd “en-US”), ja politikā ir norādītas nederīgas vērtības.</translation>
 <translation id="2604182581880595781">Konfigurēt ar tīkla failu kopīgošanas ierīcēm saistīto politiku.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1100,6 +1100,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Google ieteikumu vietrādi URL var norādīt šādi: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
+<translation id="3864129983143201415">Konfigurēt lietotāja sesijā atļautās valodas</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3868347814555911633">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
@@ -1800,7 +1801,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5835124959204887277">Tiek norādīti vietrāži URL un domēni, kuriem netiks rādīta uzvedne, kad tiks pieprasīti drošības atslēgu apstiprinājuma sertifikāti. Turklāt uz drošības atslēgu tiks nosūtīts signāls, norādot, ka var izmantot atsevišķu apstiprinājumu. Ja šī politika netiek izmantota, Chrome 65. versijas vai jaunākas versijas lietotājiem tiks parādīta uzvedne, kad vietnēs tiks pieprasīts drošības atslēgu apstiprinājums.
 
       Vietrāži URL (piemēram, https://example.com/kads/cels) atbildīs tikai kā U2F appID. Domēni (piemēram, example.com) atbildīs tikai kā tīmekļa autorizācijas RP ID. Tādējādi, lai nodrošinātu U2F un tīmekļa autorizācijas API konkrētai vietnei, ir jābūt norādītam gan appID vietrādim URL, gan domēnam.</translation>
-<translation id="5835412847081687053">Konfigurē lietotāja sesijā atļautās lietotāja saskarnes lokalizācijas</translation>
 <translation id="5836064773277134605">Attālās piekļuves saimniekdatora izmantoto UDP portu diapazona ierobežošana</translation>
 <translation id="5862253018042179045">Iestatiet mutisko atsauksmju pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 

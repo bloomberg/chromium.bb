@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Chromium ће шифровати податке ради додатне сигурности.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
+<translation id="2818397554133737874">Подаци прегледања ове особе ће бити избрисани са овог уређаја. Да бисте вратили податке, пријавите се у Chromium као $2.</translation>
 <translation id="2847479871509788944">Уклони из Chromium-а...</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2898082584336937987">Инсталирајте Chromium на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
@@ -100,7 +101,6 @@
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4407044323746248786">Желите ли ипак да затворите Chromium?</translation>
 <translation id="4415566066719264597">Нека Chromium ради у позадини</translation>
-<translation id="4421155425831608516">Пријављивање у Chromium је онемогућио администратор овог уређаја.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="459535195905078186">Chromium апликације</translation>
@@ -118,6 +118,7 @@
 <translation id="5032989939245619637">Сачувај детаље у Chromium-у</translation>
 <translation id="5045248521775609809">Нека Chromium буде увек са вама</translation>
 <translation id="5116586539350239523">Chromium ће безбедно складиштити личне податке да не бисте морали да их поново уносите.</translation>
+<translation id="5181952534059945058">Ова страница користи превише меморије, па је Chromium уклонио одређени садржај.</translation>
 <translation id="5277894862589591112">Да бисте применили промене, поново покрените Chromium</translation>
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Ажурирање Chromium-а (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -146,6 +147,7 @@
 <translation id="5902536751647951209">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Chromium или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Ажурирање је скоро готово! Поново покрените уређај да бисте довршили ажурирање.</translation>
 <translation id="5987687638152509985">Ажурирајте Chromium да бисте започели синхронизацију</translation>
+<translation id="6013050204643758987">Chromium ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6055895534982063517">Доступна је нова верзија Chromium-а, бржа него икада пре.</translation>
 <translation id="6063093106622310249">&amp;Отвори у Chromium-у</translation>
@@ -192,7 +194,6 @@
 <translation id="7196312274710523067">Није могуће покренути Chromium. Покушајте поново.</translation>
 <translation id="7205698830395646142">Сакриј у Chromium менију</translation>
 <translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
-<translation id="722928257909516027">Приказ Chromium менија</translation>
 <translation id="731644333568559921">Ажурирај &amp;Chromium ОС</translation>
 <translation id="731795002583552498">Ажурирање Chromium-а</translation>
 <translation id="7318036098707714271">Датотека подешавања је оштећена или неважећа.

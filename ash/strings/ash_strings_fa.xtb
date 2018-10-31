@@ -112,6 +112,7 @@
 <translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
 <translation id="2790844815106384441">انتخاب کند وب‌سایت‌ها امکان استفاده از خدمات مکان، میکروفون، دوربین یا سایر ویژگی‌های دستگاه را داشته باشند یا نه</translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
+<translation id="2803734122639935495">برای باز کردن قفل، گذرواژه‌تان را وارد کنید</translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
 <translation id="2825619548187458965">قفسه</translation>
 <translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">فیش میکروفون</translation>
 <translation id="5669267381087807207">فعالسازی</translation>
 <translation id="5673434351075758678">از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» بعد از همگام‌سازی تنظیمات.</translation>
+<translation id="5691772641933328258">اثر انگشت تشخیص داده نشد</translation>
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
 <translation id="5750765938512549687">بلوتوث خاموش است</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">وضوح تغییر کرد</translation>
 <translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
-<translation id="632744581670418035">هم‌پوشانی صفحه‌کلید</translation>
 <translation id="6344698853700675736">روشن/خاموش کردن نور شب</translation>
 <translation id="6376931439017688372">بلوتوث روشن است</translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">درحال اتصال به <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">هشدار: ویژگی آزمایشی</translation>
 <translation id="7846634333498149051">صفحه‌کلید</translation>
+<translation id="7868900307798234037">درحال باز کردن قفل با اثر انگشت</translation>
 <translation id="7886169021410746335">تنظیمات حریم خصوصی را تنظیم کند</translation>
 <translation id="7886277072580235377">وقتی از سیستم خارج شوید، جلسه اینترنت پاک خواهد شد. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">‏Send an email (ایمیل ارسال کن)</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">حساب تحت مدیریت <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> است</translation>
 <translation id="7977927628060636163">درحال جستجوی شبکه‌های تلفن همراه…</translation>
 <translation id="7982789257301363584">شبکه</translation>
+<translation id="7984197416080286869">تلاش‌های بیش از حد برای باز کردن قفل با اثر انگشت</translation>
 <translation id="7994370417837006925">ورود چندگانه به سیستم</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8029241286966751120">‏«ذره‌بین تمام‌صفحه» فعال شد. برای خاموش کردن آن، Ctrl+Search+M را دوباره فشار دهید.</translation>

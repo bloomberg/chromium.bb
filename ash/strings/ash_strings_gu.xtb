@@ -80,7 +80,7 @@
 <translation id="225680501294068881">ઉપકરણો માટે સ્કેન કરી રહ્યું છે...</translation>
 <translation id="2268130516524549846">Bluetooth અક્ષમ છે</translation>
 <translation id="2268813581635650749">બધામાંથી સાઇન આઉટ કરો</translation>
-<translation id="2292698582925480719">પ્રદર્શન સ્કેલ</translation>
+<translation id="2292698582925480719">પ્રદર્શન ધોરણ</translation>
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
 <translation id="2339073806695260576">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, લેઝર પૉઇન્ટર અથવા મૅગ્નિફાયિંગ ગ્લાસનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટન પર ટૅપ કરો.</translation>
 <translation id="2341729377289034582">ઊભી સ્થિતિ પર લૉક કરેલું છે</translation>
@@ -93,7 +93,7 @@
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="2413728805700750528">મેનેજ કરાયેલ સત્ર <ph name="DISPLAY_NAME" />ને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> સાથે કનેક્ટ થયા</translation>
-<translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની ખાતરી કરો: <ph name="PASSKEY" /></translation>
+<translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2484513351006226581">કીબોર્ડ લેઆઉટ સ્વિચ કરવા માટે <ph name="KEYBOARD_SHORTCUT" />ને દબાવો.</translation>
 <translation id="2501920221385095727">સ્ટિકી કી</translation>
@@ -112,6 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2790844815106384441">સ્થાન સેવાઓ અથવા ઉપકરણના માઇક્રોફોન, કૅમેરા કે અન્ય સુવિધાઓનો ઉપયોગ વેબસાઇટ કરી શકે કે નહીં તે પસંદ કરો</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">અનલૉક કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
@@ -156,9 +157,9 @@
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3510503721818156981">નવા ફોન સાથે કનેક્ટ કરેલ Chromebook</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
-<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
+<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછા જાઓ (ફરી શરૂ કરવું જરૂરી છે)</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
-<translation id="3606978283550408104">બ્રેઇલ પ્રદર્શન કનેક્ટ થયું.</translation>
+<translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>
 <translation id="3626281679859535460">તેજ</translation>
 <translation id="3631369015426612114">નીચેના પરથી સૂચનાઓને મંજૂરી આપો</translation>
@@ -182,7 +183,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> થી કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="394485226368336402">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
-<translation id="3995138139523574647">USB-C ઉપકરણ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
+<translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{એક ઍપ માટે બંધ છે}one{# ઍપ માટે બંધ છે}other{# ઍપ માટે બંધ છે}}</translation>
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
@@ -240,10 +241,10 @@
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
 <translation id="5313326810920013265">Bluetooth સેટિંગ</translation>
-<translation id="5331975486040154427">USB-C ઉપકરણ (ડાબી બાજુનું પાછળનું પોર્ટ)</translation>
+<translation id="5331975486040154427">USB-C ડિવાઇસ (ડાબી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="5379115545237091094">ઘણા બધા પ્રયાસો</translation>
 <translation id="5397578532367286026">આ વપરાશકર્તાના ઉપયોગ અને ઇતિહાસની chrome.com પર સંચાલક (<ph name="MANAGER_EMAIL" />) દ્વારા સમીક્ષા કરવામાં આવી શકે છે.</translation>
-<translation id="5430931332414098647">ઝટપટ ટિથરિંગ</translation>
+<translation id="5430931332414098647">ફટાફટ ટિથરિંગ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
 <translation id="5496819745535887422">તમારા વ્યવસ્થાપક તમારા ઉપકરણને રોલ બૅક કરી રહ્યા છે. ઉપકરણ ફરી શરૂ કરવામાં આવશે, ત્યારે બધો ડેટા ડિલીટ થઈ જશે.</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">માઇક જેક</translation>
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5673434351075758678">તમારી સેટિંગને સિંક કર્યા પછી "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />"માં ફેરવો.</translation>
+<translation id="5691772641933328258">ફિંગરપ્રિન્ટ ઓળખી શકાઈ નથી</translation>
 <translation id="574392208103952083">મધ્યમ</translation>
 <translation id="5744083938413354016">ખેંચવાને ટૅપ કરો</translation>
 <translation id="5750765938512549687">બ્લૂટૂથ બંધ છે</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">રિઝોલ્યુશન બદલાયું</translation>
 <translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે કલમનો ઉપયોગ કરો</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
-<translation id="632744581670418035">કીબોર્ડ ઓવરલે</translation>
 <translation id="6344698853700675736">રાત્રિ પ્રકાશને ટૉગલ કરો</translation>
 <translation id="6376931439017688372">બ્લૂટૂથ ચાલુ છે</translation>
 <translation id="639644700271529076">CAPS LOCK બંધ છે</translation>
@@ -345,7 +346,7 @@
 <translation id="7068360136237591149">ફાઇલો ખોલો</translation>
 <translation id="7076293881109082629">સાઇન ઇન કરી રહ્યું છે</translation>
 <translation id="7092922358121866860">રાત્રિ પ્રકાશ સેટિંગ બતાવો</translation>
-<translation id="7098389117866926363">USB-C ઉપકરણ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
+<translation id="7098389117866926363">USB-C ડિવાઇસ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
 <translation id="7131634465328662194">તમે આપમેળે સાઇન આઉટ થઈ જશો.</translation>
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
@@ -371,7 +372,7 @@
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7604942372593434070">તમારી બ્રાઉઝિંગ પ્રવૃત્તિને ઍક્સેસ કરો</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
-<translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ઉપકરણને અનલૉક કરો</translation>
+<translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ડિવાઇસને અનલૉક કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7654687942625752712">બોલાયેલ પ્રતિસાદ બંધ કરવા પાંચ સેકન્ડ માટે બન્ને વૉલ્યૂમ કીને દબાવી રાખો.</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> સાથે કનેક્ટ થઈ રહ્યું છે</translation>
 <translation id="7842569679327885685">ચેતવણી: પ્રાયોગિક સુવિધા</translation>
 <translation id="7846634333498149051">કીબોર્ડ</translation>
+<translation id="7868900307798234037">ફિંગરપ્રિન્ટથી અનલૉક કરી રહ્યાં છે</translation>
 <translation id="7886169021410746335">ગોપનીયતા સેટિંગ ગોઠવો</translation>
 <translation id="7886277072580235377">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારા ઇન્ટરનેટ સત્રની માહિતી સાફ કરવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ઇમેઇલ મોકલો</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
+<translation id="7984197416080286869">ફિંગરપ્રિન્ટ માટેના ઘણા બધા પ્રયત્નો</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
 <translation id="8029241286966751120">પૂર્ણસ્ક્રીન મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ બંધ કરવા માટે ફરીથી Ctrl+Search+M દબાવો.</translation>
@@ -409,7 +412,7 @@
 <translation id="8236042855478648955">વિરામ લેવાનો સમય</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="8297006494302853456">નબળું</translation>
-<translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
+<translation id="8308637677604853869">પાછલું મેનૂ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
@@ -422,7 +425,7 @@
 <translation id="8433977262951327081">શેલ્ફમાં મેનૂ પરપોટો ઇનપુટ વિકલ્પો બતાવવાનો શૉર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" />ને બદલે <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="8452135315243592079">SIM કાર્ડ ખૂટે છે</translation>
 <translation id="8454013096329229812">વાઇ-ફાઇ ચાલુ છે.</translation>
-<translation id="847056008324733326">પ્રદર્શન સ્કેલની સેટિંગ્સ</translation>
+<translation id="847056008324733326">પ્રદર્શન ધોરણનું સેટિંગ</translation>
 <translation id="8477270416194247200">રદ કરવા માટે Alt+શોધો અથવા Shift દબાવો.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8513108775083588393">આપમેળે ફેરવો</translation>
@@ -450,7 +453,7 @@
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>
-<translation id="8938800817013097409">USB-C ઉપકરણ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
+<translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
 <translation id="899350903320462459">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને <ph name="LOGIN_ID" /> તરીકે અનલૉક કરો</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>
@@ -461,7 +464,7 @@
 <translation id="9079731690316798640">વાઇ-ફાઇ: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">માઇકોફોન ઉપયોગમાં છે.</translation>
 <translation id="9089416786594320554">ઇનપુટ પદ્ધતિઓ</translation>
-<translation id="9091626656156419976">પ્રદર્શન <ph name="DISPLAY_NAME" /> દૂર કરે છે</translation>
+<translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> ડિસ્પ્લે કાઢી નાખ્યું</translation>
 <translation id="9151726767154816831">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો અને પાવરવૉશ કરો</translation>
 <translation id="9179259655489829027">આ સુવિધા તમને પાસવર્ડની જરૂર વગર ઝડપથી કોઈ સાઇન-ઇન થયેલ વપરાશકર્તાને ઍક્સેસ કરવાની પરવાનગી આપે છે. માત્ર તમે જેના પર વિશ્વાસ કરતા હો તે એકાઉન્ટ સાથે જ આ સુવિધાનો ઉપયોગ કરો.</translation>
 <translation id="9193626018745640770">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છીએ</translation>

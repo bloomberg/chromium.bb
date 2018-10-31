@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
+<translation id="1360432990279830238">Одјављујете се и искључујете синхрониз?</translation>
 <translation id="1375321115329958930">Сачуване лозинке</translation>
 <translation id="1377255359165588604">Синхронизација више не функционише.</translation>
 <translation id="1377321085342047638">Број картице</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1657011748321897393">Дељење није успело зато што нисте повезани са мрежом.</translation>
 <translation id="165877110639533037">Нема отворених картица</translation>
+<translation id="168715261339224929">Да би вам обележивачи били доступни на свим уређајима, укључите синхронизацију.</translation>
 <translation id="1687475363370981210">Означи све као прочитано</translation>
 <translation id="1690731385917361335">Нема ставки</translation>
 <translation id="1700629756560807968">Број изабраних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -315,6 +317,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6196207969502475924">Гласовна претрага</translation>
 <translation id="6254066287920239840">Отварајте ликнове у апликацији уместо у прегледачу.</translation>
 <translation id="6255097610484507482">Измена кредитне картице</translation>
+<translation id="6303969859164067831">Одјави ме и искључи синхронизацију</translation>
 <translation id="6308436439357671616">Ово вам омогућава да снимате и отпремате слике.</translation>
 <translation id="6324528485781869530">Промените налог за синхронизацију</translation>
 <translation id="6324669097367352121">Подешавања пријављивања</translation>
@@ -340,6 +343,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6464071786529933911">Отвори у новој картици без архивирања</translation>
 <translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Претходни сат</translation>
+<translation id="6643016212128521049">Обриши</translation>
 <translation id="6656103420185847513">Измена директоријума</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="667999046851023355">Документ</translation>

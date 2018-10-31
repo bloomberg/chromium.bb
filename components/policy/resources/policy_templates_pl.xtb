@@ -78,6 +78,9 @@
       Listę dostępnych zmiennych znajdziesz na stronie https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       W przypadku nieskonfigurowania tej zasady będzie używany domyślny katalog pamięci podręcznej, a użytkownik będzie mógł zmienić to ustawienie za pomocą parametru wiersza polecenia „--disk-cache-dir”.</translation>
+<translation id="113521240853905588">Konfiguruje języki, których można używać jako preferowanych w <ph name="PRODUCT_OS_NAME" />.
+
+      Jeśli ta zasada jest skonfigurowana, użytkownik może dodać do listy preferowanych języków tylko języki z listy ustawionej w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub zawiera pustą listę, użytkownik może ustawić dowolne języki jako preferowane. Jeśli zasada zawiera listę z nieprawidłowymi wartościami, wszystkie nieprawidłowe wartości będą ignorowane. Jeśli użytkownik wcześniej dodał do listy preferowanych języków języki, które nie są dozwolone przez tę zasadę, zostaną one usunięte. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku, który nie jest dozwolony przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony język interfejsu podczas następnego logowania się użytkownika. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości ustawionej w tej zasadzie albo na język zastępczy (obecnie jest to en-US), jeśli zasada zawiera same wartości nieprawidłowe.</translation>
 <translation id="1135264353752122851">Umożliwia wybranie układów klawiatury dozwolonych w sesjach użytkownika <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest ustawiona, użytkownik może wybrać tylko jedną z metod wprowadzania wskazanych w tej zasadzie. Jeśli zasada nie jest skonfigurowana lub jej wartością jest pusta lista, użytkownik może wybrać wszystkie obsługiwane metody wprowadzania. Jeśli bieżąca metoda wprowadzania nie jest dozwolona przez tę zasadę, zostanie przełączona na odpowiadającą układowi klawiatury fizycznej (jeśli jest dozwolona) lub pierwszą poprawną metodę z tej listy. Wszystkie niepoprawne lub nieobsługiwane metody wprowadzania z tej listy będą ignorowane.</translation>
@@ -612,9 +615,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           Wszystkie nowsze wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności. Wyłączenie zmniejsza bezpieczeństwo uwierzytelniania.
 
           Jeśli ta zasada jest nieskonfigurowana, wartością domyślną jest prawda i NTLMv2 jest włączone.</translation>
-<translation id="2598508021807251719">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
-
-      Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
 <translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi udziałami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1081,6 +1081,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
           URL sugestii Google to: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Ta zasada jest egzekwowana tylko wtedy, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
+<translation id="3864129983143201415">Skonfiguruj dozwolone języki sesji użytkownika</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">Ta zasada jest aktywna tylko w trybie sklepu.
 
@@ -1745,7 +1746,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
-<translation id="5835412847081687053">Skonfiguruj dozwolone języki sesji użytkownika</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
 <translation id="5862253018042179045">Ustawia domyślny stan funkcji ułatwień dostępu w postaci potwierdzeń głosowych na ekranie logowania.
 
@@ -2903,7 +2903,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8615400197788843468">Włącza w <ph name="PRODUCT_NAME" /> funkcję ograniczonego logowania w G Suite i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Jeśli zdefiniujesz to ustawienie, użytkownik będzie mógł uzyskać dostęp
-      do Google Apps tylko przy użyciu kont z określonych domen (uwaga:
+      do G Suite tylko przy użyciu kont z określonych domen (uwaga:
       aby zezwolić na konta gmail.com/googlemail.com, dodaj do listy domen
       wpis „consumer_accounts” (bez cudzysłowów)).
 
@@ -2999,7 +2999,7 @@ Jeśli jako stronę główną ustawisz stronę Nowa karta albo adres URL (wpisan
       Jeśli ta zasada jest nieskonfigurowana albo wartość jest mniejsza niż 1 MB, <ph name="PRODUCT_OS_NAME" /> użyje domyślnego rozmiaru pamięci podręcznej.</translation>
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>
 <translation id="8860342862142842017">Wyłącz egzekwowanie protokołu Certificate Transparency dla skrótów subjectPublicKeyInfo z listy</translation>
-<translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8864975621965365890">Pomija prośbę o odinstalowanie wyświetlaną wtedy, gdy strona jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8867464911288727016">Włącza w <ph name="PRODUCT_NAME" /> zintegrowaną usługę Tłumacz Google.
 
       Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> będzie proponować użytkownikowi funkcje tłumaczenia, wyświetlając (w stosownych sytuacjach) zintegrowany pasek tłumaczenia i opcję tłumaczenia w menu kontekstowym prawego przycisku myszy.

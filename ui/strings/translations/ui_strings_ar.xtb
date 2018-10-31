@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">مفتاح سهم  إلى أسفل</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{يوم واحد}zero{# من الأيام}two{يومان (#)}few{# أيام}many{# يومًا}other{# من الأيام}}</translation>
 <translation id="335581015389089642">الحديث</translation>
+<translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
 <translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">حدد مجلدًا للتحميل</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">مفتاح سهم إلى اليسار</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{يوم واحد و }zero{# من الأيام و }two{يومان (#) و }few{# أيام و }many{# يومًا و }other{# من الأيام و }}</translation>
+<translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثانية}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ساعة واحدة}zero{# من الساعات}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# من الساعات}}</translation>
