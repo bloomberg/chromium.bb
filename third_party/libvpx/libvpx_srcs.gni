@@ -64,8 +64,6 @@ libvpx_srcs_x86 = [
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_loopfilter.c",
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_skin_detection.c",
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_skin_detection.h",
-  "//third_party/libvpx/source/libvpx/vp8/common/x86/filter_x86.c",
-  "//third_party/libvpx/source/libvpx/vp8/common/x86/filter_x86.h",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/loopfilter_x86.c",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/vp8_asm_stubs.c",
   "//third_party/libvpx/source/libvpx/vp8/decoder/dboolhuff.c",
@@ -415,6 +413,7 @@ libvpx_srcs_x86_mmx = [
   "//third_party/libvpx/source/libvpx/vpx_ports/emms_mmx.c",
 ]
 libvpx_srcs_x86_sse2 = [
+  "//third_party/libvpx/source/libvpx/vp8/common/x86/bilinear_filter_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/idct_blk_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/denoising_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_enc_stubs_sse2.c",
@@ -540,8 +539,6 @@ libvpx_srcs_x86_64 = [
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_loopfilter.c",
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_skin_detection.c",
   "//third_party/libvpx/source/libvpx/vp8/common/vp8_skin_detection.h",
-  "//third_party/libvpx/source/libvpx/vp8/common/x86/filter_x86.c",
-  "//third_party/libvpx/source/libvpx/vp8/common/x86/filter_x86.h",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/loopfilter_x86.c",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/vp8_asm_stubs.c",
   "//third_party/libvpx/source/libvpx/vp8/decoder/dboolhuff.c",
@@ -896,6 +893,7 @@ libvpx_srcs_x86_64_assembly = [
 libvpx_srcs_x86_64_mmx =
     [ "//third_party/libvpx/source/libvpx/vp8/common/x86/idct_blk_mmx.c" ]
 libvpx_srcs_x86_64_sse2 = [
+  "//third_party/libvpx/source/libvpx/vp8/common/x86/bilinear_filter_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/common/x86/idct_blk_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/denoising_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_enc_stubs_sse2.c",
