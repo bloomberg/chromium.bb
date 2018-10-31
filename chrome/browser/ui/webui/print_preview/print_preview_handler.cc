@@ -977,7 +977,7 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type, callback_id);
 }
 
-// TODO (rbpotter): Remove this when the old Print Preview page is deleted.
+// TODO(rbpotter): Remove this when the old Print Preview page is deleted.
 void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
   GURL local_printers_manage_url(
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
@@ -998,9 +998,8 @@ void PrintPreviewHandler::HandleShowSystemDialog(
     return;
 
   auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
-  print_view_manager->PrintForSystemDialogNow(
-      base::Bind(&PrintPreviewHandler::ClosePreviewDialog,
-                 weak_factory_.GetWeakPtr()));
+  print_view_manager->PrintForSystemDialogNow(base::BindOnce(
+      &PrintPreviewHandler::ClosePreviewDialog, weak_factory_.GetWeakPtr()));
 
   // Cancel the pending preview request if exists.
   print_preview_ui()->OnCancelPendingPreviewRequest();

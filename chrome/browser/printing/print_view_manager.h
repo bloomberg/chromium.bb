@@ -26,7 +26,7 @@ class PrintViewManager : public PrintViewManagerBase,
   // Same as PrintNow(), but for the case where a user prints with the system
   // dialog from print preview.
   // |dialog_shown_callback| is called when the print dialog is shown.
-  bool PrintForSystemDialogNow(const base::Closure& dialog_shown_callback);
+  bool PrintForSystemDialogNow(base::OnceClosure dialog_shown_callback);
 
   // Same as PrintNow(), but for the case where a user press "ctrl+shift+p" to
   // show the native system dialog. This can happen from both initiator and
@@ -67,8 +67,9 @@ class PrintViewManager : public PrintViewManagerBase,
     SCRIPTED_PREVIEW,
   };
 
-  // IPC Message handlers.
   struct FrameDispatchHelper;
+
+  // IPC Message handlers.
   void OnDidShowPrintDialog(content::RenderFrameHost* rfh);
   void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                    IPC::Message* reply_msg);
@@ -76,21 +77,21 @@ class PrintViewManager : public PrintViewManagerBase,
                                   bool source_is_modifiable);
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
-  base::Closure on_print_dialog_shown_callback_;
+  base::OnceClosure on_print_dialog_shown_callback_;
 
   // Current state of print preview for this view.
-  PrintPreviewState print_preview_state_;
+  PrintPreviewState print_preview_state_ = NOT_PREVIEWING;
 
   // The current RFH that is print previewing. It should be a nullptr when
   // |print_preview_state_| is NOT_PREVIEWING.
-  content::RenderFrameHost* print_preview_rfh_;
+  content::RenderFrameHost* print_preview_rfh_ = nullptr;
 
   // Keeps track of the pending callback during scripted print preview.
-  content::RenderProcessHost* scripted_print_preview_rph_;
+  content::RenderProcessHost* scripted_print_preview_rph_ = nullptr;
 
   // Indicates whether we're switching from print preview to system dialog. This
   // flag is true between PrintForSystemDialogNow() and PrintPreviewDone().
-  bool is_switching_to_system_dialog_;
+  bool is_switching_to_system_dialog_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };
