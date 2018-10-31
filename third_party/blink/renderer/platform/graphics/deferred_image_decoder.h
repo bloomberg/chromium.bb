@@ -75,7 +75,6 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   size_t FrameCount();
   bool ImageIsHighBitDepth() const { return image_is_high_bit_depth_; }
   int RepetitionCount() const;
-  void ClearCacheExceptFrame(size_t index);
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
   TimeDelta FrameDurationAtIndex(size_t index) const;

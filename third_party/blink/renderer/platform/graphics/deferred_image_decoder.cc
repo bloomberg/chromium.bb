@@ -217,11 +217,6 @@ int DeferredImageDecoder::RepetitionCount() const {
                            : repetition_count_;
 }
 
-void DeferredImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
-  if (metadata_decoder_)
-    metadata_decoder_->ClearCacheExceptFrame(clear_except_frame);
-}
-
 bool DeferredImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
   if (metadata_decoder_)
     return metadata_decoder_->FrameHasAlphaAtIndex(index);

@@ -85,8 +85,6 @@ bool BitmapImage::CurrentFrameHasSingleSecurityOrigin() const {
 
 void BitmapImage::DestroyDecodedData() {
   cached_frame_ = PaintImage();
-  if (decoder_)
-    decoder_->ClearCacheExceptFrame(kNotFound);
   NotifyMemoryChanged();
 }
 
