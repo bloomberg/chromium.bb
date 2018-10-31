@@ -32,6 +32,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -272,7 +273,6 @@ class ChromeContentRendererClient
                                        const content::WebPluginInfo& plugin);
 
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override;
@@ -342,9 +342,7 @@ class ChromeContentRendererClient
   mojom::ModuleEventSinkPtr module_event_sink_;
 #endif
 
-  std::unique_ptr<service_manager::Connector> connector_;
-  service_manager::mojom::ConnectorRequest connector_request_;
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
+  service_manager::ServiceBinding service_binding_{this};
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);

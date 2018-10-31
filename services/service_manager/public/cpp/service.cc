@@ -42,27 +42,4 @@ void Service::SetContext(ServiceContext* context) {
   service_context_ = context;
 }
 
-ForwardingService::ForwardingService(Service* target) : target_(target) {}
-
-ForwardingService::~ForwardingService() {}
-
-void ForwardingService::OnStart() {
-  target_->OnStart();
-}
-
-void ForwardingService::OnBindInterface(
-    const BindSourceInfo& source,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  target_->OnBindInterface(source, interface_name, std::move(interface_pipe));
-}
-
-bool ForwardingService::OnServiceManagerConnectionLost() {
-  return target_->OnServiceManagerConnectionLost();
-}
-
-void ForwardingService::SetContext(ServiceContext* context) {
-  target_->SetContext(context);
-}
-
 }  // namespace service_manager
