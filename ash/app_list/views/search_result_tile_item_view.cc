@@ -42,29 +42,27 @@ namespace {
 
 constexpr int kSearchTileWidth = 80;
 constexpr int kSearchTileTopPadding = 4;
-constexpr int kSearchTitleSpacing = 5;
+constexpr int kSearchTitleSpacing = 7;
 constexpr int kSearchPriceSize = 37;
 constexpr int kSearchRatingSize = 26;
 constexpr int kSearchRatingStarSize = 12;
 constexpr int kSearchRatingStarHorizontalSpacing = 1;
 constexpr int kSearchRatingStarVerticalSpacing = 2;
+// Text line height in the search result tile.
+constexpr int kTileTextLineHeight = 16;
 
-// Delta applied to the font size of SearchResultTile rating.
-constexpr int kSearchRatingTextSizeDelta = 1;
-// Delta applied to the font size of SearchResultTile price.
-constexpr int kSearchPriceTextSizeDelta = 1;
+// Delta applied to the font size of SearchResultTile title.
+constexpr int kSearchResultTileTitleTextSizeDelta = 1;
 
 constexpr int kIconSelectedSize = 56;
 constexpr int kIconSelectedCornerRadius = 4;
 // Icon selected color, Google Grey 900 8%.
 constexpr int kIconSelectedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 
-constexpr SkColor kSearchTitleColor = SkColorSetARGB(0xDF, 0x00, 0x00, 0x00);
-constexpr SkColor kSearchAppRatingColor =
-    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
-constexpr SkColor kSearchAppPriceColor = SkColorSetARGB(0xFF, 0x0F, 0x9D, 0x58);
-constexpr SkColor kSearchRatingStarColor =
-    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
+constexpr SkColor kSearchTitleColor = gfx::kGoogleGrey900;
+constexpr SkColor kSearchAppRatingColor = gfx::kGoogleGrey700;
+constexpr SkColor kSearchAppPriceColor = gfx::kGoogleGreen600;
+constexpr SkColor kSearchRatingStarColor = gfx::kGoogleGrey700;
 
 }  // namespace
 
@@ -99,21 +97,18 @@ SearchResultTileItemView::SearchResultTileItemView(
     AddChildView(badge_);
   }
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new views::Label;
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
-  title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
+  title_->SetLineHeight(kTileTextLineHeight);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetHandlesTooltips(false);
   AddChildView(title_);
 
   if (is_play_store_app_search_enabled_) {
-    const gfx::FontList& font = AppListConfig::instance().app_title_font();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
-    rating_->SetFontList(font);
-    rating_->SetLineHeight(font.GetHeight());
+    rating_->SetLineHeight(kTileTextLineHeight);
     rating_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     rating_->SetVisible(false);
     AddChildView(rating_);
@@ -128,8 +123,7 @@ SearchResultTileItemView::SearchResultTileItemView(
 
     price_ = new views::Label;
     price_->SetEnabledColor(kSearchAppPriceColor);
-    price_->SetFontList(font);
-    price_->SetLineHeight(font.GetHeight());
+    price_->SetLineHeight(kTileTextLineHeight);
     price_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     price_->SetVisible(false);
     AddChildView(price_);
@@ -168,7 +162,6 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   const gfx::FontList& font = AppListConfig::instance().app_title_font();
   if (IsSuggestedAppTileShownInAppPage()) {
     title_->SetFontList(font);
-    title_->SetLineHeight(font.GetHeight());
     title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
   } else {
     // Set solid color background to avoid broken text. See crbug.com/746563.
@@ -178,27 +171,20 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
         rating_->SetFontList(
-            ui::ResourceBundle::GetSharedInstance()
-                .GetFontList(kSearchResultTitleFontStyle)
-                .DeriveWithSizeDelta(kSearchRatingTextSizeDelta));
-        rating_->SetLineHeight(rating_->font_list().GetHeight());
+            ui::ResourceBundle::GetSharedInstance().GetFontList(
+                kSearchResultTitleFontStyle));
       } else {
         rating_->SetFontList(font);
-        rating_->SetLineHeight(font.GetHeight());
       }
     }
     if (price_) {
       price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
-        price_->SetFontList(
-            ui::ResourceBundle::GetSharedInstance()
-                .GetFontList(kSearchResultTitleFontStyle)
-                .DeriveWithSizeDelta(kSearchPriceTextSizeDelta));
-        price_->SetLineHeight(price_->font_list().GetHeight());
+        price_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+            kSearchResultTitleFontStyle));
       } else {
         price_->SetFontList(font);
-        price_->SetLineHeight(font.GetHeight());
       }
     }
     title_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
@@ -207,11 +193,9 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       title_->SetFontList(
           ui::ResourceBundle::GetSharedInstance()
               .GetFontList(kSearchResultTitleFontStyle)
-              .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
-      title_->SetLineHeight(title_->font_list().GetHeight());
+              .DeriveWithSizeDelta(kSearchResultTileTitleTextSizeDelta));
     } else {
       title_->SetFontList(font);
-      title_->SetLineHeight(font.GetHeight());
     }
     title_->SetEnabledColor(kSearchTitleColor);
   }

@@ -20,6 +20,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/crx_file/id_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -28,8 +29,8 @@ namespace {
 
 // The id prefix to identify a Play Store search result.
 constexpr char kPlayAppPrefix[] = "play://";
-// Badge icon color, #000 at 54% opacity.
-constexpr SkColor kBadgeColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
+// Badge icon color.
+constexpr SkColor kBadgeColor = gfx::kGoogleGrey700;
 // Size of the vector icon inside the badge.
 constexpr int kBadgeIconSize = 12;
 // Padding around the circular background of the badge.
