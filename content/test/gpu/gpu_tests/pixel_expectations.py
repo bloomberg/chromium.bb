@@ -98,10 +98,8 @@ class PixelExpectations(GpuTestExpectations):
     #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774809)
-    # TODO(ericrk): Un-comment this after the rebase for
-    # https://crbug.com/899399 completes.
-    # self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
-    #     ['highsierra', ('intel', 0xa2e)], bug=857578)
+    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+        ['highsierra', ('intel', 0xa2e)], bug=857578)
 
     # Failing on NVIDIA Shield TV; not sure why yet.
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
@@ -132,25 +130,10 @@ class PixelExpectations(GpuTestExpectations):
               ['android', 'nvidia'], bug=868596)
 
     # Fails on Nexus 5, 6 and 6P
-    # TODO(ericrk): Un-comment this after the rebase for
-    # https://crbug.com/899399 completes.
-    # self.Fail('Pixel_BackgroundImage',
-    #     ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
-    # self.Fail('Pixel_BackgroundImage',
-    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
-    # self.Fail('Pixel_BackgroundImage',
-    #     ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
-    # Moving to GPU raster causes antialiasing differences on the primary black
-    # div. Rebasing. https://crbug.com/899399
-    self.Fail("Pixel_2DCanvasWebGL")
-    self.Fail("Pixel_BackgroundImage")
-    self.Fail("Pixel_CSS3DBlueBox")
-    self.Fail("Pixel_Canvas2DRedBox")
-    self.Fail("Pixel_OffscreenCanvasTransferAfterStyleResize")
-    self.Fail("Pixel_OffscreenCanvasTransferBeforeStyleResize")
-    self.Fail("Pixel_WebGLGreenTriangle_AA_Alpha")
-    self.Fail("Pixel_WebGLGreenTriangle_AA_NoAlpha")
-    self.Fail("Pixel_WebGLGreenTriangle_NoAA_Alpha")
-    self.Fail("Pixel_WebGLGreenTriangle_NoAA_NoAlpha")
-    self.Fail("Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear")
