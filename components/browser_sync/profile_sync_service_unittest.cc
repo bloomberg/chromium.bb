@@ -16,7 +16,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
@@ -28,8 +27,7 @@
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,9 +180,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void SignIn() {
-    identity::MakePrimaryAccountAvailable(signin_manager(), auth_service(),
-                                          identity_manager(),
-                                          "test_user@gmail.com");
+    identity_test_env()->MakePrimaryAccountAvailable("test_user@gmail.com");
   }
 
   void CreateService(ProfileSyncService::StartBehavior behavior) {
@@ -300,22 +296,12 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return profile_sync_service_bundle_.account_tracker();
   }
 
-#if defined(OS_CHROMEOS)
-  FakeSigninManagerBase* signin_manager()
-#else
-  FakeSigninManager* signin_manager()
-#endif
-  // Opening brace is outside of macro to avoid confusing lint.
-  {
-    return profile_sync_service_bundle_.signin_manager();
-  }
-
-  FakeProfileOAuth2TokenService* auth_service() {
-    return profile_sync_service_bundle_.auth_service();
-  }
-
   identity::IdentityManager* identity_manager() {
     return profile_sync_service_bundle_.identity_manager();
+  }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return profile_sync_service_bundle_.identity_test_env();
   }
 
   ProfileSyncService* service() { return service_.get(); }
@@ -705,7 +691,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
             identity_provider()->GetActiveAccountId());
 
   identity_manager()->ClearPrimaryAccount(
@@ -720,10 +706,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
             service()->GetTransportState());
   EXPECT_EQ("", identity_provider()->GetActiveAccountId());
 
-  identity::MakePrimaryAccountAvailable(signin_manager(), auth_service(),
-                                        identity_manager(),
-                                        "new_user@gmail.com");
-  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+  identity_test_env()->MakePrimaryAccountAvailable("new_user@gmail.com");
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
             identity_provider()->GetActiveAccountId());
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -796,12 +780,11 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   std::string secondary_account_name = "test_user2@gmail.com";
   std::string secondary_account_id = account_tracker()->SeedAccountInfo(
       secondary_account_gaiaid, secondary_account_name);
-  auth_service()->UpdateCredentials(secondary_account_id,
-                                    "second_account_refresh_token");
-  auth_service()->RevokeCredentials(secondary_account_id);
+  identity_test_env()->SetRefreshTokenForAccount(secondary_account_id);
+  identity_test_env()->RemoveRefreshTokenForAccount(secondary_account_id);
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  auth_service()->RevokeCredentials(primary_account_id);
+  identity_test_env()->RemoveRefreshTokenForPrimaryAccount();
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 
@@ -848,14 +831,15 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
 
   // Simulate the credentials getting locally rejected by the client by setting
   // the refresh token to a special invalid value.
-  auth_service()->UpdateCredentials(
-      primary_account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
   GoogleServiceAuthError rejected_by_client =
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_CLIENT);
   ASSERT_EQ(rejected_by_client,
-            auth_service()->GetAuthError(primary_account_id));
+            identity_test_env()
+                ->identity_manager()
+                ->GetErrorStateOfRefreshTokenForAccount(primary_account_id));
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
   EXPECT_TRUE(invalidate_credentials_called);
 
@@ -958,7 +942,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
 TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // This test needs to manually send access tokens (or errors), so disable
   // automatic replies to access token requests.
-  auth_service()->set_auto_post_fetch_response_on_message_loop(false);
+  identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
   syncer::SyncCredentials init_credentials;
 
@@ -991,17 +975,17 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
 
   // Wait for ProfileSyncService to send an access token request.
   base::RunLoop().RunUntilIdle();
-  auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
-                                           base::Time::Max());
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      primary_account_id, "access token", base::Time::Max());
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
   ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
 
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
-  auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
+  identity_test_env()->SetRefreshTokenForPrimaryAccount();
   // Again, wait for ProfileSyncService to be notified.
   base::RunLoop().RunUntilIdle();
-  auth_service()->IssueErrorForAllPendingRequests(
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   // Check that the invalid token is returned from sync.
@@ -1021,7 +1005,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
 TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // This test needs to manually send access tokens (or errors), so disable
   // automatic replies to access token requests.
-  auth_service()->set_auto_post_fetch_response_on_message_loop(false);
+  identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
   syncer::SyncCredentials init_credentials;
 
@@ -1054,18 +1038,18 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
 
   // Wait for ProfileSyncService to send an access token request.
   base::RunLoop().RunUntilIdle();
-  auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
-                                           base::Time::Max());
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      primary_account_id, "access token", base::Time::Max());
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
   ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
 
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
-  auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
+  identity_test_env()->SetRefreshTokenForPrimaryAccount();
   // Wait for ProfileSyncService to be notified of the changed credentials and
   // send a new access token request.
   base::RunLoop().RunUntilIdle();
-  auth_service()->IssueErrorForAllPendingRequests(
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   // Check that the invalid token is returned from sync.
@@ -1076,10 +1060,10 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
             service()->GetTransportState());
 
   // Now emulate Chrome receiving a new, valid LST.
-  auth_service()->UpdateCredentials(primary_account_id, "totally valid token");
+  identity_test_env()->SetRefreshTokenForPrimaryAccount();
   // Again, wait for ProfileSyncService to be notified.
   base::RunLoop().RunUntilIdle();
-  auth_service()->IssueTokenForAllPendingRequests(
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "this one works", base::Time::Now() + base::TimeDelta::FromDays(10));
 
   // Check that sync auth error state cleared.

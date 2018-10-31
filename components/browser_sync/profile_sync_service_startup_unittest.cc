@@ -15,7 +15,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync/engine/mock_sync_engine.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,8 +65,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         sync_prefs_(profile_sync_service_bundle_.pref_service()) {
-    profile_sync_service_bundle_.auth_service()
-        ->set_auto_post_fetch_response_on_message_loop(true);
+    profile_sync_service_bundle_.identity_test_env()
+        ->SetAutomaticIssueOfAccessTokens(true);
   }
 
   ~ProfileSyncServiceStartupTest() override {
@@ -97,23 +97,18 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void SimulateTestUserSignin() {
-    identity::MakePrimaryAccountAvailable(
-        profile_sync_service_bundle_.signin_manager(),
-        profile_sync_service_bundle_.auth_service(),
-        profile_sync_service_bundle_.identity_manager(), kEmail);
+    profile_sync_service_bundle_.identity_test_env()
+        ->MakePrimaryAccountAvailable(kEmail);
   }
 
   void SimulateTestUserSigninWithoutRefreshToken() {
     // Set the primary account *without* providing an OAuth token.
-    identity::SetPrimaryAccount(profile_sync_service_bundle_.signin_manager(),
-                                profile_sync_service_bundle_.identity_manager(),
-                                kEmail);
+    profile_sync_service_bundle_.identity_test_env()->SetPrimaryAccount(kEmail);
   }
 
   void UpdateCredentials() {
-    identity::SetRefreshTokenForPrimaryAccount(
-        profile_sync_service_bundle_.auth_service(),
-        profile_sync_service_bundle_.identity_manager());
+    profile_sync_service_bundle_.identity_test_env()
+        ->SetRefreshTokenForPrimaryAccount();
   }
 
   DataTypeManagerMock* SetUpDataTypeManagerMock() {
