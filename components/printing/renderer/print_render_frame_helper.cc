@@ -1099,7 +1099,7 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
     web_frame->DispatchBeforePrintEvent();
     if (!weak_this)
       return;
-    Print(web_frame, blink::WebNode(), true /* is_scripted? */);
+    Print(web_frame, blink::WebNode(), PrintRequestType::kScripted);
     if (weak_this)
       web_frame->DispatchAfterPrintEvent();
   }
@@ -1160,7 +1160,7 @@ void PrintRenderFrameHelper::OnPrintPages() {
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
-  Print(frame, plugin, false /* is_scripted? */);
+  Print(frame, plugin, PrintRequestType::kRegular);
   if (weak_this)
     frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
@@ -1176,7 +1176,8 @@ void PrintRenderFrameHelper::OnPrintForSystemDialog() {
     return;
   }
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  Print(frame, print_preview_context_.source_node(), false);
+  Print(frame, print_preview_context_.source_node(),
+        PrintRequestType::kRegular);
   if (weak_this)
     frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
@@ -1597,7 +1598,7 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
 
     auto self = weak_ptr_factory_.GetWeakPtr();
     Print(duplicate_node.GetDocument().GetFrame(), duplicate_node,
-          false /* is_scripted? */);
+          PrintRequestType::kRegular);
     // Check if |this| is still valid.
     if (!self)
       return;
@@ -1608,7 +1609,7 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
 
 void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
                                    const blink::WebNode& node,
-                                   bool is_scripted) {
+                                   PrintRequestType print_request_type) {
   // If still not finished with earlier print request simply ignore.
   if (prep_frame_view_)
     return;
@@ -1637,7 +1638,7 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
     PrintMsg_PrintPages_Params print_settings;
     auto self = weak_ptr_factory_.GetWeakPtr();
     GetPrintSettingsFromUser(frame_ref.GetFrame(), node, expected_page_count,
-                             is_scripted, &print_settings);
+                             print_request_type, &print_settings);
     // Check if |this| is still valid.
     if (!self)
       return;
@@ -1864,7 +1865,7 @@ bool PrintRenderFrameHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
                                                     const blink::WebNode& node,
                                                     int* number_of_pages) {
   DCHECK(frame);
-  bool fit_to_paper_size = !(PrintingNodeOrPdfFrame(frame, node));
+  bool fit_to_paper_size = !PrintingNodeOrPdfFrame(frame, node);
   if (!InitPrintSettings(fit_to_paper_size)) {
     notify_browser_of_print_failure_ = false;
     Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
@@ -1978,8 +1979,11 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
     blink::WebLocalFrame* frame,
     const blink::WebNode& node,
     int expected_pages_count,
-    bool is_scripted,
+    PrintRequestType print_request_type,
     PrintMsg_PrintPages_Params* print_settings) {
+  bool is_scripted = print_request_type == PrintRequestType::kScripted;
+  DCHECK(is_scripted || print_request_type == PrintRequestType::kRegular);
+
   PrintHostMsg_ScriptedPrint_Params params;
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->HasSelection();
