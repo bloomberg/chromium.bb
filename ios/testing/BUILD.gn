@@ -77,6 +77,7 @@ bundle_data("http_server_bundle_data") {
     "data/http_server_files/history.js",
     "data/http_server_files/history_go.html",
     "data/http_server_files/history_go.js",
+    "data/http_server_files/iframe_form.html",
     "data/http_server_files/iframe_host.html",
     "data/http_server_files/links.html",
     "data/http_server_files/memory_usage.html",

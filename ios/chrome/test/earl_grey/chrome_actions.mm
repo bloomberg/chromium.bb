@@ -74,4 +74,12 @@ id<GREYAction> TapWebElement(const std::string& element_id) {
       web::test::ElementSelector::ElementSelectorId(element_id));
 }
 
+id<GREYAction> TapWebElementInFrame(const std::string& element_id,
+                                    const int frame_index) {
+  return web::WebViewTapElement(
+      chrome_test_util::GetCurrentWebState(),
+      web::test::ElementSelector::ElementSelectorIdInFrame(element_id,
+                                                           frame_index));
+}
+
 }  // namespace chrome_test_util

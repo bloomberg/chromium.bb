@@ -147,6 +147,10 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
       net::registry_controlled_domains::GetDomainAndRegistry(
           visibleURL.host(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // Sometimes the site_name can be empty. i.e. if the host is an IP address.
+  if (site_name.empty()) {
+    site_name = visibleURL.host();
+  }
   NSString* siteName = base::SysUTF8ToNSString(site_name);
 
   NSPredicate* predicate =

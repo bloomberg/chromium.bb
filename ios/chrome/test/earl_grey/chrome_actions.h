@@ -34,6 +34,13 @@ id<GREYAction> TurnSyncSwitchOn(BOOL on);
 // state.
 id<GREYAction> TapWebElement(const std::string& element_id);
 
+// Action to tap a web element in iframe with the given |element_id| on the
+// current web state. iframe is an immediate child of the main frame with the
+// given index. The action fails if target iframe has a different origin from
+// the main frame.
+id<GREYAction> TapWebElementInFrame(const std::string& element_id,
+                                    const int frame_index);
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_
