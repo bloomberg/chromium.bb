@@ -2215,8 +2215,27 @@ void WebMediaPlayerImpl::OnPictureInPictureControlClicked(
   }
 }
 
+void WebMediaPlayerImpl::SendBytesReceivedUpdate() {
+  media_metrics_provider_->AddBytesReceived(bytes_received_since_last_update_);
+  bytes_received_since_last_update_ = 0;
+}
+
 void WebMediaPlayerImpl::OnBytesReceived(uint64_t data_length) {
-  media_metrics_provider_->AddBytesReceived(data_length);
+  bytes_received_since_last_update_ += data_length;
+  constexpr base::TimeDelta kBytesReceivedUpdateInterval =
+      base::TimeDelta::FromMilliseconds(500);
+  auto current_time = base::TimeTicks::Now();
+  if (earliest_time_next_bytes_received_update_.is_null() ||
+      earliest_time_next_bytes_received_update_ <= current_time) {
+    report_bytes_received_timer_.Stop();
+    SendBytesReceivedUpdate();
+    earliest_time_next_bytes_received_update_ =
+        current_time + kBytesReceivedUpdateInterval;
+  } else {
+    report_bytes_received_timer_.Start(
+        FROM_HERE, kBytesReceivedUpdateInterval, this,
+        &WebMediaPlayerImpl::SendBytesReceivedUpdate);
+  }
 }
 
 void WebMediaPlayerImpl::ScheduleRestart() {
