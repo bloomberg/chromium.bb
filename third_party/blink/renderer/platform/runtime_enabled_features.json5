@@ -1003,10 +1003,6 @@
       status: "test",
     },
     {
-      name: "PostMessageOptions",
-      status: "stable",
-    },
-    {
       name: "PreciseMemoryInfo",
     },
     {

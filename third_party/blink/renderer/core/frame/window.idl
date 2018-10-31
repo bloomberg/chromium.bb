@@ -96,7 +96,7 @@
 
     [CrossOrigin, CallWith=CurrentWindow, RaisesException] void postMessage(any message, USVString targetOrigin, optional sequence<object> transfer = []);
 
-    [CrossOrigin, CallWith=CurrentWindow, RaisesException, RuntimeEnabled=PostMessageOptions] void postMessage(any message, optional WindowPostMessageOptions options);
+    [CrossOrigin, CallWith=CurrentWindow, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
 
     // WindowOrWorkerGlobalScope mixin
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
