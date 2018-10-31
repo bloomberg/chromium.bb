@@ -235,11 +235,13 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // Never delay scavenging for more than the following number of
   // deallocated pages.  With 4K pages, this comes to 4GB of
   // deallocation.
-  static const int kMaxReleaseDelay = 1 << 20;
+  // Chrome:  Changed to 64MB
+  static const int kMaxReleaseDelay = 1 << 14;
 
   // If there is nothing to release, wait for so many pages before
   // scavenging again.  With 4K pages, this comes to 1GB of memory.
-  static const int kDefaultReleaseDelay = 1 << 18;
+  // Chrome:  Changed to 16MB
+  static const int kDefaultReleaseDelay = 1 << 12;
 
   // Pick the appropriate map and cache types based on pointer size
   typedef MapSelector<kAddressBits>::Type PageMap;
