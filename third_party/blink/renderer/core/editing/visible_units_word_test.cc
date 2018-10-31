@@ -451,7 +451,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipTab) {
 
 //----
 
-TEST_F(VisibleUnitsWordTest, PreviousWordBasic) {
+TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordBasic) {
   EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p>| (1) abc def</p>"));
   EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> |(1) abc def</p>"));
   EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> (|1) abc def</p>"));

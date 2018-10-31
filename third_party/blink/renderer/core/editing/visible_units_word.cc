@@ -110,19 +110,30 @@ PositionInFlatTree NextWordPositionInternal(
   return TextSegments::FindBoundaryForward(position, &finder);
 }
 
-unsigned PreviousWordPositionBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  if (may_have_more_context &&
-      !StartOfLastWordBoundaryContext(characters, offset)) {
-    need_more_context = true;
-    return 0;
-  }
-  need_more_context = false;
-  return FindNextWordBackward(characters, length, offset);
+PositionInFlatTree PreviousWordPositionInternal(
+    const PositionInFlatTree& position) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   private:
+    Position Find(const String text, unsigned offset) final {
+      DCHECK_LE(offset, text.length());
+      if (!offset || text.length() == 0)
+        return Position();
+      TextBreakIterator* it =
+          WordBreakIterator(text.Characters16(), text.length());
+      for (int runner = it->preceding(offset); runner != kTextBreakDone;
+           runner = it->preceding(runner)) {
+        // We stop searching when the character following the break is
+        // alphanumeric or underscore.
+        if (runner && (WTF::Unicode::IsAlphanumeric(text[runner]) ||
+                       text[runner] == kLowLineCharacter))
+          return Position::Before(runner);
+      }
+      return Position::Before(0);
+    }
+  } finder;
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
 unsigned StartWordBoundary(
@@ -219,12 +230,24 @@ VisiblePosition NextWordPosition(const VisiblePosition& c) {
   return CreateVisiblePosition(NextWordPosition(c.DeepEquivalent()));
 }
 
+PositionInFlatTreeWithAffinity PreviousWordPosition(
+    const PositionInFlatTree& start) {
+  const PositionInFlatTree prev = PreviousWordPositionInternal(start);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+      PositionInFlatTreeWithAffinity(prev), start);
+}
+
+PositionWithAffinity PreviousWordPosition(const Position& start) {
+  const PositionInFlatTreeWithAffinity& prev =
+      PreviousWordPosition(ToPositionInFlatTree(start));
+  return ToPositionInDOMTreeWithAffinity(prev);
+}
+
+// TODO(xiaochengh): Remove this function. Change callers to use the
+// Position version as it doesn't need canonical input position.
 VisiblePosition PreviousWordPosition(const VisiblePosition& c) {
   DCHECK(c.IsValid()) << c;
-  VisiblePosition prev =
-      CreateVisiblePosition(PreviousBoundary(c, PreviousWordPositionBoundary));
-  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-      prev, c.DeepEquivalent());
+  return CreateVisiblePosition(PreviousWordPosition(c.DeepEquivalent()));
 }
 
 Position StartOfWordPosition(const VisiblePosition& position, EWordSide side) {

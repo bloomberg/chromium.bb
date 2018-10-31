@@ -60,5 +60,33 @@ selection_test(
       'editable',
     '</div>',
   ],
-  'Move backward backward');
+  'Move backward word');
+
+selection_test(
+  [
+    '<div contenteditable>',
+      'editable',
+      '<table border="1" contenteditable="false"><tbody><tr><td>',
+        '<div style="display:inline-block;">',
+          '<span contenteditable="plaintext-only">e|ditable</span>',
+          '<span>static</span>',
+         '</div>',
+      '</td></tr></tbody></table>',
+      'editable',
+    '</div>',
+  ],
+  selection => selection.modify('move', 'forward', 'word'),
+  [
+    '<div contenteditable>',
+      'editable',
+      '<table border="1" contenteditable="false"><tbody><tr><td>',
+        '<div style="display:inline-block;">',
+          '<span contenteditable="plaintext-only">editable|</span>',
+          '<span>static</span>',
+         '</div>',
+      '</td></tr></tbody></table>',
+      'editable',
+    '</div>',
+  ],
+  'Move forward word');
 </script>
