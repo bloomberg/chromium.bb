@@ -808,26 +808,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetBold", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                     AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold)) != 0;
+        bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kBold);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction(
       "GetItalic", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                       AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic)) != 0;
+        bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kItalic);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction("GetUnderline", [](v8::Isolate* isolate,
                                          v8::ReturnValue<v8::Value> result,
                                          AutomationAXTreeWrapper* tree_wrapper,
                                          ui::AXNode* node) {
-    bool value =
-        (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline)) != 0;
+    bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kUnderline);
     result.Set(v8::Boolean::New(isolate, value));
   });
   RouteNodeIDFunction(
@@ -835,9 +829,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(
-                 ax::mojom::TextStyle::kTextStyleLineThrough)) != 0;
+            node->data().HasTextStyle(ax::mojom::TextStyle::kLineThrough);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction(

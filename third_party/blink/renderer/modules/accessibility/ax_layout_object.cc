@@ -1216,7 +1216,11 @@ int AXLayoutObject::TextLength() const {
   return GetText().length();
 }
 
-TextStyle AXLayoutObject::GetTextStyle() const {
+static unsigned TextStyleFlag(ax::mojom::TextStyle text_style_enum) {
+  return static_cast<unsigned>(1 << static_cast<int>(text_style_enum));
+}
+
+int32_t AXLayoutObject::GetTextStyle() const {
   if (!GetLayoutObject())
     return AXNodeObject::GetTextStyle();
 
@@ -1224,17 +1228,17 @@ TextStyle AXLayoutObject::GetTextStyle() const {
   if (!style)
     return AXNodeObject::GetTextStyle();
 
-  unsigned text_style = kTextStyleNone;
+  int32_t text_style = 0;
   if (style->GetFontWeight() == BoldWeightValue())
-    text_style |= kTextStyleBold;
+    text_style |= TextStyleFlag(ax::mojom::TextStyle::kBold);
   if (style->GetFontDescription().Style() == ItalicSlopeValue())
-    text_style |= kTextStyleItalic;
+    text_style |= TextStyleFlag(ax::mojom::TextStyle::kItalic);
   if (style->GetTextDecoration() == TextDecoration::kUnderline)
-    text_style |= kTextStyleUnderline;
+    text_style |= TextStyleFlag(ax::mojom::TextStyle::kUnderline);
   if (style->GetTextDecoration() == TextDecoration::kLineThrough)
-    text_style |= kTextStyleLineThrough;
+    text_style |= TextStyleFlag(ax::mojom::TextStyle::kLineThrough);
 
-  return static_cast<TextStyle>(text_style);
+  return text_style;
 }
 
 KURL AXLayoutObject::Url() const {

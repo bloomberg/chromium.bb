@@ -305,24 +305,16 @@ void WalkAXTreeDepthFirst(const AXNode* node,
         gfx::ToEnclosingRect(tree->RelativeToTreeBounds(node, text_size_rect));
     result->text_size = scaled_text_size_rect.height();
 
-    const int32_t text_style =
-        node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
     result->color =
         node->data().GetIntAttribute(ax::mojom::IntAttribute::kColor);
     result->bgcolor =
         node->data().GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor);
-    result->bold =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold)) != 0;
-    result->italic =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic)) != 0;
+    result->bold = node->data().HasTextStyle(ax::mojom::TextStyle::kBold);
+    result->italic = node->data().HasTextStyle(ax::mojom::TextStyle::kItalic);
     result->line_through =
-        (text_style & static_cast<int32_t>(
-                          ax::mojom::TextStyle::kTextStyleLineThrough)) != 0;
+        node->data().HasTextStyle(ax::mojom::TextStyle::kLineThrough);
     result->underline =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline)) != 0;
+        node->data().HasTextStyle(ax::mojom::TextStyle::kUnderline);
   }
 
   const gfx::Rect& absolute_rect =

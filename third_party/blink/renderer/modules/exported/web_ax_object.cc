@@ -890,11 +890,11 @@ ax::mojom::TextPosition WebAXObject::GetTextPosition() const {
   return private_->GetTextPosition();
 }
 
-WebAXTextStyle WebAXObject::TextStyle() const {
+int WebAXObject::TextStyle() const {
   if (IsDetached())
-    return kWebAXTextStyleNone;
+    return 0;
 
-  return static_cast<WebAXTextStyle>(private_->GetTextStyle());
+  return private_->GetTextStyle();
 }
 
 WebURL WebAXObject::Url() const {

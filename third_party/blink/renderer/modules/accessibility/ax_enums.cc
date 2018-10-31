@@ -23,12 +23,6 @@ STATIC_ASSERT_ENUM(kWebAXOrientationVertical,
 STATIC_ASSERT_ENUM(kWebAXOrientationHorizontal,
                    kAccessibilityOrientationHorizontal);
 
-STATIC_ASSERT_ENUM(kWebAXTextStyleNone, kTextStyleNone);
-STATIC_ASSERT_ENUM(kWebAXTextStyleBold, kTextStyleBold);
-STATIC_ASSERT_ENUM(kWebAXTextStyleItalic, kTextStyleItalic);
-STATIC_ASSERT_ENUM(kWebAXTextStyleUnderline, kTextStyleUnderline);
-STATIC_ASSERT_ENUM(kWebAXTextStyleLineThrough, kTextStyleLineThrough);
-
 STATIC_ASSERT_ENUM(WebAXStringAttribute::kAriaKeyShortcuts,
                    AXStringAttribute::kAriaKeyShortcuts);
 STATIC_ASSERT_ENUM(WebAXStringAttribute::kAriaRoleDescription,

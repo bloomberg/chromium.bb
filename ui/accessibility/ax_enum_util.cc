@@ -1866,77 +1866,17 @@ ax::mojom::TextPosition ParseTextPosition(const char* text_position) {
 
 const char* ToString(ax::mojom::TextStyle text_style) {
   switch (text_style) {
-    case ax::mojom::TextStyle::kNone:
-      return "none";
-    case ax::mojom::TextStyle::kTextStyleBold:
-      return "textStyleBold";
-    case ax::mojom::TextStyle::kTextStyleItalic:
-      return "textStyleItalic";
-    case ax::mojom::TextStyle::kTextStyleBoldItalic:
-      return "textStyleBoldItalic";
-    case ax::mojom::TextStyle::kTextStyleUnderline:
-      return "textStyleUnderline";
-    case ax::mojom::TextStyle::kTextStyleBoldUnderline:
-      return "textStyleBoldUnderline";
-    case ax::mojom::TextStyle::kTextStyleItalicUnderline:
-      return "textStyleItalicUnderline";
-    case ax::mojom::TextStyle::kTextStyleBoldItalicUnderline:
-      return "textStyleBoldItalicUnderline";
-    case ax::mojom::TextStyle::kTextStyleLineThrough:
-      return "textStyleLineThrough";
-    case ax::mojom::TextStyle::kTextStyleBoldLineThrough:
-      return "textStyleBoldLineThrough";
-    case ax::mojom::TextStyle::kTextStyleItalicLineThrough:
-      return "textStyleItalicLineThrough";
-    case ax::mojom::TextStyle::kTextStyleBoldItalicLineThrough:
-      return "textStyleBoldItalicLineThrough";
-    case ax::mojom::TextStyle::kTextStyleUnderlineLineThrough:
-      return "textStyleUnderlineLineThrough";
-    case ax::mojom::TextStyle::kTextStyleBoldUnderlineLineThrough:
-      return "textStyleBoldUnderlineLineThrough";
-    case ax::mojom::TextStyle::kTextStyleItalicUnderlineLineThrough:
-      return "textStyleItalicUnderlineLineThrough";
-    case ax::mojom::TextStyle::kTextStyleBoldItalicUnderlineLineThrough:
-      return "textStyleBoldItalicUnderlineLineThrough";
+    case ax::mojom::TextStyle::kBold:
+      return "bold";
+    case ax::mojom::TextStyle::kItalic:
+      return "italic";
+    case ax::mojom::TextStyle::kUnderline:
+      return "underline";
+    case ax::mojom::TextStyle::kLineThrough:
+      return "lineThrough";
   }
 
   return "";
-}
-
-ax::mojom::TextStyle ParseTextStyle(const char* text_style) {
-  if (0 == strcmp(text_style, "none"))
-    return ax::mojom::TextStyle::kNone;
-  if (0 == strcmp(text_style, "textStyleBold"))
-    return ax::mojom::TextStyle::kTextStyleBold;
-  if (0 == strcmp(text_style, "textStyleItalic"))
-    return ax::mojom::TextStyle::kTextStyleItalic;
-  if (0 == strcmp(text_style, "textStyleBoldItalic"))
-    return ax::mojom::TextStyle::kTextStyleBoldItalic;
-  if (0 == strcmp(text_style, "textStyleUnderline"))
-    return ax::mojom::TextStyle::kTextStyleUnderline;
-  if (0 == strcmp(text_style, "textStyleBoldUnderline"))
-    return ax::mojom::TextStyle::kTextStyleBoldUnderline;
-  if (0 == strcmp(text_style, "textStyleItalicUnderline"))
-    return ax::mojom::TextStyle::kTextStyleItalicUnderline;
-  if (0 == strcmp(text_style, "textStyleBoldItalicUnderline"))
-    return ax::mojom::TextStyle::kTextStyleBoldItalicUnderline;
-  if (0 == strcmp(text_style, "textStyleLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleLineThrough;
-  if (0 == strcmp(text_style, "textStyleBoldLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleBoldLineThrough;
-  if (0 == strcmp(text_style, "textStyleItalicLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleItalicLineThrough;
-  if (0 == strcmp(text_style, "textStyleBoldItalicLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleBoldItalicLineThrough;
-  if (0 == strcmp(text_style, "textStyleUnderlineLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleUnderlineLineThrough;
-  if (0 == strcmp(text_style, "textStyleBoldUnderlineLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleBoldUnderlineLineThrough;
-  if (0 == strcmp(text_style, "textStyleItalicUnderlineLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleItalicUnderlineLineThrough;
-  if (0 == strcmp(text_style, "textStyleBoldItalicUnderlineLineThrough"))
-    return ax::mojom::TextStyle::kTextStyleBoldItalicUnderlineLineThrough;
-  return ax::mojom::TextStyle::kNone;
 }
 
 const char* ToString(ax::mojom::AriaCurrentState aria_current_state) {
