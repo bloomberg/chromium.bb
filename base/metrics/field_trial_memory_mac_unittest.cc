@@ -41,9 +41,10 @@ class FieldTrialMemoryServerTest : public MultiProcessTest {
     ASSERT_EQ(kr, KERN_SUCCESS) << "mach_vm_allocate";
     memory_.reset(address, size);
 
-    kr = mach_make_memory_entry_64(mach_task_self(), &size, address,
-                                   VM_PROT_READ, memory_object_.receive(),
-                                   MACH_PORT_NULL);
+    kr = mach_make_memory_entry_64(
+        mach_task_self(), &size, address, VM_PROT_READ,
+        mac::ScopedMachSendRight::Receiver(memory_object_).get(),
+        MACH_PORT_NULL);
     ASSERT_EQ(kr, KERN_SUCCESS) << "mach_make_memory_entry_64";
 
     memcpy(reinterpret_cast<void*>(address), kMemoryTestPattern,

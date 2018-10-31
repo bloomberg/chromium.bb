@@ -527,11 +527,11 @@ class ChannelPosix : public Channel,
           // letting us know that it is now safe to close the file
           // descriptor. For more information, see:
           // http://crbug.com/298276
-          MessagePtr fds_message(
-              new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
-                                   Message::MessageType::HANDLES_SENT));
-          memcpy(fds_message->mutable_payload(), fds.data(),
-                 sizeof(fds[0]) * fds.size());
+          MessagePtr fds_message(new Channel::Message(
+              sizeof(int) * fds.size(), 0, Message::MessageType::HANDLES_SENT));
+          int* fd_data = reinterpret_cast<int*>(fds_message->mutable_payload());
+          for (size_t i = 0; i < fds.size(); ++i)
+            fd_data[i] = fds[i].get();
           outgoing_messages_.emplace_back(std::move(fds_message), 0);
           {
             base::AutoLock l(fds_to_close_lock_);
