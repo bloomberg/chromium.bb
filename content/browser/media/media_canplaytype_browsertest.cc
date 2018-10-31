@@ -1344,12 +1344,11 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AvcLevels) {
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E041\"'"));
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E042\"'"));
 
-  // Levels 5 (0x32), 5.1 (0x33).
-  // Note: Level 5.2 (0x34) is not considered valid (crbug.com/460376).
+  // Levels 5 (0x32), 5.1 (0x33), 5.2 (0x34).
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E031\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E032\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E033\"'"));
-  EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E034\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E034\"'"));
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E035\"'"));
   // Verify that decimal representations of levels are not supported.
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E005\"'"));
