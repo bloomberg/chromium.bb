@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
@@ -138,6 +139,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   void ReprioritizeRequest(net::URLRequest* request,
                            net::RequestPriority new_priority);
 
+  // Returns true if the timer that dispatches long queued requests is running.
+  bool IsLongQueuedRequestsDispatchTimerRunning() const;
+
   bool priority_requests_delayable() const {
     return priority_requests_delayable_;
   }
@@ -171,6 +175,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   void SetResourceSchedulerParamsManagerForTests(
       const ResourceSchedulerParamsManager& resource_scheduler_params_manager);
 
+  // Dispatch requests that have been queued for too long to network.
+  void DispatchLongQueuedRequestsForTesting();
+
  private:
   class Client;
   class RequestQueue;
@@ -194,11 +201,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Returns the client for the given |child_id| and |route_id| combo.
   Client* GetClient(int child_id, int route_id);
 
+  // May start the timer that dispatches long queued requests
+  void StartLongQueuedRequestsDispatchTimerIfNeeded();
+
+  // Called when |long_queued_requests_dispatch_timer_| is fired. May start any
+  // pending requests that can be started.
+  void OnLongQueuedRequestsDispatchTimerFired();
+
   ClientMap client_map_;
   RequestSet unowned_requests_;
 
   // Guaranteed to be non-null.
   const base::TickClock* tick_clock_;
+
+  // Timer to dispatch requests that may have been queued for too long.
+  base::OneShotTimer long_queued_requests_dispatch_timer_;
 
   // Whether or not to enable ResourceScheduling. This will almost always be
   // enabled, except for some C++ headless embedders who may implement their own
