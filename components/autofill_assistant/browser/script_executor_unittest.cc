@@ -363,51 +363,5 @@ TEST_F(ScriptExecutorTest, HideDetailsOnError) {
   executor_->Run(executor_callback_.Get());
 }
 
-TEST_F(ScriptExecutorTest, HideOverlay) {
-  ActionsResponseProto actions_response;
-  actions_response.set_server_payload("payload");
-  actions_response.add_actions()->mutable_tell()->set_message("1");
-  // focus_element hides the overlay
-  actions_response.add_actions()
-      ->mutable_focus_element()
-      ->mutable_element()
-      ->add_selectors("exists");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
-      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
-
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
-
-  EXPECT_CALL(executor_callback_, Run(_));
-
-  overlay_ = true;
-  executor_->Run(executor_callback_.Get());
-  ASSERT_FALSE(overlay_);
-}
-
-TEST_F(ScriptExecutorTest, ShowOverlayAgainAfterHiding) {
-  ActionsResponseProto actions_response;
-  actions_response.set_server_payload("payload");
-  actions_response.add_actions()
-      ->mutable_focus_element()
-      ->mutable_element()
-      ->add_selectors("exists");
-  // tell shows the overlay again, after it's been hidden by focus_element
-  actions_response.add_actions()->mutable_tell()->set_message("1");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
-      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
-
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
-
-  EXPECT_CALL(executor_callback_, Run(_));
-
-  overlay_ = true;
-  executor_->Run(executor_callback_.Get());
-  ASSERT_TRUE(overlay_);
-}
-
 }  // namespace
 }  // namespace autofill_assistant

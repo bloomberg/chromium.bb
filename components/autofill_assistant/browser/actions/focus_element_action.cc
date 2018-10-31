@@ -16,7 +16,6 @@ namespace autofill_assistant {
 FocusElementAction::FocusElementAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_focus_element());
-  show_overlay_ = false;
 }
 
 FocusElementAction::~FocusElementAction() {}
