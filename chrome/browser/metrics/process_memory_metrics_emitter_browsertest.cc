@@ -52,6 +52,9 @@ using extensions::TestExtensionDir;
 
 using UkmEntry = ukm::builders::Memory_Experimental;
 
+// Whether the value of a metric can be zero.
+enum class ValueRestriction { NONE, ABOVE_ZERO };
+
 // Returns the number of renderers associated with top-level frames in
 // |browser|. There can be other renderers in the process (e.g. spare renderer).
 int GetNumRenderers(Browser* browser) {
@@ -128,7 +131,7 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
 void CheckMemoryMetric(const std::string& name,
                        const base::HistogramTester& histogram_tester,
                        int count,
-                       bool check_minimum,
+                       ValueRestriction value_restriction,
                        int number_of_processes = 1u) {
   std::unique_ptr<base::HistogramSamples> samples(
       histogram_tester.GetHistogramSamplesSinceCreation(name));
@@ -142,7 +145,7 @@ void CheckMemoryMetric(const std::string& name,
     EXPECT_EQ(samples->TotalCount(), count * number_of_processes) << name;
   }
 
-  if (check_minimum)
+  if (value_restriction == ValueRestriction::ABOVE_ZERO)
     EXPECT_GT(samples->sum(), 0u) << name;
 
   // As a sanity check, no memory stat should exceed 4 GB.
@@ -156,37 +159,42 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                            int number_of_extenstion_processes = 0u) {
 #if !defined(OS_WIN)
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
-                    count, true);
+                    count, ValueRestriction::ABOVE_ZERO);
 #endif
   if (number_of_renderer_processes) {
 #if !defined(OS_WIN)
     CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
-                      count, true, number_of_renderer_processes);
+                      count, ValueRestriction::ABOVE_ZERO,
+                      number_of_renderer_processes);
 #endif
     CheckMemoryMetric("Memory.Experimental.Renderer2.BlinkGC", histogram_tester,
-                      count, false, number_of_renderer_processes);
+                      count, ValueRestriction::NONE,
+                      number_of_renderer_processes);
     CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
-                      histogram_tester, count, false,
+                      histogram_tester, count, ValueRestriction::NONE,
                       number_of_renderer_processes);
     CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, true, number_of_renderer_processes);
+                      count, ValueRestriction::ABOVE_ZERO,
+                      number_of_renderer_processes);
   }
   if (number_of_extenstion_processes) {
 #if !defined(OS_WIN)
     CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
-                      count, true, number_of_extenstion_processes);
+                      count, ValueRestriction::ABOVE_ZERO,
+                      number_of_extenstion_processes);
 #endif
     CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
-                      histogram_tester, count, false,
+                      histogram_tester, count, ValueRestriction::NONE,
                       number_of_extenstion_processes);
     CheckMemoryMetric("Memory.Experimental.Extension2.PartitionAlloc",
-                      histogram_tester, count, false,
+                      histogram_tester, count, ValueRestriction::NONE,
                       number_of_extenstion_processes);
     CheckMemoryMetric("Memory.Experimental.Extension2.V8", histogram_tester,
-                      count, true, number_of_extenstion_processes);
+                      count, ValueRestriction::ABOVE_ZERO,
+                      number_of_extenstion_processes);
   }
   CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
-                    histogram_tester, count, true);
+                    histogram_tester, count, ValueRestriction::ABOVE_ZERO);
 }
 
 }  // namespace
@@ -222,15 +230,22 @@ class ProcessMemoryMetricsEmitterTest
     EXPECT_EQ(expected_value, *value) << name;
   }
 
-  void CheckMemoryMetricWithName(const ukm::mojom::UkmEntry* entry,
-                                 const char* name,
-                                 bool can_be_zero = true) {
+  void CheckMemoryMetricWithName(
+      const ukm::mojom::UkmEntry* entry,
+      const char* name,
+      ValueRestriction value_restriction = ValueRestriction::NONE) {
     const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
     ASSERT_TRUE(value) << name;
-    if (can_be_zero)
-      EXPECT_GE(*value, 0) << name;
-    else
-      EXPECT_GT(*value, 0) << name;
+
+    switch (value_restriction) {
+      case ValueRestriction::NONE:
+        EXPECT_GE(*value, 0) << name;
+        break;
+      case ValueRestriction::ABOVE_ZERO:
+        EXPECT_GT(*value, 0) << name;
+        break;
+    }
+
     EXPECT_LE(*value, 4000) << name;
   }
 
@@ -263,8 +278,9 @@ class ProcessMemoryMetricsEmitterTest
       } else {
         // This must be Total2.
         total_entry_count++;
-        CheckMemoryMetricWithName(
-            entry, UkmEntry::kTotal2_PrivateMemoryFootprintName, false);
+        CheckMemoryMetricWithName(entry,
+                                  UkmEntry::kTotal2_PrivateMemoryFootprintName,
+                                  ValueRestriction::ABOVE_ZERO);
       }
     }
     EXPECT_EQ(entry_count, browser_entry_count);
@@ -275,35 +291,45 @@ class ProcessMemoryMetricsEmitterTest
 
   void CheckUkmRendererEntry(const ukm::mojom::UkmEntry* entry) {
 #if !defined(OS_WIN)
-    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName, false);
+    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
+                              ValueRestriction::ABOVE_ZERO);
 #endif
 #if !defined(OS_MACOSX)
-    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName, false);
+    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
+                              ValueRestriction::ABOVE_ZERO);
 #endif
     CheckMemoryMetricWithName(entry, UkmEntry::kPrivateMemoryFootprintName,
-                              false);
-    CheckMemoryMetricWithName(entry, UkmEntry::kBlinkGCName, true);
-    CheckMemoryMetricWithName(entry, UkmEntry::kPartitionAllocName, true);
-    CheckMemoryMetricWithName(entry, UkmEntry::kV8Name, true);
-    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfExtensionsName, true);
+                              ValueRestriction::ABOVE_ZERO);
+    CheckMemoryMetricWithName(entry, UkmEntry::kBlinkGCName,
+                              ValueRestriction::NONE);
+    CheckMemoryMetricWithName(entry, UkmEntry::kPartitionAllocName,
+                              ValueRestriction::NONE);
+    CheckMemoryMetricWithName(entry, UkmEntry::kV8Name, ValueRestriction::NONE);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfExtensionsName,
+                              ValueRestriction::NONE);
     CheckTimeMetricWithName(entry, UkmEntry::kUptimeName);
 
-    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfDocumentsName, true);
-    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfFramesName, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfDocumentsName,
+                              ValueRestriction::NONE);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfFramesName,
+                              ValueRestriction::NONE);
     CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfLayoutObjectsName,
-                              true);
-    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfNodesName, true);
+                              ValueRestriction::NONE);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfNodesName,
+                              ValueRestriction::NONE);
   }
 
   void CheckUkmBrowserEntry(const ukm::mojom::UkmEntry* entry) {
 #if !defined(OS_WIN)
-    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName, false);
+    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
+                              ValueRestriction::ABOVE_ZERO);
 #endif
 #if !defined(OS_MACOSX)
-    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName, false);
+    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
+                              ValueRestriction::ABOVE_ZERO);
 #endif
     CheckMemoryMetricWithName(entry, UkmEntry::kPrivateMemoryFootprintName,
-                              false);
+                              ValueRestriction::ABOVE_ZERO);
 
     CheckTimeMetricWithName(entry, UkmEntry::kUptimeName);
   }
