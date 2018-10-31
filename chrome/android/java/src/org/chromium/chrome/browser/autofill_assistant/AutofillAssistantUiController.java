@@ -206,12 +206,18 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onShowOverlay() {
-        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::showOverlay);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> {
+            uiDelegate.showOverlay();
+            uiDelegate.disableProgressBarPulsing();
+        });
     }
 
     @CalledByNative
     private void onHideOverlay() {
-        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideOverlay);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> {
+            uiDelegate.hideOverlay();
+            uiDelegate.enableProgressBarPulsing();
+        });
     }
 
     @CalledByNative
