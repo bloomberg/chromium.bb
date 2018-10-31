@@ -304,6 +304,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
           browser_context_->RetriveInProgressDownloadManager()),
       next_download_id_(download::DownloadItem::kInvalidId),
       is_history_download_id_retrieved_(false),
+      should_persist_new_download_(false),
       cancelled_download_cleared_from_history_(0),
       interrupted_download_cleared_from_history_(0),
       weak_factory_(this) {
@@ -368,7 +369,7 @@ void DownloadManagerImpl::GetNextId(GetNextIdCallback callback) {
           base::BindRepeating(&DownloadManagerImpl::OnHistoryNextIdRetrived,
                               weak_factory_.GetWeakPtr()));
     } else {
-      OnHistoryNextIdRetrived(download::DownloadItem::kInvalidId + 1);
+      OnHistoryNextIdRetrived(download::DownloadItem::kInvalidId);
     }
   }
 }
@@ -387,6 +388,10 @@ void DownloadManagerImpl::SetNextId(uint32_t next_id) {
 void DownloadManagerImpl::OnHistoryNextIdRetrived(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   is_history_download_id_retrieved_ = true;
+  if (next_id == download::DownloadItem::kInvalidId)
+    next_id++;
+  else
+    should_persist_new_download_ = true;
   SetNextId(next_id);
 }
 
@@ -587,7 +592,8 @@ void DownloadManagerImpl::StartDownloadItem(
     download::DownloadItemImpl* download = downloads_by_guid_[info->guid];
     if (!download || download->GetState() == download::DownloadItem::CANCELLED)
       download = nullptr;
-    std::move(callback).Run(std::move(info), download);
+    std::move(callback).Run(std::move(info), download,
+                            should_persist_new_download_);
     OnDownloadStarted(download, on_started);
   } else {
     GetNextId(base::BindOnce(&DownloadManagerImpl::CreateNewDownloadItemToStart,
@@ -604,7 +610,8 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   download::DownloadItemImpl* download = CreateActiveItem(id, *info);
-  std::move(callback).Run(std::move(info), download);
+  std::move(callback).Run(std::move(info), download,
+                          should_persist_new_download_);
   // For new downloads, we notify here, rather than earlier, so that
   // the download_file is bound to download and all the usual
   // setters (e.g. Cancel) work.

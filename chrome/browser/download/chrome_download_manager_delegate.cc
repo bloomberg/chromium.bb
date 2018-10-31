@@ -296,6 +296,7 @@ void OnDownloadLocationDetermined(
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(download::DownloadItem::kInvalidId),
+      next_id_retrieved_(false),
       download_prefs_(new DownloadPrefs(profile)),
       disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -357,17 +358,13 @@ void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
 
-  // |download::DownloadItem::kInvalidId| will be returned only when download
+  // |download::DownloadItem::kInvalidId| will be returned only when history
   // database failed to initialize.
-  bool download_db_available = (next_id != download::DownloadItem::kInvalidId);
-  RecordDatabaseAvailability(download_db_available);
-  if (download_db_available) {
+  bool history_db_available = (next_id != download::DownloadItem::kInvalidId);
+  RecordDatabaseAvailability(history_db_available);
+  if (history_db_available)
     next_download_id_ = next_id;
-  } else {
-    // Still download files without download database, all download history in
-    // this browser session will not be persisted.
-    next_download_id_ = download::DownloadItem::kInvalidId + 1;
-  }
+  next_id_retrieved_ = true;
 
   IdCallbackVector callbacks;
   id_callbacks_.swap(callbacks);
@@ -385,7 +382,7 @@ void ChromeDownloadManagerDelegate::GetNextId(
         profile_->GetOriginalProfile())->GetDelegate()->GetNextId(callback);
     return;
   }
-  if (next_download_id_ == download::DownloadItem::kInvalidId) {
+  if (!next_id_retrieved_) {
     id_callbacks_.push_back(callback);
     return;
   }
@@ -396,8 +393,10 @@ void ChromeDownloadManagerDelegate::ReturnNextId(
     const content::DownloadIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK_NE(download::DownloadItem::kInvalidId, next_download_id_);
-  callback.Run(next_download_id_++);
+  // kInvalidId is returned to indicate the error.
+  callback.Run(next_download_id_);
+  if (next_download_id_ != download::DownloadItem::kInvalidId)
+    ++next_download_id_;
 }
 
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
