@@ -4,6 +4,9 @@
 
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 
+#include "base/time/time.h"
+#include "build/build_config.h"
+
 namespace resource_coordinator {
 
 ProcessResourceCoordinator::ProcessResourceCoordinator(
@@ -12,33 +15,34 @@ ProcessResourceCoordinator::ProcessResourceCoordinator(
   CoordinationUnitID new_cu_id(CoordinationUnitType::kProcess,
                                CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(connector, new_cu_id);
+  DCHECK(service_);
 }
 
 ProcessResourceCoordinator::~ProcessResourceCoordinator() = default;
 
+void ProcessResourceCoordinator::OnProcessLaunched(
+    const base::Process& process) {
+  // TODO(fdoray): Merge ProcessCoordinationUnit::SetPID/SetLaunchTime().
+  service_->SetPID(process.Pid());
+  service_->SetLaunchTime(
+#if defined(OS_ANDROID)
+      // Process::CreationTime() is not available on Android. Since this method
+      // is called immediately after the process is launched, the process launch
+      // time can be approximated with the current time.
+      base::Time::Now()
+#else
+      process.CreationTime()
+#endif
+          );
+}
+
 void ProcessResourceCoordinator::SetCPUUsage(double cpu_usage) {
-  if (!service_)
-    return;
   service_->SetCPUUsage(cpu_usage);
-}
-
-void ProcessResourceCoordinator::SetLaunchTime(base::Time launch_time) {
-  if (!service_)
-    return;
-  service_->SetLaunchTime(launch_time);
-}
-
-void ProcessResourceCoordinator::SetPID(base::ProcessId pid) {
-  if (!service_)
-    return;
-  service_->SetPID(pid);
 }
 
 void ProcessResourceCoordinator::AddFrame(
     const FrameResourceCoordinator& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_)
-    return;
   // We could keep the ID around ourselves, but this hop ensures that the child
   // has been created on the service-side.
   frame.service()->GetID(

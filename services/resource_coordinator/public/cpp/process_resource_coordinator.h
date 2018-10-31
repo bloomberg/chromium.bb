@@ -6,7 +6,7 @@
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_PROCESS_RESOURCE_COORDINATOR_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/threading/thread_checker.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
@@ -22,10 +22,10 @@ class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
   ProcessResourceCoordinator(service_manager::Connector* connector);
   ~ProcessResourceCoordinator() override;
 
-  void SetCPUUsage(double usage);
-  void SetLaunchTime(base::Time launch_time);
-  void SetPID(base::ProcessId pid);
+  // Must be called immediately after the process is launched.
+  void OnProcessLaunched(const base::Process& process);
 
+  void SetCPUUsage(double usage);
   void AddFrame(const FrameResourceCoordinator& frame);
 
  private:
