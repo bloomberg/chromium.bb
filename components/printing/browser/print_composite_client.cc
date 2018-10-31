@@ -167,7 +167,6 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
 void PrintCompositeClient::DoCompositePageToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
-    int page_num,
     const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -175,7 +174,7 @@ void PrintCompositeClient::DoCompositePageToPdf(
   auto& compositor = GetCompositeRequest(document_cookie);
   auto region = content.metafile_data_region.Duplicate();
   compositor->CompositePageToPdf(
-      GenerateFrameGuid(render_frame_host), page_num, std::move(region),
+      GenerateFrameGuid(render_frame_host), std::move(region),
       ConvertContentInfoMap(render_frame_host, content.subframe_content_info),
       base::BindOnce(&PrintCompositeClient::OnDidCompositePageToPdf,
                      std::move(callback)));

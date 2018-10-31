@@ -165,7 +165,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
-        params.document_cookie, render_frame_host, page_number, content,
+        params.document_cookie, render_frame_host, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), page_number,
                        params.document_cookie, ids));
