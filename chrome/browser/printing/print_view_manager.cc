@@ -66,11 +66,7 @@ struct PrintViewManager::FrameDispatchHelper {
 };
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
-    : PrintViewManagerBase(web_contents),
-      print_preview_state_(NOT_PREVIEWING),
-      print_preview_rfh_(nullptr),
-      scripted_print_preview_rph_(nullptr),
-      is_switching_to_system_dialog_(false) {
+    : PrintViewManagerBase(web_contents) {
   if (PrintPreviewDialogController::IsPrintPreviewURL(web_contents->GetURL())) {
     EnableInternalPDFPluginForContents(
         web_contents->GetMainFrame()->GetProcess()->GetID(),
@@ -83,10 +79,10 @@ PrintViewManager::~PrintViewManager() {
 }
 
 bool PrintViewManager::PrintForSystemDialogNow(
-    const base::Closure& dialog_shown_callback) {
-  DCHECK(!dialog_shown_callback.is_null());
-  DCHECK(on_print_dialog_shown_callback_.is_null());
-  on_print_dialog_shown_callback_ = dialog_shown_callback;
+    base::OnceClosure dialog_shown_callback) {
+  DCHECK(dialog_shown_callback);
+  DCHECK(!on_print_dialog_shown_callback_);
+  on_print_dialog_shown_callback_ = std::move(dialog_shown_callback);
   is_switching_to_system_dialog_ = true;
 
   SetPrintingRFH(print_preview_rfh_);
@@ -193,11 +189,8 @@ void PrintViewManager::OnDidShowPrintDialog(content::RenderFrameHost* rfh) {
   if (rfh != print_preview_rfh_)
     return;
 
-  if (on_print_dialog_shown_callback_.is_null())
-    return;
-
-  on_print_dialog_shown_callback_.Run();
-  on_print_dialog_shown_callback_.Reset();
+  if (on_print_dialog_shown_callback_)
+    std::move(on_print_dialog_shown_callback_).Run();
 }
 
 void PrintViewManager::OnSetupScriptedPrintPreview(
