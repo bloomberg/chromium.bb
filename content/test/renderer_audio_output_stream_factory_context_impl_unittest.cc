@@ -49,9 +49,9 @@ const int kRenderProcessId = 42;
 const int kRenderFrameId = 24;
 const float kWaveFrequency = 440.f;
 const int kChannels = 1;
-const int kBuffers = 1000;
-const int kSampleFrequency = 44100;
-const int kSamplesPerBuffer = kSampleFrequency / 100;
+const int kBuffers = 100;
+const int kSampleFrequency = 8000;
+const int kSamplesPerBuffer = kSampleFrequency / 10;
 
 std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
 GetTestAudioSource() {
@@ -206,8 +206,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
 };
 
 // It's flaky on the buildbot, http://crbug.com/761214.
-TEST_F(RendererAudioOutputStreamFactoryIntegrationTest,
-       DISABLED_StreamIntegrationTest) {
+TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // Sets up the factory on the IO thread and runs client code on the UI thread.
   // Send a sine wave from the client and makes sure it's received by the output
   // stream.
