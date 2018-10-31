@@ -32,6 +32,9 @@ package-lock.json
 iron-autogrow-textarea/*
 
 # paper-input
+paper-input/all-imports.html
+paper-input/paper-input-behavior.html
+paper-input/paper-input-char-counter.html
 paper-input/paper-input.html
 paper-input/paper-textarea.html
 

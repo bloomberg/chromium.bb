@@ -9,19 +9,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_library("paper-input-addon-behavior-extracted") {
 }
 
-js_library("paper-input-behavior-extracted") {
-  deps = [
-    "../iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
-    "../iron-behaviors:iron-control-state-extracted",
-  ]
-}
-
-js_library("paper-input-char-counter-extracted") {
-  deps = [
-    ":paper-input-addon-behavior-extracted",
-  ]
-}
-
 js_library("paper-input-container-extracted") {
 }
 
