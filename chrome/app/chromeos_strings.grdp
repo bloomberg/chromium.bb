@@ -80,6 +80,9 @@
   <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
     The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
   </message>
+  <message name="IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL" desc="Accessibility text read by chromevox when the default wallpaper is focused.">
+    Default wallpaper
+  </message>
 
   <!-- Zip Archiver -->
   <message desc="The product name for Zip Archiver." name="IDS_ZIP_ARCHIVER_NAME">

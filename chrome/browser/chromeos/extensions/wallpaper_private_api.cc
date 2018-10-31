@@ -229,6 +229,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
              IDS_WALLPAPER_MANAGER_CONFIRM_PREVIEW_WALLPAPER_LABEL);
   SET_STRING("setSuccessfullyMessage",
              IDS_WALLPAPER_MANAGER_SET_SUCCESSFULLY_MESSAGE);
+  SET_STRING("defaultWallpaperLabel", IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();

@@ -1534,10 +1534,19 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
     this.wallpaperRequest_ = null;
   }
   if (selectedListItem.custom) {
+    var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
+    if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
+      var defaultWallpaperInfo = {
+        wallpaperId: null,
+        baseURL: 'OemDefaultWallpaper',
+        layout: Constants.WallpaperThumbnailDefaultLayout,
+        source: Constants.WallpaperSourceEnum.OEM,
+        ariaLabel: loadTimeData.getString('defaultWallpaperLabel'),
+        availableOffline: true
+      };
+      wallpapersDataModel.push(defaultWallpaperInfo);
+    }
     chrome.wallpaperPrivate.getLocalImagePaths(localImagePaths => {
-      // Show a 'no images' message to user if there's no local image.
-      this.updateNoImagesVisibility_(localImagePaths.length == 0);
-      var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
       for (var imagePath of localImagePaths) {
         var wallpaperInfo = {
           // The absolute file path, used for retrieving the image data if user
@@ -1559,7 +1568,8 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
         };
         wallpapersDataModel.push(wallpaperInfo);
       }
-      // Display the images.
+      // Show a "no images" message if there's no image.
+      this.updateNoImagesVisibility_(wallpapersDataModel.length == 0);
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
     });
   } else {
