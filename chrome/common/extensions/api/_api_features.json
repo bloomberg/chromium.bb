@@ -251,6 +251,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://chrome-signin/*",
+      "chrome://discards/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
