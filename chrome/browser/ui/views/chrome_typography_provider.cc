@@ -34,8 +34,13 @@ bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
   if (theme.UsesHighContrastColors())
     return true;
 
-  constexpr auto kTestColorId = ui::NativeTheme::kColorId_LabelEnabledColor;
-  return theme.GetSystemColor(kTestColorId) != SK_ColorBLACK;
+  // TODO(pbos): Revisit this check. Both GG900 and black are considered
+  // "default black" as the common theme uses GG900 as primary color.
+  const SkColor test_color =
+      theme.GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  const bool label_color_is_black =
+      test_color == SK_ColorBLACK || test_color == gfx::kGoogleGrey900;
+  return !label_color_is_black;
 }
 
 // Returns a color for a possibly inverted or high-contrast OS color theme.
