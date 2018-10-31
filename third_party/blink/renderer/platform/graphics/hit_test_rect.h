@@ -40,9 +40,13 @@ struct PLATFORM_EXPORT HitTestRect {
   }
 
   bool operator!=(const HitTestRect& rhs) const { return !(*this == rhs); }
+
+  String ToString() const;
 };
 
 using LayerHitTestRects = WTF::HashMap<const PaintLayer*, Vector<HitTestRect>>;
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestRect&);
 
 }  // namespace blink
 

@@ -54,6 +54,7 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
 void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                                               const LayoutPoint& paint_offset) {
   LayoutRect paint_rect;
+  const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (BoxModelObjectPainter::
           IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
@@ -70,9 +71,13 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // paint_rect so we expand the paint_rect by the border size when painting
     // the background into the scrolling contents layer.
     paint_rect.Expand(layout_box_.BorderBoxOutsets());
+
+    background_client = &layout_box_.GetScrollableArea()
+                             ->GetScrollingBackgroundDisplayItemClient();
   } else {
     paint_rect = layout_box_.BorderBoxRect();
     paint_rect.MoveBy(paint_offset);
+    background_client = &layout_box_;
   }
 
   // Paint the background if we're visible and this block has a box decoration
@@ -83,11 +88,11 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     PaintBoxDecorationBackgroundWithRect(
         contents_paint_state ? contents_paint_state->GetPaintInfo()
                              : paint_info,
-        paint_rect);
+        paint_rect, *background_client);
   }
 
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(paint_info, paint_offset, paint_rect);
+    RecordHitTestData(paint_info, paint_offset, paint_rect, *background_client);
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
@@ -102,7 +107,8 @@ bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
 
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
-    const LayoutRect& paint_rect) {
+    const LayoutRect& paint_rect,
+    const DisplayItemClient& background_client) {
   bool painting_overflow_contents = BoxModelObjectPainter::
       IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           &layout_box_, paint_info);
@@ -121,17 +127,12 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     cache_skipper.emplace(paint_info.context);
   }
 
-  const DisplayItemClient& display_item_client =
-      painting_overflow_contents
-          ? layout_box_.GetScrollableArea()
-                ->GetScrollingBackgroundDisplayItemClient()
-          : layout_box_;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, display_item_client,
+          paint_info.context, background_client,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, display_item_client,
+  DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
   BoxDecorationData box_decoration_data(layout_box_);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
@@ -255,7 +256,8 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const LayoutPoint& paint_offset,
-                                   const LayoutRect& paint_rect) {
+                                   const LayoutRect& paint_rect,
+                                   const DisplayItemClient& background_client) {
   // TODO(sunxd): ReplacedPainter only record hit test data for svg root which
   // skips clip. We should move the conditions and ReplacedPainter's
   // RecordHitTestData here.
@@ -275,7 +277,7 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestData::RecordHitTestRect(paint_info.context, layout_box_,
+  HitTestData::RecordHitTestRect(paint_info.context, background_client,
                                  HitTestRect(paint_rect, touch_action));
 }
 

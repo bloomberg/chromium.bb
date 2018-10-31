@@ -7,6 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "cc/base/region.h"
 #include "cc/layers/touch_action_region.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -32,6 +33,15 @@ LayoutRect HitTestRect::GetBounds(const Vector<HitTestRect>& hit_test_rects) {
   }
   const auto& rect = region.bounds();
   return LayoutRect(IntRect(rect));
+}
+
+String HitTestRect::ToString() const {
+  // TODO(pdr): Print the value of |whitelisted_touch_action|.
+  return rect.ToString();
+}
+
+std::ostream& operator<<(std::ostream& os, const HitTestRect& hit_test_rect) {
+  return os << hit_test_rect.ToString();
 }
 
 }  // namespace blink

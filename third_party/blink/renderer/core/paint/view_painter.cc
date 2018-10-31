@@ -32,41 +32,15 @@ void ViewPainter::Paint(const PaintInfo& paint_info) {
 }
 
 void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
-  PaintBoxDecorationBackgroundInternal(paint_info);
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    BoxPainter(layout_view_)
-        .RecordHitTestData(paint_info, LayoutPoint(),
-                           layout_view_.BorderBoxRect());
-  }
-}
-
-void ViewPainter::PaintBoxDecorationBackgroundInternal(
-    const PaintInfo& paint_info) {
-  // Paint the background if we're visible and this block has a box decoration
-  // (background, border, appearance, or box shadow).
-  const ComputedStyle& style = layout_view_.StyleRef();
-  if (style.Visibility() != EVisibility::kVisible ||
-      !layout_view_.HasBoxDecorationBackground()) {
-    return;
-  }
-
-  if (paint_info.SkipRootBackground())
+  if (layout_view_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  // This function overrides background painting for the LayoutView.
-  // View background painting is special in the following ways:
-  // 1. The view paints background for the root element, the background
-  //    positioning respects the positioning and transformation of the root
-  //    element.
-  // 2. CSS background-clip is ignored, the background layers always expand to
-  //    cover the whole canvas. None of the stacking context effects (except
-  //    transformation) on the root element affects the background.
-  // 3. The main frame is also responsible for painting the user-agent-defined
-  //    base background color. Conceptually it should be painted by the embedder
-  //    but painting it here allows culling and pre-blending optimization when
-  //    possible.
-
-  GraphicsContext& context = paint_info.context;
+  bool has_touch_action_rect =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
+      (layout_view_.EffectiveWhitelistedTouchAction() !=
+       TouchAction::kTouchActionAuto);
+  if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect)
+    return;
 
   // The background rect always includes at least the visible content size.
   IntRect background_rect(PixelSnappedIntRect(layout_view_.BackgroundRect()));
@@ -75,7 +49,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   if (paint_info.IsPrinting())
     background_rect.Unite(layout_view_.DocumentRect());
 
-  const DisplayItemClient* display_item_client = &layout_view_;
+  const DisplayItemClient* background_client = &layout_view_;
 
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
   if (BoxModelObjectPainter::
@@ -88,27 +62,57 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     // object_paint_properties.h for details.
     document_rect.MoveBy(layout_view_.ScrollOrigin());
     background_rect.Unite(document_rect);
-    display_item_client = &layout_view_.GetScrollableArea()
-                               ->GetScrollingBackgroundDisplayItemClient();
+    background_client = &layout_view_.GetScrollableArea()
+                             ->GetScrollingBackgroundDisplayItemClient();
     scoped_scroll_property.emplace(
         paint_info.context.GetPaintController(),
-        layout_view_.FirstFragment().ContentsProperties(), *display_item_client,
+        layout_view_.FirstFragment().ContentsProperties(), *background_client,
         DisplayItem::kDocumentBackground);
   }
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, *display_item_client, DisplayItem::kDocumentBackground))
+  if (layout_view_.HasBoxDecorationBackground()) {
+    PaintBoxDecorationBackgroundInternal(paint_info, background_rect,
+                                         *background_client);
+  }
+  if (has_touch_action_rect) {
+    BoxPainter(layout_view_)
+        .RecordHitTestData(paint_info, LayoutPoint(),
+                           LayoutRect(background_rect), *background_client);
+  }
+}
+
+// This function handles background painting for the LayoutView.
+// View background painting is special in the following ways:
+// 1. The view paints background for the root element, the background
+//    positioning respects the positioning and transformation of the root
+//    element.
+// 2. CSS background-clip is ignored, the background layers always expand to
+//    cover the whole canvas. None of the stacking context effects (except
+//    transformation) on the root element affects the background.
+// 3. The main frame is also responsible for painting the user-agent-defined
+//    base background color. Conceptually it should be painted by the embedder
+//    but painting it here allows culling and pre-blending optimization when
+//    possible.
+void ViewPainter::PaintBoxDecorationBackgroundInternal(
+    const PaintInfo& paint_info,
+    const IntRect& background_rect,
+    const DisplayItemClient& background_client) {
+  // TODO(pdr): Can this check be removed? It is not hit in any test.
+  if (paint_info.SkipRootBackground())
     return;
+
+  GraphicsContext& context = paint_info.context;
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context, background_client, DisplayItem::kDocumentBackground)) {
+    return;
+  }
+  DrawingRecorder recorder(context, background_client,
+                           DisplayItem::kDocumentBackground);
 
   const Document& document = layout_view_.GetDocument();
   const LocalFrameView& frame_view = *layout_view_.GetFrameView();
-  bool is_main_frame = document.IsInMainFrame();
-  bool paints_base_background =
-      is_main_frame && (frame_view.BaseBackgroundColor().Alpha() > 0);
-  bool should_clear_canvas =
-      paints_base_background &&
-      (document.GetSettings() &&
-       document.GetSettings()->GetShouldClearDocumentBackground());
+  bool paints_base_background = document.IsInMainFrame() &&
+                                (frame_view.BaseBackgroundColor().Alpha() > 0);
   Color base_background_color =
       paints_base_background ? frame_view.BaseBackgroundColor() : Color();
   Color root_background_color = layout_view_.StyleRef().VisitedDependentColor(
@@ -116,9 +120,6 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   const LayoutObject* root_object =
       document.documentElement() ? document.documentElement()->GetLayoutObject()
                                  : nullptr;
-
-  DrawingRecorder recorder(context, *display_item_client,
-                           DisplayItem::kDocumentBackground);
 
   // Special handling for print economy mode.
   bool force_background_to_white =
@@ -174,6 +175,10 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     }
   }
 
+  bool should_clear_canvas =
+      paints_base_background &&
+      (document.GetSettings() &&
+       document.GetSettings()->GetShouldClearDocumentBackground());
   if (!background_renderable) {
     if (base_background_color.Alpha()) {
       context.FillRect(

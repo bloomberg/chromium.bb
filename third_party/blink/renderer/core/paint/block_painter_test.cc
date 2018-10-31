@@ -330,7 +330,9 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
       ElementsAre(IsSameId(&scroller->GetScrollableArea()
                                 ->GetScrollingBackgroundDisplayItemClient(),
                            kBackgroundType),
-                  IsSameId(scroller, DisplayItem::kHitTest),
+                  IsSameId(&scroller->GetScrollableArea()
+                                ->GetScrollingBackgroundDisplayItemClient(),
+                           DisplayItem::kHitTest),
                   IsSameId(child, DisplayItem::kHitTest)));
   EXPECT_THAT(non_scroller_paint_controller.GetDisplayItemList(),
               ElementsAre(IsSameId(&root_client, kDocumentBackgroundType)));
