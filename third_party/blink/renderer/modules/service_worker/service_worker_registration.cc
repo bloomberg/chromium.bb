@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/navigation_preload_state.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -120,7 +120,7 @@ void DidSetNavigationPreloadHeader(ScriptPromiseResolver* resolver,
 ServiceWorkerRegistration* ServiceWorkerRegistration::Take(
     ScriptPromiseResolver* resolver,
     WebServiceWorkerRegistrationObjectInfo info) {
-  return ServiceWorkerContainerClient::From(
+  return ServiceWorkerContainer::From(
              To<Document>(resolver->GetExecutionContext()))
       ->GetOrCreateServiceWorkerRegistration(std::move(info));
 }

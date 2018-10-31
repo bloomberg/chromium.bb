@@ -46,7 +46,7 @@ class ServiceWorkerRegistration final
 
   // Eager finalization needed to promptly invalidate the corresponding entry of
   // the (registration id, WeakMember<ServiceWorkerRegistration>) map inside
-  // ServiceWorkerContainerClient.
+  // ServiceWorkerContainer.
   EAGERLY_FINALIZE();
 
   // Called in 2 scenarios:
