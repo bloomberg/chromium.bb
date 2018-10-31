@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
+#include "net/base/url_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -1472,8 +1473,15 @@ void QuicChromiumClientSession::OnConnectionClosed(
     quic::ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
   logger_->OnConnectionClosed(error, error_details, source);
+  bool is_google_host = HasGoogleHost(GURL("https://" + session_key_.host()));
   if (source == quic::ConnectionCloseSource::FROM_PEER) {
     if (IsCryptoHandshakeConfirmed()) {
+      if (is_google_host) {
+        base::UmaHistogramSparse(
+            "Net.QuicSession.ConnectionCloseErrorCodeServerGoogle."
+            "HandshakeConfirmed",
+            error);
+      }
       base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
           error);
@@ -1484,10 +1492,20 @@ void QuicChromiumClientSession::OnConnectionClosed(
       if (num_streams > 0)
         histogram->AddCount(error, num_streams);
     }
+    if (is_google_host) {
+      base::UmaHistogramSparse(
+          "Net.QuicSession.ConnectionCloseErrorCodeServerGoogle", error);
+    }
     base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeServer",
                              error);
   } else {
     if (IsCryptoHandshakeConfirmed()) {
+      if (is_google_host) {
+        base::UmaHistogramSparse(
+            "Net.QuicSession.ConnectionCloseErrorCodeClientGoogle."
+            "HandshakeConfirmed",
+            error);
+      }
       base::UmaHistogramSparse(
           "Net.QuicSession.ConnectionCloseErrorCodeClient.HandshakeConfirmed",
           error);
@@ -1503,6 +1521,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
             "Net.QuicSession.HandshakeTimeout.PathDegradingDetected",
             connection()->IsPathDegrading());
       }
+    }
+    if (is_google_host) {
+      base::UmaHistogramSparse(
+          "Net.QuicSession.ConnectionCloseErrorCodeClientGoogle", error);
     }
     base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeClient",
                              error);
