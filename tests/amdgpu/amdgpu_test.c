@@ -422,7 +422,8 @@ static void amdgpu_disable_suites()
 	* BUG: Compute ring stalls and never recovers when the address is
 	* written after the command already submitted
 	*/
-	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR, "compute ring block test", CU_FALSE))
+	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR,
+			"compute ring block test (set amdgpu.lockup_timeout=50)", CU_FALSE))
 		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
 	if (amdgpu_set_test_active(BO_TESTS_STR, "Metadata", CU_FALSE))
