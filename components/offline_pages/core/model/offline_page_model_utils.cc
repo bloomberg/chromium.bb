@@ -43,6 +43,8 @@ OfflinePagesNamespaceEnumeration ToNamespaceEnum(
     return OfflinePagesNamespaceEnumeration::BROWSER_ACTIONS;
   else if (name_space == kLivePageSharingNamespace)
     return OfflinePagesNamespaceEnumeration::LIVE_PAGE_SHARING;
+  else if (name_space == kAutoAsyncNamespace)
+    return OfflinePagesNamespaceEnumeration::ASYNC_AUTO_LOADING;
 
   NOTREACHED();
   return OfflinePagesNamespaceEnumeration::DEFAULT;

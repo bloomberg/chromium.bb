@@ -20,8 +20,12 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/renderer/net/available_offline_content_helper.h"
+#include "chrome/renderer/net/page_auto_fetcher_helper_android.h"
 #endif
 
+namespace content {
+class RenderFrame;
+}
 namespace error_page {
 struct ErrorPageParams;
 }
@@ -69,6 +73,7 @@ class NetErrorHelperCore {
         bool* download_button_shown,
         error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
             offline_content_feature_state,
+        bool* auto_fetch_allowed,
         std::string* html) const = 0;
 
     // Loads the given HTML in the frame for use as an error page.
@@ -125,6 +130,16 @@ class NetErrorHelperCore {
     // Signals that offline content summary is available.
     virtual void OfflineContentSummaryAvailable(
         const std::string& offline_content_summary_json) = 0;
+
+    // Returns the render frame associated with NetErrorHelper.
+    virtual content::RenderFrame* GetRenderFrame() = 0;
+
+#if defined(OS_ANDROID)
+    // Called after an attempt to automatically schedule a background fetch for
+    // a page with a network error.
+    virtual void SetAutoFetchState(
+        chrome::mojom::OfflinePageAutoFetcherScheduleResult result) = 0;
+#endif
 
    protected:
     virtual ~Delegate() {}
@@ -210,6 +225,11 @@ class NetErrorHelperCore {
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer) {
     auto_reload_timer_ = std::move(timer);
   }
+
+#if defined(OS_ANDROID)
+  void SetPageAutoFetcherHelperForTesting(
+      std::unique_ptr<PageAutoFetcherHelper> page_auto_fetcher_helper);
+#endif
 
   // Execute the effect of pressing the specified button.
   // Note that the visual effects of the 'MORE' button are taken
@@ -311,6 +331,7 @@ class NetErrorHelperCore {
 
 #if defined(OS_ANDROID)
   AvailableOfflineContentHelper available_content_helper_;
+  std::unique_ptr<PageAutoFetcherHelper> page_auto_fetcher_helper_;
 #endif
 };
 

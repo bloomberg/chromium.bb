@@ -120,6 +120,7 @@ class NetErrorHelper
       bool* download_button_shown,
       error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
           offline_content_feature_state,
+      bool* auto_fetch_allowed,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
   void EnablePageHelperFunctions(net::Error net_error) override;
@@ -141,6 +142,12 @@ class NetErrorHelper
       const std::string& offline_content_json) override;
   void OfflineContentSummaryAvailable(
       const std::string& offline_content_summary_json) override;
+  content::RenderFrame* GetRenderFrame() override;
+
+#if defined(OS_ANDROID)
+  void SetAutoFetchState(
+      chrome::mojom::OfflinePageAutoFetcherScheduleResult state) override;
+#endif
 
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
                                      const std::string& language,

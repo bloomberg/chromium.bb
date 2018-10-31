@@ -88,6 +88,7 @@
           "blink.mojom.MediaDownloadInProductHelp",
           "blink.mojom.ShareService",
           "blink.mojom.TextSuggestionHost",
+          "chrome.mojom.OfflinePageAutoFetcher",
           "chrome.mojom.OpenSearchDocumentDescriptionHandler",
           "chrome.mojom.PrerenderCanceler",
           "chromeos.ime.mojom.InputEngineManager",
