@@ -94,7 +94,7 @@ camera.App.ViewsStack.prototype = {
   },
   get all() {
     return this.stack_.map(entry => entry.view);
-  }
+  },
 };
 
 /**
@@ -114,7 +114,7 @@ camera.App.ViewsStack.prototype.push = function(
 
   this.stack_.push({
     view: view,
-    callback: opt_callback || function(result) {}
+    callback: opt_callback || function(result) {},
   });
 
   view.enter(opt_arguments);
@@ -153,7 +153,7 @@ camera.App.prototype.start = function() {
     return new Promise((resolve, reject) => {
       this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
         type: camera.views.Dialog.Type.ALERT,
-        message: chrome.i18n.getMessage('migratePicturesMsg')
+        message: chrome.i18n.getMessage('migratePicturesMsg'),
       }, result => {
         if (!result.isPositive) {
           var error = new Error('Did not acknowledge migrate-prompt.');

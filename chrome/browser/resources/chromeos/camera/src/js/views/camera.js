@@ -169,7 +169,7 @@ camera.views.Camera.prototype = {
   },
   get galleryButton() {
     return this.galleryButton_;
-  }
+  },
 };
 
 /**
@@ -417,7 +417,7 @@ camera.views.Camera.prototype.createPhotoBlob_ = function() {
       // still have the same aspect ratio with the preview.
       var photoSettings = {
         imageWidth: photoCapabilities.imageWidth.max,
-        imageHeight: photoCapabilities.imageHeight.max
+        imageHeight: photoCapabilities.imageHeight.max,
       };
       return this.imageCapture_.takePhoto(photoSettings);
     });
@@ -463,11 +463,11 @@ camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
       [{
         aspectRatio: { ideal: recordMode ? 1.7777777778 : 1.3333333333 },
         width: { min: 1280 },
-        frameRate: { min: 24 }
+        frameRate: { min: 24 },
       },
       {
         width: { min: 640 },
-        frameRate: { min: 24 }
+        frameRate: { min: 24 },
       }];
 
   // Constraints are ordered by priority.

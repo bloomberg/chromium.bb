@@ -68,7 +68,7 @@ camera.views.camera.GalleryButton = function(router, model) {
 camera.views.camera.GalleryButton.prototype = {
   set disabled(value) {
     this.button_.disabled = value;
-  }
+  },
 };
 
 /**

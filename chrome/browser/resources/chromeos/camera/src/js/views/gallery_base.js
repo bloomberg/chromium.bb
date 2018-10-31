@@ -84,11 +84,11 @@ camera.views.GalleryBase.DOMPicture.prototype = {
   },
   get element() {
     return this.element_;
-  }
+  },
 };
 
 camera.views.GalleryBase.prototype = {
-  __proto__: camera.View.prototype
+  __proto__: camera.View.prototype,
 };
 
 /**
@@ -136,7 +136,7 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.CONFIRMATION,
     message: chrome.i18n.getMessage(multi ?
-        'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param)
+        'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param),
   }, result => {
     if (!result.isPositive)
       return;

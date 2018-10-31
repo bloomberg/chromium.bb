@@ -108,7 +108,7 @@ camera.models.Gallery.Picture.prototype = {
   },
   get timestamp() {
     return this.timestamp_;
-  }
+  },
 };
 
 /**

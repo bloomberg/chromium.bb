@@ -75,7 +75,7 @@ camera.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
 camera.views.camera.Preview.prototype = {
   get stream() {
     return this.stream_;
-  }
+  },
 };
 
 /**

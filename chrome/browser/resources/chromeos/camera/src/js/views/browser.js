@@ -80,7 +80,7 @@ camera.views.Browser = function(router, model) {
 };
 
 camera.views.Browser.prototype = {
-  __proto__: camera.views.GalleryBase.prototype
+  __proto__: camera.views.GalleryBase.prototype,
 };
 
 /**

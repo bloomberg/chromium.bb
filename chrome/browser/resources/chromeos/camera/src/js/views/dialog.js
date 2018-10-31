@@ -58,11 +58,11 @@ camera.views.Dialog = function(router) {
  */
 camera.views.Dialog.Type = Object.freeze({
   CONFIRMATION: 0,
-  ALERT: 1
+  ALERT: 1,
 });
 
 camera.views.Dialog.prototype = {
-  __proto__: camera.View.prototype
+  __proto__: camera.View.prototype,
 };
 
 /**

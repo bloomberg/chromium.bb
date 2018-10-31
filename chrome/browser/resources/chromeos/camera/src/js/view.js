@@ -63,7 +63,7 @@ camera.View.prototype = {
   },
   get router() {
     return this.router_;
-  }
+  },
 };
 
 /**
@@ -156,7 +156,7 @@ camera.View.prototype.inactivate = function() {
     var element = elementsArray[index];
     this.tabIndexes_.push([
       element,
-      element.tabIndex
+      element.tabIndex,
     ]);
     element.tabIndex = -1;
   }
