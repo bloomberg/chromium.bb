@@ -45,6 +45,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                                        const NGBreakToken*,
                                        NGInlineChildLayoutContext* context);
 
+  // Prepare to reuse fragments. Returns false if reuse is not possible.
+  bool PrepareReuseFragments(const NGConstraintSpace&);
+
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
@@ -105,6 +108,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void AssociateItemsWithInlines(NGInlineNodeData*);
 
   void ClearAssociatedFragments(const NGInlineBreakToken*);
+
+  bool MarkLineBoxesDirty(LayoutBlockFlow*);
 
   NGInlineNodeData* MutableData() {
     return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();

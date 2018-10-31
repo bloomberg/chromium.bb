@@ -2554,6 +2554,10 @@ void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
 
 void LayoutBlockFlow::ClearCachedLayoutResult() {}
 
+bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
+  return false;
+}
+
 void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
                                        scoped_refptr<const NGPhysicalFragment>,
                                        NGPhysicalOffset) {}

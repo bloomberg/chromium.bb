@@ -74,13 +74,13 @@ class CORE_EXPORT NGLayoutAlgorithm {
 
   NGInputNodeType Node() const { return node_; }
 
-  const NGBreakTokenType* BreakToken() const { return break_token_; }
+  const NGBreakTokenType* BreakToken() const { return break_token_.get(); }
 
   NGInputNodeType node_;
   const NGConstraintSpace& constraint_space_;
 
   // The break token from which we are currently resuming layout.
-  const NGBreakTokenType* break_token_;
+  scoped_refptr<const NGBreakTokenType> break_token_;
 
   NGBoxFragmentBuilderType container_builder_;
 };

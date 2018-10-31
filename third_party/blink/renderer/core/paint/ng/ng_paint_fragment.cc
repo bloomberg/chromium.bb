@@ -220,17 +220,23 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
   // Re-using NGPaintFragment allows the paint system to identify objects.
   if (previous_instance) {
     DCHECK_EQ(previous_instance->parent_, parent);
+    DCHECK(!previous_instance->next_sibling_);
 
+// TODO(kojii): This fails some tests when reusing line box was enabled.
+// Investigate and re-enable.
+#if 0
     // If the physical fragment was re-used, re-use the paint fragment as well.
     if (&previous_instance->PhysicalFragment() == fragment.get()) {
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
+      previous_instance->is_dirty_inline_ = false;
       // No need to re-populate children because NGPhysicalFragment is
       // immutable and thus children should not have been changed.
       *populate_children = false;
       previous_instance->SetShouldDoFullPaintInvalidation();
       return previous_instance;
     }
+#endif
 
     // If the LayoutObject are the same, the new paint fragment should have the
     // same DisplayItemClient identity as the previous instance.
@@ -238,6 +244,7 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       previous_instance->physical_fragment_ = std::move(fragment);
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
+      previous_instance->is_dirty_inline_ = false;
       if (!*populate_children)
         previous_instance->first_child_ = nullptr;
       previous_instance->SetShouldDoFullPaintInvalidation();

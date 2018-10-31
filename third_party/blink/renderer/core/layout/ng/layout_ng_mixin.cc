@@ -272,6 +272,38 @@ LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
 }
 
 template <typename Base>
+bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
+    const NGConstraintSpace& constraint_space) const {
+  if (!Base::cached_constraint_space_)
+    return false;
+  const NGConstraintSpace& cached_constraint_space =
+      *Base::cached_constraint_space_;
+  DCHECK(cached_result_);
+
+  // When scrollbar changes, |constraint_space.AvailableSize()| becomes
+  // different without setting |NeedsLayout()|.
+  // TODO(kojii): Should NGBlockNode::Layout() set NeedsLayout() when scrollbar
+  // change was detected and needs to relayout?
+  if (constraint_space.AvailableSize().inline_size !=
+      cached_constraint_space.AvailableSize().inline_size)
+    return false;
+
+  // Floats in either cached or new constraint space prevents reusing cached
+  // lines.
+  if (constraint_space.AdjoiningFloatTypes() != kFloatTypeNone ||
+      cached_constraint_space.AdjoiningFloatTypes() != kFloatTypeNone ||
+      !constraint_space.ExclusionSpace().IsEmpty() ||
+      !cached_constraint_space.ExclusionSpace().IsEmpty())
+    return false;
+
+  // Propagating OOF needs re-layout.
+  if (!cached_result_->OutOfFlowPositionedDescendants().IsEmpty())
+    return false;
+
+  return true;
+}
+
+template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset,
