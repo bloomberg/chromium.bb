@@ -105,8 +105,8 @@ PlatformHandle WrapPlatformHandles(Channel::Message::HandleInfoEntry info,
 
     // Try to wrap the handles into an FDIO file descriptor.
     base::ScopedFD out_fd;
-    zx_status_t result =
-        fdio_create_fd(fd_handles, fd_infos, info.count, out_fd.receive());
+    zx_status_t result = fdio_create_fd(fd_handles, fd_infos, info.count,
+                                        base::ScopedFD::Receiver(out_fd).get());
     if (result != ZX_OK) {
       ZX_DLOG(ERROR, result) << "fdio_create_fd";
       return PlatformHandle();

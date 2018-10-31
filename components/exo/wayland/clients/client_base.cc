@@ -191,8 +191,8 @@ std::unique_ptr<ScopedVkInstance> CreateVkInstance() {
   };
 
   std::unique_ptr<ScopedVkInstance> vk_instance(new ScopedVkInstance());
-  VkResult result =
-      vkCreateInstance(&create_info, nullptr, vk_instance->receive());
+  VkResult result = vkCreateInstance(
+      &create_info, nullptr, ScopedVkInstance::Receiver(*vk_instance).get());
   CHECK_EQ(VK_SUCCESS, result)
       << "Failed to create a Vulkan instance. Do you have an ICD "
          "driver (e.g: "
@@ -228,7 +228,7 @@ std::unique_ptr<ScopedVkDevice> CreateVkDevice(VkInstance vk_instance,
   };
   std::unique_ptr<ScopedVkDevice> vk_device(new ScopedVkDevice());
   result = vkCreateDevice(physical_device, &device_create_info, nullptr,
-                          vk_device->receive());
+                          ScopedVkDevice::Receiver(*vk_device).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_device;
 }
@@ -265,8 +265,9 @@ std::unique_ptr<ScopedVkRenderPass> CreateVkRenderPass(VkDevice vk_device) {
   };
   std::unique_ptr<ScopedVkRenderPass> vk_render_pass(
       new ScopedVkRenderPass(VK_NULL_HANDLE, {vk_device}));
-  VkResult result = vkCreateRenderPass(vk_device, &render_pass_create_info,
-                                       nullptr, vk_render_pass->receive());
+  VkResult result =
+      vkCreateRenderPass(vk_device, &render_pass_create_info, nullptr,
+                         ScopedVkRenderPass::Receiver(*vk_render_pass).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_render_pass;
 }
@@ -282,8 +283,9 @@ std::unique_ptr<ScopedVkCommandPool> CreateVkCommandPool(
   };
   std::unique_ptr<ScopedVkCommandPool> vk_command_pool(
       new ScopedVkCommandPool(VK_NULL_HANDLE, {vk_device}));
-  VkResult result = vkCreateCommandPool(vk_device, &command_pool_create_info,
-                                        nullptr, vk_command_pool->receive());
+  VkResult result = vkCreateCommandPool(
+      vk_device, &command_pool_create_info, nullptr,
+      ScopedVkCommandPool::Receiver(*vk_command_pool).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_command_pool;
 }
@@ -863,7 +865,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         new ScopedVkImage(VK_NULL_HANDLE, {vk_device_->get()}));
     VkResult result = create_dma_buf_image_intel(
         vk_device_->get(), &dma_buf_image_create_info, nullptr,
-        buffer->vk_memory->receive(), buffer->vk_image->receive());
+        ScopedVkDeviceMemory::Receiver(*buffer->vk_memory).get(),
+        ScopedVkImage::Receiver(*buffer->vk_image).get());
 
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan image from a dmabuf.";
@@ -893,8 +896,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->vk_image_view.reset(
         new ScopedVkImageView(VK_NULL_HANDLE, {vk_device_->get()}));
-    result = vkCreateImageView(vk_device_->get(), &vk_image_view_create_info,
-                               nullptr, buffer->vk_image_view->receive());
+    result = vkCreateImageView(
+        vk_device_->get(), &vk_image_view_create_info, nullptr,
+        ScopedVkImageView::Receiver(*buffer->vk_image_view).get());
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan image view.";
       return buffer;
@@ -911,8 +915,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     buffer->vk_framebuffer.reset(
         new ScopedVkFramebuffer(VK_NULL_HANDLE, {vk_device_->get()}));
 
-    result = vkCreateFramebuffer(vk_device_->get(), &vk_framebuffer_create_info,
-                                 nullptr, buffer->vk_framebuffer->receive());
+    result = vkCreateFramebuffer(
+        vk_device_->get(), &vk_framebuffer_create_info, nullptr,
+        ScopedVkFramebuffer::Receiver(*buffer->vk_framebuffer).get());
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan framebuffer.";
       return buffer;

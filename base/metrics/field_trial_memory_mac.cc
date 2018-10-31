@@ -63,8 +63,9 @@ FieldTrialMemoryServer::~FieldTrialMemoryServer() {}
 
 bool FieldTrialMemoryServer::Start() {
   std::string bootstrap_name = GetBootstrapName();
-  kern_return_t kr = bootstrap_check_in(bootstrap_port, bootstrap_name.c_str(),
-                                        server_port_.receive());
+  kern_return_t kr = bootstrap_check_in(
+      bootstrap_port, bootstrap_name.c_str(),
+      mac::ScopedMachReceiveRight::Receiver(server_port_).get());
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_check_in " << bootstrap_name;
     return false;
@@ -149,7 +150,7 @@ mac::ScopedMachSendRight FieldTrialMemoryClient::AcquireMemoryObject() {
   std::string bootstrap_name = GetBootstrapName();
   kern_return_t kr = bootstrap_look_up(
       bootstrap_port, const_cast<char*>(bootstrap_name.c_str()),
-      server_port.receive());
+      mac::ScopedMachSendRight::Receiver(server_port).get());
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up " << bootstrap_name;
     return mac::ScopedMachSendRight();

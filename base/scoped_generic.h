@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 
 namespace base {
@@ -51,6 +52,34 @@ namespace base {
 //   };
 //
 //   typedef ScopedGeneric<int, FooScopedTraits> ScopedFoo;
+//
+// A Traits type may choose to track ownership of objects in parallel with
+// ScopedGeneric. To do so, it must implement the Acquire and Release methods,
+// which will be called by ScopedGeneric during ownership transfers and extend
+// the ScopedGenericOwnershipTracking tag type.
+//
+//   struct BarScopedTraits : public ScopedGenericOwnershipTracking {
+//     using ScopedGenericType = ScopedGeneric<int, BarScopedTraits>;
+//     static int InvalidValue() {
+//       return 0;
+//     }
+//
+//     static void Free(int b) {
+//       ::FreeBar(b);
+//     }
+//
+//     static void Acquire(const ScopedGenericType& owner, int b) {
+//       ::TrackAcquisition(b, owner);
+//     }
+//
+//     static void Release(const ScopedGenericType& owner, int b) {
+//       ::TrackRelease(b, owner);
+//     }
+//   };
+//
+//   typedef ScopedGeneric<int, BarScopedTraits> ScopedBar;
+struct ScopedGenericOwnershipTracking {};
+
 template<typename T, typename Traits>
 class ScopedGeneric {
  private:
@@ -74,19 +103,24 @@ class ScopedGeneric {
 
   // Constructor. Takes responsibility for freeing the resource associated with
   // the object T.
-  explicit ScopedGeneric(const element_type& value) : data_(value) {}
+  explicit ScopedGeneric(const element_type& value) : data_(value) {
+    TrackAcquire(data_.generic);
+  }
 
   // Constructor. Allows initialization of a stateful traits object.
   ScopedGeneric(const element_type& value, const traits_type& traits)
       : data_(value, traits) {
+    TrackAcquire(data_.generic);
   }
 
   // Move constructor. Allows initialization from a ScopedGeneric rvalue.
   ScopedGeneric(ScopedGeneric<T, Traits>&& rvalue)
       : data_(rvalue.release(), rvalue.get_traits()) {
+    TrackAcquire(data_.generic);
   }
 
   ~ScopedGeneric() {
+    CHECK(!receiving_) << "ScopedGeneric destroyed with active receiver";
     FreeIfNecessary();
   }
 
@@ -104,15 +138,26 @@ class ScopedGeneric {
       abort();
     FreeIfNecessary();
     data_.generic = value;
+    TrackAcquire(value);
   }
 
   void swap(ScopedGeneric& other) {
+    if (&other == this) {
+      return;
+    }
+
+    TrackRelease(data_.generic);
+    other.TrackRelease(other.data_.generic);
+
     // Standard swap idiom: 'using std::swap' ensures that std::swap is
     // present in the overload set, but we call swap unqualified so that
     // any more-specific overloads can be used, if available.
     using std::swap;
     swap(static_cast<Traits&>(data_), static_cast<Traits&>(other.data_));
     swap(data_.generic, other.data_.generic);
+
+    TrackAcquire(data_.generic);
+    other.TrackAcquire(other.data_.generic);
   }
 
   // Release the object. The return value is the current object held by this
@@ -121,15 +166,95 @@ class ScopedGeneric {
   element_type release() WARN_UNUSED_RESULT {
     element_type old_generic = data_.generic;
     data_.generic = traits_type::InvalidValue();
+    TrackRelease(old_generic);
     return old_generic;
   }
 
-  // Returns a raw pointer to the object storage, to allow the scoper to be used
-  // to receive and manage out-parameter values. Implies reset().
-  element_type* receive() WARN_UNUSED_RESULT {
-    reset();
-    return &data_.generic;
-  }
+  // A helper class that provides a T* that can be used to take ownership of
+  // a value returned from a function via out-parameter. When the Receiver is
+  // destructed (which should usually be at the end of the statement in which
+  // receive is called), ScopedGeneric::reset() will be called with the
+  // Receiver's value.
+  //
+  // In the simple case of a function that assigns the value before it returns,
+  // C++'s lifetime extension can be used as follows:
+  //
+  //    ScopedFoo foo;
+  //    bool result = GetFoo(ScopedFoo::Receiver(foo).get());
+  //
+  // Note that the lifetime of the Receiver is extended until the semicolon,
+  // and ScopedGeneric is assigned the value upon destruction of the Receiver,
+  // so the following code would not work:
+  //
+  //    // BROKEN!
+  //    ScopedFoo foo;
+  //    UseFoo(&foo, GetFoo(ScopedFoo::Receiver(foo).get()));
+  //
+  // In more complicated scenarios, you may need to provide an explicit scope
+  // for the Receiver, as in the following:
+  //
+  //    std::vector<ScopedFoo> foos(64);
+  //
+  //    {
+  //      std::vector<ScopedFoo::Receiver> foo_receivers;
+  //      for (auto foo : foos) {
+  //        foo_receivers_.emplace_back(foo);
+  //      }
+  //      for (auto receiver : foo_receivers) {
+  //        SubmitGetFooRequest(receiver.get());
+  //      }
+  //      WaitForFooRequests();
+  //    }
+  //    UseFoos(foos);
+  class Receiver {
+   public:
+    explicit Receiver(ScopedGeneric& parent) : scoped_generic_(&parent) {
+      CHECK(!scoped_generic_->receiving_)
+          << "attempted to construct Receiver for ScopedGeneric with existing "
+             "Receiver";
+      scoped_generic_->receiving_ = true;
+    }
+
+    ~Receiver() {
+      if (scoped_generic_) {
+        CHECK(scoped_generic_->receiving_);
+        scoped_generic_->reset(value_);
+        scoped_generic_->receiving_ = false;
+      }
+    }
+
+    Receiver(Receiver&& move) {
+      CHECK(!used_) << "moving into already-used Receiver";
+      CHECK(!move.used_) << "moving from already-used Receiver";
+      scoped_generic_ = move.scoped_generic_;
+      move.scoped_generic_ = nullptr;
+    }
+
+    Receiver& operator=(Receiver&& move) {
+      CHECK(!used_) << "moving into already-used Receiver";
+      CHECK(!move.used_) << "moving from already-used Receiver";
+      scoped_generic_ = move.scoped_generic_;
+      move.scoped_generic_ = nullptr;
+    }
+
+    // We hand out a pointer to a field in Receiver instead of directly to
+    // ScopedGeneric's internal storage in order to make it so that users can't
+    // accidentally silently break ScopedGeneric's invariants. This way, an
+    // incorrect use-after-scope-exit is more detectable by ASan or static
+    // analysis tools, as the pointer is only valid for the lifetime of the
+    // Receiver, not the ScopedGeneric.
+    T* get() {
+      used_ = true;
+      return &value_;
+    }
+
+   private:
+    T value_ = Traits::InvalidValue();
+    ScopedGeneric* scoped_generic_;
+    bool used_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(Receiver);
+  };
 
   const element_type& get() const { return data_.generic; }
 
@@ -150,10 +275,43 @@ class ScopedGeneric {
  private:
   void FreeIfNecessary() {
     if (data_.generic != traits_type::InvalidValue()) {
+      TrackRelease(data_.generic);
       data_.Free(data_.generic);
       data_.generic = traits_type::InvalidValue();
     }
   }
+
+  template <typename Void = void>
+  typename std::enable_if_t<
+      std::is_base_of<ScopedGenericOwnershipTracking, Traits>::value,
+      Void>
+  TrackAcquire(const T& value) {
+    if (value != traits_type::InvalidValue()) {
+      data_.Acquire(static_cast<const ScopedGeneric&>(*this), value);
+    }
+  }
+
+  template <typename Void = void>
+  typename std::enable_if_t<
+      !std::is_base_of<ScopedGenericOwnershipTracking, Traits>::value,
+      Void>
+  TrackAcquire(const T& value) {}
+
+  template <typename Void = void>
+  typename std::enable_if_t<
+      std::is_base_of<ScopedGenericOwnershipTracking, Traits>::value,
+      Void>
+  TrackRelease(const T& value) {
+    if (value != traits_type::InvalidValue()) {
+      data_.Release(static_cast<const ScopedGeneric&>(*this), value);
+    }
+  }
+
+  template <typename Void = void>
+  typename std::enable_if_t<
+      !std::is_base_of<ScopedGenericOwnershipTracking, Traits>::value,
+      Void>
+  TrackRelease(const T& value) {}
 
   // Forbid comparison. If U != T, it totally doesn't make sense, and if U ==
   // T, it still doesn't make sense because you should never have the same
@@ -164,6 +322,7 @@ class ScopedGeneric {
       const ScopedGeneric<T2, Traits2>& p2) const;
 
   Data data_;
+  bool receiving_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedGeneric);
 };
