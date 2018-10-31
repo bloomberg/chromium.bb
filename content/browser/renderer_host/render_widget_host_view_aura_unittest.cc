@@ -2804,7 +2804,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1,
                                    view_->GetLocalSurfaceIdAllocationTime());
-  viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
+  child_allocator.GenerateId();
+  viz::LocalSurfaceId local_surface_id2 =
+      child_allocator.GetCurrentLocalSurfaceId();
 
   {
     cc::RenderFrameMetadata metadata;
@@ -2833,7 +2835,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1,
                                    view_->GetLocalSurfaceIdAllocationTime());
-  viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
+  child_allocator.GenerateId();
+  viz::LocalSurfaceId local_surface_id2 =
+      child_allocator.GetCurrentLocalSurfaceId();
 
   {
     cc::RenderFrameMetadata metadata;

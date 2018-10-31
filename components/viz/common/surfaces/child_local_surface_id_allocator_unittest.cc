@@ -139,8 +139,9 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
   LocalSurfaceId pregenerateid_local_surface_id =
       generating_child_allocator.GetCurrentLocalSurfaceId();
 
+  generating_child_allocator.GenerateId();
   const LocalSurfaceId& returned_local_surface_id =
-      generating_child_allocator.GenerateId();
+      generating_child_allocator.GetCurrentLocalSurfaceId();
 
   const LocalSurfaceId& postgenerateid_local_surface_id =
       generating_child_allocator.GetCurrentLocalSurfaceId();
