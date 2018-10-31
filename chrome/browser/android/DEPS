@@ -17,5 +17,9 @@ specific_include_rules = {
   # Special-case where monochrome composes chrome+webview
   "monochrome_entry_point\.cc": [
     "+android_webview",
-  ]
+  ],
+  # Allowed for test setup.
+  "chrome_entry_point_for_test\.cc": [
+    "+chrome/utility/chrome_content_utility_client.h",
+  ],
 }
