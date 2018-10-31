@@ -212,7 +212,8 @@ void CSSFontVariationSettingsInterpolationType::ApplyStandardPropertyValue(
   wtf_size_t length = numbers.length();
   for (wtf_size_t i = 0; i < length; ++i) {
     settings->Append(FontVariationAxis(
-        tags[i], ToInterpolableNumber(numbers.Get(i))->Value()));
+        tags[i],
+        static_cast<float>(ToInterpolableNumber(numbers.Get(i))->Value())));
   }
   state.GetFontBuilder().SetVariationSettings(settings);
 }
