@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/numerics/safe_conversions.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "ui/gl/gl_image_shared_memory.h"
 
 namespace cc {
@@ -24,9 +23,7 @@ scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     gpu::SurfaceHandle surface_handle) {
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
 
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-  scoped_refptr<gl::GLImageSharedMemory> image(
-      new gl::GLImageSharedMemory(size, internalformat));
+  auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
   if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                          base::checked_cast<size_t>(handle.stride)))
     return nullptr;
