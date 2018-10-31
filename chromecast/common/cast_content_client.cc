@@ -90,6 +90,10 @@ void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->standard_schemes.push_back(kChromeResourceScheme);
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   schemes->standard_schemes.push_back(extensions::kExtensionScheme);
+  // Treat as secure because we only load extension code written by us.
+  schemes->secure_schemes.push_back(extensions::kExtensionScheme);
+  schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+  schemes->csp_bypassing_schemes.push_back(extensions::kExtensionScheme);
 #endif
 }
 
