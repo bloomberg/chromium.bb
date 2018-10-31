@@ -283,6 +283,10 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
 // are completely indifferent to GL state. Others require that GL state
 // matches GrContext state tracking.
 bool PermitsInconsistentContextState(CommandId command) {
+  // Note that state restoration is expensive. If you're adding any new command
+  // which is frequently used between multiple RasterCHROMIUMs for tiled
+  // rasterization, make sure to add it to the whitelist below for commands
+  // which don't need consistent GL state.
   switch (command) {
     case kBeginQueryEXT:
     case kBeginRasterCHROMIUMImmediate:
@@ -302,10 +306,29 @@ bool PermitsInconsistentContextState(CommandId command) {
     case kSetActiveURLCHROMIUM:
     case kUnlockTransferCacheEntryINTERNAL:
     case kWaitSyncTokenCHROMIUM:
+    case kTraceBeginCHROMIUM:
+    case kTraceEndCHROMIUM:
       return true;
-    default:
+    case kGetIntegerv:
+    case kLoseContextCHROMIUM:
+    case kUnpremultiplyAndDitherCopyCHROMIUM:
+    case kCreateTexture:
+    case kSetColorSpaceMetadata:
+    case kProduceTextureDirectImmediate:
+    case kTexParameteri:
+    case kBindTexImage2DCHROMIUM:
+    case kReleaseTexImage2DCHROMIUM:
+    case kTexStorage2D:
+    case kCopySubTexture:
+      return false;
+    case kNumCommands:
+    case kOneBeforeStartPoint:
+      NOTREACHED();
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
