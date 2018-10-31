@@ -38,6 +38,7 @@ class V4L2Buffer {
   static std::unique_ptr<V4L2Buffer> Create(scoped_refptr<V4L2Device> device,
                                             enum v4l2_buf_type type,
                                             enum v4l2_memory memory,
+                                            size_t planes_count,
                                             size_t buffer_id);
   ~V4L2Buffer();
 
@@ -48,6 +49,7 @@ class V4L2Buffer {
   V4L2Buffer(scoped_refptr<V4L2Device> device,
              enum v4l2_buf_type type,
              enum v4l2_memory memory,
+             size_t planes_count,
              size_t buffer_id);
   bool Query();
 
@@ -67,10 +69,11 @@ class V4L2Buffer {
 std::unique_ptr<V4L2Buffer> V4L2Buffer::Create(scoped_refptr<V4L2Device> device,
                                                enum v4l2_buf_type type,
                                                enum v4l2_memory memory,
+                                               size_t planes_count,
                                                size_t buffer_id) {
   // Not using std::make_unique because constructor is private.
   std::unique_ptr<V4L2Buffer> buffer(
-      new V4L2Buffer(device, type, memory, buffer_id));
+      new V4L2Buffer(device, type, memory, planes_count, buffer_id));
 
   if (!buffer->Query())
     return nullptr;
@@ -81,14 +84,19 @@ std::unique_ptr<V4L2Buffer> V4L2Buffer::Create(scoped_refptr<V4L2Device> device,
 V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
                        enum v4l2_buf_type type,
                        enum v4l2_memory memory,
+                       size_t planes_count,
                        size_t buffer_id)
-    : device_(device), plane_mappings_(VIDEO_MAX_PLANES) {
+    : device_(device) {
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
+  DCHECK_LE(planes_count, base::size(v4l2_planes_));
   v4l2_buffer_.m.planes = v4l2_planes_;
-  v4l2_buffer_.length = VIDEO_MAX_PLANES;
+  // Just in case we got more planes than we want.
+  v4l2_buffer_.length = std::min(planes_count, base::size(v4l2_planes_));
   v4l2_buffer_.index = buffer_id;
   v4l2_buffer_.type = type;
   v4l2_buffer_.memory = memory;
+
+  plane_mappings_.resize(v4l2_buffer_.length);
 }
 
 V4L2Buffer::~V4L2Buffer() {
@@ -106,7 +114,7 @@ bool V4L2Buffer::Query() {
     return false;
   }
 
-  plane_mappings_.resize(v4l2_buffer_.length);
+  DCHECK(plane_mappings_.size() == v4l2_buffer_.length);
 
   return true;
 }
@@ -176,7 +184,7 @@ V4L2BufferQueueProxy::V4L2BufferQueueProxy(
     scoped_refptr<V4L2Queue> queue)
     : queue_(std::move(queue)) {
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer->type));
-  DCHECK_LE(v4l2_buffer->length, static_cast<uint32_t>(VIDEO_MAX_PLANES));
+  DCHECK_LE(v4l2_buffer->length, base::size(v4l2_planes_));
 
   memcpy(&v4l2_buffer_, v4l2_buffer, sizeof(v4l2_buffer_));
   memcpy(v4l2_planes_, v4l2_buffer->m.planes,
@@ -532,13 +540,26 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
     return 0;
   }
 
+  // First query the number of planes in the buffers we are about to request.
+  // This should not be required, but Tegra's VIDIOC_QUERYBUF will fail on
+  // output buffers if the number of specified planes does not exactly match the
+  // format.
+  struct v4l2_format format = {.type = type_};
+  int ret = device_->Ioctl(VIDIOC_G_FMT, &format);
+  if (ret) {
+    VPLOGF(1) << "VIDIOC_G_FMT failed: ";
+    return 0;
+  }
+  planes_count_ = format.fmt.pix_mp.num_planes;
+  DCHECK_LE(planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
+
   struct v4l2_requestbuffers reqbufs = {};
   reqbufs.count = count;
   reqbufs.type = type_;
   reqbufs.memory = memory;
   DVLOGF(3) << "queue " << type_ << ": requesting " << count << " buffers.";
 
-  int ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
+  ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
   if (ret) {
     VPLOGF(1) << "VIDIOC_REQBUFS failed: ";
     return 0;
@@ -549,7 +570,7 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
 
   // Now query all buffer information.
   for (size_t i = 0; i < reqbufs.count; i++) {
-    auto buffer = V4L2Buffer::Create(device_, type_, memory_, i);
+    auto buffer = V4L2Buffer::Create(device_, type_, memory_, planes_count_, i);
 
     if (!buffer) {
       DeallocateBuffers();
@@ -662,8 +683,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   v4l2_buffer.type = type_;
   v4l2_buffer.memory = memory_;
   v4l2_buffer.m.planes = planes;
-  // TODO(acourbot): use actual number of planes.
-  v4l2_buffer.length = VIDEO_MAX_PLANES;
+  v4l2_buffer.length = planes_count_;
   int ret = device_->Ioctl(VIDIOC_DQBUF, &v4l2_buffer);
   if (ret) {
     // TODO(acourbot): we should not have to check for EPIPE as codec clients

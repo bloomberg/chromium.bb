@@ -251,6 +251,7 @@ class MEDIA_GPU_EXPORT V4L2Queue
   const enum v4l2_buf_type type_;
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;
   bool is_streaming_ = false;
+  size_t planes_count_ = 0;
 
   std::vector<std::unique_ptr<V4L2Buffer>> buffers_;
 
