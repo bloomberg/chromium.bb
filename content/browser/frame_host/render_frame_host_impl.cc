@@ -2494,7 +2494,7 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
 
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
-  GetProcess()->SetIgnoreInputEvents(true);
+  GetProcess()->SetBlocked(true);
 
   delegate_->RunJavaScriptDialog(this, message, default_prompt, dialog_type,
                                  reply_msg);
@@ -2541,7 +2541,7 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 
   // While a JS beforeunload dialog is showing, tabs in the same process
   // shouldn't process input events.
-  GetProcess()->SetIgnoreInputEvents(true);
+  GetProcess()->SetBlocked(true);
 
   // The beforeunload dialog for this frame may have been triggered by a
   // browser-side request to this frame or a frame up in the frame hierarchy.
@@ -4160,7 +4160,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
     const base::string16& user_input) {
-  GetProcess()->SetIgnoreInputEvents(false);
+  GetProcess()->SetBlocked(false);
 
   SendJavaScriptDialogReply(reply_msg, success, user_input);
 

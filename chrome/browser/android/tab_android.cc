@@ -977,7 +977,7 @@ bool TabAndroid::AreRendererInputEventsIgnored(
     const base::android::JavaParamRef<jobject>& obj) {
   content::RenderProcessHost* render_process_host =
       web_contents()->GetMainFrame()->GetProcess();
-  return render_process_host->IgnoreInputEvents();
+  return render_process_host->IsBlocked();
 }
 
 void TabAndroid::ShowMediaDownloadInProductHelp(

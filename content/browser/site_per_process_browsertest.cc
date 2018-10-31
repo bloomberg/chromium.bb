@@ -74,6 +74,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -13445,7 +13446,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // (typically during session restore when many navigations would be happening in
 // backgrounded processes).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       CommitTimeoutForInvisibleWebContents) {
+                       NoCommitTimeoutForInvisibleWebContents) {
   // Navigate first tab to a.com.
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), a_url));
@@ -13471,6 +13472,131 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // (see https://crbug.com/881812).
   new_contents->WasHidden();
   EXPECT_EQ(Visibility::HIDDEN, new_contents->GetVisibility());
+
+  // Attempt to navigate the second tab to a.com.  This will attempt to reuse
+  // the hung process.
+  base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
+  NavigationHandleImpl::SetCommitTimeoutForTesting(kTimeout);
+  GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
+  EXPECT_TRUE(
+      ExecJs(new_contents, JsReplace("window.location = $1", hung_url)));
+
+  // Verify that we will not be notified about the unresponsive renderer.
+  // Before changes in https://crrev.com/c/1089797, the test would get notified
+  // and therefore |hung_process| would be non-null.
+  RenderProcessHost* hung_process =
+      unresponsive_renderer_observer.Wait(kTimeout * 10);
+  EXPECT_FALSE(hung_process);
+
+  // Reset the timeout.
+  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
+}
+
+class TestWCBeforeUnloadDelegate : public JavaScriptDialogManager,
+                                   public WebContentsDelegate {
+ public:
+  explicit TestWCBeforeUnloadDelegate(WebContentsImpl* web_contents)
+      : web_contents_(web_contents) {
+    web_contents_->SetDelegate(this);
+  }
+
+  ~TestWCBeforeUnloadDelegate() override {
+    if (!callback_.is_null())
+      std::move(callback_).Run(true, base::string16());
+
+    web_contents_->SetDelegate(nullptr);
+    web_contents_->SetJavaScriptDialogManagerForTesting(nullptr);
+  }
+
+  void Wait() {
+    run_loop_->Run();
+    run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+  // WebContentsDelegate
+
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    return this;
+  }
+
+  // JavaScriptDialogManager
+
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           RenderFrameHost* render_frame_host,
+                           JavaScriptDialogType dialog_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           DialogClosedCallback callback,
+                           bool* did_suppress_message) override {
+    NOTREACHED();
+  }
+
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             RenderFrameHost* render_frame_host,
+                             bool is_reload,
+                             DialogClosedCallback callback) override {
+    callback_ = std::move(callback);
+    run_loop_->Quit();
+  }
+
+  bool HandleJavaScriptDialog(WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override {
+    NOTREACHED();
+    return true;
+  }
+
+  void CancelDialogs(WebContents* web_contents, bool reset_state) override {}
+
+ private:
+  WebContentsImpl* web_contents_;
+
+  DialogClosedCallback callback_;
+
+  std::unique_ptr<base::RunLoop> run_loop_ = std::make_unique<base::RunLoop>();
+
+  DISALLOW_COPY_AND_ASSIGN(TestWCBeforeUnloadDelegate);
+};
+
+// This is a regression test for https://crbug.com/891423 in which tabs showing
+// beforeunload dialogs stalled navigation and triggered the "hung process"
+// dialog.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NoCommitTimeoutWithBeforeUnloadDialog) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate first tab to a.com.
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  RenderProcessHost* a_process = web_contents->GetMainFrame()->GetProcess();
+
+  // Open b.com in a second tab.  Using a renderer-initiated navigation is
+  // important to leave a.com and b.com SiteInstances in the same
+  // BrowsingInstance (so the b.com -> a.com navigation in the next test step
+  // will reuse the process associated with the first a.com tab).
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* new_shell = OpenPopup(web_contents, b_url, "newtab");
+  WebContents* new_contents = new_shell->web_contents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  RenderProcessHost* b_process = new_contents->GetMainFrame()->GetProcess();
+  EXPECT_NE(a_process, b_process);
+
+  // Disable the beforeunload hang monitor (otherwise there will be a race
+  // between the beforeunload dialog and the beforeunload hang timer) and give
+  // the page a gesture to allow dialogs.
+  web_contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  web_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::string16());
+
+  // Hang the first contents in a beforeunload dialog.
+  TestWCBeforeUnloadDelegate test_delegate(web_contents);
+  EXPECT_TRUE(
+      ExecJs(web_contents, "window.onbeforeunload=function(e){ return 'x' }"));
+  EXPECT_TRUE(ExecJs(web_contents, "window.location.reload()"));
+  test_delegate.Wait();
 
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.

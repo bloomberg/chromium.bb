@@ -90,6 +90,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "url/url_constants.h"
 
@@ -236,6 +237,7 @@ RenderViewHostImpl::RenderViewHostImpl(
   GetWidget()->set_owner_delegate(this);
 
   GetProcess()->AddObserver(this);
+  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 
   // New views may be created during RenderProcessHost::ProcessDied(), within a
   // brief window where the internal ChannelProxy is null. This ensures that the
@@ -271,6 +273,8 @@ RenderViewHostImpl::~RenderViewHostImpl() {
                        base::Unretained(ResourceDispatcherHostImpl::Get()),
                        GetProcess()->GetID(), GetRoutingID()));
   }
+
+  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
   // Detach the routing ID as the object is going away.
   GetProcess()->RemoveRoute(GetRoutingID());
@@ -975,6 +979,10 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 void RenderViewHostImpl::PostRenderViewReady() {
   GetProcess()->PostTaskWhenProcessIsReady(base::BindOnce(
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
+}
+
+void RenderViewHostImpl::OnGpuSwitched() {
+  OnWebkitPreferencesChanged();
 }
 
 void RenderViewHostImpl::RenderViewReady() {

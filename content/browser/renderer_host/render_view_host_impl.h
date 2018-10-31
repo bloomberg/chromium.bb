@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace content {
 
@@ -63,6 +64,7 @@ class TimeoutMonitor;
 class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                                           public RenderWidgetHostOwnerDelegate,
                                           public RenderProcessHostObserver,
+                                          public ui::GpuSwitchingObserver,
                                           public IPC::Listener {
  public:
   // Convenience function, just like RenderViewHost::FromID.
@@ -194,6 +196,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Send RenderViewReady to observers once the process is launched, but not
   // re-entrantly.
   void PostRenderViewReady();
+
+  // GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
 
   void set_main_frame_routing_id(int routing_id) {
     main_frame_routing_id_ = routing_id;

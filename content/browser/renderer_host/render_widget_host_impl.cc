@@ -460,7 +460,11 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           RenderWidgetHostID(process->GetID(), routing_id_), this));
   CHECK(result.second) << "Inserting a duplicate item!";
   process_->AddRoute(routing_id_, this);
-  process_->AddWidget(this);
+  render_process_blocked_state_changed_subscription_ =
+      process_->RegisterBlockStateChangedCallback(base::BindRepeating(
+          &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
+          base::Unretained(this)));
+  process_->AddPriorityClient(this);
 
   SetupInputRouter();
   SetWidget(std::move(widget));
@@ -1115,9 +1119,8 @@ bool RenderWidgetHostImpl::RequestRepaintForTesting() {
   return view_->RequestRepaintForTesting();
 }
 
-void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
-    bool ignore_input_events) {
-  if (ignore_input_events)
+void RenderWidgetHostImpl::RenderProcessBlockedStateChanged(bool blocked) {
+  if (blocked)
     StopInputEventAckTimeout();
   else
     RestartInputEventAckTimeoutIfNecessary();
@@ -2082,7 +2085,8 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
     DCHECK(owned_bitmaps_.empty());
   }
 
-  process_->RemoveWidget(this);
+  render_process_blocked_state_changed_subscription_.reset();
+  process_->RemovePriorityClient(this);
   process_->RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(
       RenderWidgetHostID(process_->GetID(), routing_id_));
@@ -2690,7 +2694,7 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
 }
 
 bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
-  return process_->IgnoreInputEvents() || !delegate_ ||
+  return process_->IsBlocked() || !delegate_ ||
          delegate_->ShouldIgnoreInputEvents();
 }
 

@@ -126,8 +126,6 @@
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
@@ -224,7 +222,6 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gpu_switching_manager.h"
 #include "ui/native_theme/native_theme_features.h"
 
 #if defined(OS_ANDROID)
@@ -1574,10 +1571,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       browser_context_(browser_context),
       storage_partition_impl_(storage_partition_impl),
       sudden_termination_allowed_(true),
-      ignore_input_events_(false),
+      is_blocked_(false),
       is_for_guests_only_(is_for_guests_only),
       is_unused_(true),
-      gpu_observer_registered_(false),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
       permission_service_context_(new PermissionServiceContext(this)),
@@ -1691,11 +1687,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   g_in_process_thread = nullptr;
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
-
-  if (gpu_observer_registered_) {
-    ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
-    gpu_observer_registered_ = false;
-  }
 
   is_dead_ = true;
 
@@ -1846,11 +1837,6 @@ bool RenderProcessHostImpl::Init() {
     channel_->Pause();
 
     fast_shutdown_started_ = false;
-  }
-
-  if (!gpu_observer_registered_) {
-    gpu_observer_registered_ = true;
-    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
 
   init_time_ = base::TimeTicks::Now();
@@ -3408,18 +3394,22 @@ bool RenderProcessHostImpl::IsInitializedAndNotDead() const {
   return is_initialized_ && !is_dead_;
 }
 
-void RenderProcessHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
-  if (ignore_input_events == ignore_input_events_)
+void RenderProcessHostImpl::SetBlocked(bool blocked) {
+  if (blocked == is_blocked_)
     return;
 
-  ignore_input_events_ = ignore_input_events;
-  for (auto* widget : widgets_) {
-    widget->ProcessIgnoreInputEventsChanged(ignore_input_events);
-  }
+  is_blocked_ = blocked;
+  blocked_state_changed_callback_list_.Notify(blocked);
 }
 
-bool RenderProcessHostImpl::IgnoreInputEvents() const {
-  return ignore_input_events_;
+bool RenderProcessHostImpl::IsBlocked() const {
+  return is_blocked_;
+}
+
+std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+RenderProcessHostImpl::RegisterBlockStateChangedCallback(
+    const base::RepeatingCallback<void(bool)>& cb) {
+  return blocked_state_changed_callback_list_.Add(cb);
 }
 
 void RenderProcessHostImpl::Cleanup() {
@@ -3535,23 +3525,16 @@ void RenderProcessHostImpl::RemovePendingView() {
     UpdateProcessPriority();
 }
 
-void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
-  RenderWidgetHostImpl* widget_impl =
-      static_cast<RenderWidgetHostImpl*>(widget);
-  widgets_.insert(widget_impl);
-
-  DCHECK(!base::ContainsKey(priority_clients_, widget_impl));
-  priority_clients_.insert(widget_impl);
+void RenderProcessHostImpl::AddPriorityClient(PriorityClient* priority_client) {
+  DCHECK(!base::ContainsKey(priority_clients_, priority_client));
+  priority_clients_.insert(priority_client);
   UpdateProcessPriorityInputs();
 }
 
-void RenderProcessHostImpl::RemoveWidget(RenderWidgetHost* widget) {
-  RenderWidgetHostImpl* widget_impl =
-      static_cast<RenderWidgetHostImpl*>(widget);
-  widgets_.erase(widget_impl);
-
-  DCHECK(base::ContainsKey(priority_clients_, widget_impl));
-  priority_clients_.erase(widget_impl);
+void RenderProcessHostImpl::RemovePriorityClient(
+    PriorityClient* priority_client) {
+  DCHECK(base::ContainsKey(priority_clients_, priority_client));
+  priority_clients_.erase(priority_client);
   UpdateProcessPriorityInputs();
 }
 
@@ -4512,10 +4495,6 @@ void RenderProcessHostImpl::OnCloseACK(int closed_widget_route_id) {
   holder->Release(closed_widget_route_id);
 }
 
-void RenderProcessHostImpl::OnGpuSwitched() {
-  RecomputeAndUpdateWebKitPreferences();
-}
-
 // static
 RenderProcessHost*
 RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
@@ -4658,17 +4637,6 @@ void RenderProcessHostImpl::OnAec3Enabled() {
   // spurious.
   if (!aec3_set_callback_.is_null())
     std::move(aec3_set_callback_).Run(true, std::string());
-}
-
-void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
-  // We are updating all widgets including swapped out ones.
-  for (auto* widget : widgets_) {
-    RenderViewHost* rvh = RenderViewHost::From(widget);
-    if (!rvh)
-      continue;
-
-    rvh->OnWebkitPreferencesChanged();
-  }
 }
 
 // static

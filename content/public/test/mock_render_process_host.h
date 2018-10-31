@@ -45,7 +45,6 @@ class URLLoaderFactory;
 namespace content {
 
 class MockRenderProcessHostFactory;
-class RenderWidgetHost;
 class SiteInstance;
 class StoragePartition;
 
@@ -98,13 +97,16 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsReady() const override;
   int GetID() const override;
   bool IsInitializedAndNotDead() const override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
-  bool IgnoreInputEvents() const override;
+  void SetBlocked(bool blocked) override;
+  bool IsBlocked() const override;
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  RegisterBlockStateChangedCallback(
+      const base::RepeatingCallback<void(bool)>& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
-  void AddWidget(RenderWidgetHost* widget) override;
-  void RemoveWidget(RenderWidgetHost* widget) override;
+  void AddPriorityClient(PriorityClient* priority_client) override;
+  void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
 #endif

@@ -643,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
   EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Make sure input events still work in the renderer process.
-  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IgnoreInputEvents());
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IsBlocked());
 }
 
 // Make sure that dialogs are closed after a renderer process dies, and that
@@ -1770,7 +1770,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   // interstitial is deleted now.
 
   // Make sure input events still work in the renderer process.
-  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IgnoreInputEvents());
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IsBlocked());
 }
 
 
