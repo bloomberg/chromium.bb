@@ -11,6 +11,26 @@
 
 namespace offline_pages {
 
+namespace {
+
+using DailyUsageType = OfflineMetricsCollectorImpl::DailyUsageType;
+using PrefetchUsageType = OfflineMetricsCollectorImpl::PrefetchUsageType;
+
+void ReportOfflineUsageForOneDayToUma(DailyUsageType usage_type) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.OfflineUsage", usage_type);
+}
+
+void ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType usage_type) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.OfflineUsage.NotOfflineResilient",
+                            usage_type);
+}
+
+void ReportPrefetchUsageForOneDayToUma(PrefetchUsageType usage_type) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.PrefetchUsage", usage_type);
+}
+
+}  // namespace
+
 // static
 void OfflineMetricsCollectorImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOfflineUsageStartObserved, false);
@@ -71,27 +91,27 @@ void OfflineMetricsCollectorImpl::ReportAccumulatedStats() {
     return;
 
   for (int i = 0; i < unused_days_count_; ++i)
-    ReportOfflineUsageForOneDayToUma(DailyUsageType::UNUSED);
+    ReportOfflineUsageForOneDayToUma(DailyUsageType::kUnused);
   for (int i = 0; i < started_days_count_; ++i)
-    ReportOfflineUsageForOneDayToUma(DailyUsageType::STARTED);
+    ReportOfflineUsageForOneDayToUma(DailyUsageType::kStarted);
   for (int i = 0; i < offline_days_count_; ++i)
-    ReportOfflineUsageForOneDayToUma(DailyUsageType::OFFLINE);
+    ReportOfflineUsageForOneDayToUma(DailyUsageType::kOffline);
   for (int i = 0; i < online_days_count_; ++i)
-    ReportOfflineUsageForOneDayToUma(DailyUsageType::ONLINE);
+    ReportOfflineUsageForOneDayToUma(DailyUsageType::kOnline);
   for (int i = 0; i < mixed_days_count_; ++i)
-    ReportOfflineUsageForOneDayToUma(DailyUsageType::MIXED);
+    ReportOfflineUsageForOneDayToUma(DailyUsageType::kMixed);
 
   for (int i = 0; i < prefetch_enable_count_; ++i) {
     UMA_HISTOGRAM_BOOLEAN("OfflinePages.PrefetchEnabled", true);
   }
 
   for (int i = 0; i < prefetch_fetched_count_; ++i)
-    ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::FETCHED_NEW_PAGES);
+    ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::kFetchedNewPages);
   for (int i = 0; i < prefetch_opened_count_; ++i)
-    ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::OPENED_PAGES);
+    ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::kOpenedPages);
   for (int i = 0; i < prefetch_mixed_count_; ++i)
     ReportPrefetchUsageForOneDayToUma(
-        PrefetchUsageType::FETCHED_AND_OPENED_PAGES);
+        PrefetchUsageType::kFetchedAndOpenedPages);
 
   unused_days_count_ = 0;
   started_days_count_ = 0;
@@ -190,16 +210,22 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
     return false;
 
   // Increment the counter that corresponds to tracked usage.
-  if (online_navigation_observed_ && offline_navigation_observed_)
+  if (online_navigation_observed_ && offline_navigation_observed_) {
     mixed_days_count_++;
-  else if (online_navigation_observed_)
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kMixed);
+  } else if (online_navigation_observed_) {
     online_days_count_++;
-  else if (offline_navigation_observed_)
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kOnline);
+  } else if (offline_navigation_observed_) {
     offline_days_count_++;
-  else if (chrome_start_observed_)
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kOffline);
+  } else if (chrome_start_observed_) {
     started_days_count_++;
-  else
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kStarted);
+  } else {
     unused_days_count_++;
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kUnused);
+  }
 
   if (prefetch_is_enabled_observed_)
     prefetch_enable_count_++;
@@ -221,8 +247,10 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   //    tracking is reset to start for the current day.
   int days_in_between =
       (current_midnight - tracking_day_midnight_).InDays() - 1;
-  DCHECK(days_in_between >= 0);
+  DCHECK_GE(days_in_between, 0);
   unused_days_count_ += days_in_between;
+  for (int i = 0; i < days_in_between; ++i)
+    ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kUnused);
 
   // Reset tracking
   chrome_start_observed_ = false;
@@ -235,18 +263,6 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   tracking_day_midnight_ = current_midnight;
 
   return true;
-}
-
-void OfflineMetricsCollectorImpl::ReportOfflineUsageForOneDayToUma(
-    DailyUsageType usage_type) {
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.OfflineUsage", usage_type,
-                            DailyUsageType::MAX_USAGE);
-}
-
-void OfflineMetricsCollectorImpl::ReportPrefetchUsageForOneDayToUma(
-    PrefetchUsageType usage_type) {
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.PrefetchUsage", usage_type,
-                            PrefetchUsageType::MAX_USAGE);
 }
 
 base::Time OfflineMetricsCollectorImpl::Now() const {
