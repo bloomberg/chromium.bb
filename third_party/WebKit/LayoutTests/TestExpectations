@@ -113,6 +113,20 @@ crbug.com/891427 virtual/threaded/animations/invisible-composited-animations-pre
 # One more from Findit: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/220243
 crbug.com/891427 rootscroller/set-root-scroller.html [ Pass Failure Timeout Crash ]
 
+# These 6 are special. They are tied to both of these CLs:
+#   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
+#   - https://chromium-review.googlesource.com/c/chromium/src/+/1308038
+# and they only seem (really) flaky when the second CL is in place. But I believe
+# they are related to timing and to the same issues as above.
+# Here is an example: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/221340
+crbug.com/891427 fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/layout_ng/fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-body-scrollablearea.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-div-body-scrollablearea.html [ Pass Failure Timeout Crash ]
+
+
 # Remove these when --enable-display-compositor-pixel-dump becomes the
 # "default" setting. These will all need to be re-baselined at that point.
 # All differences should be related to the overflow menu being (now
@@ -2845,7 +2859,8 @@ crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance
 
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 
-crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
