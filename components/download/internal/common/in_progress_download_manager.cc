@@ -316,7 +316,7 @@ void InProgressDownloadManager::StartDownload(
     std::string guid = info->guid;
     StartDownloadWithItem(std::move(stream),
                           std::move(url_loader_factory_getter), std::move(info),
-                          GetInProgressDownload(guid));
+                          GetInProgressDownload(guid), false);
   }
 }
 
@@ -324,7 +324,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
     std::unique_ptr<InputStream> stream,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
     std::unique_ptr<DownloadCreateInfo> info,
-    DownloadItemImpl* download) {
+    DownloadItemImpl* download,
+    bool should_persist_new_download) {
   if (!download) {
     // If the download is no longer known to the DownloadManager, then it was
     // removed after it was resumed. Ignore. If the download is cancelled
@@ -341,15 +342,21 @@ void InProgressDownloadManager::StartDownloadWithItem(
   if (delegate_)
     default_download_directory = delegate_->GetDefaultDownloadDirectory();
 
-  base::Optional<DownloadDBEntry> entry_opt =
-      download_db_cache_->RetrieveEntry(download->GetGuid());
-  if (!entry_opt.has_value()) {
-    download_db_cache_->AddOrReplaceEntry(CreateDownloadDBEntryFromItem(
-        *download, UkmInfo(info->download_source, GetUniqueDownloadId()),
-        info->fetch_error_body, info->request_headers));
+  if (info->is_new_download && !should_persist_new_download)
+    non_persistent_download_guids_.insert(download->GetGuid());
+  // If the download is not persisted, don't notify |download_db_cache_|.
+  if (non_persistent_download_guids_.find(download->GetGuid()) ==
+      non_persistent_download_guids_.end()) {
+    base::Optional<DownloadDBEntry> entry_opt =
+        download_db_cache_->RetrieveEntry(download->GetGuid());
+    if (!entry_opt.has_value()) {
+      download_db_cache_->AddOrReplaceEntry(CreateDownloadDBEntryFromItem(
+          *download, UkmInfo(info->download_source, GetUniqueDownloadId()),
+          info->fetch_error_body, info->request_headers));
     }
     download->RemoveObserver(download_db_cache_.get());
     download->AddObserver(download_db_cache_.get());
+  }
 
   std::unique_ptr<DownloadFile> download_file;
   if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {

@@ -358,6 +358,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Whether next download ID from history DB is being retrieved.
   bool is_history_download_id_retrieved_;
 
+  // Whether new download should be persisted to the in progress download
+  // database.
+  bool should_persist_new_download_;
+
   // The download GUIDs that are cleared up on startup.
   std::set<std::string> cleared_download_guids_on_startup_;
   int cancelled_download_cleared_from_history_;

@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -40,7 +41,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
  public:
   using StartDownloadItemCallback =
       base::OnceCallback<void(std::unique_ptr<DownloadCreateInfo> info,
-                              DownloadItemImpl*)>;
+                              DownloadItemImpl*,
+                              bool /* should_persist_new_download */)>;
 
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
@@ -173,7 +175,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<InputStream> stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
       std::unique_ptr<DownloadCreateInfo> info,
-      DownloadItemImpl* download);
+      DownloadItemImpl* download,
+      bool should_persist_new_download);
 
   // Whether |download_db_cache_| is initialized.
   bool is_initialized_;
@@ -206,6 +209,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
   std::vector<std::unique_ptr<DownloadItemImpl>> in_progress_downloads_;
+
+  // A list of download GUIDs that should not be persisted.
+  std::set<std::string> non_persistent_download_guids_;
 
   // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
   // is not available.

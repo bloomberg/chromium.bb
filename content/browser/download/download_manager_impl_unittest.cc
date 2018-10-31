@@ -161,20 +161,20 @@ class MockDownloadItemFactory
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
       override;
 
-  void set_is_download_started(bool is_download_started) {
-    is_download_started_ = is_download_started;
+  void set_is_download_persistent(bool is_download_persistent) {
+    is_download_persistent_ = is_download_persistent;
   }
 
  private:
   std::map<uint32_t, download::MockDownloadItemImpl*> items_;
   download::DownloadItemImplDelegate item_delegate_;
-  bool is_download_started_;
+  bool is_download_persistent_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadItemFactory);
 };
 
 MockDownloadItemFactory::MockDownloadItemFactory()
-    : is_download_started_(false) {}
+    : is_download_persistent_(false) {}
 
 MockDownloadItemFactory::~MockDownloadItemFactory() {}
 
@@ -286,7 +286,7 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
   EXPECT_CALL(*result, IsPaused()).WillRepeatedly(Return(false));
   EXPECT_CALL(*result, IsTemporary()).WillRepeatedly(Return(false));
 
-  if (is_download_started_) {
+  if (is_download_persistent_) {
     EXPECT_CALL(*result, RemoveObserver(_));
     EXPECT_CALL(*result, AddObserver(_));
   }
@@ -557,7 +557,9 @@ TEST_F(DownloadManagerTest, StartDownload) {
   std::unique_ptr<download::DownloadCreateInfo> info(
       new download::DownloadCreateInfo);
   std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
-  uint32_t local_id(5);  // Random value
+  // Random value, a non 0 value means history db is properly loaded, and new
+  // downloads should be persisted to the in-progress db.
+  uint32_t local_id(5);
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
   OnInProgressDownloadManagerInitialized();
 
@@ -582,11 +584,47 @@ TEST_F(DownloadManagerTest, StartDownload) {
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));
 
-  mock_download_item_factory_->set_is_download_started(true);
+  mock_download_item_factory_->set_is_download_persistent(true);
   download_manager_->StartDownload(
       std::move(info), std::move(input_stream), nullptr,
       download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
+}
+
+// Test the case that a new download is started when history db failed to
+// initialize.
+TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
+  std::unique_ptr<download::DownloadCreateInfo> info(
+      new download::DownloadCreateInfo);
+  std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
+  base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
+  OnInProgressDownloadManagerInitialized();
+  EXPECT_FALSE(download_manager_->GetDownload(1));
+
+  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
+      .WillOnce(Return());
+  // Returning kInvalidId to indicate that the history db failed.
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
+      .WillOnce(RunCallback<0>(download::DownloadItem::kInvalidId));
+
+#if !defined(USE_X11)
+  // Doing nothing will set the default download directory to null.
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
+#endif
+  EXPECT_CALL(GetMockDownloadManagerDelegate(),
+              ApplicationClientIdForFileScanning())
+      .WillRepeatedly(Return("client-id"));
+  download::MockDownloadFile* mock_file = new download::MockDownloadFile;
+  auto input_stream =
+      std::make_unique<ByteStreamInputStream>(std::move(stream));
+  EXPECT_CALL(*mock_download_file_factory_.get(),
+              MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
+      .WillOnce(Return(mock_file));
+
+  download_manager_->StartDownload(
+      std::move(info), std::move(input_stream), nullptr,
+      download::DownloadUrlParameters::OnStartedCallback());
+  EXPECT_TRUE(download_manager_->GetDownload(1));
 }
 
 // Confirm that calling DetermineDownloadTarget behaves properly if the delegate
