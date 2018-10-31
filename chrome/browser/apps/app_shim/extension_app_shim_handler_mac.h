@@ -26,16 +26,20 @@ class Profile;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 namespace extensions {
 class AppWindow;
 class Extension;
-}
+}  // namespace extensions
+
+namespace views {
+class BridgeFactoryHost;
+}  // namespace views
 
 namespace apps {
 
@@ -50,6 +54,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
    public:
     virtual ~Delegate() {}
 
+    virtual base::FilePath GetFullProfilePath(
+        const base::FilePath& relative_path);
     virtual bool ProfileExistsForPath(const base::FilePath& path);
     virtual Profile* ProfileForPath(const base::FilePath& path);
     virtual void LoadProfileAsync(const base::FilePath& path,
@@ -90,9 +96,15 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual AppShimHandler::Host* FindHost(Profile* profile,
                                          const std::string& app_id);
 
-  // Get the host corresponding to a browser instance, or nullptr if none
-  // exists.
-  AppShimHandler::Host* FindHostForBrowser(Browser* browser);
+  // Return the host corresponding to |profile| and |app_id|, or create one if
+  // needed.
+  AppShimHandler::Host* FindOrCreateHost(Profile* profile,
+                                         const std::string& app_id);
+
+  // Get the ViewBridgeFactoryHost, which may be used to create remote
+  // NSWindows, corresponding to a browser instance (or nullptr if none exists).
+  views::BridgeFactoryHost* GetViewsBridgeFactoryHostForBrowser(
+      Browser* browser);
 
   void SetHostedAppHidden(Profile* profile,
                           const std::string& app_id,

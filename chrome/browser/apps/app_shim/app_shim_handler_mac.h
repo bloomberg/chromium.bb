@@ -29,6 +29,9 @@ class AppShimHandler {
   // https://crbug.com/896917
   class Host {
    public:
+    // Returns true if an AppShimHostBootstrap has already connected to this
+    // host.
+    virtual bool HasBootstrapConnected() const = 0;
     // Invoked when the app shim process has finished launching. The |bootstrap|
     // object owns the lifetime of the app shim process.
     virtual void OnBootstrapConnected(

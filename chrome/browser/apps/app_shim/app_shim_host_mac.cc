@@ -71,6 +71,17 @@ void AppShimHost::ChannelError(uint32_t custom_reason,
   Close();
 }
 
+void AppShimHost::SendLaunchResult() {
+  DCHECK(!has_sent_on_launch_complete_);
+  DCHECK(bootstrap_);
+  DCHECK(launch_result_);
+  if (*launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
+    bootstrap_->OnLaunchAppSucceeded(std::move(app_shim_request_));
+  else
+    bootstrap_->OnLaunchAppFailed(*launch_result_);
+  has_sent_on_launch_complete_ = true;
+}
+
 void AppShimHost::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Note that we must call GetAppShimHandler here and not in the destructor
@@ -88,6 +99,10 @@ apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
 
+bool AppShimHost::HasBootstrapConnected() const {
+  return bootstrap_ != nullptr;
+}
+
 void AppShimHost::OnBootstrapConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   DCHECK(!bootstrap_);
@@ -97,6 +112,11 @@ void AppShimHost::OnBootstrapConnected(
   host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
   host_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
+
+  // If we already have a launch result ready (e.g, because we launched the app
+  // from Chrome), send the result immediately.
+  if (launch_result_)
+    SendLaunchResult();
 }
 
 void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
@@ -126,12 +146,9 @@ void AppShimHost::QuitApp() {
 
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
   DCHECK(!has_sent_on_launch_complete_);
-  DCHECK(bootstrap_);
-  if (result == apps::APP_SHIM_LAUNCH_SUCCESS)
-    bootstrap_->OnLaunchAppSucceeded(std::move(app_shim_request_));
-  else
-    bootstrap_->OnLaunchAppFailed(result);
-  has_sent_on_launch_complete_ = true;
+  launch_result_.emplace(result);
+  if (bootstrap_)
+    SendLaunchResult();
 }
 
 void AppShimHost::OnAppClosed() {

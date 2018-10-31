@@ -190,13 +190,10 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
 
 views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
   auto* shim_handler = apps::ExtensionAppShimHandler::Get();
-  if (shim_handler) {
-    apps::AppShimHandler::Host* host =
-        shim_handler->FindHostForBrowser(browser_view_->browser());
-    if (host)
-      return host->GetViewsBridgeFactoryHost();
-  }
-  return nullptr;
+  if (!shim_handler)
+    return nullptr;
+  return shim_handler->GetViewsBridgeFactoryHostForBrowser(
+      browser_view_->browser());
 }
 
 void BrowserFrameMac::OnWindowDestroying(gfx::NativeWindow native_window) {

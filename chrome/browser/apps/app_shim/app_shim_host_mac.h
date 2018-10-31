@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
@@ -35,6 +36,7 @@ class AppShimHost : public chrome::mojom::AppShimHost,
   AppShimHost(const std::string& app_id, const base::FilePath& profile_path);
 
   // apps::AppShimHandler::Host overrides:
+  bool HasBootstrapConnected() const override;
   void OnBootstrapConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnAppLaunchComplete(apps::AppShimLaunchResult result) override;
@@ -51,6 +53,7 @@ class AppShimHost : public chrome::mojom::AppShimHost,
   // channel error and OnAppClosed).
   ~AppShimHost() override;
   void ChannelError(uint32_t custom_reason, const std::string& description);
+  void SendLaunchResult();
 
   // Closes the channel and destroys the AppShimHost.
   void Close();
@@ -75,6 +78,10 @@ class AppShimHost : public chrome::mojom::AppShimHost,
 
   std::string app_id_;
   base::FilePath profile_path_;
+
+  // The result passed to OnAppLaunchComplete, not set until OnAppLaunchComplete
+  // is called.
+  base::Optional<apps::AppShimLaunchResult> launch_result_;
   bool has_sent_on_launch_complete_ = false;
 
   THREAD_CHECKER(thread_checker_);
