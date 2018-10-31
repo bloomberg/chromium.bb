@@ -19,11 +19,9 @@ namespace chromeos {
 namespace ime {
 namespace rulebased {
 
-using KeyMap = std::map<std::string, std::string>;
+using KeyMap = std::map<std::string, const char*>;
 
 using TransformRule = std::pair<std::unique_ptr<re2::RE2>, std::string>;
-
-KeyMap ParseKeyMapForTesting(const wchar_t* raw_key_map, bool is_102);
 
 class RulesData {
  public:
@@ -31,9 +29,7 @@ class RulesData {
   ~RulesData();
 
   // Creates the RulesData by the given raw data.
-  static std::unique_ptr<RulesData> Create(const wchar_t** key_map,
-                                           const uint8_t key_map_count,
-                                           const uint8_t* key_map_index,
+  static std::unique_ptr<RulesData> Create(const char*** key_map,
                                            bool is_102_keyboard,
                                            const char** transforms,
                                            const uint16_t transforms_count,
@@ -63,11 +59,8 @@ class RulesData {
   const re2::RE2* history_prune_re() const { return history_prune_re_.get(); }
 
  private:
-  // All possible KeyMap instances under various modifier states.
-  std::vector<KeyMap> key_map_cache_;
-
-  // The map from the modifier state to the KeyMap instance.
-  const KeyMap* key_maps_[8] = {0};
+  // The KeyMap instances under all the modifier states.
+  KeyMap key_maps_[8];
 
   // The map from the sub group match index (of the merged regexp) to the
   // transform rule (which is a pair of matching regexp, and replace string).

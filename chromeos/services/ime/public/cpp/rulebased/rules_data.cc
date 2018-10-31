@@ -4,9 +4,7 @@
 
 #include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
 
-#include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ar.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ckb_ar.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ckb_en.h"
@@ -32,30 +30,21 @@ namespace rulebased {
 namespace {
 
 struct RawDataEntry {
-  const wchar_t** key_map;
-  const uint8_t key_map_count;
-  const uint8_t* key_map_index;
+  const char*** key_map;
   bool is_102_keyboard;
   const char** transforms;
   const uint16_t transforms_count;
   const char* history_prune;
 
-  RawDataEntry(const wchar_t** map,
-               uint8_t map_count,
-               const uint8_t* map_index,
-               bool is_102)
-      : RawDataEntry(map, map_count, map_index, is_102, nullptr, 0, nullptr) {}
+  RawDataEntry(const char*** map, bool is_102)
+      : RawDataEntry(map, is_102, nullptr, 0, nullptr) {}
 
-  RawDataEntry(const wchar_t** map,
-               uint8_t map_count,
-               const uint8_t* map_index,
+  RawDataEntry(const char*** map,
                bool is_102,
                const char** trans,
                uint16_t trans_count,
                const char* prune)
       : key_map(map),
-        key_map_count(map_count),
-        key_map_index(map_index),
         is_102_keyboard(is_102),
         transforms(trans),
         transforms_count(trans_count),
@@ -63,69 +52,29 @@ struct RawDataEntry {
 };
 
 static const std::map<std::string, RawDataEntry> kRawData = {
-    {id_ar, RawDataEntry(key_map_ar,
-                         base::size(key_map_ar),
-                         key_map_index_ar,
-                         is_102_ar)},
-    {id_ckb_ar, RawDataEntry(key_map_ckb_ar,
-                             base::size(key_map_ckb_ar),
-                             key_map_index_ckb_ar,
-                             is_102_ckb_ar)},
-    {id_ckb_en, RawDataEntry(key_map_ckb_en,
-                             base::size(key_map_ckb_en),
-                             key_map_index_ckb_en,
-                             is_102_ckb_en)},
-    {kIdDevaPhone, RawDataEntry(kKeyMapUs,
-                                kKeyMapUsLen,
-                                kKeyMapIndexUs,
-                                kIs102Us,
-                                kTransformsDevaPhone,
-                                kTransformsDevaPhoneLen,
-                                kHistoryPruneDevaPhone)},
-    {id_fa, RawDataEntry(key_map_fa,
-                         base::size(key_map_fa),
-                         key_map_index_fa,
-                         is_102_fa)},
-    {id_km, RawDataEntry(key_map_km,
-                         base::size(key_map_km),
-                         key_map_index_km,
-                         is_102_km)},
-    {id_lo, RawDataEntry(key_map_lo,
-                         base::size(key_map_lo),
-                         key_map_index_lo,
-                         is_102_lo)},
-    {id_ne_inscript, RawDataEntry(key_map_ne_inscript,
-                                  base::size(key_map_ne_inscript),
-                                  key_map_index_ne_inscript,
-                                  is_102_ne_inscript)},
-    {id_ru_phone_aatseel, RawDataEntry(key_map_ru_phone_aatseel,
-                                       base::size(key_map_ru_phone_aatseel),
-                                       key_map_index_ru_phone_aatseel,
-                                       is_102_ru_phone_aatseel)},
-    {id_ru_phone_yazhert, RawDataEntry(key_map_ru_phone_yazhert,
-                                       base::size(key_map_ru_phone_yazhert),
-                                       key_map_index_ru_phone_yazhert,
-                                       is_102_ru_phone_yazhert)},
-    {id_ta_inscript, RawDataEntry(key_map_ta_inscript,
-                                  base::size(key_map_ta_inscript),
-                                  key_map_index_ta_inscript,
-                                  is_102_ta_inscript)},
-    {id_ta_typewriter, RawDataEntry(key_map_ta_typewriter,
-                                    base::size(key_map_ta_typewriter),
-                                    key_map_index_ta_typewriter,
-                                    is_102_ta_typewriter)},
-    {id_th, RawDataEntry(key_map_th,
-                         base::size(key_map_th),
-                         key_map_index_th,
-                         is_102_th)},
-    {id_th_pattajoti, RawDataEntry(key_map_th_pattajoti,
-                                   base::size(key_map_th_pattajoti),
-                                   key_map_index_th_pattajoti,
-                                   is_102_th_pattajoti)},
-    {id_th_tis, RawDataEntry(key_map_th_tis,
-                             base::size(key_map_th_tis),
-                             key_map_index_th_tis,
-                             is_102_th_tis)}};
+    {ar::kId, RawDataEntry(ar::kKeyMap, ar::kIs102)},
+    {ckb_ar::kId, RawDataEntry(ckb_ar::kKeyMap, ckb_ar::kIs102)},
+    {ckb_en::kId, RawDataEntry(ckb_en::kKeyMap, ckb_en::kIs102)},
+    {deva_phone::kId, RawDataEntry(us::kKeyMap,
+                                   us::kIs102,
+                                   deva_phone::kTransforms,
+                                   deva_phone::kTransformsLen,
+                                   deva_phone::kHistoryPrune)},
+    {fa::kId, RawDataEntry(fa::kKeyMap, fa::kIs102)},
+    {km::kId, RawDataEntry(km::kKeyMap, km::kIs102)},
+    {lo::kId, RawDataEntry(lo::kKeyMap, lo::kIs102)},
+    {ne_inscript::kId, RawDataEntry(ne_inscript::kKeyMap, ne_inscript::kIs102)},
+    {ru_phone_aatseel::kId,
+     RawDataEntry(ru_phone_aatseel::kKeyMap, ru_phone_aatseel::kIs102)},
+    {ru_phone_yazhert::kId,
+     RawDataEntry(ru_phone_yazhert::kKeyMap, ru_phone_yazhert::kIs102)},
+    {ta_inscript::kId, RawDataEntry(ta_inscript::kKeyMap, ta_inscript::kIs102)},
+    {ta_typewriter::kId,
+     RawDataEntry(ta_typewriter::kKeyMap, ta_typewriter::kIs102)},
+    {th::kId, RawDataEntry(th::kKeyMap, th::kIs102)},
+    {th_pattajoti::kId,
+     RawDataEntry(th_pattajoti::kKeyMap, th_pattajoti::kIs102)},
+    {th_tis::kId, RawDataEntry(th_tis::kKeyMap, th_tis::kIs102)}};
 
 static const char* k101Keys[] = {
     // Row #1
@@ -159,52 +108,15 @@ static const char* k102Keys[] = {
     // Row #5
     "Space"};
 
-bool ScanBrackets(const wchar_t** pstr,
-                  wchar_t bracket_left,
-                  wchar_t bracket_right,
-                  std::string* str_out) {
-  const wchar_t* p = *pstr;
-  if (*p != bracket_left || *(p + 1) != bracket_left)
-    return false;
-  p += 2;
-  const wchar_t* from = p;
-  while (*p != L'\0') {
-    if (*p == bracket_right && *(p + 1) == bracket_right) {
-      base::WideToUTF8(from, p - from, str_out);
-      *pstr = p + 2;
-      return true;
-    }
-    ++p;
-  }
-  return false;
-}
+const static size_t kKeyMapCount = 8;
 
-// Parses the raw key map string and generate a KeyMap instance.
-// Each character in the raw key map string maps to a key on the keyboard 101 or
-// 102 layout with the same sequence of from top left to bottom right.
-// For example, the 1st character maps to the BackQuote key, the 2nd maps to the
-// Number1 key, and the last character maps to the Space key.
-// Please refer to the sequences defined by |k101Keys| and |k102Keys|.
-// If the definition wants to map multiple characters to one key, the double
-// brackets are used. e.g. "{{abc}}" or "((abc))".
-// The parsing supports both "{{}}" and "(())" to eliminate the ambiguities
-// where it wants to map the character "{", "}", "(", or ")" to a key.
-// e.g. "{{{abc}}..." is ambiguous and should be defined as "{((abc))..".
-KeyMap ParseKeyMap(const wchar_t* raw_key_map, bool is_102) {
+// Parses the raw key mappings and generate a KeyMap instance.
+KeyMap ParseKeyMap(const char** raw_key_map, bool is_102) {
   const char** std_keys = is_102 ? k102Keys : k101Keys;
+  size_t nkeys = is_102 ? base::size(k102Keys) : base::size(k101Keys);
   KeyMap key_map;
-  const wchar_t* p = raw_key_map;
-  uint8_t index = 0;
-  while (*p != L'\0') {
-    std::string str;
-    if (!ScanBrackets(&p, L'{', L'}', &str) &&
-        !ScanBrackets(&p, L'(', L')', &str)) {
-      base::WideToUTF8(p++, 1, &str);
-    }
-
-    DCHECK((is_102 && index < 49) || (!is_102 && index < 48));
-    key_map[std_keys[index++]] = str;
-  }
+  for (size_t i = 0; i < nkeys; ++i)
+    key_map[std_keys[i]] = raw_key_map[i];
   return key_map;
 }
 
@@ -254,32 +166,22 @@ std::unique_ptr<re2::RE2> ParseHistoryPrune(const char* history_prune) {
 // The delimit inserted at the position of "transat".
 // The term "transat" means "was transformed at".
 // Please refer to some details in the |Transform| method.
-static const std::string kTransatDelimit = base::WideToUTF8(L"\u001D");
+static const char* kTransatDelimit = u8"\u001D";
 
 }  // namespace
-KeyMap ParseKeyMapForTesting(const wchar_t* raw_key_map, bool is_102) {
-  return ParseKeyMap(raw_key_map, is_102);
-}
 
 RulesData::RulesData() = default;
 RulesData::~RulesData() = default;
 
 // static
-std::unique_ptr<RulesData> RulesData::Create(const wchar_t** key_map,
-                                             const uint8_t key_map_count,
-                                             const uint8_t* key_map_index,
+std::unique_ptr<RulesData> RulesData::Create(const char*** key_map,
                                              bool is_102_keyboard,
                                              const char** transforms,
                                              const uint16_t transforms_count,
                                              const char* history_prune) {
   std::unique_ptr<RulesData> data = std::make_unique<RulesData>();
-  for (uint8_t i = 0; i < key_map_count; ++i)
-    data->key_map_cache_.push_back(ParseKeyMap(key_map[i], is_102_keyboard));
-
-  for (uint8_t i = 0; i < base::size(data->key_maps_); ++i) {
-    uint8_t index = key_map_index[i];
-    DCHECK(index < data->key_map_cache_.size());
-    data->key_maps_[i] = &(data->key_map_cache_[index]);
+  for (uint8_t i = 0; i < kKeyMapCount; ++i) {
+    data->key_maps_[i] = ParseKeyMap(key_map[i], is_102_keyboard);
   }
   data->transform_re_merged_ =
       ParseTransforms(transforms, transforms_count, data->transform_rules_);
@@ -294,9 +196,8 @@ std::unique_ptr<RulesData> RulesData::GetById(const std::string& id) {
     return nullptr;
 
   const RawDataEntry& entry = it->second;
-  return Create(entry.key_map, entry.key_map_count, entry.key_map_index,
-                entry.is_102_keyboard, entry.transforms, entry.transforms_count,
-                entry.history_prune);
+  return Create(entry.key_map, entry.is_102_keyboard, entry.transforms,
+                entry.transforms_count, entry.history_prune);
 }
 
 // static
@@ -305,7 +206,7 @@ bool RulesData::IsIdSupported(const std::string& id) {
 }
 
 const KeyMap* RulesData::GetKeyMapByModifiers(uint8_t modifiers) const {
-  return modifiers < 8 ? key_maps_[modifiers] : nullptr;
+  return modifiers < 8 ? &key_maps_[modifiers] : nullptr;
 }
 
 bool RulesData::Transform(const std::string& context,
