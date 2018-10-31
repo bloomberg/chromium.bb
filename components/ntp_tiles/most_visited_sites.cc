@@ -315,6 +315,22 @@ bool MostVisitedSites::UpdateCustomLink(const GURL& url,
   return success;
 }
 
+bool MostVisitedSites::ReorderCustomLink(const GURL& url, size_t new_pos) {
+  if (!custom_links_ || !custom_links_enabled_)
+    return false;
+
+  // Initialize custom links if they have not been initialized yet.
+  InitializeCustomLinks();
+
+  bool success = custom_links_->ReorderLink(url, new_pos);
+  if (success) {
+    if (custom_links_action_count_ != -1)
+      custom_links_action_count_++;
+    BuildCurrentTiles();
+  }
+  return success;
+}
+
 bool MostVisitedSites::DeleteCustomLink(const GURL& url) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;

@@ -49,6 +49,7 @@ class CustomLinksManagerImpl : public CustomLinksManager,
   bool UpdateLink(const GURL& url,
                   const GURL& new_url,
                   const base::string16& new_title) override;
+  bool ReorderLink(const GURL& url, size_t new_pos) override;
   bool DeleteLink(const GURL& url) override;
   bool UndoAction() override;
 
