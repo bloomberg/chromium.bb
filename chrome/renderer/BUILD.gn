@@ -426,6 +426,8 @@ jumbo_static_library("renderer") {
     sources += [
       "net/available_offline_content_helper.cc",
       "net/available_offline_content_helper.h",
+      "net/page_auto_fetcher_helper_android.cc",
+      "net/page_auto_fetcher_helper_android.h",
     ]
   }
 }

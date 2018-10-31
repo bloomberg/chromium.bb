@@ -22,12 +22,12 @@ enum OfflinePageAutoFetcherScheduleResult {
 // Provides controls for fetching offline pages automatically and quietly in
 // the background.
 interface OfflinePageAutoFetcher {
-  // Attempts to schedule an auto fetch for this URL, and returns the result.
+  // Attempts to schedule an auto fetch for the URL on the current page.
   // If user_requested is false, only schedules the fetch if there is remaining
   // quota.
-  TrySchedule(bool user_requested, url.mojom.Url url) =>
+  TrySchedule(bool user_requested) =>
     (OfflinePageAutoFetcherScheduleResult out);
 
-  // Cancels a previously scheduled auto fetch.
-  CancelSchedule(url.mojom.Url url);
+  // Cancels a previously scheduled auto fetch for the URL of the current page.
+  CancelSchedule();
 };

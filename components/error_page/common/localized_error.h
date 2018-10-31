@@ -39,6 +39,7 @@ class LocalizedError {
       bool can_show_network_diagnostics_dialog,
       bool is_incognito,
       OfflineContentOnNetErrorFeatureState offline_content_feature_state,
+      bool auto_fetch_feature_enabled,
       const std::string& locale,
       std::unique_ptr<error_page::ErrorPageParams> params,
       base::DictionaryValue* strings);

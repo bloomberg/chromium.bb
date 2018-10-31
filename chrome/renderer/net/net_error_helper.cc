@@ -61,6 +61,10 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/common/offline_page_auto_fetcher.mojom.h"
+#endif
+
 using base::JSONWriter;
 using content::DocumentState;
 using content::RenderFrame;
@@ -109,6 +113,16 @@ OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
 #else   // OS_ANDROID
 OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
   return OfflineContentOnNetErrorFeatureState::kDisabled;
+}
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+bool IsAutoFetchFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
+}
+#else   // OS_ANDROID
+bool IsAutoFetchFeatureEnabled() {
+  return false;
 }
 #endif  // OS_ANDROID
 
@@ -189,6 +203,10 @@ void NetErrorHelper::LaunchOfflineItem(const std::string& id,
 
 void NetErrorHelper::LaunchDownloadsPage() {
   core_->LaunchDownloadsPage();
+}
+
+content::RenderFrame* NetErrorHelper::GetRenderFrame() {
+  return render_frame();
 }
 
 void NetErrorHelper::SendCommand(
@@ -352,6 +370,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool* show_cached_copy_button_shown,
     bool* download_button_shown,
     OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
+    bool* auto_fetch_allowed,
     std::string* error_html) const {
   error_html->clear();
 
@@ -367,8 +386,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error.reason(), error.domain(), error.url(), is_failed_post,
         error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
         ChromeRenderThreadObserver::is_incognito_process(),
-        *offline_content_feature_state, RenderThread::Get()->GetLocale(),
-        std::move(params), &error_strings);
+        *offline_content_feature_state, IsAutoFetchFeatureEnabled(),
+        RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
         error_strings.Get("showSavedCopyButton", nullptr);
@@ -381,7 +400,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
       *offline_content_feature_state =
           OfflineContentOnNetErrorFeatureState::kDisabled;
     }
-
+    *auto_fetch_allowed = error_strings.FindKey("attemptAutoFetch") != nullptr;
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -422,7 +441,7 @@ void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      GetOfflineContentOnNetErrorFeatureState(),
+      GetOfflineContentOnNetErrorFeatureState(), IsAutoFetchFeatureEnabled(),
       RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
       &error_strings);
 
@@ -538,8 +557,30 @@ void NetErrorHelper::OfflineContentSummaryAvailable(
         base::UTF8ToUTF16(base::StrCat({"offlineContentSummaryAvailable(",
                                         offline_content_summary_json, ");"})));
   }
-#endif
+#endif  // defined(OS_ANDROID)
 }
+
+#if defined(OS_ANDROID)
+void NetErrorHelper::SetAutoFetchState(
+    chrome::mojom::OfflinePageAutoFetcherScheduleResult result) {
+  const char* scheduled = "false";
+  const char* can_schedule = "false";
+  switch (result) {
+    case chrome::mojom::OfflinePageAutoFetcherScheduleResult::kAlreadyScheduled:
+    case chrome::mojom::OfflinePageAutoFetcherScheduleResult::kScheduled:
+      scheduled = "true";
+      can_schedule = "true";
+      break;
+    case chrome::mojom::OfflinePageAutoFetcherScheduleResult::kOtherError:
+      break;
+    case chrome::mojom::OfflinePageAutoFetcherScheduleResult::kNotEnoughQuota:
+      can_schedule = "true";
+      break;
+  }
+  render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(base::StrCat(
+      {"setAutoFetchState(", scheduled, ", ", can_schedule, ");"})));
+}
+#endif  // defined(OS_ANDROID)
 
 void NetErrorHelper::DNSProbeStatus(int32_t status_num) {
   DCHECK(status_num >= 0 && status_num < error_page::DNS_PROBE_MAX);

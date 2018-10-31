@@ -381,6 +381,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
+#include "chrome/browser/offline_pages/offline_page_auto_fetcher.h"
 #include "chrome/common/descriptors_android.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -4300,6 +4301,12 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&NavigationPredictor::Create));
+
+#if defined(OS_ANDROID)
+  frame_interfaces_parameterized_->AddInterface(
+      base::BindRepeating(&offline_pages::OfflinePageAutoFetcher::Create),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+#endif
 }
 
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(

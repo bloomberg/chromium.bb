@@ -874,6 +874,7 @@ void LocalizedError::GetStrings(
     bool can_show_network_diagnostics_dialog,
     bool is_incognito,
     OfflineContentOnNetErrorFeatureState offline_content_feature_state,
+    bool auto_fetch_feature_enabled,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params,
     base::DictionaryValue* error_strings) {
@@ -1081,6 +1082,11 @@ void LocalizedError::GetStrings(
   error_strings->SetString(
       "closeDescriptionPopup",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
+
+  if (auto_fetch_feature_enabled && IsOfflineError(error_domain, error_code) &&
+      !is_incognito) {
+    error_strings->SetString("attemptAutoFetch", "true");
+  }
 
   if (IsOfflineError(error_domain, error_code) && !is_incognito) {
     switch (offline_content_feature_state) {

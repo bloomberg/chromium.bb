@@ -49,6 +49,7 @@ NSString* GetErrorPage(NSError* error, bool is_post, bool is_off_the_record) {
       /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
       error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::
           kDisabled,
+      /*auto_fetch_feature_enabled=*/false,
       GetApplicationContext()->GetApplicationLocale(),
       /*params=*/nullptr, &error_strings);
 

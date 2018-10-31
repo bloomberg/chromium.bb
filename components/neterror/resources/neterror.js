@@ -159,6 +159,10 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
+// TODO(crbug.com/883486): UI not yet implemented.
+function setAutoFetchState(scheduled, can_schedule) {
+}
+
 function toggleErrorInformationPopup() {
   document.getElementById('error-information-popup-container')
       .classList.toggle(HIDDEN_CLASS);

@@ -11,7 +11,6 @@
 #include "gin/arguments.h"
 #include "gin/wrappable.h"
 
-
 namespace content {
 class RenderFrame;
 }
