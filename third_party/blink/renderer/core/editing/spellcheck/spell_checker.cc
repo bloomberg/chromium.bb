@@ -599,8 +599,8 @@ void SpellChecker::CancelCheck() {
   spell_check_requester_->CancelCheck();
 }
 
-void SpellChecker::DocumentAttached(Document* document) {
-  idle_spell_check_controller_->DocumentAttached(document);
+void SpellChecker::DidAttachDocument(Document* document) {
+  idle_spell_check_controller_->DidAttachDocument(document);
 }
 
 void SpellChecker::Trace(blink::Visitor* visitor) {

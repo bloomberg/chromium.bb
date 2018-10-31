@@ -469,9 +469,9 @@ bool FrameSelection::IsHidden() const {
   return EnclosingTextControl(start);
 }
 
-void FrameSelection::DocumentAttached(Document* document) {
+void FrameSelection::DidAttachDocument(Document* document) {
   DCHECK(document);
-  selection_editor_->DocumentAttached(document);
+  selection_editor_->DidAttachDocument(document);
   SetContext(document);
 }
 

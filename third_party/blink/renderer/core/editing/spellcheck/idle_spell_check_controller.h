@@ -52,7 +52,7 @@ class CORE_EXPORT IdleSpellCheckController final
   // document is detached or spellchecking is globally disabled.
   void Deactivate();
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   // Exposed for testing only.
   SpellCheckRequester& GetSpellCheckRequester() const;

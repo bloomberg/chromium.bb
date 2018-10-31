@@ -2765,7 +2765,7 @@ void Document::Initialize() {
   if (TextAutosizer* autosizer = GetTextAutosizer())
     autosizer->UpdatePageInfo();
 
-  frame_->DocumentAttached();
+  frame_->DidAttachDocument();
   lifecycle_.AdvanceTo(DocumentLifecycle::kStyleClean);
 
   if (View())

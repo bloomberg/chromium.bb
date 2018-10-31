@@ -220,7 +220,7 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckController::DocumentAttached(Document* document) {
+void IdleSpellCheckController::DidAttachDocument(Document* document) {
   SetContext(document);
 }
 

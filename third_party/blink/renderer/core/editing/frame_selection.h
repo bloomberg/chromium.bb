@@ -204,7 +204,7 @@ class CORE_EXPORT FrameSelection final
   SelectionInDOMTree GetSelectionInDOMTree() const;
   bool IsDirectional() const;
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   void DidLayout();
   void CommitAppearanceIfNeeded();

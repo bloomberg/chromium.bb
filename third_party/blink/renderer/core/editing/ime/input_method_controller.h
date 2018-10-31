@@ -89,7 +89,7 @@ class CORE_EXPORT InputMethodController final
   EphemeralRange CompositionEphemeralRange() const;
 
   void Clear();
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   PlainTextRange GetSelectionOffsets() const;
   // Returns true if setting selection to specified offsets, otherwise false.

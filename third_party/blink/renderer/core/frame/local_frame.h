@@ -148,7 +148,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
                                          Frame* child) override;
 
   void DetachChildren();
-  void DocumentAttached();
+  // After Document is attached, resets state related to document, and sets
+  // context to the current document.
+  void DidAttachDocument();
 
   Frame* FindFrameForNavigation(const AtomicString& name,
                                 LocalFrame& active_frame,

@@ -489,14 +489,15 @@ void LocalFrame::DetachChildren() {
     ChildFrameDisconnector(*document).Disconnect();
 }
 
-void LocalFrame::DocumentAttached() {
-  DCHECK(GetDocument());
+void LocalFrame::DidAttachDocument() {
+  Document* document = GetDocument();
+  DCHECK(document);
   GetEditor().Clear();
   GetEventHandler().Clear();
-  Selection().DocumentAttached(GetDocument());
-  GetInputMethodController().DocumentAttached(GetDocument());
-  GetSpellChecker().DocumentAttached(GetDocument());
-  GetTextSuggestionController().DocumentAttached(GetDocument());
+  Selection().DidAttachDocument(document);
+  GetInputMethodController().DidAttachDocument(document);
+  GetSpellChecker().DidAttachDocument(document);
+  GetTextSuggestionController().DidAttachDocument(document);
   previews_resource_loading_hints_receiver_.reset();
 }
 

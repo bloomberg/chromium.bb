@@ -31,7 +31,7 @@ class CORE_EXPORT TextSuggestionController final
  public:
   explicit TextSuggestionController(LocalFrame&);
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   bool IsMenuOpen() const;
 
