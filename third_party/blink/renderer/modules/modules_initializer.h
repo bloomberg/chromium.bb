@@ -28,7 +28,7 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
                                      ShadowRoot&) const override;
   PictureInPictureController* CreatePictureInPictureController(
       Document&) const override;
-  void InitInspectorAgentSession(InspectorSession*,
+  void InitInspectorAgentSession(DevToolsSession*,
                                  bool,
                                  InspectorDOMAgent*,
                                  InspectedFrames*,

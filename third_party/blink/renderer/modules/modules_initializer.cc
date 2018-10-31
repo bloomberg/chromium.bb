@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
+#include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -211,7 +211,7 @@ ModulesInitializer::CreatePictureInPictureController(Document& document) const {
 }
 
 void ModulesInitializer::InitInspectorAgentSession(
-    InspectorSession* session,
+    DevToolsSession* session,
     bool allow_view_agents,
     InspectorDOMAgent* dom_agent,
     InspectedFrames* inspected_frames,

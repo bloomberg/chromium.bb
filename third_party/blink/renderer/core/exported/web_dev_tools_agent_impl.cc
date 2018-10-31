@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
+#include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_animation_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
@@ -74,7 +75,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_performance_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_testing_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
@@ -184,10 +184,9 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::instance_ = nullptr;
 
-InspectorSession* WebDevToolsAgentImpl::AttachSession(
-    InspectorSession::Client* session_client,
-    mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
-  if (!sessions_.size())
+void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
+                                         bool restore) {
+  if (!network_agents_.size())
     Platform::Current()->CurrentThread()->AddTaskObserver(this);
 
   ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
@@ -195,98 +194,85 @@ InspectorSession* WebDevToolsAgentImpl::AttachSession(
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
   InspectedFrames* inspected_frames = inspected_frames_.Get();
 
-  bool should_reattach = !reattach_session_state.is_null();
+  int context_group_id =
+      main_thread_debugger->ContextGroupId(inspected_frames->Root());
+  session->ConnectToV8(main_thread_debugger->GetV8Inspector(),
+                       context_group_id);
 
-  InspectorSession* inspector_session = new InspectorSession(
-      session_client, probe_sink_.Get(), inspected_frames, 0,
-      main_thread_debugger->GetV8Inspector(),
-      main_thread_debugger->ContextGroupId(inspected_frames->Root()),
-      std::move(reattach_session_state));
-
-  InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
-      isolate, inspected_frames, inspector_session->V8Session());
-  inspector_session->Append(dom_agent);
+  InspectorDOMAgent* dom_agent =
+      new InspectorDOMAgent(isolate, inspected_frames, session->V8Session());
+  session->Append(dom_agent);
 
   InspectorLayerTreeAgent* layer_tree_agent =
       InspectorLayerTreeAgent::Create(inspected_frames, this);
-  inspector_session->Append(layer_tree_agent);
+  session->Append(layer_tree_agent);
 
   InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
-      inspected_frames, nullptr, inspector_session->V8Session());
-  inspector_session->Append(network_agent);
+      inspected_frames, nullptr, session->V8Session());
+  session->Append(network_agent);
 
   InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
       dom_agent, inspected_frames, network_agent,
       resource_content_loader_.Get(), resource_container_.Get());
-  inspector_session->Append(css_agent);
+  session->Append(css_agent);
 
-  InspectorDOMDebuggerAgent* dom_debugger_agent = new InspectorDOMDebuggerAgent(
-      isolate, dom_agent, inspector_session->V8Session());
-  inspector_session->Append(dom_debugger_agent);
+  InspectorDOMDebuggerAgent* dom_debugger_agent =
+      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session());
+  session->Append(dom_debugger_agent);
 
-  inspector_session->Append(
+  session->Append(
       InspectorDOMSnapshotAgent::Create(inspected_frames, dom_debugger_agent));
 
-  inspector_session->Append(new InspectorAnimationAgent(
-      inspected_frames, css_agent, inspector_session->V8Session()));
+  session->Append(new InspectorAnimationAgent(inspected_frames, css_agent,
+                                              session->V8Session()));
 
-  inspector_session->Append(InspectorMemoryAgent::Create(inspected_frames));
+  session->Append(InspectorMemoryAgent::Create(inspected_frames));
 
-  inspector_session->Append(
-      InspectorPerformanceAgent::Create(inspected_frames));
+  session->Append(InspectorPerformanceAgent::Create(inspected_frames));
 
-  inspector_session->Append(
-      InspectorApplicationCacheAgent::Create(inspected_frames));
+  session->Append(InspectorApplicationCacheAgent::Create(inspected_frames));
 
   InspectorPageAgent* page_agent = InspectorPageAgent::Create(
       inspected_frames, this, resource_content_loader_.Get(),
-      inspector_session->V8Session());
-  inspector_session->Append(page_agent);
+      session->V8Session());
+  session->Append(page_agent);
 
-  inspector_session->Append(new InspectorLogAgent(
+  session->Append(new InspectorLogAgent(
       &inspected_frames->Root()->GetPage()->GetConsoleMessageStorage(),
-      inspected_frames->Root()->GetPerformanceMonitor(),
-      inspector_session->V8Session()));
+      inspected_frames->Root()->GetPerformanceMonitor(), session->V8Session()));
 
   InspectorOverlayAgent* overlay_agent =
       new InspectorOverlayAgent(web_local_frame_impl_.Get(), inspected_frames,
-                                inspector_session->V8Session(), dom_agent);
-  inspector_session->Append(overlay_agent);
+                                session->V8Session(), dom_agent);
+  session->Append(overlay_agent);
 
-  inspector_session->Append(
-      new InspectorIOAgent(isolate, inspector_session->V8Session()));
+  session->Append(new InspectorIOAgent(isolate, session->V8Session()));
 
-  inspector_session->Append(new InspectorAuditsAgent(network_agent));
+  session->Append(new InspectorAuditsAgent(network_agent));
 
   // TODO(dgozman): we should actually pass the view instead of frame, but
   // during remote->local transition we cannot access mainFrameImpl() yet, so
   // we have to store the frame which will become the main frame later.
-  inspector_session->Append(
-      new InspectorEmulationAgent(web_local_frame_impl_.Get()));
+  session->Append(new InspectorEmulationAgent(web_local_frame_impl_.Get()));
 
-  inspector_session->Append(new InspectorTestingAgent(inspected_frames));
+  session->Append(new InspectorTestingAgent(inspected_frames));
 
-  // Call session init callbacks registered from higher layers
+  // Call session init callbacks registered from higher layers.
   CoreInitializer::GetInstance().InitInspectorAgentSession(
-      inspector_session, include_view_agents_, dom_agent, inspected_frames,
+      session, include_view_agents_, dom_agent, inspected_frames,
       web_local_frame_impl_->ViewImpl()->GetPage());
 
-  if (should_reattach) {
-    inspector_session->Restore();
-    if (worker_client_)
-      worker_client_->ResumeStartup();
-  }
+  if (restore && worker_client_)
+    worker_client_->ResumeStartup();
 
   if (node_to_inspect_) {
     overlay_agent->Inspect(node_to_inspect_);
     node_to_inspect_ = nullptr;
   }
 
-  sessions_.insert(inspector_session);
-  network_agents_.insert(inspector_session, network_agent);
-  page_agents_.insert(inspector_session, page_agent);
-  overlay_agents_.insert(inspector_session, overlay_agent);
-  return inspector_session;
+  network_agents_.insert(session, network_agent);
+  page_agents_.insert(session, page_agent);
+  overlay_agents_.insert(session, overlay_agent);
 }
 
 // static
@@ -316,7 +302,8 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       include_view_agents_(include_view_agents) {
   DCHECK(IsMainThread());
   agent_ = new DevToolsAgent(
-      this, web_local_frame_impl_->GetFrame()->GetInspectorTaskRunner(),
+      this, inspected_frames_.Get(), probe_sink_.Get(),
+      web_local_frame_impl_->GetFrame()->GetInspectorTaskRunner(),
       Platform::Current()->GetIOTaskRunner());
 }
 
@@ -326,7 +313,6 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
 
 void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(agent_);
-  visitor->Trace(sessions_);
   visitor->Trace(network_agents_);
   visitor->Trace(page_agents_);
   visitor->Trace(overlay_agents_);
@@ -354,12 +340,11 @@ void WebDevToolsAgentImpl::BindRequest(
       web_local_frame_impl_->GetTaskRunner(TaskType::kInternalInspector));
 }
 
-void WebDevToolsAgentImpl::DetachSession(InspectorSession* session) {
+void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
   network_agents_.erase(session);
   page_agents_.erase(session);
   overlay_agents_.erase(session);
-  sessions_.erase(session);
-  if (!sessions_.size())
+  if (!network_agents_.size())
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
 }
 
@@ -413,8 +398,6 @@ void WebDevToolsAgentImpl::DebuggerTaskFinished() {}
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);
   resource_content_loader_->DidCommitLoadForLocalFrame(frame);
-  for (auto& session : sessions_)
-    session->DidCommitLoadForLocalFrame(frame);
 }
 
 bool WebDevToolsAgentImpl::ScreencastEnabled() {
@@ -478,14 +461,14 @@ void WebDevToolsAgentImpl::FlushProtocolNotifications() {
 
 void WebDevToolsAgentImpl::WillProcessTask(
     const base::PendingTask& pending_task) {
-  if (sessions_.IsEmpty())
+  if (network_agents_.IsEmpty())
     return;
   ThreadDebugger::IdleFinished(V8PerIsolateData::MainThreadIsolate());
 }
 
 void WebDevToolsAgentImpl::DidProcessTask(
     const base::PendingTask& pending_task) {
-  if (sessions_.IsEmpty())
+  if (network_agents_.IsEmpty())
     return;
   ThreadDebugger::IdleStarted(V8PerIsolateData::MainThreadIsolate());
   FlushProtocolNotifications();
