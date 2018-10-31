@@ -233,10 +233,6 @@
 # DCHECK in DelegatedFrameHost
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 
-# https://crbug.com/815379
--WindowOpenApiTest.RemoveLockedFullscreenFromWindow
--WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
-
 # App list code flake: https://crbug.com/847154 https://crbug.com/843429
 -MultiProfileFileManagerBrowserTest.*
 
