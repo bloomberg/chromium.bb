@@ -823,6 +823,19 @@ int y4m_input_open(y4m_input *_y4m, FILE *_fin, char *_skip, int _nskip,
             "Only progressive scan handled.\n");
     return -1;
   }
+  /* Only support vertical chroma sample position if the input format is
+   * already 420mpeg2. Colocated is not supported in Y4M.
+   */
+  if (csp == AOM_CSP_VERTICAL && strcmp(_y4m->chroma_type, "420mpeg2") != 0) {
+    fprintf(stderr,
+            "Vertical chroma sample position only supported "
+            "for 420mpeg2 input\n");
+    return -1;
+  }
+  if (csp == AOM_CSP_COLOCATED) {
+    fprintf(stderr, "Colocated chroma sample position not supported in Y4M\n");
+    return -1;
+  }
   _y4m->aom_fmt = AOM_IMG_FMT_I420;
   _y4m->bps = 12;
   _y4m->bit_depth = 8;
@@ -833,10 +846,6 @@ int y4m_input_open(y4m_input *_y4m, FILE *_fin, char *_skip, int _nskip,
     _y4m->dst_buf_read_sz =
         _y4m->pic_w * _y4m->pic_h +
         2 * ((_y4m->pic_w + 1) / 2) * ((_y4m->pic_h + 1) / 2);
-    if (csp == AOM_CSP_VERTICAL) {
-      fprintf(stderr, "Unsupported conversion from 420jpeg to 420mpeg2\n");
-      return -1;
-    }
     /* Natively supported: no conversion required. */
     _y4m->aux_buf_sz = _y4m->aux_buf_read_sz = 0;
     _y4m->convert = y4m_convert_null;

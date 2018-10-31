@@ -35,6 +35,10 @@ const char *colorspace8(aom_chroma_sample_position_t csp, aom_img_fmt_t fmt) {
     default:
       if (csp == AOM_CSP_VERTICAL) {
         return "C420mpeg2 XYSCSS=420MPEG2";
+      } else if (csp == AOM_CSP_COLOCATED) {
+        // Note that Y4M does not have a dedicated header for colocated chroma,
+        // and that FFMPEG interprets C420 as C420jpeg.
+        return "C420";
       } else {
         return "C420jpeg";
       }

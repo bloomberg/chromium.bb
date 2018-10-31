@@ -900,6 +900,11 @@ static int main_loop(int argc, const char **argv_) {
                   y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
                   aom_input_ctx.height, &aom_input_ctx.framerate,
                   img->monochrome, img->csp, img->fmt, img->bit_depth);
+              if (img->csp == AOM_CSP_COLOCATED) {
+                fprintf(stderr,
+                        "Warning: Y4M lacks a colorspace for colocated "
+                        "chroma. Using a placeholder.\n");
+              }
               if (do_md5) {
                 MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
               } else {
