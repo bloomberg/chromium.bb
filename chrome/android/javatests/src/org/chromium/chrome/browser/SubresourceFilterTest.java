@@ -90,6 +90,7 @@ public final class SubresourceFilterTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/899903")
     public void resourceNotFiltered() throws Exception {
         String url = mTestServer.getURL(PAGE_WITH_JPG);
         mActivityTestRule.loadUrl(url);
