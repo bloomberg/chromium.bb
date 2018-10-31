@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -39,6 +40,7 @@ class ChromeMojoProxyResolverFactory
 
  private:
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMojoProxyResolverFactory);
 };
