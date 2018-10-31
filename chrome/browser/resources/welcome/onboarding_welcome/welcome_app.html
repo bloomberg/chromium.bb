@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="google_apps/nux_google_apps.html">
@@ -13,7 +14,7 @@
 
 <dom-module id="welcome-app">
   <template>
-    <style include="paper-button-style">
+    <style include="paper-button-style cr-hidden-style">
       #viewManager {
         align-items: center;
         display: flex;
@@ -33,7 +34,7 @@
         top: initial;
       }
     </style>
-    <cr-view-manager id="viewManager">
+    <cr-view-manager id="viewManager" hidden="[[!modulesInitialized_]]">
       <landing-view id="step-landing" slot="view" class="active"></landing-view>
     </cr-view-manager>
   </template>
