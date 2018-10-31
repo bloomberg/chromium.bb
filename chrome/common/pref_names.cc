@@ -879,6 +879,10 @@ const char kNTLMShareAuthenticationEnabled[] =
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";
 
+// URL path string of the most recently used SMB NetworkFileShare path.
+const char kMostRecentlyUsedNetworkFileShareURL[] =
+    "network_file_shares.most_recently_used_url";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

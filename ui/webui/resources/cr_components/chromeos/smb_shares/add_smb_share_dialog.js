@@ -12,6 +12,11 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
+    lastUrl: {
+      type: String,
+      value: '',
+    },
+
     /** @private {string} */
     mountUrl_: {
       type: String,
@@ -76,6 +81,7 @@ Polymer({
     this.$.dialog.showModal();
 
     this.addWebUIListener('on-shares-found', this.onSharesFound_.bind(this));
+    this.mountUrl_ = this.lastUrl;
   },
 
   /** @private */

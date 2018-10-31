@@ -159,4 +159,33 @@ suite('AddSmbShareDialogTests', function() {
     expectFalse(credentials.hidden);
   });
 
+  test('MostRecentlyUsedUrl', function() {
+    const expectedSmbUrl = 'smb://192.168.1.1/testshare';
+
+    PolymerTest.clearBody();
+
+    page = document.createElement('settings-smb-shares-page');
+    page.prefs = {
+      network_file_shares: {most_recently_used_url: {value: expectedSmbUrl}},
+    };
+    document.body.appendChild(page);
+
+    const button = page.$$('#addShare');
+    assertTrue(!!button);
+    button.click();
+
+    Polymer.dom.flush();
+
+    addDialog = page.$$('add-smb-share-dialog');
+    assertTrue(!!addDialog);
+
+    Polymer.dom.flush();
+
+    const openDialogButton = page.$$('#addShare');
+    openDialogButton.click();
+
+    expectEquals(expectedSmbUrl, addDialog.mountUrl_);
+    expectEquals(expectedSmbUrl, addDialog.mountUrl_);
+  });
+
 });
