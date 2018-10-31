@@ -252,6 +252,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   void RootWindowDestroyed();
 
+  // Notify the root view of our widget of a native accessibility event.
+  void NotifyAccessibilityEvent(ax::mojom::Event event_type);
+
   std::unique_ptr<aura::WindowTreeHost> host_;
   DesktopWindowTreeHost* desktop_window_tree_host_;
 

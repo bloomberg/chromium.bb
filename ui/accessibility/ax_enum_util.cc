@@ -110,6 +110,10 @@ const char* ToString(ax::mojom::Event event) {
       return "textChanged";
     case ax::mojom::Event::kTextSelectionChanged:
       return "textSelectionChanged";
+    case ax::mojom::Event::kWindowActivated:
+      return "windowActivated";
+    case ax::mojom::Event::kWindowDeactivated:
+      return "windowDeactivated";
     case ax::mojom::Event::kTreeChanged:
       return "treeChanged";
     case ax::mojom::Event::kValueChanged:
@@ -218,6 +222,10 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kTextChanged;
   if (0 == strcmp(event, "textSelectionChanged"))
     return ax::mojom::Event::kTextSelectionChanged;
+  if (0 == strcmp(event, "windowActivated"))
+    return ax::mojom::Event::kWindowActivated;
+  if (0 == strcmp(event, "windowDeactivated"))
+    return ax::mojom::Event::kWindowDeactivated;
   if (0 == strcmp(event, "treeChanged"))
     return ax::mojom::Event::kTreeChanged;
   if (0 == strcmp(event, "valueChanged"))

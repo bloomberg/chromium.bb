@@ -71,6 +71,8 @@ chrome.automation.EventType = {
   STATE_CHANGED: 'stateChanged',
   TEXT_CHANGED: 'textChanged',
   TEXT_SELECTION_CHANGED: 'textSelectionChanged',
+  WINDOW_ACTIVATED: 'windowActivated',
+  WINDOW_DEACTIVATED: 'windowDeactivated',
   TREE_CHANGED: 'treeChanged',
   VALUE_CHANGED: 'valueChanged',
 };
