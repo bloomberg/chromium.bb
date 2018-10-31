@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <meta name="viewport" content="width=device-width, user-scalable=no" />
-<link rel=match href=set-root-scroller-before-load.html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/run-after-layout-and-paint.js"></script>
@@ -8,24 +7,23 @@
   // Set the browser controls to be 100px and hidden.
   // NOTE: It is important that this test be run with the Android viewport
   // flags turned on.
-  if (window.internals) {
+  if (window.internals)
     internals.setBrowserControlsState(100, 0, false);
-    testRunner.setShouldGeneratePixelResults(true);
-  }
 
+  var t = async_test("test");
   addEventListener("load", function() {
     const iframe = document.getElementById("iframe");
     const scroller = iframe.contentDocument.getElementById("scroller");
     document.rootScroller = iframe;
     iframe.contentDocument.rootScroller = scroller;
-    runAfterLayoutAndPaint(() => {
+    runAfterLayoutAndPaint(t.step_func_done(() => {
       assert_equals(
           internals.effectiveRootScroller(document), iframe,
           "rootScroller in main document should be iframe.");
       assert_equals(
           internals.effectiveRootScroller(iframe.contentDocument), scroller,
           "rootScroller in iframe should be scroller element.");
-    }, true);
+    }));
   });
 </script>
 <style>

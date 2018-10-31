@@ -4,8 +4,10 @@
 var _lazyTestResults; // Set by setPrintTestResultsLazily().
 var _lazyDescription; // Set by description() after setPrintTestResultsLazily().
 
-// svg/dynamic-updates tests set enablePixelTesting=true, as we want to dump text + pixel results
-if (self.testRunner) {
+// If pixelTestingOnly is true, we will dump pixel results only.
+// If enablePixelTesting=true, we will dump text + pixel results.
+// Otherwise we will dump text results only.
+if (self.testRunner && !self.pixelTestingOnly) {
     if (self.enablePixelTesting)
         testRunner.dumpAsTextWithPixelResults();
     else

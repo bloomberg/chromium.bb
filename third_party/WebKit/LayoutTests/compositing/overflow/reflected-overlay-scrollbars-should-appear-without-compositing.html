@@ -38,14 +38,6 @@ if (window.internals) {
     internals.runtimeFlags.overlayScrollbarsEnabled = true;
     internals.settings.setPreferCompositingToLCDTextEnabled(false);
 }
-
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-
-onload = function() {
-    if (window.internals && window.testRunner)
-        testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
-};
 </script>
 <div id="container">
   <div id="clipper">

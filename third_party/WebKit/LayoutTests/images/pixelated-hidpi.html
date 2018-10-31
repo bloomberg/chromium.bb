@@ -36,9 +36,6 @@
         if (!window.testRunner)
             return;
 
-        // Ignore the render tree.
-        testRunner.dumpAsTextWithPixelResults();
-
         testRunner.waitUntilDone();
         testRunner.setBackingScaleFactor(2, function () {
             drawImageToCanvas();

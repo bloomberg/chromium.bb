@@ -35,7 +35,7 @@ firstShadowRoot.innerHTML = "not <b>visible</b>";
 
 const secondShadowRoot = secondHost.attachShadow({mode: 'open'});
 const visibleDiv = document.createElement("div");
-div.innerHTML = "<i>visible</i>";
+visibleDiv.innerHTML = "<i>visible</i>";
 secondShadowRoot.appendChild(visibleDiv);
 const slot = document.createElement("slot");
 slot.invisible = "invisible";

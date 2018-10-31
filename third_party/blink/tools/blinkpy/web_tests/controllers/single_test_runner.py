@@ -183,8 +183,8 @@ class SingleTestRunner(object):
         fs = self._filesystem
 
         # Do not create a new baseline unless we are specifically told so.
-        current_expected_path = port.expected_filename(self._test_name, extension)
-        if not fs.exists(current_expected_path) and not force_create_new_baseline:
+        current_expected_path = port.expected_filename(self._test_name, extension, return_default=False)
+        if not current_expected_path and not force_create_new_baseline:
             return
 
         flag_specific_dir = port.baseline_flag_specific_dir()
@@ -207,13 +207,11 @@ class SingleTestRunner(object):
             _log.info('Removing the current baseline "%s"', port.relative_test_filename(output_path))
             fs.remove(output_path)
 
-        if not data:
-            _log.info('Not creating new baseline because the test does not need it')
-            return
-
         # Note that current_expected_path may change because of the above file removal.
-        current_expected_path = port.expected_filename(self._test_name, extension)
-        if fs.exists(current_expected_path) and fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
+        current_expected_path = port.expected_filename(self._test_name, extension, return_default=False)
+        data = data or ''
+        if (current_expected_path and
+                fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest()):
             if self._options.reset_results:
                 _log.info('Not writing new baseline "%s" because it is the same as the current baseline',
                           port.relative_test_filename(output_path))
@@ -221,6 +219,12 @@ class SingleTestRunner(object):
                 _log.info('Not copying baseline to "%s" because the actual result is the same as the current baseline',
                           port.relative_test_filename(output_path))
             return
+
+        if not data and not current_expected_path:
+            _log.info('Not creating new baseline because the test does not need it')
+            return
+        # If the data is empty and the fallback exists, we'll continue to create
+        # an empty baseline file to override the fallback baseline.
 
         if self._options.reset_results:
             _log.info('Writing new baseline "%s"', port.relative_test_filename(output_path))
@@ -294,8 +298,15 @@ class SingleTestRunner(object):
 
     def _report_extra_baseline(self, driver_output, extension, message):
         """If the baseline file exists, logs an error and returns True."""
+        if driver_output.crash or driver_output.timeout:
+            return False
+        # If the baseline overrides a fallback one, we need the empty file to
+        # match the empty result.
+        if self._port.fallback_expected_filename(self._test_name, extension):
+            return False
+
         expected_file = self._port.expected_filename(self._test_name, extension, return_default=False)
-        if expected_file and not driver_output.crash and not driver_output.timeout:
+        if expected_file:
             _log.error('%s %s, but has an extra baseline file. Please remove %s' %
                        (self._test_name, message, expected_file))
             return True
@@ -320,10 +331,6 @@ class SingleTestRunner(object):
                 # expect it to fail or produce additional console output (when
                 # -expected.txt is optional), so don't report missing
                 # -expected.txt for testharness tests.
-                pass
-            elif self._reference_files:
-                # A reftest's -expected.txt is optional. TODO(wangxianzhu): May
-                # let reftests use the standard baseline existence rule.
                 pass
             elif not expected_driver_output.text:
                 failures.append(test_failures.FailureMissingResult())
@@ -474,9 +481,6 @@ class SingleTestRunner(object):
 
         expected_text = self._port.expected_text(self._test_name)
         expected_text_output = DriverOutput(text=expected_text, image=None, image_hash=None, audio=None)
-        # Compare text only if there the optional text baseline exists.
-        if expected_text is None:
-            test_output.text = None
         # This _compare_output compares text if expected text exists, ignores
         # image, checks for extra baselines, and generates crash or timeout
         # failures if needed.

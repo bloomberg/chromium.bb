@@ -57,7 +57,6 @@ class TestInstance(object):
         self.keyboard = False
         self.error = ''
         self.timeout = False
-        self.is_reftest = False
         self.device_failure = False
         self.leak = False
 
@@ -91,12 +90,19 @@ class TestList(object):
             test.__dict__[key] = value
         self.tests[name] = test
 
-    def add_reftest(self, name, reference_name, same_image, crash=False):
-        self.add(name, actual_text='reftest', actual_checksum='xxx', actual_image='XXX', is_reftest=True, crash=crash)
+    def add_reference(self, name, actual_checksum='checksum', actual_image='IMAGE'):
+        self.add(name, actual_checksum=actual_checksum, actual_image=actual_image,
+                 actual_text=None, expected_text=None, expected_image=None)
+
+    def add_reftest(self, name, reference_name, same_image=True,
+                    actual_text=None, expected_text=None, crash=False):
+        self.add(name, actual_checksum='checksum', actual_image='IMAGE', expected_image=None,
+                 actual_text=actual_text, expected_text=expected_text,
+                 crash=crash)
         if same_image:
-            self.add(reference_name, actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+            self.add_reference(reference_name)
         else:
-            self.add(reference_name, actual_checksum='yyy', actual_image='YYY', is_reftest=True)
+            self.add_reference(reference_name, actual_checksum='diff', actual_image='DIFF')
 
     def keys(self):
         return self.tests.keys()
@@ -110,14 +116,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 121
+TOTAL_TESTS = 127
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_NON_VIRTUAL_FAILURES = 19
-UNEXPECTED_FAILURES = 40
+UNEXPECTED_NON_VIRTUAL_FAILURES = 21
+UNEXPECTED_FAILURES = 44
 
 
 def unit_test_list():
@@ -212,23 +218,27 @@ layer at (0,0) size 800x34
               expected_text='\nfoo\n\n', actual_text='\nfoo\r\n\r\r\n')
 
     # For reftests.
-    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html', same_image=True)
-
+    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html')
     # This adds a different virtual reference to ensure that that also works.
-    tests.add('virtual/virtual_passes/passes/reftest-expected.html', actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+    tests.add_reference('virtual/virtual_passes/passes/reftest-expected.html')
 
+    tests.add_reftest('passes/reftest-with-text.html', 'passes/reftest-with-text-expected.html',
+                      actual_text='reftest', expected_text='reftest')
     tests.add_reftest('passes/mismatch.html', 'passes/mismatch-expected-mismatch.html', same_image=False)
-    tests.add_reftest('passes/svgreftest.svg', 'passes/svgreftest-expected.svg', same_image=True)
-    tests.add_reftest('passes/xhtreftest.xht', 'passes/xhtreftest-expected.html', same_image=True)
+    tests.add_reftest('passes/svgreftest.svg', 'passes/svgreftest-expected.svg')
+    tests.add_reftest('passes/xhtreftest.xht', 'passes/xhtreftest-expected.html')
     tests.add_reftest('passes/phpreftest.php', 'passes/phpreftest-expected-mismatch.svg', same_image=False)
     tests.add_reftest('failures/expected/reftest.html', 'failures/expected/reftest-expected.html', same_image=False)
-    tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html', same_image=True)
-    tests.add_reftest('failures/unexpected/crash-reftest.html',
-                      'failures/unexpected/crash-reftest-expected.html', same_image=True, crash=True)
+    tests.add_reftest('failures/unexpected/reftest-with-matching-text.html', 'failures/unexpected/reftest-with-matching-text-expected.html',
+                      same_image=False, actual_text='reftest', expected_text='reftest')
+    tests.add_reftest('failures/unexpected/reftest-with-mismatching-text.html', 'failures/unexpected/reftest-with-mismatching-text-expected.html',
+                      actual_text='reftest', expected_text='reftest-different')
+    tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html')
+    tests.add_reftest('failures/unexpected/crash-reftest.html', 'failures/unexpected/crash-reftest-expected.html', crash=True)
     tests.add_reftest('failures/unexpected/reftest.html', 'failures/unexpected/reftest-expected.html', same_image=False)
-    tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html', same_image=True)
-    tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, is_reftest=True)
-    tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None, is_reftest=True)
+    tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html')
+    tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, expected_image=None)
+    tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None)
 
     tests.add('websocket/tests/passes/text.html')
 
@@ -317,13 +327,12 @@ Bug(test) failures/expected/device_failure.html [ WontFix ]
     test_list = unit_test_list()
     for test in test_list.tests.values():
         add_file(test, test.name[test.name.rfind('.'):], '')
-        if test.is_reftest:
-            continue
-        if test.actual_audio:
+        if test.expected_audio:
             add_file(test, '-expected.wav', test.expected_audio)
-            continue
-        add_file(test, '-expected.txt', test.expected_text)
-        add_file(test, '-expected.png', test.expected_image)
+        if test.expected_text:
+            add_file(test, '-expected.txt', test.expected_text)
+        if test.expected_image:
+            add_file(test, '-expected.png', test.expected_image)
 
     filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'virtual_passes',
                                                'passes', 'args-expected.txt'), 'args-txt --virtual-arg')

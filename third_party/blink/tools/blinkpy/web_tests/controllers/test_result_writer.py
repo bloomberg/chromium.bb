@@ -185,8 +185,8 @@ class TestResultWriter(object):
     def create_text_diff_and_write_result(self, actual_text, expected_text):
         # FIXME: This function is actually doing the diffs as well as writing results.
         # It might be better to extract code which does 'diff' and make it a separate function.
-        if not actual_text or not expected_text:
-            return
+        actual_text = actual_text or ''
+        expected_text = expected_text or ''
 
         # Output a plain-text diff file.
         file_type = '.txt'

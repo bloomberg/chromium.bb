@@ -627,7 +627,12 @@ class Port(object):
         if len(baselines) < 2:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
-                return self.fallback_expected_filename(actual_test_name, extension)
+                if len(baselines) == 0:
+                    return self.fallback_expected_filename(actual_test_name, extension)
+                # In this case, baselines[0] is the current baseline of the
+                # virtual test, so the first base test baseline is the fallback
+                # baseline of the virtual test.
+                return self.expected_filename(actual_test_name, extension, return_default=False)
             return None
 
         platform_dir, baseline_filename = baselines[1]

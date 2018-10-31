@@ -3,7 +3,6 @@
 <head>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 <script src="resources/link-highlight-helper.js"></script>
-<script src="../../resources/js-test.js"></script>
 </head>
 <body onload="runTest();">
 <div style="transform: scaleY(2.5); position: absolute; left: 40px; top: 80px;">
@@ -22,10 +21,8 @@ function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);

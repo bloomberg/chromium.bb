@@ -31,10 +31,8 @@ function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);

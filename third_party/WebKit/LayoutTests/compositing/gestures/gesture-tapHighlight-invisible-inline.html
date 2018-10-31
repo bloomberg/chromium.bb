@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
 <script src="resources/link-highlight-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 <style>
@@ -26,10 +25,8 @@ function runTest() {
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
 
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);

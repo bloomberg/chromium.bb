@@ -23,10 +23,8 @@ function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     // In this test a link highlight is commenced, then a node is deleted from in front of
     // target, forcing a layout change that moves the target node mid-animation.
