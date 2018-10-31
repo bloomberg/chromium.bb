@@ -152,8 +152,6 @@ jumbo_static_library("browser") {
     "omnibox_popup_view.h",
     "omnibox_pref_names.cc",
     "omnibox_pref_names.h",
-    "omnibox_switches.cc",
-    "omnibox_switches.h",
     "omnibox_view.cc",
     "omnibox_view.h",
     "query_in_omnibox.cc",
