@@ -166,6 +166,22 @@ void MdnsResponderAdapterImpl::Close() {
     RunTasks();
   }
   mDNS_FinalExit(&mdns_);
+
+  a_questions_.clear();
+  aaaa_questions_.clear();
+  ptr_questions_.clear();
+  srv_questions_.clear();
+  txt_questions_.clear();
+
+  responder_interface_info_.clear();
+
+  a_responses_.clear();
+  aaaa_responses_.clear();
+  ptr_responses_.clear();
+  srv_responses_.clear();
+  txt_responses_.clear();
+
+  service_records_.clear();
 }
 
 bool MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {

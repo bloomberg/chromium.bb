@@ -79,19 +79,16 @@ void MdnsResponderService::StartAndSuspendListener() {
 
 void MdnsResponderService::StopListener() {
   StopListening();
-  if (!publisher_ || publisher_->state() == ScreenPublisher::State::kStopped) {
+  if (!publisher_ || publisher_->state() == ScreenPublisher::State::kStopped ||
+      publisher_->state() == ScreenPublisher::State::kSuspended) {
     StopMdnsResponder();
-    mdns_responder_.reset();
+    if (!publisher_ || publisher_->state() == ScreenPublisher::State::kStopped)
+      mdns_responder_.reset();
   }
   ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kStopped);
 }
 
 void MdnsResponderService::SuspendListener() {
-  // TODO(btolsch): What state should suspend actually produce for both
-  // listening and publishing?  The issue is around |mdns_responder_| and
-  // whether it needs to be destroyed once we stop obeying its Execute
-  // scheduling requirement.  We might be able to flush the cache on resume or
-  // maybe mDNSResponder handles this anyway.
   StopMdnsResponder();
   ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kSuspended);
 }
@@ -120,13 +117,11 @@ void MdnsResponderService::StartAndSuspendPublisher() {
 
 void MdnsResponderService::StopPublisher() {
   StopService();
-  // TODO(btolsch): We could also only call StopMdnsResponder for
-  // ScreenListenerState::kSuspended.  If these ever become asynchronous
-  // (unlikely), we'd also have to consider kStarting/kStopping/etc.  Similar
-  // comments apply to StopListener.
-  if (!listener_ || listener_->state() == ScreenListener::State::kStopped) {
+  if (!listener_ || listener_->state() == ScreenListener::State::kStopped ||
+      listener_->state() == ScreenListener::State::kSuspended) {
     StopMdnsResponder();
-    mdns_responder_.reset();
+    if (!listener_ || listener_->state() == ScreenListener::State::kStopped)
+      mdns_responder_.reset();
   }
   ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kStopped);
 }
@@ -148,8 +143,8 @@ void MdnsResponderService::UpdateFriendlyName(
 }
 
 void MdnsResponderService::HandleMdnsEvents() {
-  // NOTE: In the worst case, we might get a single combined packet for
-  // PTR/SRV/TXT and then no other packets.  If we don't loop here, we would
+  // NOTE: In the common case, we will get a single combined packet for
+  // PTR/SRV/TXT/A and then no other packets.  If we don't loop here, we would
   // start SRV/TXT queries based on the PTR response, but never check for events
   // again.  This should no longer be a problem when we have correct scheduling
   // of RunTasks.
