@@ -371,7 +371,6 @@ void AwContentBrowserClient::AllowWorkerFileSystem(
 
 bool AwContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    const base::string16& name,
     content::ResourceContext* context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   return true;

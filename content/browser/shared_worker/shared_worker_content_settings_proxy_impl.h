@@ -34,8 +34,7 @@ class CONTENT_EXPORT SharedWorkerContentSettingsProxyImpl
   ~SharedWorkerContentSettingsProxyImpl() override;
 
   // blink::mojom::WorkerContentSettingsProxy implementation.
-  void AllowIndexedDB(const base::string16& name,
-                      AllowIndexedDBCallback callback) override;
+  void AllowIndexedDB(AllowIndexedDBCallback callback) override;
   void RequestFileSystemAccessSync(
       RequestFileSystemAccessSyncCallback callback) override;
 

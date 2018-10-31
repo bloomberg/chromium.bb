@@ -58,7 +58,7 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "IndexedDBClient"; }
 
-  bool AllowIndexedDB(ExecutionContext*, const String& name);
+  bool AllowIndexedDB(ExecutionContext*);
 
   static IndexedDBClient* From(ExecutionContext*);
 

@@ -32,12 +32,11 @@ class BrowsingDataIndexedDBHelperTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
-  const base::string16 description(base::ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
-  helper->AddIndexedDB(origin1, description);
-  helper->AddIndexedDB(origin2, description);
+  helper->AddIndexedDB(origin1);
+  helper->AddIndexedDB(origin2);
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -56,12 +55,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
-  const base::string16 description(base::ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
-  helper->AddIndexedDB(origin, description);
-  helper->AddIndexedDB(origin, description);
+  helper->AddIndexedDB(origin);
+  helper->AddIndexedDB(origin);
 
   TestCompletionCallback callback;
   helper->StartFetching(

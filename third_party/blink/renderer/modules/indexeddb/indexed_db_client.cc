@@ -41,8 +41,7 @@ IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
   return Supplement<WorkerClients>::From<IndexedDBClient>(clients);
 }
 
-bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
-                                     const String& name) {
+bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context) {
   DCHECK(context->IsContextThread());
   SECURITY_DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
 
@@ -52,14 +51,14 @@ bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
       return false;
     if (auto* settings_client = frame->GetContentSettingsClient()) {
       return settings_client->AllowIndexedDB(
-          name, WebSecurityOrigin(context->GetSecurityOrigin()));
+          WebSecurityOrigin(context->GetSecurityOrigin()));
     }
     return true;
   }
 
   WorkerGlobalScope& worker_global_scope = *To<WorkerGlobalScope>(context);
   return WorkerContentSettingsClient::From(worker_global_scope)
-      ->AllowIndexedDB(name);
+      ->AllowIndexedDB();
 }
 
 // static

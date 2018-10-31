@@ -308,8 +308,7 @@ bool ContentSettingsObserver::AllowImage(bool enabled_per_settings,
   return allow;
 }
 
-bool ContentSettingsObserver::AllowIndexedDB(const WebString& name,
-                                             const WebSecurityOrigin& origin) {
+bool ContentSettingsObserver::AllowIndexedDB(const WebSecurityOrigin& origin) {
   WebFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
@@ -317,8 +316,7 @@ bool ContentSettingsObserver::AllowIndexedDB(const WebString& name,
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
       routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), name.Utf16(),
-      &result));
+      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
   return result;
 }
 

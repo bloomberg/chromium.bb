@@ -201,13 +201,12 @@ void TabSpecificContentSettings::IndexedDBAccessed(
     int render_process_id,
     int render_frame_id,
     const GURL& url,
-    const base::string16& description,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)
-    settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
+    settings->OnIndexedDBAccessed(url, blocked_by_policy);
 }
 
 // static
@@ -440,17 +439,13 @@ void TabSpecificContentSettings::OnCookieChange(
   NotifySiteDataObservers();
 }
 
-void TabSpecificContentSettings::OnIndexedDBAccessed(
-    const GURL& url,
-    const base::string16& description,
-    bool blocked_by_policy) {
+void TabSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
+                                                     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(
-        url, description);
+    blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(url);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(
-        url, description);
+    allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(url);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

@@ -28,7 +28,6 @@ ServiceWorkerContentSettingsProxyImpl::
     ~ServiceWorkerContentSettingsProxyImpl() = default;
 
 void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
-    const base::string16& name,
     AllowIndexedDBCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // May be shutting down.
@@ -46,7 +45,7 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
   // so just pass an empty |render_frames|.
   std::vector<GlobalFrameRoutingId> render_frames;
   std::move(callback).Run(GetContentClient()->browser()->AllowWorkerIndexedDB(
-      origin_.GetURL(), name, context_->wrapper()->resource_context(),
+      origin_.GetURL(), context_->wrapper()->resource_context(),
       render_frames));
 }
 

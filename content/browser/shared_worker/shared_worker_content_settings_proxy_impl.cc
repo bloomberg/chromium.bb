@@ -24,10 +24,9 @@ SharedWorkerContentSettingsProxyImpl::~SharedWorkerContentSettingsProxyImpl() =
     default;
 
 void SharedWorkerContentSettingsProxyImpl::AllowIndexedDB(
-    const base::string16& name,
     AllowIndexedDBCallback callback) {
   if (!origin_.opaque()) {
-    owner_->AllowIndexedDB(origin_.GetURL(), name, std::move(callback));
+    owner_->AllowIndexedDB(origin_.GetURL(), std::move(callback));
   } else {
     std::move(callback).Run(false);
   }

@@ -248,7 +248,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::Callback<void(bool)> callback) override;
   bool AllowWorkerIndexedDB(
       const GURL& url,
-      const base::string16& name,
       content::ResourceContext* context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   AllowWebBluetoothResult AllowWebBluetooth(

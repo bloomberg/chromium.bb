@@ -55,12 +55,11 @@ void AllowFileSystemOnIOThread(const GURL& url,
 }
 
 bool AllowIndexedDBOnIOThread(const GURL& url,
-                              const base::string16& name,
                               ResourceContext* resource_context,
                               std::vector<GlobalFrameRoutingId> render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, name, resource_context, render_frames);
+      url, resource_context, render_frames);
 }
 
 }  // namespace
@@ -320,11 +319,10 @@ void SharedWorkerHost::AllowFileSystem(
 }
 
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
-                                      const base::string16& name,
                                       base::OnceCallback<void(bool)> callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AllowIndexedDBOnIOThread, url, name,
+      base::BindOnce(&AllowIndexedDBOnIOThread, url,
                      RenderProcessHost::FromID(process_id_)
                          ->GetBrowserContext()
                          ->GetResourceContext(),
