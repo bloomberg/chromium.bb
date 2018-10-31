@@ -7,9 +7,9 @@
   await TestRunner.showPanel('sources');
 
   var mockTargetId = 1;
-  function createMockTarget(name, capabilities, dontAttachToMain) {
+  function createMockTarget(name, capabilities, type, dontAttachToMain) {
     return SDK.targetManager.createTarget(
-        'mock-target-' + mockTargetId++, name, capabilities, params => new SDK.StubConnection(params),
+        'mock-target-' + mockTargetId++, name, capabilities, type, params => new SDK.StubConnection(params),
         dontAttachToMain ? null : TestRunner.mainTarget);
   }
 
@@ -35,7 +35,7 @@
 
   TestRunner.addResult('');
   TestRunner.addResult('Adding page target');
-  var pageTarget = createMockTarget('page-target', SDK.Target.Capability.AllForTests, true /* dontAttachToMain */);
+  var pageTarget = createMockTarget('page-target', SDK.Target.Capability.AllForTests, SDK.Target.Type.Frame, true /* dontAttachToMain */);
   var pageRuntimeModel = pageTarget.model(SDK.RuntimeModel);
   pageTarget.model(SDK.ResourceTreeModel)._frameAttached('42', '');
   pageTarget.model(SDK.ResourceTreeModel)._frameNavigated({
@@ -57,7 +57,7 @@
   TestRunner.addResult('');
   TestRunner.addResult('Adding sw target');
   var swTarget = createMockTarget(
-      'sw-target', SDK.Target.Capability.Network | SDK.Target.Capability.Worker | SDK.Target.Capability.JS);
+      'sw-target', SDK.Target.Capability.Network | SDK.Target.Capability.Worker | SDK.Target.Capability.JS, SDK.Target.Type.Worker);
   swTarget.model(SDK.RuntimeModel)
       ._executionContextCreated(
           {id: 'sw1', auxData: {isDefault: true, frameId: ''}, origin: 'origin', name: 'swContext1Name'});
