@@ -53,6 +53,12 @@ bool CrtcController::Modeset(const DrmOverlayPlane& plane,
   mode_ = mode;
   is_disabled_ = false;
 
+  // Hold modeset buffer until page flip. This fixes a crash on entering
+  // hardware mirror mode in some circumstances (bug 888553).
+  // TODO(spang): Fix this better by changing how mirrors are set up (bug
+  // 899352).
+  modeset_framebuffer_ = plane.buffer;
+
   return true;
 }
 
@@ -105,6 +111,10 @@ void CrtcController::MoveCursor(const gfx::Point& location) {
   if (is_disabled_)
     return;
   drm_->MoveCursor(crtc_, location);
+}
+
+void CrtcController::OnPageFlipComplete() {
+  modeset_framebuffer_ = nullptr;
 }
 
 void CrtcController::DisableCursor() {

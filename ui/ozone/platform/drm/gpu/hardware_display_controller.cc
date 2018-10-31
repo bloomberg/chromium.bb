@@ -338,6 +338,8 @@ void HardwareDisplayController::OnPageFlipComplete(
     return;  // Modeset occured during this page flip.
   time_of_last_flip_ = presentation_feedback.timestamp;
   current_planes_ = std::move(pending_planes);
+  for (const auto& controller : crtc_controllers_)
+    controller->OnPageFlipComplete();
   page_flip_request_ = nullptr;
 }
 

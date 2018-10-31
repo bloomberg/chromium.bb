@@ -166,6 +166,7 @@ class MockDrmDevice : public DrmDevice {
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& lut) override;
   bool SetCapability(uint64_t capability, uint64_t value) override;
+  uint32_t GetFramebufferForCrtc(uint32_t crtc_id) const;
 
  private:
   ~MockDrmDevice() override;
@@ -204,6 +205,9 @@ class MockDrmDevice : public DrmDevice {
   std::map<uint32_t, uint32_t> crtc_cursor_map_;
 
   std::map<uint32_t, ScopedDrmPropertyBlobPtr> blob_property_map_;
+
+  std::set<uint32_t> framebuffer_ids_;
+  std::map<uint32_t, uint32_t> crtc_fb_;
 
   base::queue<PageFlipCallback> callbacks_;
 
