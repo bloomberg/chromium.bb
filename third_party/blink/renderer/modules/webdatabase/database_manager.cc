@@ -49,7 +49,8 @@ DatabaseManager& DatabaseManager::Manager() {
   return *g_database_manager;
 }
 
-DatabaseManager::DatabaseManager() : context_map_(new ContextMap) {}
+DatabaseManager::DatabaseManager()
+    : context_map_(MakeGarbageCollected<ContextMap>()) {}
 
 DatabaseManager::~DatabaseManager() = default;
 

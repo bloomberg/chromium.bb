@@ -61,7 +61,8 @@ StorageController::StorageController(
     mojom::blink::StoragePartitionServicePtr storage_partition_service,
     size_t total_cache_limit)
     : ipc_runner_(std::move(ipc_runner)),
-      namespaces_(new HeapHashMap<String, WeakMember<StorageNamespace>>()),
+      namespaces_(MakeGarbageCollected<
+                  HeapHashMap<String, WeakMember<StorageNamespace>>>()),
       total_cache_limit_(total_cache_limit),
       storage_partition_service_(std::move(storage_partition_service)) {}
 

@@ -125,7 +125,7 @@ using ElementRequestTypeMap =
 
 ElementRequestTypeMap& FullscreenFlagMap() {
   DEFINE_STATIC_LOCAL(Persistent<ElementRequestTypeMap>, map,
-                      (new ElementRequestTypeMap));
+                      (MakeGarbageCollected<ElementRequestTypeMap>()));
   return *map;
 }
 

@@ -124,8 +124,8 @@ String MemoryCache::DefaultCacheIdentifier() {
 MemoryCache::ResourceMap* MemoryCache::EnsureResourceMap(
     const String& cache_identifier) {
   if (!resource_maps_.Contains(cache_identifier)) {
-    ResourceMapIndex::AddResult result =
-        resource_maps_.insert(cache_identifier, new ResourceMap);
+    ResourceMapIndex::AddResult result = resource_maps_.insert(
+        cache_identifier, MakeGarbageCollected<ResourceMap>());
     CHECK(result.is_new_entry);
   }
   return resource_maps_.at(cache_identifier);

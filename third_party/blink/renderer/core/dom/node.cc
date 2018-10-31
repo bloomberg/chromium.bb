@@ -2340,7 +2340,7 @@ using EventTargetDataMap =
     HeapHashMap<WeakMember<Node>, TraceWrapperMember<EventTargetData>>;
 static EventTargetDataMap& GetEventTargetDataMap() {
   DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map,
-                      (new EventTargetDataMap));
+                      (MakeGarbageCollected<EventTargetDataMap>()));
   return *map;
 }
 

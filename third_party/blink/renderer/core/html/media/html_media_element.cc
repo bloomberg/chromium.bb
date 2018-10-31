@@ -209,7 +209,7 @@ const char* BoolString(bool val) {
 
 DocumentElementSetMap& DocumentToElementSetMap() {
   DEFINE_STATIC_LOCAL(Persistent<DocumentElementSetMap>, map,
-                      (new DocumentElementSetMap));
+                      (MakeGarbageCollected<DocumentElementSetMap>()));
   return *map;
 }
 

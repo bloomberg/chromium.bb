@@ -90,7 +90,7 @@ CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     : element_definition_is_running_(false),
       owner_(owner),
       v0_(new V0RegistrySet()),
-      upgrade_candidates_(new UpgradeCandidateMap()),
+      upgrade_candidates_(MakeGarbageCollected<UpgradeCandidateMap>()),
       reaction_stack_(&CustomElementReactionStack::Current()) {}
 
 void CustomElementRegistry::Trace(blink::Visitor* visitor) {

@@ -441,10 +441,30 @@ class HeapHashMap : public HashMap<KeyArg,
                                    MappedTraitsArg,
                                    HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base =
+      HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>;
   static_assert(WTF::IsTraceable<KeyArg>::value ||
                     WTF::IsTraceable<MappedArg>::value,
                 "For hash maps without traceable elements, use HashMap<> "
                 "instead of HeapHashMap<>");
+
+ public:
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    return ThreadHeap::Allocate<
+        HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>>(
+        size, eagerly_sweep);
+  }
+
+  void* operator new(size_t size) = delete;
+  void operator delete(void* p) = delete;
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
+  }
 };
 
 template <typename ValueArg,

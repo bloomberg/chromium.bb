@@ -89,7 +89,7 @@ void PerformanceMonitor::Subscribe(Violation violation,
   DCHECK(violation < kAfterLast);
   ClientThresholds* client_thresholds = subscriptions_.at(violation);
   if (!client_thresholds) {
-    client_thresholds = new ClientThresholds();
+    client_thresholds = MakeGarbageCollected<ClientThresholds>();
     subscriptions_.Set(violation, client_thresholds);
   }
   client_thresholds->Set(client, threshold);

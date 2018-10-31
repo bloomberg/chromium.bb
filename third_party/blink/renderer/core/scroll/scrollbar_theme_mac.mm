@@ -121,7 +121,7 @@ typedef HeapHashMap<WeakMember<Scrollbar>, RetainPtr<BlinkScrollbarObserver>>
 
 static ScrollbarPainterMap& GetScrollbarPainterMap() {
   DEFINE_STATIC_LOCAL(Persistent<ScrollbarPainterMap>, map,
-                      (new ScrollbarPainterMap));
+                      (MakeGarbageCollected<ScrollbarPainterMap>()));
   return *map;
 }
 

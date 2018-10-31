@@ -85,9 +85,11 @@ AttrNodeList& ElementRareData::EnsureAttrNodeList() {
 
 ElementRareData::ResizeObserverDataMap&
 ElementRareData::EnsureResizeObserverData() {
-  if (!resize_observer_data_)
-    resize_observer_data_ = new HeapHashMap<TraceWrapperMember<ResizeObserver>,
-                                            Member<ResizeObservation>>();
+  if (!resize_observer_data_) {
+    resize_observer_data_ =
+        MakeGarbageCollected<HeapHashMap<TraceWrapperMember<ResizeObserver>,
+                                         Member<ResizeObservation>>>();
+  }
   return *resize_observer_data_;
 }
 
