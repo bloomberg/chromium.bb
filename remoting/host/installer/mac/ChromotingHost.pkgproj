@@ -669,7 +669,7 @@
 							<key>LANGUAGE</key>
 							<string>English</string>
 							<key>VALUE</key>
-							<string>@@HOST_NAME@@ requires 10.6 or newer.</string>
+							<string>@@HOST_NAME@@ requires 10.10 or newer.</string>
 						</dict>
 					</array>
 					<key>NAME</key>

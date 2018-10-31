@@ -119,7 +119,7 @@ mac_app_bundle("remoting_host_uninstaller") {
     "BUNDLE_ID=$uninstaller_bundle_id",
     "VERSION_FULL=$remoting_version_full",
     "VERSION_SHORT=$remoting_version_short",
-    "MACOSX_DEPLOYMENT_TARGET=10.7",
+    "MACOSX_DEPLOYMENT_TARGET=10.10",
   ]
 
   sources = [
