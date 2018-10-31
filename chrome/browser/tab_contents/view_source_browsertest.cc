@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -49,6 +51,25 @@ class ViewSourceTest : public InProcessBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewSourceTest);
+};
+
+class ViewSourceFeaturePolicyTest : public ViewSourceTest {
+ public:
+  ViewSourceFeaturePolicyTest() : ViewSourceTest() {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewSourceFeaturePolicyTest);
 };
 
 // This test renders a page in view-source and then checks to see if the title
@@ -512,4 +533,32 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, JavaScriptURISanitized) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       link_href_extraction_script, &link_href));
   EXPECT_EQ("about:blank", link_href);
+}
+
+// This test verifies that 'view-source' documents are not affected by vertical
+// scroll (see https://crbug.com/898688).
+IN_PROC_BROWSER_TEST_F(ViewSourceFeaturePolicyTest,
+                       ViewSourceNotAffectedByHeaderPolicy) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const std::string k_verify_feature = R"(
+      var all_features = document.policy.allowedFeatures();
+      var vs = all_features.find((f) => f === 'vertical-scroll');
+      console.log(vs);
+      domAutomationController.send("" + vs);)";
+  // Sanity-check: 'vertical-scroll' is disabled in the actual page (set by the
+  // mock headers).
+  GURL url(embedded_test_server()->GetURL(kTestHtml));
+  ui_test_utils::NavigateToURL(browser(), url);
+  std::string response;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(), k_verify_feature,
+      &response));
+  EXPECT_EQ("undefined", response);
+  // Ensure the policy is enabled in the view-source version.
+  ui_test_utils::NavigateToURL(browser(), GURL(content::kViewSourceScheme +
+                                               std::string(":") + url.spec()));
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(), k_verify_feature,
+      &response));
+  EXPECT_EQ("vertical-scroll", response);
 }
