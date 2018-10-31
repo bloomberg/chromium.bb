@@ -1394,6 +1394,9 @@
           # Tell the tests to exit after one frame for faster iteration.
           '--one-frame-only',
         ],
+        'android_args': [
+          '--shard-timeout=500',
+        ],
       },
     },
 

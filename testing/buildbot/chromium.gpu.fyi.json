@@ -79,7 +79,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -175,7 +176,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -271,7 +273,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -499,7 +502,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -595,7 +599,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -691,7 +696,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -1024,7 +1030,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -1458,7 +1465,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -1821,7 +1829,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -2695,7 +2704,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -3129,7 +3139,8 @@
       {
         "args": [
           "-v",
-          "--one-frame-only"
+          "--one-frame-only",
+          "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
