@@ -50604,6 +50604,21 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Used Omnibox"/>
 </enum>
 
+<enum name="UserActivationFrameResultEnum">
+  <int value="0" label="NullFailure"/>
+  <int value="1" label="NullSuccess"/>
+  <int value="2" label="SelfFailure"/>
+  <int value="3" label="SelfSuccess"/>
+  <int value="4" label="AncestorFailure"/>
+  <int value="5" label="AncestorSuccess"/>
+  <int value="6" label="DescendantFailure"/>
+  <int value="7" label="DescendantSuccess"/>
+  <int value="8" label="OtherFailure"/>
+  <int value="9" label="OtherSuccess"/>
+  <int value="10" label="NonMainThreadFailure"/>
+  <int value="11" label="NonMainThreadSuccess"/>
+</enum>
+
 <enum name="UserCertContentDisposition">
   <int value="0" label="No Content-Disposition"/>
   <int value="1" label="Content-Disposition"/>
