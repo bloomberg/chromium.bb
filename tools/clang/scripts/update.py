@@ -895,6 +895,15 @@ def UpdateClang(args):
   return 0
 
 
+def gn_arg(v):
+  if v == 'True':
+    return True
+  if v == 'False':
+    return False
+  raise argparse.ArgumentTypeError('Expected one of %r or %r' % (
+      'True', 'False'))
+
+
 def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
@@ -929,10 +938,12 @@ def main():
                       'and using prebuilt cmake binaries')
   parser.add_argument('--verify-version',
                       help='verify that clang has the passed-in version')
+  parser.add_argument('--with-android', type=gn_arg, nargs='?', const=True,
+                      help='build the Android ASan runtime (linux only)',
+                      default=sys.platform.startswith('linux'))
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
-                      dest='with_android',
-                      default=sys.platform.startswith('linux'))
+                      dest='with_android')
   parser.add_argument('--without-fuchsia', action='store_false',
                       help='don\'t build Fuchsia clang_rt runtime (linux/mac)',
                       dest='with_fuchsia',
@@ -986,9 +997,6 @@ def main():
     PACKAGE_VERSION = CLANG_REVISION + '-0'
 
     args.force_local_build = True
-    if 'OS=android' not in os.environ.get('GYP_DEFINES', ''):
-      # Only build the Android ASan rt on ToT bots when targetting Android.
-      args.with_android = False
     # Don't build fuchsia runtime on ToT bots at all.
     args.with_fuchsia = False
 

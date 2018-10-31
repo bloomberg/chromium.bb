@@ -49,6 +49,11 @@ vars = {
   # purposes.
   'checkout_configuration': 'default',
 
+  # By default, don't check out android. Will be overridden by gclient
+  # variables.
+  # TODO(ehmaldonado): Remove this once the bug in gclient is fixed.
+  'checkout_android': False,
+
   # Pull in Android native toolchain dependencies for Chrome OS too, so we can
   # build ARC++ support libraries.
   'checkout_android_native_support': 'checkout_android or checkout_chromeos',
@@ -2056,7 +2061,7 @@ hooks = [
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'src/tools/clang/scripts/update.py'],
+    'action': ['python', 'src/tools/clang/scripts/update.py', '--with-android={checkout_android}'],
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.
