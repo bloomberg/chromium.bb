@@ -2555,6 +2555,8 @@ jumbo_split_static_library("ui") {
       "views/login_view.h",
       "views/material_refresh_layout_provider.cc",
       "views/material_refresh_layout_provider.h",
+      "views/md_text_button_with_down_arrow.cc",
+      "views/md_text_button_with_down_arrow.h",
       "views/media_router/cast_dialog_helper.cc",
       "views/media_router/cast_dialog_helper.h",
       "views/media_router/cast_dialog_metrics.cc",

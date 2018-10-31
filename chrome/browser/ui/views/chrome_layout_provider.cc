@@ -109,6 +109,10 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
                  views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL) -
              8;
     }
+    case DISTANCE_DROPDOWN_BUTTON_LABEL_ARROW_SPACING:
+      return 8;
+    case DISTANCE_DROPDOWN_BUTTON_RIGHT_MARGIN:
+      return 12;
     case views::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_RELATED_CONTROL_HORIZONTAL:
