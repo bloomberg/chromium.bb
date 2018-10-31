@@ -1933,9 +1933,7 @@ bool Document::NeedsFullLayoutTreeUpdate() const {
     return true;
   if (NeedsStyleInvalidation())
     return true;
-  // FIXME: The childNeedsDistributionRecalc bit means either self or children,
-  // we should fix that.
-  if (ChildNeedsDistributionRecalc())
+  if (IsSlotAssignmentOrLegacyDistributionDirty())
     return true;
   if (DocumentAnimations::NeedsAnimationTimingUpdate(*this))
     return true;
@@ -7665,10 +7663,11 @@ SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
   return *slot_assignment_engine_;
 }
 
-bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
+bool Document::IsSlotAssignmentOrLegacyDistributionDirty() const {
   if (ChildNeedsDistributionRecalc())
     return true;
-  if (GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
+  if (slot_assignment_engine_ &&
+      slot_assignment_engine_->HasPendingSlotAssignmentRecalc()) {
     return true;
   }
   return false;
