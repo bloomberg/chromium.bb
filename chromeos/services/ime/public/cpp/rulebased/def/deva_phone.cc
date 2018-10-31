@@ -6,7 +6,9 @@
 
 #include "base/stl_util.h"
 
-const char* kTransformsDevaPhone[] = {
+namespace deva_phone {
+
+const char* kTransforms[] = {
     u8"0",
     u8"\u0966",
     u8"1",
@@ -530,8 +532,10 @@ const char* kTransformsDevaPhone[] = {
     u8"\u0964\u001d?\\.",
     u8"\u2026"};
 
-const unsigned int kTransformsDevaPhoneLen = base::size(kTransformsDevaPhone);
+const unsigned int kTransformsLen = base::size(kTransforms);
 
-const char* kHistoryPruneDevaPhone = "n(\\.)?|c|ch|C|nc|nC|nch|\\.|a";
+const char* kHistoryPrune = "n(\\.)?|c|ch|C|nc|nC|nch|\\.|a";
 
-const char* kIdDevaPhone = "deva_phone";
+const char* kId = "deva_phone";
+
+}  // namespace deva_phone

@@ -5,16 +5,20 @@
 #ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
 #define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
 
+namespace deva_phone {
+
 // The transform rules for the deva_phone IME.
-extern const char* kTransformsDevaPhone[];
+extern const char* kTransforms[];
 
 // The length of the transform rule for the deva_phone IME.
-extern const unsigned int kTransformsDevaPhoneLen;
+extern const unsigned int kTransformsLen;
 
 // The history prune regexp for the deva_phone IME.
-extern const char* kHistoryPruneDevaPhone;
+extern const char* kHistoryPrune;
 
 // The id of the deva_phone IME.
-extern const char* kIdDevaPhone;
+extern const char* kId;
+
+}  // namespace deva_phone
 
 #endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
