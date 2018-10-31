@@ -4,8 +4,6 @@
 
 #include "content/browser/devtools/devtools_session.h"
 
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
@@ -97,14 +95,6 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   // Set cookie to an empty struct to reattach next time instead of attaching.
   if (!session_state_cookie_)
     session_state_cookie_ = blink::mojom::DevToolsSessionState::New();
-}
-
-void DevToolsSession::SendResponse(
-    std::unique_ptr<base::DictionaryValue> response) {
-  std::string json;
-  base::JSONWriter::Write(*response.get(), &json);
-  client_->DispatchProtocolMessage(agent_host_, json);
-  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::MojoConnectionDestroyed() {

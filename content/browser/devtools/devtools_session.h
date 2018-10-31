@@ -53,7 +53,6 @@ class DevToolsSession : public protocol::FrontendChannel,
   HandlersMap& handlers() { return handlers_; }
 
  private:
-  void SendResponse(std::unique_ptr<base::DictionaryValue> response);
   void MojoConnectionDestroyed();
   void DispatchProtocolMessageToAgent(int call_id,
                                       const std::string& method,
