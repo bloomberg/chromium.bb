@@ -1015,9 +1015,16 @@ bool HttpUtil::HeadersIterator::AdvanceTo(const char* name) {
 HttpUtil::ValuesIterator::ValuesIterator(
     std::string::const_iterator values_begin,
     std::string::const_iterator values_end,
-    char delimiter)
-    : values_(values_begin, values_end, std::string(1, delimiter)) {
+    char delimiter,
+    bool ignore_empty_values)
+    : values_(values_begin, values_end, std::string(1, delimiter)),
+      ignore_empty_values_(ignore_empty_values) {
   values_.set_quote_chars("\"");
+  // Could set this unconditionally, since code below has to check for empty
+  // values after trimming, anyways, but may provide a minor performance
+  // improvement.
+  if (!ignore_empty_values_)
+    values_.set_options(base::StringTokenizer::RETURN_EMPTY_TOKENS);
 }
 
 HttpUtil::ValuesIterator::ValuesIterator(const ValuesIterator& other) = default;
@@ -1030,8 +1037,7 @@ bool HttpUtil::ValuesIterator::GetNext() {
     value_end_ = values_.token_end();
     TrimLWS(&value_begin_, &value_end_);
 
-    // bypass empty values.
-    if (value_begin_ != value_end_)
+    if (!ignore_empty_values_ || value_begin_ != value_end_)
       return true;
   }
   return false;
@@ -1051,8 +1057,7 @@ HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
       value_end_(end),
       value_is_quoted_(false),
       values_optional_(optional_values == Values::NOT_REQUIRED),
-      strict_quotes_(strict_quotes == Quotes::STRICT_QUOTES) {
-}
+      strict_quotes_(strict_quotes == Quotes::STRICT_QUOTES) {}
 
 HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
     std::string::const_iterator begin,
