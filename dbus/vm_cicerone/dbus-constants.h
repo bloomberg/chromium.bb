@@ -27,6 +27,7 @@ const char kInstallLinuxPackageMethod[] = "InstallLinuxPackage";
 const char kUninstallPackageOwningFileMethod[] = "UninstallPackageOwningFile";
 const char kCreateLxdContainerMethod[] = "CreateLxdContainer";
 const char kStartLxdContainerMethod[] = "StartLxdContainer";
+const char kSetTimezoneMethod[] = "SetTimezone";
 const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 

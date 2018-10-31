@@ -516,6 +516,28 @@ message LxdContainerCreatedSignal {
   string failure_reason = 5;
 }
 
+// Request to set timezone for all containers in all VMs known to cicerone.
+message SetTimezoneRequest {
+  // The timezone name to set, for example "America/Denver" or "Etc/UTC".
+  // See /usr/share/zoneinfo, 'timedatectl list-timezones', or the timezone-data
+  // package for other valid names.
+  //
+  // This name will also specify the zoneinfo file from which cicerone will
+  // parse a posix TZ string. That string will be used as a fallback in the
+  // case that the VM does not support zoneinfo files for timezones.
+  string timezone_name = 1;
+}
+
+// Response to setting timezone for all containers in all VMs known to cicerone.
+message SetTimezoneResponse {
+  // The number of containers for which the timezone was successfully set.
+  int32 successes = 1;
+
+  // The failure reason for each container for which the timezone could not be
+  // set.
+  repeated string failure_reasons = 2;
+}
+
 // Message used in the signal for when a container is downloading.
 message LxdContainerDownloadingSignal {
   // Name of the VM the container is in.
