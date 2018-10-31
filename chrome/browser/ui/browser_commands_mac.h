@@ -12,6 +12,9 @@ namespace chrome {
 // Toggles the visibility of the toolbar in fullscreen mode.
 void ToggleFullscreenToolbar(Browser* browser);
 
+// Toggles the "Allow JavaScript from AppleEvents" setting.
+void ToggleJavaScriptFromAppleEventsAllowed(Browser* browser);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_COMMANDS_MAC_H_

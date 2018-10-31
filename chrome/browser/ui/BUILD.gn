@@ -1920,8 +1920,8 @@ jumbo_split_static_library("ui") {
 
   if (is_mac) {
     sources += [
-      "browser_commands_mac.cc",
       "browser_commands_mac.h",
+      "browser_commands_mac.mm",
       "browser_mac.cc",
       "browser_mac.h",
       "cocoa/accelerator_utils_cocoa.mm",

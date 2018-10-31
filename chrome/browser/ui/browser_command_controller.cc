@@ -442,9 +442,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       chrome::ToggleFullscreenToolbar(browser_);
       break;
     case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {
-      PrefService* prefs = profile()->GetPrefs();
-      prefs->SetBoolean(prefs::kAllowJavascriptAppleEvents,
-                        !prefs->GetBoolean(prefs::kAllowJavascriptAppleEvents));
+      chrome::ToggleJavaScriptFromAppleEventsAllowed(browser_);
       break;
     }
 #endif
