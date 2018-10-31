@@ -79,7 +79,7 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
     }
 
     if (origin_opt_out_received_) {
-      user_data->SetCacheControlNoTransformDirective();
+      user_data->set_cache_control_no_transform_directive();
     }
 
     return PreviewsUKMObserver::OnCommit(navigation_handle, source_id);

@@ -5153,7 +5153,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
   // Annotate request if no-transform directive found in response headers.
   if (response_headers &&
       response_headers->HasHeaderValue("cache-control", "no-transform")) {
-    previews_user_data->SetCacheControlNoTransformDirective();
+    previews_user_data->set_cache_control_no_transform_directive();
   }
 
   previews::PreviewsDeciderImpl* previews_decider_impl =
