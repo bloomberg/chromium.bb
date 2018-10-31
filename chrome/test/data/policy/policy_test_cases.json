@@ -4166,5 +4166,53 @@
     "pref_mappings": [
       { "pref": "vpn_config_allowed" }
     ]
+  },
+
+  "AlternativeBrowserPath": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "AlternativeBrowserPath": "foobarbaz" },
+    "pref_mappings": [
+      { "pref": "browser_switcher.alternative_browser_path" }
+    ]
+  },
+
+  "AlternativeBrowserParameters": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "AlternativeBrowserParameters": ["-foreground", "-new-window"]
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.alternative_browser_parameters" }
+    ]
+  },
+
+  "BrowserSwitcherUrlList": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherUrlList": ["example.com", "google.com"]
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.url_list" }
+    ]
+  },
+
+  "BrowserSwitcherUrlGreylist": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherUrlGreylist": ["example.com", "google.com"]
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.url_greylist" }
+    ]
+  },
+
+  "BrowserSwitcherUseIeSitelist": {
+    "os": ["win"],
+    "test_policy": {
+      "BrowserSwitcherUseIeSitelist": true
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.use_ie_sitelist" }
+    ]
   }
 }

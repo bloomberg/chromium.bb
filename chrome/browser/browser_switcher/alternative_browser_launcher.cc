@@ -45,12 +45,20 @@ AlternativeBrowserLauncherImpl::AlternativeBrowserLauncherImpl(
 AlternativeBrowserLauncherImpl::~AlternativeBrowserLauncherImpl() {}
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserPathChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserPath))
+    return;
+
   // This string could be a variable, e.g. "${ie}". Let the driver decide what
   // to do with it.
   driver_->SetBrowserPath(prefs_->GetString(prefs::kAlternativeBrowserPath));
 }
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserParameters))
+    return;
+
   // This string could contain a placeholder, e.g. "${url}". Let the driver
   // decide what to do with it.
   driver_->SetBrowserParameters(

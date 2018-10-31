@@ -167,12 +167,20 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
 }
 
 void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kUrlList))
+    return;
+
   chrome_policies_.sitelist.clear();
   for (const auto& url : *prefs_->GetList(prefs::kUrlList))
     chrome_policies_.sitelist.push_back(url.GetString());
 }
 
 void BrowserSwitcherSitelistImpl::OnGreylistChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kUrlGreylist))
+    return;
+
   chrome_policies_.greylist.clear();
   for (const auto& url : *prefs_->GetList(prefs::kUrlGreylist))
     chrome_policies_.greylist.push_back(url.GetString());
