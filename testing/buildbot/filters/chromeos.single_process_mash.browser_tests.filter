@@ -164,13 +164,6 @@
 # Flaky tests. crbug.com/880584
 -UnifiedAutoplaySettingBrowserTest.*
 
-# Window Open API tests.  https://crbug.com/815379
--WindowOpenApiTest.OpenLockedFullscreenWindow
--WindowOpenApiTest.RemoveLockedFullscreenFromWindow
--WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
--WindowOpenApiTest.UpdateWindowToLockedFullscreen
--WindowOpenApiTest.VerifyCommandsInLockedFullscreen
-
 # Flaky tests. crbug.com/833144
 -GetAuthTokenFunctionPublicSessionTest.NonWhitelisted
 
