@@ -27,6 +27,7 @@ constexpr char kJsScreenPath[] = "login.AssistantOptInFlowScreen";
 constexpr char kSkipPressed[] = "skip-pressed";
 constexpr char kNextPressed[] = "next-pressed";
 constexpr char kFlowFinished[] = "flow-finished";
+constexpr char kReloadRequested[] = "reload-requested";
 
 }  // namespace
 
@@ -338,6 +339,12 @@ void AssistantOptInFlowScreenHandler::HandleValuePropScreenUserAction(
     OnActivityControlOptInResult(false);
   } else if (action == kNextPressed) {
     OnActivityControlOptInResult(true);
+  } else if (action == kReloadRequested) {
+    if (settings_manager_.is_bound()) {
+      SendGetSettingsRequest();
+    } else {
+      LOG(ERROR) << "Settings mojom failed to setup. Check Assistant service.";
+    }
   }
 }
 
