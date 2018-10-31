@@ -39,7 +39,7 @@ void FetchHandler::Wire(UberDispatcher* dispatcher) {
   Fetch::Dispatcher::wire(dispatcher, this);
 }
 
-DevToolsNetworkInterceptor::InterceptionStage ToInterceptorStage(
+DevToolsNetworkInterceptor::InterceptionStage RequestStageToInterceptorStage(
     const Fetch::RequestStage& stage) {
   if (stage == Fetch::RequestStageEnum::Request)
     return DevToolsNetworkInterceptor::REQUEST;
@@ -72,7 +72,7 @@ Response ToInterceptionPatterns(
     }
     result->push_back(DevToolsNetworkInterceptor::Pattern(
         patterns.get(i)->GetUrlPattern("*"), std::move(resource_types),
-        ToInterceptorStage(patterns.get(i)->GetRequestStage(
+        RequestStageToInterceptorStage(patterns.get(i)->GetRequestStage(
             Fetch::RequestStageEnum::Request))));
   }
   return Response::OK();
@@ -334,7 +334,7 @@ void FetchHandler::OnResponseBodyPipeTaken(
 
 namespace {
 
-std::unique_ptr<Array<Fetch::HeaderEntry>> BuildResponseHeaders(
+std::unique_ptr<Array<Fetch::HeaderEntry>> ToHeaderEntryArray(
     scoped_refptr<net::HttpResponseHeaders> headers) {
   auto result = std::make_unique<Array<Fetch::HeaderEntry>>();
   size_t iterator = 0;
@@ -359,7 +359,7 @@ void FetchHandler::RequestIntercepted(
   Maybe<Array<Fetch::HeaderEntry>> response_headers;
   if (info->response_headers) {
     status_code = info->response_headers->response_code();
-    response_headers = BuildResponseHeaders(info->response_headers);
+    response_headers = ToHeaderEntryArray(info->response_headers);
   }
 
   if (info->auth_challenge) {
