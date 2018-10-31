@@ -65,6 +65,8 @@ public class JniProcessor extends AbstractProcessor {
     static final String NATIVE_CLASS_PACKAGE_NAME = "org.chromium.base.natives";
     static final ClassName NATIVE_CLASS_NAME =
             ClassName.get(NATIVE_CLASS_PACKAGE_NAME, NATIVE_CLASS_NAME_STR);
+    static final String NATIVE_TEST_FIELD_NAME = "TESTING_ENABLED";
+    static final boolean TESTING_ENABLED = false;
 
     // Builder for NativeClass which will hold all our native method declarations.
     private TypeSpec.Builder mNativesBuilder;
@@ -101,9 +103,15 @@ public class JniProcessor extends AbstractProcessor {
 
     public JniProcessor() {
         // State of mNativesBuilder needs to be preserved between processing rounds.
+        FieldSpec testingFlag = FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
+                                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                                        .initializer("" + TESTING_ENABLED)
+                                        .build();
+
         mNativesBuilder = TypeSpec.classBuilder(NATIVE_CLASS_NAME)
                                   .addAnnotation(createGeneratedAnnotation())
-                                  .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+                                  .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                                  .addField(testingFlag);
 
         try {
             sNativeMethodHashFunction = MessageDigest.getInstance("MD5");
@@ -305,9 +313,16 @@ public class JniProcessor extends AbstractProcessor {
             builder.addModifiers(Modifier.PUBLIC);
         }
 
+        // Holds the test natives target if it is set.
+        FieldSpec testTarget = FieldSpec.builder(nativeInterfaceType, "testInst")
+                                       .addModifiers(Modifier.STATIC)
+                                       .build();
+
+        ParameterSpec testNativesParam =
+                ParameterSpec.builder(nativeInterfaceType, "testNatives").build();
+
         // Target is a field that holds an instance of some NativeInterface.
         // Is initialized with an instance of this class.
-        // Target is final for now so it gets inlined.
         FieldSpec target = FieldSpec.builder(nativeInterfaceType, "mNatives")
                                    .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
                                    .addModifiers(Modifier.FINAL)
@@ -315,6 +330,30 @@ public class JniProcessor extends AbstractProcessor {
                                    .build();
 
         builder.addField(target);
+        builder.addField(testTarget);
+
+        // Getter for target or testing instance if flag in GEN_JNI is set.
+        MethodSpec instanceGetter =
+                MethodSpec.methodBuilder("get")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(nativeInterfaceType)
+                        .beginControlFlow("if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_TEST_FIELD_NAME)
+                        .addStatement("return $N", testTarget)
+                        .endControlFlow()
+                        .addStatement("return $N", target)
+                        .build();
+
+        // Sets testTarget to passed in Natives instance.
+        MethodSpec setInstanceForTesting =
+                MethodSpec.methodBuilder("setForTesting")
+                        .returns(TypeName.VOID)
+                        .addParameter(testNativesParam)
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .addStatement("$N = $N", testTarget, testNativesParam)
+                        .build();
+
+        builder.addMethod(instanceGetter);
+        builder.addMethod(setInstanceForTesting);
 
         for (Element enclosed : nativeInterface.getEnclosedElements()) {
             if (enclosed.getKind() != ElementKind.METHOD) {
@@ -334,14 +373,6 @@ public class JniProcessor extends AbstractProcessor {
             // NativeClass.
             builder.addMethod(createNativeWrapperMethod(interfaceMethod, nativesMethod));
         }
-
-        // Getter for target.
-        MethodSpec instanceGetter = MethodSpec.methodBuilder("get")
-                                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                            .addCode("return $N;\n", target)
-                                            .returns(nativeInterfaceType)
-                                            .build();
-        builder.addMethod(instanceGetter);
 
         return builder.build();
     }
