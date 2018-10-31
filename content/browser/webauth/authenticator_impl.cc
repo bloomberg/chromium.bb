@@ -203,7 +203,7 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
 }
 
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
-    base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
+    const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
     bool is_individual_attestation) {
   auto credential_params = mojo::ConvertTo<
@@ -211,7 +211,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
       options->public_key_parameters);
 
   device::CtapMakeCredentialRequest make_credential_param(
-      client_data_hash,
+      client_data_json,
       mojo::ConvertTo<device::PublicKeyCredentialRpEntity>(
           options->relying_party),
       mojo::ConvertTo<device::PublicKeyCredentialUserEntity>(options->user),
@@ -228,12 +228,12 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 }
 
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
-    base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
+    const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
     base::Optional<base::span<const uint8_t, device::kRpIdHashLength>>
         alternative_application_parameter) {
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
-                                                    client_data_hash);
+                                                    client_data_json);
 
   auto allowed_list =
       mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
@@ -255,15 +255,6 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
             options->cable_authentication_data));
   }
   return request_parameter;
-}
-
-std::array<uint8_t, crypto::kSHA256Length> ConstructClientDataHash(
-    const std::string& client_data) {
-  // SHA-256 hash of the JSON data structure.
-  std::array<uint8_t, crypto::kSHA256Length> client_data_hash;
-  crypto::SHA256HashString(client_data, client_data_hash.data(),
-                           client_data_hash.size());
-  return client_data_hash;
 }
 
 // The application parameter is the SHA-256 hash of the UTF-8 encoding of
@@ -638,9 +629,8 @@ void AuthenticatorImpl::MakeCredential(
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_, transports_,
-      CreateCtapMakeCredentialRequest(
-          ConstructClientDataHash(client_data_json_), options,
-          individual_attestation),
+      CreateCtapMakeCredentialRequest(client_data_json_, options,
+                                      individual_attestation),
       std::move(authenticator_selection_criteria),
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -730,15 +720,12 @@ void AuthenticatorImpl::GetAssertion(
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  // Save client data to return with the authenticator response.
-  // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
-  // communicate with the origin.
   client_data_json_ = SerializeCollectedClientDataToJson(
       client_data::kGetType, caller_origin, std::move(options->challenge));
 
-  auto ctap_request = CreateCtapGetAssertionRequest(
-      ConstructClientDataHash(client_data_json_), std::move(options),
-      alternative_application_parameter_);
+  auto ctap_request =
+      CreateCtapGetAssertionRequest(client_data_json_, std::move(options),
+                                    alternative_application_parameter_);
 
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(

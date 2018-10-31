@@ -9,47 +9,18 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
-#include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
-namespace {
-
-bool AreGetAssertionRequestMapKeysCorrect(
-    const cbor::Value::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 7u || key >= 1u);
-                     });
-}
-
-bool IsGetAssertionOptionMapFormatCorrect(
-    const cbor::Value::MapValue& option_map) {
-  return std::all_of(
-      option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return (key == kUserPresenceMapKey || key == kUserVerificationMapKey) &&
-               param.second.is_bool();
-      });
-}
-
-}  // namespace
-
-CtapGetAssertionRequest::CtapGetAssertionRequest(
-    std::string rp_id,
-    base::span<const uint8_t, kClientDataHashLength> client_data_hash)
+CtapGetAssertionRequest::CtapGetAssertionRequest(std::string rp_id,
+                                                 std::string client_data_json)
     : rp_id_(std::move(rp_id)),
-      client_data_hash_(fido_parsing_utils::Materialize(client_data_hash)) {}
+      client_data_json_(std::move(client_data_json)),
+      client_data_hash_(
+          fido_parsing_utils::CreateSHA256Hash(client_data_json_)) {}
 
 CtapGetAssertionRequest::CtapGetAssertionRequest(
     const CtapGetAssertionRequest& that) = default;
@@ -163,92 +134,6 @@ bool CtapGetAssertionRequest::CheckResponseRpIdHash(
   return response_rp_id_hash == fido_parsing_utils::CreateSHA256Hash(rp_id_) ||
          (alternative_application_parameter_ &&
           response_rp_id_hash == *alternative_application_parameter_);
-}
-
-base::Optional<CtapGetAssertionRequest> ParseCtapGetAssertionRequest(
-    base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::Reader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
-  if (!AreGetAssertionRequestMapKeysCorrect(request_map))
-    return base::nullopt;
-
-  const auto rp_id_it = request_map.find(cbor::Value(1));
-  if (rp_id_it == request_map.end() || !rp_id_it->second.is_string())
-    return base::nullopt;
-
-  const auto client_data_hash_it = request_map.find(cbor::Value(2));
-  if (client_data_hash_it == request_map.end() ||
-      !client_data_hash_it->second.is_bytestring())
-    return base::nullopt;
-
-  const auto client_data_hash =
-      base::make_span(client_data_hash_it->second.GetBytestring())
-          .subspan<0, kClientDataHashLength>();
-  CtapGetAssertionRequest request(rp_id_it->second.GetString(),
-                                  client_data_hash);
-
-  const auto allow_list_it = request_map.find(cbor::Value(3));
-  if (allow_list_it != request_map.end()) {
-    if (!allow_list_it->second.is_array())
-      return base::nullopt;
-
-    const auto& credential_descriptors = allow_list_it->second.GetArray();
-    std::vector<PublicKeyCredentialDescriptor> allow_list;
-    for (const auto& credential_descriptor : credential_descriptors) {
-      auto allowed_credential =
-          PublicKeyCredentialDescriptor::CreateFromCBORValue(
-              credential_descriptor);
-      if (!allowed_credential)
-        return base::nullopt;
-
-      allow_list.push_back(std::move(*allowed_credential));
-    }
-    request.SetAllowList(std::move(allow_list));
-  }
-
-  const auto option_it = request_map.find(cbor::Value(5));
-  if (option_it != request_map.end()) {
-    if (!option_it->second.is_map())
-      return base::nullopt;
-
-    const auto& option_map = option_it->second.GetMap();
-    if (!IsGetAssertionOptionMapFormatCorrect(option_map))
-      return base::nullopt;
-
-    const auto user_presence_option =
-        option_map.find(cbor::Value(kUserPresenceMapKey));
-    if (user_presence_option != option_map.end())
-      request.SetUserPresenceRequired(user_presence_option->second.GetBool());
-
-    const auto uv_option =
-        option_map.find(cbor::Value(kUserVerificationMapKey));
-    if (uv_option != option_map.end())
-      request.SetUserVerification(
-          uv_option->second.GetBool()
-              ? UserVerificationRequirement::kRequired
-              : UserVerificationRequirement::kPreferred);
-  }
-
-  const auto pin_auth_it = request_map.find(cbor::Value(6));
-  if (pin_auth_it != request_map.end()) {
-    if (!pin_auth_it->second.is_bytestring())
-      return base::nullopt;
-    request.SetPinAuth(pin_auth_it->second.GetBytestring());
-  }
-
-  const auto pin_protocol_it = request_map.find(cbor::Value(7));
-  if (pin_protocol_it != request_map.end()) {
-    if (!pin_protocol_it->second.is_unsigned() ||
-        pin_protocol_it->second.GetUnsigned() >
-            std::numeric_limits<uint8_t>::max())
-      return base::nullopt;
-    request.SetPinProtocol(pin_auth_it->second.GetUnsigned());
-  }
-
-  return request;
 }
 
 }  // namespace device

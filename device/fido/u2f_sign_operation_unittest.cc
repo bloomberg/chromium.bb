@@ -38,7 +38,7 @@ class U2fSignOperationTest : public ::testing::Test {
   CtapGetAssertionRequest CreateSignRequest(
       std::vector<std::vector<uint8_t>> key_handles) {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
 
     std::vector<PublicKeyCredentialDescriptor> allowed_list;
     for (auto& key_handle : key_handles) {

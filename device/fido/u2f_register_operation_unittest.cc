@@ -35,7 +35,7 @@ CtapMakeCredentialRequest CreateRegisterRequestWithRegisteredKeys(
       fido_parsing_utils::Materialize(test_data::kUserId));
 
   CtapMakeCredentialRequest request(
-      test_data::kClientDataHash, std::move(rp), std::move(user),
+      test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
   request.SetExcludeList(std::move(registered_keys));

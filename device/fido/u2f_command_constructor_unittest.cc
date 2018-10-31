@@ -29,13 +29,13 @@ CtapMakeCredentialRequest ConstructMakeCredentialRequest() {
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   return CtapMakeCredentialRequest(
-      test_data::kClientDataHash, std::move(rp), std::move(user),
+      test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1))));
 }
 
 CtapGetAssertionRequest ConstructGetAssertionRequest() {
-  return CtapGetAssertionRequest("acme.com", test_data::kClientDataHash);
+  return CtapGetAssertionRequest("acme.com", test_data::kClientDataJson);
 }
 
 }  // namespace
@@ -120,7 +120,7 @@ TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   CtapMakeCredentialRequest make_credential_param(
-      test_data::kClientDataHash, std::move(rp), std::move(user),
+      test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, -257}}));
 
   EXPECT_FALSE(IsConvertibleToU2fRegisterCommand(make_credential_param));

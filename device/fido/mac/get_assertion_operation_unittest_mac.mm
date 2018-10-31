@@ -13,6 +13,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/mac/make_credential_operation.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,14 +26,13 @@ namespace {
 
 using test::TestCallbackReceiver;
 
-const std::array<uint8_t, kClientDataHashLength> kClientDataHash = {};
 const std::string kRpId = "rp.example.com";
 const std::vector<uint8_t> kUserId = {10, 11, 12, 13, 14, 15};
 const char kKeychainAccessGroup[] =
     "EQHXZ8M8AV.com.google.chrome.webauthn.test";
 
 CtapGetAssertionRequest MakeTestRequest() {
-  return CtapGetAssertionRequest(kRpId, kClientDataHash);
+  return CtapGetAssertionRequest(kRpId, test_data::kClientDataJson);
 }
 
 bool MakeCredential() API_AVAILABLE(macos(10.12.2)) {
@@ -40,7 +40,7 @@ bool MakeCredential() API_AVAILABLE(macos(10.12.2)) {
                        base::Optional<AuthenticatorMakeCredentialResponse>>
       callback_receiver;
   auto request = CtapMakeCredentialRequest(
-      kClientDataHash, PublicKeyCredentialRpEntity(kRpId),
+      test_data::kClientDataJson, PublicKeyCredentialRpEntity(kRpId),
       PublicKeyCredentialUserEntity(kUserId),
       PublicKeyCredentialParams(
           {{PublicKeyCredentialParams::
