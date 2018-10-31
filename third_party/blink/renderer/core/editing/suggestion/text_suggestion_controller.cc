@@ -198,7 +198,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 TextSuggestionController::TextSuggestionController(LocalFrame& frame)
     : is_suggestion_menu_open_(false), frame_(&frame) {}
 
-void TextSuggestionController::DocumentAttached(Document* document) {
+void TextSuggestionController::DidAttachDocument(Document* document) {
   DCHECK(document);
   SetContext(document);
 }

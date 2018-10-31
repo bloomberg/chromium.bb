@@ -97,7 +97,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   // ensure leak reporting stability.
   void PrepareForLeakDetection();
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
  private:
   explicit SpellChecker(LocalFrame&);

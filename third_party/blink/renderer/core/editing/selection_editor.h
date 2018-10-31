@@ -56,7 +56,7 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
   void SetSelectionAndEndTyping(const SelectionInDOMTree&);
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   // There functions are exposed for |FrameSelection|.
   void CacheRangeOfDocument(Range*);

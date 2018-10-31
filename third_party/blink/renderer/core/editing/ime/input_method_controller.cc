@@ -407,7 +407,7 @@ void InputMethodController::ContextDestroyed(Document*) {
   composition_range_ = nullptr;
 }
 
-void InputMethodController::DocumentAttached(Document* document) {
+void InputMethodController::DidAttachDocument(Document* document) {
   DCHECK(document);
   SetContext(document);
 }

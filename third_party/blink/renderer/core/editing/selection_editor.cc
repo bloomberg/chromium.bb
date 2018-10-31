@@ -140,7 +140,7 @@ void SelectionEditor::DidFinishDOMMutation() {
   AssertSelectionValid();
 }
 
-void SelectionEditor::DocumentAttached(Document* document) {
+void SelectionEditor::DidAttachDocument(Document* document) {
   DCHECK(document);
   DCHECK(!LifecycleContext()) << LifecycleContext();
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
