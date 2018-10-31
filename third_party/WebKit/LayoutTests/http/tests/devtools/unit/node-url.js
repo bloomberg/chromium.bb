@@ -7,7 +7,6 @@
   const url = Host.isWin()
       ? 'c:\\prog\\foobar.js'
       : '/usr/local/home/prog/foobar.js'
-  const nodejsTarget = {isNodeJS: () => true};
   let obj = {
     id: 0,
     result: {
@@ -30,7 +29,7 @@
       }
     }
   };
-  Protocol.NodeURL.patch(nodejsTarget, obj);
+  Protocol.NodeURL.patch(obj);
   TestRunner.addResult(`..result.value.url patched: ${
     obj.result.result.value.url !== url}`);
   TestRunner.addResult(`..exceptionDetails.url patched: ${
