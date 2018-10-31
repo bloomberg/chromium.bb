@@ -45,19 +45,20 @@ TEST_F(PreviewsUserDataTest, DeepCopy) {
   EXPECT_FALSE(data->black_listed_for_lite_page());
   EXPECT_FALSE(data->offline_preview_used());
 
-  data->SetDataSavingsInflationPercent(123);
-  data->SetCacheControlNoTransformDirective();
+  data->set_data_savings_inflation_percent(123);
+  data->set_cache_control_no_transform_directive();
   data->SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
   data->set_offline_preview_used(true);
   data->set_black_listed_for_lite_page(true);
 
-  PreviewsUserData copy(*data);
-  EXPECT_EQ(id, copy.page_id());
-  EXPECT_EQ(123, copy.data_savings_inflation_percent());
-  EXPECT_TRUE(copy.cache_control_no_transform_directive());
-  EXPECT_EQ(previews::PreviewsType::NOSCRIPT, copy.committed_previews_type());
-  EXPECT_TRUE(copy.black_listed_for_lite_page());
-  EXPECT_TRUE(copy.offline_preview_used());
+  PreviewsUserData data_copy(*data);
+  EXPECT_EQ(id, data_copy.page_id());
+  EXPECT_EQ(123, data_copy.data_savings_inflation_percent());
+  EXPECT_TRUE(data_copy.cache_control_no_transform_directive());
+  EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
+            data_copy.committed_previews_type());
+  EXPECT_TRUE(data_copy.black_listed_for_lite_page());
+  EXPECT_TRUE(data_copy.offline_preview_used());
 }
 
 }  // namespace

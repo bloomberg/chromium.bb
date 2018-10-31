@@ -45,7 +45,7 @@ bool PreviewsOptimizationGuide::IsWhitelisted(PreviewsUserData* previews_data,
     return false;
 
   if (inflation_percent != 0 && previews_data)
-    previews_data->SetDataSavingsInflationPercent(inflation_percent);
+    previews_data->set_data_savings_inflation_percent(inflation_percent);
 
   return true;
 }

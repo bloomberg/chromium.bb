@@ -17,7 +17,7 @@ namespace previews {
 // TODO(ryansturm): rename this to remove UserData.
 class PreviewsUserData {
  public:
-  PreviewsUserData(uint64_t page_id);
+  explicit PreviewsUserData(uint64_t page_id);
   ~PreviewsUserData();
 
   PreviewsUserData(const PreviewsUserData& previews_user_data);
@@ -25,18 +25,17 @@ class PreviewsUserData {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
+  // Returns the data savings inflation percent to use for this navigation
+  // instead of the default if it is not 0.
+  int data_savings_inflation_percent() const {
+    return data_savings_inflation_percent_;
+  }
   // Sets a data savings inflation percent value to use instead of the default
   // if there is a committed preview. Note that this is expected to be used for
   // specific preview types (such as NoScript) that don't have better data use
   // estimation information.
-  void SetDataSavingsInflationPercent(int inflation_percent) {
+  void set_data_savings_inflation_percent(int inflation_percent) {
     data_savings_inflation_percent_ = inflation_percent;
-  }
-
-  // Returns the data savings inflation percent to use for this navigation
-  // instead of the default if it is not 0.
-  int data_savings_inflation_percent() {
-    return data_savings_inflation_percent_;
   }
 
   // Whether a lite page preview was prevented from being shown due to the
@@ -48,40 +47,37 @@ class PreviewsUserData {
     black_listed_for_lite_page_ = black_listed_for_lite_page;
   }
 
-  // Sets that the page load received the Cache-Control:no-transform
-  // directive. Expected to be set upon receiving a committed response.
-  void SetCacheControlNoTransformDirective() {
-    cache_control_no_transform_directive_ = true;
-  }
-
   // Returns whether the Cache-Control:no-transform directive has been
   // detected for the request. Should not be called prior to receiving
   // a committed response.
-  bool cache_control_no_transform_directive() {
+  bool cache_control_no_transform_directive() const {
     return cache_control_no_transform_directive_;
   }
-
-  // Sets the committed previews type. Should only be called once.
-  void SetCommittedPreviewsType(previews::PreviewsType previews_type);
-
-  // The committed previews type, if any. Otherwise PreviewsType::NONE.
-  previews::PreviewsType committed_previews_type() const {
-    return committed_previews_type_;
+  // Sets that the page load received the Cache-Control:no-transform
+  // directive. Expected to be set upon receiving a committed response.
+  void set_cache_control_no_transform_directive() {
+    cache_control_no_transform_directive_ = true;
   }
 
   // Whether there is a committed previews type.
   bool HasCommittedPreviewsType() const {
     return committed_previews_type_ != previews::PreviewsType::NONE;
   }
+  // The committed previews type, if any. Otherwise PreviewsType::NONE.
+  previews::PreviewsType committed_previews_type() const {
+    return committed_previews_type_;
+  }
+  // Sets the committed previews type. Should only be called once.
+  void SetCommittedPreviewsType(previews::PreviewsType previews_type);
 
+  bool offline_preview_used() const { return offline_preview_used_; }
   // Whether an offline preview is being served.
   void set_offline_preview_used(bool offline_preview_used) {
     offline_preview_used_ = offline_preview_used;
   }
-  bool offline_preview_used() { return offline_preview_used_; }
 
   // The PreviewsState that was allowed for the navigation.
-  content::PreviewsState allowed_previews_state() {
+  content::PreviewsState allowed_previews_state() const {
     return allowed_previews_state_;
   }
   void set_allowed_previews_state(
@@ -90,7 +86,7 @@ class PreviewsUserData {
   }
 
   // The PreviewsState that was committed for the navigation.
-  content::PreviewsState committed_previews_state() {
+  content::PreviewsState committed_previews_state() const {
     return committed_previews_state_;
   }
   void set_committed_previews_state(
@@ -99,11 +95,12 @@ class PreviewsUserData {
   }
 
  private:
-
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
+
   // A previews data savings inflation percent for the navigation if not 0.
   int data_savings_inflation_percent_ = 0;
+
   // Whether the origin provided a no-transform directive.
   bool cache_control_no_transform_directive_ = false;
 
