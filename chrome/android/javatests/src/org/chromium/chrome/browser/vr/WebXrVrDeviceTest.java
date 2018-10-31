@@ -22,6 +22,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -70,6 +71,7 @@ public class WebXrVrDeviceTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
         mWebVrTestFramework.loadUrlAndAwaitInitialization(
@@ -87,6 +89,7 @@ public class WebXrVrDeviceTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @CommandLineFlags.Add("enable-features=WebXROrientationSensorDevice")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @Restriction(RESTRICTION_TYPE_SVR)
@@ -110,6 +113,7 @@ public class WebXrVrDeviceTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
