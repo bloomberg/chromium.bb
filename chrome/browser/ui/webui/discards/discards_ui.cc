@@ -407,6 +407,9 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->AddResourcePath("sorted_table_behavior.js",
                           IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS);
 
+  source->AddResourcePath("graph_tab.html", IDR_DISCARDS_GRAPH_TAB_HTML);
+  source->AddResourcePath("graph_tab.js", IDR_DISCARDS_GRAPH_TAB_JS);
+
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath("chrome/browser/ui/webui/discards/discards.mojom.js",
                           IDR_DISCARDS_MOJO_JS);
