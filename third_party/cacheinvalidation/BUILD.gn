@@ -14,8 +14,6 @@ config("cacheinvalidation_config") {
 static_library("cacheinvalidation") {
   sources = [
     "overrides/google/cacheinvalidation/deps/callback.h",
-    "overrides/google/cacheinvalidation/deps/gmock.h",
-    "overrides/google/cacheinvalidation/deps/googletest.h",
     "overrides/google/cacheinvalidation/deps/logging.h",
     "overrides/google/cacheinvalidation/deps/mutex.h",
     "overrides/google/cacheinvalidation/deps/random.cc",
@@ -92,6 +90,8 @@ static_library("cacheinvalidation") {
 
 test("cacheinvalidation_unittests") {
   sources = [
+    "overrides/google/cacheinvalidation/deps/gmock.h",
+    "overrides/google/cacheinvalidation/deps/googletest.h",
     "src/google/cacheinvalidation/impl/invalidation-client-impl_test.cc",
     "src/google/cacheinvalidation/impl/protocol-handler_test.cc",
     "src/google/cacheinvalidation/impl/recurring-task_test.cc",
