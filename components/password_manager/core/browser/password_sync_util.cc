@@ -9,6 +9,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/origin.h"
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -30,8 +31,8 @@ namespace sync_util {
 
 std::string GetSyncUsernameIfSyncingPasswords(
     const syncer::SyncService* sync_service,
-    const SigninManagerBase* signin_manager) {
-  if (!signin_manager)
+    const identity::IdentityManager* identity_manager) {
+  if (!identity_manager)
     return std::string();
 
   // If sync is set up, return early if we aren't syncing passwords.
@@ -40,12 +41,13 @@ std::string GetSyncUsernameIfSyncingPasswords(
     return std::string();
   }
 
-  return signin_manager->GetAuthenticatedAccountInfo().email;
+  return identity_manager->GetPrimaryAccountInfo().email;
 }
 
-bool IsSyncAccountCredential(const autofill::PasswordForm& form,
-                             const syncer::SyncService* sync_service,
-                             const SigninManagerBase* signin_manager) {
+bool IsSyncAccountCredential(
+    const autofill::PasswordForm& form,
+    const syncer::SyncService* sync_service,
+    const identity::IdentityManager* identity_manager) {
   if (!IsGaiaCredentialPage(form.signon_realm))
     return false;
 
@@ -57,11 +59,11 @@ bool IsSyncAccountCredential(const autofill::PasswordForm& form,
 
   return gaia::AreEmailsSame(
       base::UTF16ToUTF8(form.username_value),
-      GetSyncUsernameIfSyncingPasswords(sync_service, signin_manager));
+      GetSyncUsernameIfSyncingPasswords(sync_service, identity_manager));
 }
 
 bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
-                            const SigninManagerBase* signin_manager,
+                            const identity::IdentityManager* identity_manager,
                             PrefService* prefs) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   bool is_protected_credential_url =
@@ -74,7 +76,7 @@ bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
   if (!is_protected_credential_url)
     return false;
 
-  std::string sync_email = signin_manager->GetAuthenticatedAccountInfo().email;
+  std::string sync_email = identity_manager->GetPrimaryAccountInfo().email;
   std::string username = base::UTF16ToUTF8(form.username_value);
 
   if (sync_email.empty() || username.empty())
@@ -93,12 +95,12 @@ bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
 }
 
 bool IsSyncAccountEmail(const std::string& username,
-                        const SigninManagerBase* signin_manager) {
-  // |signin_manager| can be null if user is not signed in.
-  if (!signin_manager)
+                        const identity::IdentityManager* identity_manager) {
+  // |identity_manager| can be null if user is not signed in.
+  if (!identity_manager)
     return false;
 
-  std::string sync_email = signin_manager->GetAuthenticatedAccountInfo().email;
+  std::string sync_email = identity_manager->GetPrimaryAccountInfo().email;
 
   if (sync_email.empty() || username.empty())
     return false;

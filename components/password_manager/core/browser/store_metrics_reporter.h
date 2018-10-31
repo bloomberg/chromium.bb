@@ -8,7 +8,10 @@
 #include "base/macros.h"
 
 class PrefService;
-class SigninManagerBase;
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace syncer {
 class SyncService;
@@ -29,13 +32,13 @@ class StoreMetricsReporter {
  public:
   // Reports various metrics based on whether password manager is enabled. Uses
   // |client| to obtain the password store and password syncing state. Uses
-  // |sync_service| and |signin_manager| to obtain the sync username to report
+  // |sync_service| and |identity_manager| to obtain the sync username to report
   // about its presence among saved credentials. Uses the |prefs| to obtain the
   // state of the first-run-experience bubble.
   StoreMetricsReporter(bool password_manager_enabled,
                        PasswordManagerClient* client,
                        const syncer::SyncService* sync_service,
-                       const SigninManagerBase* signin_manager,
+                       const identity::IdentityManager* identity_manager,
                        PrefService* prefs);
 
   ~StoreMetricsReporter();

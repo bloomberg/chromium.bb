@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -105,7 +104,6 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
  private:
-  base::MessageLoop message_loop_;  // For |password_store_|.
   GURL last_committed_entry_url_;
   scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_;
   bool is_incognito_;
@@ -150,14 +148,14 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
         filter_(&client_,
                 base::BindRepeating(&SyncUsernameTestBase::sync_service,
                                     base::Unretained(this)),
-                base::BindRepeating(&SyncUsernameTestBase::signin_manager,
+                base::BindRepeating(&SyncUsernameTestBase::identity_manager,
                                     base::Unretained(this))) {
     form_manager_.Init(nullptr);
     fetcher_.Fetch();
   }
 
   void CheckFilterResultsTestCase(const TestCase& test_case) {
-    DCHECK(signin_manager()->IsAuthenticated());
+    DCHECK(identity_manager()->HasPrimaryAccount());
 
     SetSyncingPasswords(test_case.password_sync == TestCase::SYNCING_PASSWORDS);
     client_.set_last_committed_entry_url(test_case.last_committed_entry_url);
@@ -398,7 +396,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   ASSERT_NE("user@example.org",
-            signin_manager()->GetAuthenticatedAccountInfo().email);
+            identity_manager()->GetPrimaryAccountInfo().email);
   SetSyncingPasswords(true);
   EXPECT_TRUE(filter_.ShouldSave(form));
 }

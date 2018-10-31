@@ -21,7 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
@@ -266,7 +266,8 @@ void PasswordManagerPresenter::RequestShowPassword(
   }
   if (password_manager::sync_util::IsSyncAccountCredential(
           form, sync_service,
-          SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
+          IdentityManagerFactory::GetForProfile(
+              password_view_->GetProfile()))) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }

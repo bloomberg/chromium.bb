@@ -14,8 +14,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace password_manager {
 
@@ -24,8 +27,8 @@ class SyncCredentialsFilter : public CredentialsFilter {
  public:
   using SyncServiceFactoryFunction =
       base::RepeatingCallback<const syncer::SyncService*(void)>;
-  using SigninManagerFactoryFunction =
-      base::RepeatingCallback<const SigninManagerBase*(void)>;
+  using IdentityManagerFactoryFunction =
+      base::RepeatingCallback<const identity::IdentityManager*(void)>;
 
   // Implements protection of sync credentials. Uses |client| to get the last
   // commited entry URL for a check against GAIA reauth site. Uses the factory
@@ -36,7 +39,7 @@ class SyncCredentialsFilter : public CredentialsFilter {
   SyncCredentialsFilter(
       const PasswordManagerClient* client,
       SyncServiceFactoryFunction sync_service_factory_function,
-      SigninManagerFactoryFunction signin_manager_factory_function);
+      IdentityManagerFactoryFunction identity_manager_factory_function);
   ~SyncCredentialsFilter() override;
 
   // CredentialsFilter
@@ -66,9 +69,9 @@ class SyncCredentialsFilter : public CredentialsFilter {
 
   const SyncServiceFactoryFunction sync_service_factory_function_;
 
-  // For incognito profile, |signin_manager_factory_function_| returns the
+  // For incognito profile, |identity_manager_factory_function_| returns the
   // sign in manager of its original profile.
-  const SigninManagerFactoryFunction signin_manager_factory_function_;
+  const IdentityManagerFactoryFunction identity_manager_factory_function_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncCredentialsFilter);
 };

@@ -58,7 +58,8 @@ TEST_F(StoreMetricsReporterTest, StoreIndependentMetrics) {
       base::HistogramTester histogram_tester;
       EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(nullptr));
       StoreMetricsReporter reporter(password_manager_enabled, &client_,
-                                    sync_service(), signin_manager(), &prefs_);
+                                    sync_service(), identity_manager(),
+                                    &prefs_);
 
       histogram_tester.ExpectBucketCount("PasswordManager.Enabled",
                                          password_manager_enabled, 1);
@@ -89,7 +90,7 @@ TEST_F(StoreMetricsReporterTest, PasswordStore) {
     FakeSigninAs("some.user@gmail.com");
 
     StoreMetricsReporter reporter(true, &client_, sync_service(),
-                                  signin_manager(), &prefs_);
+                                  identity_manager(), &prefs_);
     store->ShutdownOnUIThread();
   }
 }
@@ -114,7 +115,7 @@ TEST_F(StoreMetricsReporterTest, PasswordStoreForUnderAdvancedProtection) {
     FakeSigninAs("some.user@gmail.com");
 
     StoreMetricsReporter reporter(true, &client_, sync_service(),
-                                  signin_manager(), &prefs_);
+                                  identity_manager(), &prefs_);
     store->ShutdownOnUIThread();
   }
 }
