@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/scenic/vulkan_implementation_scenic.h"
 
+#include <lib/ui/scenic/cpp/commands.h>
+#include <lib/ui/scenic/cpp/session.h>
 #include <lib/zx/channel.h>
 
 #include "base/files/file_path.h"
@@ -75,13 +77,15 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   ScenicWindow* scenic_window = scenic_window_manager_->GetWindow(window);
   if (!scenic_window)
     return nullptr;
-  ScenicSession* scenic_session = scenic_window->scenic_session();
+  scenic::Session* scenic_session = scenic_window->scenic_session();
   fuchsia::images::ImagePipePtr image_pipe;
-  ScenicSession::ResourceId image_pipe_id =
-      scenic_session->CreateImagePipe(image_pipe.NewRequest());
+  uint32_t image_pipe_id = scenic_session->AllocResourceId();
+  scenic_session->Enqueue(
+      scenic::NewCreateImagePipeCmd(image_pipe_id, image_pipe.NewRequest()));
   scenic_window->SetTexture(image_pipe_id);
   scenic_session->ReleaseResource(image_pipe_id);
-  scenic_session->Present();
+  scenic_session->Present(/*presentation_time=*/0,
+                          [](fuchsia::images::PresentationInfo info) {});
 
   VkSurfaceKHR surface;
   VkMagmaSurfaceCreateInfoKHR surface_create_info = {};
