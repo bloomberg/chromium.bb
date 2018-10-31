@@ -69,6 +69,11 @@ class CustomLinksManager {
   virtual bool UpdateLink(const GURL& url,
                           const GURL& new_url,
                           const base::string16& new_title) = 0;
+  // Moves the specified link from its current index and inserts it at
+  // |new_pos|. Returns false and does nothing if custom links is not
+  // initialized, |url| is invalid, |url| does not exist in the list, or
+  // |new_pos| is invalid/already the current index.
+  virtual bool ReorderLink(const GURL& url, size_t new_pos) = 0;
   // Deletes the link with the specified |url|. Returns false and does nothing
   // if custom links is not initialized, |url| is invalid, or |url| does not
   // exist in the list.

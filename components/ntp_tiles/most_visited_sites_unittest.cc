@@ -276,6 +276,7 @@ class MockCustomLinksManager : public CustomLinksManager {
                bool(const GURL& url,
                     const GURL& new_url,
                     const base::string16& new_title));
+  MOCK_METHOD2(ReorderLink, bool(const GURL& url, size_t new_pos));
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
   MOCK_METHOD0(UndoAction, bool());
   MOCK_METHOD1(RegisterCallbackForOnChanged,

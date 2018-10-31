@@ -34,6 +34,11 @@ const TestCaseItem kTestCase2[] = {
     {"http://foo1.com/", "Foo1"},
     {"http://foo2.com/", "Foo2"},
 };
+const TestCaseItem kTestCase3[] = {
+    {"http://foo1.com/", "Foo1"},
+    {"http://foo2.com/", "Foo2"},
+    {"http://foo3.com/", "Foo3"},
+};
 const TestCaseItem kTestCaseMax[] = {
     {"http://foo1.com/", "Foo1"}, {"http://foo2.com/", "Foo2"},
     {"http://foo3.com/", "Foo3"}, {"http://foo4.com/", "Foo4"},
@@ -275,6 +280,54 @@ TEST_F(CustomLinksManagerImplTest, UpdateLinkWhenUrlAlreadyExists) {
   // and not modify the list.
   EXPECT_FALSE(custom_links_->UpdateLink(
       GURL(kTestCase2[0].url), GURL(kTestCase2[1].url), base::string16()));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, ReorderLink) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase3);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase3);
+  std::vector<Link> links_after_reorder1(
+      {Link{GURL(kTestCase3[2].url), base::UTF8ToUTF16(kTestCase3[2].title),
+            true},
+       Link{GURL(kTestCase3[0].url), base::UTF8ToUTF16(kTestCase3[0].title),
+            true},
+       Link{GURL(kTestCase3[1].url), base::UTF8ToUTF16(kTestCase3[1].title),
+            true}});
+  std::vector<Link> links_after_reorder2(
+      {Link{GURL(kTestCase3[0].url), base::UTF8ToUTF16(kTestCase3[0].title),
+            true},
+       Link{GURL(kTestCase3[2].url), base::UTF8ToUTF16(kTestCase3[2].title),
+            true},
+       Link{GURL(kTestCase3[1].url), base::UTF8ToUTF16(kTestCase3[1].title),
+            true}});
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to call reorder with the current index. This should fail and not modify
+  // the list.
+  EXPECT_FALSE(custom_links_->ReorderLink(GURL(kTestCase3[2].url), (size_t)2));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to call reorder with an invalid index. This should fail and not modify
+  // the list.
+  EXPECT_FALSE(custom_links_->ReorderLink(GURL(kTestCase3[2].url), (size_t)-1));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+  EXPECT_FALSE(custom_links_->ReorderLink(GURL(kTestCase3[2].url),
+                                          initial_links.size()));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Move the last link to the front.
+  EXPECT_TRUE(custom_links_->ReorderLink(GURL(kTestCase3[2].url), (size_t)0));
+  EXPECT_EQ(links_after_reorder1, custom_links_->GetLinks());
+
+  // Move the same link to the right.
+  EXPECT_TRUE(custom_links_->ReorderLink(GURL(kTestCase3[2].url), (size_t)1));
+  EXPECT_EQ(links_after_reorder2, custom_links_->GetLinks());
+
+  // Move the same link to the end.
+  EXPECT_TRUE(custom_links_->ReorderLink(GURL(kTestCase3[2].url), (size_t)2));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 }
 

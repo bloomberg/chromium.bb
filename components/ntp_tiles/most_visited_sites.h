@@ -184,6 +184,11 @@ class MostVisitedSites : public history::TopSitesObserver,
   bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const base::string16& new_title);
+  // Moves the custom link specified by |url| to the index |new_pos|. If |url|
+  // does not exist, or |new_pos| is invalid, returns false and does nothing.
+  // Will initialize custom links if they have not been initialized yet. Custom
+  // links must be enabled.
+  bool ReorderCustomLink(const GURL& url, size_t new_pos);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, returns false and does nothing. Will initialize
   // custom links if they have not been initialized yet. Custom links must be
