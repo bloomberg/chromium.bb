@@ -34,8 +34,11 @@ AssistantAudioDecoder::AssistantAudioDecoder(
       client_(std::move(client)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
-      media_thread_(std::make_unique<base::Thread>("media_thread")) {
+      media_thread_(std::make_unique<base::Thread>("media_thread")),
+      weak_factory_(this) {
   CHECK(media_thread_->Start());
+  client_.set_connection_error_handler(base::BindOnce(
+      &AssistantAudioDecoder::OnConnectionError, base::Unretained(this)));
 }
 
 AssistantAudioDecoder::~AssistantAudioDecoder() = default;
@@ -47,57 +50,83 @@ void AssistantAudioDecoder::Decode() {
 }
 
 void AssistantAudioDecoder::OpenDecoder(OpenDecoderCallback callback) {
+  DCHECK(!open_callback_);
+  open_callback_ = std::move(callback);
   media_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantAudioDecoder::OpenDecoderOnMediaThread,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this)));
 }
 
-void AssistantAudioDecoder::OpenDecoderOnMediaThread(
-    OpenDecoderCallback callback) {
+void AssistantAudioDecoder::CloseDecoder(CloseDecoderCallback callback) {
+  DCHECK(!close_callback_);
+  close_callback_ = std::move(callback);
+  media_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantAudioDecoder::CloseDecoderOnMediaThread,
+                     base::Unretained(this)));
+}
+
+void AssistantAudioDecoder::OpenDecoderOnMediaThread() {
   bool read_ok = true;
   protocol_ = std::make_unique<media::BlockingUrlProtocol>(
       data_source_.get(), base::BindRepeating(&OnError, &read_ok));
   decoder_ = std::make_unique<media::AudioFileReader>(protocol_.get());
 
-  if (!decoder_->Open() || !read_ok) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AssistantAudioDecoder::OnDecoderErrorOnThread,
-                       base::Unretained(this), std::move(callback)));
+  if (closed_ || !decoder_->Open() || !read_ok) {
+    CloseDecoderOnMediaThread();
     return;
   }
 
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantAudioDecoder::OnDecoderInitializedOnThread,
-                     base::Unretained(this), std::move(callback),
-                     decoder_->sample_rate(), decoder_->channels()));
+                     weak_factory_.GetWeakPtr(), decoder_->sample_rate(),
+                     decoder_->channels()));
 }
 
 void AssistantAudioDecoder::DecodeOnMediaThread() {
   std::vector<std::unique_ptr<media::AudioBus>> decoded_audio_packets;
   // Experimental number of decoded packets before sending to |client_|.
   constexpr int kPacketsToRead = 16;
-  decoder_->Read(&decoded_audio_packets, kPacketsToRead);
+  DCHECK(decoder_);
+  // The client expects to be called |OnNewBuffers()| so that to return
+  // AudioDeviceOwner's |FillBuffer()| call. If |closed_| is true, still return
+  // empty |decoded_audio_packets| to indicate no more data available.
+  if (!closed_)
+    decoder_->Read(&decoded_audio_packets, kPacketsToRead);
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AssistantAudioDecoder::OnBufferDecodedOnThread,
-                     base::Unretained(this), std::move(decoded_audio_packets)));
+      FROM_HERE, base::BindOnce(&AssistantAudioDecoder::OnBufferDecodedOnThread,
+                                weak_factory_.GetWeakPtr(),
+                                std::move(decoded_audio_packets)));
+}
+
+void AssistantAudioDecoder::CloseDecoderOnMediaThread() {
+  // |decoder_| may not be initialized.
+  if (decoder_)
+    decoder_->Close();
+
+  closed_ = true;
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AssistantAudioDecoder::RunCallbacksAsClosed,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void AssistantAudioDecoder::OnDecoderInitializedOnThread(
-    OpenDecoderCallback callback,
     int sample_rate,
     int channels) {
-  std::move(callback).Run(/*success=*/true, kBytesPerSample, sample_rate,
-                          channels);
+  DCHECK(open_callback_);
+  std::move(open_callback_)
+      .Run(/*success=*/true, kBytesPerSample, sample_rate, channels);
 }
 
 void AssistantAudioDecoder::OnBufferDecodedOnThread(
     const std::vector<std::unique_ptr<media::AudioBus>>&
         decoded_audio_packets) {
+  if (!client_)
+    return;
+
   std::vector<std::vector<uint8_t>> buffers;
   for (const auto& audio_bus : decoded_audio_packets) {
     const int bytes_to_alloc =
@@ -110,12 +139,25 @@ void AssistantAudioDecoder::OnBufferDecodedOnThread(
   client_->OnNewBuffers(buffers);
 }
 
-void AssistantAudioDecoder::OnDecoderErrorOnThread(
-    OpenDecoderCallback callback) {
-  std::move(callback).Run(/*success=*/false,
-                          /*bytes_per_sample=*/0,
-                          /*samples_per_second=*/0,
-                          /*channels=*/0);
+void AssistantAudioDecoder::OnConnectionError() {
+  client_ = nullptr;
+  media_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantAudioDecoder::CloseDecoderOnMediaThread,
+                     base::Unretained(this)));
+}
+
+void AssistantAudioDecoder::RunCallbacksAsClosed() {
+  if (open_callback_) {
+    std::move(open_callback_)
+        .Run(/*success=*/false,
+             /*bytes_per_sample=*/0,
+             /*samples_per_second=*/0,
+             /*channels=*/0);
+  }
+
+  if (close_callback_)
+    std::move(close_callback_).Run();
 }
 
 }  // namespace assistant
