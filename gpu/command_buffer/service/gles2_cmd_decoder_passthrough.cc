@@ -1048,6 +1048,13 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     gpu_tracer_.reset();
   }
 
+  if (!have_context) {
+    for (auto& fence : deschedule_until_finished_fences_) {
+      fence->Invalidate();
+    }
+  }
+  deschedule_until_finished_fences_.clear();
+
   // Destroy the surface before the context, some surface destructors make GL
   // calls.
   surface_ = nullptr;
@@ -1461,10 +1468,12 @@ void GLES2DecoderPassthroughImpl::PerformIdleWork() {
 }
 
 bool GLES2DecoderPassthroughImpl::HasPollingWork() const {
-  return false;
+  return deschedule_until_finished_fences_.size() >= 2;
 }
 
-void GLES2DecoderPassthroughImpl::PerformPollingWork() {}
+void GLES2DecoderPassthroughImpl::PerformPollingWork() {
+  ProcessDescheduleUntilFinished();
+}
 
 bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
     uint32_t client_texture_id,
@@ -2237,6 +2246,23 @@ error::Error GLES2DecoderPassthroughImpl::ProcessReadPixels(bool did_finish) {
   // completed.
   DCHECK(!did_finish || pending_read_pixels_.empty());
   return error::kNoError;
+}
+
+void GLES2DecoderPassthroughImpl::ProcessDescheduleUntilFinished() {
+  if (deschedule_until_finished_fences_.size() < 2) {
+    return;
+  }
+  DCHECK_EQ(2u, deschedule_until_finished_fences_.size());
+
+  if (!deschedule_until_finished_fences_[0]->HasCompleted()) {
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_END0(
+      "cc", "GLES2DecoderPassthroughImpl::DescheduleUntilFinished", this);
+  deschedule_until_finished_fences_.erase(
+      deschedule_until_finished_fences_.begin());
+  client_->OnRescheduleAfterFinished();
 }
 
 void GLES2DecoderPassthroughImpl::UpdateTextureBinding(
