@@ -33,8 +33,12 @@
         value: 'cr-radio-button, controlled-radio-button',
       },
 
+      /**
+       * @type {!RegExp}
+       * @private
+       */
       selectableRegExp_: {
-        type: Object,
+        value: Object,
         computed: 'computeSelectableRegExp_(selectable)',
       },
     },
@@ -118,31 +122,24 @@
         radio.focus();
     },
 
-    /** @private */
-    computeSelectableRegExp_: function() {
-      const tags = this.selectable.split(', ').join('|');
-      return new RegExp(`^(${tags})$`, 'i');
-    },
-
-    /**
-     * @param {!EventTarget} target
-     * @return {boolean}
-     * @private
-     */
-    isRadioButton_: function(target) {
-      return this.selectableRegExp_.test(target.tagName);
-    },
-
     /**
      * @param {!KeyboardEvent} event
      * @private
      */
     onKeyDown_: function(event) {
-      if (event.path.some(target => /^(a|(cr-|)input)$/i.test(target.tagName)))
+      if (this.disabled)
         return;
 
-      if (this.disabled || event.ctrlKey || event.shiftKey || event.metaKey ||
-          event.altKey) {
+      if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey)
+        return;
+
+      const targetElement = /** @type {!Element} */ (event.target);
+      if (!this.buttons_.includes(targetElement))
+        return;
+
+      if (event.key == ' ' || event.key == 'Enter') {
+        event.preventDefault();
+        this.select_(/** @type {!Element} */ (event.target));
         return;
       }
 
@@ -150,18 +147,16 @@
       if (enabledRadios.length == 0)
         return;
 
-      const lastSelection = enabledRadios.findIndex(radio => radio.checked);
       let selectedIndex;
       const max = enabledRadios.length - 1;
-      if (lastSelection == -1 && (event.key == ' ' || event.key == 'Enter')) {
-        selectedIndex = 0;
-      } else if (event.key == 'Home') {
+      if (event.key == 'Home') {
         selectedIndex = 0;
       } else if (event.key == 'End') {
         selectedIndex = max;
       } else if (this.deltaKeyMap_.has(event.key)) {
         const delta = this.deltaKeyMap_.get(event.key);
         // If nothing selected, start from the first radio then add |delta|.
+        const lastSelection = enabledRadios.findIndex(radio => radio.checked);
         selectedIndex = Math.max(0, lastSelection) + delta;
         selectedIndex = Math.min(max, Math.max(0, selectedIndex));
       } else {
@@ -178,16 +173,26 @@
     },
 
     /**
+     * @return {!RegExp}
+     * @private
+     */
+    computeSelectableRegExp_: function() {
+      const tags = this.selectable.split(', ').join('|');
+      return new RegExp(`^(${tags})$`, 'i');
+    },
+
+    /**
      * @param {!Event} event
      * @private
      */
     onClick_: function(event) {
-      if (event.path.some(target => /^a$/i.test(target.tagName)))
+      const path = event.composedPath();
+      if (path.some(target => /^a$/i.test(target.tagName)))
         return;
-      const target = event.path.find(n => this.isRadioButton_(n));
-      const name = `${target.name}`;
-      if (target && !target.disabled && this.selected != name)
-        this.selected = name;
+      const target = /** @type {!Element} */ (
+          path.find(n => this.selectableRegExp_.test(n.tagName)));
+      if (target && this.buttons_.includes(target))
+        this.select_(/** @type {!Element} */ (target));
     },
 
     /** @private */
@@ -195,8 +200,9 @@
       // TODO(crbug.com/738611): After migration to Polymer 2, remove
       // Polymer 1 references.
       this.buttons_ = Polymer.DomIf ?
-          this.$$('slot').assignedNodes({flatten: true})
-              .filter(n => this.isRadioButton_(n)) :
+          this.$$('slot')
+              .assignedNodes({flatten: true})
+              .filter(n => this.selectableRegExp_.test(n.tagName)) :
           this.queryAllEffectiveChildren(this.selectable);
       this.buttonEventTracker_.removeAll();
       this.buttons_.forEach(el => {
@@ -206,6 +212,19 @@
             el, 'name-changed', () => this.populate_());
       });
       this.update_();
+    },
+
+    /**
+     * @param {!Element} button
+     * @private
+     */
+    select_: function(button) {
+      if (!isEnabled(button))
+        return;
+
+      const name = `${button.name}`;
+      if (this.selected != name)
+        this.selected = name;
     },
 
     /** @private */
