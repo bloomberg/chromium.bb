@@ -132,7 +132,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         mDetailsView.setText(contactDetails.getContactDetailsAsString());
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
-                    contactDetails.getDisplayNameAbbreviation(), 2);
+                    contactDetails.getDisplayNameAbbreviation());
             mImage.setImageBitmap(icon);
         } else {
             setIconBitmap(icon);
