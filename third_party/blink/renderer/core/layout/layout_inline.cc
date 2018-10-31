@@ -230,27 +230,49 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
   // before and after the block share the same style, but the block doesn't need
   // to pass its style on to anyone else.
   const ComputedStyle& new_style = StyleRef();
-  LayoutInline* continuation = InlineElementContinuation();
-  LayoutInline* end_of_continuation = nullptr;
-  for (LayoutInline* curr_cont = continuation; curr_cont;
-       curr_cont = curr_cont->InlineElementContinuation()) {
-    LayoutBoxModelObject* next_cont = curr_cont->Continuation();
-    curr_cont->SetContinuation(nullptr);
-    curr_cont->SetStyle(MutableStyle());
-    curr_cont->SetContinuation(next_cont);
-    end_of_continuation = curr_cont;
-  }
+  if (LayoutInline* continuation = InlineElementContinuation()) {
+    LayoutInline* previous_part = this;
+    LayoutInline* end_of_continuation = nullptr;
+    bool is_real_continuation = false;
+    for (LayoutInline* curr_cont = continuation; curr_cont;
+         curr_cont = curr_cont->InlineElementContinuation()) {
+      if (!is_real_continuation && curr_cont != previous_part->NextSibling()) {
+        // When we have a continuation chain, and the block child that was the
+        // reason for creating that in the first place is removed, we don't
+        // clean up the continuation chain. Previously split inlines should
+        // ideally be joined when this happens, but we don't do that, but rather
+        // leave the mess around. We'll end up with direct LayoutInline siblings
+        // for the same Node (that form a bogus continuation chain). Here we
+        // check that we're NOT in such a situation, and that the Node actually
+        // forms a real continuation chain. This matters when it comes to
+        // marking the anonymous container(s) of block children as relatively
+        // positioned. We should only do that if the Node is an ancestor of the
+        // blocks. Otherwise out-of-flow positioned descendants will use the
+        // wrong containing block.
+        is_real_continuation = true;
+      }
+      previous_part = curr_cont;
 
-  if (continuation && old_style) {
-    DCHECK(end_of_continuation);
-    LayoutObject* block = ContainingBlock()->NextSibling();
-    // If an inline's in-flow positioning has changed then any descendant blocks
-    // will need to change their styles accordingly.
-    if (block && block->IsAnonymousBlock() &&
-        new_style.GetPosition() != old_style->GetPosition() &&
-        (new_style.HasInFlowPosition() || old_style->HasInFlowPosition()))
-      UpdateInFlowPositionOfAnonymousBlockContinuations(
-          block, new_style, *old_style, end_of_continuation->ContainingBlock());
+      LayoutBoxModelObject* next_cont = curr_cont->Continuation();
+      curr_cont->SetContinuation(nullptr);
+      curr_cont->SetStyle(MutableStyle());
+      curr_cont->SetContinuation(next_cont);
+      end_of_continuation = curr_cont;
+    }
+
+    if (is_real_continuation && old_style) {
+      DCHECK(end_of_continuation);
+      LayoutObject* block = ContainingBlock()->NextSibling();
+      // If an inline's in-flow positioning has changed then any descendant
+      // blocks will need to change their styles accordingly.
+      if (block && block->IsAnonymousBlock() &&
+          new_style.GetPosition() != old_style->GetPosition() &&
+          (new_style.HasInFlowPosition() || old_style->HasInFlowPosition())) {
+        UpdateInFlowPositionOfAnonymousBlockContinuations(
+            block, new_style, *old_style,
+            end_of_continuation->ContainingBlock());
+      }
+    }
   }
 
   if (!AlwaysCreateLineBoxes()) {
