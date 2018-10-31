@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/range/range_f.h"
 
 namespace cc {
 
@@ -87,28 +88,13 @@ struct ScrollSnapAlign {
   SnapAlignment alignment_inline;
 };
 
-// TODO(sunyunjia): Use gfx::RangeF as windows.h has already been removed from
-// range.h.
-class SnapVisibleRange {
- public:
-  SnapVisibleRange() {}
-  SnapVisibleRange(float start, float end) : start_(start), end_(end) {}
-  bool Contains(float value) const;
-  float start() const { return start_; }
-  float end() const { return end_; }
-
- private:
-  float start_;
-  float end_;
-};
-
 // This class includes snap offset and visible range needed to perform a snap
 // operation on one axis for a specific area. The data can be used to determine
 // whether this snap area provides a valid snap position for the current scroll.
 class SnapSearchResult {
  public:
   SnapSearchResult() {}
-  SnapSearchResult(float offset, const SnapVisibleRange& range);
+  SnapSearchResult(float offset, const gfx::RangeF& range);
   // Clips the |snap_offset| between 0 and |max_snap|. And clips the
   // |visible_range| between 0 and |max_visible|.
   void Clip(float max_snap, float max_visible);
@@ -120,15 +106,15 @@ class SnapSearchResult {
   float snap_offset() const { return snap_offset_; }
   void set_snap_offset(float offset) { snap_offset_ = offset; }
 
-  SnapVisibleRange visible_range() const { return visible_range_; }
-  void set_visible_range(const SnapVisibleRange& range);
+  gfx::RangeF visible_range() const { return visible_range_; }
+  void set_visible_range(const gfx::RangeF& range);
 
  private:
   float snap_offset_;
   // This is the range on the cross axis, within which the SnapArea generating
   // this |snap_offset| is visible. We expect the range to be in order (as
-  // opposed to reversed), i.e., start < end.
-  SnapVisibleRange visible_range_;
+  // opposed to reversed), i.e., start() < end().
+  gfx::RangeF visible_range_;
 };
 
 // Snap area is a bounding box that could be snapped to when a scroll happens in
