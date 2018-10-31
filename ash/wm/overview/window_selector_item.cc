@@ -25,6 +25,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -600,12 +601,26 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
     WindowSelector::UpdateAnimationSettingsCallback callback) {
   // Animate the window selector widget and the window itself.
   // TODO(sammiequon): Investigate if we can combine with
-  // FadeInWidgetAndMaybeSlideOnEnter and animate the transient children too.
-  // Also when animating we should remove shadow and rounded corners.
-  std::vector<ui::Layer*> animation_layers = {
-      GetWindowForStacking()->layer(),
-      item_widget_->GetNativeWindow()->layer()};
-  for (auto* layer : animation_layers) {
+  // FadeInWidgetAndMaybeSlideOnEnter. Also when animating we should remove
+  // shadow and rounded corners.
+  std::vector<std::pair<ui::Layer*, int>> animation_layers_and_offsets = {
+      {item_widget_->GetNativeWindow()->layer(), 0}};
+
+  // Transient children may already have a y translation relative to their base
+  // ancestor, so factor that in when computing their new y translation.
+  base::Optional<int> base_window_y_translation = base::nullopt;
+  for (auto* window : wm::GetTransientTreeIterator(GetWindowForStacking())) {
+    if (!base_window_y_translation.has_value()) {
+      base_window_y_translation = base::make_optional(
+          window->layer()->transform().To2dTranslation().y());
+    }
+    const int offset = *base_window_y_translation -
+                       window->layer()->transform().To2dTranslation().y();
+    animation_layers_and_offsets.push_back({window->layer(), offset});
+  }
+
+  for (auto& layer_and_offset : animation_layers_and_offsets) {
+    ui::Layer* layer = layer_and_offset.first;
     layer->GetAnimator()->StopAnimating();
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
     if (!callback.is_null()) {
@@ -617,7 +632,8 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
 
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
-    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin;
+    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin -
+                       layer_and_offset.second;
     gfx::Transform transform = layer->transform();
     transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
     layer->SetTransform(transform);
