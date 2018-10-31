@@ -1,0 +1,29 @@
+Name: Netwide Assembler
+Short Name: nasm
+URL: https://www.nasm.us/
+Version: bfa1ed0ae9cb15b54b008431d122db3c22cd45eb
+License: 2-Clause BSD
+License File: src/LICENSE
+Security Critical: no
+Source: https://repo.or.cz/nasm.git
+
+Description:
+This contains the source to NASM, the assembler used for parts of Chromium.
+
+Local Modifications:
+* Applied deterministic.diff to make nasm deterministic.
+* Modified .gitignore not to hide generated files Chromium needs.
+
+To update, have clang in your system path (from //third_party/llvm-
+build/Release+Asserts/bin) then do the following:
+
+git remote add upstream https://repo.or.cz/nasm.git
+git fetch upstream
+git merge upstream/master
+CC=clang CXX=clang++ ./autogen.sh
+CC=clang CXX=clang++ ./configure
+make perlreq
+./generate_nasm_sources.py
+git add <any new .c/.h files which show up>
+git commit -a
+

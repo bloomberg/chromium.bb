@@ -1,0 +1,80 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/compiler/compiler.gni")
+import("nasm_sources.gni")
+
+configs_to_delete = [
+  # Don't enable sanitizers for build tools. They slow down the overall build.
+  "//build/config/sanitizers:default_sanitizer_flags",
+]
+
+configs_to_add = []
+if (is_debug) {
+  configs_to_delete += [
+    # Build with full optimizations even on debug configurations, because some
+    # yasm build steps (highbd_sad4d_sse2.asm) can take ~33 seconds or more in
+    # debug component builds on Windows. Enabling compiler optimizations saves
+    #  ~5 seconds.
+    "//build/config/compiler:default_optimization",
+
+    # Don't define _DEBUG. Modest savings, but good for consistency.
+    "//build/config:debug",
+  ]
+
+  configs_to_add += [
+    "//build/config:release",
+    "//build/config/compiler:optimize_max",
+  ]
+  if (is_win) {
+    # This switches to using the release CRT. For yasm debug component builds
+    # of highbd_sad4d_sse2.asm on Windows this saved about 15 s.
+    configs_to_delete += [ "//build/config/win:default_crt" ]
+    configs_to_add += [ "//build/config/win:release_crt" ]
+  }
+}
+
+config("nasm_config") {
+  include_dirs = [
+    ".",
+    "asm",
+    "config",
+    "disasm",
+    "include",
+    "output",
+    "x86",
+  ]
+
+  # TODO(dalecurtis): Try using a common config.h for now, but Mac may need its
+  # own and Windows may need to use the pregenerated msvc.h one.
+  defines = [ "HAVE_CONFIG_H" ]
+
+  if (is_clang) {
+    cflags = [
+      # The inline functions in NASM's headers flag this.
+      "-Wno-unused-function",
+
+      # NASM writes nasm_assert(!"some string literal").
+      "-Wno-string-conversion",
+
+      # NASM sometimes redefines macros from its config.h.
+      "-Wno-macro-redefined",
+    ]
+  }
+}
+
+if (current_toolchain == host_toolchain) {
+  executable("nasm") {
+    sources = nasmlib_sources + nasm_sources
+
+    configs -= configs_to_delete
+    configs += configs_to_add
+    configs += [ ":nasm_config" ]
+
+    deps = [
+      # Default manifest on Windows (a no-op elsewhere).
+      "//build/win:default_exe_manifest",
+    ]
+  }
+}
