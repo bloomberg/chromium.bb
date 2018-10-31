@@ -756,14 +756,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillEnforceMinRequiredFieldsForHeuristics",
-                        "AutofillEnforceMinRequiredFieldsForUpload"
-                    ],
+                    "name": "Enabled_NoSmallAddressForms",
                     "disable_features": [
-                        "AutofillEnforceMinRequiredFieldsForQuery",
-                        "AutofillRestrictUnownedFieldsToFormlessCheckout"
+                        "AutofillEnforceMinRequiredFieldsForQuery"
                     ]
                 }
             ]
