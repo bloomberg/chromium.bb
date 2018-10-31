@@ -58,9 +58,10 @@ AppShimHost::AppShimHost(const std::string& app_id,
 
 AppShimHost::~AppShimHost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
-  if (handler)
-    handler->OnShimClose(this);
+  // Ensure that we send a response to the bootstrap even if we failed to finish
+  // loading.
+  if (bootstrap_ && !has_sent_on_launch_complete_)
+    bootstrap_->OnLaunchAppFailed(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
 }
 
 void AppShimHost::ChannelError(uint32_t custom_reason,
@@ -72,7 +73,16 @@ void AppShimHost::ChannelError(uint32_t custom_reason,
 
 void AppShimHost::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Note that we must call GetAppShimHandler here and not in the destructor
+  // because some tests override the method.
+  apps::AppShimHandler* handler = GetAppShimHandler();
+  if (handler)
+    handler->OnShimClose(this);
   delete this;
+}
+
+apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
+  return apps::AppShimHandler::GetForAppMode(app_id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,33 +97,26 @@ void AppShimHost::OnBootstrapConnected(
   host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
   host_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
-
-  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
-  if (handler)
-    handler->OnShimLaunch(this, bootstrap_->GetLaunchType(),
-                          bootstrap_->GetLaunchFiles());
-  // |handler| can only be NULL after AppShimHostManager is destroyed. Since
-  // this only happens at shutdown, do nothing here.
 }
 
 void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
                            const std::vector<base::FilePath>& files) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  apps::AppShimHandler* handler = GetAppShimHandler();
   if (handler)
     handler->OnShimFocus(this, focus_type, files);
 }
 
 void AppShimHost::SetAppHidden(bool hidden) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  apps::AppShimHandler* handler = GetAppShimHandler();
   if (handler)
     handler->OnShimSetHidden(this, hidden);
 }
 
 void AppShimHost::QuitApp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  apps::AppShimHandler* handler = GetAppShimHandler();
   if (handler)
     handler->OnShimQuit(this);
 }
@@ -122,11 +125,13 @@ void AppShimHost::QuitApp() {
 // AppShimHost, apps::AppShimHandler::Host
 
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
-  if (!has_sent_on_launch_complete_) {
-    DCHECK(bootstrap_);
-    bootstrap_->OnLaunchAppComplete(result, std::move(app_shim_request_));
-    has_sent_on_launch_complete_ = true;
-  }
+  DCHECK(!has_sent_on_launch_complete_);
+  DCHECK(bootstrap_);
+  if (result == apps::APP_SHIM_LAUNCH_SUCCESS)
+    bootstrap_->OnLaunchAppSucceeded(std::move(app_shim_request_));
+  else
+    bootstrap_->OnLaunchAppFailed(result);
+  has_sent_on_launch_complete_ = true;
 }
 
 void AppShimHost::OnAppClosed() {
