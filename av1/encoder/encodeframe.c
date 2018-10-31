@@ -5098,8 +5098,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 
-  td->intrabc_used_this_tile = 0;
-
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params.mib_size) {
     av1_encode_sb_row(cpi, td, tile_row, tile_col, mi_row);
@@ -5121,10 +5119,11 @@ static void encode_tiles(AV1_COMP *cpi) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
       TileDataEnc *const this_tile =
           &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+      cpi->td.intrabc_used = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       cpi->td.mb.backup_tile_ctx = &this_tile->backup_tctx;
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
-      cpi->intrabc_used |= cpi->td.intrabc_used_this_tile;
+      cpi->intrabc_used |= cpi->td.intrabc_used;
     }
   }
 }
@@ -6130,8 +6129,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   }
 
   if (!dry_run) {
-    if (av1_allow_intrabc(cm) && is_intrabc_block(mbmi))
-      td->intrabc_used_this_tile = 1;
+    if (av1_allow_intrabc(cm) && is_intrabc_block(mbmi)) td->intrabc_used = 1;
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
         mbmi->sb_type > BLOCK_4X4 && !(is_inter && (mbmi->skip || seg_skip))) {
       if (is_inter) {

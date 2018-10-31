@@ -286,7 +286,6 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
 
     cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
     av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
-    td->intrabc_used_this_tile = 0;
 
     av1_encode_sb_row(cpi, td, tile_row, tile_col, current_mi_row);
 #if CONFIG_MULTITHREAD
@@ -472,7 +471,7 @@ static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
   for (int i = 0; i < num_workers; i++) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
-    cpi->intrabc_used |= thread_data->td->intrabc_used_this_tile;
+    cpi->intrabc_used |= thread_data->td->intrabc_used;
     // Accumulate counters.
     if (i < cpi->num_workers - 1) {
       av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
@@ -491,6 +490,8 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     worker->hook = hook;
     worker->data1 = thread_data;
     worker->data2 = NULL;
+
+    thread_data->td->intrabc_used = 0;
 
     // Before encoding a frame, copy the thread data from cpi.
     if (thread_data->td != &cpi->td) {

@@ -546,7 +546,7 @@ typedef struct ThreadData {
   PALETTE_BUFFER *palette_buffer;
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
-  int intrabc_used_this_tile;
+  int intrabc_used;
   FRAME_CONTEXT *tctx;
 } ThreadData;
 
