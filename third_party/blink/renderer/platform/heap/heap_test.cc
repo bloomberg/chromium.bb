@@ -1901,6 +1901,7 @@ TEST(HeapTest, SimplePersistent) {
 
 TEST(HeapTest, SimpleFinalization) {
   {
+    SimpleFinalizedObject::destructor_calls_ = 0;
     Persistent<SimpleFinalizedObject> finalized =
         SimpleFinalizedObject::Create();
     EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
@@ -2072,6 +2073,8 @@ TEST(HeapTest, EagerlySweepingPages) {
 
 TEST(HeapTest, Finalization) {
   {
+    HeapTestSubClass::destructor_calls_ = 0;
+    HeapTestSuperClass::destructor_calls_ = 0;
     HeapTestSubClass* t1 = HeapTestSubClass::Create();
     HeapTestSubClass* t2 = HeapTestSubClass::Create();
     HeapTestSuperClass* t3 = HeapTestSuperClass::Create();
