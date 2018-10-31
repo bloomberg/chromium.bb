@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/discover_screen_view.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 
 namespace chromeos {
 
@@ -26,7 +27,8 @@ DiscoverScreen::~DiscoverScreen() {
 }
 
 void DiscoverScreen::Show() {
-  if (IsPublicSessionOrEphemeralLogin()) {
+  if (IsPublicSessionOrEphemeralLogin() ||
+      !TabletModeClient::Get()->tablet_mode_enabled()) {
     Finish(ScreenExitCode::DISCOVER_FINISHED);
     return;
   }
