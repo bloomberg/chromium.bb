@@ -298,11 +298,6 @@ bool WindowSelectorController::ToggleOverview(
       return true;
     }
 
-    // Suspend occlusion tracker until the enter animation is complete.
-    occlusion_tracker_pauser_ =
-        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-            Shell::Get()->aura_env());
-
     window_selector_->set_enter_exit_overview_type(new_type);
     if (type == WindowSelector::EnterExitOverviewType::kWindowsMinimized ||
         type == WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
@@ -330,14 +325,11 @@ bool WindowSelectorController::ToggleOverview(
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
-    if (!delayed_animations_.empty())
-      OnStartingAnimationComplete(/*canceled=*/true);
+    if (!delayed_animations_.empty()) {
+      Shell::Get()->NotifyOverviewModeStartingAnimationComplete(
+          /*canceled=*/true);
+    }
     delayed_animations_.clear();
-
-    // Suspend occlusion tracker until the exit animation is complete.
-    occlusion_tracker_pauser_ =
-        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-            Shell::Get()->aura_env());
 
     window_selector_ = std::make_unique<WindowSelector>(this);
     window_selector_->set_enter_exit_overview_type(new_type);
@@ -345,22 +337,9 @@ bool WindowSelectorController::ToggleOverview(
     window_selector_->Init(windows, hide_windows);
     if (IsBlurAllowed())
       overview_blur_controller_->Blur();
-    if (start_animations_.empty())
-      OnStartingAnimationComplete(/*canceled=*/false);
     OnSelectionStarted();
   }
   return true;
-}
-
-void WindowSelectorController::OnStartingAnimationComplete(bool canceled) {
-  Shell::Get()->NotifyOverviewModeStartingAnimationComplete(canceled);
-  window_selector_->OnStartingAnimationComplete(canceled);
-  occlusion_tracker_pauser_.reset();
-}
-
-void WindowSelectorController::OnEndingAnimationComplete(bool canceled) {
-  Shell::Get()->NotifyOverviewModeEndingAnimationComplete(canceled);
-  occlusion_tracker_pauser_.reset();
 }
 
 bool WindowSelectorController::IsSelecting() const {
@@ -501,14 +480,15 @@ void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
 
-  if (!start_animations_.empty())
-    OnEndingAnimationComplete(/*canceled=*/true);
+  if (!start_animations_.empty()) {
+    Shell::Get()->NotifyOverviewModeEndingAnimationComplete(
+        /*canceled=*/true);
+  }
   start_animations_.clear();
-
-  window_selector_->UpdateMaskAndShadow(/*show=*/false);
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
+  window_selector->UpdateMaskAndShadow(/*show=*/false);
   window_selector->Shutdown();
   // There may be no delayed animations in tests, so unblur right away.
   if (delayed_animations_.empty() && IsBlurAllowed())
@@ -539,8 +519,7 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
   if (!window_selector_ && !previous_empty && delayed_animations_.empty()) {
     if (IsBlurAllowed())
       overview_blur_controller_->Unblur();
-
-    OnEndingAnimationComplete(/*canceled=*/false);
+    Shell::Get()->NotifyOverviewModeEndingAnimationComplete(/*canceled=*/false);
   }
 }
 
@@ -555,8 +534,11 @@ void WindowSelectorController::RemoveAndDestroyStartAnimationObserver(
   const bool previous_empty = start_animations_.empty();
   base::EraseIf(start_animations_, base::MatchesUniquePtr(animation_observer));
 
-  if (!previous_empty && start_animations_.empty())
-    OnStartingAnimationComplete(/*canceled=*/false);
+  if (!previous_empty && start_animations_.empty()) {
+    Shell::Get()->NotifyOverviewModeStartingAnimationComplete(
+        /*canceled=*/false);
+    window_selector_->UpdateMaskAndShadow(/*show=*/true);
+  }
 }
 
 // static

@@ -13,7 +13,6 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/aura/window_occlusion_tracker.h"
 
 namespace ash {
 class WindowSelector;
@@ -98,9 +97,6 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // Dispatched when window selection begins.
   void OnSelectionStarted();
 
-  void OnStartingAnimationComplete(bool canceled);
-  void OnEndingAnimationComplete(bool canceled);
-
   // Collection of DelayedAnimationObserver objects that own widgets that may be
   // still animating after overview mode ends. If shell needs to shut down while
   // those animations are in progress, the animations are shut down and the
@@ -109,9 +105,6 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // Collection of DelayedAnimationObserver objects. When this becomes empty,
   // notify shell that the starting animations have been completed.
   std::vector<std::unique_ptr<DelayedAnimationObserver>> start_animations_;
-
-  std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
-      occlusion_tracker_pauser_;
 
   std::unique_ptr<WindowSelector> window_selector_;
   base::Time last_selection_time_;

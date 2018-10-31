@@ -1104,6 +1104,7 @@ void WindowGrid::InitShieldWidget() {
   aura::Window* parent_window = widget_window->parent();
   const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
       parent_window->bounds(), parent_window);
+  parent_window->SetBounds(bounds);
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
 

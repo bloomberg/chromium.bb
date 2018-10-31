@@ -50,7 +50,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -103,27 +102,6 @@ struct WindowSelectorItemForRoot {
   }
 
   const aura::Window* root_window;
-};
-
-// A WidgetDelegate to specify the initialy focused view.
-class TextFilterWidgetDelegate : public views::WidgetDelegate {
- public:
-  TextFilterWidgetDelegate(views::Widget* widget, views::View* initial_focus)
-      : widget_(widget), initial_focus_(initial_focus) {}
-  ~TextFilterWidgetDelegate() override = default;
-
-  // WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
-  views::View* GetInitiallyFocusedView() override { return initial_focus_; }
-
- private:
-  views::Widget* widget_;
-  views::View* initial_focus_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextFilterWidgetDelegate);
 };
 
 // Triggers a shelf visibility update on all root window controllers.
@@ -224,9 +202,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.name = "OverviewModeTextFilter";
   *text_filter_bottom = params.bounds.bottom() + kTextFieldBottomMargin;
   params.parent = root_window->GetChildById(kShellWindowId_StatusContainer);
-
-  views::Textfield* textfield = new views::Textfield();
-  params.delegate = new TextFilterWidgetDelegate(widget, textfield);
   widget->Init(params);
 
   // Use |container| to specify the padding surrounding the text and to give
@@ -246,6 +221,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
                   vertical_padding, kTextFilterCornerRadius),
       kTextFilterHorizontalPadding));
 
+  views::Textfield* textfield = new views::Textfield();
   textfield->set_controller(controller);
   textfield->SetBorder(views::NullBorder());
   textfield->SetBackgroundColor(kTextFilterBackgroundColor);
@@ -269,6 +245,8 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   aura::Window* text_filter_widget_window = widget->GetNativeWindow();
   text_filter_widget_window->layer()->SetOpacity(0);
   text_filter_widget_window->SetTransform(transform);
+  widget->Show();
+  textfield->RequestFocus();
 
   return widget;
 }
@@ -766,14 +744,6 @@ void WindowSelector::UpdateMaskAndShadow(bool show) {
   for (auto& grid : grid_list_) {
     for (auto& window : grid->window_list())
       window->UpdateMaskAndShadow(show);
-  }
-}
-
-void WindowSelector::OnStartingAnimationComplete(bool canceled) {
-  if (!canceled) {
-    UpdateMaskAndShadow(!canceled);
-    if (text_filter_widget_)
-      text_filter_widget_->Show();
   }
 }
 
