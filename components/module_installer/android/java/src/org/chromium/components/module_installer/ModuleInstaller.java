@@ -5,30 +5,24 @@
 package org.chromium.components.module_installer;
 
 import com.google.android.play.core.splitcompat.SplitCompat;
-import com.google.android.play.core.splitinstall.SplitInstallManager;
-import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
-import com.google.android.play.core.splitinstall.SplitInstallRequest;
-import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener;
-import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/** Installs Dynamic Feature Modules (DFMs). */
+/** Installs dynamic feature modules (DFMs). */
 public class ModuleInstaller {
-    private static final String TAG = "ModuleInstaller";
+    /** Command line switch for activating the fake backend.  */
+    public static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
     private static final Map<String, List<OnFinishedListener>> sModuleNameListenerMap =
             new HashMap<>();
-    private static SplitInstallManager sManager;
-    private static SplitInstallStateUpdatedListener sUpdateListener;
+    private static ModuleInstallerBackend sBackend;
 
     /** Listener for when a module install has finished. */
     public interface OnFinishedListener {
@@ -66,13 +60,7 @@ public class ModuleInstaller {
             // Request is already running.
             return;
         }
-
-        SplitInstallRequest request =
-                SplitInstallRequest.newBuilder().addModule(moduleName).build();
-        getManager().startInstall(request).addOnFailureListener(exception -> {
-            Log.e(TAG, "Failed to request module '" + moduleName + "': " + exception);
-            onFinished(false, Arrays.asList(moduleName));
-        });
+        getBackend().install(moduleName);
     }
 
     private static void onFinished(boolean success, List<String> moduleNames) {
@@ -89,34 +77,19 @@ public class ModuleInstaller {
         }
 
         if (sModuleNameListenerMap.isEmpty()) {
-            sManager.unregisterListener(sUpdateListener);
-            sUpdateListener = null;
-            sManager = null;
+            sBackend.close();
+            sBackend = null;
         }
     }
 
-    private static SplitInstallManager getManager() {
-        ThreadUtils.assertOnUiThread();
-
-        if (sManager == null) {
-            sManager = SplitInstallManagerFactory.create(ContextUtils.getApplicationContext());
-            sUpdateListener = (state) -> {
-                switch (state.status()) {
-                    case SplitInstallSessionStatus.INSTALLED:
-                        onFinished(true, state.moduleNames());
-                        break;
-                    case SplitInstallSessionStatus.CANCELED:
-                    case SplitInstallSessionStatus.FAILED:
-                        Log.e(TAG,
-                                "Failed to install modules '" + state.moduleNames()
-                                        + "': " + state.status());
-                        onFinished(false, state.moduleNames());
-                        break;
-                }
-            };
-            sManager.registerListener(sUpdateListener);
+    private static ModuleInstallerBackend getBackend() {
+        if (sBackend == null) {
+            ModuleInstallerBackend.OnFinishedListener listener = ModuleInstaller::onFinished;
+            sBackend = CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)
+                    ? new FakeModuleInstallerBackend(listener)
+                    : new PlayCoreModuleInstallerBackend(listener);
         }
-        return sManager;
+        return sBackend;
     }
 
     private ModuleInstaller() {}
