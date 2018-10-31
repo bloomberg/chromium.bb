@@ -7,6 +7,9 @@ import("//build/config/android/rules.gni")
 android_library("module_installer_java") {
   java_files = [
     "java/src/org/chromium/components/module_installer/ModuleInstaller.java",
+    "java/src/org/chromium/components/module_installer/ModuleInstallerBackend.java",
+    "java/src/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
+    "java/src/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
   ]
   deps = [
     "//base:base_java",
