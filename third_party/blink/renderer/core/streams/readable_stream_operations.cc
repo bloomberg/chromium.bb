@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -271,6 +272,7 @@ MessagePort* ReadableStreamOperations::ReadableStreamSerialize(
     ScriptValue stream,
     ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
+  DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
   v8::TryCatch block(script_state->GetIsolate());
   v8::Local<v8::Value> args[] = {stream.V8Value()};
   ScriptValue result(
@@ -297,6 +299,7 @@ ScriptValue ReadableStreamOperations::ReadableStreamDeserialize(
     MessagePort* port,
     ExceptionState& exception_state) {
   DCHECK(port);
+  DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
   auto* isolate = script_state->GetIsolate();
   v8::Local<v8::Context> context = script_state->GetContext();
   v8::Local<v8::Value> port_v8 = ToV8(port, context->Global(), isolate);

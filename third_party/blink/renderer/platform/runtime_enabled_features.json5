@@ -1257,6 +1257,9 @@
       name: "TrackLayoutPassesPerBlock",
     },
     {
+      name: "TransferableStreams",
+    },
+    {
       name: "TrustedDOMTypes",
       status: "experimental",
     },

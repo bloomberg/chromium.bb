@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -87,6 +88,10 @@ void AddCountUse(ScriptState* script_state, v8::Local<v8::Object> binding) {
 }
 
 void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
+  // These values are only used when serialization is enabled.
+  if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+    return;
+
   v8::Local<v8::Object> global = script_state->GetContext()->Global();
   v8::Local<v8::Context> context = script_state->GetContext();
   v8::Isolate* isolate = script_state->GetIsolate();
