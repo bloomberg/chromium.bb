@@ -5,9 +5,13 @@
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 
 #include "components/viz/common/gpu/context_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -22,7 +26,6 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
     sk_sp<SkImage> image) {
   CHECK(image);
   DCHECK(!image->isLazyGenerated());
-
   paint_image_ =
       CreatePaintImageBuilder()
           .set_image(std::move(image), cc::PaintImage::GetNextContentId())
@@ -39,7 +42,20 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(PaintImage image)
   CHECK(paint_image_.GetSkImage());
 }
 
-UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() = default;
+UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!original_skia_image_)
+    return;
+
+  if (!original_skia_image_task_runner_->BelongsToCurrentThread()) {
+    PostCrossThreadTask(
+        *original_skia_image_task_runner_, FROM_HERE,
+        CrossThreadBind([](sk_sp<SkImage> image) { image.reset(); },
+                        std::move(original_skia_image_)));
+  } else {
+    original_skia_image_.reset();
+  }
+}
 
 IntSize UnacceleratedStaticBitmapImage::Size() const {
   return IntSize(paint_image_.width(), paint_image_.height());
@@ -53,6 +69,8 @@ bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
 scoped_refptr<StaticBitmapImage>
 UnacceleratedStaticBitmapImage::MakeAccelerated(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!context_wrapper)
     return nullptr;  // Can happen if the context is lost.
 
@@ -81,12 +99,21 @@ void UnacceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
                                           RespectImageOrientationEnum,
                                           ImageClampingMode clamp_mode,
                                           ImageDecodingMode) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, clamp_mode,
                                 PaintImageForCurrentFrame());
 }
 
 PaintImage UnacceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   return paint_image_;
+}
+
+void UnacceleratedStaticBitmapImage::Transfer() {
+  DETACH_FROM_THREAD(thread_checker_);
+
+  original_skia_image_ = paint_image_.GetSkImage();
+  Thread* thread = Platform::Current()->CurrentThread();
+  original_skia_image_task_runner_ = thread->GetTaskRunner();
 }
 
 }  // namespace blink
