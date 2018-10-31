@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_H_
 
+#include <memory>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
@@ -61,7 +67,7 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
   const std::vector<MediaRoute::Id>& joinable_route_ids() const {
     return joinable_route_ids_;
   }
-  virtual const std::set<MediaCastMode>& cast_modes() const;
+  virtual const std::set<MediaCastMode>& GetCastModes() const;
   const std::unordered_map<MediaRoute::Id, MediaCastMode>&
   routes_and_cast_modes() const {
     return routes_and_cast_modes_;
@@ -128,7 +134,7 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
 
   class UIMediaRouteControllerObserver : public MediaRouteController::Observer {
    public:
-    explicit UIMediaRouteControllerObserver(
+    UIMediaRouteControllerObserver(
         MediaRouterUI* ui,
         scoped_refptr<MediaRouteController> controller);
     ~UIMediaRouteControllerObserver() override;
@@ -138,7 +144,7 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
     void OnControllerInvalidated() override;
 
    private:
-    MediaRouterUI* ui_;
+    MediaRouterUI* const ui_;
 
     DISALLOW_COPY_AND_ASSIGN(UIMediaRouteControllerObserver);
   };
@@ -204,7 +210,7 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
   MediaRouterWebUIMessageHandler* handler_ = nullptr;
 
   // Set to true by |handler_| when the UI has been initialized.
-  bool ui_initialized_;
+  bool ui_initialized_ = false;
 
   std::vector<MediaRoute::Id> joinable_route_ids_;
   CastModeSet cast_modes_;

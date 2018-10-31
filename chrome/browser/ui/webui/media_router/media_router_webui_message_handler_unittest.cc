@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 
 #include <memory>
+#include <set>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -95,7 +97,7 @@ class MockMediaRouterUI : public MediaRouterUI {
   MOCK_CONST_METHOD0(UserSelectedTabMirroringForCurrentOrigin, bool());
   MOCK_METHOD1(RecordCastModeSelection, void(MediaCastMode cast_mode));
   MOCK_CONST_METHOD0(GetPresentationRequestSourceName, std::string());
-  MOCK_CONST_METHOD0(cast_modes, const std::set<MediaCastMode>&());
+  MOCK_CONST_METHOD0(GetCastModes, const std::set<MediaCastMode>&());
   MOCK_METHOD1(OnMediaControllerUIAvailable,
                void(const MediaRoute::Id& route_id));
   MOCK_METHOD0(OnMediaControllerUIClosed, void());
@@ -169,7 +171,7 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterWebUITest {
   // Gets the call data for the function call made to |web_ui_|. There needs
   // to be one call made, and its function name must be |function_name|.
   const base::Value* GetCallData(const std::string& function_name) {
-    CHECK(1u == web_ui_->call_data().size());
+    CHECK_EQ(1u, web_ui_->call_data().size());
     const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
     CHECK(function_name == call_data.function_name());
     return call_data.arg1();
@@ -553,7 +555,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, RecordCastModeSelection) {
 TEST_F(MediaRouterWebUIMessageHandlerTest, RetrieveCastModeSelection) {
   base::ListValue args;
   std::set<MediaCastMode> cast_modes = {MediaCastMode::TAB_MIRROR};
-  EXPECT_CALL(*mock_media_router_ui_, cast_modes())
+  EXPECT_CALL(*mock_media_router_ui_, GetCastModes())
       .WillRepeatedly(ReturnRef(cast_modes));
 
   EXPECT_CALL(*mock_media_router_ui_, GetPresentationRequestSourceName())

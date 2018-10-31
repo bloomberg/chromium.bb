@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 
-#include <algorithm>
-#include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "base/guid.h"
@@ -61,7 +58,6 @@ namespace media_router {
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
-      ui_initialized_(false),
       weak_factory_(this) {
   auto handler = std::make_unique<MediaRouterWebUIMessageHandler>(this);
   handler_ = handler.get();
@@ -177,7 +173,7 @@ std::string MediaRouterUI::GetPresentationRequestSourceName() const {
              : GetHostFromURL(gurl);
 }
 
-const std::set<MediaCastMode>& MediaRouterUI::cast_modes() const {
+const std::set<MediaCastMode>& MediaRouterUI::GetCastModes() const {
   return cast_modes_;
 }
 
@@ -368,14 +364,14 @@ void MediaRouterUI::UpdateCastModes() {
   // UI.
   cast_modes_ = query_result_manager()->GetSupportedCastModes();
   if (ui_initialized_) {
-    handler_->UpdateCastModes(cast_modes(), GetPresentationRequestSourceName(),
-                              forced_cast_mode());
+    handler_->UpdateCastModes(
+        GetCastModes(), GetPresentationRequestSourceName(), forced_cast_mode());
   }
 }
 
 void MediaRouterUI::UpdateRoutesToCastModesMapping() {
   std::unordered_map<MediaSource::Id, MediaCastMode> available_source_map;
-  for (const auto& cast_mode : cast_modes()) {
+  for (const auto& cast_mode : GetCastModes()) {
     for (const auto& source : GetSourcesForCastMode(cast_mode))
       available_source_map.insert(std::make_pair(source.id(), cast_mode));
   }

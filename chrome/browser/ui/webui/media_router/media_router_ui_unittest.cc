@@ -787,7 +787,7 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   media_router_ui_->InitForTest(
       &mock_router_, web_contents(), message_handler_.get(),
       std::move(start_presentation_context_), nullptr);
-  EXPECT_EQ(expected_modes, media_router_ui_->cast_modes());
+  EXPECT_EQ(expected_modes, media_router_ui_->GetCastModes());
   EXPECT_EQ(base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION),
             media_router_ui_->forced_cast_mode());
   EXPECT_EQ("google.com", media_router_ui_->GetPresentationRequestSourceName());
