@@ -207,6 +207,11 @@ class CORE_EXPORT NGExclusionSpaceInternal {
         const NGBfcOffset& offset,
         const LayoutUnit available_inline_size) const;
 
+    template <typename LambdaFunc>
+    void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
+                                       const LayoutUnit available_inline_size,
+                                       const LambdaFunc&) const;
+
     LayoutUnit ClearanceOffset(EClear clear_type) const;
     LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
 
@@ -313,6 +318,7 @@ class CORE_EXPORT NGExclusionSpace {
         offset, available_inline_size, minimum_size);
   }
 
+  // If possible prefer FindLayoutOpportunity over this function.
   LayoutOpportunityVector AllLayoutOpportunities(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size) const {
