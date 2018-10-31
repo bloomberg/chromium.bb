@@ -61,12 +61,16 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // Some apps have high-density display support and do not require scaling
   // to match the system display density, but others are density-unaware and
   // look better when scaled to match the display density.
-  if (registration.has_value() && registration->IsScaled()) {
-    menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_HIGH_DENSITY,
-                                         IDS_CROSTINI_USE_HIGH_DENSITY);
-  } else {
-    menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_LOW_DENSITY,
-                                         IDS_CROSTINI_USE_LOW_DENSITY);
+  // The default terminal app is crosh in a Chrome window and it doesn't run in
+  // the Crostini container so it doesn't support display density the same way.
+  if (registration.has_value() && !registration->is_terminal_app()) {
+    if (registration->IsScaled()) {
+      menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_HIGH_DENSITY,
+                                           IDS_CROSTINI_USE_HIGH_DENSITY);
+    } else {
+      menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_LOW_DENSITY,
+                                           IDS_CROSTINI_USE_LOW_DENSITY);
+    }
   }
 
   if (!features::IsTouchableAppContextMenuEnabled())
