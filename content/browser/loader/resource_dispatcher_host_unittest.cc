@@ -2247,6 +2247,7 @@ TEST_P(ResourceDispatcherHostTest, DataSentBeforeDetach) {
 
   // Get a bit of data before cancelling.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
+  client.RunUntilResponseBodyArrived();
 
   // Simulate a cancellation coming from the renderer.
   loader = nullptr;
