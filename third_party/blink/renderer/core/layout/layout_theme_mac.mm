@@ -267,10 +267,11 @@ static RGBA32 ConvertNSColorToColor(NSColor* color) {
   NSColor* color_in_color_space = ColorInColorSpace(color);
   if (color_in_color_space) {
     static const double kScaleFactor = nextafter(256.0, 0.0);
-    return MakeRGB(
+    return MakeRGBA(
         static_cast<int>(kScaleFactor * [color_in_color_space redComponent]),
         static_cast<int>(kScaleFactor * [color_in_color_space greenComponent]),
-        static_cast<int>(kScaleFactor * [color_in_color_space blueComponent]));
+        static_cast<int>(kScaleFactor * [color_in_color_space blueComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space alphaComponent]));
   }
 
   // This conversion above can fail if the NSColor in question is an
