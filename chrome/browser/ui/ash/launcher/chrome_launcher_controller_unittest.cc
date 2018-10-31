@@ -39,7 +39,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -79,12 +79,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_image_loader_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -94,7 +91,6 @@
 #include "components/exo/shell_surface.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -4496,29 +4492,21 @@ class ChromeLauncherControllerDemoModeTest
     // To prevent crash on test exit and pending decode request.
     ArcAppIcon::DisableSafeDecodingForTesting();
 
-    // Fake online Demo Mode.
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
-        std::make_unique<chromeos::FakeImageLoaderClient>());
-    chromeos::DemoSession::SetDemoConfigForTesting(
-        chromeos::DemoSession::DemoModeConfig::kOnline);
-    ASSERT_TRUE(chromeos::DemoSession::StartIfInDemoMode());
-    chromeos::DemoSession::Get()->SetOfflineResourcesLoadedForTesting(
-        base::FilePath());
-
     ChromeLauncherControllerTest::SetUp();
+
+    // Fake Demo Mode.
+    demo_mode_test_helper_ = std::make_unique<chromeos::DemoModeTestHelper>();
+    demo_mode_test_helper_->InitializeSession();
   }
 
   void TearDown() override {
-    ChromeLauncherControllerTest::TearDown();
+    demo_mode_test_helper_.reset();
 
-    chromeos::DemoSession::ShutDownIfInitialized();
-    chromeos::DemoSession::ResetDemoConfigForTesting();
-    chromeos::DBusThreadManager::Shutdown();
+    ChromeLauncherControllerTest::TearDown();
   }
 
  private:
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<chromeos::DemoModeTestHelper> demo_mode_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerDemoModeTest);
 };

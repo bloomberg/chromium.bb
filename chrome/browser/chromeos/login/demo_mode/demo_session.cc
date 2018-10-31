@@ -336,23 +336,16 @@ void DemoSession::EnsureOfflineResourcesLoaded(
 
   component_updater::CrOSComponentManager* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
-  if (cros_component_manager) {
-    g_browser_process->platform_part()->cros_component_manager()->Load(
-        kDemoModeResourcesComponentName,
-        component_updater::CrOSComponentManager::MountPolicy::kMount,
-        component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
-        base::BindOnce(&DemoSession::InstalledComponentLoaded,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Cros component manager may be unset in tests - if that is the case,
-    // report component install failure, so DemoSession attempts loading the
-    // component directly from the pre-installed component path.
-    // TODO(michaelpg): Rework tests to require the online component to load in
-    // online-enrolled demo mode.
-    InstalledComponentLoaded(
-        component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
-        base::FilePath());
-  }
+  // In unit tests, DemoModeTestHelper should set up a fake
+  // CrOSComponentManager.
+  DCHECK(cros_component_manager);
+
+  g_browser_process->platform_part()->cros_component_manager()->Load(
+      kDemoModeResourcesComponentName,
+      component_updater::CrOSComponentManager::MountPolicy::kMount,
+      component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
+      base::BindOnce(&DemoSession::InstalledComponentLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DemoSession::SetOfflineResourcesLoadedForTesting(
@@ -411,8 +404,11 @@ DemoSession::DemoSession()
       session_manager_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
-  session_manager_observer_.Add(session_manager::SessionManager::Get());
-  OnSessionStateChanged();
+  // SessionManager may be unset in unit tests.
+  if (session_manager::SessionManager::Get()) {
+    session_manager_observer_.Add(session_manager::SessionManager::Get());
+    OnSessionStateChanged();
+  }
 }
 
 DemoSession::~DemoSession() = default;

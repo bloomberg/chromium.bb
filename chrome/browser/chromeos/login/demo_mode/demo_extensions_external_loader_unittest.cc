@@ -22,18 +22,13 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -143,71 +138,29 @@ class TestExternalProviderVisitor
 class DemoExtensionsExternalLoaderTest : public testing::Test {
  public:
   DemoExtensionsExternalLoaderTest()
-      : browser_process_platform_part_test_api_(
-            TestingBrowserProcess::GetGlobal()->platform_part()),
-        test_shared_loader_factory_(
+      : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
 
   ~DemoExtensionsExternalLoaderTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
-
-    ASSERT_TRUE(offline_demo_resources_.CreateUniqueTempDir());
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
-
+    demo_mode_test_helper_ = std::make_unique<DemoModeTestHelper>();
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
         test_shared_loader_factory_);
+    profile_ = std::make_unique<TestingProfile>();
   }
 
   void TearDown() override {
     profile_.reset();
-    DBusThreadManager::Shutdown();
-    DemoSession::ShutDownIfInitialized();
-    DemoSession::ResetDemoConfigForTesting();
-    browser_process_platform_part_test_api_.ShutdownCrosComponentManager();
+    demo_mode_test_helper_.reset();
   }
 
  protected:
-  void InitializeSession(bool mount_demo_resources,
-                         bool wait_for_offline_resources_load) {
-    InitializeCrosComponentManager(mount_demo_resources);
-
-    ASSERT_TRUE(DemoSession::StartIfInDemoMode());
-
-    if (wait_for_offline_resources_load)
-      WaitForOfflineResourcesLoad();
-
-    profile_ = std::make_unique<TestingProfile>();
-  }
-
-  void InitializeCrosComponentManager(bool enable_demo_resources) {
-    auto cros_component_manager =
-        std::make_unique<component_updater::FakeCrOSComponentManager>();
-    cros_component_manager->set_supported_components(
-        {DemoSession::kDemoModeResourcesComponentName});
-    if (enable_demo_resources) {
-      cros_component_manager->ResetComponentState(
-          DemoSession::kDemoModeResourcesComponentName,
-          component_updater::FakeCrOSComponentManager::ComponentInfo(
-              component_updater::CrOSComponentManager::Error::NONE,
-              base::FilePath("/dev/null"), offline_demo_resources_.GetPath()));
-    }
-
-    browser_process_platform_part_test_api_.InitializeCrosComponentManager(
-        std::move(cros_component_manager));
-  }
-
-  void WaitForOfflineResourcesLoad() {
-    base::RunLoop run_loop;
-    DemoSession::Get()->EnsureOfflineResourcesLoaded(run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
   std::string GetTestResourcePath(const std::string& rel_path) {
-    return offline_demo_resources_.GetPath().Append(rel_path).value();
+    return demo_mode_test_helper_->GetDemoResourcesPath()
+        .Append(rel_path)
+        .value();
   }
 
   bool SetExtensionsConfig(const base::Value& config) {
@@ -216,7 +169,8 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
       return false;
 
     base::FilePath config_path =
-        offline_demo_resources_.GetPath().Append("demo_extensions.json");
+        demo_mode_test_helper_->GetDemoResourcesPath().Append(
+            "demo_extensions.json");
     int written =
         base::WriteFile(config_path, config_str.data(), config_str.size());
     return written == static_cast<int>(config_str.size());
@@ -252,21 +206,16 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
             extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   }
 
- protected:
   TestExternalProviderVisitor external_provider_visitor_;
 
   std::unique_ptr<TestingProfile> profile_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
 
+  std::unique_ptr<DemoModeTestHelper> demo_mode_test_helper_;
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  BrowserProcessPlatformPartTestApi browser_process_platform_part_test_api_;
-
-  base::ScopedTempDir offline_demo_resources_;
-
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;
@@ -277,8 +226,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
 };
 
 TEST_F(DemoExtensionsExternalLoaderTest, NoDemoExtensionsConfig) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   std::unique_ptr<extensions::ExternalProviderImpl> external_provider =
       CreateExternalProvider(&external_provider_visitor_);
@@ -291,8 +239,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, NoDemoExtensionsConfig) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, InvalidDemoExtensionsConfig) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   ASSERT_TRUE(SetExtensionsConfig(base::Value("invalid_config")));
 
@@ -307,8 +254,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, InvalidDemoExtensionsConfig) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, SingleDemoExtension) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -329,8 +275,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, SingleDemoExtension) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, MultipleDemoExtension) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -361,8 +306,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, MultipleDemoExtension) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, CrxPathWithAbsolutePath) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -388,8 +332,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, CrxPathWithAbsolutePath) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, ExtensionWithPathMissing) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -414,8 +357,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, ExtensionWithPathMissing) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, ExtensionWithVersionMissing) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -439,8 +381,8 @@ TEST_F(DemoExtensionsExternalLoaderTest, ExtensionWithVersionMissing) {
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, DemoResourcesNotLoaded) {
-  InitializeSession(false /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSessionWithPendingComponent();
+  demo_mode_test_helper_->FailLoadingComponent();
 
   std::unique_ptr<extensions::ExternalProviderImpl> external_provider =
       CreateExternalProvider(&external_provider_visitor_);
@@ -453,8 +395,7 @@ TEST_F(DemoExtensionsExternalLoaderTest, DemoResourcesNotLoaded) {
 
 TEST_F(DemoExtensionsExternalLoaderTest,
        StartLoaderBeforeOfflineResourcesLoaded) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    false /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSessionWithPendingComponent();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -465,7 +406,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
       CreateExternalProvider(&external_provider_visitor_);
   external_provider->VisitRegisteredExtension();
 
-  WaitForOfflineResourcesLoad();
+  demo_mode_test_helper_->FinishLoadingComponent();
 
   external_provider_visitor_.WaitForReady();
   EXPECT_TRUE(external_provider->IsReady());
@@ -478,8 +419,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
 
 TEST_F(DemoExtensionsExternalLoaderTest,
        StartLoaderBeforeOfflineResourcesLoadFails) {
-  InitializeSession(false /*mount_demo_resources*/,
-                    false /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSessionWithPendingComponent();
 
   base::Value config = base::Value(base::Value::Type::DICTIONARY);
   AddExtensionToConfig(std::string(32, 'a'), base::make_optional("1.0.0"),
@@ -490,7 +430,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
       CreateExternalProvider(&external_provider_visitor_);
   external_provider->VisitRegisteredExtension();
 
-  WaitForOfflineResourcesLoad();
+  demo_mode_test_helper_->FailLoadingComponent();
 
   external_provider_visitor_.WaitForReady();
   EXPECT_TRUE(external_provider->IsReady());
@@ -498,8 +438,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
 }
 
 TEST_F(DemoExtensionsExternalLoaderTest, LoadApp) {
-  InitializeSession(true /*mount_demo_resources*/,
-                    true /*wait_for_offline_resources_load*/);
+  demo_mode_test_helper_->InitializeSession();
 
   // Create a temporary cache directory.
   base::ScopedTempDir temp_dir;
@@ -573,18 +512,15 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
     user_manager_ = fake_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
   }
 
   ~ShouldCreateDemoExtensionsExternalLoaderTest() override = default;
 
-  void SetUp() override { DBusThreadManager::Initialize(); }
-
-  void TearDown() override {
-    DBusThreadManager::Shutdown();
-    DemoSession::ShutDownIfInitialized();
-    DemoSession::ResetDemoConfigForTesting();
+  void SetUp() override {
+    demo_mode_test_helper_ = std::make_unique<DemoModeTestHelper>();
   }
+
+  void TearDown() override { demo_mode_test_helper_.reset(); }
 
  protected:
   std::unique_ptr<TestingProfile> AddTestUser(const AccountId& account_id) {
@@ -597,13 +533,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
 
   void StartDemoSession(DemoSession::DemoModeConfig demo_config) {
     ASSERT_NE(DemoSession::DemoModeConfig::kNone, demo_config);
-
-    DemoSession::SetDemoConfigForTesting(demo_config);
-    DemoSession::StartIfInDemoMode();
-
-    base::RunLoop run_loop;
-    DemoSession::Get()->EnsureOfflineResourcesLoaded(run_loop.QuitClosure());
-    run_loop.Run();
+    demo_mode_test_helper_->InitializeSession();
   }
 
   // Owned by scoped_user_manager_.
@@ -612,7 +542,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<DemoModeTestHelper> demo_mode_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShouldCreateDemoExtensionsExternalLoaderTest);
 };
@@ -659,8 +589,6 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, MultiProfile) {
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, NotDemoMode) {
-  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
-
   // This should be no-op, given that the default demo session enrollment state
   // is not-enrolled.
   DemoSession::StartIfInDemoMode();
@@ -674,8 +602,6 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, NotDemoMode) {
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, DemoSessionNotStarted) {
-  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
-
   std::unique_ptr<TestingProfile> profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));
 
