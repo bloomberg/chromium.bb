@@ -47,17 +47,17 @@ void InsertOpportunity(const NGLayoutOpportunity& opportunity,
 }
 
 // Returns true if there is at least one edge between block_start and block_end.
-bool HasSolidEdges(const Vector<scoped_refptr<const NGExclusion>, 1>& edges,
-                   LayoutUnit block_start,
-                   LayoutUnit block_end) {
+bool HasSolidEdges(
+    const Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>& edges,
+    LayoutUnit block_start,
+    LayoutUnit block_end) {
   // If there aren't any adjacent exclusions, we must be the initial shelf.
   // This always has "solid" edges on either side.
   if (edges.IsEmpty())
     return true;
 
   for (const auto& edge : edges) {
-    if (edge->rect.BlockEndOffset() > block_start &&
-        edge->rect.BlockStartOffset() < block_end)
+    if (edge.block_end > block_start && edge.block_start < block_end)
       return true;
   }
 
@@ -68,12 +68,13 @@ bool HasSolidEdges(const Vector<scoped_refptr<const NGExclusion>, 1>& edges,
 // (block_offset, LayoutUnit::Max())
 // to the given out_edges vector.
 // edges will be invalid after this call.
-void CollectSolidEdges(Vector<scoped_refptr<const NGExclusion>, 1>* edges,
-                       LayoutUnit block_offset,
-                       Vector<scoped_refptr<const NGExclusion>, 1>* out_edges) {
+void CollectSolidEdges(
+    Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>* edges,
+    LayoutUnit block_offset,
+    Vector<NGExclusionSpaceInternal::NGShelfEdge, 1>* out_edges) {
   *out_edges = std::move(*edges);
   for (auto* it = out_edges->begin(); it != out_edges->end();) {
-    if ((*it)->rect.BlockEndOffset() <= block_offset) {
+    if ((*it).block_end <= block_offset) {
       out_edges->erase(it);
     } else {
       ++it;
@@ -403,7 +404,9 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
             if (exclusion.rect.LineEndOffset() > shelf.line_left)
               shelf.line_left_edges.clear();
             shelf.line_left = exclusion.rect.LineEndOffset();
-            shelf.line_left_edges.emplace_back(&exclusion);
+            shelf.line_left_edges.emplace_back(
+                exclusion.rect.BlockStartOffset(),
+                exclusion.rect.BlockEndOffset());
           }
           shelf.shape_exclusions->line_left_shapes.emplace_back(&exclusion);
         } else {
@@ -413,7 +416,9 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
             if (exclusion.rect.LineStartOffset() < shelf.line_right)
               shelf.line_right_edges.clear();
             shelf.line_right = exclusion.rect.LineStartOffset();
-            shelf.line_right_edges.emplace_back(&exclusion);
+            shelf.line_right_edges.emplace_back(
+                exclusion.rect.BlockStartOffset(),
+                exclusion.rect.BlockEndOffset());
           }
           shelf.shape_exclusions->line_right_shapes.emplace_back(&exclusion);
         }
