@@ -685,7 +685,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return ax::mojom::TextPosition::kNone;
   }
   virtual int TextLength() const { return 0; }
-  virtual TextStyle GetTextStyle() const { return kTextStyleNone; }
+
+  // Bitmask from ax::mojom::TextStyle.
+  virtual int32_t GetTextStyle() const { return 0; }
+
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
   }

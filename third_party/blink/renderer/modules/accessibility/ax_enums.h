@@ -34,14 +34,6 @@ enum AccessibilitySelectedState {
   kSelectedStateTrue,
 };
 
-enum TextStyle {
-  kTextStyleNone = 0,
-  kTextStyleBold = 1 << 0,
-  kTextStyleItalic = 1 << 1,
-  kTextStyleUnderline = 1 << 2,
-  kTextStyleLineThrough = 1 << 3
-};
-
 enum class AXBoolAttribute {
   kAriaBusy,
 };

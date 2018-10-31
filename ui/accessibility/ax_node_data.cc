@@ -522,6 +522,11 @@ bool AXNodeData::HasAction(ax::mojom::Action action) const {
   return IsFlagSet(actions, static_cast<uint32_t>(action));
 }
 
+bool AXNodeData::HasTextStyle(ax::mojom::TextStyle text_style_enum) const {
+  int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  return IsFlagSet(style, static_cast<uint32_t>(text_style_enum));
+}
+
 ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
@@ -585,6 +590,17 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
 
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
   return static_cast<ax::mojom::Action>(actions);
+}
+
+void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
+  DCHECK_GE(static_cast<int>(text_style_enum),
+            static_cast<int>(ax::mojom::TextStyle::kMinValue));
+  DCHECK_LE(static_cast<int>(text_style_enum),
+            static_cast<int>(ax::mojom::TextStyle::kMaxValue));
+  int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  style = ModifyFlag(style, static_cast<uint32_t>(text_style_enum), true);
+  RemoveIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, style);
 }
 
 ax::mojom::CheckedState AXNodeData::GetCheckedState() const {
@@ -923,21 +939,14 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case ax::mojom::IntAttribute::kTextStyle: {
-        int32_t text_style = int_attribute.second;
-        if (text_style == static_cast<int32_t>(ax::mojom::TextStyle::kNone))
-          break;
-        std::string text_style_value(" text_style=");
-        if (text_style &
-            static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold))
+        std::string text_style_value;
+        if (HasTextStyle(ax::mojom::TextStyle::kBold))
           text_style_value += "bold,";
-        if (text_style &
-            static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic))
+        if (HasTextStyle(ax::mojom::TextStyle::kItalic))
           text_style_value += "italic,";
-        if (text_style &
-            static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline))
+        if (HasTextStyle(ax::mojom::TextStyle::kUnderline))
           text_style_value += "underline,";
-        if (text_style &
-            static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleLineThrough))
+        if (HasTextStyle(ax::mojom::TextStyle::kLineThrough))
           text_style_value += "line-through,";
         result += text_style_value.substr(0, text_style_value.size() - 1);
         break;

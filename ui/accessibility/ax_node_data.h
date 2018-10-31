@@ -130,11 +130,13 @@ struct AX_EXPORT AXNodeData {
   // Returns true if the given enum bit is 1.
   bool HasState(ax::mojom::State state) const;
   bool HasAction(ax::mojom::Action action) const;
+  bool HasTextStyle(ax::mojom::TextStyle text_style) const;
 
   // Set or remove bits in the given enum's corresponding bitfield.
   ax::mojom::State AddState(ax::mojom::State state);
   ax::mojom::State RemoveState(ax::mojom::State state);
   ax::mojom::Action AddAction(ax::mojom::Action action);
+  void AddTextStyle(ax::mojom::TextStyle text_style);
 
   // Helper functions to get or set some common int attributes with some
   // specific enum types. To remove an attribute, set it to None.

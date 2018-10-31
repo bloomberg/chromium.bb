@@ -609,9 +609,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     }
 
     if (src.TextStyle()) {
-      dst->AddIntAttribute(
-          ax::mojom::IntAttribute::kTextStyle,
-          static_cast<int32_t>(AXTextStyleFromBlink(src.TextStyle())));
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle,
+                           src.TextStyle());
     }
 
     if (dst->role == ax::mojom::Role::kInlineTextBox) {
