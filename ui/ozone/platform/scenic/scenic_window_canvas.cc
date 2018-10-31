@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
@@ -25,23 +27,25 @@ void ScenicWindowCanvas::Frame::Initialize(gfx::Size size,
       size.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
   size_t buffer_size = bytes_per_row * size.height();
 
-  memory_region = base::UnsafeSharedMemoryRegion::Create(buffer_size);
+  base::WritableSharedMemoryRegion memory_region =
+      base::WritableSharedMemoryRegion::Create(buffer_size);
   memory_mapping = memory_region.Map();
 
-  if (!memory_region.IsValid()) {
+  if (!memory_mapping.IsValid()) {
     LOG(WARNING) << "Failed to map memory for ScenicWindowCanvas.";
-    memory_region = base::UnsafeSharedMemoryRegion();
     memory_mapping = base::WritableSharedMemoryMapping();
     surface.reset();
     return;
   }
 
+  auto read_only_memory = base::WritableSharedMemoryRegion::ConvertToReadOnly(
+      std::move(memory_region));
+  auto memory_handle =
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(read_only_memory));
   scenic_memory = std::make_unique<scenic::Memory>(
-      scenic,
-      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-          memory_region.Duplicate())
-          .PassPlatformHandle(),
-      buffer_size, fuchsia::images::MemoryType::HOST_MEMORY);
+      scenic, memory_handle.PassPlatformHandle(), buffer_size,
+      fuchsia::images::MemoryType::HOST_MEMORY);
   surface = SkSurface::MakeRasterDirect(
       SkImageInfo::MakeN32Premul(size.width(), size.height()),
       memory_mapping.memory(), bytes_per_row);
