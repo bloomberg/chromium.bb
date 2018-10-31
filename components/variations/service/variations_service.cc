@@ -305,10 +305,16 @@ void VariationsService::PerformPreMainMessageLoopStartup() {
 
   InitResourceRequestedAllowedNotifier();
 
+// Android instead calls OnAppEnterForeground() which then calls
+// StartRepeatedVariationsSeedFetch(). This is too early to do it on Android
+// because at this point the |restrict_mode_| hasn't been set yet. See also
+// the CHECK in SetRestrictMode().
+#if !defined(OS_ANDROID)
   if (!IsFetchingEnabled())
     return;
 
   StartRepeatedVariationsSeedFetch();
+#endif  // !defined(OS_ANDROID)
 }
 
 std::string VariationsService::LoadPermanentConsistencyCountry(
@@ -356,8 +362,10 @@ void VariationsService::OnAppEnterForeground() {
 void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // This should be called before the server URL has been computed.
-  DCHECK(variations_server_url_.is_empty());
+  // This should be called before the server URL has been computed. Note: This
+  // uses a CHECK because this is relevant for the behavior in release official
+  // builds that talk to the variations server - which don't enable DCHECKs.
+  CHECK(variations_server_url_.is_empty());
   restrict_mode_ = restrict_mode;
 }
 
