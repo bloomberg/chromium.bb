@@ -40,9 +40,7 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
   [self.view setUserInteractionEnabled:enabled];
 }
 
-#pragma mark - InfobarContainerStateDelegate
-
-- (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
+- (void)updateLayoutAnimated:(BOOL)animated {
   // Update the infobarContainer height.
   CGRect containerFrame = self.view.frame;
   CGFloat height = [self topmostVisibleInfoBarHeight];

@@ -24,6 +24,7 @@ class WebState;
 // Coordinator that owns and manages an InfoBarContainer.
 @interface InfobarCoordinator : ChromeCoordinator
 
+// TODO(crbug.com/892376): Stop passing TabModel and use WebStateList instead.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
