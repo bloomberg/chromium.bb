@@ -34,6 +34,7 @@
 namespace {
 
 const double kCurrentTimeBufferedDelta = 1.0;
+const int kThumbRadius = 6;
 
 // Only respond to main button of primary pointer(s).
 bool IsValidPointerEvent(const blink::Event& event) {
@@ -198,6 +199,18 @@ void MediaControlTimelineElement::RenderBarSegments() {
   }
 
   double current_position = current_time / duration;
+
+  // Transform the current_position to always align with the center of thumb
+  // At time 0, the thumb's center is 6px away from beginning of progress bar
+  // At the end of video, thumb's center is -6px away from end of progress bar
+  // Convert 6px into ratio respect to progress bar width since
+  // current_position is range from 0 to 1
+  double width = TrackWidth() / ZoomFactor();
+  if (width != 0) {
+    double offset = kThumbRadius / width;
+    current_position += offset - 2 * offset * current_position;
+  }
+
   MediaControlSliderElement::Position before_segment(0, 0);
   MediaControlSliderElement::Position after_segment(0, 0);
 
