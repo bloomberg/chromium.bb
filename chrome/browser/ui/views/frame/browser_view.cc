@@ -1083,8 +1083,6 @@ void BrowserView::FullscreenStateChanged() {
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
-  // There should only be one toolbar button provider.
-  DCHECK(!toolbar_button_provider_);
   toolbar_button_provider_ = provider;
 }
 
