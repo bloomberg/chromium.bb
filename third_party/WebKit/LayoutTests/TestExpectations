@@ -5567,3 +5567,7 @@ crbug.com/899222 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/g
 crbug.com/899222 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 crbug.com/899222 [ Linux Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 crbug.com/900356 [ Win ] virtual/threaded/animations/animationworklet/worklet-animation-style-update.html [ Failure Pass ]
+
+# Sheriff 2018-10-31
+crbug.com/726520 [ Win10 ] virtual/layout_ng_experimental/printing/iframe-print.html [ Failure ]
+
