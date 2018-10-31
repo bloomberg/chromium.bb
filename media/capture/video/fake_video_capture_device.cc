@@ -540,8 +540,6 @@ void FakePhotoDevice::SetPhotoOptions(
     device_state_write_access->exposure_time = std::max(
         kMinExposureTime, std::min(settings->exposure_time, kMaxExposureTime));
   }
-  if (settings->has_exposure_mode)
-    device_state_write_access->exposure_mode = mojom::MeteringMode::MANUAL;
 
   std::move(callback).Run(true);
 }
