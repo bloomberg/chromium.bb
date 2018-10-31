@@ -63,8 +63,6 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
     return queried_subresource_paths_;
   }
 
-  bool GetIsAssociatedWithAdSubframe() const override { return false; }
-
  private:
   // Using STL types for compatibility with gtest/gmock.
   std::vector<std::string> queried_subresource_paths_;

@@ -36,8 +36,6 @@ class WebDocumentSubresourceFilter {
   // console.
   virtual bool ShouldLogToConsole() = 0;
 
-  virtual bool GetIsAssociatedWithAdSubframe() const = 0;
-
   // Report that the resource request corresponding to |request_id|  was tagged
   // as an ad.
   virtual void ReportAdRequestId(int request_id) {}

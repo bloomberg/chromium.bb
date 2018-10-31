@@ -66,10 +66,6 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   bool IsAdSubframe() override { return is_ad_subframe_; }
   void SetIsAdSubframe() override { is_ad_subframe_ = true; }
 
-  bool IsFilterAssociatedWithAdSubframe() {
-    return last_injected_filter_->GetIsAssociatedWithAdSubframe();
-  }
-
   blink::WebDocumentSubresourceFilter* filter() {
     return last_injected_filter_.get();
   }
@@ -508,7 +504,6 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
   histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
 
-  EXPECT_FALSE(agent()->IsFilterAssociatedWithAdSubframe());
   EXPECT_FALSE(agent()->IsAdSubframe());
 }
 
@@ -576,7 +571,6 @@ TEST_F(SubresourceFilterAgentTest,
   // For testing the flag passed to the dedicated worker filter, the unit test
   // is not able to test the implementation of WillCreateWorkerFetchContext as
   // that will require setup of a WebWorkerFetchContextImpl.
-  EXPECT_TRUE(agent()->IsFilterAssociatedWithAdSubframe());
   EXPECT_TRUE(agent()->IsAdSubframe());
 }
 
@@ -589,7 +583,6 @@ TEST_F(SubresourceFilterAgentTest, DryRun_FrameAlreadyTaggedAsAd) {
                                  false /* is_associated_with_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
-  EXPECT_TRUE(agent()->IsFilterAssociatedWithAdSubframe());
   EXPECT_TRUE(agent()->IsAdSubframe());
 }
 

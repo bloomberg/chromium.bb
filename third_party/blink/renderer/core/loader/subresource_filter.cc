@@ -50,7 +50,7 @@ SubresourceFilter::SubresourceFilter(
   // associated with an ad subframe.
   if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
     auto* loader = document->Loader();
-    if (subresource_filter_->GetIsAssociatedWithAdSubframe()) {
+    if (document->GetFrame()->IsAdSubframe()) {
       ReportAdRequestId(loader->GetResponse().RequestId());
     }
   }
@@ -96,9 +96,6 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
 bool SubresourceFilter::IsAdResource(
     const KURL& resource_url,
     mojom::RequestContextType request_context) {
-  if (subresource_filter_->GetIsAssociatedWithAdSubframe())
-    return true;
-
   WebDocumentSubresourceFilter::LoadPolicy load_policy;
   if (last_resource_check_result_.first ==
       std::make_pair(resource_url, request_context)) {
