@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -23,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import javax.annotation.Nullable;
+
 /**
  * Implements a fake Contextual Search server, for testing purposes.
  * TODO(donnd): add more functionality to this class once the overall approach has been validated.
@@ -32,8 +33,6 @@ import java.util.concurrent.TimeoutException;
 @VisibleForTesting
 class ContextualSearchFakeServer
         implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
-    static final long ARBITRARY_DOC_ID = -12345678901234l;
-    static final long ARBITRARY_SNIPPET_HASH = 12345678901234567l;
 
     private final ContextualSearchPolicy mPolicy;
 
@@ -183,8 +182,6 @@ class ContextualSearchFakeServer
         private final String mCaption;
         private final String mQuickActionUri;
         private final int mQuickActionCategory;
-        private final long mDocId;
-        private final long mSnippetHash;
 
         boolean mDidStartResolution;
         boolean mDidFinishResolution;
@@ -205,14 +202,12 @@ class ContextualSearchFakeServer
          * @param caption               The caption to display.
          * @param quickActionUri        The URI for the intent associated with the quick action.
          * @param quickActionCategory   The category for the quick action.
-         * @param docId                 A document ID from the Search crawl.
-         * @param snippetHash           A long hash of some characters tapped.
          */
         FakeTapSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
-                long docId, long snippetHash) {
+                String thumbnailUrl, String caption, String quickActionUri,
+                int quickActionCategory) {
             super(nodeId);
 
             mIsNetworkUnavailable = isNetworkUnavailable;
@@ -229,8 +224,6 @@ class ContextualSearchFakeServer
             mCaption = caption;
             mQuickActionUri = quickActionUri;
             mQuickActionCategory = quickActionCategory;
-            mDocId = docId;
-            mSnippetHash = snippetHash;
         }
 
         @Override
@@ -303,7 +296,7 @@ class ContextualSearchFakeServer
                         handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
                                 mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
                                 mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                                mQuickActionUri, mQuickActionCategory, mDocId, mSnippetHash);
+                                mQuickActionUri, mQuickActionCategory);
 
                         mActiveFakeTapSearch = null;
                         mDidFinishResolution = true;
@@ -337,17 +330,15 @@ class ContextualSearchFakeServer
          * @param caption
          * @param quickActionUri
          * @param quickActionCategory
-         * @param docId
-         * @param snippetHash
          */
         FakeSlowResolveSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
-                long docId, long snippetHash) {
+                String thumbnailUrl, String caption, String quickActionUri,
+                int quickActionCategory) {
             super(nodeId, isNetworkUnavailable, responseCode, searchTerm, displayText,
                     alternateTerm, mid, doPreventPreload, startAdjust, endAdjust, contextLanguage,
-                    thumbnailUrl, caption, quickActionUri, quickActionCategory, docId, snippetHash);
+                    thumbnailUrl, caption, quickActionUri, quickActionCategory);
         }
 
         @Override
@@ -573,11 +564,11 @@ class ContextualSearchFakeServer
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory, long docId, long snippetHash) {
+            int quickActionCategory) {
         mBaseManager.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory, docId, snippetHash);
+                quickActionCategory);
     }
 
     @Override
@@ -623,26 +614,25 @@ class ContextualSearchFakeServer
         registerFakeLongPressSearch(new FakeLongPressSearch("resolution", "Resolution"));
 
         registerFakeTapSearch(new FakeTapSearch("search", false, 200, "Search", "Search",
-                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0, 0));
+                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("term", false, 200, "Term", "Term",
-                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0, 0));
+                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("resolution", false, 200, "Resolution",
                 "Resolution", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE, 0, 0));
-        registerFakeTapSearch(
-                new FakeTapSearch("german", false, 200, "Deutsche", "Deutsche", "alternate-term",
-                        "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE, 0, 0));
+                QuickActionCategory.NONE));
+        registerFakeTapSearch(new FakeTapSearch("german", false, 200, "Deutsche", "Deutsche",
+                "alternate-term", "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("intelligence", false, 200, "Intelligence",
                 "Intelligence", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE, ARBITRARY_DOC_ID, ARBITRARY_SNIPPET_HASH));
+                QuickActionCategory.NONE));
 
         // Register a resolving search of "States" that expands to "United States".
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("states", false, 200, "States",
                 "States", "alternate-term", "", false, -7, 0, "", "", "", "",
-                QuickActionCategory.NONE, 0, 0));
+                QuickActionCategory.NONE));
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("search", false, 200, "Search",
                 "Search", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE, 0, 0));
+                QuickActionCategory.NONE));
     }
 
     /**
