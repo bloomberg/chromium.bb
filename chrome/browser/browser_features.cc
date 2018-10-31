@@ -10,7 +10,7 @@ namespace features {
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
 // mode.
 const base::Feature kDoubleTapToZoomInTabletMode{
-    "DoubleTapToZoomInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DoubleTapToZoomInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features
