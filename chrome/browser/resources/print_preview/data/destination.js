@@ -181,6 +181,8 @@ print_preview.DuplexModeRestriction = {
  * @typedef {{
  *   allowedColorModes: ?print_preview.ColorMode,
  *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
+ *   defaultColorMode: ?print_preview.ColorMode,
+ *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
  * }}
  */
 print_preview.Policies;
@@ -796,23 +798,21 @@ cr.define('print_preview', function() {
 
     /**
      * @return {?print_preview.ColorMode} Color mode set by policy.
-     * @private
      */
-    colorPolicy_() {
+    get colorPolicy() {
       return this.policies && this.policies.allowedColorModes ?
           this.policies.allowedColorModes :
           null;
     }
 
     /**
-     * @return {print_preview.DuplexModeRestriction} Duplex modes allowed by
+     * @return {?print_preview.DuplexModeRestriction} Duplex modes allowed by
      *     policy.
-     * @private
      */
-    duplexPolicy_() {
+    get duplexPolicy() {
       return this.policies && this.policies.allowedDuplexModes ?
           this.policies.allowedDuplexModes :
-          print_preview.DuplexModeRestriction.NONE;
+          null;
     }
 
     /**
@@ -834,33 +834,20 @@ cr.define('print_preview', function() {
       return hasColor && hasMonochrome;
     }
 
-    /** @return {boolean} Whether the printer color mode is set by policy. */
-    get isColorManaged() {
-      return !!this.colorPolicy_();
+    /**
+     * @return {?print_preview.ColorMode} Value of default color setting given
+     *     by policy.
+     */
+    get defaultColorPolicy() {
+      return this.policies && this.policies.defaultColorMode;
     }
 
-    /** @return {?boolean} Value of color setting given by policy. */
-    get colorPolicyValue() {
-      return this.colorPolicy_() ?
-          this.colorPolicy_() == print_preview.ColorMode.COLOR :
-          null;
-    }
-
-    /** @return {boolean} Whether the printer duplex mode is set by policy. */
-    get isDuplexManaged() {
-      return !!this.duplexPolicy_();
-    }
-
-    /** @return {?boolean} Value for duplex setting given by policy. */
-    get duplexPolicyValue() {
-      switch (this.duplexPolicy_()) {
-        case print_preview.DuplexModeRestriction.NONE:
-          return null;
-        case print_preview.DuplexModeRestriction.SIMPLEX:
-          return false;
-        default:
-          return true;
-      }
+    /**
+     * @return {?print_preview.DuplexModeRestriction} Value of default duplex
+     *     setting given by policy.
+     */
+    get defaultDuplexPolicy() {
+      return this.policies && this.policies.defaultDuplexMode;
     }
 
     /**

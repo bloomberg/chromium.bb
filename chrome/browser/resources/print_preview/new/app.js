@@ -411,6 +411,9 @@ Polymer({
     if (!this.$.model.initialized())
       this.$.model.applyStickySettings();
 
+    if (this.destination_)
+      this.$.model.applyDestinationSpecificPolicies();
+
     if (this.state == print_preview_new.State.NOT_READY ||
         this.state == print_preview_new.State.INVALID_PRINTER) {
       this.$.state.transitTo(print_preview_new.State.READY);
