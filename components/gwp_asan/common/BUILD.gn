@@ -4,12 +4,16 @@
 
 assert(is_win, "GWP-ASan currently only supports Windows.")
 
-static_library("common") {
+component("common") {
+  output_name = "gwp_asan_common"
   sources = [
+    "export.h",
     "guarded_page_allocator.cc",
     "guarded_page_allocator.h",
     "guarded_page_allocator_win.cc",
   ]
+
+  defines = [ "GWP_ASAN_IMPLEMENTATION" ]
 
   deps = [
     "//base",
