@@ -79,6 +79,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ime/input_method.h"
@@ -122,6 +123,7 @@ base::Feature kOmniboxShowFullUrlOnKeyboardShortcut{
 }  // namespace
 
 using content::WebContents;
+using metrics::OmniboxEventProto;
 using views::View;
 
 // LocationBarView -----------------------------------------------------------
@@ -809,8 +811,8 @@ void LocationBarView::ButtonPressed(views::Button* sender,
   DCHECK(event.IsMouseEvent() || event.IsGestureEvent());
   if (keyword_hint_view_ == sender) {
     omnibox_view_->model()->AcceptKeyword(
-        event.IsMouseEvent() ? KeywordModeEntryMethod::CLICK_ON_VIEW
-                             : KeywordModeEntryMethod::TAP_ON_VIEW);
+        event.IsMouseEvent() ? OmniboxEventProto::CLICK_HINT_VIEW
+                             : OmniboxEventProto::TAP_HINT_VIEW);
   } else {
     DCHECK_EQ(clear_all_button_, sender);
     omnibox_view_->SetUserText(base::string16());

@@ -38,6 +38,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -73,6 +74,8 @@
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -293,7 +296,7 @@ void OmniboxViewViews::SetUserText(const base::string16& text,
 void OmniboxViewViews::EnterKeywordModeForDefaultSearchProvider() {
   // Transition the user into keyword mode using their default search provider.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
 }
 
 void OmniboxViewViews::GetSelectionBounds(
@@ -485,7 +488,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     return false;
 
   if (model()->is_keyword_hint() && !event.IsShiftDown())
-    return model()->AcceptKeyword(KeywordModeEntryMethod::TAB);
+    return model()->AcceptKeyword(OmniboxEventProto::TAB);
 
   if (!model()->popup_model()->IsOpen())
     return false;
