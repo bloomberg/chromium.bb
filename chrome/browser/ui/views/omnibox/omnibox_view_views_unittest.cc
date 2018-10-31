@@ -30,6 +30,7 @@
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event_utils.h"
@@ -45,6 +46,7 @@
 #endif
 
 using gfx::Range;
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -512,7 +514,7 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
 TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
   omnibox_view()->SetUserText(base::UTF8ToUTF16("user text"));
   omnibox_view()->model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
 
   ASSERT_EQ(base::UTF8ToUTF16("user text"), omnibox_view()->GetText());
   ASSERT_TRUE(omnibox_view()->IsSelectAll());

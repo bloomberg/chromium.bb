@@ -37452,6 +37452,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OmniboxEnteredKeywordMode">
+  <obsolete>
+    Deprecated 10/2018 and replaced with OmniboxEnteredKeywordMode2.
+  </obsolete>
   <int value="0" label="via tab"/>
   <int value="1" label="via space at end"/>
   <int value="2" label="via space in middle"/>
@@ -37459,6 +37462,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="question mark"/>
   <int value="5" label="mouse click on hint view"/>
   <int value="6" label="tap gesture on hint view"/>
+</enum>
+
+<enum name="OmniboxEnteredKeywordMode2">
+  <int value="0" label="invalid"/>
+  <int value="1" label="via tab"/>
+  <int value="2" label="via space at end"/>
+  <int value="3" label="via space in middle"/>
+  <int value="4" label="keyboard shortcut"/>
+  <int value="5" label="question mark"/>
+  <int value="6" label="mouse click on hint view"/>
+  <int value="7" label="tap gesture on hint view"/>
+  <int value="8" label="select suggestion"/>
 </enum>
 
 <enum name="OmniboxFocusReason">

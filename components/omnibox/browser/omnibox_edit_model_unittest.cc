@@ -22,6 +22,9 @@
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
+
+using metrics::OmniboxEventProto;
 
 class OmniboxEditModelTest : public testing::Test {
  public:
@@ -411,14 +414,13 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
   // Entering keyword search mode should preserve the full display text as the
   // user text, and select all.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
   EXPECT_EQ(base::UTF8ToUTF16("user text"), model()->GetUserTextForTesting());
   EXPECT_EQ(base::UTF8ToUTF16("user text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());
 
-  // Deleting the user text and exiting keyword mode should clear everything.
+  // Deleting the user text (exiting keyword) mode should clear everything.
   view()->SetUserText(base::string16());
-  model()->ClearKeyword();
   {
     EXPECT_TRUE(view()->GetText().empty());
     EXPECT_TRUE(model()->GetUserTextForTesting().empty());
@@ -441,7 +443,7 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
   // Entering keyword search mode should preserve temporary text as the user
   // text, and select all.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
   EXPECT_EQ(base::UTF8ToUTF16("match text"), model()->GetUserTextForTesting());
   EXPECT_EQ(base::UTF8ToUTF16("match text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());
