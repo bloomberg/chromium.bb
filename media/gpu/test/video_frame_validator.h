@@ -55,10 +55,9 @@ class VideoFrameValidator {
   // This checks if |video_frame|'s pixel content is as expected.
   // A client of VideoFrameValidator would call this function on each frame in
   // PictureReady().
-  // The client MUST pass video frames in display order.
-  // TODO(crbug.com/856562): Specify frame index and compare the index-th video
-  // frame, so that a client can call this in any order.
-  void EvaluateVideoFrame(scoped_refptr<VideoFrame> video_frame);
+  // |frame_index| is the index of video frame in display order.
+  void EvaluateVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                          size_t frame_index);
 
   // Returns information of frames that don't match golden md5 values.
   // If there is no mismatched frame, returns an empty vector.
@@ -69,13 +68,17 @@ class VideoFrameValidator {
                       std::vector<std::string> md5_of_frames,
                       std::unique_ptr<VideoFrameMapper> video_frame_mapper);
 
-  // This maps |video_frame|, converts it to I420 format and computes the MD5
-  // value of the converted I420 video frame.
+  // This maps |video_frame|, converts it to I420 format.
+  // Returns the resulted I420 frame on success, and otherwise return nullptr.
   // |video_frame| is unchanged in this method.
+  scoped_refptr<VideoFrame> CreateStandardizedFrame(
+      scoped_refptr<VideoFrame> video_frame) const;
+
+  // Returns md5 values of video frame represented by |video_frame|.
   std::string ComputeMD5FromVideoFrame(
       scoped_refptr<VideoFrame> video_frame) const;
 
-  // Create VideoFrame with I420 format from |src_frame|.
+  // Creates VideoFrame with I420 format from |src_frame|.
   scoped_refptr<VideoFrame> CreateI420Frame(
       const VideoFrame* const src_frame) const;
 
@@ -85,9 +88,6 @@ class VideoFrameValidator {
 
   // The results of invalid frame data.
   std::vector<MismatchedFrameInfo> mismatched_frames_;
-
-  // Current frame index to be evaluated.
-  size_t frame_index_ = 0;
 
   // Prefix of saved yuv files.
   const base::FilePath prefix_output_yuv_;

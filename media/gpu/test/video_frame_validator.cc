@@ -48,19 +48,29 @@ VideoFrameValidator::VideoFrameValidator(
 VideoFrameValidator::~VideoFrameValidator() {}
 
 void VideoFrameValidator::EvaluateVideoFrame(
-    scoped_refptr<VideoFrame> video_frame) {
+    scoped_refptr<VideoFrame> video_frame,
+    size_t frame_index) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::string expected_md5;
-  LOG_IF(FATAL, frame_index_ >= md5_of_frames_.size())
+  LOG_IF(FATAL, frame_index >= md5_of_frames_.size())
       << "Frame number is over than the number of read md5 values in file.";
-  expected_md5 = md5_of_frames_[frame_index_];
+  expected_md5 = md5_of_frames_[frame_index];
 
-  std::string computed_md5 = ComputeMD5FromVideoFrame(std::move(video_frame));
+  auto standard_frame = CreateStandardizedFrame(video_frame);
+  if (!standard_frame) {
+    LOG(ERROR) << "Failed to create standardized frame.";
+    return;
+  }
+  std::string computed_md5 = ComputeMD5FromVideoFrame(standard_frame);
   if (computed_md5 != expected_md5) {
     mismatched_frames_.push_back(
-        MismatchedFrameInfo{frame_index_, computed_md5, expected_md5});
+        MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
   }
-  frame_index_++;
+  if (!prefix_output_yuv_.empty()) {
+    // Output yuv.
+    LOG_IF(WARNING, !WriteI420ToFile(frame_index, standard_frame.get()))
+        << "Failed to write yuv into file.";
+  }
 }
 
 std::vector<VideoFrameValidator::MismatchedFrameInfo>
@@ -68,34 +78,27 @@ VideoFrameValidator::GetMismatchedFramesInfo() const {
   return mismatched_frames_;
 }
 
-std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
+scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(
     scoped_refptr<VideoFrame> video_frame) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   if (!mapped_frame) {
     LOG(FATAL) << "Failed to map decoded picture.";
-    return std::string();
+    return nullptr;
   }
 
-  auto i420_frame = CreateI420Frame(mapped_frame.get());
-  if (!i420_frame) {
-    LOG(ERROR) << "Failed to convert to I420";
-    return std::string();
-  }
+  return CreateI420Frame(mapped_frame.get());
+}
 
+std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
+    scoped_refptr<VideoFrame> video_frame) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, i420_frame);
+  VideoFrame::HashFrameForTesting(&context, video_frame);
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
-  auto md5_string = MD5DigestToBase16(digest);
-
-  if (!prefix_output_yuv_.empty()) {
-    // Output yuv.
-    LOG_IF(WARNING, !WriteI420ToFile(frame_index_, i420_frame.get()))
-        << "Failed to write yuv into file.";
-  }
-  return md5_string;
+  return MD5DigestToBase16(digest);
 }
 
 scoped_refptr<VideoFrame> VideoFrameValidator::CreateI420Frame(

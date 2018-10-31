@@ -365,6 +365,7 @@ class GLRenderingVDAClient
   size_t num_queued_fragments_;
   size_t num_decoded_frames_;
   size_t num_done_bitstream_buffers_;
+  size_t frame_index_;
   base::TimeTicks initialize_done_ticks_;
   GLenum texture_target_;
   VideoPixelFormat pixel_format_;
@@ -426,6 +427,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_queued_fragments_(0),
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
+      frame_index_(0),
       texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
       next_picture_buffer_id_(1),
@@ -604,7 +606,9 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
   if (video_frame_validator_) {
     auto video_frame = texture_it->second->CreateVideoFrame(visible_rect);
     ASSERT_NE(video_frame.get(), nullptr);
-    video_frame_validator_->EvaluateVideoFrame(std::move(video_frame));
+    video_frame_validator_->EvaluateVideoFrame(std::move(video_frame),
+                                               frame_index_);
+    frame_index_++;
   }
   rendering_helper_->ConsumeVideoFrame(config_.window_id,
                                        std::move(video_frame_texture));
@@ -706,6 +710,7 @@ void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
 
+  frame_index_ = 0;
   switch (reset_point_) {
     case DONE_RESET_AFTER_FIRST_CONFIG_INFO:
     case MID_STREAM_RESET:
@@ -1201,10 +1206,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
-  // TODO(crbug.com/856562): Use Frame Validator in every test case, not
-  // limited to thumbnail test case.
-  bool use_video_frame_validator =
-      render_as_thumbnails && g_frame_validator && g_test_import;
+  bool use_video_frame_validator = g_frame_validator && g_test_import;
   if (use_video_frame_validator) {
     LOG(INFO) << "Using Frame Validator..";
 #if !defined(OS_CHROMEOS)
