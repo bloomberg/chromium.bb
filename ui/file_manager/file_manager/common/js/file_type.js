@@ -146,7 +146,7 @@ FileType.types = [
     type: 'video',
     name: 'VIDEO_FILE_TYPE',
     subtype: '3GP',
-    pattern: /\.3gp$/i,
+    pattern: /\.3gpp?$/i,
     mimePattern: /video\/3gpp/i
   },
   {
