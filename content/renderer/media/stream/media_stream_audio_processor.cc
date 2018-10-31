@@ -524,12 +524,6 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
   DCHECK(render_thread_checker_.CalledOnValidThread());
 }
 
-void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
-  // This is the old GetStats interface from webrtc::AudioProcessorInterface.
-  // It should not be in use by Chrome any longer.
-  NOTREACHED();
-}
-
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;

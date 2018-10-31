@@ -41,10 +41,6 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   // this method.
   void Stop();
 
-  // webrtc::AudioProcessorInterface implementation.
-  // This method is called on the libjingle thread.
-  void GetStats(AudioProcessorStats* stats) override;
-
   // This method is called on the libjingle thread.
   AudioProcessorStatistics GetStats(bool has_remote_tracks) override;
 
