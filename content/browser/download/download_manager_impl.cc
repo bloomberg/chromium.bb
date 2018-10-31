@@ -1012,8 +1012,11 @@ void DownloadManagerImpl::PostInitialization(
       break;
     case DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE:
       in_progress_cache_initialized_ = true;
-      if (load_history_downloads_cb_)
-        std::move(load_history_downloads_cb_).Run();
+      // Post a task to load downloads from history db.
+      if (load_history_downloads_cb_) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, std::move(load_history_downloads_cb_));
+      }
       break;
     case DOWNLOAD_INITIALIZATION_DEPENDENCY_NONE:
     default:
