@@ -132,8 +132,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Remove these as we update our sites.
 //
 
-#define SK_LEGACY_APPROX_POWF_SPECIALCASE
-
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
 // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
