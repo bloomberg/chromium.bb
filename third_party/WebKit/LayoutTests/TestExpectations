@@ -4651,6 +4651,9 @@ crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
+# Previous/NextWordPosition crossing editing boundaries.
+crbug.com/900060 editing/selection/mixed-editability-8.html [ Failure ]
+
 # Sheriff failures 2017-09-11
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
