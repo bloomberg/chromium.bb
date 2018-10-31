@@ -27,6 +27,7 @@ source_set("unit_tests") {
   ]
   deps = [
     "//base/test:test_support",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon:favicon",
@@ -41,5 +42,6 @@ source_set("unit_tests") {
     "//ios/web/public/test/fakes",
     "//testing/gtest:gtest",
     "//third_party/ocmock",
+    "//ui/base:base",
   ]
 }

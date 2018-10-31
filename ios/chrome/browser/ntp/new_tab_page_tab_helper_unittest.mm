@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -25,8 +27,10 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -94,6 +98,8 @@ TEST_F(NewTabPageTabHelperTest, TestAlreadyNTP) {
   test_web_state_.SetVisibleURL(url);
   CreateTabHelper();
   EXPECT_TRUE(tab_helper()->IsActive());
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_NEW_TAB_TITLE),
+              base::SysUTF16ToNSString(pending_item_->GetTitle()));
 }
 
 // Tests a newly created non-NTP webstate.
@@ -105,6 +111,7 @@ TEST_F(NewTabPageTabHelperTest, TestNotNTP) {
   test_web_state_.SetVisibleURL(url);
   CreateTabHelper();
   EXPECT_FALSE(tab_helper()->IsActive());
+  EXPECT_NSEQ(@"", base::SysUTF16ToNSString(pending_item_->GetTitle()));
 }
 
 // Tests navigating back and forth between an NTP and non-NTP page.

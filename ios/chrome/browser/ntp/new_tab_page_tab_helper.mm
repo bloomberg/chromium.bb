@@ -47,8 +47,10 @@ NewTabPageTabHelper::NewTabPageTabHelper(
   web_state->AddObserver(this);
 
   active_ = web_state->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
-  if (active_)
+  if (active_) {
+    UpdatePendingItemTitle();
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
+  }
 }
 
 bool NewTabPageTabHelper::IsActive() const {
@@ -64,6 +66,14 @@ void NewTabPageTabHelper::Deactivate() {
 void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
   SetActive(false);
+}
+
+void NewTabPageTabHelper::DidStartNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (navigation_context->GetUrl().GetOrigin() == kChromeUINewTabURL) {
+    UpdatePendingItemTitle();
+  }
 }
 
 void NewTabPageTabHelper::DidFinishNavigation(
@@ -82,15 +92,15 @@ void NewTabPageTabHelper::SetActive(bool active) {
   bool was_active = active_;
   active_ = active;
 
-  if (active) {
-    web::NavigationManager* manager = web_state_->GetNavigationManager();
-    web::NavigationItem* item = manager->GetPendingItem();
-    if (item)
-      item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  }
-
   // Tell |delegate_| to show or hide the NTP, if necessary.
   if (active_ != was_active) {
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
   }
+}
+
+void NewTabPageTabHelper::UpdatePendingItemTitle() {
+  web::NavigationManager* manager = web_state_->GetNavigationManager();
+  web::NavigationItem* item = manager->GetPendingItem();
+  if (item)
+    item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 }
