@@ -771,7 +771,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
 
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.
-  if (NGBaseline::ShouldPropagateBaselines(GetLayoutBox())) {
+  LayoutBox* layout_box = GetLayoutBox();
+  if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
     space_builder.AddBaselineRequest(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
@@ -787,7 +788,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
               parent_constraint_space.ReplacedPercentageResolutionSize())
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(style.GetWritingMode());
-  return Layout(constraint_space);
+  scoped_refptr<NGLayoutResult> result = Layout(constraint_space);
+  // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
+  // when it's being laid out.
+  if (!constraint_space.IsIntermediateLayout())
+    layout_box->ClearNeedsLayout();
+  return result;
 }
 
 scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(

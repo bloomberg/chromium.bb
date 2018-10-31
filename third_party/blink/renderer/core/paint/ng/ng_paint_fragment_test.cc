@@ -500,7 +500,10 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
   EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
 }
 
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtStart) {
+// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
+// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
+// such case, the result is not deterministic.
+TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -523,7 +526,10 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtStart) {
   EXPECT_FALSE(line3->IsDirty());
 }
 
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtLast) {
+// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
+// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
+// such case, the result is not deterministic.
+TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -545,7 +551,10 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtLast) {
   EXPECT_TRUE(line3->IsDirty());
 }
 
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtMiddle) {
+// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
+// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
+// such case, the result is not deterministic.
+TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");

@@ -802,7 +802,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-blo
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash Timeout ]
 crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Pass Crash Timeout ]
 
-crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-auto-height.html [ Failure ]
+crbug.com/897141 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-auto-height.html [ Failure Crash ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-fixed-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/regular-block-becomes-multicol.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regular-block-becomes-multicol.html [ Failure ]

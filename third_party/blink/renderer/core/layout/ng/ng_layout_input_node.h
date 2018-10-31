@@ -23,6 +23,7 @@ class NGBreakToken;
 class NGConstraintSpace;
 class NGInlineChildLayoutContext;
 class NGLayoutResult;
+class NGPaintFragment;
 struct MinMaxSize;
 struct NGLogicalSize;
 struct NGPhysicalSize;
@@ -151,6 +152,10 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
+
+  // Returns the first NGPaintFragment for this node. When block fragmentation
+  // occurs, there will be multiple NGPaintFragment for a node.
+  const NGPaintFragment* PaintFragment() const;
 
   String ToString() const;
 

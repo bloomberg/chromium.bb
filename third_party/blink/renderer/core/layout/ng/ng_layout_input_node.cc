@@ -127,6 +127,12 @@ NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
                         LayoutUnit(icb_size.Height())};
 }
 
+const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {
+  if (LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(GetLayoutBox()))
+    return block_flow->PaintFragment();
+  return nullptr;
+}
+
 String NGLayoutInputNode::ToString() const {
   return IsInline() ? ToNGInlineNode(*this).ToString()
                     : ToNGBlockNode(*this).ToString();

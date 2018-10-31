@@ -67,6 +67,7 @@ class LayoutNGMixin : public Base {
                              const NGBreakToken*,
                              const NGLayoutResult&) final;
   void ClearCachedLayoutResult() final;
+  bool AreCachedLinesValidFor(const NGConstraintSpace&) const final;
 
   // For testing only.
   scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting() final;

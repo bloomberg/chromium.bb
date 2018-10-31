@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
@@ -691,6 +692,90 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
                                     context);
   return algorithm.Layout();
+}
+
+bool NGInlineNode::PrepareReuseFragments(
+    const NGConstraintSpace& constraint_space) {
+  if (!IsPrepareLayoutFinished())
+    return false;
+
+  LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
+  if (!block_flow->EverHadLayout())
+    return false;
+
+  // If the block flow itself was changed, re-layout may be needed.
+  if (block_flow->SelfNeedsLayout())
+    return false;
+
+  // Check the cached result is valid for the constraint space.
+  if (!block_flow->AreCachedLinesValidFor(constraint_space))
+    return false;
+
+  if (!MarkLineBoxesDirty(block_flow))
+    return false;
+
+  PrepareLayoutIfNeeded();
+
+  return true;
+}
+
+// Mark line boxes dirty for where marked for |NeedsLayout()|.
+//
+// Removal of LayoutObject already marks relevant line boxes dirty by calling
+// |DirtyLinesFromChangedChild()|, but style changes have not marked yet.
+//
+// TODO(kojii): By having this loop, we probably don't have to mark in
+// |InsertedIntoTree()|. NG mimics legacy doing so in |InsertedIntoTree()| and
+// also have this loop in |LayoutBlockFlow::LayoutInlineChildren()|. Investigate
+// if we can remove the duplicated marking.
+bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
+  bool has_dirtied_lines = false;
+  for (LayoutObject* layout_object = block_flow->NextInPreOrder(block_flow);
+       layout_object;) {
+    bool should_dirty_lines = false;
+    LayoutObject* next = nullptr;
+    if (layout_object->IsText()) {
+      should_dirty_lines =
+          !has_dirtied_lines && layout_object->SelfNeedsLayout();
+      next = layout_object->NextInPreOrderAfterChildren(block_flow);
+      layout_object->ClearNeedsLayout();
+    } else if (layout_object->IsLayoutInline()) {
+      should_dirty_lines =
+          !has_dirtied_lines && layout_object->SelfNeedsLayout();
+      next = layout_object->NextInPreOrder(block_flow);
+      layout_object->ClearNeedsLayout();
+    } else if (layout_object->IsFloatingOrOutOfFlowPositioned()) {
+      // Aborting in the middle of the traversal is safe because this function
+      // ClearNeedsLayout() on text and LayoutInline, but since an inline
+      // formatting context is laid out as a whole, these flags don't matter.
+      // For that reason, this traversal should not ClearNeedsLayout() atomic
+      // inlines, floats, or OOF -- objects that need to be laid out separately
+      // from the inline formatting context.
+      // TODO(kojii): This looks a bit tricky, better to come up with clearner
+      // solution if any.
+      return false;
+    } else if (layout_object->IsAtomicInlineLevel()) {
+      should_dirty_lines = !has_dirtied_lines && layout_object->NeedsLayout();
+      next = layout_object->NextInPreOrderAfterChildren(block_flow);
+    } else {
+      NOTREACHED();
+      // With LayoutNGBlockFragmentation, LayoutFlowThread/LayoutMultiColumnSet
+      // appear in fast/multicol/paged-becomes-multicol-auto-height.html.
+      // crbug.com/897141
+      next = layout_object->NextInPreOrder(block_flow);
+    }
+    if (should_dirty_lines) {
+      // TODO(kojii): This seems to invalidate more than necessary because this
+      // function reads PreviousSibling, whose InlineFragments maybe cleared
+      // already.
+      NGPaintFragment::DirtyLinesFromChangedChild(layout_object);
+      has_dirtied_lines = true;
+    }
+    ClearInlineFragment(layout_object);
+    layout_object = next;
+  }
+  block_flow->ClearNeedsLayout();
+  return true;
 }
 
 static LayoutUnit ComputeContentSize(
