@@ -62,11 +62,15 @@ class TracingUmaTracker {
   ~TracingUmaTracker() = default;
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
 
+  void StopAndRecord() {
+    Stop();
+    UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
+  }
+
   void Stop() {
     TRACE_EVENT_ASYNC_END0(
         tracing_category_, metric_name_,
         TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
-    UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
   }
 
  private:
@@ -342,7 +346,11 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     const viz::FrameSinkId& expected_frame_sink_id,
     const viz::FrameSinkId& frame_sink_id,
     const gfx::PointF& transformed_location) {
-  tracker.Stop();
+  if (expected_frame_sink_id.is_valid()) {
+    tracker.Stop();
+  } else {
+    tracker.StopAndRecord();
+  }
   uint32_t last_id = expected_frame_sink_id.is_valid() ? last_verify_request_id_
                                                        : last_request_id_;
   bool in_flight = expected_frame_sink_id.is_valid() ? verify_request_in_flight_
