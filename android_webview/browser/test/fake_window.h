@@ -58,6 +58,8 @@ class FakeWindow {
 
   void RequestDrawGL(FakeFunctor* functor);
 
+  bool on_draw_hardware_pending() const { return on_draw_hardware_pending_; }
+
  private:
   class ScopedMakeCurrent;
 
