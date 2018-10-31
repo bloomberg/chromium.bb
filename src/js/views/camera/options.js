@@ -147,7 +147,7 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
     [this.toggleMirror_, 'onToggleMirrorClicked_', 'mirror'],
     [this.toggleGrid_, 'onToggleGridClicked_', 'grid'],
     [this.toggleTimer_, 'onToggleTimerClicked_', 'timer'],
-    [this.toggleMic_, 'onToggleMicClicked_']
+    [this.toggleMic_, 'onToggleMicClicked_'],
   ];
   toggles.forEach(([element, fn, attr]) => {
     element.addEventListener('click', this[fn].bind(this));
@@ -177,7 +177,7 @@ camera.views.camera.Options.Sound = Object.freeze({
   SHUTTER: 0,
   TICK: 1,
   RECORDSTART: 2,
-  RECORDEND: 3
+  RECORDEND: 3,
 });
 
 /**

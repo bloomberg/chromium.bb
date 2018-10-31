@@ -265,7 +265,7 @@ camera.HorizontalScrollBar = function(scroller) {
 };
 
 camera.HorizontalScrollBar.prototype = {
-  __proto__: camera.ScrollBar.prototype
+  __proto__: camera.ScrollBar.prototype,
 };
 
 /**
@@ -335,7 +335,7 @@ camera.VerticalScrollBar = function(scroller) {
 };
 
 camera.VerticalScrollBar.prototype = {
-  __proto__: camera.ScrollBar.prototype
+  __proto__: camera.ScrollBar.prototype,
 };
 
 /**

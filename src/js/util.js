@@ -349,7 +349,7 @@ camera.util.SmoothScroller.DURATION = 500;
  */
 camera.util.SmoothScroller.Mode = {
   SMOOTH: 0,
-  INSTANT: 1
+  INSTANT: 1,
 };
 
 camera.util.SmoothScroller.prototype = {
@@ -382,7 +382,7 @@ camera.util.SmoothScroller.prototype = {
   get clientHeight() {
     // TODO(mtomasz): This does not reflect paddings nor margins.
     return this.element_.clientHeight;
-  }
+  },
 };
 
 /**
@@ -646,9 +646,9 @@ camera.util.ScrollTracker.prototype = {
   get delta() {
     return [
       this.startScrollPosition_[0] - this.lastScrollPosition_[0],
-      this.startScrollPosition_[1] - this.lastScrollPosition_[1]
+      this.startScrollPosition_[1] - this.lastScrollPosition_[1],
     ];
-  }
+  },
 };
 
 /**
@@ -804,7 +804,7 @@ camera.util.MouseScroller.prototype.onMouseDown_ = function(event) {
   this.startPosition_ = [event.screenX, event.screenY];
   this.startScrollPosition_ = [
     this.scroller_.scrollLeft,
-    this.scroller_.scrollTop
+    this.scroller_.scrollTop,
   ];
 };
 

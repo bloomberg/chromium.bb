@@ -129,7 +129,7 @@ camera.models.FileSystem.initialize = function(promptMigrate) {
     camera.models.FileSystem.initInternalFs_(),
     camera.models.FileSystem.initExternalFs_(),
     checkAcked,
-    checkMigrated
+    checkMigrated,
   ]).then(([internalFs, externalFs, acked, migrated]) => {
     camera.models.FileSystem.internalFs = internalFs;
     camera.models.FileSystem.externalFs = externalFs;
@@ -478,7 +478,7 @@ camera.models.FileSystem.parseInternalEntries_ = function(
 camera.models.FileSystem.getEntries = function() {
   return Promise.all([
     camera.models.FileSystem.readFs_(camera.models.FileSystem.internalFs),
-    camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs)
+    camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs),
   ]).then(([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
