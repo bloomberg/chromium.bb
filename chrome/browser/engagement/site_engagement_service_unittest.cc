@@ -41,6 +41,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -571,7 +572,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                               0);
 
   // Record metrics for an empty engagement system.
-  service_->RecordMetrics();
+  service_->RecordMetrics(service_->GetAllDetails());
 
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kTotalEngagementHistogram, 0, 1);
@@ -611,6 +612,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                             SiteEngagementService::ENGAGEMENT_MOUSE);
   NavigateAndCommit(url2);
   service_->HandleMediaPlaying(web_contents(), true);
+
+  // Wait until the background metrics recording happens.
+  content::RunAllTasksUntilIdle();
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               2);
@@ -678,6 +682,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   NavigateAndCommit(url2);
   service_->HandleUserInput(web_contents(),
                             SiteEngagementService::ENGAGEMENT_TOUCH_GESTURE);
+
+  // Wait until the background metrics recording happens.
+  content::RunAllTasksUntilIdle();
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               3);
@@ -759,6 +766,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
 
   clock_.SetNow(clock_.Now() + base::TimeDelta::FromMinutes(60));
   service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+
+  // Wait until the background metrics recording happens.
+  content::RunAllTasksUntilIdle();
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               4);
