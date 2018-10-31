@@ -29,6 +29,13 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    showPolicyIndicator_: {
+      type: Boolean,
+      value: false,
+      computed: 'getDisabled_(disabled, property)',
+    },
   },
 
   focus: function() {
