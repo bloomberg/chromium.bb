@@ -184,14 +184,14 @@ public class CastWebContentsSurfaceHelperTest {
     }
 
     @Test
-    public void testInstanceId() {
-        assertNull(mSurfaceHelper.getInstanceId());
-        StartParams params1 = new StartParamsBuilder().withId("/0").build();
+    public void testSessionId() {
+        assertNull(mSurfaceHelper.getSessionId());
+        StartParams params1 = new StartParamsBuilder().withId("/abc123").build();
         mSurfaceHelper.onNewStartParams(params1);
-        assertEquals("/0", mSurfaceHelper.getInstanceId());
-        StartParams params2 = new StartParamsBuilder().withId("/1").build();
+        assertEquals("/abc123", mSurfaceHelper.getSessionId());
+        StartParams params2 = new StartParamsBuilder().withId("/123-abc").build();
         mSurfaceHelper.onNewStartParams(params2);
-        assertEquals("/1", mSurfaceHelper.getInstanceId());
+        assertEquals("/123-abc", mSurfaceHelper.getSessionId());
     }
 
     @Test

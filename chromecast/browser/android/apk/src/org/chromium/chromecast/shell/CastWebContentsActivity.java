@@ -246,7 +246,7 @@ public class CastWebContentsActivity extends Activity {
                     || keyCode == KeyEvent.KEYCODE_MEDIA_STOP
                     || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
-                CastWebContentsComponent.onKeyDown(mSurfaceHelper.getInstanceId(), keyCode);
+                CastWebContentsComponent.onKeyDown(mSurfaceHelper.getSessionId(), keyCode);
                 return true;
             }
         }

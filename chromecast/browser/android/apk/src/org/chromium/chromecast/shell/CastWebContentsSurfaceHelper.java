@@ -46,7 +46,7 @@ class CastWebContentsSurfaceHelper {
     // Activated when we have WebContents to display.
     private final Controller<StartParams> mStartParamsState = new Controller<>();
 
-    private String mInstanceId;
+    private String mSessionId;
     private MediaSessionGetter mMediaSessionGetter;
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
@@ -175,7 +175,7 @@ class CastWebContentsSurfaceHelper {
             // http://developer.android.com/training/managing-audio/volume-playback.html
             hostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
             // Notify CastWebContentsComponent when closed.
-            return () -> CastWebContentsComponent.onComponentClosed(mInstanceId);
+            return () -> CastWebContentsComponent.onComponentClosed(mSessionId);
         });
 
         // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
@@ -189,7 +189,7 @@ class CastWebContentsSurfaceHelper {
         // Cache relevant fields from StartParams in instance variables.
         mStartParamsState.subscribe(Observers.onEnter(params -> {
             mTouchInputEnabled = params.touchInputEnabled;
-            mInstanceId = params.uri.getPath();
+            mSessionId = params.uri.getPath();
         }));
 
         mCreatedState.set(Unit.unit());
@@ -202,9 +202,9 @@ class CastWebContentsSurfaceHelper {
 
     // Closes this activity if a new WebContents is not being displayed.
     private void maybeFinishLater(Handler handler, Runnable callback) {
-        final String currentInstanceId = mInstanceId;
+        final String currentSessionId = mSessionId;
         handler.postDelayed(() -> {
-            if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
+            if (currentSessionId != null && currentSessionId.equals(mSessionId)) {
                 callback.run();
             }
         }, TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS);
@@ -215,8 +215,8 @@ class CastWebContentsSurfaceHelper {
         mCreatedState.reset();
     }
 
-    String getInstanceId() {
-        return mInstanceId;
+    String getSessionId() {
+        return mSessionId;
     }
 
     boolean isTouchInputEnabled() {

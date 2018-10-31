@@ -28,9 +28,9 @@ import org.chromium.content_public.browser.WebContents;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastWebContentsIntentUtilsTest {
-    private static final String INSTANCE_ID = "1";
-    private static final String EXPECTED_URI = "cast://webcontents/1";
+    private static final String EXPECTED_URI = "cast://webcontents/123-abc";
     private static final String APP_ID = "app";
+    private static final String SESSION_ID = "123-abc";
     private static final int VISIBILITY_PRIORITY = 2;
 
     private @Mock WebContents mWebContents;
@@ -45,7 +45,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testOnActivityStopped() {
-        Intent in = CastWebContentsIntentUtils.onActivityStopped(INSTANCE_ID);
+        Intent in = CastWebContentsIntentUtils.onActivityStopped(SESSION_ID);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -54,7 +54,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testOnGesture() {
-        Intent in = CastWebContentsIntentUtils.onGesture(INSTANCE_ID, 1);
+        Intent in = CastWebContentsIntentUtils.onGesture(SESSION_ID, 1);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -73,7 +73,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testOnKeyDown() {
-        Intent in = CastWebContentsIntentUtils.onKeyDown(INSTANCE_ID, 32);
+        Intent in = CastWebContentsIntentUtils.onKeyDown(SESSION_ID, 32);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -84,7 +84,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testOnVisibilityChange() {
-        Intent in = CastWebContentsIntentUtils.onVisibilityChange(INSTANCE_ID, 3);
+        Intent in = CastWebContentsIntentUtils.onVisibilityChange(SESSION_ID, 3);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -103,7 +103,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testRequestVisibilityPriority() {
-        Intent in = CastWebContentsIntentUtils.requestVisibilityPriority(INSTANCE_ID, 2);
+        Intent in = CastWebContentsIntentUtils.requestVisibilityPriority(SESSION_ID, 2);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -115,7 +115,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testRequestMoveOut() {
-        Intent in = CastWebContentsIntentUtils.requestMoveOut(INSTANCE_ID);
+        Intent in = CastWebContentsIntentUtils.requestMoveOut(SESSION_ID);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -125,7 +125,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testGestureConsumed() {
-        Intent in = CastWebContentsIntentUtils.gestureConsumed(INSTANCE_ID, 1, true);
+        Intent in = CastWebContentsIntentUtils.gestureConsumed(SESSION_ID, 1, true);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -134,7 +134,7 @@ public class CastWebContentsIntentUtilsTest {
         Assert.assertTrue(CastWebContentsIntentUtils.isGestureConsumed(in));
         Assert.assertEquals(CastWebContentsIntentUtils.ACTION_GESTURE_CONSUMED, in.getAction());
 
-        in = CastWebContentsIntentUtils.gestureConsumed(INSTANCE_ID, 2, false);
+        in = CastWebContentsIntentUtils.gestureConsumed(SESSION_ID, 2, false);
         Assert.assertNull(in.getData());
         uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -147,7 +147,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastActivity() {
         Intent in = CastWebContentsIntentUtils.requestStartCastActivity(
-                mActivity, mWebContents, true, false, true, INSTANCE_ID);
+                mActivity, mWebContents, true, false, true, SESSION_ID);
         Assert.assertFalse(CastWebContentsIntentUtils.isRemoteControlMode(in));
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
@@ -162,7 +162,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastFragment() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
+                mWebContents, APP_ID, 3, true, SESSION_ID, true, true);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -171,6 +171,7 @@ public class CastWebContentsIntentUtilsTest {
         Assert.assertEquals(mWebContents, webContents);
         Assert.assertTrue(CastWebContentsIntentUtils.isTouchable(in));
         Assert.assertEquals(APP_ID, CastWebContentsIntentUtils.getAppId(in));
+        Assert.assertEquals(SESSION_ID, CastWebContentsIntentUtils.getSessionId(in));
         Assert.assertEquals(3, CastWebContentsIntentUtils.getVisibilityPriority(in));
         Assert.assertEquals(CastIntents.ACTION_SHOW_WEB_CONTENT, in.getAction());
         Assert.assertTrue(CastWebContentsIntentUtils.isRemoteControlMode(in));
@@ -179,7 +180,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastService() {
         Intent in = CastWebContentsIntentUtils.requestStartCastService(
-                mActivity, mWebContents, INSTANCE_ID);
+                mActivity, mWebContents, SESSION_ID);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -190,7 +191,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testRequestStopWebContents() {
-        Intent in = CastWebContentsIntentUtils.requestStopWebContents(INSTANCE_ID);
+        Intent in = CastWebContentsIntentUtils.requestStopWebContents(SESSION_ID);
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -198,7 +199,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testEnableTouchInputTrue() {
-        Intent in = CastWebContentsIntentUtils.enableTouchInput(INSTANCE_ID, true);
+        Intent in = CastWebContentsIntentUtils.enableTouchInput(SESSION_ID, true);
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -208,7 +209,7 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testEnableTouchInputFalse() {
-        Intent in = CastWebContentsIntentUtils.enableTouchInput(INSTANCE_ID, false);
+        Intent in = CastWebContentsIntentUtils.enableTouchInput(SESSION_ID, false);
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
@@ -219,28 +220,28 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testShouldTurnOnScreenActivityTrue() {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                mActivity, mWebContents, true, false, true, INSTANCE_ID);
+                mActivity, mWebContents, true, false, true, SESSION_ID);
         Assert.assertTrue(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
     }
 
     @Test
     public void testShouldTurnOnScreenActivityFalse() {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                mActivity, mWebContents, true, false, false, INSTANCE_ID);
+                mActivity, mWebContents, true, false, false, SESSION_ID);
         Assert.assertFalse(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
     }
 
     @Test
     public void testShouldTurnOnScreenFragmentTrue() {
         Intent intent = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
+                mWebContents, APP_ID, 3, true, SESSION_ID, true, true);
         Assert.assertTrue(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
     }
 
     @Test
     public void testShouldTurnOnScreenFragmentFalse() {
         Intent intent = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, false);
+                mWebContents, APP_ID, 3, true, SESSION_ID, true, false);
         Assert.assertFalse(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
     }
 
@@ -255,14 +256,14 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testIsRemoteControlModeTrue() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
+                mWebContents, APP_ID, 3, true, SESSION_ID, true, true);
         Assert.assertTrue(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 
     @Test
     public void testIsRemoteControlModeFalse() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, false, INSTANCE_ID, false, true);
+                mWebContents, APP_ID, 3, false, SESSION_ID, false, true);
         Assert.assertFalse(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 }
