@@ -1562,6 +1562,13 @@ bool PaintLayerScrollableArea::SetHasVerticalScrollbar(bool has_scrollbar) {
   if (FreezeScrollbarsScope::ScrollbarsAreFrozen())
     return false;
 
+  if (GetLayoutBox()->GetDocument().IsVerticalScrollEnforced()) {
+    // When the policy is enforced the contents of document cannot be scrolled.
+    // This would make rendering a scrollbar look strange
+    // (https://crbug.com/898151).
+    return false;
+  }
+
   if (has_scrollbar == HasVerticalScrollbar())
     return false;
 
