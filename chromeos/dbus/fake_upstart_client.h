@@ -19,6 +19,9 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   // DBusClient overrides.
   void Init(dbus::Bus* bus) override;
 
+  void StartJob(const std::string& job,
+                const std::vector<std::string>& upstart_env,
+                VoidDBusMethodCallback callback) override;
   // UpstartClient overrides.
   void StartAuthPolicyService() override;
   void RestartAuthPolicyService() override;
@@ -27,7 +30,6 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override;
   void StopMediaAnalytics() override;
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override;
-  void StartBluetoothLogging() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeUpstartClient);
