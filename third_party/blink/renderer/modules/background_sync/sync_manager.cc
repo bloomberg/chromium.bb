@@ -27,11 +27,12 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
                                             const String& tag) {
   // TODO(jkarlin): Wait for the registration to become active instead of
   // rejecting. See crbug.com/542437.
-  if (!registration_->active())
+  if (!registration_->active()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(DOMExceptionCode::kAbortError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Registration failed - no active Service Worker"));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -98,8 +99,8 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
                                "window or registration tag too long."));
       break;
     case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kPermissionDeniedError, "Permission denied."));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                                            "Permission denied."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
       resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,

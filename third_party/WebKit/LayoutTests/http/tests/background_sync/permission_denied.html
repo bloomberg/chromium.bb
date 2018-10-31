@@ -24,7 +24,7 @@ promise_test(test => {
     .then(() => sync_manager.register('sync'))
     .then(() => assert_unreached('sync.register() must not succeed when permission is denied'),
           error => {
-        assert_equals(error.name, 'PermissionDeniedError');
+        assert_equals(error.name, 'NotAllowedError');
         assert_equals(error.message, 'Permission denied.');
     });
   }, 'Registering a sync should reject the promise if permission is denied');
