@@ -12,7 +12,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -48,18 +52,35 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
   BrowserSwitcherServiceTest() = default;
   ~BrowserSwitcherServiceTest() override = default;
 
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
+  void SetUseIeSitelist(bool use_ie_sitelist) {
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kBrowserSwitcherUseIeSitelist,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_PLATFORM,
+                 std::make_unique<base::Value>(use_ie_sitelist), nullptr);
+    provider_.UpdateChromePolicy(policies);
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
+  policy::MockConfigurationPolicyProvider provider_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherServiceTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, NotEnabledByPolicy) {
-  // Only load the IEEM sitelist if the 'use_ie_sitelist' pref is set to true.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, false);
+  // Only load the IEEM sitelist if the 'UseIeSitelist' policy is set to true.
   base::RunLoop run_loop;
   BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
   BrowserSwitcherService::SetXmlParsedCallbackForTesting(
       run_loop.QuitClosure());
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(GURL(kAValidUrl));
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   bool fetch_happened = false;
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
@@ -76,13 +97,13 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, NotEnabledByPolicy) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
-  // Only load the IEEM sitelist if the 'use_ie_sitelist' pref is set to true.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, false);
+  SetUseIeSitelist(true);
+
   base::RunLoop run_loop;
   BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
   BrowserSwitcherService::SetXmlParsedCallbackForTesting(
       run_loop.QuitClosure());
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(GURL(kAnInvalidUrl));
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAnInvalidUrl);
 
   bool fetch_happened = false;
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
@@ -99,12 +120,13 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, FetchAndParseAfterStartup) {
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, true);
+  SetUseIeSitelist(true);
+
   base::RunLoop run_loop;
   BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
   BrowserSwitcherService::SetXmlParsedCallbackForTesting(
       run_loop.QuitClosure());
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(GURL(kAValidUrl));
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(ReturnValidXml));
@@ -119,12 +141,34 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, FetchAndParseAfterStartup) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IgnoresFailedDownload) {
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, true);
+  SetUseIeSitelist(true);
+
   base::RunLoop run_loop;
   BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
   BrowserSwitcherService::SetXmlParsedCallbackForTesting(
       run_loop.QuitClosure());
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(GURL(kAValidUrl));
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(FailToDownload));
+
+  // Execute everything and make sure no rules are applied.
+  auto* service =
+      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  run_loop.Run();
+  EXPECT_FALSE(service->sitelist()->ShouldSwitch(GURL("http://google.com/")));
+  EXPECT_FALSE(
+      service->sitelist()->ShouldSwitch(GURL("http://docs.google.com/")));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IgnoresNonManagedPref) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, true);
+
+  base::RunLoop run_loop;
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(FailToDownload));

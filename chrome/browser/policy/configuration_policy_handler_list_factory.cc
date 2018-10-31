@@ -104,6 +104,11 @@
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -912,6 +917,27 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnterpriseHardwarePlatformAPIEnabled,
     prefs::kEnterpriseHardwarePlatformAPIEnabled,
     base::Value::Type::BOOLEAN },
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  { key::kAlternativeBrowserPath,
+    browser_switcher::prefs::kAlternativeBrowserPath,
+    base::Value::Type::STRING },
+  { key::kAlternativeBrowserParameters,
+    browser_switcher::prefs::kAlternativeBrowserParameters,
+    base::Value::Type::LIST },
+  { key::kBrowserSwitcherUrlList,
+    browser_switcher::prefs::kUrlList,
+    base::Value::Type::LIST },
+  { key::kBrowserSwitcherUrlGreylist,
+    browser_switcher::prefs::kUrlGreylist,
+    base::Value::Type::LIST },
+#endif
+#if defined(OS_WIN)
+  { key::kBrowserSwitcherUseIeSitelist,
+    browser_switcher::prefs::kUseIeSitelist,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

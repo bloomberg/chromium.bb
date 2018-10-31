@@ -14794,6 +14794,11 @@ Called by update_net_error_codes.py.-->
   <int value="491" label="AllowWakeLocks"/>
   <int value="492" label="ScreenBrightnessPercent"/>
   <int value="493" label="CloudReportingEnabled"/>
+  <int value="494" label="AlternativeBrowserPath"/>
+  <int value="495" label="AlternativeBrowserParameters"/>
+  <int value="496" label="BrowserSwitcherUrlList"/>
+  <int value="497" label="BrowserSwitcherUrlGreylist"/>
+  <int value="498" label="BrowserSwitcherUseIeSitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

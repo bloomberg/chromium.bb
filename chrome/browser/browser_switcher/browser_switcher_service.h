@@ -45,7 +45,7 @@ class BrowserSwitcherService : public KeyedService {
   static void SetIeemFetchDelayForTesting(base::TimeDelta delay);
   static void SetXmlParsedCallbackForTesting(
       base::OnceCallback<void()> callback);
-  static void SetIeemSitelistUrlForTesting(const GURL& url);
+  static void SetIeemSitelistUrlForTesting(const std::string& url);
 #endif
 
  private:
@@ -67,7 +67,7 @@ class BrowserSwitcherService : public KeyedService {
   static base::TimeDelta fetch_sitelist_delay_;
 
   // URL to fetch the IEEM sitelist from. Only used for testing.
-  static GURL ieem_sitelist_url_for_testing_;
+  static std::string ieem_sitelist_url_for_testing_;
 
   // If set, gets called once the IEEM sitelist rules are applied. Also gets
   // called if any step of the process fails.

@@ -77,7 +77,8 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
   DCHECK(profile);
   DCHECK(prefs_);
 #if defined(OS_WIN)
-  if (prefs_->GetBoolean(prefs::kUseIeSitelist)) {
+  if (prefs_->GetBoolean(prefs::kUseIeSitelist) &&
+      prefs_->IsManagedPreference(prefs::kUseIeSitelist)) {
     GURL sitelist_url = GetIeemSitelistUrl();
     if (sitelist_url.is_valid()) {
       auto factory =
@@ -89,6 +90,8 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
                          base::Unretained(this), std::move(sitelist_url),
                          std::move(factory)),
           fetch_sitelist_delay_);
+    } else {
+      DoneLoadingIeemSitelist();
     }
   } else {
     DoneLoadingIeemSitelist();
@@ -139,16 +142,17 @@ void BrowserSwitcherService::SetXmlParsedCallbackForTesting(
   xml_parsed_callback_for_testing_ = std::move(callback);
 }
 
-GURL BrowserSwitcherService::ieem_sitelist_url_for_testing_;
+std::string BrowserSwitcherService::ieem_sitelist_url_for_testing_;
 
 // static
-void BrowserSwitcherService::SetIeemSitelistUrlForTesting(const GURL& url) {
-  ieem_sitelist_url_for_testing_ = url;
+void BrowserSwitcherService::SetIeemSitelistUrlForTesting(
+    const std::string& spec) {
+  ieem_sitelist_url_for_testing_ = spec;
 }
 
 GURL BrowserSwitcherService::GetIeemSitelistUrl() {
-  if (!ieem_sitelist_url_for_testing_.is_empty())
-    return ieem_sitelist_url_for_testing_;
+  if (!ieem_sitelist_url_for_testing_.empty())
+    return GURL(ieem_sitelist_url_for_testing_);
 
   base::win::RegKey key;
   if (ERROR_SUCCESS != key.Open(HKEY_LOCAL_MACHINE, kIeSiteListKey, KEY_READ) &&

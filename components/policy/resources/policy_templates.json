@@ -693,6 +693,21 @@
       ],
     },
     {
+      'name': 'BrowserSwitcher',
+      'type': 'group',
+      'caption': '''<ph name="LBS_PRODUCT_NAME">Legacy Browser Support</ph>''',
+      'desc': '''Configure policies to switch between browsers.
+
+      Configured websites will automatically open in another browser than <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'policies': [
+        'AlternativeBrowserPath',
+        'AlternativeBrowserParameters',
+        'BrowserSwitcherUrlList',
+        'BrowserSwitcherUrlGreylist',
+        'BrowserSwitcherUseIeSitelist',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -13589,6 +13604,153 @@
           When this policy is unset user screen controls and auto-brightness features are not affected.
           The policy values should be specified in percents in range 0-100.''',
     },
+    {
+      'id': 494,
+      'name': 'AlternativeBrowserPath',
+      'future': True,
+      'type': 'string',
+      'schema': {'type': 'string'},
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': '${ie}',
+      'supported_on': ['chrome.*:71-'],
+      'caption': '''Alternative browser to launch for configured websites.''',
+      'tags': [],
+      'desc': '''This policy controls which command to use to open URLs in an alternative browser.
+
+      When this policy is left unset, a platform-specific default is used: Internet Explorer for Windows, or Safari for Mac OS X. On Linux, launching an alternative browser will fail when this is unset.
+
+      When this policy is set to one of ${ie}, ${firefox}, ${safari} or
+      ${opera}, that browser will launch if it is installed. ${ie} is only
+      available on Windows, and ${safari} is only available on Windows and Mac
+      OS X.
+
+      When this policy is set to a file path, that file is used as an executable
+      file.''',
+    },
+    {
+      'id': 495,
+      'name': 'AlternativeBrowserParameters',
+      'future': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'example_value': [
+        '-foreground',
+        '-new-window',
+        '${url}',
+        '-profile',
+        '%HOME%\\browser_profile',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:71-'],
+      'caption': '''Command-line parameters for the alternative browser.''',
+      'tags': [],
+      'desc': '''This policy controls command-line parameters to launch to the alternative browser.
+
+      When this policy is left unset, only the URL is passed as a command-line parameters.
+
+      When this policy is set to a list of strings, each string is passed to the alternative browser as a separate command-line parameters. On Windows, the parameters are joined with spaces. On Mac OS X and Linux, a parameter may contain spaces, and still be treated as a single parameter.
+
+      If an element contains ${url}, it gets replaced with the URL of the page to open.
+
+      If no element contains ${url}, the URL is appended at the end of the command line.
+
+      Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable. On Mac OS X and Linux, ${ABC} is replaced with the value of the ABC environment variable.''',
+    },
+    {
+      'id': 496,
+      'name': 'BrowserSwitcherUrlList',
+      'future': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'example_value': [
+        'ie.com',
+        '!open-in-chrome.ie.com',
+        'foobar.com/ie-only/'
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:71-'],
+      'caption': '''Websites to open in alternative browser''',
+      'tags': [],
+      'desc': '''This policy controls the list of websites to open in an alternative browser.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> policy.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses those rules when choosing if a URL should open in an alternative browser.
+
+      When the Internet Explorer add-in is present and enabled, Internet Explorer switches back to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when the rules do not match.
+
+      If rules contradict eachother, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the most specific rule.''',
+    },
+    {
+      'id': 497,
+      'name': 'BrowserSwitcherUrlGreylist',
+      'future': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'example_value': [
+        'ie.com',
+        '!open-in-chrome.ie.com',
+        'foobar.com/ie-only/'
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:71-'],
+      'caption': '''Websites that should never trigger a browser switch.''',
+      'tags': [],
+      'desc': '''This policy controls the list of websites that will never cause a browser switch.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> policy.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy. However, the logic is reversed: rules that match will not open an alternative browser.
+
+      Unlike <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME">Internet Explorer</ph> should open these URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'id': 498,
+      'name': 'BrowserSwitcherUseIeSitelist',
+      'future': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:71-'],
+      'caption': '''Use Internet Explorer's SiteList policy for Legacy Browser Support.''',
+      'tags': [],
+      'desc': '''This policy controls whether to load rules from Internet Explorer's SiteList policy.
+
+      When this policy is left unset, or set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy as a source of rules for switching browsers.
+
+      When this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reads Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> to obtain the site list's URL. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> then downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
+
+      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
+    },
   ],
 
   'messages': {
@@ -13730,5 +13892,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 493
+  'highest_id_currently_used': 498
 }
