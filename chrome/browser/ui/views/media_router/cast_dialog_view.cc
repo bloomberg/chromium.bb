@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/md_text_button_with_down_arrow.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -112,7 +112,7 @@ int CastDialogView::GetDialogButtons() const {
 }
 
 views::View* CastDialogView::CreateExtraView() {
-  sources_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  sources_button_ = new views::MdTextButtonWithDownArrow(
       this,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
   sources_button_->set_id(kAlternativeSourceButtonId);
