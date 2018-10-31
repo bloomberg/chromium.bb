@@ -61,9 +61,9 @@ view code coverage breakdown by directories and by components, for example:
 When you click on a particular source file in one of the views above, you can check
 per-line coverage information such as
 
-- Uncovered / Covered line fragments, lines and code blocks. This information can be 
+- Uncovered / Covered line fragments, lines and code blocks. This information can be
 useful to identify areas of code that lack test coverage.
-- Per-line hit counts indicating how many times this line was hit by all tested targets. 
+- Per-line hit counts indicating how many times this line was hit by all tested targets.
 This information can be useful to determine hot spots in your code.
 - Potentially dead code. See [dead code example].
 
@@ -98,7 +98,7 @@ $ autoninja -C out/coverage crypto_unittests url_unittests
 ```
 
 ### Step 2 Create Raw Profiles
-The next step is to run the instrumented binaries. When the program exits, it 
+The next step is to run the instrumented binaries. When the program exits, it
 writes a raw profile for each process. Because Chromium runs tests in
 multiple processes, the number of processes spawned can be as many as a few
 hundred, resulting in the generation of a few hundred gigabytes’ raw
@@ -161,7 +161,7 @@ For more information on how to use llvm-cov, please refer to the [guide].
 For any breakage report and feature requests, please [file a bug].
 
 ### Mailing list
-For questions and general discussions, please join [chrome-code-coverage group].
+For questions and general discussions, please join [code-coverage group].
 
 ## FAQ
 
@@ -247,7 +247,7 @@ information, see [crbug.com/842424].
 
 
 [assert]: http://man7.org/linux/man-pages/man3/assert.3.html
-[chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
+[code-coverage group]: https://groups.google.com/a/chromium.org/forum/#!forum/code-coverage
 [code-coverage repository]: https://chrome-internal.googlesource.com/chrome/tools/code-coverage
 [coverage dashboard]: https://chromium-coverage.appspot.com/
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
