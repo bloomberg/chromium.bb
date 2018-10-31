@@ -76,6 +76,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
                                                          ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr), style_(style) {
   DCHECK(element.CanParticipateInFlatTree());
+  DCHECK(style_);
   // TODO(ecobos): Move the first-letter logic inside ParentLayoutObject too?
   // It's an extra (unnecessary) check for text nodes, though.
   if (element.IsFirstLetterPseudoElement()) {
@@ -127,36 +128,24 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
       !CanHaveGeneratedChildren(*parent_layout_object)) {
     return false;
   }
-  return node_->LayoutObjectIsNeeded(Style());
-}
-
-ComputedStyle& LayoutTreeBuilderForElement::Style() const {
-  if (!style_) {
-    // TODO(futhark@chromium.org): this should never happen, but we currently
-    // have crashes in the wild because of this (https://crbug.com/875796).
-    // Please report if you ever end up here.
-    NOTREACHED();
-    style_ = node_->StyleForLayoutObject();
-  }
-  return *style_;
+  return node_->LayoutObjectIsNeeded(*style_);
 }
 
 DISABLE_CFI_PERF
 void LayoutTreeBuilderForElement::CreateLayoutObject() {
-  ComputedStyle& style = Style();
   ReattachLegacyLayoutObjectList& legacy_layout_objects =
       node_->GetDocument().GetReattachLegacyLayoutObjectList();
   if (legacy_layout_objects.IsForcingLegacyLayout()) {
     DCHECK(!node_->GetLayoutObject());
-    style.SetForceLegacyLayout(true);
+    style_->SetForceLegacyLayout(true);
   }
-  LayoutObject* new_layout_object = node_->CreateLayoutObject(style);
+  LayoutObject* new_layout_object = node_->CreateLayoutObject(*style_);
   if (!new_layout_object)
     return;
 
   LayoutObject* parent_layout_object = ParentLayoutObject();
 
-  if (!parent_layout_object->IsChildAllowed(new_layout_object, style)) {
+  if (!parent_layout_object->IsChildAllowed(new_layout_object, *style_)) {
     new_layout_object->Destroy();
     return;
   }
@@ -171,7 +160,7 @@ void LayoutTreeBuilderForElement::CreateLayoutObject() {
   LayoutObject* next_layout_object = NextLayoutObject();
   node_->SetLayoutObject(new_layout_object);
   new_layout_object->SetStyle(
-      &style);  // SetStyle() can depend on LayoutObject() already being set.
+      style_);  // SetStyle() can depend on LayoutObject() already being set.
 
   // Note: Adding new_layout_object instead of LayoutObject(). LayoutObject()
   // may be a child of new_layout_object.

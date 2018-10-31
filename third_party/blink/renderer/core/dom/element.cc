@@ -1993,14 +1993,13 @@ void Element::AttachLayoutTree(AttachContext& context) {
     data->ClearComputedStyle();
   }
 
-  if (CanParticipateInFlatTree()) {
-    LayoutTreeBuilderForElement builder(*this, GetNonAttachedStyle());
+  ComputedStyle* style = GetNonAttachedStyle();
+  if (style && CanParticipateInFlatTree()) {
+    LayoutTreeBuilderForElement builder(*this, style);
     builder.CreateLayoutObjectIfNeeded();
 
-    if (ComputedStyle* style = builder.ResolvedStyle()) {
-      if (!GetLayoutObject() && ShouldStoreNonLayoutObjectComputedStyle(*style))
-        StoreNonLayoutObjectComputedStyle(style);
-    }
+    if (!GetLayoutObject() && ShouldStoreNonLayoutObjectComputedStyle(*style))
+      StoreNonLayoutObjectComputedStyle(style);
   }
 
   if (HasRareData() && !GetLayoutObject() &&
