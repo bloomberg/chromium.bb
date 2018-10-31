@@ -83,7 +83,7 @@ public class JniProcessor extends AbstractProcessor {
     // Types that are non-primitives and should not be
     // casted to objects in native method declarations.
     static final ImmutableSet JNI_OBJECT_TYPE_EXCEPTIONS =
-            ImmutableSet.of("java.lang.String", "void");
+            ImmutableSet.of("java.lang.String", "java.lang.Throwable", "java.lang.Class", "void");
 
     static String getNameOfWrapperClass(String containingClassName) {
         return containingClassName + NATIVE_WRAPPER_CLASS_POSTFIX;
