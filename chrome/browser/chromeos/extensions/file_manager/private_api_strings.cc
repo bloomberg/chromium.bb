@@ -839,6 +839,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
                    chromeos::DemoSession::IsDeviceInDemoMode());
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
+  dict->SetBoolean(
+      "MY_FILES_VOLUME_ENABLED",
+      base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
   dict->SetString("CHROMEOS_RELEASE_BOARD",
                   base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(
