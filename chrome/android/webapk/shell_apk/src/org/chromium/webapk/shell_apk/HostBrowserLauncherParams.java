@@ -43,13 +43,22 @@ public class HostBrowserLauncherParams {
 
         int hostBrowserMajorChromiumVersion = HostBrowserUtils.queryHostBrowserMajorChromiumVersion(
                 context, hostBrowserPackageName);
+
+        ComponentName launchingActivityComponent = intent.getComponent();
+        if (intent.getStringExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME)
+                != null) {
+            launchingActivityComponent = new ComponentName(context.getPackageName(),
+                    intent.getStringExtra(
+                            WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME));
+        }
+
         String startUrl = null;
         int source = WebApkConstants.SHORTCUT_SOURCE_UNKNOWN;
         boolean forceNavigation = false;
 
         if (Intent.ACTION_SEND.equals(intent.getAction())
                 || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
-            Bundle shareTargetMetaData = fetchActivityMetaData(context, intent.getComponent());
+            Bundle shareTargetMetaData = fetchActivityMetaData(context, launchingActivityComponent);
             startUrl = computeStartUrlForShareTarget(shareTargetMetaData, intent);
             source = WebApkConstants.SHORTCUT_SOURCE_SHARE;
             forceNavigation = true;
@@ -73,7 +82,7 @@ public class HostBrowserLauncherParams {
 
         return new HostBrowserLauncherParams(hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,
-                forceNavigation, launchTimeMs, intent.getComponent().getClassName());
+                forceNavigation, launchTimeMs, launchingActivityComponent.getClassName());
     }
 
     private static Bundle fetchActivityMetaData(

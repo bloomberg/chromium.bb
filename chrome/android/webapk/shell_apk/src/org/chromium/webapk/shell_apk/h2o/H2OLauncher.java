@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -20,15 +21,15 @@ import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
 /** Contains methods for launching host browser where ShellAPK shows the splash screen. */
 public class H2OLauncher {
     // Lowest version of Chromium which supports ShellAPK showing the splash screen.
-    private static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = Integer.MAX_VALUE;
+    static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = Integer.MAX_VALUE;
 
     private static final String TAG = "cr_H2OLauncher";
 
     /**
-     * Returns whether the main intent should launch SplashActivity.class for the given host browser
-     * params.
+     * Returns whether intents (android.intent.action.MAIN, android.intent.action.SEND ...) should
+     * launch {@link SplashActivity} for the given host browser params.
      */
-    public static boolean shouldMainIntentLaunchSplashActivity(HostBrowserLauncherParams params) {
+    public static boolean shouldIntentLaunchSplashActivity(HostBrowserLauncherParams params) {
         return params.getHostBrowserMajorChromiumVersion()
                 >= MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
@@ -69,5 +70,24 @@ public class H2OLauncher {
             Log.w(TAG, "Unable to launch browser in WebAPK mode.");
             e.printStackTrace();
         }
+    }
+
+    /** Launches the given component, passing extras from the given intent. */
+    public static void copyIntentExtrasAndLaunch(
+            Context context, Intent intentToCopy, ComponentName launchComponent) {
+        Intent intent = new Intent();
+        intent.setAction(intentToCopy.getAction());
+        intent.setData(intentToCopy.getData());
+        intent.setComponent(launchComponent);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Bundle copiedExtras = intentToCopy.getExtras();
+        if (copiedExtras != null) {
+            intent.putExtras(copiedExtras);
+        }
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME,
+                intentToCopy.getComponent().getClassName());
+
+        context.startActivity(intent);
     }
 }
