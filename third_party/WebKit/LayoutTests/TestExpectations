@@ -2831,8 +2831,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-an
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Failure ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/list-item-with-empty-first-line.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-line.html [ Failure ]
 
@@ -5586,6 +5584,5 @@ crbug.com/899222 [ Linux Win ] virtual/scroll_customization/fast/events/touch/ge
 crbug.com/900356 [ Win ] virtual/threaded/animations/animationworklet/worklet-animation-style-update.html [ Failure Pass ]
 
 # Sheriff 2018-10-31
-crbug.com/726520 [ Win10 ] virtual/layout_ng_experimental/printing/iframe-print.html [ Failure ]
 crbug.com/900326 [ Win7 Mac10.12 ] http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
 crbug.com/900641 [ Linux ] compositing/transitions/transform-on-large-layer.html [ Timeout Pass ]
