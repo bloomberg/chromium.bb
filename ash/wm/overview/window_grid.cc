@@ -289,13 +289,10 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       window_observer_(this),
       window_state_observer_(this),
       bounds_(bounds_in_screen) {
-  aura::Window::Windows windows_in_root;
   for (auto* window : windows) {
-    if (window->GetRootWindow() == root_window)
-      windows_in_root.push_back(window);
-  }
+    if (window->GetRootWindow() != root_window)
+      continue;
 
-  for (auto* window : windows_in_root) {
     // Stop ongoing animations before entering overview mode. Because we are
     // deferring SetTransform of the windows beneath the window covering the
     // available workspace, we need to set the correct transforms of these

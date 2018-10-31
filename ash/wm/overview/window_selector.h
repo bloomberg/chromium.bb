@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/scoped_hide_overview_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
@@ -296,7 +296,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   bool IsEmpty();
 
   // Tracks observed windows.
-  std::set<aura::Window*> observed_windows_;
+  base::flat_set<aura::Window*> observed_windows_;
 
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
