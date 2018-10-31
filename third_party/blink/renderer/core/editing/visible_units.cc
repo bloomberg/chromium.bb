@@ -1053,16 +1053,14 @@ bool IsVisuallyEquivalentCandidate(const PositionInFlatTree& position) {
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> SkipToEndOfEditingBoundary(
-    const VisiblePositionTemplate<Strategy>& pos,
+static PositionTemplate<Strategy> SkipToEndOfEditingBoundary(
+    const PositionTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
-  DCHECK(pos.IsValid()) << pos;
   if (pos.IsNull())
     return pos;
 
   ContainerNode* highest_root = HighestEditableRoot(anchor);
-  ContainerNode* highest_root_of_pos =
-      HighestEditableRoot(pos.DeepEquivalent());
+  ContainerNode* highest_root_of_pos = HighestEditableRoot(pos);
 
   // Return |pos| itself if the two are from the very same editable region,
   // or both are non-editable.
@@ -1070,17 +1068,16 @@ static VisiblePositionTemplate<Strategy> SkipToEndOfEditingBoundary(
     return pos;
 
   // If this is not editable but |pos| has an editable root, skip to the end
-  if (!highest_root && highest_root_of_pos)
-    return CreateVisiblePosition(
-        PositionTemplate<Strategy>(highest_root_of_pos,
-                                   PositionAnchorType::kAfterAnchor)
-            .ParentAnchoredEquivalent());
+  if (!highest_root && highest_root_of_pos) {
+    return PositionTemplate<Strategy>(highest_root_of_pos,
+                                      PositionAnchorType::kAfterAnchor)
+        .ParentAnchoredEquivalent();
+  }
 
   // That must mean that |pos| is not editable. Return the next position after
   // |pos| that is in the same editable region as this position
   DCHECK(highest_root);
-  return CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
-      pos.DeepEquivalent(), *highest_root));
+  return FirstEditablePositionAfterPositionInRoot(pos, *highest_root);
 }
 
 template <typename Strategy>
@@ -1144,7 +1141,8 @@ static VisiblePositionTemplate<Strategy> NextPositionOfAlgorithm(
       return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
           next, position.GetPosition());
     case kCanSkipOverEditingBoundary:
-      return SkipToEndOfEditingBoundary(next, position.GetPosition());
+      return CreateVisiblePosition(SkipToEndOfEditingBoundary(
+          next.DeepEquivalent(), position.GetPosition()));
   }
   NOTREACHED();
   return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
@@ -1167,16 +1165,14 @@ VisiblePositionInFlatTree NextPositionOf(
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> SkipToStartOfEditingBoundary(
-    const VisiblePositionTemplate<Strategy>& pos,
+static PositionTemplate<Strategy> SkipToStartOfEditingBoundary(
+    const PositionTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
-  DCHECK(pos.IsValid()) << pos;
   if (pos.IsNull())
     return pos;
 
   ContainerNode* highest_root = HighestEditableRoot(anchor);
-  ContainerNode* highest_root_of_pos =
-      HighestEditableRoot(pos.DeepEquivalent());
+  ContainerNode* highest_root_of_pos = HighestEditableRoot(pos);
 
   // Return |pos| itself if the two are from the very same editable region, or
   // both are non-editable.
@@ -1184,17 +1180,17 @@ static VisiblePositionTemplate<Strategy> SkipToStartOfEditingBoundary(
     return pos;
 
   // If this is not editable but |pos| has an editable root, skip to the start
-  if (!highest_root && highest_root_of_pos)
-    return CreateVisiblePosition(PreviousVisuallyDistinctCandidate(
+  if (!highest_root && highest_root_of_pos) {
+    return PreviousVisuallyDistinctCandidate(
         PositionTemplate<Strategy>(highest_root_of_pos,
                                    PositionAnchorType::kBeforeAnchor)
-            .ParentAnchoredEquivalent()));
+            .ParentAnchoredEquivalent());
+  }
 
   // That must mean that |pos| is not editable. Return the last position
   // before |pos| that is in the same editable region as this position
   DCHECK(highest_root);
-  return CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
-      pos.DeepEquivalent(), *highest_root));
+  return LastEditablePositionBeforePositionInRoot(pos, *highest_root);
 }
 
 template <typename Strategy>
@@ -1224,7 +1220,8 @@ static VisiblePositionTemplate<Strategy> PreviousPositionOfAlgorithm(
       return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(prev,
                                                                     position);
     case kCanSkipOverEditingBoundary:
-      return SkipToStartOfEditingBoundary(prev, position);
+      return CreateVisiblePosition(
+          SkipToStartOfEditingBoundary(prev.DeepEquivalent(), position));
   }
 
   NOTREACHED();
