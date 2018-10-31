@@ -93,7 +93,13 @@ bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
 
 }  // namespace
 
-PreviewsUITabHelper::~PreviewsUITabHelper() {}
+PreviewsUITabHelper::~PreviewsUITabHelper() {
+  // Report a non-opt out for the previous page if it was a preview and was not
+  // reloaded without previews.
+  if (!on_dismiss_callback_.is_null()) {
+    std::move(on_dismiss_callback_).Run(false);
+  }
+}
 
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents), weak_factory_(this) {
@@ -239,6 +245,12 @@ void PreviewsUITabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
+
+  // Report a non-opt out for the previous page if it was a preview and was not
+  // reloaded without previews.
+  if (!on_dismiss_callback_.is_null()) {
+    std::move(on_dismiss_callback_).Run(false);
+  }
 
   previews_freshness_ = base::Time();
   previews_user_data_.reset();
