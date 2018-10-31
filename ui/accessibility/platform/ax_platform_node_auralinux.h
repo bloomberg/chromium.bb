@@ -81,6 +81,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnCheckedStateChanged();
   void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();
+  void OnWindowActivated();
+  void OnWindowDeactivated();
   void OnSelected();
   void OnValueChanged();
 
@@ -119,6 +121,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
     ATK_TABLE_INTERFACE,
     ATK_TEXT_INTERFACE,
     ATK_VALUE_INTERFACE,
+    ATK_WINDOW_INTERFACE,
   };
 
   int GetGTypeInterfaceMask();

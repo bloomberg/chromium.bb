@@ -63,6 +63,8 @@
     stateChanged,
     textChanged,
     textSelectionChanged,
+    windowActivated,
+    windowDeactivated,
     treeChanged,
     valueChanged
   };
