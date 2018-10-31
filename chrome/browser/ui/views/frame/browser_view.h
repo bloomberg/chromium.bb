@@ -66,6 +66,7 @@ class TabStrip;
 class ToolbarButtonProvider;
 class ToolbarView;
 class TopContainerView;
+class TopControlsSlideControllerTest;
 class WebContentsCloseHandler;
 
 namespace extensions {
@@ -542,6 +543,7 @@ class BrowserView : public BrowserWindow,
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
   // interface to keep these two classes decoupled and testable.
   friend class BrowserViewLayoutDelegateImpl;
+  friend class TopControlsSlideControllerTest;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, AccessibleWindowTitle);
 
