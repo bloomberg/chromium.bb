@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 
 namespace features {
 
@@ -21,6 +22,11 @@ extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
     base::Feature kPageAlmostIdle;
 extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
     base::Feature kPerformanceMeasurement;
+
+#if defined(OS_WIN)
+extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
+    base::Feature kEmptyWorkingSet;
+#endif
 
 }  // namespace features
 

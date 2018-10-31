@@ -25,6 +25,12 @@ const base::Feature kPageAlmostIdle{"PageAlmostIdle",
 const base::Feature kPerformanceMeasurement{"PerformanceMeasurement",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Empty the working set of processes in which all frames are frozen.
+const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 
 namespace resource_coordinator {
