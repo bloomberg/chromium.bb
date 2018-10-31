@@ -19,11 +19,29 @@
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
+// Overrides for flat_set lookups:
+bool operator<(
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) {
+  return lhs->mailbox() < rhs->mailbox();
+}
+
+bool operator<(
+    const Mailbox& lhs,
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) {
+  return lhs < rhs->mailbox();
+}
+
+bool operator<(const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
+               const Mailbox& rhs) {
+  return lhs->mailbox() < rhs;
+}
 
 SharedImageFactory::SharedImageFactory(
     const GpuPreferences& gpu_preferences,
@@ -33,22 +51,22 @@ SharedImageFactory::SharedImageFactory(
     MailboxManager* mailbox_manager,
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
-    MemoryTracker* tracker)
+    MemoryTracker* memory_tracker)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
+      memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       backing_factory_(
           std::make_unique<SharedImageBackingFactoryGLTexture>(gpu_preferences,
                                                                workarounds,
                                                                gpu_feature_info,
-                                                               image_factory,
-                                                               tracker)),
+                                                               image_factory)),
       wrapped_sk_image_factory_(
           gpu_preferences.enable_raster_to_sk_image
               ? std::make_unique<raster::WrappedSkImageFactory>(context_state)
               : nullptr) {}
 
 SharedImageFactory::~SharedImageFactory() {
-  DCHECK(mailboxes_.empty());
+  DCHECK(shared_images_.empty());
 }
 
 bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
@@ -56,8 +74,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
-  if (mailboxes_.find(mailbox) != mailboxes_.end()) {
-    LOG(ERROR) << "CreateSharedImage: mailbox already exists";
+  if (shared_image_manager_->IsSharedImage(mailbox)) {
+    LOG(ERROR) << "CreateSharedImage: mailbox is already associated with a "
+                  "SharedImage";
     return false;
   }
 
@@ -77,56 +96,78 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
     return false;
   }
 
-  // TODO(ericrk): Handle the non-legacy case.
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_tracker_.get());
+
+  // TODO(ericrk): Remove this once no legacy cases remain.
   if (!using_wrapped_sk_image &&
-      !backing->ProduceLegacyMailbox(mailbox_manager_)) {
-    LOG(ERROR)
-        << "CreateSharedImage: could not convert backing to legacy mailbox.";
-    backing->Destroy();
+      !shared_image->ProduceLegacyMailbox(mailbox_manager_)) {
+    LOG(ERROR) << "CreateSharedImage: could not convert shared_image to legacy "
+                  "mailbox.";
     return false;
   }
 
-  if (!shared_image_manager_->Register(std::move(backing))) {
-    LOG(ERROR) << "CreateSharedImage: Could not register backing with "
-                  "SharedImageManager.";
-    return false;
-  }
-
-  mailboxes_.emplace(mailbox);
+  shared_images_.emplace(std::move(shared_image));
   return true;
 }
 
 bool SharedImageFactory::DestroySharedImage(const Mailbox& mailbox) {
-  auto it = mailboxes_.find(mailbox);
-  if (it == mailboxes_.end()) {
+  auto it = shared_images_.find(mailbox);
+  if (it == shared_images_.end()) {
     LOG(ERROR) << "Could not find shared image mailbox";
     return false;
   }
-  shared_image_manager_->Unregister(mailbox);
-  mailboxes_.erase(it);
+  shared_images_.erase(it);
   return true;
 }
 
 void SharedImageFactory::DestroyAllSharedImages(bool have_context) {
-  for (const auto& mailbox : mailboxes_) {
-    if (!have_context)
-      shared_image_manager_->OnContextLost(mailbox);
-    shared_image_manager_->Unregister(mailbox);
+  if (!have_context) {
+    for (auto& shared_image : shared_images_)
+      shared_image->OnContextLost();
   }
-  mailboxes_.clear();
+  shared_images_.clear();
 }
 
+// TODO(ericrk): Move this entirely to SharedImageManager.
 bool SharedImageFactory::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd,
     int client_id,
     uint64_t client_tracing_id) {
-  for (const auto& mailbox : mailboxes_) {
-    shared_image_manager_->OnMemoryDump(mailbox, pmd, client_id,
+  for (const auto& shared_image : shared_images_) {
+    shared_image_manager_->OnMemoryDump(shared_image->mailbox(), pmd, client_id,
                                         client_tracing_id);
   }
 
   return true;
+}
+
+SharedImageRepresentationFactory::SharedImageRepresentationFactory(
+    SharedImageManager* manager,
+    MemoryTracker* tracker)
+    : manager_(manager),
+      tracker_(std::make_unique<MemoryTypeTracker>(tracker)) {}
+
+SharedImageRepresentationFactory::~SharedImageRepresentationFactory() {
+  DCHECK_EQ(0u, tracker_->GetMemRepresented());
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexture>
+SharedImageRepresentationFactory::ProduceGLTexture(const Mailbox& mailbox) {
+  return manager_->ProduceGLTexture(mailbox, tracker_.get());
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+SharedImageRepresentationFactory::ProduceGLTexturePassthrough(
+    const Mailbox& mailbox) {
+  return manager_->ProduceGLTexturePassthrough(mailbox, tracker_.get());
+}
+
+std::unique_ptr<SharedImageRepresentationSkia>
+SharedImageRepresentationFactory::ProduceSkia(const Mailbox& mailbox) {
+  return manager_->ProduceSkia(mailbox, tracker_.get());
 }
 
 }  // namespace gpu

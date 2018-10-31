@@ -597,24 +597,22 @@ void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
   MaybeDeleteThis(have_context);
 }
 
-void Texture::SetLightweightRef(MemoryTypeTracker* tracker) {
-  DCHECK(!lightweight_ref_);
-  DCHECK(tracker);
+void Texture::SetLightweightRef() {
   ScopedMemTrackerChange change(this);
-  lightweight_ref_ = tracker;
+  has_lightweight_ref_ = true;
 }
 
 void Texture::RemoveLightweightRef(bool have_context) {
-  DCHECK(lightweight_ref_);
+  DCHECK(has_lightweight_ref_);
   {
     ScopedMemTrackerChange change(this);
-    lightweight_ref_ = nullptr;
+    has_lightweight_ref_ = false;
   }
   MaybeDeleteThis(have_context);
 }
 
 void Texture::MaybeDeleteThis(bool have_context) {
-  if (!refs_.empty() || lightweight_ref_)
+  if (!refs_.empty() || has_lightweight_ref_)
     return;
   if (have_context)
     glDeleteTextures(1, &owned_service_id_);
@@ -636,12 +634,14 @@ Texture* Texture::CheckedCast(TextureBase* texture) {
 }
 
 MemoryTypeTracker* Texture::GetMemTracker() {
-  if (lightweight_ref_)
-    return lightweight_ref_;
-  else if (memory_tracking_ref_)
-    return memory_tracking_ref_->manager()->GetMemTracker();
-  else
+  if (has_lightweight_ref_) {
+    // Memory tracking is handled externally in the SharedImage system.
     return nullptr;
+  } else if (memory_tracking_ref_) {
+    return memory_tracking_ref_->manager()->GetMemTracker();
+  } else {
+    return nullptr;
+  }
 }
 
 Texture::LevelInfo::LevelInfo()
@@ -3615,7 +3615,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   int importance = 0;  // Default importance.
   // The link to the memory tracking |client_id| is given a higher importance
   // than other refs.
-  if (!ref->texture()->lightweight_ref_ &&
+  if (!ref->texture()->has_lightweight_ref_ &&
       (ref == ref->texture()->memory_tracking_ref_))
     importance = 2;
 

@@ -50,8 +50,6 @@ class WrappedSkImage : public SharedImageBacking {
 
   void SetCleared() override { cleared_ = true; }
 
-  size_t EstimatedSize() const override { return estimated_size_; }
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -89,7 +87,8 @@ class WrappedSkImage : public SharedImageBacking {
 
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager) override;
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override;
 
  private:
   friend class gpu::raster::WrappedSkImageFactory;
@@ -99,25 +98,24 @@ class WrappedSkImage : public SharedImageBacking {
                  const gfx::Size& size,
                  const gfx::ColorSpace& color_space,
                  uint32_t usage,
+                 size_t estimated_size,
                  raster::RasterDecoderContextState* context_state)
-      : SharedImageBacking(mailbox, format, size, color_space, usage),
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           estimated_size),
         context_state_(context_state) {
     DCHECK(!!context_state_);
   }
 
-  bool Initialize() {
+  bool Initialize(const SkImageInfo& info) {
     if (context_state_->context_lost)
       return false;
     DCHECK(context_state_->context->IsCurrent(nullptr));
 
     context_state_->need_context_state_reset = true;
-
-    SkImageInfo info = SkImageInfo::Make(
-        size().width(), size().height(),
-        ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true, format()),
-        kOpaque_SkAlphaType);
-    size_t stride = info.minRowBytes();
-    estimated_size_ = info.computeByteSize(stride);
 
     auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context,
                                                SkBudgeted::kNo, info);
@@ -156,7 +154,6 @@ class WrappedSkImage : public SharedImageBacking {
   RasterDecoderContextState* const context_state_;
 
   sk_sp<SkImage> image_;
-  uint32_t estimated_size_ = 0;
   bool cleared_ = false;
 
   uint64_t tracing_id_ = 0;
@@ -167,8 +164,9 @@ class WrappedSkImage : public SharedImageBacking {
 class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
  public:
   WrappedSkImageRepresentation(SharedImageManager* manager,
-                               SharedImageBacking* backing)
-      : SharedImageRepresentationSkia(manager, backing) {}
+                               SharedImageBacking* backing,
+                               MemoryTypeTracker* tracker)
+      : SharedImageRepresentationSkia(manager, backing, tracker) {}
 
   ~WrappedSkImageRepresentation() override { DCHECK(!write_surface_); }
 
@@ -222,16 +220,23 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  std::unique_ptr<WrappedSkImage> texture(new WrappedSkImage(
-      mailbox, format, size, color_space, usage, context_state_));
-  if (!texture->Initialize())
+  auto info = SkImageInfo::Make(size.width(), size.height(),
+                                ResourceFormatToClosestSkColorType(
+                                    /*gpu_compositing=*/true, format),
+                                kOpaque_SkAlphaType);
+  size_t estimated_size = info.computeMinByteSize();
+  std::unique_ptr<WrappedSkImage> texture(
+      new WrappedSkImage(mailbox, format, size, color_space, usage,
+                         estimated_size, context_state_));
+  if (!texture->Initialize(info))
     return nullptr;
   return texture;
 }
 
 std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(
-    SharedImageManager* manager) {
-  return std::make_unique<WrappedSkImageRepresentation>(manager, this);
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker) {
+  return std::make_unique<WrappedSkImageRepresentation>(manager, this, tracker);
 }
 
 }  // namespace raster

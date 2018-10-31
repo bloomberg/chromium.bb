@@ -1290,7 +1290,7 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
         GetGpuPreferences(), context_group_->feature_info()->workarounds(),
         GetGpuFeatureInfo(), context_state_.get(),
         context_group_->mailbox_manager(),
-        context_group_->shared_image_manager(), image_factory_, nullptr);
+        task_executor_->shared_image_manager(), image_factory_, nullptr);
   }
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage)) {

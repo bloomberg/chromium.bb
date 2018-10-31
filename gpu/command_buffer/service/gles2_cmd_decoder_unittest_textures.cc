@@ -3193,8 +3193,9 @@ class TestSharedImageBacking : public SharedImageBacking {
    public:
     TestSharedImageRepresentation(SharedImageManager* manager,
                                   SharedImageBacking* backing,
+                                  MemoryTypeTracker* tracker,
                                   gles2::Texture* texture)
-        : SharedImageRepresentationGLTexture(manager, backing),
+        : SharedImageRepresentationGLTexture(manager, backing, tracker),
           texture_(texture) {}
 
     gles2::Texture* GetTexture() override { return texture_; }
@@ -3210,9 +3211,14 @@ class TestSharedImageBacking : public SharedImageBacking {
                          uint32_t usage,
                          MemoryTypeTracker* memory_tracker,
                          GLuint texture_id)
-      : SharedImageBacking(mailbox, format, size, color_space, usage) {
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           0 /* estimated_size */) {
     texture_ = new gles2::Texture(texture_id);
-    texture_->SetLightweightRef(memory_tracker);
+    texture_->SetLightweightRef();
   }
 
   bool IsCleared() const override { return false; }
@@ -3228,8 +3234,6 @@ class TestSharedImageBacking : public SharedImageBacking {
     texture_ = nullptr;
   }
 
-  size_t EstimatedSize() const override { return 0; }
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -3237,9 +3241,10 @@ class TestSharedImageBacking : public SharedImageBacking {
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager) override {
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
     return std::make_unique<TestSharedImageRepresentation>(manager, this,
-                                                           texture_);
+                                                           tracker, texture_);
   }
 
  private:
@@ -3249,10 +3254,12 @@ class TestSharedImageBacking : public SharedImageBacking {
 TEST_P(GLES2DecoderTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
   Mailbox mailbox = Mailbox::Generate();
-  group().shared_image_manager()->Register(
-      std::make_unique<TestSharedImageBacking>(
-          mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-          gfx::ColorSpace(), 0, &memory_tracker, kNewServiceId));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      GetSharedImageManager()->Register(
+          std::make_unique<TestSharedImageBacking>(
+              mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
+              gfx::ColorSpace(), 0, &memory_tracker, kNewServiceId),
+          &memory_tracker);
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
@@ -3270,7 +3277,7 @@ TEST_P(GLES2DecoderTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   texture_ref = group().texture_manager()->GetTexture(kNewClientId);
   EXPECT_EQ(texture_ref, nullptr);
 
-  group().shared_image_manager()->Unregister(mailbox);
+  shared_image.reset();
 }
 
 TEST_P(GLES2DecoderTest,
@@ -3308,10 +3315,12 @@ TEST_P(GLES2DecoderTest,
   // Try to create a mailbox with kNewClientId.
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
   Mailbox mailbox = Mailbox::Generate();
-  group().shared_image_manager()->Register(
-      std::make_unique<TestSharedImageBacking>(
-          mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-          gfx::ColorSpace(), 0, &memory_tracker, kNewServiceId));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      GetSharedImageManager()->Register(
+          std::make_unique<TestSharedImageBacking>(
+              mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
+              gfx::ColorSpace(), 0, &memory_tracker, kNewServiceId),
+          &memory_tracker);
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
@@ -3321,8 +3330,9 @@ TEST_P(GLES2DecoderTest,
   // CreateAndTexStorage2DSharedImage should fail.
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  DoDeleteTexture(kNewClientId, kNewServiceId);
-  group().shared_image_manager()->Unregister(mailbox);
+  // We delete a texture when calling |shared_image| reset().
+  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(kNewServiceId)));
+  shared_image.reset();
 }
 
 TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {

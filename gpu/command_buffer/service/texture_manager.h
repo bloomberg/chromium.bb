@@ -366,7 +366,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   ~Texture() override;
   void AddTextureRef(TextureRef* ref);
   void RemoveTextureRef(TextureRef* ref, bool have_context);
-  void SetLightweightRef(MemoryTypeTracker* tracker);
+  void SetLightweightRef();
   void RemoveLightweightRef(bool have_context);
   void MaybeDeleteThis(bool have_context);
 
@@ -596,7 +596,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // The texture refs that point to this Texture.
   typedef base::flat_set<TextureRef*> RefSet;
   RefSet refs_;
-  MemoryTypeTracker* lightweight_ref_ = nullptr;
+  bool has_lightweight_ref_ = false;
 
   // The single TextureRef that accounts for memory for this texture. Must be
   // one of refs_.

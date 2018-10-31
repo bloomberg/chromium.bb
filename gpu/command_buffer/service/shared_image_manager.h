@@ -11,39 +11,41 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+class SharedImageRepresentationFactoryRef;
+
 class GPU_GLES2_EXPORT SharedImageManager {
  public:
   SharedImageManager();
   ~SharedImageManager();
 
-  // Registers a SharedImageBacking with the manager and returns true on
-  // success. On success, the backing has one ref which may be released by
-  // calling Unregister.
-  bool Register(std::unique_ptr<SharedImageBacking> backing);
-
-  // Releases the registration ref. If a backing reaches zero refs, it is
-  // destroyed.
-  void Unregister(const Mailbox& mailbox);
+  // Registers a SharedImageBacking with the manager and returns a
+  // SharedImageRepresentationFactoryRef which holds a ref on the SharedImage.
+  // The factory should delete this object to release the ref.
+  std::unique_ptr<SharedImageRepresentationFactoryRef> Register(
+      std::unique_ptr<SharedImageBacking> backing,
+      MemoryTypeTracker* ref);
 
   // Marks the backing associated with a mailbox as context lost.
   void OnContextLost(const Mailbox& mailbox);
 
   // Indicates whether a mailbox is associated with a SharedImage.
-  // TODO: Remove this once all mailboxes are SharedImages.
   bool IsSharedImage(const Mailbox& mailbox);
 
   // Accessors which return a SharedImageRepresentation. Representations also
   // take a ref on the mailbox, releasing it when the representation is
   // destroyed.
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      const Mailbox& mailbox);
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref);
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(const Mailbox& mailbox);
+  ProduceGLTexturePassthrough(const Mailbox& mailbox, MemoryTypeTracker* ref);
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      const Mailbox& mailbox);
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref);
 
   // Called by SharedImageRepresentation in the destructor.
-  void OnRepresentationDestroyed(const Mailbox& mailbox);
+  void OnRepresentationDestroyed(const Mailbox& mailbox,
+                                 SharedImageRepresentation* representation);
 
   // Dump memory for the given mailbox.
   void OnMemoryDump(const Mailbox& mailbox,
@@ -52,21 +54,7 @@ class GPU_GLES2_EXPORT SharedImageManager {
                     uint64_t client_tracing_id);
 
  private:
-  struct BackingAndRefCount {
-    BackingAndRefCount(std::unique_ptr<SharedImageBacking> backing,
-                       uint32_t ref_count);
-    BackingAndRefCount(BackingAndRefCount&& other);
-    BackingAndRefCount& operator=(BackingAndRefCount&& rhs);
-    ~BackingAndRefCount();
-    std::unique_ptr<SharedImageBacking> backing;
-    uint32_t ref_count = 0;
-  };
-  friend bool operator<(const BackingAndRefCount& lhs,
-                        const BackingAndRefCount& rhs);
-  friend bool operator<(const Mailbox& lhs, const BackingAndRefCount& rhs);
-  friend bool operator<(const BackingAndRefCount& lhs, const Mailbox& rhs);
-
-  base::flat_set<BackingAndRefCount> images_;
+  base::flat_set<std::unique_ptr<SharedImageBacking>> images_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageManager);
 };

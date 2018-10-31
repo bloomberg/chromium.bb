@@ -31,6 +31,8 @@ class WrappedSkImageFactory;
 struct RasterDecoderContextState;
 }  // namespace raster
 
+// TODO(ericrk): Make this a very thin wrapper around SharedImageManager like
+// SharedImageRepresentationFactory.
 class GPU_GLES2_EXPORT SharedImageFactory {
  public:
   SharedImageFactory(const GpuPreferences& gpu_preferences,
@@ -49,7 +51,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          const gfx::ColorSpace& color_space,
                          uint32_t usage);
   bool DestroySharedImage(const Mailbox& mailbox);
-  bool HasImages() const { return !mailboxes_.empty(); }
+  bool HasImages() const { return !shared_images_.empty(); }
   void DestroyAllSharedImages(bool have_context);
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -59,10 +61,12 @@ class GPU_GLES2_EXPORT SharedImageFactory {
  private:
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
+  std::unique_ptr<MemoryTypeTracker> memory_tracker_;
 
-  // The set of mailboxes which have been registered with the
-  // SharedImageManager.
-  base::flat_set<Mailbox> mailboxes_;
+  // The set of SharedImages which have been created (and are being kept alive)
+  // by this factory.
+  base::flat_set<std::unique_ptr<SharedImageRepresentationFactoryRef>>
+      shared_images_;
 
   // TODO(ericrk): This should be some sort of map from usage to factory
   // eventually.
@@ -70,6 +74,30 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
   // Non-null if gpu_preferences.enable_raster_to_sk_image.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
+};
+
+class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
+ public:
+  SharedImageRepresentationFactory(SharedImageManager* manager,
+                                   MemoryTracker* tracker);
+  ~SharedImageRepresentationFactory();
+
+  bool IsSharedImage(const Mailbox& mailbox) const {
+    return manager_->IsSharedImage(mailbox);
+  }
+
+  // Helpers which call similar classes on SharedImageManager, providing a
+  // MemoryTypeTracker.
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      const Mailbox& mailbox);
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(const Mailbox& mailbox);
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      const Mailbox& mailbox);
+
+ private:
+  SharedImageManager* manager_;
+  std::unique_ptr<MemoryTypeTracker> tracker_;
 };
 
 }  // namespace gpu

@@ -17,19 +17,19 @@
 
 namespace gpu {
 // Overrides for flat_set lookups:
-bool operator<(const gpu::SharedImageManager::BackingAndRefCount& lhs,
-               const gpu::SharedImageManager::BackingAndRefCount& rhs) {
-  return lhs.backing->mailbox() < rhs.backing->mailbox();
+bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
+               const std::unique_ptr<SharedImageBacking>& rhs) {
+  return lhs->mailbox() < rhs->mailbox();
 }
 
-bool operator<(const gpu::Mailbox& lhs,
-               const gpu::SharedImageManager::BackingAndRefCount& rhs) {
-  return lhs < rhs.backing->mailbox();
+bool operator<(const Mailbox& lhs,
+               const std::unique_ptr<SharedImageBacking>& rhs) {
+  return lhs < rhs->mailbox();
 }
 
-bool operator<(const gpu::SharedImageManager::BackingAndRefCount& lhs,
-               const gpu::Mailbox& rhs) {
-  return lhs.backing->mailbox() < rhs;
+bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
+               const Mailbox& rhs) {
+  return lhs->mailbox() < rhs;
 }
 
 SharedImageManager::SharedImageManager() = default;
@@ -38,30 +38,13 @@ SharedImageManager::~SharedImageManager() {
   DCHECK(images_.empty());
 }
 
-bool SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing) {
-  auto found = images_.find(backing->mailbox());
-  if (found != images_.end()) {
-    backing->Destroy();
-    return false;
-  }
-
-  images_.emplace(std::move(backing), 1 /* ref_count */);
-  return true;
-}
-
-void SharedImageManager::Unregister(const Mailbox& mailbox) {
-  auto found = images_.find(mailbox);
-  if (found == images_.end()) {
-    LOG(ERROR) << "SharedImageManager::Unregister: Trying to unregister a "
-                  "non existent mailbox.";
-    return;
-  }
-
-  found->ref_count--;
-  if (found->ref_count == 0) {
-    found->backing->Destroy();
-    images_.erase(found);
-  }
+std::unique_ptr<SharedImageRepresentationFactoryRef>
+SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
+                             MemoryTypeTracker* tracker) {
+  auto factory_ref = std::make_unique<SharedImageRepresentationFactoryRef>(
+      this, backing.get(), tracker);
+  images_.emplace(std::move(backing));
+  return factory_ref;
 }
 
 void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
@@ -72,7 +55,7 @@ void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
     return;
   }
 
-  found->backing->OnContextLost();
+  (*found)->OnContextLost();
 }
 
 bool SharedImageManager::IsSharedImage(const Mailbox& mailbox) {
@@ -81,7 +64,8 @@ bool SharedImageManager::IsSharedImage(const Mailbox& mailbox) {
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
-SharedImageManager::ProduceGLTexture(const Mailbox& mailbox) {
+SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
+                                     MemoryTypeTracker* tracker) {
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
@@ -89,20 +73,19 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox) {
     return nullptr;
   }
 
-  auto representation = found->backing->ProduceGLTexture(this);
+  auto representation = (*found)->ProduceGLTexture(this, tracker);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
                   "representation from an incompatible mailbox.";
     return nullptr;
   }
 
-  // Take a ref. This is released when we destroy the generated representation.
-  found->ref_count++;
   return representation;
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox) {
+SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox,
+                                                MemoryTypeTracker* tracker) {
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexturePassthrough: Trying to "
@@ -110,20 +93,19 @@ SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox) {
     return nullptr;
   }
 
-  auto representation = found->backing->ProduceGLTexturePassthrough(this);
+  auto representation = (*found)->ProduceGLTexturePassthrough(this, tracker);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexturePassthrough: Trying to "
                   "produce a representation from an incompatible mailbox.";
     return nullptr;
   }
 
-  // Take a ref. This is released when we destroy the generated representation.
-  found->ref_count++;
   return representation;
 }
 
 std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
-    const Mailbox& mailbox) {
+    const Mailbox& mailbox,
+    MemoryTypeTracker* tracker) {
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to Produce a "
@@ -131,21 +113,34 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     return nullptr;
   }
 
-  auto representation = found->backing->ProduceSkia(this);
+  auto representation = (*found)->ProduceSkia(this, tracker);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to produce a "
                   "Skia representation from an incompatible mailbox.";
     return nullptr;
   }
 
-  // Take a ref. This is released when we destroy the generated representation.
-  found->ref_count++;
   return representation;
 }
 
-void SharedImageManager::OnRepresentationDestroyed(const Mailbox& mailbox) {
-  // Just call Unregister, which releases a ref on our backing.
-  Unregister(mailbox);
+void SharedImageManager::OnRepresentationDestroyed(
+    const Mailbox& mailbox,
+    SharedImageRepresentation* representation) {
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::OnRepresentationDestroyed: Trying to "
+                  "destroy a non existent mailbox.";
+    return;
+  }
+
+  // TODO(piman): When the original (factory) representation is destroyed, we
+  // should treat the backing as pending destruction and prevent additional
+  // representations from being created. This will help avoid races due to a
+  // consumer getting lucky with timing due to a representation inadvertently
+  // extending a backing's lifetime.
+  (*found)->ReleaseRef(representation);
+  if (!(*found)->HasAnyRefs())
+    images_.erase(found);
 }
 
 void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
@@ -159,8 +154,8 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
     return;
   }
 
-  auto* backing = found->backing.get();
-  size_t estimated_size = backing->EstimatedSize();
+  auto* backing = found->get();
+  size_t estimated_size = backing->estimated_size();
   if (estimated_size == 0)
     return;
 
@@ -185,15 +180,5 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
   // or dump additional sub-paths.
   backing->OnMemoryDump(dump_name, dump, pmd, client_tracing_id);
 }
-
-SharedImageManager::BackingAndRefCount::BackingAndRefCount(
-    std::unique_ptr<SharedImageBacking> backing,
-    uint32_t ref_count)
-    : backing(std::move(backing)), ref_count(ref_count) {}
-SharedImageManager::BackingAndRefCount::BackingAndRefCount(
-    BackingAndRefCount&& other) = default;
-SharedImageManager::BackingAndRefCount& SharedImageManager::BackingAndRefCount::
-operator=(BackingAndRefCount&& rhs) = default;
-SharedImageManager::BackingAndRefCount::~BackingAndRefCount() = default;
 
 }  // namespace gpu

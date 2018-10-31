@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -47,13 +48,18 @@ class SharedImageBackingFactoryGLTextureTest
     GpuDriverBugWorkarounds workarounds;
     workarounds.max_texture_size = INT_MAX - 1;
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-        preferences, workarounds, GpuFeatureInfo(), &image_factory_, nullptr);
+        preferences, workarounds, GpuFeatureInfo(), &image_factory_);
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */);
     context_state_->InitializeGrContext(workarounds, nullptr);
+
+    memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
+    shared_image_representation_factory_ =
+        std::make_unique<SharedImageRepresentationFactory>(
+            &shared_image_manager_, nullptr);
   }
 
   bool use_passthrough() {
@@ -70,6 +76,9 @@ class SharedImageBackingFactoryGLTextureTest
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
+  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
+  std::unique_ptr<SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
@@ -106,9 +115,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   }
 
   // Next, validate via a SharedImageRepresentationGLTexture.
-  EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  EXPECT_TRUE(shared_image);
   if (!use_passthrough()) {
-    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+    auto gl_representation =
+        shared_image_representation_factory_->ProduceGLTexture(mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexture()->service_id());
     EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
@@ -122,7 +135,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   // Next, validate a SharedImageRepresentationGLTexturePassthrough.
   if (use_passthrough()) {
     auto gl_representation =
-        shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
+        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+            mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexturePassthrough()->service_id());
     EXPECT_EQ(expected_target,
@@ -135,7 +149,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   }
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation = shared_image_manager_.ProduceSkia(mailbox);
+  auto skia_representation =
+      shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, kRGBA_8888_SkColorType,
@@ -153,7 +168,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   skia_representation->EndReadAccess();
   skia_representation.reset();
 
-  shared_image_manager_.Unregister(mailbox);
+  shared_image.reset();
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
@@ -190,9 +205,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   EXPECT_EQ(size, image->GetSize());
 
   // Next, validate via a SharedImageRepresentationGLTexture.
-  EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  EXPECT_TRUE(shared_image);
   if (!use_passthrough()) {
-    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+    auto gl_representation =
+        shared_image_representation_factory_->ProduceGLTexture(mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexture()->service_id());
     EXPECT_EQ(size, gl_representation->size());
@@ -205,7 +224,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   // Next, validate a SharedImageRepresentationGLTexturePassthrough.
   if (use_passthrough()) {
     auto gl_representation =
-        shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
+        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+            mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexturePassthrough()->service_id());
     EXPECT_EQ(size, gl_representation->size());
@@ -216,7 +236,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   }
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation = shared_image_manager_.ProduceSkia(mailbox);
+  auto skia_representation =
+      shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, kRGBA_8888_SkColorType,
@@ -234,7 +255,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   skia_representation->EndReadAccess();
   skia_representation.reset();
 
-  shared_image_manager_.Unregister(mailbox);
+  shared_image.reset();
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 
   if (!use_passthrough()) {
@@ -245,8 +266,10 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     backing = backing_factory_->CreateSharedImage(mailbox, format, size,
                                                   color_space, usage);
     EXPECT_TRUE(backing);
-    EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
-    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+    shared_image = shared_image_manager_.Register(std::move(backing),
+                                                  memory_type_tracker_.get());
+    auto gl_representation =
+        shared_image_representation_factory_->ProduceGLTexture(mailbox);
     ASSERT_TRUE(gl_representation);
     gles2::Texture* texture = gl_representation->GetTexture();
     ASSERT_TRUE(texture);
@@ -255,7 +278,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     EXPECT_TRUE(texture->GetLevelType(target, 0, &type, &internal_format));
     EXPECT_EQ(internal_format, static_cast<GLenum>(GL_RGBA));
     gl_representation.reset();
-    shared_image_manager_.Unregister(mailbox);
+    shared_image.reset();
   }
 }
 
@@ -284,6 +307,27 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidSize) {
   backing = backing_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage);
   EXPECT_FALSE(backing);
+}
+
+TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
+  auto mailbox = Mailbox::Generate();
+  auto format = viz::ResourceFormat::RGBA_8888;
+  gfx::Size size(256, 256);
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
+  EXPECT_TRUE(backing);
+
+  size_t backing_estimated_size = backing->estimated_size();
+  EXPECT_GT(backing_estimated_size, 0u);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  EXPECT_EQ(backing_estimated_size, memory_type_tracker_->GetMemRepresented());
+
+  shared_image.reset();
 }
 
 INSTANTIATE_TEST_CASE_P(Service,

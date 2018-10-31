@@ -27,7 +27,6 @@ struct GpuFeatureInfo;
 struct GpuPreferences;
 struct Mailbox;
 class ImageFactory;
-class MemoryTracker;
 
 // Implementation of SharedImageBackingFactory that produces GL-texture backed
 // SharedImages.
@@ -39,8 +38,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   SharedImageBackingFactoryGLTexture(const GpuPreferences& gpu_preferences,
                                      const GpuDriverBugWorkarounds& workarounds,
                                      const GpuFeatureInfo& gpu_feature_info,
-                                     ImageFactory* image_factory,
-                                     MemoryTracker* tracker);
+                                     ImageFactory* image_factory);
   ~SharedImageBackingFactoryGLTexture() override;
 
   // SharedImageBackingFactory implementation.
@@ -79,6 +77,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
 
     // BufferFormat for scanout images.
     gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
+
+    DISALLOW_COPY_AND_ASSIGN(FormatInfo);
   };
 
   // Whether we're using the passthrough command decoder and should generate
@@ -88,7 +88,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   // Factory used to generate GLImages for SCANOUT backings.
   ImageFactory* image_factory_ = nullptr;
 
-  std::unique_ptr<MemoryTypeTracker> memory_tracker_;
   FormatInfo format_info_[viz::RESOURCE_FORMAT_MAX + 1];
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;

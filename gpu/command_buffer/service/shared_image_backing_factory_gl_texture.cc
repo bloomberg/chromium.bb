@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -36,8 +35,9 @@ class SharedImageRepresentationGLTextureImpl
  public:
   SharedImageRepresentationGLTextureImpl(SharedImageManager* manager,
                                          SharedImageBacking* backing,
+                                         MemoryTypeTracker* tracker,
                                          gles2::Texture* texture)
-      : SharedImageRepresentationGLTexture(manager, backing),
+      : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
 
   gles2::Texture* GetTexture() override { return texture_; }
@@ -54,8 +54,11 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   SharedImageRepresentationGLTexturePassthroughImpl(
       SharedImageManager* manager,
       SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
       scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
-      : SharedImageRepresentationGLTexturePassthrough(manager, backing),
+      : SharedImageRepresentationGLTexturePassthrough(manager,
+                                                      backing,
+                                                      tracker),
         texture_passthrough_(std::move(texture_passthrough)) {}
 
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
@@ -71,11 +74,12 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
  public:
   SharedImageRepresentationSkiaImpl(SharedImageManager* manager,
                                     SharedImageBacking* backing,
+                                    MemoryTypeTracker* tracker,
                                     GLenum target,
                                     GLenum internal_format,
                                     GLenum driver_internal_format,
                                     GLuint service_id)
-      : SharedImageRepresentationSkia(manager, backing),
+      : SharedImageRepresentationSkia(manager, backing, tracker),
         target_(target),
         internal_format_(internal_format),
         driver_internal_format_(driver_internal_format),
@@ -146,7 +150,12 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
                               gles2::Texture* texture,
                               GLenum internal_format,
                               GLenum driver_internal_format)
-      : SharedImageBacking(mailbox, format, size, color_space, usage),
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           texture->estimated_size()),
         texture_(texture),
         internal_format_(internal_format),
         driver_internal_format_(driver_internal_format) {
@@ -175,8 +184,6 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     texture_ = nullptr;
   }
 
-  size_t EstimatedSize() const override { return texture_->estimated_size(); }
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -199,14 +206,16 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager) override {
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
     return std::make_unique<SharedImageRepresentationGLTextureImpl>(
-        manager, this, texture_);
+        manager, this, tracker, texture_);
   }
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager) override {
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
     return std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, texture_->target(), internal_format_,
+        manager, this, tracker, texture_->target(), internal_format_,
         driver_internal_format_, texture_->service_id());
   }
 
@@ -230,48 +239,56 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
       scoped_refptr<gles2::TexturePassthrough> passthrough_texture,
       GLenum internal_format,
       GLenum driver_internal_format)
-      : SharedImageBacking(mailbox, format, size, color_space, usage),
-        passthrough_texture_(std::move(passthrough_texture)),
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           passthrough_texture->estimated_size()),
+        texture_passthrough_(std::move(passthrough_texture)),
         internal_format_(internal_format),
         driver_internal_format_(driver_internal_format) {
-    DCHECK(passthrough_texture_);
+    DCHECK(texture_passthrough_);
   }
 
   ~SharedImageBackingPassthroughGLTexture() override {
-    DCHECK(!passthrough_texture_);
+    DCHECK(!texture_passthrough_);
   }
 
   bool IsCleared() const override { return is_cleared_; }
   void SetCleared() override { is_cleared_ = true; }
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
-    DCHECK(passthrough_texture_);
-    mailbox_manager->ProduceTexture(mailbox(), passthrough_texture_.get());
+    DCHECK(texture_passthrough_);
+    mailbox_manager->ProduceTexture(mailbox(), texture_passthrough_.get());
     return true;
   }
 
   void Destroy() override {
-    DCHECK(passthrough_texture_);
+    DCHECK(texture_passthrough_);
     if (!have_context())
-      passthrough_texture_->MarkContextLost();
-    passthrough_texture_.reset();
+      texture_passthrough_->MarkContextLost();
+    texture_passthrough_.reset();
   }
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager) override {
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) override {
     return std::make_unique<SharedImageRepresentationGLTexturePassthroughImpl>(
-        manager, this, passthrough_texture_);
+        manager, this, tracker, texture_passthrough_);
   }
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager) override {
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
     return std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, passthrough_texture_->target(), internal_format_,
-        driver_internal_format_, passthrough_texture_->service_id());
+        manager, this, tracker, texture_passthrough_->target(),
+        internal_format_, driver_internal_format_,
+        texture_passthrough_->service_id());
   }
 
  private:
-  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
   GLenum internal_format_ = 0;
   GLenum driver_internal_format_ = 0;
   bool is_cleared_ = false;
@@ -281,12 +298,10 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
-    ImageFactory* image_factory,
-    MemoryTracker* tracker)
+    ImageFactory* image_factory)
     : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gles2::PassthroughCommandDecoderSupported()),
-      image_factory_(image_factory),
-      memory_tracker_(std::make_unique<MemoryTypeTracker>(tracker)) {
+      image_factory_(image_factory) {
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   if (workarounds.max_texture_size) {
@@ -497,13 +512,20 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
     if (image)
       passthrough_texture->SetLevelImage(target, 0, image.get());
+
+    // Get the texture size from ANGLE and set it on the passthrough texture.
+    GLint texture_memory_size = 0;
+    api->glGetTexParameterivFn(target, GL_MEMORY_SIZE_ANGLE,
+                               &texture_memory_size);
+    passthrough_texture->SetEstimatedSize(texture_memory_size);
+
     backing = std::make_unique<SharedImageBackingPassthroughGLTexture>(
         mailbox, format, size, color_space, usage,
         std::move(passthrough_texture), level_info_internal_format,
         driver_internal_format);
   } else {
     gles2::Texture* texture = new gles2::Texture(service_id);
-    texture->SetLightweightRef(memory_tracker_.get());
+    texture->SetLightweightRef();
     texture->SetTarget(target, 1);
     texture->sampler_state_.min_filter = GL_LINEAR;
     texture->sampler_state_.mag_filter = GL_LINEAR;

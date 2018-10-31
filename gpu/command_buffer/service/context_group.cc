@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_preferences.h"
@@ -121,7 +121,10 @@ ContextGroup::ContextGroup(
       progress_reporter_(progress_reporter),
       gpu_feature_info_(gpu_feature_info),
       discardable_manager_(discardable_manager),
-      shared_image_manager_(shared_image_manager) {
+      shared_image_representation_factory_(
+          std::make_unique<SharedImageRepresentationFactory>(
+              shared_image_manager,
+              memory_tracker.get())) {
   DCHECK(discardable_manager);
   DCHECK(feature_info_);
   DCHECK(mailbox_manager_);
