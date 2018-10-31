@@ -195,6 +195,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+
+  // Returns true if a touch or click lies between two occupied tiles.
+  bool EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event);
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
