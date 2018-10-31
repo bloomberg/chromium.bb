@@ -51,6 +51,12 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // Add the url to the blacklist.
   void BlacklistSite(const std::string& url) override;
 
+  // Test hook to call the OnCatalogFetched method since we can't pass nullptr
+  // through the test fetcher code.
+  void OnCatalogFetchedForTest(
+      ExploreSitesRequestStatus status,
+      std::unique_ptr<std::string> serialized_protobuf);
+
  private:
   // KeyedService implementation:
   void Shutdown() override;
