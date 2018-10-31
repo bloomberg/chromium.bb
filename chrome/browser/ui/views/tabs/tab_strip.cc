@@ -86,6 +86,16 @@ using MD = ui::MaterialDesignController;
 
 namespace {
 
+// Distance from the next/previous stacked before before we consider the tab
+// close enough to trigger moving.
+const int kStackedDistance = 36;
+
+// Given the bounds of a dragged tab, return the X coordinate to use for
+// computing where in the strip to insert/move the tab.
+int GetDraggedX(const gfx::Rect& dragged_bounds) {
+  return dragged_bounds.x() + TabStyle::GetTabInternalPadding().left();
+}
+
 // Max number of stacked tabs.
 constexpr int kMaxStackedCount = 4;
 
@@ -761,6 +771,81 @@ bool TabStrip::IsValidModelIndex(int model_index) const {
 
 bool TabStrip::IsDragSessionActive() const {
   return drag_controller_ != nullptr;
+}
+
+int TabStrip::GetInsertionIndexForDraggedBounds(
+    const gfx::Rect& dragged_bounds,
+    bool attaching,
+    int num_dragged_tabs,
+    bool mouse_has_ever_moved_left,
+    bool mouse_has_ever_moved_right) const {
+  // If the strip has no tabs, the only position to insert at is 0.
+  if (!tab_count())
+    return 0;
+
+  int index = -1;
+  if (touch_layout_.get()) {
+    index = GetInsertionIndexForDraggedBoundsStacked(
+        dragged_bounds, mouse_has_ever_moved_left, mouse_has_ever_moved_right);
+    if (index != -1) {
+      // Only move the tab to the left/right if the user actually moved the
+      // mouse that way. This is necessary as tabs with stacked tabs
+      // before/after them have multiple drag positions.
+      int active_index = touch_layout_->active_index();
+      if ((index < active_index && !mouse_has_ever_moved_left) ||
+          (index > active_index && !mouse_has_ever_moved_right)) {
+        index = active_index;
+      }
+    }
+  } else {
+    index = GetInsertionIndexFrom(dragged_bounds, 0);
+  }
+  if (index == -1) {
+    const int last_tab_right = ideal_bounds(tab_count() - 1).right();
+    index = (dragged_bounds.right() > last_tab_right) ? tab_count() : 0;
+  }
+
+  const Tab* last_visible_tab = GetLastVisibleTab();
+  int last_insertion_point =
+      last_visible_tab ? (GetModelIndexOfTab(last_visible_tab) + 1) : 0;
+  if (!attaching) {
+    // We're not in the process of attaching, so clamp the insertion point to
+    // keep it within the visible region.
+    last_insertion_point = std::max(0, last_insertion_point - num_dragged_tabs);
+  }
+
+  // Ensure the first dragged tab always stays in the visible index range.
+  return std::min(index, last_insertion_point);
+}
+
+bool TabStrip::ShouldDragToNextStackedTab(
+    const gfx::Rect& dragged_bounds,
+    int index,
+    bool mouse_has_ever_moved_right) const {
+  if (index + 1 >= this->tab_count() ||
+      !this->touch_layout_->IsStacked(index + 1) || !mouse_has_ever_moved_right)
+    return false;
+
+  int active_x = this->ideal_bounds(index).x();
+  int next_x = this->ideal_bounds(index + 1).x();
+  int mid_x =
+      std::min(next_x - kStackedDistance, active_x + (next_x - active_x) / 4);
+  return GetDraggedX(dragged_bounds) >= mid_x;
+}
+
+bool TabStrip::ShouldDragToPreviousStackedTab(
+    const gfx::Rect& dragged_bounds,
+    int index,
+    bool mouse_has_ever_moved_left) const {
+  if (index - 1 < this->GetPinnedTabCount() ||
+      !this->touch_layout_->IsStacked(index - 1) || !mouse_has_ever_moved_left)
+    return false;
+
+  int active_x = this->ideal_bounds(index).x();
+  int previous_x = this->ideal_bounds(index - 1).x();
+  int mid_x = std::max(previous_x + kStackedDistance,
+                       active_x - (active_x - previous_x) / 4);
+  return GetDraggedX(dragged_bounds) <= mid_x;
 }
 
 bool TabStrip::IsActiveDropTarget() const {
@@ -1709,6 +1794,69 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
   }
 
   return bounds;
+}
+
+int TabStrip::GetInsertionIndexForDraggedBoundsStacked(
+    const gfx::Rect& dragged_bounds,
+    bool mouse_has_ever_moved_left,
+    bool mouse_has_ever_moved_right) const {
+  StackedTabStripLayout* touch_layout = touch_layout_.get();
+  int active_index = touch_layout->active_index();
+  // Search from the active index to the front of the tabstrip. Do this as tabs
+  // overlap each other from the active index.
+  int index = GetInsertionIndexFromReversed(dragged_bounds, active_index);
+  if (index != active_index)
+    return index;
+  if (index == -1)
+    return GetInsertionIndexFrom(dragged_bounds, active_index + 1);
+
+  // The position to drag to corresponds to the active tab. If the next/previous
+  // tab is stacked, then shorten the distance used to determine insertion
+  // bounds. We do this as GetInsertionIndexFrom() uses the bounds of the
+  // tabs. When tabs are stacked the next/previous tab is on top of the tab.
+  if (active_index + 1 < tab_count() &&
+      touch_layout->IsStacked(active_index + 1)) {
+    index = GetInsertionIndexFrom(dragged_bounds, active_index + 1);
+    if (index == -1 && ShouldDragToNextStackedTab(dragged_bounds, active_index,
+                                                  mouse_has_ever_moved_right))
+      index = active_index + 1;
+    else if (index == -1)
+      index = active_index;
+  } else if (ShouldDragToPreviousStackedTab(dragged_bounds, active_index,
+                                            mouse_has_ever_moved_left)) {
+    index = active_index - 1;
+  }
+  return index;
+}
+
+int TabStrip::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
+                                    int start) const {
+  const int last_tab = tab_count() - 1;
+  const int dragged_x = GetDraggedX(dragged_bounds);
+  if (start < 0 || start > last_tab || dragged_x < ideal_bounds(start).x())
+    return -1;
+
+  for (int i = start; i <= last_tab; ++i) {
+    if (dragged_x < ideal_bounds(i).CenterPoint().x())
+      return i;
+  }
+
+  return (dragged_x < ideal_bounds(last_tab).right()) ? (last_tab + 1) : -1;
+}
+
+int TabStrip::GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
+                                            int start) const {
+  const int dragged_x = GetDraggedX(dragged_bounds);
+  if (start < 0 || start >= tab_count() ||
+      dragged_x >= ideal_bounds(start).right())
+    return -1;
+
+  for (int i = start; i >= 0; --i) {
+    if (dragged_x >= ideal_bounds(i).CenterPoint().x())
+      return i + 1;
+  }
+
+  return (dragged_x >= ideal_bounds(0).x()) ? 0 : -1;
 }
 
 int TabStrip::TabStartX() const {

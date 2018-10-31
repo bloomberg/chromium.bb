@@ -331,37 +331,6 @@ class TabDragController : public views::WidgetObserver,
   // dragging.
   void RunMoveLoop(const gfx::Vector2d& drag_offset);
 
-  // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
-  // the tab being dragged, |start| the index of the tab to start looking from.
-  // The search proceeds to the end of the strip.
-  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
-
-  // Like GetInsertionIndexFrom(), but searches backwards from |start| to the
-  // beginning of the strip.
-  int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
-                                    int start) const;
-
-  // Returns the index where the dragged WebContents should be inserted into
-  // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
-  // coordinates relative to |attached_tabstrip_| and has had the mirroring
-  // transformation applied.
-  // NOTE: this is invoked from Attach() before the tabs have been inserted.
-  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds) const;
-
-  // Returns true if |dragged_bounds| is close enough to the next stacked tab
-  // so that the active tab should be dragged there.
-  bool ShouldDragToNextStackedTab(const gfx::Rect& dragged_bounds,
-                                  int index) const;
-
-  // Returns true if |dragged_bounds| is close enough to the previous stacked
-  // tab so that the active tab should be dragged there.
-  bool ShouldDragToPreviousStackedTab(const gfx::Rect& dragged_bounds,
-                                      int index) const;
-
-  // Used by GetInsertionIndexForDraggedBounds() when the tabstrip is stacked.
-  int GetInsertionIndexForDraggedBoundsStacked(
-      const gfx::Rect& dragged_bounds) const;
-
   // Retrieves the bounds of the dragged tabs relative to the attached TabStrip.
   // |tab_strip_point| is in the attached TabStrip's coordinate system.
   gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& tab_strip_point);
@@ -600,9 +569,14 @@ class TabDragController : public views::WidgetObserver,
   MoveBehavior move_behavior_;
 
   // Updated as the mouse is moved when attached. Indicates whether the mouse
-  // has ever moved to the left or right. If the tabs are ever detached this
-  // is set to kMovedMouseRight | kMovedMouseLeft.
-  int mouse_move_direction_;
+  // has ever moved to the left. If the tabs are ever detached this is set to
+  // true.
+  bool mouse_has_ever_moved_left_;
+
+  // Updated as the mouse is moved when attached. Indicates whether the mouse
+  // has ever moved to the right. If the tabs are ever detached this is set
+  // to true.
+  bool mouse_has_ever_moved_right_;
 
   // Last location used in screen coordinates.
   gfx::Point last_point_in_screen_;
