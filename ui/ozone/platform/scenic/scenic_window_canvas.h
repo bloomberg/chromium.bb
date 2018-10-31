@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
@@ -57,14 +56,13 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
     bool is_empty() { return !surface; }
 
     // Shared memory for the buffer.
-    base::UnsafeSharedMemoryRegion memory_region;
     base::WritableSharedMemoryMapping memory_mapping;
-
-    // SkSurface that wraps |memory_mapping|.
-    sk_sp<SkSurface> surface;
 
     // Scenic Memory resource for |memory_region|.
     std::unique_ptr<scenic::Memory> scenic_memory;
+
+    // SkSurface that wraps |memory_mapping|.
+    sk_sp<SkSurface> surface;
 
     // Fence that will be released by Scenic when it stops using this frame.
     zx::event release_fence;
