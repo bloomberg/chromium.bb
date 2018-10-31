@@ -17,7 +17,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-struct OpenURLParams;
 class WebContents;
 }  // namespace content
 
@@ -77,8 +76,7 @@ class SafeBrowsingTriggeredPopupBlocker
   static void MaybeCreate(content::WebContents* web_contents);
   ~SafeBrowsingTriggeredPopupBlocker() override;
 
-  bool ShouldApplyStrongPopupBlocker(
-      const content::OpenURLParams* open_url_params);
+  bool ShouldApplyAbusivePopupBlocker();
 
  private:
   // The |web_contents| and |observer_manager| are expected to be

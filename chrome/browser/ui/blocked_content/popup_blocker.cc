@@ -50,10 +50,18 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   if (!user_gesture)
     return PopupBlockType::kNoGesture;
 
+  // This is trusted user action (e.g. shift-click), so make sure it is not
+  // blocked.
+  if (open_url_params &&
+      open_url_params->triggering_event_info !=
+          blink::WebTriggeringEventInfo::kFromUntrustedEvent) {
+    return PopupBlockType::kNotBlocked;
+  }
+
   auto* safe_browsing_blocker =
       SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents);
   if (safe_browsing_blocker &&
-      safe_browsing_blocker->ShouldApplyStrongPopupBlocker(open_url_params)) {
+      safe_browsing_blocker->ShouldApplyAbusivePopupBlocker()) {
     return PopupBlockType::kAbusive;
   }
   return PopupBlockType::kNotBlocked;
