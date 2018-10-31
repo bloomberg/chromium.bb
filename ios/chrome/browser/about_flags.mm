@@ -45,6 +45,7 @@
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
@@ -421,6 +422,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
                                     kIconForSearchButtonVariations,
                                     "ToggleSearchButtonIcon")},
+    {"enable-breakpad-upload-no-delay",
+     flag_descriptions::kBreakpadNoDelayInitialUploadName,
+     flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
 };
 
 // Add all switches from experimental flags to |command_line|.
