@@ -514,7 +514,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-  UpdatePipState();
+  UpdatePipState(/*was_pip=*/false);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -587,6 +587,7 @@ void WindowState::NotifyPreStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
+  UpdatePipState(old_window_state_type == mojom::WindowStateType::PIP);
 }
 
 void WindowState::NotifyPostStateTypeChange(
@@ -689,10 +690,14 @@ void WindowState::UpdatePipRoundedCorners() {
   }
 }
 
-void WindowState::UpdatePipState() {
-  ::wm::SetWindowVisibilityAnimationType(
-      window(), IsPip() ? WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT
-                        : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+void WindowState::UpdatePipState(bool was_pip) {
+  if (IsPip()) {
+    ::wm::SetWindowVisibilityAnimationType(
+        window(), WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT);
+  } else if (was_pip) {
+    ::wm::SetWindowVisibilityAnimationType(
+        window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+  }
 }
 
 void WindowState::UpdatePipBounds() {

@@ -260,8 +260,6 @@ bool ClientControlledState::EnterNextState(
         window_state->window());
   }
 
-  window_state->UpdatePipState();
-
   return true;
 }
 
