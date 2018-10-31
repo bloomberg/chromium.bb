@@ -1049,5 +1049,69 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
       << actual_color;
 }
 
+TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
+  if (!CheckIfDCSupported())
+    return;
+  DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting();
+  InitializeSurface();
+
+  surface_->SetEnableDCLayers(true);
+
+  gfx::Size window_size(100, 100);
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(50, 50);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size, true);
+  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
+  texture.CopyTo(resource.GetAddressOf());
+  HANDLE handle = 0;
+  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                               &handle);
+  // The format doesn't matter, since we aren't binding.
+  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
+      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
+  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+
+  // Pass content rect with odd with and height.  Surface should round up width
+  // and height when creating swap chain.
+  gfx::RectF contents_rect(0, 0, 49, 49);
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi}, contents_rect,
+      gfx::Rect(window_size), 0, 0, 1.0, 0, false);
+  surface_->ScheduleDCLayer(params);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+
+  Sleep(1000);
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface_->GetLayerSwapChainForTesting(0);
+  ASSERT_TRUE(swap_chain);
+
+  DXGI_SWAP_CHAIN_DESC1 desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
+  EXPECT_EQ(desc.Format, DXGI_FORMAT_NV12);
+  EXPECT_EQ(desc.Width, 50u);
+  EXPECT_EQ(desc.Height, 50u);
+
+  SkColor expected_color = SkColorSetRGB(0xe1, 0x90, 0xeb);
+  SkColor actual_color =
+      ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+  EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+      << std::hex << "Expected " << expected_color << " Actual "
+      << actual_color;
+}
+
 }  // namespace
 }  // namespace gpu
