@@ -460,8 +460,6 @@ void DefaultState::EnterToNextState(WindowState* window_state,
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
   }
-
-  window_state->UpdatePipState();
 }
 
 void DefaultState::ReenterToCurrentState(
