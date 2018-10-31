@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_link_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_worker_global_scope.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_worklet_global_scope.h"
@@ -73,6 +74,20 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
+
+void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
+                      const v8::PropertyDescriptor& descriptor) {
+  DCHECK(descriptor.has_configurable());
+  DCHECK(descriptor.has_enumerable());
+  DCHECK(descriptor.has_value());
+  DCHECK(descriptor.has_writable());
+  info.GetReturnValue().Set(V8ObjectBuilder(ScriptState::ForCurrentRealm(info))
+                                .Add("configurable", descriptor.configurable())
+                                .Add("enumerable", descriptor.enumerable())
+                                .Add("value", descriptor.value())
+                                .Add("writable", descriptor.writable())
+                                .V8Value());
+}
 
 bool ToBooleanSlow(v8::Isolate* isolate,
                    v8::Local<v8::Value> value,
