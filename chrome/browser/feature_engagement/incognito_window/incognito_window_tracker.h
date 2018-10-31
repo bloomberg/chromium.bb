@@ -10,7 +10,7 @@
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
 #include "ui/views/widget/widget_observer.h"
 
-class IncognitoWindowPromoBubbleView;
+class FeaturePromoBubbleView;
 
 namespace feature_engagement {
 
@@ -52,14 +52,14 @@ class IncognitoWindowTracker : public FeatureTracker,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  IncognitoWindowPromoBubbleView* incognito_promo() { return incognito_promo_; }
+  FeaturePromoBubbleView* incognito_promo() { return incognito_promo_; }
 
   // FeatureTracker:
   void OnSessionTimeMet() override;
 
   // Promotional UI that appears next to the AppMenuButton and encourages its
   // use. Owned by its NativeWidget.
-  IncognitoWindowPromoBubbleView* incognito_promo_ = nullptr;
+  FeaturePromoBubbleView* incognito_promo_ = nullptr;
 
   // Observes the |incognito_promo_|'s Widget. Used to tell whether the promo
   // is open and is called back when it closes.
