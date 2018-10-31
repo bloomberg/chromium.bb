@@ -24,22 +24,6 @@ __gCrWeb['searchEngine'] = __gCrWeb.searchEngine;
 (function() {
 
 /**
- * Find <link> of OSDD(Open Search Description Document) in document and return
- * it's URL. If multiple OSDDs are found(which should never happen on a sane web
- * site), return the URL of the first OSDD.
- * @return {Object|undefined} Dictionary containing document.URL and "href"
- *   of OSDD <link>, or undefined if not found.
- */
-__gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl = function() {
-  var links = document.getElementsByTagName('link');
-  for (var i = 0; i < links.length; ++i) {
-    if (links[i].type == 'application/opensearchdescription+xml') {
-      return {'documentUrl': document.URL, 'openSearchUrl': links[i].href};
-    }
-  }
-};
-
-/**
  * Encodes |url| in "application/x-www-form-urlencoded" content type of <form>.
  * The standard is defined in:
  * https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.1
@@ -227,8 +211,7 @@ function generateSearchableUrl_(form) {
           value = 'Submit';
         }
         queryArgs.push(
-            encodeFormData_(element.name) + '=' +
-            encodeFormData_(value));
+            encodeFormData_(element.name) + '=' + encodeFormData_(value));
       }
       continue;
     }
@@ -305,5 +288,23 @@ document.addEventListener('submit', function(event) {
         {'command': 'searchEngine.searchableUrl', 'url': url});
   }
 }, false);
+
+/**
+ * Finds <link> of OSDD(Open Search Description Document) in the main frame. If
+ * found, sends a message containing the page's URL and OSDD's URL to native
+ * side. If the page has multiple OSDD <links>s (which should never happen on a
+ * sane web site), only send the first <link>.
+ */
+var links = document.getElementsByTagName('link');
+for (var i = 0; i < links.length; ++i) {
+  if (links[i].type == 'application/opensearchdescription+xml') {
+    __gCrWeb.message.invokeOnHost({
+      'command': 'searchEngine.openSearch',
+      'pageUrl': document.URL,
+      'osddUrl': links[i].href
+    });
+    break;
+  }
+};
 
 }());  // End of anonymous object
