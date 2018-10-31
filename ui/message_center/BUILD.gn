@@ -253,6 +253,7 @@ if (enable_message_center) {
         "views/message_popup_collection_unittest.cc",
         "views/notification_view_md_unittest.cc",
         "views/notification_view_unittest.cc",
+        "views/slide_out_controller_unittest.cc",
       ]
       if (!is_chromeos) {
         sources += [ "views/notification_menu_model_unittest.cc" ]
