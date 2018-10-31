@@ -35,6 +35,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // idl implementation.
   ScriptPromise activate(ScriptState*);
 
+  const base::UnguessableToken& GetToken() const { return portal_token_; }
+
   FrameOwnerElementType OwnerType() const override {
     return FrameOwnerElementType::kPortal;
   }
