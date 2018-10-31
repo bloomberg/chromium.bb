@@ -152,6 +152,8 @@ jumbo_split_static_library("browser") {
     "bookmarks/startup_task_runner_service_factory.h",
     "browser_about_handler.cc",
     "browser_about_handler.h",
+    "browser_features.cc",
+    "browser_features.h",
     "browser_process.cc",
     "browser_process.h",
     "browser_process_impl.cc",

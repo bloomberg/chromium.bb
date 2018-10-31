@@ -3205,6 +3205,12 @@ const char kDisableTabletSplitViewName[] = "Disable split view in Tablet mode";
 const char kDisableTabletSplitViewDescription[] =
     "Disable split view for Chrome OS tablet mode.";
 
+const char kDoubleTapToZoomInTabletModeName[] =
+    "Double-tap to zoom in tablet mode";
+const char kDoubleTapToZoomInTabletModeDescription[] =
+    "If Enabled, double tapping in webpages while in tablet mode will zoom the "
+    "page.";
+
 const char kEnableAppListSearchAutocompleteName[] =
     "App List Search Autocomplete";
 const char kEnableAppListSearchAutocompleteDescription[] =
