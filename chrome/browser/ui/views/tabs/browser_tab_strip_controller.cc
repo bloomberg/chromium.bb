@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
@@ -316,7 +318,19 @@ NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
 }
 
 void BrowserTabStripController::CreateNewTab() {
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // This must be called before AddTabAt() so that OmniboxFocused is called
+  // after NewTabOpened. TODO(collinbaker): remove omnibox focusing from
+  // triggering conditions (since it is always focused for new tabs) and move
+  // this after AddTabAt() call.
+  auto* reopen_tab_iph =
+      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
+          browser_view_->browser()->profile());
+  reopen_tab_iph->NewTabOpened();
+#endif
+
   model_->delegate()->AddTabAt(GURL(), -1, true);
+
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   auto* new_tab_tracker =
       feature_engagement::NewTabTrackerFactory::GetInstance()->GetForProfile(
