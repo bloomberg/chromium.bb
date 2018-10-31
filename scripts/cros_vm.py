@@ -28,15 +28,128 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 
 
-class VMError(Exception):
-  """Exception for VM failures."""
+class DeviceError(Exception):
+  """Exception for Device failures."""
 
   def __init__(self, message):
-    super(VMError, self).__init__()
+    super(DeviceError, self).__init__()
     logging.error(message)
 
 
-class VM(object):
+class Device(object):
+  """Class for managing a test device."""
+
+  def __init__(self, opts):
+    """Initialize Device.
+
+    Args:
+      opts: command line options.
+    """
+    self.device = opts.device
+    self.ssh_port = None
+    self.board = opts.board
+
+    self.cmd = opts.args[1:] if opts.cmd else None
+    self.private_key = opts.private_key
+    self.dry_run = opts.dry_run
+    # log_level is only set if --log-level or --debug is specified.
+    self.log_level = getattr(opts, 'log_level', None)
+    self.InitRemote()
+
+  def InitRemote(self):
+    """Initialize remote access."""
+    self.remote = remote_access.RemoteDevice(self.device,
+                                             port=self.ssh_port,
+                                             private_key=self.private_key)
+
+    self.device_addr = 'ssh://%s' % self.device
+    if self.ssh_port:
+      self.device_addr += ':%d' % self.ssh_port
+
+  def WaitForBoot(self):
+    """Wait for the device to boot up.
+
+    Wait for the ssh connection to become active.
+    """
+    try:
+      result = retry_util.RetryException(
+          exception=remote_access.SSHConnectionError,
+          max_retry=10,
+          functor=lambda: self.RemoteCommand(cmd=['echo']),
+          sleep=5)
+    except remote_access.SSHConnectionError:
+      raise DeviceError(
+          'WaitForBoot timed out trying to connect to the device.')
+
+    if result.returncode != 0:
+      raise DeviceError('WaitForBoot failed: %s.' % result.error)
+
+  def RemoteCommand(self, cmd, stream_output=False, **kwargs):
+    """Run a remote command.
+
+    Args:
+      cmd: command to run.
+      stream_output: Stream output of long-running commands.
+      kwargs: additional args (see documentation for RemoteDevice.RunCommand).
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    if not self.dry_run:
+      kwargs.setdefault('error_code_ok', True)
+      if stream_output:
+        kwargs.setdefault('capture_output', False)
+      else:
+        kwargs.setdefault('combine_stdout_stderr', True)
+        kwargs.setdefault('log_output', True)
+      return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
+
+  @property
+  def is_vm(self):
+    """Returns true if we're a VM."""
+    return self._IsVM(self.device)
+
+  @staticmethod
+  def _IsVM(device):
+    """VM if |device| is specified and it's not localhost."""
+    return not device or device == remote_access.LOCALHOST
+
+  @staticmethod
+  def Create(opts):
+    """Create either a Device or VM based on |opts.device|."""
+    if Device._IsVM(opts.device):
+      return VM(opts)
+    return Device(opts)
+
+  @staticmethod
+  def GetParser():
+    """Parse a list of args.
+
+    Args:
+      argv: list of command line arguments.
+
+    Returns:
+      List of parsed opts.
+    """
+    parser = commandline.ArgumentParser(description=__doc__)
+    parser.add_argument('--device', help='Hostname or Device IP.')
+    sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
+    parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
+    parser.add_argument('--private-key', help='Path to ssh private key.')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='dry run for debugging.')
+    parser.add_argument('--cmd', action='store_true', default=False,
+                        help='Run a command.')
+    parser.add_argument('args', nargs=argparse.REMAINDER,
+                        help='Command to run.')
+    return parser
+
+
+class VMError(DeviceError):
+  """Exception for VM failures."""
+
+
+class VM(Device):
   """Class for managing a VM."""
 
   SSH_PORT = 9222
@@ -48,6 +161,8 @@ class VM(object):
     Args:
       opts: command line options.
     """
+    super(VM, self).__init__(opts)
+
     self.qemu_path = opts.qemu_path
     self.qemu_img_path = opts.qemu_img_path
     self.qemu_bios_path = opts.qemu_bios_path
@@ -64,16 +179,12 @@ class VM(object):
     self.display = opts.display
     self.image_path = opts.image_path
     self.image_format = opts.image_format
-    self.board = opts.board
+
+    self.device = remote_access.LOCALHOST
     self.ssh_port = opts.ssh_port
-    self.private_key = opts.private_key
-    self.dry_run = opts.dry_run
-    # log_level is only set if --log-level or --debug is specified.
-    self.log_level = getattr(opts, 'log_level', None)
 
     self.start = opts.start
     self.stop = opts.stop
-    self.cmd = opts.args[1:] if opts.cmd else None
 
     self.cache_dir = os.path.abspath(opts.cache_dir)
     assert os.path.isdir(self.cache_dir), "Cache directory doesn't exist"
@@ -90,13 +201,7 @@ class VM(object):
     self.kvm_pipe_out = '%s.out' % self.kvm_monitor  # from KVM
     self.kvm_serial = '%s.serial' % self.kvm_monitor
 
-    self.remote = remote_access.RemoteDevice(remote_access.LOCALHOST,
-                                             port=self.ssh_port,
-                                             private_key=self.private_key)
-    self.device_addr = 'ssh://%s:%d' % (remote_access.LOCALHOST, self.ssh_port)
-
-    # TODO(achuith): support nographics, snapshot, mem_path, usb_passthrough,
-    # moblab, etc.
+    self.InitRemote()
 
   def _RunCommand(self, *args, **kwargs):
     """Use SudoRunCommand or RunCommand as necessary.
@@ -462,41 +567,11 @@ class VM(object):
     if not os.path.exists(self.vm_dir):
       self.Start()
 
-    try:
-      result = retry_util.RetryException(
-          exception=remote_access.SSHConnectionError,
-          max_retry=10,
-          functor=lambda: self.RemoteCommand(cmd=['echo']),
-          sleep=5)
-    except remote_access.SSHConnectionError:
-      raise VMError('WaitForBoot timed out trying to connect to VM.')
-
-    if result.returncode != 0:
-      raise VMError('WaitForBoot failed: %s.' % result.error)
+    super(VM, self).WaitForBoot()
 
     # Chrome can take a while to start with software emulation.
     if not self.enable_kvm:
       self._WaitForProcs()
-
-  def RemoteCommand(self, cmd, stream_output=False, **kwargs):
-    """Run a remote command in the VM.
-
-    Args:
-      cmd: command to run.
-      stream_output: Stream output of long-running commands.
-      kwargs: additional args (see documentation for RemoteDevice.RunCommand).
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    if not self.dry_run:
-      kwargs.setdefault('error_code_ok', True)
-      if stream_output:
-        kwargs.setdefault('capture_output', False)
-      else:
-        kwargs.setdefault('combine_stdout_stderr', True)
-        kwargs.setdefault('log_output', True)
-      return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
 
   @staticmethod
   def GetParser():
@@ -508,7 +583,10 @@ class VM(object):
     Returns:
       List of parsed opts.
     """
-    parser = commandline.ArgumentParser(description=__doc__)
+    device_parser = Device.GetParser()
+    parser = commandline.ArgumentParser(description=__doc__,
+                                        parents=[device_parser],
+                                        add_help=False, logging=False)
     parser.add_argument('--start', action='store_true', default=False,
                         help='Start the VM.')
     parser.add_argument('--stop', action='store_true', default=False,
@@ -547,21 +625,13 @@ class VM(object):
                         help='Do not display video output.')
     parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                         help='ssh port to communicate with VM.')
-    parser.add_argument('--private-key', help='Path to ssh private key.')
-    sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
-    parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
     parser.add_argument('--cache-dir', type='path',
                         default=path_util.GetCacheDir(),
                         help='Cache directory to use.')
     parser.add_argument('--vm-dir', type='path',
                         help='Temp VM directory to use.')
-    parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='dry run for debugging.')
-    parser.add_argument('--cmd', action='store_true', default=False,
-                        help='Run a command in the VM.')
-    parser.add_argument('args', nargs=argparse.REMAINDER,
-                        help='Command to run in the VM.')
     return parser
+
 
 def main(argv):
   opts = VM.GetParser().parse_args(argv)
