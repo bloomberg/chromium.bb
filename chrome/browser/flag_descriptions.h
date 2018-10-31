@@ -228,6 +228,9 @@ extern const char kDevtoolsExperimentsDescription[];
 extern const char kDisableAudioForDesktopShareName[];
 extern const char kDisableAudioForDesktopShareDescription[];
 
+extern const char kDisableIpcFloodingProtectionName[];
+extern const char kDisableIpcFloodingProtectionDescription[];
+
 extern const char kDisablePushStateThrottleName[];
 extern const char kDisablePushStateThrottleDescription[];
 
