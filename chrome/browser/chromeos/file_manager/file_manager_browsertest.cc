@@ -274,10 +274,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
-                      TestCase("selectCreateFolderDownloads"),
+    ::testing::Values(TestCase("selectCreateFolderDownloads"),
 // This test is flaky in MSAN, disabling until is fixed: crbug.com/899664.
 #if !defined(MEMORY_SANITIZER)
+                      TestCase("selectCreateFolderDownloads").InGuestMode(),
                       TestCase("createFolderDownloads").InGuestMode(),
 #endif
                       TestCase("createFolderDownloads"),
@@ -292,7 +292,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("keyboardDeleteDownloads"),
                       TestCase("keyboardDeleteDrive").DisableDriveFs(),
                       TestCase("keyboardDeleteDrive").EnableDriveFs(),
+// This test is flaky in MSAN, disabling until is fixed: crbug.com/899664.
+#if !defined(MEMORY_SANITIZER)
                       TestCase("keyboardDeleteFolderDownloads").InGuestMode(),
+#endif
                       TestCase("keyboardDeleteFolderDownloads"),
                       TestCase("keyboardDeleteFolderDrive").DisableDriveFs(),
                       TestCase("keyboardDeleteFolderDrive").EnableDriveFs(),
@@ -304,7 +307,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("renameFileDownloads"),
                       TestCase("renameFileDrive").DisableDriveFs(),
                       TestCase("renameFileDrive").EnableDriveFs(),
+// This test is flaky in MSAN, disabling until is fixed: crbug.com/899664.
+#if !defined(MEMORY_SANITIZER)
                       TestCase("renameNewFolderDownloads").InGuestMode(),
+#endif
                       TestCase("renameNewFolderDownloads"),
                       TestCase("renameNewFolderDrive").DisableDriveFs(),
                       TestCase("renameNewFolderDrive").EnableDriveFs()));
