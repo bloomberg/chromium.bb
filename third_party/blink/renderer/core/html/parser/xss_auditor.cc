@@ -915,10 +915,12 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
     last_non_space_position = kNotFound;
     for (found_position = start_position; found_position < end_position;
          found_position++) {
+      if (StartsSingleLineCommentAt(string, found_position) ||
+          StartsMultiLineCommentAt(string, found_position)) {
+        break;
+      }
       if (!request.should_allow_cdata) {
-        if (StartsSingleLineCommentAt(string, found_position) ||
-            StartsMultiLineCommentAt(string, found_position) ||
-            StartsHTMLOpenCommentAt(string, found_position) ||
+        if (StartsHTMLOpenCommentAt(string, found_position) ||
             StartsHTMLCloseCommentAt(string, found_position)) {
           break;
         }
