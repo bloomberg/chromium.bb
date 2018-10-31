@@ -11,7 +11,7 @@
 
 namespace blink {
 namespace vector_math {
-namespace AVX {
+namespace avx {
 
 constexpr size_t kBitsPerRegister = 256u;
 constexpr size_t kPackedFloatsPerRegister = kBitsPerRegister / 32u;
@@ -83,7 +83,7 @@ void Zvmul(const float* real1p,
            float* imag_dest_p,
            size_t frames_to_process);
 
-}  // namespace AVX
+}  // namespace avx
 }  // namespace vector_math
 }  // namespace blink
 

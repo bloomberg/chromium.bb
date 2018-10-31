@@ -22,9 +22,9 @@ namespace vector_math {
 namespace VECTOR_MATH_SIMD_NAMESPACE_NAME {
 
 // This stride is chosen so that the same prepared filter created by
-// AVX::PrepareFilterForConv can be used by both AVX::Conv and SSE::Conv.
-// A prepared filter created by SSE::PrepareFilterForConv can only be used
-// by SSE::Conv.
+// AVX::PrepareFilterForConv can be used by both AVX::Conv and sse::Conv.
+// A prepared filter created by sse::PrepareFilterForConv can only be used
+// by sse::Conv.
 constexpr size_t kReversedFilterStride = 8u / kPackedFloatsPerRegister;
 
 bool IsAligned(const float* p) {

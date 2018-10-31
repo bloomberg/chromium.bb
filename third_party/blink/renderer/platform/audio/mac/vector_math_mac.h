@@ -12,7 +12,7 @@
 
 namespace blink {
 namespace vector_math {
-namespace Mac {
+namespace mac {
 
 // On the Mac we use the highly optimized versions in Accelerate.framework
 // In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes
@@ -143,7 +143,7 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 #endif
 }
 
-}  // namespace Mac
+}  // namespace mac
 }  // namespace vector_math
 }  // namespace blink
 
