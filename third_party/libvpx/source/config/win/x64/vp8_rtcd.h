@@ -58,13 +58,13 @@ void vp8_bilinear_predict4x4_c(unsigned char* src,
                                int yofst,
                                unsigned char* dst,
                                int dst_pitch);
-void vp8_bilinear_predict4x4_mmx(unsigned char* src,
-                                 int src_pitch,
-                                 int xofst,
-                                 int yofst,
-                                 unsigned char* dst,
-                                 int dst_pitch);
-#define vp8_bilinear_predict4x4 vp8_bilinear_predict4x4_mmx
+void vp8_bilinear_predict4x4_sse2(unsigned char* src,
+                                  int src_pitch,
+                                  int xofst,
+                                  int yofst,
+                                  unsigned char* dst,
+                                  int dst_pitch);
+#define vp8_bilinear_predict4x4 vp8_bilinear_predict4x4_sse2
 
 void vp8_bilinear_predict8x4_c(unsigned char* src,
                                int src_pitch,
@@ -72,13 +72,13 @@ void vp8_bilinear_predict8x4_c(unsigned char* src,
                                int yofst,
                                unsigned char* dst,
                                int dst_pitch);
-void vp8_bilinear_predict8x4_mmx(unsigned char* src,
-                                 int src_pitch,
-                                 int xofst,
-                                 int yofst,
-                                 unsigned char* dst,
-                                 int dst_pitch);
-#define vp8_bilinear_predict8x4 vp8_bilinear_predict8x4_mmx
+void vp8_bilinear_predict8x4_sse2(unsigned char* src,
+                                  int src_pitch,
+                                  int xofst,
+                                  int yofst,
+                                  unsigned char* dst,
+                                  int dst_pitch);
+#define vp8_bilinear_predict8x4 vp8_bilinear_predict8x4_sse2
 
 void vp8_bilinear_predict8x8_c(unsigned char* src,
                                int src_pitch,
