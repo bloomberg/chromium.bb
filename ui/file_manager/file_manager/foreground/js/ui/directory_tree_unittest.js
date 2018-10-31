@@ -501,8 +501,9 @@ function testUpdateSubElementsFromListSections() {
   assertEquals(NavigationSection.MY_FILES, myFilesItem.section);
   assertEquals(NavigationSection.CLOUD, driveItem.section);
 
+  const metadataModel = mockMetadataModel();
   DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
-      null, fileOperationManager, true);
+      metadataModel, fileOperationManager, true);
   directoryTree.dataModel = treeModel;
   directoryTree.updateSubElementsFromList(false);
 
@@ -958,9 +959,10 @@ function testInsideMyDriveAndInsideDrive(callback) {
       .webkitResolveLocalFileSystemURLEntries['filesystem:downloads/folder1'] =
       new MockDirectoryEntry(downloadsFileSystem, '/folder1');
 
+  const metadataModel = mockMetadataModel();
   DirectoryTree.decorate(
-      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
-      true);
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
   directoryTree.dataModel = new MockNavigationListModel(volumeManager);
   directoryTree.redraw(true);
 
