@@ -725,24 +725,6 @@ void TabSpecificContentSettings::OnAudioBlocked() {
   OnContentBlocked(CONTENT_SETTINGS_TYPE_SOUND);
 }
 
-void TabSpecificContentSettings::OnFramebustBlocked(
-    const GURL& blocked_url,
-    FramebustBlockTabHelper::ClickCallback click_callback) {
-#if !defined(OS_ANDROID)
-  FramebustBlockTabHelper* framebust_block_tab_helper =
-      FramebustBlockTabHelper::FromWebContents(web_contents());
-  if (!framebust_block_tab_helper)
-    return;
-
-  framebust_block_tab_helper->AddBlockedUrl(blocked_url,
-                                            std::move(click_callback));
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
-#endif  // !defined(OS_ANDROID)
-}
-
 void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   if (allowed) {
     OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
