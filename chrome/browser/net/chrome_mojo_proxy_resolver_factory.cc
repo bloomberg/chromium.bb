@@ -10,16 +10,13 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-ChromeMojoProxyResolverFactory::ChromeMojoProxyResolverFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-}
+ChromeMojoProxyResolverFactory::ChromeMojoProxyResolverFactory() = default;
 
 ChromeMojoProxyResolverFactory::~ChromeMojoProxyResolverFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 proxy_resolver::mojom::ProxyResolverFactoryPtr
@@ -34,7 +31,7 @@ void ChromeMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
     proxy_resolver::mojom::ProxyResolverRequest req,
     proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Bind a ProxyResolverFactory backed by the proxy resolver service, have it
   // create a ProxyResolverFactory and then destroy the factory, to avoid
