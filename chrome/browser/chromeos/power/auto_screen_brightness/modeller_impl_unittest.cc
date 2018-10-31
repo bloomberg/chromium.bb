@@ -58,8 +58,8 @@ class FakeTrainer : public Trainer {
   // Trainer overrides:
   void SetInitialCurves(const MonotoneCubicSpline& global_curve,
                         const MonotoneCubicSpline& current_curve) override {
-    CHECK(!global_curve_.has_value());
-    CHECK(!current_curve_.has_value());
+    CHECK(!global_curve_);
+    CHECK(!current_curve_);
 
     global_curve_.emplace(global_curve);
     current_curve_.emplace(current_curve);
@@ -67,7 +67,7 @@ class FakeTrainer : public Trainer {
 
   MonotoneCubicSpline Train(
       const std::vector<TrainingDataPoint>& data) override {
-    CHECK(current_curve_.has_value());
+    CHECK(current_curve_);
     current_curve_.emplace(CreateTestCurveFromTrainingData(data));
     return current_curve_.value();
   }
@@ -86,36 +86,49 @@ class TestObserver : public Modeller::Observer {
 
   // Modeller::Observer overrides:
   void OnModelTrained(const MonotoneCubicSpline& brightness_curve) override {
-    brightness_curve_.emplace(brightness_curve);
+    personal_curve_.emplace(brightness_curve);
     trained_curve_received_ = true;
   }
 
   void OnModelInitialized(
-      const Modeller::Status model_status,
-      const base::Optional<MonotoneCubicSpline>& brightness_curve) override {
-    model_status_ = base::Optional<Modeller::Status>(model_status);
-    if (brightness_curve.has_value()) {
-      brightness_curve_.emplace(brightness_curve.value());
-    }
+      const base::Optional<MonotoneCubicSpline>& global_curve,
+      const base::Optional<MonotoneCubicSpline>& personal_curve) override {
+    model_initialized_ = true;
+    if (global_curve)
+      global_curve_.emplace(global_curve.value());
+
+    if (personal_curve)
+      personal_curve_.emplace(personal_curve.value());
   }
 
   Modeller::Status model_status() const {
-    CHECK(model_status_.has_value());
-    return model_status_.value();
+    CHECK(model_initialized_);
+
+    if (personal_curve_)
+      return Modeller::Status::kPersonal;
+
+    if (global_curve_)
+      return Modeller::Status::kGlobal;
+
+    return Modeller::Status::kDisabled;
   }
 
   MonotoneCubicSpline brightness_curve() const {
-    CHECK(brightness_curve_.has_value());
-    return brightness_curve_.value();
+    if (personal_curve_)
+      return personal_curve_.value();
+
+    CHECK(global_curve_);
+    return global_curve_.value();
   }
 
-  bool HasModelStatus() { return model_status_.has_value(); }
-  bool HasBrightnessCurve() { return brightness_curve_.has_value(); }
+  bool model_initialized() { return model_initialized_; }
+  bool has_brightness_curve() { return global_curve_ || personal_curve_; }
   bool trained_curve_received() { return trained_curve_received_; }
 
  private:
-  base::Optional<Modeller::Status> model_status_;
-  base::Optional<MonotoneCubicSpline> brightness_curve_;
+  bool model_initialized_ = false;
+  base::Optional<MonotoneCubicSpline> global_curve_;
+  base::Optional<MonotoneCubicSpline> personal_curve_;
   bool trained_curve_received_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -190,7 +203,7 @@ TEST_F(ModellerImplTest, AlsReaderDisabledOnInit) {
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 }
 
 // BrightnessMonitor is |kDisabled| when Modeller is created.
@@ -200,7 +213,7 @@ TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnInit) {
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 }
 
 // AlsReader is |kDisabled| on later notification.
@@ -209,13 +222,13 @@ TEST_F(ModellerImplTest, AlsReaderDisabledOnNotification) {
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->HasModelStatus());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->model_initialized());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kDisabled);
   fake_als_reader_.ReportReaderInitialized();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 }
 
 // AlsReader is |kSuccess| on later notification.
@@ -224,8 +237,8 @@ TEST_F(ModellerImplTest, AlsReaderEnabledOnNotification) {
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->HasModelStatus());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->model_initialized());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_als_reader_.ReportReaderInitialized();
@@ -241,13 +254,13 @@ TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnNotification) {
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kInitializing);
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->HasModelStatus());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->model_initialized());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kDisabled);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 }
 
 // BrightnessMonitor is |kSuccess| on later notification.
@@ -256,8 +269,8 @@ TEST_F(ModellerImplTest, BrightnessMonitorEnabledOnNotification) {
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kInitializing);
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->HasModelStatus());
-  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
+  EXPECT_FALSE(test_observer_->model_initialized());
+  EXPECT_FALSE(test_observer_->has_brightness_curve());
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();

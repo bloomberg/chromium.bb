@@ -15,7 +15,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader_impl.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
@@ -58,7 +58,7 @@ class ModellerImpl : public Modeller,
 
   // Size of |data_cache_|.
   static constexpr int kNumberAmbientValuesToTrack =
-      kAmbientLightHorizonSeconds * AlsReaderImpl::kNumberAlsPollPerSeconds;
+      kAmbientLightHorizonSeconds * AlsReader::kAlsPollFrequency;
 
   static constexpr char kModelDir[] = "autobrightness";
   static constexpr char kCurveFileName[] = "curve";
@@ -144,6 +144,12 @@ class ModellerImpl : public Modeller,
   // |model_status_| is not |kInitializing|.
   void OnInitializationComplete();
 
+  // Called when the modeller is initialized. It notifies its observers about
+  // constructed global curve and personal curve (loaded from the disk). Both
+  // curves will be nullopt if model is disabled, and personal curve will be
+  // nullopt if no curve is loaded from the disk.
+  void NotifyObserverInitStatus(Modeller::Observer& observer);
+
   // Called after we've attempted to construct a |curve| from data saved on
   // disk. |curve| will be assigned to |current_curve_| if |curve| is not
   // nullopt. Otherwise, |current_curve_| will have the same value as
@@ -186,8 +192,8 @@ class ModellerImpl : public Modeller,
 
   base::FilePath curve_path_;
 
-  // Latest trained curve.
-  base::Optional<MonotoneCubicSpline> current_curve_;
+  // Latest personal curve, either loaded from disk or trained.
+  base::Optional<MonotoneCubicSpline> personal_curve_;
 
   // Global curve constructed from predefined params.
   const MonotoneCubicSpline global_curve_;
