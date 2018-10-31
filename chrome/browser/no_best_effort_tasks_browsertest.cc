@@ -12,32 +12,47 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class RunLoopUntilNonEmptyPaint : public content::WebContentsObserver {
+class RunLoopUntilLoadedAndPainted : public content::WebContentsObserver {
  public:
-  explicit RunLoopUntilNonEmptyPaint(content::WebContents* web_contents)
+  explicit RunLoopUntilLoadedAndPainted(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
 
-  ~RunLoopUntilNonEmptyPaint() override = default;
+  ~RunLoopUntilLoadedAndPainted() override = default;
 
   // Runs a RunLoop on the main thread until the first non-empty frame is
-  // painted for the WebContents provided to the constructor.
-  void RunUntilNonEmptyPaint() {
-    if (web_contents()->CompletedFirstVisuallyNonEmptyPaint())
+  // painted and the load is complete for the WebContents provided to the
+  // constructor.
+  void Run() {
+    if (LoadedAndPainted())
       return;
+
     run_loop_.Run();
   }
 
  private:
+  bool LoadedAndPainted() {
+    return web_contents()->CompletedFirstVisuallyNonEmptyPaint() &&
+           !web_contents()->IsLoading();
+  }
+
   // content::WebContentsObserver:
-  void DidFirstVisuallyNonEmptyPaint() override { run_loop_.Quit(); }
+  void DidFirstVisuallyNonEmptyPaint() override {
+    if (LoadedAndPainted())
+      run_loop_.Quit();
+  }
+  void DidStopLoading() override {
+    if (LoadedAndPainted())
+      run_loop_.Quit();
+  }
 
   base::RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(RunLoopUntilNonEmptyPaint);
+  DISALLOW_COPY_AND_ASSIGN(RunLoopUntilLoadedAndPainted);
 };
 
 class NoBestEffortTasksTest : public InProcessBrowserTest {
@@ -55,22 +70,39 @@ class NoBestEffortTasksTest : public InProcessBrowserTest {
 
 }  // namespace
 
-// Verify that it is possible to get the first non-empty paint without running
-// BEST_EFFORT tasks.
+// Verify that it is possible to load and paint the initial about:blank page
+// without running BEST_EFFORT tasks.
 //
-// TODO(fdoray) https://crbug.com/833989:
-// - Flaky timeout on ChromeOS ASAN
-// - Consistent timeout on Win ASAN
+// TODO(fdoray) https://crbug.com/833989: Times out on Win and ChromeOS ASAN.
 #if defined(ADDRESS_SANITIZER) && (defined(OS_CHROMEOS) || defined(OS_WIN))
-#define MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks \
-  DISABLED_FirstNonEmptyPaintWithoutBestEffortTasks
+#define MAYBE_LoadAndPaintAboutBlank DISABLED_LoadAndPaintAboutBlank
 #else
-#define MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks \
-  FirstNonEmptyPaintWithoutBestEffortTasks
+#define MAYBE_LoadAndPaintAboutBlank LoadAndPaintAboutBlank
 #endif
-IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest,
-                       MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks) {
-  RunLoopUntilNonEmptyPaint run_loop_until_non_empty_paint(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  run_loop_until_non_empty_paint.RunUntilNonEmptyPaint();
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, MAYBE_LoadAndPaintAboutBlank) {
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(web_contents->GetLastCommittedURL().IsAboutBlank());
+
+  RunLoopUntilLoadedAndPainted run_until_loaded_and_painted(web_contents);
+  run_until_loaded_and_painted.Run();
+}
+
+// Verify that it is possible to load and paint a page from the network without
+// running BEST_EFFORT tasks.
+//
+// This test has more dependencies than LoadAndPaintAboutBlank, including
+// loading cookies.
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintFromNetwork) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::OpenURLParams open(
+      embedded_test_server()->GetURL("a.com", "/empty.html"),
+      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_TYPED, false);
+  content::WebContents* const web_contents = browser()->OpenURL(open);
+  EXPECT_TRUE(web_contents->IsLoading());
+
+  RunLoopUntilLoadedAndPainted run_until_loaded_and_painted(web_contents);
+  run_until_loaded_and_painted.Run();
 }
