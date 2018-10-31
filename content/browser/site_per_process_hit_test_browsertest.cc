@@ -722,8 +722,8 @@ class SitePerProcessHitTestBrowserTest
     if (std::get<0>(GetParam()) == 1) {
       feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
     } else if (std::get<0>(GetParam()) == 2) {
-      feature_list_.InitAndEnableFeature(
-          features::kEnableVizHitTestSurfaceLayer);
+      feature_list_.InitWithFeatures({features::kEnableVizHitTestSurfaceLayer},
+                                     {features::kEnableVizHitTestDrawQuad});
     } else {
       feature_list_.InitWithFeatures({}, {features::kEnableVizHitTestDrawQuad,
                                           features::kVizDisplayCompositor});
@@ -2157,13 +2157,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        HitTestStaleDataDeletedView) {
-  // TODO(sunxd): Hit test regions are not submitted for overlapping surfaces,
-  // causing /2 to fail outside of Viz. https::/crbug.com/846798
-  if (base::FeatureList::IsEnabled(features::kEnableVizHitTestSurfaceLayer) &&
-      !base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
-    return;
-  }
-
   // Have two iframes to avoid going to short circuit path during the second
   // targeting.
   GURL main_url(
@@ -2231,7 +2224,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   auto result = web_contents->GetInputEventRouter()->FindTargetSynchronously(
       rwhv_parent, down_event);
   EXPECT_EQ(result.view, rwhv_parent);
-  EXPECT_TRUE(result.should_query_view);
+  // When VizHitTestSurfaceLayer is enabled and there is only one child frame,
+  // we can find the target frame and are sure there are no other possible
+  // targets, in this case, we dispatch the event immediately without
+  // asynchronously querying the root-view.
+  if (features::IsVizHitTestingSurfaceLayerEnabled())
+    EXPECT_FALSE(result.should_query_view);
+  else
+    EXPECT_TRUE(result.should_query_view);
   EXPECT_EQ(result.target_location.value(), parent_location);
 }
 
@@ -5653,6 +5653,32 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_TRUE(
       expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
   EXPECT_EQ(kFastHitTestFlags, hit_test_data[3].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       OccludedOOPIF) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled())
+    return;
+
+  auto hit_test_data =
+      SetupAndGetHitTestData("/frame_tree/page_with_occluded_iframes.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform1;
+  gfx::Transform expected_transform2;
+  expected_transform2.Translate(-110 * device_scale_factor, 0);
+
+  // We should not skip OOPIFs that are occluded by parent frame elements, since
+  // in cc an element's bound may not be its hit test area.
+  DCHECK(hit_test_data.size() == 4);
+  EXPECT_TRUE(ApproximatelyEqual(
+      TransformRectToQuadF(gfx::Rect(100, 100), expected_transform1),
+      TransformRectToQuadF(hit_test_data[3])));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[3].flags);
+
+  EXPECT_TRUE(ApproximatelyEqual(
+      TransformRectToQuadF(gfx::Rect(100, 100), expected_transform2),
+      TransformRectToQuadF(hit_test_data[2])));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
 static const int kHitTestOption[] = {0, 1, 2};

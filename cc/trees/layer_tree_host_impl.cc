@@ -2654,9 +2654,6 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       gfx::Rect layer_screen_space_rect = MathUtil::MapEnclosingClippedRect(
           surface_layer->ScreenSpaceTransform(),
           gfx::Rect(surface_layer->bounds()));
-      if (overlapping_region.Contains(layer_screen_space_rect))
-        continue;
-
       auto flag = GetFlagsForSurfaceLayer(surface_layer);
       if (overlapping_region.Intersects(layer_screen_space_rect))
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
