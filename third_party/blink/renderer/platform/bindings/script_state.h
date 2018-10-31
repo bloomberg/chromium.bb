@@ -112,6 +112,11 @@ class PLATFORM_EXPORT ScriptState final
     return From(info.GetIsolate()->GetCurrentContext());
   }
 
+  static ScriptState* ForCurrentRealm(
+      const v8::PropertyCallbackInfo<v8::Value>& info) {
+    return From(info.GetIsolate()->GetCurrentContext());
+  }
+
   static ScriptState* ForRelevantRealm(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     return From(info.Holder()->CreationContext());

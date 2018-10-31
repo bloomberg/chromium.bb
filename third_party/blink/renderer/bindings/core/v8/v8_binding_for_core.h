@@ -180,35 +180,8 @@ inline void V8SetReturnValueFast(const CallbackInfo& callbackInfo,
 // Specialized overload, used by interface indexed property handlers in their
 // descriptor callbacks, which need an actual V8 Object with the properties of
 // a property descriptor.
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             const v8::PropertyDescriptor& descriptor) {
-  DCHECK(descriptor.has_configurable());
-  DCHECK(descriptor.has_enumerable());
-  DCHECK(descriptor.has_value());
-  DCHECK(descriptor.has_writable());
-  v8::Local<v8::Object> desc = v8::Object::New(callback_info.GetIsolate());
-  desc->Set(callback_info.GetIsolate()->GetCurrentContext(),
-            V8AtomicString(callback_info.GetIsolate(), "configurable"),
-            ToV8(descriptor.configurable(), callback_info.Holder(),
-                 callback_info.GetIsolate()))
-      .ToChecked();
-  desc->Set(callback_info.GetIsolate()->GetCurrentContext(),
-            V8AtomicString(callback_info.GetIsolate(), "enumerable"),
-            ToV8(descriptor.enumerable(), callback_info.Holder(),
-                 callback_info.GetIsolate()))
-      .ToChecked();
-  desc->Set(callback_info.GetIsolate()->GetCurrentContext(),
-            V8AtomicString(callback_info.GetIsolate(), "value"),
-            descriptor.value())
-      .ToChecked();
-  desc->Set(callback_info.GetIsolate()->GetCurrentContext(),
-            V8AtomicString(callback_info.GetIsolate(), "writable"),
-            ToV8(descriptor.writable(), callback_info.Holder(),
-                 callback_info.GetIsolate()))
-      .ToChecked();
-  callback_info.GetReturnValue().Set(desc);
-}
+CORE_EXPORT void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>&,
+                                  const v8::PropertyDescriptor&);
 
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
