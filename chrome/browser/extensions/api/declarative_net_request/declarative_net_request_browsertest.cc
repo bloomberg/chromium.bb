@@ -26,6 +26,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -481,9 +482,15 @@ class DeclarativeNetRequestBrowserTest
 using DeclarativeNetRequestBrowserTest_Packed =
     DeclarativeNetRequestBrowserTest;
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// TODO: test times out on win7-debug. http://crbug.com/900447.
+#define MAYBE_BlockRequests_UrlFilter DISABLED_BlockRequests_UrlFilter
+#else
+#define MAYBE_BlockRequests_UrlFilter BlockRequests_UrlFilter
+#endif
 // Tests the "urlFilter" property of a declarative rule condition.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       BlockRequests_UrlFilter) {
+                       MAYBE_BlockRequests_UrlFilter) {
   struct {
     std::string url_filter;
     int id;
