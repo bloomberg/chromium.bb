@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
@@ -36,6 +37,10 @@ namespace base {
 class UnguessableToken;
 class Value;
 }
+
+namespace features {
+CONTENT_EXPORT extern const base::Feature kCrashReporting;
+}  // namespace features
 
 namespace resource_coordinator {
 class FrameResourceCoordinator;

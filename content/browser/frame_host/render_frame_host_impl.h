@@ -27,7 +27,6 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
-#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
@@ -1024,6 +1023,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+  void NotifyWebReportingCrashID(const std::string& crash_id) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
@@ -1317,6 +1317,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // registered via MarkInitiatorAsRequiringSeparateURLLoaderFactory method.
   URLLoaderFactoryBundleInfo::OriginMap
   CreateInitiatorSpecificURLLoaderFactories();
+
+  // Based on the termination |status|, may generate a crash report to be routed
+  // to the Reporting API.
+  void MaybeGenerateCrashReport(base::TerminationStatus status);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
@@ -1751,6 +1755,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |DidCommitProvisionalLoad()|. This situation should only happen when an
   // empty document is loaded.
   mojom::ResourceLoadInfoPtr deferred_main_frame_load_info_;
+
+  // A unique ID that can be used to track the RenderFrame in the case of a
+  // crash. This ID will be set as a crash key in the render process.
+  // https://www.w3.org/TR/reporting/#crashreportbody-crashid
+  std::string web_reporting_crash_id_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

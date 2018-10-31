@@ -114,6 +114,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FullscreenStateChanged(bool is_fullscreen) override {}
 
+  void NotifyWebReportingCrashID(const std::string& crash_id) override {}
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif

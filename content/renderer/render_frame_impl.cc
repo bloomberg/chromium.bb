@@ -19,6 +19,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/guid.h"
 #include "base/i18n/char_iterator.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -1784,6 +1785,13 @@ void RenderFrameImpl::Initialize() {
   // Bind this frame and the message router. This must be called after |frame_|
   // is set since binding requires a per-frame task runner.
   RenderThread::Get()->AddRoute(routing_id_, this);
+
+  if (IsLocalRoot()) {
+    std::string crash_id = base::GenerateGUID();
+    static auto* reporting_crash_id_key = base::debug::AllocateCrashKeyString(
+        "reporting_crash_id", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(reporting_crash_id_key, crash_id);
+  }
 }
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
