@@ -942,23 +942,13 @@ class SimulatorTestRunner(TestRunner):
         cert_path: Path to the certificate to copy to all emulators
     '''
 
-    # TODO(crbug.com/892381): Remove this debug logging
-    print 'ERICALE copy_trusted_certificate DEBUG START'
-    simLocs = glob.glob(
-        '{}/Library/Developer/CoreSimulator/Devices/*/data/Library/'.
-        format(os.path.expanduser('~')))
-    for loc in simLocs:
-      print loc
-      print subprocess.check_output(['ls', '-lsr', loc])
-      print "--"
-    print 'ERICALE copy_trusted_certificate DEBUG END'
-
     trustStores = glob.glob(
         '{}/Library/Developer/CoreSimulator/Devices/*/data/Library'.
         format(os.path.expanduser('~')))
     for trustStore in trustStores:
       print 'Copying TrustStore to {}'.format(trustStore)
-      os.makedirs(trustStore + "/Keychains/",exist_ok=True)
+      if not os.path.exists(trustStore + "/Keychains/"):
+        os.makedirs(trustStore + "/Keychains/")
       shutil.copy(cert_path, trustStore + "/Keychains/TrustStore.sqlite3")
 
 
