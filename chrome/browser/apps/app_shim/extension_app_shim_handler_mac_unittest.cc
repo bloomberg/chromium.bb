@@ -36,6 +36,9 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
  public:
   virtual ~MockDelegate() {}
 
+  base::FilePath GetFullProfilePath(const base::FilePath& relative_path) {
+    return relative_path;
+  }
   MOCK_METHOD1(ProfileExistsForPath, bool(const base::FilePath&));
   MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
   void LoadProfileAsync(const base::FilePath& path,
@@ -66,6 +69,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   AppShimHandler::Host* CreateHost(
       const std::string& app_id,
       const base::FilePath& profile_path) override {
+    DCHECK(host_for_create_);
     auto* result = host_for_create_;
     host_for_create_ = nullptr;
     return result;
@@ -124,13 +128,47 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
 
 class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
-  TestingAppShimHostBootstrap(apps::AppShimHandler* handler)
-      : handler_(handler) {}
-  using AppShimHostBootstrap::LaunchApp;
+  TestingAppShimHostBootstrap(
+      const base::FilePath& profile_path,
+      const std::string& app_id,
+      base::Optional<apps::AppShimLaunchResult>* launch_result,
+      apps::AppShimHandler* handler)
+      : profile_path_(profile_path),
+        app_id_(app_id),
+        launch_result_(launch_result),
+        handler_(handler),
+        weak_factory_(this) {}
   apps::AppShimHandler* GetHandler() override { return handler_; }
 
+  void DoTestLaunch(apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& files) {
+    chrome::mojom::AppShimHostPtr host_ptr;
+    LaunchApp(mojo::MakeRequest(&host_ptr), profile_path_, app_id_, launch_type,
+              files,
+              base::BindOnce(&TestingAppShimHostBootstrap::DoTestLaunchDone,
+                             launch_result_));
+  }
+
+  static void DoTestLaunchDone(
+      base::Optional<apps::AppShimLaunchResult>* launch_result,
+      apps::AppShimLaunchResult result,
+      chrome::mojom::AppShimRequest app_shim_request) {
+    if (launch_result)
+      launch_result->emplace(result);
+  }
+
+  base::WeakPtr<TestingAppShimHostBootstrap> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
+  base::FilePath profile_path_;
+  std::string app_id_;
+  // Note that |launch_result_| is optional so that we can track whether or not
+  // the callback to set it has arrived.
+  base::Optional<apps::AppShimLaunchResult>* launch_result_;
   apps::AppShimHandler* const handler_;
+  base::WeakPtrFactory<TestingAppShimHostBootstrap> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimHostBootstrap);
 };
 
@@ -141,30 +179,30 @@ class TestHost : public AppShimHost {
  public:
   TestHost(const base::FilePath& profile_path,
            const std::string& app_id,
-           base::Optional<apps::AppShimLaunchResult>* launch_result,
            TestingExtensionAppShimHandler* handler)
       : AppShimHost(app_id, profile_path),
-        launch_result_(launch_result),
         handler_(handler),
         weak_factory_(this) {}
 
   // Override the GetAppShimHandler for testing.
   apps::AppShimHandler* GetAppShimHandler() const override { return handler_; }
 
-  void SetLaunchResult(apps::AppShimLaunchResult result) {
-    launch_result_->emplace(result);
+  // Save the result of OnAppLaunchComplete for testing.
+  void OnAppLaunchComplete(apps::AppShimLaunchResult result) override {
+    app_launch_result.emplace(result);
+    AppShimHost::OnAppLaunchComplete(result);
   }
-  apps::AppShimLaunchResult GetLaunchResult() {
-    DCHECK(*launch_result_);
-    return *(*launch_result_);
+  base::Optional<apps::AppShimLaunchResult> app_launch_result;
+
+  apps::AppShimLaunchResult GetAppLaunchResult() {
+    DCHECK(app_launch_result);
+    return *app_launch_result;
   }
+
   base::WeakPtr<TestHost> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
   ~TestHost() override {}
-  // Note that |launch_result_| is optional so that we can track whether or not
-  // the callback to set it has arrived.
-  base::Optional<apps::AppShimLaunchResult>* launch_result_;
   TestingExtensionAppShimHandler* handler_;
 
   base::WeakPtrFactory<TestHost> weak_factory_;
@@ -178,18 +216,32 @@ class ExtensionAppShimHandlerTest : public testing::Test {
         handler_(new TestingExtensionAppShimHandler(delegate_)),
         profile_path_a_("Profile A"),
         profile_path_b_("Profile B") {
-    host_aa_ = (new TestHost(profile_path_a_, kTestAppIdA,
-                             &host_aa_launch_result_, handler_.get()))
+    bootstrap_aa_ =
+        (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
+                                         &bootstrap_aa_result_, handler_.get()))
+            ->GetWeakPtr();
+    bootstrap_ab_ =
+        (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdB,
+                                         &bootstrap_ab_result_, handler_.get()))
+            ->GetWeakPtr();
+    bootstrap_bb_ =
+        (new TestingAppShimHostBootstrap(profile_path_b_, kTestAppIdB,
+                                         &bootstrap_bb_result_, handler_.get()))
+            ->GetWeakPtr();
+    bootstrap_aa_duplicate_ =
+        (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
+                                         &bootstrap_aa_duplicate_result_,
+                                         handler_.get()))
+            ->GetWeakPtr();
+
+    host_aa_ = (new TestHost(profile_path_a_, kTestAppIdA, handler_.get()))
                    ->GetWeakPtr();
-    host_ab_ = (new TestHost(profile_path_a_, kTestAppIdB,
-                             &host_ab_launch_result_, handler_.get()))
+    host_ab_ = (new TestHost(profile_path_a_, kTestAppIdB, handler_.get()))
                    ->GetWeakPtr();
-    host_bb_ = (new TestHost(profile_path_b_, kTestAppIdB,
-                             &host_bb_launch_result_, handler_.get()))
+    host_bb_ = (new TestHost(profile_path_b_, kTestAppIdB, handler_.get()))
                    ->GetWeakPtr();
     host_aa_duplicate_ =
-        (new TestHost(profile_path_a_, kTestAppIdA,
-                      &host_aa_duplicate_launch_result_, handler_.get()))
+        (new TestHost(profile_path_a_, kTestAppIdA, handler_.get()))
             ->GetWeakPtr();
 
     base::FilePath extension_path("/fake/path");
@@ -241,43 +293,43 @@ class ExtensionAppShimHandlerTest : public testing::Test {
       host_bb_->OnAppClosed();
     if (host_aa_duplicate_)
       host_aa_duplicate_->OnAppClosed();
+
+    delete bootstrap_aa_.get();
+    delete bootstrap_ab_.get();
+    delete bootstrap_bb_.get();
+    delete bootstrap_aa_duplicate_.get();
   }
 
-  void DoShimLaunch(TestHost* host,
+  void DoShimLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
+                    base::WeakPtr<TestHost> host,
                     apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
-    delegate_->SetHostForCreate(host);
-    chrome::mojom::AppShimHostPtr host_ptr;
-    (new TestingAppShimHostBootstrap(handler_.get()))
-        ->LaunchApp(
-            mojo::MakeRequest(&host_ptr), host->GetProfilePath(),
-            host->GetAppId(), launch_type, files,
-            base::BindOnce(&ExtensionAppShimHandlerTest::DoShimLaunchDone,
-                           base::Unretained(this), host));
+    if (host)
+      delegate_->SetHostForCreate(host.get());
+    bootstrap->DoTestLaunch(launch_type, files);
   }
 
-  void DoShimLaunchDone(TestHost* host,
-                        apps::AppShimLaunchResult result,
-                        chrome::mojom::AppShimRequest app_shim_request) {
-    host->SetLaunchResult(result);
+  void NormalLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
+                    base::WeakPtr<TestHost> host) {
+    DoShimLaunch(bootstrap, host, APP_SHIM_LAUNCH_NORMAL,
+                 std::vector<base::FilePath>());
   }
 
-  void NormalLaunch(TestHost* host) {
-    DoShimLaunch(host, APP_SHIM_LAUNCH_NORMAL, std::vector<base::FilePath>());
-  }
-
-  void RegisterOnlyLaunch(TestHost* host) {
-    DoShimLaunch(host, APP_SHIM_LAUNCH_REGISTER_ONLY,
+  void RegisterOnlyLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
+                          base::WeakPtr<TestHost> host) {
+    DoShimLaunch(bootstrap, host, APP_SHIM_LAUNCH_REGISTER_ONLY,
                  std::vector<base::FilePath>());
   }
 
   // Completely launch a shim host and leave it running.
-  void LaunchAndActivate(TestHost* host, Profile* profile) {
-    NormalLaunch(host);
-    EXPECT_EQ(host, handler_->FindHost(profile, host->GetAppId()));
-    EXPECT_CALL(*handler_, OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, _));
+  void LaunchAndActivate(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
+                         base::WeakPtr<TestHost> host,
+                         Profile* profile) {
+    NormalLaunch(bootstrap, host);
+    EXPECT_EQ(host.get(), handler_->FindHost(profile, host->GetAppId()));
+    EXPECT_CALL(*handler_, OnShimFocus(host.get(), APP_SHIM_FOCUS_NORMAL, _));
     handler_->OnAppActivated(profile, host->GetAppId());
-    EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, host->GetLaunchResult());
+    EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, host->GetAppLaunchResult());
   }
 
   // Simulates a focus request coming from a running app shim.
@@ -302,14 +354,22 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   base::FilePath profile_path_b_;
   TestingProfile profile_a_;
   TestingProfile profile_b_;
-  base::Optional<apps::AppShimLaunchResult> host_aa_launch_result_;
-  base::Optional<apps::AppShimLaunchResult> host_ab_launch_result_;
-  base::Optional<apps::AppShimLaunchResult> host_bb_launch_result_;
-  base::Optional<apps::AppShimLaunchResult> host_aa_duplicate_launch_result_;
+
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_aa_;
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_ab_;
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_bb_;
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_aa_duplicate_;
+
+  base::Optional<apps::AppShimLaunchResult> bootstrap_aa_result_;
+  base::Optional<apps::AppShimLaunchResult> bootstrap_ab_result_;
+  base::Optional<apps::AppShimLaunchResult> bootstrap_bb_result_;
+  base::Optional<apps::AppShimLaunchResult> bootstrap_aa_duplicate_result_;
+
   base::WeakPtr<TestHost> host_aa_;
   base::WeakPtr<TestHost> host_ab_;
   base::WeakPtr<TestHost> host_bb_;
   base::WeakPtr<TestHost> host_aa_duplicate_;
+
   scoped_refptr<const Extension> extension_a_;
   scoped_refptr<const Extension> extension_b_;
 
@@ -322,8 +382,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
   EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  NormalLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND, *host_aa_launch_result_);
+  NormalLaunch(bootstrap_aa_, nullptr);
+  EXPECT_EQ(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND, *bootstrap_aa_result_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
@@ -331,8 +391,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
   EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
       .WillOnce(Return(true));
   EXPECT_CALL(*delegate_, LaunchUserManager());
-  NormalLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_PROFILE_LOCKED, *host_aa_launch_result_);
+  NormalLaunch(bootstrap_aa_, nullptr);
+  EXPECT_EQ(APP_SHIM_LAUNCH_PROFILE_LOCKED, *bootstrap_aa_result_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
@@ -341,8 +401,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
-  NormalLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_APP_NOT_FOUND, *host_aa_launch_result_);
+  NormalLaunch(bootstrap_aa_, host_aa_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_APP_NOT_FOUND, *bootstrap_aa_result_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
@@ -352,36 +412,37 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
       .WillRepeatedly(Return(extension_a_.get()));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
-  NormalLaunch(host_aa_.get());
+  NormalLaunch(bootstrap_aa_, host_aa_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   // Normal startup.
-  NormalLaunch(host_aa_.get());
+  NormalLaunch(bootstrap_aa_, host_aa_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  NormalLaunch(host_ab_.get());
+  NormalLaunch(bootstrap_ab_, host_ab_);
   EXPECT_EQ(host_ab_.get(), handler_->FindHost(&profile_a_, kTestAppIdB));
 
   std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_b_, extension_b_.get(), some_file));
-  DoShimLaunch(host_bb_.get(), APP_SHIM_LAUNCH_NORMAL, some_file);
+  DoShimLaunch(bootstrap_bb_, host_bb_, APP_SHIM_LAUNCH_NORMAL, some_file);
   EXPECT_EQ(host_bb_.get(), handler_->FindHost(&profile_b_, kTestAppIdB));
 
   // Activation when there is a registered shim finishes launch with success and
   // focuses the app.
   EXPECT_CALL(*handler_, OnShimFocus(host_aa_.get(), APP_SHIM_FOCUS_NORMAL, _));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
-  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *host_aa_launch_result_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
 
   // Starting and closing a second host just focuses the original host of the
   // app.
   EXPECT_CALL(*handler_,
               OnShimFocus(host_aa_.get(), APP_SHIM_FOCUS_REOPEN, some_file));
 
-  DoShimLaunch(host_aa_duplicate_.get(), APP_SHIM_LAUNCH_NORMAL, some_file);
-  EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *host_aa_duplicate_launch_result_);
+  DoShimLaunch(bootstrap_aa_duplicate_, host_aa_duplicate_,
+               APP_SHIM_LAUNCH_NORMAL, some_file);
+  EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_duplicate_result_);
 
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(host_aa_duplicate_.get());
@@ -406,8 +467,8 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
-  RegisterOnlyLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *host_aa_launch_result_);
+  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Return no app windows for OnShimFocus and OnShimQuit.
@@ -446,12 +507,12 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
 
 TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   // Launch shims, adding entries in the map.
-  RegisterOnlyLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *host_aa_launch_result_);
+  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  RegisterOnlyLaunch(host_ab_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *host_ab_launch_result_);
+  RegisterOnlyLaunch(bootstrap_ab_, host_ab_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_ab_result_);
   EXPECT_EQ(host_ab_.get(), handler_->FindHost(&profile_a_, kTestAppIdB));
 
   // Return empty window list.
@@ -473,8 +534,8 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
   // For an APP_SHIM_LAUNCH_REGISTER_ONLY, don't launch the app.
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
       .Times(0);
-  RegisterOnlyLaunch(host_aa_.get());
-  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *host_aa_launch_result_);
+  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Close the shim, removing the entry in the map.
@@ -489,7 +550,7 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
   EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
       .WillOnce(Return(static_cast<Profile*>(NULL)))
       .WillRepeatedly(Return(&profile_a_));
-  NormalLaunch(host_aa_.get());
+  NormalLaunch(bootstrap_aa_, host_aa_);
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
   delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -498,7 +559,7 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
 // Tests that calls to OnShimFocus, OnShimHide correctly handle a null extension
 // being provided by the extension system.
 TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
-  LaunchAndActivate(host_aa_.get(), &profile_a_);
+  LaunchAndActivate(bootstrap_aa_, host_aa_, &profile_a_);
 
   // Have GetWindows() return an empty window list for focus (otherwise, it
   // will contain a single nullptr, which can't be focused). Expect 1 call only.
@@ -518,7 +579,7 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
   EXPECT_EQ(nullptr, host_aa_.get());
 
   // Do the same for SetHidden on host_bb.
-  LaunchAndActivate(host_bb_.get(), &profile_b_);
+  LaunchAndActivate(bootstrap_bb_, host_bb_, &profile_b_);
   ShimSetHidden(host_bb_.get(), true);
   EXPECT_NE(nullptr, host_bb_.get());
 
@@ -526,6 +587,36 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
       .WillRepeatedly(Return(nullptr));
   ShimSetHidden(host_bb_.get(), true);
   EXPECT_EQ(nullptr, host_bb_.get());
+}
+
+TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
+  // Create a host for our profile.
+  delegate_->SetHostForCreate(host_aa_.get());
+  EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_EQ(host_aa_.get(),
+            handler_->FindOrCreateHost(&profile_a_, kTestAppIdA));
+  EXPECT_FALSE(bool(host_aa_->app_launch_result));
+
+  // Launch the app for this host. It should find the pre-existing host, and the
+  // pre-existing host's launch result should be set.
+  EXPECT_CALL(*handler_, OnShimFocus(host_aa_.get(), APP_SHIM_FOCUS_NORMAL, _))
+      .Times(1);
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
+      .Times(0);
+  EXPECT_FALSE(bool(host_aa_->app_launch_result));
+  DoShimLaunch(bootstrap_aa_, nullptr, APP_SHIM_LAUNCH_REGISTER_ONLY,
+               std::vector<base::FilePath>());
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, host_aa_->app_launch_result);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+
+  // Try to launch the app again. It should fail to launch, and the previous
+  // profile should remain.
+  DoShimLaunch(bootstrap_aa_duplicate_, nullptr, APP_SHIM_LAUNCH_REGISTER_ONLY,
+               std::vector<base::FilePath>());
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, host_aa_->app_launch_result);
+  EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_duplicate_result_);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
 }  // namespace apps

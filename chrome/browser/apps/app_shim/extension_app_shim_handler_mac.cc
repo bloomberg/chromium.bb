@@ -151,21 +151,25 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
 
 namespace apps {
 
+base::FilePath ExtensionAppShimHandler::Delegate::GetFullProfilePath(
+    const base::FilePath& relative_profile_path) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->user_data_dir().Append(relative_profile_path);
+}
+
 bool ExtensionAppShimHandler::Delegate::ProfileExistsForPath(
-    const base::FilePath& path) {
+    const base::FilePath& full_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // Check for the profile name in the profile info cache to ensure that we
   // never access any directory that isn't a known profile.
-  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
   ProfileAttributesEntry* entry;
   return profile_manager->GetProfileAttributesStorage().
       GetProfileAttributesWithPath(full_path, &entry);
 }
 
 Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
-    const base::FilePath& path) {
+    const base::FilePath& full_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
   Profile* profile = profile_manager->GetProfileByPath(full_path);
 
   // Use IsValidProfile to check if the profile has been created.
@@ -173,17 +177,14 @@ Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
 }
 
 void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
-    const base::FilePath& path,
+    const base::FilePath& full_path,
     base::OnceCallback<void(Profile*)> callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
   profile_manager->LoadProfileByPath(full_path, false, std::move(callback));
 }
 
 bool ExtensionAppShimHandler::Delegate::IsProfileLockedForPath(
-    const base::FilePath& path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
+    const base::FilePath& full_path) {
   return profiles::IsProfileLocked(full_path);
 }
 
@@ -277,13 +278,26 @@ AppShimHandler::Host* ExtensionAppShimHandler::FindHost(
   return it == hosts_.end() ? NULL : it->second;
 }
 
-AppShimHandler::Host* ExtensionAppShimHandler::FindHostForBrowser(
-    Browser* browser) {
+AppShimHandler::Host* ExtensionAppShimHandler::FindOrCreateHost(
+    Profile* profile,
+    const std::string& app_id) {
+  Host*& host = hosts_[make_pair(profile, app_id)];
+  if (!host)
+    host = delegate_->CreateHost(app_id, profile->GetPath());
+  return host;
+}
+
+views::BridgeFactoryHost*
+ExtensionAppShimHandler::GetViewsBridgeFactoryHostForBrowser(Browser* browser) {
+  if (!features::HostWindowsInAppShimProcess())
+    return nullptr;
+
   const Extension* extension =
       apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
-  if (extension) {
-    return FindHost(Profile::FromBrowserContext(browser->profile()),
-                    extension->id());
+  if (extension && extension->is_hosted_app()) {
+    Host* host = FindOrCreateHost(
+        Profile::FromBrowserContext(browser->profile()), extension->id());
+    return host->GetViewsBridgeFactoryHost();
   }
   return nullptr;
 }
@@ -417,8 +431,10 @@ void ExtensionAppShimHandler::OnShimLaunch(
   AppShimLaunchType launch_type = bootstrap->GetLaunchType();
   DCHECK(crx_file::id_util::IdIsValid(app_id));
 
-  const base::FilePath& profile_path = bootstrap->GetProfilePath();
-  DCHECK(!profile_path.empty());
+  const base::FilePath& relative_profile_path = bootstrap->GetProfilePath();
+  DCHECK(!relative_profile_path.empty());
+  base::FilePath profile_path =
+      delegate_->GetFullProfilePath(relative_profile_path);
 
   if (!delegate_->ProfileExistsForPath(profile_path)) {
     // User may have deleted the profile this shim was originally created for.
@@ -499,12 +515,11 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   AppShimLaunchType launch_type = bootstrap->GetLaunchType();
   const std::vector<base::FilePath>& files = bootstrap->GetLaunchFiles();
 
-  // The first host to claim this (profile, app_id) becomes the main host.
-  // For any others, focus or relaunch the app.
-  Host*& host = hosts_[make_pair(profile, app_id)];
-  if (!host) {
-    host = delegate_->CreateHost(app_id, bootstrap->GetProfilePath());
-  } else {
+  Host* host = FindOrCreateHost(profile, app_id);
+  if (host->HasBootstrapConnected()) {
+    // If another app shim process has already connected to this (profile,
+    // app_id) pair, then focus the windows for the existing process, and
+    // close the new process.
     OnShimFocus(host,
                 launch_type == APP_SHIM_LAUNCH_NORMAL ?
                     APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL,
@@ -713,13 +728,15 @@ void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
 
   Profile* profile = static_cast<Profile*>(context);
   Host* host = FindHost(profile, app_id);
-  if (host) {
+  if (host && host->HasBootstrapConnected()) {
+    // If there is a connected app shim process, notify it of success and focus
+    // the app windows.
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
     OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, std::vector<base::FilePath>());
-    return;
+  } else {
+    // Otherwise, launch an app shim.
+    delegate_->LaunchShim(profile, extension);
   }
-
-  delegate_->LaunchShim(profile, extension);
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
