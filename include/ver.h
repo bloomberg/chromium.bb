@@ -39,7 +39,6 @@
 #define NASM_VER_H
 
 extern const char nasm_version[];
-extern const char nasm_date[];
 extern const char nasm_compile_options[];
 extern const char nasm_comment[];
 extern const char nasm_signature[];

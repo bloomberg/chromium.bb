@@ -118,8 +118,8 @@ int main(int argc, char **argv)
                 case 'r':
                 case 'v':
                     fprintf(stderr,
-                            "NDISASM version %s compiled on %s\n",
-			    nasm_version, nasm_date);
+                            "NDISASM version %s\n",
+			    nasm_version);
                     return 0;
                 case 'u':	/* -u for -b 32, -uu for -b 64 */
 		    if (bits < 64)
