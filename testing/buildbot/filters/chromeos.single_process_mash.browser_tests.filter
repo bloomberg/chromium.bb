@@ -99,15 +99,9 @@
 # Crashes on exit, even without SingleProcessMash.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.Success/*
 
-# Flaky tests. crbug.com/880584
--AutoplayMetricsBrowserTest.RecordAutoplayAttemptUkm
-
 # Blub Arc tests.
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/0
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/1
-
-# Enterprise keys tests.
--CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/*
 
 # Flaky.  crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
@@ -154,9 +148,6 @@
 
 # Uses ash::LockWindow. https://crbug.com/899862
 -ShutdownPolicyLockerTest.*
-
-# Flaky tests. crbug.com/880584
--UnifiedAutoplaySettingBrowserTest.*
 
 # Flaky tests. crbug.com/833144
 -GetAuthTokenFunctionPublicSessionTest.NonWhitelisted
