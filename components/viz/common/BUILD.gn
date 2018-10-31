@@ -20,6 +20,7 @@ viz_component("resource_format_utils") {
   sources = [
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
+    "resources/resource_sizes.h",
     "viz_resource_format_export.h",
   ]
 
@@ -31,8 +32,10 @@ viz_component("resource_format_utils") {
 
   deps = [
     "//base",
+    "//cc/base:base",
     "//skia",
     "//ui/gfx:buffer_types",
+    "//ui/gfx/geometry:geometry",
   ]
 }
 
@@ -122,7 +125,6 @@ viz_component("common") {
     "resources/resource_id.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
-    "resources/resource_sizes.h",
     "resources/return_callback.h",
     "resources/returned_resource.h",
     "resources/shared_bitmap.cc",

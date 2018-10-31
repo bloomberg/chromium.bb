@@ -150,6 +150,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   scoped_refptr<gpu::raster::RasterDecoderContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
+  std::unique_ptr<gpu::SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;

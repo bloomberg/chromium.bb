@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_H_
 
+#include "base/containers/flat_map.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -21,9 +22,11 @@ class MemoryAllocatorDump;
 namespace gpu {
 class MailboxManager;
 class SharedImageManager;
+class SharedImageRepresentation;
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
+class MemoryTypeTracker;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
 // Should not be accessed direclty, instead is accessed through a
@@ -34,7 +37,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
                      viz::ResourceFormat format,
                      const gfx::Size& size,
                      const gfx::ColorSpace& color_space,
-                     uint32_t usage);
+                     uint32_t usage,
+                     size_t estimated_size);
 
   virtual ~SharedImageBacking();
 
@@ -43,7 +47,13 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const gfx::ColorSpace& color_space() const { return color_space_; }
   uint32_t usage() const { return usage_; }
   const Mailbox& mailbox() const { return mailbox_; }
+  size_t estimated_size() const { return estimated_size_; }
   void OnContextLost() { have_context_ = false; }
+
+  // Concrete functions to manage a ref count.
+  void AddRef(SharedImageRepresentation* representation);
+  void ReleaseRef(SharedImageRepresentation* representation);
+  bool HasAnyRefs() const { return !refs_.empty(); }
 
   // Tracks whether the backing has ever been cleared, or whether it may contain
   // uninitialized pixels.
@@ -56,10 +66,6 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Destroys the underlying backing. Must be called before destruction.
   virtual void Destroy() = 0;
 
-  // Memory dump helpers:
-  // Returns the estimated size of the backing. If 0 is returned, the dump will
-  // be omitted.
-  virtual size_t EstimatedSize() const;
   // Allows the backing to attach additional data to the dump or dump
   // additional sub paths.
   virtual void OnMemoryDump(const std::string& dump_name,
@@ -75,11 +81,14 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Used by SharedImageManager.
   friend class SharedImageManager;
   virtual std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager);
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker);
   virtual std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager);
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker);
   virtual std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager);
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker);
 
   // Used by subclasses in Destroy.
   bool have_context() const { return have_context_; }
@@ -90,8 +99,13 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const gfx::Size size_;
   const gfx::ColorSpace color_space_;
   const uint32_t usage_;
+  const size_t estimated_size_;
 
   bool have_context_ = true;
+  // A vector of SharedImageRepresentations which hold references to this
+  // backing. The first reference is considered the owner, and the vector is
+  // ordered by the order in which references were taken.
+  std::vector<SharedImageRepresentation*> refs_;
 };
 
 }  // namespace gpu

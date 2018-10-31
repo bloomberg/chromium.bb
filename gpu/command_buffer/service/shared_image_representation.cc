@@ -8,10 +8,14 @@ namespace gpu {
 
 SharedImageRepresentation::SharedImageRepresentation(
     SharedImageManager* manager,
-    SharedImageBacking* backing)
-    : manager_(manager), backing_(backing) {}
+    SharedImageBacking* backing,
+    MemoryTypeTracker* owning_tracker)
+    : manager_(manager), backing_(backing), tracker_(owning_tracker) {
+  backing_->AddRef(this);
+}
+
 SharedImageRepresentation::~SharedImageRepresentation() {
-  manager_->OnRepresentationDestroyed(backing_->mailbox());
+  manager_->OnRepresentationDestroyed(backing_->mailbox(), this);
 }
 
 }  // namespace gpu

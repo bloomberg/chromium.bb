@@ -35,6 +35,7 @@ struct GpuPreferences;
 class MailboxManager;
 class TransferBufferManager;
 class SharedImageManager;
+class SharedImageRepresentationFactory;
 class ServiceDiscardableManager;
 class PassthroughDiscardableManager;
 class DecoderContext;
@@ -210,8 +211,9 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return discardable_manager_;
   }
 
-  SharedImageManager* shared_image_manager() const {
-    return shared_image_manager_;
+  SharedImageRepresentationFactory* shared_image_representation_factory()
+      const {
+    return shared_image_representation_factory_.get();
   }
 
   uint32_t GetMemRepresented() const;
@@ -337,7 +339,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ServiceDiscardableManager* discardable_manager_;
 
-  SharedImageManager* shared_image_manager_;
+  std::unique_ptr<SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

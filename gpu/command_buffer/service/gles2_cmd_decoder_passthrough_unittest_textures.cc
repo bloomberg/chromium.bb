@@ -21,8 +21,11 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
     TestSharedImageRepresentationPassthrough(
         SharedImageManager* manager,
         SharedImageBacking* backing,
+        MemoryTypeTracker* tracker,
         scoped_refptr<TexturePassthrough>& texture_passthrough)
-        : SharedImageRepresentationGLTexturePassthrough(manager, backing),
+        : SharedImageRepresentationGLTexturePassthrough(manager,
+                                                        backing,
+                                                        tracker),
           texture_passthrough_(texture_passthrough) {}
 
     const scoped_refptr<TexturePassthrough>& GetTexturePassthrough() override {
@@ -39,7 +42,12 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,
                                     GLuint texture_id)
-      : SharedImageBacking(mailbox, format, size, color_space, usage) {
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           0 /* estimated_size */) {
     texture_passthrough_ =
         base::MakeRefCounted<TexturePassthrough>(texture_id, GL_TEXTURE_2D);
   }
@@ -54,8 +62,6 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
 
   void Destroy() override { texture_passthrough_.reset(); }
 
-  size_t EstimatedSize() const override { return 0; }
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -63,9 +69,10 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager) override {
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) override {
     return std::make_unique<TestSharedImageRepresentationPassthrough>(
-        manager, this, texture_passthrough_);
+        manager, this, tracker, texture_passthrough_);
   }
 
  private:
@@ -77,11 +84,14 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
 using namespace cmds;
 
 TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
+  MemoryTypeTracker memory_tracker(nullptr);
   Mailbox mailbox = Mailbox::Generate();
-  GetSharedImageManager()->Register(
-      std::make_unique<TestSharedImageBackingPassthrough>(
-          mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-          gfx::ColorSpace(), 0, kNewServiceId));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      GetSharedImageManager()->Register(
+          std::make_unique<TestSharedImageBackingPassthrough>(
+              mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
+              gfx::ColorSpace(), 0, kNewServiceId),
+          &memory_tracker);
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
@@ -111,7 +121,7 @@ TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   EXPECT_EQ(0u, GetPassthroughResources()->texture_shared_image_map.count(
                     kNewClientId));
 
-  GetSharedImageManager()->Unregister(mailbox);
+  shared_image.reset();
 }
 
 TEST_F(GLES2DecoderPassthroughTest,
@@ -136,12 +146,15 @@ TEST_F(GLES2DecoderPassthroughTest,
 
 TEST_F(GLES2DecoderPassthroughTest,
        CreateAndTexStorage2DSharedImageCHROMIUMPreexistingTexture) {
+  MemoryTypeTracker memory_tracker(nullptr);
   // Create a texture with kNewClientId.
   Mailbox mailbox = Mailbox::Generate();
-  GetSharedImageManager()->Register(
-      std::make_unique<TestSharedImageBackingPassthrough>(
-          mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-          gfx::ColorSpace(), 0, kNewServiceId));
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      GetSharedImageManager()->Register(
+          std::make_unique<TestSharedImageBackingPassthrough>(
+              mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
+              gfx::ColorSpace(), 0, kNewServiceId),
+          &memory_tracker);
 
   {
     CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
@@ -162,7 +175,7 @@ TEST_F(GLES2DecoderPassthroughTest,
   }
 
   DoDeleteTexture(kNewClientId);
-  GetSharedImageManager()->Unregister(mailbox);
+  shared_image.reset();
 }
 
 }  // namespace gles2

@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -43,7 +44,12 @@ class SharedImageBackingFactoryAHardwareBufferTest : public testing::Test {
     workarounds.max_texture_size = INT_MAX - 1;
     backing_factory_ =
         std::make_unique<SharedImageBackingFactoryAHardwareBuffer>(
-            workarounds, GpuFeatureInfo(), nullptr);
+            workarounds, GpuFeatureInfo());
+
+    memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
+    shared_image_representation_factory_ =
+        std::make_unique<SharedImageRepresentationFactory>(
+            &shared_image_manager_, nullptr);
   }
 
  protected:
@@ -52,6 +58,9 @@ class SharedImageBackingFactoryAHardwareBufferTest : public testing::Test {
   std::unique_ptr<SharedImageBackingFactoryAHardwareBuffer> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
+  std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
+  std::unique_ptr<SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 };
 
 // Basic test to check creation and deletion of AHB backed shared image.
@@ -93,8 +102,11 @@ TEST_F(SharedImageBackingFactoryAHardwareBufferTest, Basic) {
   EXPECT_EQ(height, size.height());
 
   // Next validate via a SharedImageRepresentationGLTexture.
-  EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
-  auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  auto gl_representation =
+      shared_image_representation_factory_->ProduceGLTexture(mailbox);
   EXPECT_TRUE(gl_representation);
   EXPECT_TRUE(gl_representation->GetTexture()->service_id());
   EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
@@ -104,7 +116,7 @@ TEST_F(SharedImageBackingFactoryAHardwareBufferTest, Basic) {
   EXPECT_EQ(usage, gl_representation->usage());
   gl_representation.reset();
 
-  shared_image_manager_.Unregister(mailbox);
+  factory_ref.reset();
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
@@ -141,6 +153,30 @@ TEST_F(SharedImageBackingFactoryAHardwareBufferTest, InvalidSize) {
   backing = backing_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage);
   EXPECT_FALSE(backing);
+}
+
+TEST_F(SharedImageBackingFactoryAHardwareBufferTest, EstimatedSize) {
+  if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
+    return;
+
+  auto mailbox = Mailbox::Generate();
+  auto format = viz::ResourceFormat::RGBA_8888;
+  gfx::Size size(256, 256);
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
+  EXPECT_TRUE(backing);
+
+  size_t backing_estimated_size = backing->estimated_size();
+  EXPECT_GT(backing_estimated_size, 0u);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  EXPECT_EQ(backing_estimated_size, memory_type_tracker_->GetMemRepresented());
+
+  shared_image.reset();
 }
 
 }  // anonymous namespace

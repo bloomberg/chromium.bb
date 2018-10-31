@@ -8,6 +8,8 @@
 #include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/logging.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -30,8 +32,9 @@ class SharedImageRepresentationGLTextureAHardwareBuffer
  public:
   SharedImageRepresentationGLTextureAHardwareBuffer(SharedImageManager* manager,
                                                     SharedImageBacking* backing,
+                                                    MemoryTypeTracker* tracker,
                                                     gles2::Texture* texture)
-      : SharedImageRepresentationGLTexture(manager, backing),
+      : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
 
   gles2::Texture* GetTexture() override { return texture_; }
@@ -54,10 +57,14 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
       const gfx::ColorSpace& color_space,
       uint32_t usage,
       base::android::ScopedHardwareBufferHandle handle,
-      MemoryTypeTracker* tracker)
-      : SharedImageBacking(mailbox, format, size, color_space, usage),
-        hardware_buffer_handle_(std::move(handle)),
-        memory_tracker_(tracker) {
+      size_t estimated_size)
+      : SharedImageBacking(mailbox,
+                           format,
+                           size,
+                           color_space,
+                           usage,
+                           estimated_size),
+        hardware_buffer_handle_(std::move(handle)) {
     DCHECK(hardware_buffer_handle_.is_valid());
   }
 
@@ -100,7 +107,8 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager) override {
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
     // Use same texture for all the texture representations generated from same
     // backing.
     if (!GenGLTexture())
@@ -108,7 +116,7 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
 
     DCHECK(texture_);
     return std::make_unique<SharedImageRepresentationGLTextureAHardwareBuffer>(
-        manager, this, texture_);
+        manager, this, tracker, texture_);
   }
 
  private:
@@ -152,7 +160,7 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
 
     // Create a gles2 Texture.
     texture_ = new gles2::Texture(service_id);
-    texture_->SetLightweightRef(memory_tracker_);
+    texture_->SetLightweightRef();
     texture_->SetTarget(target, 1);
     texture_->sampler_state_.min_filter = GL_LINEAR;
     texture_->sampler_state_.mag_filter = GL_LINEAR;
@@ -188,7 +196,6 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
   // will not know if SetCleared() arrives during begin write happening on GL
   // texture representation.
   bool is_cleared_ = false;
-  MemoryTypeTracker* memory_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHardwareBuffer);
 };
@@ -196,9 +203,7 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
 SharedImageBackingFactoryAHardwareBuffer::
     SharedImageBackingFactoryAHardwareBuffer(
         const GpuDriverBugWorkarounds& workarounds,
-        const GpuFeatureInfo& gpu_feature_info,
-        MemoryTracker* tracker)
-    : memory_tracker_(std::make_unique<MemoryTypeTracker>(tracker)) {
+        const GpuFeatureInfo& gpu_feature_info) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
   feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2, false,
@@ -314,6 +319,13 @@ SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
     return nullptr;
   }
 
+  // Calculate SharedImage size in bytes.
+  size_t estimated_size;
+  if (!viz::ResourceSizes::MaybeSizeInBytes(size, format, &estimated_size)) {
+    LOG(ERROR) << "Failed to calculate SharedImage size";
+    return nullptr;
+  }
+
   // Setup AHardwareBuffer.
   AHardwareBuffer* buffer = nullptr;
   AHardwareBuffer_Desc hwb_desc;
@@ -344,9 +356,7 @@ SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
 
   auto backing = std::make_unique<SharedImageBackingAHardwareBuffer>(
       mailbox, format, size, color_space, usage,
-      base::android::ScopedHardwareBufferHandle::Adopt(buffer),
-      memory_tracker_.get());
-
+      base::android::ScopedHardwareBufferHandle::Adopt(buffer), estimated_size);
   return backing;
 }
 

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -57,6 +58,11 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
+      // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
+      shared_image_representation_factory_(
+          std::make_unique<gpu::SharedImageRepresentationFactory>(
+              gpu_service_->shared_image_manager(),
+              nullptr)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
@@ -311,10 +317,9 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!*shared_image_out);
-  auto* shared_image_manager = gpu_service_->shared_image_manager();
-  if (shared_image_manager->IsSharedImage(metadata.mailbox)) {
+  if (shared_image_representation_factory_->IsSharedImage(metadata.mailbox)) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
-        shared_image_manager->ProduceSkia(metadata.mailbox);
+        shared_image_representation_factory_->ProduceSkia(metadata.mailbox);
     DCHECK(shared_image);
     if (!shared_image->BeginReadAccess(metadata.color_type, backend_texture)) {
       DLOG(ERROR)

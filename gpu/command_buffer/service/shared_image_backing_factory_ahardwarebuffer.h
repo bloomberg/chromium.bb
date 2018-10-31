@@ -21,8 +21,6 @@ class SharedImageBacking;
 class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 struct Mailbox;
-class MemoryTracker;
-class MemoryTypeTracker;
 
 // Implementation of SharedImageBackingFactory that produces AHardwareBuffer
 // backed SharedImages. This is meant to be used on Android only.
@@ -31,8 +29,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHardwareBuffer
  public:
   SharedImageBackingFactoryAHardwareBuffer(
       const GpuDriverBugWorkarounds& workarounds,
-      const GpuFeatureInfo& gpu_feature_info,
-      MemoryTracker* tracker);
+      const GpuFeatureInfo& gpu_feature_info);
   ~SharedImageBackingFactoryAHardwareBuffer() override;
 
   // SharedImageBackingFactory implementation.
@@ -65,7 +62,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHardwareBuffer
 
   // Used to limit the max size of AHardwareBuffer.
   int32_t max_gl_texture_size_ = 0;
-  std::unique_ptr<MemoryTypeTracker> memory_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingFactoryAHardwareBuffer);
 };

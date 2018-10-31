@@ -27,13 +27,15 @@ class TexturePassthrough;
 class GPU_GLES2_EXPORT SharedImageRepresentation {
  public:
   SharedImageRepresentation(SharedImageManager* manager,
-                            SharedImageBacking* backing);
+                            SharedImageBacking* backing,
+                            MemoryTypeTracker* tracker);
   virtual ~SharedImageRepresentation();
 
   viz::ResourceFormat format() const { return backing_->format(); }
   const gfx::Size& size() const { return backing_->size(); }
   const gfx::ColorSpace& color_space() const { return backing_->color_space(); }
   uint32_t usage() const { return backing_->usage(); }
+  MemoryTypeTracker* tracker() { return tracker_; }
   bool IsCleared() const { return backing_->IsCleared(); }
   void SetCleared() { backing_->SetCleared(); }
 
@@ -42,18 +44,33 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   void OnContextLost() { backing_->OnContextLost(); }
 
  protected:
-  SharedImageBacking* backing() { return backing_; }
+  SharedImageBacking* backing() const { return backing_; }
 
  private:
   SharedImageManager* manager_;
   SharedImageBacking* backing_;
+  MemoryTypeTracker* tracker_;
+};
+
+class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationFactoryRef(SharedImageManager* manager,
+                                      SharedImageBacking* backing,
+                                      MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  const Mailbox& mailbox() const { return backing()->mailbox(); }
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
+    return backing()->ProduceLegacyMailbox(mailbox_manager);
+  }
 };
 
 class SharedImageRepresentationGLTexture : public SharedImageRepresentation {
  public:
   SharedImageRepresentationGLTexture(SharedImageManager* manager,
-                                     SharedImageBacking* backing)
-      : SharedImageRepresentation(manager, backing) {}
+                                     SharedImageBacking* backing,
+                                     MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual gles2::Texture* GetTexture() = 0;
 };
@@ -62,8 +79,9 @@ class SharedImageRepresentationGLTexturePassthrough
     : public SharedImageRepresentation {
  public:
   SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
-                                                SharedImageBacking* backing)
-      : SharedImageRepresentation(manager, backing) {}
+                                                SharedImageBacking* backing,
+                                                MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual const scoped_refptr<gles2::TexturePassthrough>&
   GetTexturePassthrough() = 0;
@@ -72,8 +90,9 @@ class SharedImageRepresentationGLTexturePassthrough
 class SharedImageRepresentationSkia : public SharedImageRepresentation {
  public:
   SharedImageRepresentationSkia(SharedImageManager* manager,
-                                SharedImageBacking* backing)
-      : SharedImageRepresentation(manager, backing) {}
+                                SharedImageBacking* backing,
+                                MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,

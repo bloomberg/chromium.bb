@@ -260,6 +260,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
     return decoder_->GetAndClearBackbufferClearBitsForTest();
   }
 
+  SharedImageManager* GetSharedImageManager() { return &shared_image_manager_; }
+
   typedef TestHelper::AttribInfo AttribInfo;
   typedef TestHelper::UniformInfo UniformInfo;
 
@@ -935,9 +937,11 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   PassthroughResources* GetPassthroughResources() const {
     return group_->passthrough_resources();
   }
-  SharedImageManager* GetSharedImageManager() const {
-    return group_->shared_image_manager();
+  SharedImageRepresentationFactory* GetSharedImageRepresentationFactory()
+      const {
+    return group_->shared_image_representation_factory();
   }
+  SharedImageManager* GetSharedImageManager() { return &shared_image_manager_; }
   const base::circular_deque<GLES2DecoderPassthroughImpl::PendingReadPixels>&
   GetPendingReadPixels() const {
     return decoder_->pending_read_pixels_;
