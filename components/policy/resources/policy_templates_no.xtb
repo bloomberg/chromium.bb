@@ -101,7 +101,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Denne verdien er en liste med strenger. De gyldige listeoppføringene er «all» (alle), «PIN» (PIN-kode) og «FINGERPRINT» (fingeravtrykk). Hvis du legger til «all» i listen, blir alle modusene for hurtigopplåsing tilgjengelige for brukerne – inkludert moduser som implementeres i fremtiden. Hvis du ikke gjør det, er bare de modusene for hurtigopplåsing som finnes i listen, tilgjengelige.
 
-          Hvis du for eksempel vil tillate alle modusene for hurtigopplåsing, bruker du [«all»]. Hvis du bare vil tillate PIN-kode og fingeravtrykk, bruker du [«PIN», «FINGERPRINT»].For å slå av alle modusene for hurtigopplåsing, bruk [].
+          Hvis du for eksempel vil tillate alle modusene for hurtigopplåsing, bruker du [«all»]. Hvis du bare vil tillate PIN-kode og fingeravtrykk, bruker du [«PIN», «FINGERPRINT»]. For å slå av alle modusene for hurtigopplåsing, bruk [].
 
           Som standard er ingen moduser for hurtigopplåsing tilgjengelige for administrerte enheter.</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
@@ -990,7 +990,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       </translation>
 <translation id="3748900290998155147">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om oppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
 
-          Hvis denne regelen er angitt som «true» (sant) eller ikke angis, brukes oppvekkingslåser for strømstyring.
+          Hvis denne regelen er angitt som «true» (sant) eller ikke angis, fungerer oppvekkingslåser under strømstyring.
 
           Hvis denne regelen er angitt som «false» (usant), blir forespørsler om oppvekkingslåser ignorert.</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
@@ -1026,7 +1026,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis regelen «EnableMediaRouter» angis som «false», har denne regelens verdi ingen virkning, og verktøyradikonet vises ikke.</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
-<translation id="3790085888761753785">Hvis denne innstillingen er slått på, kan brukere logge på kontoene sine med Smart Lock. Dette gir mer valgfrihet enn vanlig Smart Lock-atferd, som bare lar brukere låse opp skjermen.
+<translation id="3790085888761753785">Hvis denne innstillingen er slått på, kan brukere logge på kontoene sine med Smart Lock. Dette gir mer valgfrihet enn vanlig Smart Lock-funksjonalitet, som bare lar brukere låse opp skjermen.
 
       Hvis denne innstillingen er slått av, kan ikke brukerne bruke Smart Lock-pålogging.
 
@@ -2315,7 +2315,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="717630378807352957">Tillat alle skrivere fra konfigurasjonsfilen.</translation>
 <translation id="7176721759719212761">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om skjermoppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
 
-          Hvis denne regelen er angitt som «true» (sant) eller ikke angis, brukes skjermoppvekkingslåser for strømstyring, med mindre AllowWakeLocks er angitt som «false» (usant).
+          Hvis denne regelen er angitt som «true» (sant) eller ikke angis, fungerer skjermoppvekkingslåser under strømstyring, med mindre AllowWakeLocks er angitt som «false» (usant).
 
           Hvis denne regelen er angitt som «false» (usant), blir forespørsler om skjermoppvekkingslåser nedgradert til systemoppvekkingsforespørsler.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -2335,7 +2335,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       En passende feil vises hvis brukere prøver å angi en hovedkonto for en nettleser med et brukernavn som ikke samsvarer med dette mønsteret.
 
-      Hvis du lar denne regelen stå tom / ikke konfigurert, kan brukere angi hvilken som helst Google-konto som hovedkonto for nettlesere i <ph name="PRODUCT_NAME" />.</translation>
+      Hvis denne regelen ikke er angitt eller er tom, kan brukere angi hvilken som helst Google-konto som hovedkonto for nettlesere i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Angi minimumslengden for PIN-koden for låseskjermen</translation>
 <translation id="7232816984286843471">Hvis denne regelen er angitt som «false» (usant), kan ikke brukerne kjøre Crostini.
 
@@ -2711,7 +2711,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
       Hvis denne regelen endres til usant, gjelder den for oppstart av nye virtuelle maskiner, men eksisterende virtuelle maskiner som allerede kjøres, blir ikke avsluttet.
       Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
       Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
-<translation id="8001701200415781021">Begrens hvilke Google-kontoer kan angis som hovedkontoer for nettlesere i <ph name="PRODUCT_NAME" /></translation>
+<translation id="8001701200415781021">Begrens hvilke Google-kontoer som kan angis som hovedkonto for nettlesere i <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8033913082323846868">Denne regelen er avviklet i M70. Bruk AutofillAddressEnabled og AutofillCreditCardEnabled i stedet.
 
@@ -2969,12 +2969,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       konto, på administrerte enheter som krever Google-autentisering, hvis
       kontoen ikke finnes på den nevnte listen over tillatte domener.
 
-      Hvis du lar denne innstillingen stå tom / ikke konfigurert, har brukerne
+      Hvis denne regelen ikke er angitt eller er tom, har brukerne
       tilgang til G Suite med hvilken som helst konto.
 
-      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til
-      i alle HTTP- og HTTPS-forespørsler for alle google.com-domener, som beskrevet på
-      https://support.google.com/a/answer/1668854.
+      Denne regelen gjør at toppteksten X-GoogApps-Allowed-Domains blir lagt til
+      i alle HTTP- og HTTPS-forespørsler for alle google.com-domener, som
+      beskrevet på https://support.google.com/a/answer/1668854.
 
       Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>

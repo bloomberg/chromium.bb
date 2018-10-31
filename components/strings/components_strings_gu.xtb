@@ -97,7 +97,7 @@
 <translation id="153384715582417236">હમણાં માટે બસ આટલું પૂરતું છે</translation>
 <translation id="154408704832528245">વિતરણ માટેનું સરનામું પસંદ કરો</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
-<translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા નિર્દેશિકા નથી</translation>
+<translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા ડિરેક્ટરી નથી</translation>
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.&lt;/p&gt;
 
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; અ‍ૅપ્લિકેશનના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
@@ -112,7 +112,7 @@
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />સાઇટના હોમપેજની મુલાકાત લેવાનો<ph name="END_LINK" /> પ્રયાસ કરો.</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="1645368109819982629">અસમર્થિત પ્રોટોકોલ</translation>
-<translation id="1655462015569774233">{1,plural, =1{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા ગઈકાલે સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}one{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા #  દિવસ પહેલાં સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}other{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા #  દિવસ પહેલાં સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}}</translation>
+<translation id="1655462015569774233">{1,plural, =1{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; એના સુરક્ષા પ્રમાણપત્રની સમયસીમા ગઈકાલે પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}one{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; એના સુરક્ષા પ્રમાણપત્રની સમયસીમા #દિવસ પહેલાં પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}other{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમયસીમા #દિવસ પહેલાં પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}}</translation>
 <translation id="1656489000284462475">પિકઅપ</translation>
 <translation id="1662550410081243962">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
 <translation id="1663943134801823270">કાર્ડ અને સરનામા Chromeમાંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં સંચાલિત કરી શકો છો.</translation>
@@ -248,7 +248,7 @@
 <translation id="2556876185419854533">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> તરફથી. આ અને અન્ય <ph name="OTHER_ARTICLE_COUNT" /> વાર્તાઓ વાંચો.</translation>
-<translation id="2587841377698384444">નિર્દેશિકા API ID:</translation>
+<translation id="2587841377698384444">ડિરેક્ટરી API ID:</translation>
 <translation id="2597378329261239068">આ દસ્તાવેજ પાસવર્ડ સુરક્ષિત છે. કૃપા કરીને પાસવર્ડ દાખલ કરો.</translation>
 <translation id="2609632851001447353">વૈવિધ્ય</translation>
 <translation id="262424810616849754">{COUNT,plural, =0{કોઈ નહીં}=1{1 ઍપ્લિકેશન ($1)}=2{2 ઍપ્લિકેશનો ($1, $2)}one{# ઍપ્લિકેશનો ($1, $2, $3)}other{# ઍપ્લિકેશનો ($1, $2, $3)}}</translation>
@@ -322,7 +322,7 @@
 <translation id="3083099961703215236">{COUNT,plural, =0{કોઈ નહીં}=1{1 પાસવર્ડ}one{# પાસવર્ડ}other{# પાસવર્ડ}}</translation>
 <translation id="3096100844101284527">પિકઅપ માટેનું સરનામું ઉમેરો</translation>
 <translation id="3105172416063519923">સંપત્તિ ID:</translation>
-<translation id="3109728660330352905">તમને આ પેજને જોવાની અધિકૃતિ નથી.</translation>
+<translation id="3109728660330352905">તમને આ પેજને જોવાનો અધિકાર નથી.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />કનેક્ટિવિટી ડાયગ્નોસ્ટિક્સ ચલાવવાનો પ્રયાસ કરો<ph name="END_LINK" />.</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{કોઈ નહીં}=1{1 એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}one{# એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}other{# એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}}</translation>
@@ -331,7 +331,7 @@
 <translation id="3154506275960390542">આ પૃષ્ઠમાં એક ફૉર્મ છે, જે કદાચ સુરક્ષિત રીતે સબમિટ નહીં થાય. જે ડેટા તમે મોકલો તેને પરિવહન દરમિયાન અન્ય લોકો જોઈ શકશે અથવા સર્વર જે મેળવે, તે બદલવા માટે હુમલાખોર ફેરફાર કરી શકશે.</translation>
 <translation id="3157931365184549694">પુનઃસ્થાપિત કરો</translation>
 <translation id="3162559335345991374">તમે ઉપયોગ કરી રહ્યા છો તે વાઇ-ફાઇને તેના લોગિન પેજની મુલાકાત લેવાની જરૂર હોઈ શકે છે.</translation>
-<translation id="3167968892399408617">તમે છુપા ટેબ્સમાં જુઓ છો તે પૃષ્ઠો તમે તમારા બધા છુપા ટેબ્સ બંધ કરી દો તે પછી તમારા બ્રાઉઝરના ઇતિહાસ, કુકી સ્ટોર અથવા શોધ ઇતિહાસમાં રહેશે નહીં. તમે ડાઉનલોડ કરો છો તે કોઈપણ ફાઇલો અથવા તમે બનાવો છો તે બુકમાર્ક્સ રાખવામાં આવશે.</translation>
+<translation id="3167968892399408617">તમે છૂપા ટૅબમાં જુઓ છો એ પેજ તમે તમારા બધા છૂપા ટૅબ બંધ કરી દો, એ પછી તમારા બ્રાઉઝરના ઇતિહાસ, કુકી સ્ટોર અથવા શોધ ઇતિહાસમાં રહેશે નહિ. તમે ડાઉનલોડ કરો છો તે કોઈ પણ ફાઇલો અથવા તમે બનાવો છો તે બુકમાર્ક રાખવામાં આવશે.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
 <translation id="3176929007561373547">પ્રૉક્સી સર્વર કાર્ય કરી રહ્યું છે તેની ખાતરી કરવા માટે તમારું પ્રૉક્સી સેટિંગ તપાસો
@@ -426,7 +426,7 @@
 <translation id="3736520371357197498">જો તમે તમારી સુરક્ષાના જોખમોને સમજો છો, તો તમે જોખમી પ્રોગ્રામ્સ દૂર કરી દેવામાં આવે તે પહેલાં <ph name="BEGIN_LINK" />આ અસલામત સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="3739623965217189342">તમે કૉપિ કરેલ લિંક</translation>
 <translation id="3744899669254331632">તમે અત્યારે <ph name="SITE" /> ની મુલાકાત લઈ શકતા નથી કારણ કે વેબસાઇટે સ્ક્રૅમ્બલ કરેલ ઓળખાણપત્રો મોકલ્યાં છે જેના પર Chromium પ્રક્રિયા કરી શકતું નથી. નેટવર્ક ભૂલો અને હુમલાઓ સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પૃષ્ઠ સંભવતઃ પછીથી કાર્ય કરશે.</translation>
-<translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો તમને છેતરીને કંઈક જોખમકારક પ્રવૃત્તિ જેમ કે સૉફ્ટવેર ઇન્સ્ટૉલ કરવા અથવા તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, ફોન નંબર અથવા ક્રેડિટ કાર્ડ) જણાવવા માટે પ્રેરિત કરી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો તમને કંઈક જોખમકારક પ્રવૃત્તિ જેમ કે સૉફ્ટવેર ઇન્સ્ટૉલ કરવા અથવા તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, ફોન નંબર અથવા ક્રેડિટ કાર્ડ) જણાવવા ફસાવી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">સર્વર ભૂલને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
 <translation id="3759461132968374835">તમે હાલમાં ક્રેશની જાણ કરી નથી. ક્રેશની જાણ કરવાનું અક્ષમ હતું ત્યારે થયેલા ક્રેશ અહીં દેખાશે નહીં.</translation>
 <translation id="3765032636089507299">Safe Browsing પેજ રચના હેઠળ છે.</translation>
@@ -487,19 +487,19 @@
 <translation id="4221630205957821124">&lt;h4&gt;પગલું 1: પોર્ટલમાં સાઇન ઇન કરો&lt;/h4&gt;
     &lt;p&gt;કાફે અથવા એરપોર્ટ જેવા સ્થાન પરના વાઇ-ફાઇ નેટવર્કમાં તમારે સાઇન ઇન કરવું જરૂરી હોય છે. સાઇન ઇન પેજ જોવા માટે, &lt;code&gt;http://&lt;/code&gt;નો ઉપયોગ કરતા પેજની મુલાકાત લો.&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;&lt;code&gt;http://&lt;/code&gt;થી શરૂ થતી કોઈપણ વેબસાઇટ પર જાઓ, જેમ કે &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;http://&lt;/code&gt;થી શરૂ થતી કોઈ પણ વેબસાઇટ પર જાઓ, જેમ કે &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;ખુલનારા સાઇન ઇન પેજ પર, ઇન્ટરનેટનો ઉપયોગ કરવા માટે સાઇન ઇન કરો.&lt;/li&gt;
     &lt;/ol&gt;
     &lt;h4&gt;પગલું 2: પેજ છૂપા મોડમાં ખોલો (માત્ર કમ્પ્યુટર માટે)&lt;/h4&gt;
-    &lt;p&gt;તમે મુલાકાત લઈ રહ્યા હતા તે પેજ છૂપી વિંડોમાં ખોલો.&lt;/p&gt;
-    &lt;p&gt;જો પેજ ખુલે, તો Chrome એક્સ્ટેંશન બરાબર કામ કરતું નથી. ભૂલ સુધારવા માટે, એક્સ્ટેંશન બંધ કરો.&lt;/p&gt;
+    &lt;p&gt;તમે મુલાકાત લઈ રહ્યા હતા એ પેજ છૂપી વિંડોમાં ખોલો.&lt;/p&gt;
+    &lt;p&gt;જો પેજ ખૂલે, તો Chrome એક્સટેન્શન બરાબર કાર્ય કરતું નથી. ભૂલ સુધારવા માટે, એક્સટેન્શન બંધ કરો.&lt;/p&gt;
     &lt;h4&gt;પગલું 3: તમારી ઑપરેટિંગ સિસ્ટમ અપડેટ કરો&lt;/h4&gt;
     &lt;p&gt;ખાતરી કરો કે તમારું ડિવાઇસ અપ-ટૂ-ડેટ છે.&lt;/p&gt;
     &lt;h4&gt;પગલું 4: તમારું ઍન્ટિવાયરસ હંગામી ધોરણે બંધ કરો&lt;/h4&gt;
     &lt;p&gt;જો તમે "HTTPS સુરક્ષા" અથવા "HTTPS સ્કૅનિંગ" પ્રદાન કરનાર ઍન્ટિવાયરસ ધરાવતા હશો, તો તમને આ ભૂલ દેખાશે. ઍન્ટિવાયરસ સુરક્ષા આપવાથી Chromeને અટકાવે છે.&lt;/p&gt;
     &lt;p&gt;આ ભૂલ સુધારવા માટે, તમારું ઍન્ટિવાયરસ સૉફ્ટવેર બંધ કરો. જો સૉફ્ટવેર બંધ કર્યા પછી પેજ કાર્ય કરે, તો સુરક્ષિત સાઇટનો ઉપયોગ કરતી વખતે આ સૉફ્ટવેર બંધ કરો.&lt;/p&gt;
-    &lt;p&gt;તમારું કામ પતી ગયા પછી, તમારો ઍન્ટિવાયરસ પ્રોગ્રામ પાછો ચાલુ કરવાનું યાદ રાખો.&lt;/p&gt;
-    &lt;h4&gt;પગલું 5: અતિરિક્ત સહાય મેળવો&lt;/h4&gt;
+    &lt;p&gt;તમારું કાર્ય પૂરું થઈ ગયા પછી, તમારો ઍન્ટિવાયરસ પ્રોગ્રામ પાછો ચાલુ કરવાનું યાદ રાખો.&lt;/p&gt;
+    &lt;h4&gt;પગલું 5: વધારે મદદ મેળવો&lt;/h4&gt;
     &lt;p&gt;જો હજુ તમને ભૂલ દેખાય, તો વેબસાઇટના માલિકનો સંપર્ક કરો.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવવાનો પ્રયાસ કરો<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">માન્યતા</translation>
@@ -632,15 +632,15 @@
 <translation id="5230733896359313003">વિતરણ માટેનું સરનામું</translation>
 <translation id="5250209940322997802">"નેટવર્ક સાથે કનેક્ટ કરો"</translation>
 <translation id="5251803541071282808">મેઘ</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />સૉફ્ટવેરને કામચલાઉ રીતે બંધ કરવા માટે આ પગલાં અનુસરો, જેથી તમે વેબ પર જઈ શકો. તમને એડમિનની ખાસ મંજૂરીની જરૂર પડશે.<ph name="END_PARAGRAPH" />
+<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />સૉફ્ટવેરને થોડા સમય માટે બંધ કરવા માટે આ પગલાં અનુસરો, જેથી તમે વેબ પર જઈ શકો. તમને એડમિનના ખાસ અધિકારોની જરૂર પડશે.<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /> <ph name="BEGIN_BOLD" />ચાલુ કરો<ph name="END_BOLD" /> ક્લિક કરો, પછી <ph name="BEGIN_BOLD" />"સ્થાનિક સેવાઓ જુઓ"<ph name="END_BOLD" /> શોધો અને પસંદ કરો
-    <ph name="LIST_ITEM" /> <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> પસંદ કરો
-    <ph name="LIST_ITEM" />જુઓ <ph name="BEGIN_BOLD" />Startup type<ph name="END_BOLD" />, <ph name="BEGIN_BOLD" />Disabled<ph name="END_BOLD" /> પસંદ કરો
-    <ph name="LIST_ITEM" />જુઓ <ph name="BEGIN_BOLD" />Service status<ph name="END_BOLD" />, <ph name="BEGIN_BOLD" />Stop<ph name="END_BOLD" /> ક્લિક કરો
-    <ph name="LIST_ITEM" />ક્લિક <ph name="BEGIN_BOLD" />લાગુ કરો<ph name="END_BOLD" />, પછી <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" /> ક્લિક કરો
-    <ph name="LIST_ITEM" />તમારા કમ્પ્યુટરમાંથી હંમેશાં માટે સૉફ્ટવેર દૂર કરવા <ph name="BEGIN_LEARN_MORE_LINK" />Chrome સહાયતા કેન્દ્ર<ph name="END_LEARN_MORE_LINK" />ની મુલાકાત લો
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />ચાલુ કરો<ph name="END_BOLD" /> પર ક્લિક કરો, પછી માટે શોધો અને <ph name="BEGIN_BOLD" />"સ્થાનિક સેવાઓ જુઓ"<ph name="END_BOLD" /> પસંદ કરો
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> પસંદ કરો
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />ચાલુ કરવાનો પ્રકાર<ph name="END_BOLD" /> હેઠળ, <ph name="BEGIN_BOLD" />બંધ કરેલ<ph name="END_BOLD" /> પસંદ કરો
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />સેવાની સ્થિતિ<ph name="END_BOLD" /> હેઠળ, <ph name="BEGIN_BOLD" />બંધ કરો<ph name="END_BOLD" /> પર ક્લિક કરો
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />લાગુ કરો<ph name="END_BOLD" /> પર ક્લિક કરો, પછી <ph name="BEGIN_BOLD" />ઓકે<ph name="END_BOLD" /> પર ક્લિક કરો
+    <ph name="LIST_ITEM" />તમારા કમ્પ્યુટરમાંથી કાયમ માટે સૉફ્ટવેરને દૂર કરવા માટે <ph name="BEGIN_LEARN_MORE_LINK" />Chrome સહાય કેન્દ્ર<ph name="END_LEARN_MORE_LINK" />ની મુલાકાત લો
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">બધા સાચવેલા પાસવર્ડ બતાવો</translation>
 <translation id="5287240709317226393">કુકી બતાવો</translation>
@@ -698,7 +698,7 @@
 <translation id="5610807607761827392">તમે <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં કાર્ડ્સ અને સરનામાં સંચાલિત કરી શકો છો.</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> એ તમને ઘણીબધી વખત રીડાયરેક્ટ કર્યું.</translation>
 <translation id="5629630648637658800">નીતિ સેટિંગ્સ લોડ કરવામાં નિષ્ફળ થયાં</translation>
-<translation id="5631439013527180824">અમાન્ય ઉપકરણ સંચાલન ટોકન</translation>
+<translation id="5631439013527180824">અમાન્ય ડિવાઇસ સંચાલન ટોકન</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો કદાચ હાલમાં તમારા કમ્પ્યુટર પર જોખમી પ્રોગ્રામ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે તમારી માહિતી (ઉદાહરણ તરીકે, ફોટો, પાસવર્ડ, સંદેશા અને ક્રેડિટ કાર્ડ) ચોરી અથવા કાઢી નાખી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">ભ્રામક કન્ટેન્ટ બ્લૉક કરી</translation>
 <translation id="5659593005791499971">ઇમેઇલ</translation>
@@ -888,7 +888,7 @@
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
 <translation id="7179323680825933600">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
-<translation id="7180611975245234373">તાજું કરો</translation>
+<translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7182878459783632708">કોઈ નીતિઓ  સેટ નથી</translation>
 <translation id="7186367841673660872">આ પૃષ્ઠનું<ph name="ORIGINAL_LANGUAGE" />માંથી<ph name="LANGUAGE_LANGUAGE" />માં ભાષાંતર કરવામાં આવ્યું છે.</translation>
 <translation id="7192203810768312527"><ph name="SIZE" /> ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટો વધુ ધીમે લોડ થઈ શકે છે.</translation>
@@ -922,14 +922,14 @@
 <translation id="7390545607259442187">કાર્ડની પુષ્ટિ કરો</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;જો તમે તમારા Windows કમ્પ્યુટર પર Superfish સૉફ્ટવેર ધરાવો છો, તો તમને આ ભૂલ દેખાશે.&lt;/p&gt;
-      &lt;p&gt;તે સૉફ્ટવેરને કામચલાઉ રીતે બંધ કરવા માટે, આ પગલાં અનુસરો, જેથી તમે વેબ પર પહોંચી શકો. તમારી પાસે એડમિનની ખાસ મંજૂરી હોવી જરૂરી છે.&lt;/p&gt;
+      &lt;p&gt;તે સૉફ્ટવેરને થોડા સમય માટે બંધ કરવા માટે, આ પગલાં અનુસરો, જેથી તમે વેબ પર પહોંચી શકો. તમારી પાસે એડમિનના ખાસ અધિકારો હોવા જરૂરી છે.&lt;/p&gt;
       &lt;ol&gt;
       &lt;li&gt;&lt;strong&gt;શરૂ કરો&lt;/strong&gt; પર ક્લિક કરો, પછી &lt;strong&gt;"સ્થાનિક સેવાઓ જુઓ"&lt;/strong&gt; શોધો અને પસંદ કરો 
       &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; પસંદ કરો
       &lt;li&gt;&lt;strong&gt;શરૂઆતનો પ્રકાર&lt;/strong&gt; હેઠળ, &lt;strong&gt;બંધ કરેલ&lt;/strong&gt; પસંદ કરો
       &lt;li&gt;&lt;strong&gt;સેવા સ્ટેટસ&lt;/strong&gt; હેઠળ, &lt;strong&gt;રોકો&lt;/strong&gt; પર ક્લિક કરો
       &lt;li&gt;&lt;strong&gt;લાગુ કરો&lt;/strong&gt; પર ક્લિક કરો, પછી &lt;strong&gt;ઓકે&lt;/strong&gt; પર ક્લિક કરો
-      &lt;li&gt;તમારા કમ્પ્યુટર પરથી સૉફ્ટવેરને કાયમી ધોરણે કાઢી નાખવાની રીત જાણવા માટે, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome સહાયતા કેન્દ્ર&lt;/a&gt; પર જાઓ
+      &lt;li&gt;તમારા કમ્પ્યુટર પરથી સૉફ્ટવેરને કાયમી ધોરણે કાઢી નાંખવાની રીત જાણવા માટે, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome સહાયતા કેન્દ્ર&lt;/a&gt; પર જાઓ
       &lt;/ol&gt;</translation>
 <translation id="7416351320495623771">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
@@ -977,7 +977,7 @@
 <translation id="7662298039739062396">એક્સટેન્શન દ્વારા સેટિંગ નિયંત્રિત કરેલ છે</translation>
 <translation id="7663736086183791259">પ્રમાણપત્ર <ph name="CERTIFICATE_VALIDITY" /></translation>
 <translation id="7665886282480776333">Google પર તમારા કાર્ડને સાચવીએ?</translation>
-<translation id="7667346355482952095">પરત થયેલ નીતિ ટોકન ખાલી છે અથવા વર્તમાન ટોકન સાથે મેળ ખાતું નથી</translation>
+<translation id="7667346355482952095">પરત કરવાની નીતિનું ટોકન ખાલી છે અથવા વર્તમાન ટોકન સાથે મેળ ખાતું નથી</translation>
 <translation id="7668654391829183341">અજ્ઞાત ઉપકરણ</translation>
 <translation id="7669271284792375604">આ સાઇટ પરના હુમલાખોરો તમને તમારા બ્રાઉઝિંગ અનુભવને નુકસાન પહોંચાડે એવા પ્રોગ્રામ્સ ઇન્સ્ટૉલ કરવા માટે છેતરવાનો પ્રયાસ કરી શકે છે (ઉદાહરણ તરીકે, તમારું હોમપેજ બદલીને અથવા તમે મુલાકાત લો છો તે સાઇટ્સ પર વધુ પડતી જાહેરાતો બતાવીને).</translation>
 <translation id="7681101578153515023">સર્ચ એંજિન બદલો</translation>
@@ -1031,7 +1031,7 @@
 <translation id="800218591365569300">મેમરી ખાલી કરવા માટે અન્ય ટૅબ અથવા પ્રોગ્રામને બંધ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="8009225694047762179">બધા પાસવર્ડ મેનેજ કરો</translation>
 <translation id="8012647001091218357">અમે આ પળે તમારા વાલીઓ સુધી પહોંચી શક્યાં નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
-<translation id="8025119109950072390">આ સાઇટ પરના હુમલાખોરો તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ, ફોન નંબર્સ અથવા ક્રેડિટ કાર્ડ્સ) ને દર્શાવવા અથવા સોફ્ટવેર ઇન્સ્ટૉલ કરવા જેવી જોખમી વસ્તુઓને કરવા માટે તમને છેતરવાનો પ્રયાસ કરી શકે છે.</translation>
+<translation id="8025119109950072390">આ સાઇટ પરના હુમલાખોરો તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, ફોન નંબર અથવા ક્રેડિટ કાર્ડ)ને દર્શાવવા અથવા સોફ્ટવેર ઇન્સ્ટૉલ કરવા જેવી જોખમી વસ્તુઓને કરવા માટે તમને છેતરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="8034522405403831421">આ પૃષ્ઠ <ph name="SOURCE_LANGUAGE" /> માં છે. શું તેનો અનુવાદ <ph name="TARGET_LANGUAGE" /> માં કરીએ?</translation>
 <translation id="8037357227543935929">પૂછો (ડિફૉલ્ટ)</translation>
 <translation id="803771048473350947">ફાઇલ</translation>
@@ -1040,7 +1040,7 @@
 <translation id="8042918947222776840">પિકઅપ પદ્ધતિ પસંદ કરો</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />"ની ગોઠવણી યોગ્ય રીતે કરવામાં આવી નથી. સામાન્ય રીતે "<ph name="SOFTWARE_NAME" />"ને અનઇન્સ્ટૉલ કરવાથી સમસ્યા હલ થઈ જાય છે. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8079031581361219619">સાઇટ ફરીથી લોડ કરીએ?</translation>
-<translation id="8088680233425245692">લેખ જોવામાં નિષ્ફળ થયાં.</translation>
+<translation id="8088680233425245692">લેખ જોવામાં નિષ્ફળ.</translation>
 <translation id="8091372947890762290">સક્રિયતા સર્વર પર બાકી છે</translation>
 <translation id="8094917007353911263">તમે ઉપયોગ કરી રહ્યાં છો તે નેટવર્કને <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ની મુલાકાત લેવાની જરૂર પડી શકે છે.</translation>
 <translation id="8103161714697287722">ચુકવણીની પદ્ધતિ</translation>
