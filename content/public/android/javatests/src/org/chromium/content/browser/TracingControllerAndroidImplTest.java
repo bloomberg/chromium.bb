@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -42,7 +42,7 @@ public class TracingControllerAndroidImplTest {
     @Test
     @MediumTest
     @Feature({"GPU"})
-    @DisabledTest(message = "crbug.com/899894")
+    @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/899894")
     public void testTraceFileCreation() throws Exception {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -76,8 +76,8 @@ public class TracingControllerAndroidImplTest {
     private class TestCallback<T> implements Callback<T> {
         @Override
         public void onResult(T result) {
-            mWasCalled.open();
             mResult = result;
+            mWasCalled.open();
         }
 
         public ConditionVariable mWasCalled = new ConditionVariable();
@@ -87,7 +87,6 @@ public class TracingControllerAndroidImplTest {
     @Test
     @MediumTest
     @Feature({"GPU"})
-    @DisabledTest(message = "crbug.com/899894")
     public void testGetKnownCategories() throws Exception {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -108,7 +107,6 @@ public class TracingControllerAndroidImplTest {
     @Test
     @MediumTest
     @Feature({"GPU"})
-    @DisabledTest(message = "crbug.com/899894")
     public void testBufferUsage() throws Exception {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -131,7 +129,7 @@ public class TracingControllerAndroidImplTest {
     @Test
     @MediumTest
     @Feature({"GPU"})
-    @DisabledTest(message = "crbug.com/899894")
+    @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/899894")
     public void testStopCallbackAndCompression() throws Exception {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
