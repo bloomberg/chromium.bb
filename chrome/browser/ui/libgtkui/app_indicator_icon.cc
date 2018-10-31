@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/strings/stringize_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -89,16 +89,13 @@ void EnsureMethodsLoaded() {
 
   g_attempted_load = true;
 
-  void* indicator_lib = nullptr;
+  std::string lib_name =
+      "libappindicator" + base::NumberToString(GTK_MAJOR_VERSION) + ".so";
+  void* indicator_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
 
   if (!indicator_lib) {
-    indicator_lib =
-        dlopen("libappindicator" STRINGIZE(GTK_MAJOR_VERSION) ".so", RTLD_LAZY);
-  }
-
-  if (!indicator_lib) {
-    indicator_lib = dlopen(
-        "libappindicator" STRINGIZE(GTK_MAJOR_VERSION) ".so.1", RTLD_LAZY);
+    lib_name += ".1";
+    indicator_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
   }
 
   if (!indicator_lib)
