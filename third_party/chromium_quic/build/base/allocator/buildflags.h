@@ -6,7 +6,10 @@
 
 #include "build/buildflag.h"
 
-#define BUILDFLAG_INTERNAL_USE_ALLOCATOR_SHIM() (1)
+#define BUILDFLAG_INTERNAL_USE_ALLOCATOR_SHIM() (0)
 #define BUILDFLAG_INTERNAL_USE_NEW_TCMALLOC() (0)
+
+// HACK needed for src/base/memory_linux.cc.
+#define __libc_malloc(N) malloc(N)
 
 #endif  // BASE_ALLOCATOR_BUILDFLAGS_H_

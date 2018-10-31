@@ -34,7 +34,6 @@ source_set("net") {
     "base/net_module.h",
     "base/parse_number.cc",
     "base/parse_number.h",
-    "base/registry_controlled_domains/effective_tld_names-inc.cc",
     "base/registry_controlled_domains/registry_controlled_domain.cc",
     "base/registry_controlled_domains/registry_controlled_domain.h",
     "base/sockaddr_storage.cc",
@@ -71,17 +70,19 @@ source_set("net") {
     "third_party/spdy/platform/impl/spdy_string_piece_impl.h",
     "third_party/spdy/platform/impl/spdy_string_utils_impl.cc",
     "third_party/spdy/platform/impl/spdy_string_utils_impl.h",
-    "tools/epoll_server/epoll_server.cc",
-    "tools/epoll_server/epoll_server.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  # The following sources cause problems in the build, but since they are not
+  # needed, don't fix anything and don't build them.
+  #
+  # sources -= [
+  #   "tools/epoll_server/epoll_server.cc",
+  #   "tools/epoll_server/epoll_server.h",
+  # ]
+
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
 }
-
 # NOTE: The quic files are covered by the root BUILD.gn and most of the spdy
 # files aren't used at the moment.
 # third_party/quic/core/quic_constants.cc

@@ -5,29 +5,3 @@
 config("default_include_dirs") {
   include_dirs = [ "//" ]
 }
-
-config("compiler_defaults") {
-  cflags = []
-  cflags_cc = [
-    "-std=c++14",
-    "-fno-exceptions",
-  ]
-  configs = [ "config:default_optimization" ]
-  if (current_os == "linux") {
-    cflags += [
-      "-g",
-      "-fPIC",
-    ]
-    ldflags = [ "-pthread" ]
-  }
-  if (is_debug) {
-    defines = [ "_DEBUG" ]
-  }
-}
-
-config("executable_ldconfig") {
-  ldflags = [
-    "-Wl,-rpath=\$ORIGIN/",
-    "-Wl,-rpath-link=",
-  ]
-}

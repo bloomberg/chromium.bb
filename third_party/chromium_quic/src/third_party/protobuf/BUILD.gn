@@ -12,9 +12,16 @@ config("protobuf_config") {
 }
 
 config("protobuf_warnings") {
-  cflags = []
-  # protobuf-3 contains a few functions that are unused.
-  cflags += [ "-Wno-unused-function" ]
+  # protobuf-3 does some things that Chromium style wouldn't normally allow.
+  # Turn off the default-enabled warnings for those.
+  cflags_cc = [
+    "-Wno-unused-function",
+    "-Wno-sign-compare",
+    "-Wno-unused-const-variable",
+  ]
+  if (is_clang) {
+    cflags_cc += [ "-Wno-exit-time-destructors" ]
+  }
 }
 
 # This config should be applied to targets using generated code from the proto
@@ -114,16 +121,8 @@ protobuf_lite_sources = [
 source_set("protobuf_lite") {
   sources = protobuf_lite_sources
 
-  configs -= [ "//build/config:openscreen_code" ]
-  configs += [
-    # Must be after no_chromium_code for warning flags to be ordered
-    # correctly.
-    ":protobuf_warnings",
-  ]
-
-  public_configs = [
-    ":protobuf_config",
-  ]
+  configs += [ ":protobuf_warnings" ]
+  public_configs = [ ":protobuf_config" ]
 }
 
 # This is the full, heavy protobuf lib that's needed for c++ .protos that don't
@@ -259,15 +258,8 @@ static_library("protobuf_full") {
     "../zlib",
   ]
 
-  configs -= [ "//build/config:openscreen_code" ]
-  configs += [
-    # Must be after no_chromium_code for warning flags to be ordered
-    # correctly.
-    ":protobuf_warnings",
-  ]
-  public_configs = [
-    ":protobuf_config",
-  ]
+  configs += [ ":protobuf_warnings" ]
+  public_configs = [ ":protobuf_config" ]
 
   defines = [ "HAVE_ZLIB" ]
 }
@@ -468,12 +460,7 @@ static_library("protoc_lib") {
     "src/google/protobuf/compiler/zip_writer.h",
   ]
 
-  configs -= [ "//build/config:openscreen_code" ]
-  configs += [
-    # Must be after no_chromium_code for warning flags to be ordered
-    # correctly.
-    ":protobuf_warnings",
-  ]
+  configs += [ ":protobuf_warnings" ]
   public_configs = [ ":protobuf_config" ]
 
   public_deps = [
@@ -486,11 +473,12 @@ executable("protoc") {
     "src/google/protobuf/compiler/main.cc",
   ]
 
-  configs -= [ "//build/config:openscreen_code" ]
-
   deps = [
     ":protoc_lib",
   ]
+
+  configs += [ ":protobuf_warnings" ]
+  public_configs = [ ":protobuf_config" ]
 }
 
 executable("js_embed") {
@@ -498,7 +486,8 @@ executable("js_embed") {
     "src/google/protobuf/compiler/js/embed.cc",
   ]
 
-  configs -= [ "//build/config:openscreen_code" ]
+  configs += [ ":protobuf_warnings" ]
+  public_configs = [ ":protobuf_config" ]
 }
 
 google_python_dir = "$root_out_dir/pyproto/google"

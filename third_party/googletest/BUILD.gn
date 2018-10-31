@@ -6,6 +6,11 @@ config("gtest_config") {
   visibility = [ ":*" ]
 
   include_dirs = [ "src/googletest/include" ]
+
+  cflags_cc = []
+  if (is_clang) {
+    cflags_cc += [ "-Wno-exit-time-destructors" ]
+  }
 }
 
 config("gmock_config") {
@@ -15,6 +20,9 @@ config("gmock_config") {
     # issue/15: GMock does not support the override keyword.
     "-Wno-inconsistent-missing-override",
   ]
+  if (is_clang) {
+    cflags_cc += [ "-Wno-exit-time-destructors" ]
+  }
 
   include_dirs = [ "src/googlemock/include" ]
 }
@@ -33,8 +41,12 @@ source_set("gtest") {
 
 source_set("gtest_main") {
   testonly = true
-  sources = [ "src/googletest/src/gtest_main.cc" ]
-  deps = [ ":gtest" ]
+  sources = [
+    "src/googletest/src/gtest_main.cc",
+  ]
+  deps = [
+    ":gtest",
+  ]
 }
 
 source_set("gmock") {

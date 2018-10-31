@@ -43,12 +43,12 @@ source_set("url") {
     "url_util_internal.h",
   ]
 
-  deps = [ "../third_party" ]
-
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
+  deps = [
+    "../third_party",
+    "../third_party/icu:icuuc",
   ]
+
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
   cflags = [ "-fpermissive" ]
 }

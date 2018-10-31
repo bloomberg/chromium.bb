@@ -9,9 +9,6 @@ source_set("crypto") {
     "random.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
 }

@@ -5,9 +5,9 @@ The Open Screen Library follows the
 We also follow the
 [Chromium C++ Do's and Don'ts](https://sites.google.com/a/chromium.org/dev/developers/coding-style/cpp-dos-and-donts).
 
-C++11 language and library features are allowed in the Open Screen Library
+C++14 language and library features are allowed in the Open Screen Library
 according to the
-[C++11 use in Chromium](https://chromium-cpp.appspot.com#core-whitelist) guidelines.
+[C++14 use in Chromium](https://chromium-cpp.appspot.com#core-whitelist) guidelines.
 
 ## Open Screen Library Features
 
@@ -43,4 +43,4 @@ allowed, this declaration [enables STL optimizations](https://en.cppreference.co
 
 Blink style is *not allowed* anywhere in the Open Screen Library.
 
-C++14-only features are currently *not allowed* in the Open Screen Library.
+C++17-only features are currently *not allowed* in the Open Screen Library.

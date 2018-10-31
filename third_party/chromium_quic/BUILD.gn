@@ -3,7 +3,15 @@
 # found in the LICENSE file.
 
 config("chromium_quic_config") {
-  cflags = [ "-Wno-error=attributes" ]
+  cflags_cc = [ "-Wno-error=attributes" ]
+  if (is_gcc) {
+    cflags_cc += [
+      "-Wno-dangling-else",
+      "-Wno-return-type",
+      "-Wno-unused-but-set-variable",
+    ]
+  }
+
   include_dirs = [
     "//third_party/chromium_quic/src",
     "//third_party/chromium_quic/src/third_party/boringssl/src/include",
@@ -11,6 +19,15 @@ config("chromium_quic_config") {
     "$root_gen_dir/third_party/chromium_quic/src",
     "build/",
     "//",
+  ]
+
+  # Random code includes headers that then include generated protobuf code
+  # which requires these defines. Doing this here is simpler than passing
+  # "public_deps" everywhere and/or using the discouraged
+  # "all_dependent_config".
+  defines = [
+    "GOOGLE_PROTOBUF_NO_RTTI",
+    "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
   ]
 }
 
@@ -28,11 +45,10 @@ executable("demo_client") {
     "demo/delegates.cc",
     "demo/delegates.h",
   ]
-  deps = [ ":chromium_quic" ]
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
+  deps = [
+    ":chromium_quic",
   ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -42,11 +58,10 @@ executable("demo_server") {
     "demo/delegates.h",
     "demo/server.cc",
   ]
-  deps = [ ":chromium_quic" ]
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
+  deps = [
+    ":chromium_quic",
   ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -79,10 +94,10 @@ source_set("core") {
     "src/net/third_party/quic/core/quic_constants.h",
     "src/net/third_party/quic/core/quic_control_frame_manager.cc",
     "src/net/third_party/quic/core/quic_control_frame_manager.h",
-    "src/net/third_party/quic/core/quic_crypto_client_stream.cc",
-    "src/net/third_party/quic/core/quic_crypto_client_stream.h",
     "src/net/third_party/quic/core/quic_crypto_client_handshaker.cc",
     "src/net/third_party/quic/core/quic_crypto_client_handshaker.h",
+    "src/net/third_party/quic/core/quic_crypto_client_stream.cc",
+    "src/net/third_party/quic/core/quic_crypto_client_stream.h",
     "src/net/third_party/quic/core/quic_crypto_handshaker.cc",
     "src/net/third_party/quic/core/quic_crypto_handshaker.h",
     "src/net/third_party/quic/core/quic_crypto_server_handshaker.cc",
@@ -95,14 +110,8 @@ source_set("core") {
     "src/net/third_party/quic/core/quic_data_reader.h",
     "src/net/third_party/quic/core/quic_data_writer.cc",
     "src/net/third_party/quic/core/quic_data_writer.h",
-    "src/net/third_party/quic/core/quic_default_packet_writer.cc",
-    "src/net/third_party/quic/core/quic_default_packet_writer.h",
     "src/net/third_party/quic/core/quic_dispatcher.cc",
     "src/net/third_party/quic/core/quic_dispatcher.h",
-    "src/net/third_party/quic/core/quic_epoll_alarm_factory.cc",
-    "src/net/third_party/quic/core/quic_epoll_alarm_factory.h",
-    "src/net/third_party/quic/core/quic_epoll_connection_helper.cc",
-    "src/net/third_party/quic/core/quic_epoll_connection_helper.h",
     "src/net/third_party/quic/core/quic_error_codes.cc",
     "src/net/third_party/quic/core/quic_error_codes.h",
     "src/net/third_party/quic/core/quic_flow_controller.cc",
@@ -114,13 +123,11 @@ source_set("core") {
     "src/net/third_party/quic/core/quic_packet_creator.h",
     "src/net/third_party/quic/core/quic_packet_generator.cc",
     "src/net/third_party/quic/core/quic_packet_generator.h",
-    "src/net/third_party/quic/core/quic_packet_reader.cc",
-    "src/net/third_party/quic/core/quic_packet_reader.h",
-    "src/net/third_party/quic/core/quic_packets.cc",
-    "src/net/third_party/quic/core/quic_packets.h",
     "src/net/third_party/quic/core/quic_packet_writer.h",
     "src/net/third_party/quic/core/quic_packet_writer_wrapper.cc",
     "src/net/third_party/quic/core/quic_packet_writer_wrapper.h",
+    "src/net/third_party/quic/core/quic_packets.cc",
+    "src/net/third_party/quic/core/quic_packets.h",
     "src/net/third_party/quic/core/quic_pending_retransmission.h",
     "src/net/third_party/quic/core/quic_process_packet_interface.h",
     "src/net/third_party/quic/core/quic_received_packet_manager.cc",
@@ -136,14 +143,14 @@ source_set("core") {
     "src/net/third_party/quic/core/quic_socket_address_coder.cc",
     "src/net/third_party/quic/core/quic_socket_address_coder.h",
     "src/net/third_party/quic/core/quic_stream.cc",
-    "src/net/third_party/quic/core/quic_stream_frame_data_producer.h",
     "src/net/third_party/quic/core/quic_stream.h",
+    "src/net/third_party/quic/core/quic_stream_frame_data_producer.h",
     "src/net/third_party/quic/core/quic_stream_send_buffer.cc",
     "src/net/third_party/quic/core/quic_stream_send_buffer.h",
-    "src/net/third_party/quic/core/quic_stream_sequencer_buffer.cc",
-    "src/net/third_party/quic/core/quic_stream_sequencer_buffer.h",
     "src/net/third_party/quic/core/quic_stream_sequencer.cc",
     "src/net/third_party/quic/core/quic_stream_sequencer.h",
+    "src/net/third_party/quic/core/quic_stream_sequencer_buffer.cc",
+    "src/net/third_party/quic/core/quic_stream_sequencer_buffer.h",
     "src/net/third_party/quic/core/quic_sustained_bandwidth_recorder.cc",
     "src/net/third_party/quic/core/quic_sustained_bandwidth_recorder.h",
     "src/net/third_party/quic/core/quic_tag.cc",
@@ -179,18 +186,25 @@ source_set("core") {
     "src/net/third_party/quic/core/tls_server_handshaker.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  # The following sources cause problems in the build, but since they are not
+  # needed, don't fix anything and don't build them.
+  #
+  # sources -= [
+  #   "src/net/third_party/quic/core/quic_default_packet_writer.cc",
+  #   "src/net/third_party/quic/core/quic_default_packet_writer.h",
+  #   "src/net/third_party/quic/core/quic_packet_reader.cc",
+  #   "src/net/third_party/quic/core/quic_packet_reader.h",
+  # ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 
   deps = [
-    ":congestion_control",
     ":chromium_other",
+    ":congestion_control",
     ":crypto",
     ":frames",
-# ":http",
+
+    # ":http",
     ":platform",
     ":proto",
     "src/third_party/boringssl",
@@ -223,10 +237,7 @@ source_set("congestion_control") {
     "src/net/third_party/quic/core/congestion_control/windowed_filter.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -317,10 +328,7 @@ source_set("crypto") {
     ":proto",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -366,10 +374,7 @@ source_set("frames") {
     "src/net/third_party/quic/core/frames/quic_window_update_frame.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -405,7 +410,6 @@ source_set("frames") {
 #
 #   configs -= [
 #     "//build:default_include_dirs",
-#     "//build/config:openscreen_code",
 #   ]
 #   configs += [ ":chromium_quic_config" ]
 # }
@@ -434,7 +438,9 @@ action("proto_gen") {
     rebase_path(get_path_info(outputs[0], "dir"), root_build_dir),
   ]
 
-  deps = [ "src/third_party/protobuf:protoc" ]
+  deps = [
+    "src/third_party/protobuf:protoc",
+  ]
 }
 
 source_set("proto") {
@@ -449,10 +455,7 @@ source_set("proto") {
     "src/third_party/protobuf:protobuf_full",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -468,12 +471,11 @@ source_set("quartc") {
     "src/net/third_party/quic/quartc/quartc_stream.h",
   ]
 
-  deps = [ ":core" ]
-
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
+  deps = [
+    ":core",
   ]
+
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -488,18 +490,18 @@ source_set("platform") {
     "src/net/third_party/quic/platform/api/quic_endian.h",
     "src/net/third_party/quic/platform/api/quic_estimate_memory_usage.h",
     "src/net/third_party/quic/platform/api/quic_expect_bug.h",
-    "src/net/third_party/quic/platform/api/quic_exported_stats.h",
     "src/net/third_party/quic/platform/api/quic_export.h",
+    "src/net/third_party/quic/platform/api/quic_exported_stats.h",
     "src/net/third_party/quic/platform/api/quic_fallthrough.h",
     "src/net/third_party/quic/platform/api/quic_file_utils.h",
-    "src/net/third_party/quic/platform/api/quic_flags.h",
     "src/net/third_party/quic/platform/api/quic_flag_utils.h",
+    "src/net/third_party/quic/platform/api/quic_flags.h",
     "src/net/third_party/quic/platform/api/quic_hostname_utils.cc",
     "src/net/third_party/quic/platform/api/quic_hostname_utils.h",
     "src/net/third_party/quic/platform/api/quic_interval.h",
     "src/net/third_party/quic/platform/api/quic_ip_address.cc",
-    "src/net/third_party/quic/platform/api/quic_ip_address_family.h",
     "src/net/third_party/quic/platform/api/quic_ip_address.h",
+    "src/net/third_party/quic/platform/api/quic_ip_address_family.h",
     "src/net/third_party/quic/platform/api/quic_logging.h",
     "src/net/third_party/quic/platform/api/quic_lru_cache.h",
     "src/net/third_party/quic/platform/api/quic_map_util.h",
@@ -535,17 +537,15 @@ source_set("platform") {
     "src/net/third_party/quic/platform/impl/quic_chromium_clock.h",
     "src/net/third_party/quic/platform/impl/quic_containers_impl.h",
     "src/net/third_party/quic/platform/impl/quic_endian_impl.h",
-    "src/net/third_party/quic/platform/impl/quic_epoll_clock.cc",
-    "src/net/third_party/quic/platform/impl/quic_epoll_clock.h",
     "src/net/third_party/quic/platform/impl/quic_estimate_memory_usage_impl.h",
     "src/net/third_party/quic/platform/impl/quic_expect_bug_impl.h",
-    "src/net/third_party/quic/platform/impl/quic_exported_stats_impl.h",
     "src/net/third_party/quic/platform/impl/quic_export_impl.h",
+    "src/net/third_party/quic/platform/impl/quic_exported_stats_impl.h",
     "src/net/third_party/quic/platform/impl/quic_fallthrough_impl.h",
     "src/net/third_party/quic/platform/impl/quic_file_utils_impl.h",
+    "src/net/third_party/quic/platform/impl/quic_flag_utils_impl.h",
     "src/net/third_party/quic/platform/impl/quic_flags_impl.cc",
     "src/net/third_party/quic/platform/impl/quic_flags_impl.h",
-    "src/net/third_party/quic/platform/impl/quic_flag_utils_impl.h",
     "src/net/third_party/quic/platform/impl/quic_hostname_utils_impl.cc",
     "src/net/third_party/quic/platform/impl/quic_hostname_utils_impl.h",
     "src/net/third_party/quic/platform/impl/quic_interval_impl.h",
@@ -569,8 +569,6 @@ source_set("platform") {
     "src/net/third_party/quic/platform/impl/quic_sleep_impl.h",
     "src/net/third_party/quic/platform/impl/quic_socket_address_impl.cc",
     "src/net/third_party/quic/platform/impl/quic_socket_address_impl.h",
-    "src/net/third_party/quic/platform/impl/quic_socket_utils.cc",
-    "src/net/third_party/quic/platform/impl/quic_socket_utils.h",
     "src/net/third_party/quic/platform/impl/quic_stack_trace_impl.h",
     "src/net/third_party/quic/platform/impl/quic_str_cat_impl.h",
     "src/net/third_party/quic/platform/impl/quic_string_impl.h",
@@ -585,10 +583,21 @@ source_set("platform") {
     "src/net/third_party/quic/platform/impl/quic_url_utils_impl.h",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  # The following sources cause problems in the build, but since they are not
+  # needed, don't fix anything and don't build them.
+  #
+  # sources -= [
+  #   "src/net/third_party/quic/core/quic_epoll_alarm_factory.cc",
+  #   "src/net/third_party/quic/core/quic_epoll_alarm_factory.h",
+  #   "src/net/third_party/quic/core/quic_epoll_connection_helper.cc",
+  #   "src/net/third_party/quic/core/quic_epoll_connection_helper.h",
+  #   "src/net/third_party/quic/platform/impl/quic_epoll_clock.cc",
+  #   "src/net/third_party/quic/platform/impl/quic_epoll_clock.h",
+  #   "src/net/third_party/quic/platform/impl/quic_socket_utils.cc",
+  #   "src/net/third_party/quic/platform/impl/quic_socket_utils.h",
+  # ]
+
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 

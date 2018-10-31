@@ -46,10 +46,7 @@ source_set("zlib_inflate_chunk_simd") {
     "contrib/optimizations/inflate.c",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
 
   public_configs = [ ":zlib_inflate_chunk_simd_config" ]
@@ -88,10 +85,12 @@ static_library("zlib_x86_simd") {
     "-mpclmul",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  cflags_c = []
+  if (is_gcc) {
+    cflags_c += [ "-Wno-parentheses" ]
+  }
+
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
 }
 
@@ -145,10 +144,7 @@ static_library("zlib") {
   deps += [ ":zlib_inflate_chunk_simd" ]
   sources -= [ "inflate.c" ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [
     # Must be after no_chromium_code for warning flags to be ordered correctly.
     ":zlib_warnings",
@@ -163,7 +159,7 @@ config("minizip_warnings") {
   visibility = [ ":*" ]
 
   # zlib uses `if ((a == b))` for some reason.
-  cflags = [ "-Wno-parentheses-equality" ]
+  cflags_c = [ "-Wno-parentheses-equality" ]
 }
 
 static_library("minizip") {
@@ -187,13 +183,15 @@ static_library("minizip") {
     ":zlib",
   ]
 
+  cflags_c = []
+  if (is_gcc) {
+    cflags_c += [ "-Wno-misleading-indentation" ]
+  }
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [
     "//third_party/chromium_quic:chromium_quic_config",
+
     # Must be after no_chromium_code for warning flags to be ordered correctly.
     ":minizip_warnings",
   ]
@@ -208,10 +206,7 @@ executable("zlib_bench") {
     "contrib/bench/zlib_bench.cc",
   ]
 
-  configs -= [
-    "//build:default_include_dirs",
-    "//build/config:openscreen_code",
-  ]
+  configs -= [ "//build:default_include_dirs" ]
   configs += [ "//third_party/chromium_quic:chromium_quic_config" ]
 
   deps = [

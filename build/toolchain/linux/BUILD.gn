@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(btolsch): Add a Windows-compatible toolchain.
 toolchain("gcc") {
   tool("cc") {
     depfile = "{{output}}.d"
@@ -40,8 +39,9 @@ toolchain("gcc") {
     description = "AR {{target_output_name}}{{output_extension}}"
     rspfile_content = "{{inputs}}"
     outputs = [
-      "{{target_out_dir}}/{{target_output_name}}{{output_extension}}",
+      "{{output_dir}}/{{target_output_name}}{{output_extension}}",
     ]
+    default_output_dir = "{{target_out_dir}}"
     default_output_extension = ".a"
     output_prefix = "lib"
   }
@@ -54,7 +54,7 @@ toolchain("gcc") {
     command = "g++ -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
     rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
 
-    description = "SOLINK $soname"
+    description = "SOLINK {{output}}"
 
     # Use this for {{output_extension}} expansions unless a target manually
     # overrides it (in which case {{output_extension}} will be what the target
@@ -76,7 +76,11 @@ toolchain("gcc") {
   tool("link") {
     outfile = "{{target_output_name}}{{output_extension}}"
     rspfile = "$outfile.rsp"
-    command = "g++ {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
+
+    # These extra ldflags allow an executable to search for shared libraries in
+    # the current working directory.
+    additional_executable_ldflags = "-Wl,-rpath=\$ORIGIN/ -Wl,-rpath-link="
+    command = "g++ {{ldflags}} $additional_executable_ldflags -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
     description = "LINK $outfile"
     default_output_dir = "{{root_out_dir}}"
     rspfile_content = "{{inputs}}"
@@ -91,7 +95,7 @@ toolchain("gcc") {
   }
 
   tool("copy") {
-    command = "cp -af {{source}} {{output}}"
+    command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
     description = "COPY {{source}} {{output}}"
   }
 }
