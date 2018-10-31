@@ -3714,6 +3714,21 @@
             ]
         }
     ],
+    "RemoveGpuRasterizationViewportRestriction": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "RemoveRestriction",
+                    "disable_features": [
+                        "EnableGpuRasterizationViewportRestriction"
+                    ]
+                }
+            ]
+        }
+    ],
     "RemoveNavigationHistory": [
         {
             "platforms": [
