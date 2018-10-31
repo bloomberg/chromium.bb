@@ -595,7 +595,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
-      const base::string16& name,
       ResourceContext* context,
       const std::vector<GlobalFrameRoutingId>& render_frames);
 

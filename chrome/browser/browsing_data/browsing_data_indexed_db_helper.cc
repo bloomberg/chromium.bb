@@ -69,12 +69,9 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
   indexed_db_context_->DeleteForOrigin(origin);
 }
 
-CannedBrowsingDataIndexedDBHelper::
-PendingIndexedDBInfo::PendingIndexedDBInfo(const GURL& origin,
-                                           const base::string16& name)
-    : origin(origin),
-      name(name) {
-}
+CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::PendingIndexedDBInfo(
+    const GURL& origin)
+    : origin(origin) {}
 
 CannedBrowsingDataIndexedDBHelper::
 PendingIndexedDBInfo::~PendingIndexedDBInfo() {
@@ -82,7 +79,7 @@ PendingIndexedDBInfo::~PendingIndexedDBInfo() {
 
 bool CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::operator<(
     const PendingIndexedDBInfo& other) const {
-  return std::tie(origin, name) < std::tie(other.origin, other.name);
+  return origin < other.origin;
 }
 
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
@@ -92,12 +89,11 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
-void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
-    const GURL& origin, const base::string16& name) {
+void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(const GURL& origin) {
   if (!BrowsingDataHelper::HasWebScheme(origin))
     return;  // Non-websafe state is not considered browsing data.
 
-  pending_indexed_db_info_.insert(PendingIndexedDBInfo(origin, name));
+  pending_indexed_db_info_.insert(PendingIndexedDBInfo(origin));
 }
 
 void CannedBrowsingDataIndexedDBHelper::Reset() {

@@ -51,10 +51,10 @@ bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
   return client_->RequestFileSystemAccessSync();
 }
 
-bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
+bool WorkerContentSettingsClient::AllowIndexedDB() {
   if (!client_)
     return true;
-  return client_->AllowIndexedDB(name, WebSecurityOrigin());
+  return client_->AllowIndexedDB(WebSecurityOrigin());
 }
 
 bool WorkerContentSettingsClient::AllowScriptFromSource(

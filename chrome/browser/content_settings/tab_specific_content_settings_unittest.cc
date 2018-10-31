@@ -264,7 +264,6 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   content_settings->OnFileSystemAccessed(GURL("http://google.com"),
                                               blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
-                                        base::UTF8ToUTF16("text"),
                                         blocked_by_policy);
   content_settings->OnLocalStorageAccessed(GURL("http://google.com"),
                                            true,

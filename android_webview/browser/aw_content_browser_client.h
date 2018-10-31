@@ -93,7 +93,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       base::Callback<void(bool)> callback) override;
   bool AllowWorkerIndexedDB(
       const GURL& url,
-      const base::string16& name,
       content::ResourceContext* context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;

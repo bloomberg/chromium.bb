@@ -2519,7 +2519,6 @@ void ChromeContentBrowserClient::FileSystemAccessed(
 
 bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    const base::string16& name,
     content::ResourceContext* context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -2533,7 +2532,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
-                       it.child_id, it.frame_routing_id, url, name, !allow));
+                       it.child_id, it.frame_routing_id, url, !allow));
   }
 
   return allow;

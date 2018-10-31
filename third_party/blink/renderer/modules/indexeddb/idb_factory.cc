@@ -227,8 +227,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
   }
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
-           ->AllowIndexedDB(ExecutionContext::From(script_state),
-                            "Database Listing")) {
+           ->AllowIndexedDB(ExecutionContext::From(script_state))) {
     request->HandleResponse(DOMException::Create(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
@@ -283,7 +282,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                                version, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
-           ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
+           ->AllowIndexedDB(ExecutionContext::From(script_state))) {
     request->HandleResponse(DOMException::Create(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
@@ -349,7 +348,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
       std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
-           ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
+           ->AllowIndexedDB(ExecutionContext::From(script_state))) {
     request->HandleResponse(DOMException::Create(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;

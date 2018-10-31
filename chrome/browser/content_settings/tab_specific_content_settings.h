@@ -147,7 +147,6 @@ class TabSpecificContentSettings
   static void IndexedDBAccessed(int render_process_id,
                                 int render_frame_id,
                                 const GURL& url,
-                                const base::string16& description,
                                 bool blocked_by_policy);
 
   // Called when a specific file system in the current page was accessed.
@@ -334,9 +333,7 @@ class TabSpecificContentSettings
                       bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
-  void OnIndexedDBAccessed(const GURL& url,
-                           const base::string16& description,
-                           bool blocked_by_policy);
+  void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);

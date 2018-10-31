@@ -346,7 +346,6 @@ void ContentBrowserClient::AllowWorkerFileSystem(
 
 bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    const base::string16& name,
     ResourceContext* context,
     const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;

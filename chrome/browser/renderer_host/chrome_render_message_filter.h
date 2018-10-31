@@ -94,7 +94,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnAllowIndexedDB(int render_frame_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,
-                        const base::string16& name,
                         bool* allowed);
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);

@@ -46,9 +46,7 @@ class WebContentSettingsClient {
   }
 
   // Controls whether access to Indexed DB are allowed for this frame.
-  virtual bool AllowIndexedDB(const WebString& name, const WebSecurityOrigin&) {
-    return true;
-  }
+  virtual bool AllowIndexedDB(const WebSecurityOrigin&) { return true; }
 
   // Controls whether scripts are allowed to execute for this frame.
   virtual bool AllowScript(bool enabled_per_settings) {

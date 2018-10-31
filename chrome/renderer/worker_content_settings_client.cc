@@ -61,15 +61,13 @@ bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
 }
 
 bool WorkerContentSettingsClient::AllowIndexedDB(
-    const blink::WebString& name,
     const blink::WebSecurityOrigin&) {
   if (is_unique_origin_)
     return false;
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id_, document_origin_url_, top_frame_origin_url_, name.Utf16(),
-      &result));
+      routing_id_, document_origin_url_, top_frame_origin_url_, &result));
   return result;
 }
 
