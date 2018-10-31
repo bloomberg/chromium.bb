@@ -346,6 +346,26 @@ static INLINE void compute_flow_system(const double *dx, const double *dy,
   M[2] = M[1];
 }
 
+// Solves a general Mx = b where M is a 2x2 matrix and b is a 2x1 matrix
+static INLINE void solve_2x2_system(const double *M, const double *b,
+                                    double *output_vec) {
+  double M_0 = M[0];
+  double M_3 = M[3];
+  double det = (M_0 * M_3) - (M[1] * M[2]);
+  if (det < 1e-5) {
+    // Handle singular matrix
+    // TODO(sarahparker) compare results using pseudo inverse instead
+    M_0 += 1e-10;
+    M_3 += 1e-10;
+    det = (M_0 * M_3) - (M[1] * M[2]);
+  }
+  const double det_inv = 1 / det;
+  const double mult_b0 = det_inv * b[0];
+  const double mult_b1 = det_inv * b[1];
+  output_vec[0] = M_3 * mult_b0 - M[1] * mult_b1;
+  output_vec[1] = -M[2] * mult_b0 + M_0 * mult_b1;
+}
+
 // Compute an image gradient using a sobel filter.
 // If dir == 1, compute the x gradient. If dir == 0, compute y. This function
 // assumes the images have been padded so that they can be processed in units
