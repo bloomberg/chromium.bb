@@ -23,8 +23,10 @@ BINUTILS_FILE = 'binutils.tar.bz2'
 BINUTILS_TOOLS = ['bin/ld.gold', 'bin/objcopy', 'bin/objdump']
 BINUTILS_OUT = 'Release'
 
-DETECT_HOST_ARCH = os.path.abspath(os.path.join(
-    BINUTILS_DIR, '../../build/detect_host_arch.py'))
+# Modify sys path so we can import detect_host_arch.py
+sys.path.append(os.path.abspath(os.path.join(
+    BINUTILS_DIR, '../../build/')))
+import detect_host_arch
 
 
 def ReadFile(filename):
@@ -37,19 +39,6 @@ def WriteFile(filename, content):
   with file(filename, 'w') as f:
     f.write(content)
     f.write('\n')
-
-
-def GetArch():
-  gyp_host_arch = re.search(
-      'host_arch=(\S*)', os.environ.get('GYP_DEFINES', ''))
-  if gyp_host_arch:
-    arch = gyp_host_arch.group(1)
-    # This matches detect_host_arch.py.
-    if arch == 'x86_64':
-      return 'x64'
-    return arch
-
-  return subprocess.check_output(['python', DETECT_HOST_ARCH]).strip()
 
 
 def FetchAndExtract(arch):
@@ -109,7 +98,7 @@ def main(args):
   if not sys.platform.startswith('linux'):
     return 0
 
-  arch = GetArch()
+  arch = detect_host_arch.HostArch()
   if arch in options.ignore_if_arch:
     return 0
 
