@@ -687,6 +687,7 @@ source_set("chromeos") {
     "extensions/active_tab_permission_granter_delegate_chromeos.h",
     "extensions/default_app_order.cc",
     "extensions/default_app_order.h",
+    "extensions/default_web_app_ids.h",
     "extensions/device_local_account_external_policy_loader.cc",
     "extensions/device_local_account_external_policy_loader.h",
     "extensions/device_local_account_management_policy_provider.cc",
