@@ -27,7 +27,7 @@
 namespace {
 
 // For bookmark in-product help.
-int GetPromoStringSpecifier() {
+int GetBookmarkPromoStringSpecifier() {
   static constexpr int kTextIds[] = {IDS_BOOKMARK_PROMO_0, IDS_BOOKMARK_PROMO_1,
                                      IDS_BOOKMARK_PROMO_2};
   const std::string& str = variations::GetVariationParamValue(
@@ -62,7 +62,8 @@ void StarView::SetToggled(bool on) {
 void StarView::ShowPromo() {
   FeaturePromoBubbleView* bookmark_promo_bubble =
       FeaturePromoBubbleView::CreateOwned(
-          this, views::BubbleBorder::TOP_RIGHT, GetPromoStringSpecifier(),
+          this, views::BubbleBorder::TOP_RIGHT,
+          GetBookmarkPromoStringSpecifier(),
           FeaturePromoBubbleView::ActivationAction::ACTIVATE);
   if (!bookmark_promo_observer_.IsObserving(
           bookmark_promo_bubble->GetWidget())) {

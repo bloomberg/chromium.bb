@@ -41,7 +41,7 @@
 namespace {
 
 // For new tab in-product help.
-int GetPromoStringSpecifier() {
+int GetNewTabPromoStringSpecifier() {
   static constexpr int kTextIds[] = {IDS_NEWTAB_PROMO_0, IDS_NEWTAB_PROMO_1,
                                      IDS_NEWTAB_PROMO_2};
   const std::string& str = variations::GetVariationParamValue(
@@ -102,7 +102,7 @@ void NewTabButton::ShowPromo() {
   DCHECK(!new_tab_promo_);
   // Owned by its native widget. Will be destroyed as its widget is destroyed.
   new_tab_promo_ = FeaturePromoBubbleView::CreateOwned(
-      this, views::BubbleBorder::LEFT_CENTER, GetPromoStringSpecifier(),
+      this, views::BubbleBorder::LEFT_CENTER, GetNewTabPromoStringSpecifier(),
       FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE);
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
   SchedulePaint();
