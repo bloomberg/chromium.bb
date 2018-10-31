@@ -14,6 +14,36 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
+fuchsia_package("castrunner_pkg") {
+  binary = ":castrunner_exe"
+  package_name_override = "cast_runner"
+  sandbox_policy = "app/cast/sandbox_policy"
+}
+
+fuchsia_package_runner("castrunner") {
+  package = ":castrunner_pkg"
+  package_name_override = "cast_runner"
+  install_only = true
+  package_deps = [ [
+        ":service_pkg",
+        "chromium",
+      ] ]
+}
+
+executable("castrunner_exe") {
+  sources = [
+    "app/cast/cast_runner.cc",
+    "app/cast/cast_runner.h",
+    "app/cast/main.cc",
+  ]
+  deps = [
+    ":web_fidl",
+    ":webrunner_common",
+    "//base",
+    "//url",
+  ]
+}
+
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
