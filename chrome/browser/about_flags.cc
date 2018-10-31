@@ -4424,7 +4424,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
      flag_descriptions::kSendTabToSelfDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSendTabToSelf)},
+     FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
 
 #if defined(OS_CHROMEOS)
     {"ash-enable-notification-expansion-animation",

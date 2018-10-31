@@ -164,6 +164,9 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::MOUNTAIN_SHARES:                            \
         PER_DATA_TYPE_MACRO("MountainShares");                   \
         break;                                                   \
+      case ::syncer::SEND_TAB_TO_SELF:                           \
+        PER_DATA_TYPE_MACRO("SendTabToSelf");                    \
+        break;                                                   \
       default:                                                   \
         NOTREACHED() << "Unknown datatype "                      \
                      << ::syncer::ModelTypeToString(datatype);   \

@@ -33,6 +33,7 @@
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
+#include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
@@ -367,7 +368,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(42 == MODEL_TYPE_COUNT,
+  static_assert(43 == MODEL_TYPE_COUNT,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -401,6 +402,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(priority_preference);
   VISIT(reading_list);
   VISIT(search_engine);
+  VISIT(send_tab_to_self);
   VISIT(session);
   VISIT(synced_notification);
   VISIT(synced_notification_app_info);
@@ -734,6 +736,18 @@ VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
   VISIT(suggestions_url_post_params);
   VISIT(image_url_post_params);
   VISIT(new_tab_url);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfSpecifics& proto) {
+  VISIT(title);
+  VISIT(url);
+  VISIT(shared_time_usec);
+  VISIT(from_device);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfDevice& proto) {
+  VISIT(name);
+  VISIT(signin_scoped_device_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {
