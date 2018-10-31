@@ -326,10 +326,6 @@
       status: "experimental",
     },
     {
-      name: "CSSScrollSnapPoints",
-      status: "stable",
-    },
-    {
       name: "CSSSnapSize",
       status: "experimental",
     },

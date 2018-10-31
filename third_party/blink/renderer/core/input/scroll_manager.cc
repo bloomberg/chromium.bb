@@ -70,8 +70,7 @@ ScrollableArea* ScrollableAreaForSnapping(LayoutBox* layout_box) {
 }  // namespace
 
 ScrollManager::ScrollManager(LocalFrame& frame) : frame_(frame) {
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled())
-    snap_fling_controller_ = std::make_unique<cc::SnapFlingController>(this);
+  snap_fling_controller_ = std::make_unique<cc::SnapFlingController>(this);
 
   Clear();
 }
