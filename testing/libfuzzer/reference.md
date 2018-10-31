@@ -73,7 +73,7 @@ Windows is supported by libFuzzer with `is_asan` configuration.
 Configuration example:
 
 ```bash
-gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=false' --check
+gn gen out/libfuzzer "--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=false" --check
 ```
 
 On Windows you must use `is_component_build=true` as libFuzzer does not support
