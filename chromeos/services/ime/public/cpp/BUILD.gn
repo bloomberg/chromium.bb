@@ -19,6 +19,8 @@ source_set("rulebased") {
     "rulebased/def/ar.h",
     "rulebased/def/ckb_ar.h",
     "rulebased/def/ckb_en.h",
+    "rulebased/def/deva_phone.cc",
+    "rulebased/def/deva_phone.h",
     "rulebased/def/fa.h",
     "rulebased/def/km.h",
     "rulebased/def/lo.h",
@@ -30,6 +32,8 @@ source_set("rulebased") {
     "rulebased/def/th.h",
     "rulebased/def/th_pattajoti.h",
     "rulebased/def/th_tis.h",
+    "rulebased/def/us.cc",
+    "rulebased/def/us.h",
     "rulebased/engine.cc",
     "rulebased/engine.h",
     "rulebased/rules_data.cc",
@@ -38,6 +42,7 @@ source_set("rulebased") {
 
   deps = [
     "//base",
+    "//third_party/re2",
   ]
 }
 

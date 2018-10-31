@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-
 #include "chromeos/services/ime/public/cpp/rulebased/engine.h"
 #include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -82,6 +81,55 @@ TEST_F(RulebasedImeTest, Thai) {
   entries.push_back({"KeyA", 0, L"\u0e1f"});
   entries.push_back({"KeyM", rulebased::MODIFIER_SHIFT, L"?"});
   VerifyKeys(entries);
+}
+
+TEST_F(RulebasedImeTest, Transforms) {
+  const wchar_t* key_map[] = {
+      L"`1234567890-="
+      L"qwertyuiop[]\\"
+      L"asdfghjkl;'"
+      L"zxcvbnm,./"
+      L"\u0020"};
+  const uint8_t key_map_index[8] = {0};
+  const char* transforms[] = {
+      u8"a", u8"x", u8"x\u001dAA", u8"X", u8"(\\w)(\\w)[<>]", u8"\\2\\1"};
+  auto data =
+      rulebased::RulesData::Create(key_map, 1, key_map_index, false, transforms,
+                                   base::size(transforms), nullptr);
+  std::string transformed;
+  bool res = data->Transform("..", -1, "b", &transformed);
+  EXPECT_FALSE(res);
+  res = data->Transform("..", -1, "a", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ("..x", transformed);
+  res = data->Transform("..xA", 3, "A", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ("..X", transformed);
+  res = data->Transform("..ab", -1, "<", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ("..ba", transformed);
+}
+
+TEST_F(RulebasedImeTest, Transforms_deva_phone) {
+  auto data = rulebased::RulesData::GetById("deva_phone");
+  std::string transformed;
+  // No match.
+  bool res = data->Transform("..", -1, "?", &transformed);
+  EXPECT_FALSE(res);
+  // 1st rule.
+  res = data->Transform("..", -1, "0", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ(u8"..\u0966", transformed);
+  // Last rule.
+  res = data->Transform(u8"\u0964", -1, ".", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ(u8"\u2026", transformed);
+  // Rule with "\\1".
+  std::string str(u8"..\u0915");
+  int transat = str.length();
+  res = data->Transform(str + "a", transat, "u", &transformed);
+  EXPECT_TRUE(res);
+  EXPECT_EQ(u8"..\u0915\u094c", transformed);
 }
 
 TEST_F(RulebasedImeTest, ParseKeyMap) {
