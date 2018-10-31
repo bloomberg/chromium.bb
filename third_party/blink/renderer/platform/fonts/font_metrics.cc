@@ -132,9 +132,9 @@ void FontMetrics::AscentDescentWithHacks(
   // incorrectly added to line spacing, so we use a 15% adjustment instead
   // and add it to the ascent.
   String family_name = platform_data.FontFamilyName();
-  if (family_name == FontFamilyNames::Times ||
-      family_name == FontFamilyNames::Helvetica ||
-      family_name == FontFamilyNames::Courier)
+  if (family_name == font_family_names::kTimes ||
+      family_name == font_family_names::kHelvetica ||
+      family_name == font_family_names::kCourier)
     ascent += floorf(((ascent + descent) * 0.15f) + 0.5f);
 #endif
 }

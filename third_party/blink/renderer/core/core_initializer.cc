@@ -98,7 +98,7 @@ void CoreInitializer::Initialize() {
   const unsigned kCoreStaticStringsCount =
       kQualifiedNamesCount + EventNames::kNamesCount +
       EventTargetNames::kNamesCount + EventTypeNames::kNamesCount +
-      FetchInitiatorTypeNames::kNamesCount + FontFamilyNames::kNamesCount +
+      FetchInitiatorTypeNames::kNamesCount + font_family_names::kNamesCount +
       html_tokenizer_names::kNamesCount + http_names::kNamesCount +
       input_mode_names::kNamesCount + input_type_names::kNamesCount +
       media_feature_names::kNamesCount + media_type_names::kNamesCount +
@@ -121,7 +121,7 @@ void CoreInitializer::Initialize() {
   EventTargetNames::init();
   EventTypeNames::init();
   FetchInitiatorTypeNames::init();
-  FontFamilyNames::init();
+  font_family_names::init();
   html_tokenizer_names::init();
   http_names::init();
   input_mode_names::init();

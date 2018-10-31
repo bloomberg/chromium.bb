@@ -190,7 +190,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   FetchInitiatorTypeNames::init();
 
   InitializePlatformLanguage();
-  FontFamilyNames::init();
+  font_family_names::init();
   WebRuntimeFeatures::EnableExperimentalFeatures(true);
   WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 }

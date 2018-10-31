@@ -48,20 +48,20 @@ inline const AtomicString& AdjustFamilyNameToAvoidUnsupportedFonts(
   // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
   // a truetype font. Thus pages asking for Courier are better of
   // using 'Courier New' on windows.
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Courier))
-    return FontFamilyNames::Courier_New;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kCourier))
+    return font_family_names::kCourierNew;
 
   // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
   // (truetype font).
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::MS_Sans_Serif))
-    return FontFamilyNames::Microsoft_Sans_Serif;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kMSSansSerif))
+    return font_family_names::kMicrosoftSansSerif;
 
   // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
   // Alias 'Times' -> 'Times New Roman' (truetype font).
   // There's no 'Microsoft Sans Serif-equivalent' for Serif.
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::MS_Serif) ||
-      EqualIgnoringASCIICase(family_name, FontFamilyNames::Times))
-    return FontFamilyNames::Times_New_Roman;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kMSSerif) ||
+      EqualIgnoringASCIICase(family_name, font_family_names::kTimes))
+    return font_family_names::kTimesNewRoman;
 #endif
 
   return family_name;
@@ -70,27 +70,27 @@ inline const AtomicString& AdjustFamilyNameToAvoidUnsupportedFonts(
 inline const AtomicString& AlternateFamilyName(
     const AtomicString& family_name) {
   // Alias Courier <-> Courier New
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Courier))
-    return FontFamilyNames::Courier_New;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kCourier))
+    return font_family_names::kCourierNew;
 #if !defined(OS_WIN)
   // On Windows, Courier New (truetype font) is always present and
   // Courier is a bitmap font. So, we don't want to map Courier New to
   // Courier.
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Courier_New))
-    return FontFamilyNames::Courier;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kCourierNew))
+    return font_family_names::kCourier;
 #endif
 
   // Alias Times and Times New Roman.
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Times))
-    return FontFamilyNames::Times_New_Roman;
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Times_New_Roman))
-    return FontFamilyNames::Times;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kTimes))
+    return font_family_names::kTimesNewRoman;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kTimesNewRoman))
+    return font_family_names::kTimes;
 
   // Alias Arial and Helvetica
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Arial))
-    return FontFamilyNames::Helvetica;
-  if (EqualIgnoringASCIICase(family_name, FontFamilyNames::Helvetica))
-    return FontFamilyNames::Arial;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kArial))
+    return font_family_names::kHelvetica;
+  if (EqualIgnoringASCIICase(family_name, font_family_names::kHelvetica))
+    return font_family_names::kArial;
 
   return g_empty_atom;
 }
@@ -99,15 +99,15 @@ inline const AtomicString& GetFallbackFontFamily(
     const FontDescription& description) {
   switch (description.GenericFamily()) {
     case FontDescription::kSansSerifFamily:
-      return FontFamilyNames::sans_serif;
+      return font_family_names::kSansSerif;
     case FontDescription::kSerifFamily:
-      return FontFamilyNames::serif;
+      return font_family_names::kSerif;
     case FontDescription::kMonospaceFamily:
-      return FontFamilyNames::monospace;
+      return font_family_names::kMonospace;
     case FontDescription::kCursiveFamily:
-      return FontFamilyNames::cursive;
+      return font_family_names::kCursive;
     case FontDescription::kFantasyFamily:
-      return FontFamilyNames::fantasy;
+      return font_family_names::kFantasy;
     default:
       // Let the caller use the system default font.
       return g_empty_atom;

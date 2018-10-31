@@ -709,17 +709,17 @@ CSSValue* ComputedStyleUtils::ValueForLineHeight(const ComputedStyle& style) {
 }
 
 CSSValueID IdentifierForFamily(const AtomicString& family) {
-  if (family == FontFamilyNames::webkit_cursive)
+  if (family == font_family_names::kWebkitCursive)
     return CSSValueCursive;
-  if (family == FontFamilyNames::webkit_fantasy)
+  if (family == font_family_names::kWebkitFantasy)
     return CSSValueFantasy;
-  if (family == FontFamilyNames::webkit_monospace)
+  if (family == font_family_names::kWebkitMonospace)
     return CSSValueMonospace;
-  if (family == FontFamilyNames::webkit_pictograph)
+  if (family == font_family_names::kWebkitPictograph)
     return CSSValueWebkitPictograph;
-  if (family == FontFamilyNames::webkit_sans_serif)
+  if (family == font_family_names::kWebkitSansSerif)
     return CSSValueSansSerif;
-  if (family == FontFamilyNames::webkit_serif)
+  if (family == font_family_names::kWebkitSerif)
     return CSSValueSerif;
   return CSSValueInvalid;
 }

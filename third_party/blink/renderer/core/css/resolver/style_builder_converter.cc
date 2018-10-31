@@ -198,7 +198,7 @@ static bool ConvertFontFamilyName(
 #if defined(OS_MACOSX)
     if (family_name == FontCache::LegacySystemFontFamily()) {
       UseCounter::Count(*document_for_count, WebFeature::kBlinkMacSystemFont);
-      family_name = FontFamilyNames::system_ui;
+      family_name = font_family_names::kSystemUi;
     }
 #endif
   } else if (font_builder) {

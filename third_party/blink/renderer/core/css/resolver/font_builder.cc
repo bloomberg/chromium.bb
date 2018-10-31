@@ -86,17 +86,17 @@ AtomicString FontBuilder::GenericFontFamilyName(
     case FontDescription::kStandardFamily:
       return StandardFontFamilyName();
     case FontDescription::kSerifFamily:
-      return FontFamilyNames::webkit_serif;
+      return font_family_names::kWebkitSerif;
     case FontDescription::kSansSerifFamily:
-      return FontFamilyNames::webkit_sans_serif;
+      return font_family_names::kWebkitSansSerif;
     case FontDescription::kMonospaceFamily:
-      return FontFamilyNames::webkit_monospace;
+      return font_family_names::kWebkitMonospace;
     case FontDescription::kCursiveFamily:
-      return FontFamilyNames::webkit_cursive;
+      return font_family_names::kWebkitCursive;
     case FontDescription::kFantasyFamily:
-      return FontFamilyNames::webkit_fantasy;
+      return font_family_names::kWebkitFantasy;
     case FontDescription::kPictographFamily:
-      return FontFamilyNames::webkit_pictograph;
+      return font_family_names::kWebkitPictograph;
   }
 }
 
