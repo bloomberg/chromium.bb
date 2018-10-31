@@ -34,6 +34,7 @@ namespace content {
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
+#define MAYBE_ManipulateFocusDistance DISABLED_ManipulateFocusDistance
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_GetPhotoSettings GetPhotoSettings
@@ -43,6 +44,7 @@ namespace content {
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom ManipulateZoom
 #define MAYBE_ManipulateExposureTime ManipulateExposureTime
+#define MAYBE_ManipulateFocusDistance ManipulateFocusDistance
 #endif
 
 namespace {
@@ -233,6 +235,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
                        MAYBE_ManipulateExposureTime) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testManipulateExposureTime()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulateFocusDistance) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateFocusDistance()"));
 }
 
 INSTANTIATE_TEST_CASE_P(

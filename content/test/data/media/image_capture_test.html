@@ -271,6 +271,68 @@ function testManipulateExposureTime() {
         });
 }
 
+// Tries to read, set and read back the focusDistance capability if available.
+function testManipulateFocusDistance() {
+    var newFocusDistance = -1;
+    var imageCapturer;
+    var focusDistanceTolerance;
+    navigator.mediaDevices.getUserMedia({"video": CONSTRAINTS})
+        .then(stream => {
+            assertEquals('video', stream.getVideoTracks()[0].kind);
+            return new ImageCapture(stream.getVideoTracks()[0]);
+        })
+        .then(capturer => {
+            imageCapturer = capturer;
+            // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+            // use instead a round trip of capabilities: https://crbug.com/711524.
+            return capturer.getPhotoCapabilities();
+        })
+        .then(capabilities => {
+            const trackCapabilities = imageCapturer.track.getCapabilities();
+            if (trackCapabilities.focusDistance === undefined) {
+                console.log('focusDistance not supported, skipping test');
+                reportTestSuccess();
+                return;
+            }
+
+            const currentFocusDistance = imageCapturer.track.getSettings().focusDistance;
+            newFocusDistance = currentFocusDistance + trackCapabilities.focusDistance
+                .step;
+            newFocusDistance = Math.min(newFocusDistance, trackCapabilities.focusDistance
+                .max);
+            console.log("Setting focusDistance from " + currentFocusDistance +
+                " to " +
+                newFocusDistance);
+            focusDistanceTolerance = trackCapabilities.focusDistance.step /
+                10;
+
+            currentFocusMode = imageCapturer.track.getSettings().focusMode;
+            console.log(" focusMode == " + currentFocusMode);
+            focusModeCapabilities = trackCapabilities.focusMode;
+            console.log(" focusModeCapabilities == " +
+                focusModeCapabilities);
+
+            return imageCapturer.track.applyConstraints({
+                advanced: [{
+                    focusMode: "manual",
+                    focusDistance: newFocusDistance
+                }]
+            });
+        })
+        .then(() => {
+            assertEquals(newFocusDistance,
+                imageCapturer.track.getConstraints().advanced[0].focusDistance
+            );
+            assertTrue(Math.abs(newFocusDistance - imageCapturer.track.getSettings()
+                    .focusDistance) <
+                focusDistanceTolerance);
+            reportTestSuccess();
+        })
+        .catch(err => {
+            return failTest(err.toString());
+        });
+}
+
 </script>
 </body>
 </html>
