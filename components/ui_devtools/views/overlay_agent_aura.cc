@@ -19,6 +19,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ui_devtools {
 
@@ -553,26 +554,35 @@ void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
 
   // Find node id of element whose bounds contain the mouse pointer location.
   int element_id = FindElementIdTargetedByPoint(event);
+  if (!element_id)
+    return;
 
-  if (pinned_id_ == element_id) {
+#if defined(USE_AURA)
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  bool active_window = ::wm::IsActiveWindow(
+      target->GetRootWindow()->GetEventHandlerForPoint(event->root_location()));
+#else
+  bool active_window = true;
+#endif
+  if (pinned_id_ == element_id && active_window) {
     event->SetHandled();
     return;
   }
 
   // Pin the hover element on click.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
-    event->SetHandled();
-    if (element_id)
-      SetPinnedNodeId(element_id);
-  } else if (element_id && !pinned_id_) {
-    // Display only guidelines if hovering without a pinned element.
-    frontend()->nodeHighlightRequested(element_id);
-    HighlightNode(element_id, false /* show_size */);
-  } else if (element_id && pinned_id_) {
+    if (active_window)
+      event->SetHandled();
+    SetPinnedNodeId(element_id);
+  } else if (pinned_id_) {
     // If hovering with a pinned element, then show distances between the pinned
     // element and the hover element.
     HighlightNode(element_id, false /* show_size */);
     ShowDistancesInHighlightOverlay(pinned_id_, element_id);
+  } else {
+    // Display only guidelines if hovering without a pinned element.
+    frontend()->nodeHighlightRequested(element_id);
+    HighlightNode(element_id, false /* show_size */);
   }
 }
 
