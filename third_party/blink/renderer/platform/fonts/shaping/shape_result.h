@@ -34,6 +34,7 @@
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 struct hb_buffer_t;
@@ -52,8 +54,8 @@ struct CharacterRange;
 class Font;
 template <typename TextContainerType>
 class PLATFORM_EXPORT ShapeResultSpacing;
-class SimpleFontData;
 class TextRun;
+class ShapeResultView;
 
 enum class AdjustMidCluster {
   // Adjust the middle of a grapheme cluster to the logical end boundary.
@@ -298,7 +300,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 #endif
 
  protected:
-  ShapeResult(const SimpleFontData*, unsigned num_characters, TextDirection);
+  ShapeResult(scoped_refptr<const SimpleFontData>,
+              unsigned num_characters,
+              TextDirection);
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
@@ -312,6 +316,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Ensure |grapheme_| is computed. |BreakGlyphs| is valid only when
   // |grapheme_| is computed.
   void EnsureGraphemes(const StringView& text) const;
+
+  static unsigned CountGraphemesInCluster(const UChar*,
+                                          unsigned str_length,
+                                          uint16_t start_index,
+                                          uint16_t end_index);
 
   struct GlyphIndexResult {
     STACK_ALLOCATED();
@@ -384,11 +393,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                              hb_buffer_t*);
   template <bool is_horizontal_run>
   void ComputeGlyphBounds(const ShapeResult::RunInfo&);
-  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
+  void InsertRun(scoped_refptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,
                  hb_buffer_t*);
-  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
+  void InsertRun(scoped_refptr<ShapeResult::RunInfo>);
   void ReorderRtlRuns(unsigned run_size_before);
   unsigned ComputeStartIndex() const;
   void UpdateStartIndex();
@@ -398,7 +407,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   float width_;
   FloatRect glyph_bounding_box_;
-  Vector<std::unique_ptr<RunInfo>> runs_;
+  Vector<scoped_refptr<RunInfo>> runs_;
   scoped_refptr<const SimpleFontData> primary_font_;
   mutable std::unique_ptr<CharacterPositionData> character_position_;
 
@@ -417,6 +426,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class HarfBuzzShaper;
   friend class ShapeResultBuffer;
   friend class ShapeResultBloberizer;
+  friend class ShapeResultView;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

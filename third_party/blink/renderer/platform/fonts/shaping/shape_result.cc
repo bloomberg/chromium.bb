@@ -42,6 +42,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/glyph_bounds_accumulator.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
@@ -362,7 +363,7 @@ void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t glyph_id,
   this->safe_to_break_before = safe_to_break_before;
 }
 
-ShapeResult::ShapeResult(const SimpleFontData* font_data,
+ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
                          unsigned num_characters,
                          TextDirection direction)
     : width_(0),
@@ -388,7 +389,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
       has_vertical_offsets_(other.has_vertical_offsets_) {
   runs_.ReserveCapacity(other.runs_.size());
   for (const auto& run : other.runs_)
-    runs_.push_back(std::make_unique<RunInfo>(*run));
+    runs_.push_back(run->Create(*run.get()));
 }
 
 ShapeResult::~ShapeResult() = default;
@@ -710,12 +711,10 @@ float ShapeResult::ForEachGlyph(float initial_advance,
   return total_advance;
 }
 
-namespace {
-
-inline unsigned CountGraphemesInCluster(const UChar* str,
-                                        unsigned str_length,
-                                        uint16_t start_index,
-                                        uint16_t end_index) {
+unsigned ShapeResult::CountGraphemesInCluster(const UChar* str,
+                                              unsigned str_length,
+                                              uint16_t start_index,
+                                              uint16_t end_index) {
   if (start_index > end_index)
     std::swap(start_index, end_index);
   uint16_t length = end_index - start_index;
@@ -731,8 +730,6 @@ inline unsigned CountGraphemesInCluster(const UChar* str,
   }
   return std::max(0, num_graphemes);
 }
-
-}  // anonymous namespace
 
 float ShapeResult::ForEachGraphemeClusters(const StringView& text,
                                            float initial_advance,
@@ -913,66 +910,6 @@ namespace {
 float HarfBuzzPositionToFloat(hb_position_t value) {
   return static_cast<float>(value) / (1 << 16);
 }
-
-// This is a helper class to accumulate glyph bounding box.
-//
-// Glyph positions and bounding boxes from HarfBuzz and fonts are in physical
-// coordinate, while ShapeResult::glyph_bounding_box_ is in logical coordinate.
-// To minimize the number of conversions, this class accumulates the bounding
-// boxes in physical coordinate, and convert the accumulated box to logical.
-struct GlyphBoundsAccumulator {
-  // Construct an accumulator with the logical glyph origin.
-  explicit GlyphBoundsAccumulator(float origin) : origin(origin) {}
-
-  // The accumulated glyph bounding box in physical coordinate, until
-  // ConvertVerticalRunToLogical().
-  FloatRect bounds;
-  // The current origin, in logical coordinate.
-  float origin;
-
-  // Unite a glyph bounding box to |bounds|.
-  template <bool is_horizontal_run>
-  void Unite(const HarfBuzzRunGlyphData& glyph_data,
-             FloatRect bounds_for_glyph) {
-    if (UNLIKELY(bounds_for_glyph.IsEmpty()))
-      return;
-
-    // Glyphs are drawn at |origin + offset|. Move glyph_bounds to that point.
-    // All positions in hb_glyph_position_t are relative to the current point.
-    // https://behdad.github.io/harfbuzz/harfbuzz-Buffers.html#hb-glyph-position-t-struct
-    if (is_horizontal_run)
-      bounds_for_glyph.SetX(bounds_for_glyph.X() + origin);
-    else
-      bounds_for_glyph.SetY(bounds_for_glyph.Y() + origin);
-    bounds_for_glyph.Move(glyph_data.offset);
-
-    bounds.Unite(bounds_for_glyph);
-  }
-
-  // Non-template version of |Unite()|, see above.
-  void Unite(bool is_horizontal_run,
-             const HarfBuzzRunGlyphData& glyph,
-             FloatRect bounds_for_glyph) {
-    is_horizontal_run ? Unite<true>(glyph, bounds_for_glyph)
-                      : Unite<false>(glyph, bounds_for_glyph);
-  }
-
-  // Convert vertical run glyph bounding box to logical. Horizontal runs do not
-  // need conversions because physical and logical are the same.
-  void ConvertVerticalRunToLogical(const FontMetrics& font_metrics) {
-    // Convert physical glyph_bounding_box to logical.
-    bounds = bounds.TransposedRect();
-
-    // The glyph bounding box of a vertical run uses ideographic baseline.
-    // Adjust the box Y position because the bounding box of a ShapeResult uses
-    // alphabetic baseline.
-    // See diagrams of base lines at
-    // https://drafts.csswg.org/css-writing-modes-3/#intro-baselines
-    int baseline_adjust = font_metrics.Ascent(kIdeographicBaseline) -
-                          font_metrics.Ascent(kAlphabeticBaseline);
-    bounds.SetY(bounds.Y() + baseline_adjust);
-  }
-};
 
 // Checks whether it's safe to break without reshaping before the given glyph.
 bool IsSafeToBreakBefore(const hb_glyph_info_t* glyph_infos,
@@ -1165,12 +1102,12 @@ void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
   glyph_bounding_box_.Unite(bounds.bounds);
 }
 
-void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
+void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run_to_insert,
                             unsigned start_glyph,
                             unsigned num_glyphs,
                             hb_buffer_t* harfbuzz_buffer) {
   DCHECK_GT(num_glyphs, 0u);
-  std::unique_ptr<ShapeResult::RunInfo> run(std::move(run_to_insert));
+  scoped_refptr<ShapeResult::RunInfo> run(std::move(run_to_insert));
 
   if (run->IsHorizontal()) {
     // Inserting a horizontal run into a horizontal or vertical result. In both
@@ -1190,7 +1127,7 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
   InsertRun(std::move(run));
 }
 
-void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
+void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run) {
   // The runs are stored in result->m_runs in visual order. For LTR, we place
   // the run to be inserted before the next run with a bigger character
   // start index. For RTL, we place the run before the next run with a lower
@@ -1224,7 +1161,7 @@ ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     unsigned num_characters,
     TextDirection direction,
     Vector<uint16_t> safe_break_offsets) {
-  std::unique_ptr<RunInfo> run = std::make_unique<ShapeResult::RunInfo>(
+  auto run = RunInfo::Create(
       nullptr, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index,
       num_characters, num_characters);
@@ -1252,7 +1189,7 @@ void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
   if (runs_.size() == run_size_before + 1) {
     if (!run_size_before)
       return;
-    std::unique_ptr<RunInfo> new_run(std::move(runs_.back()));
+    scoped_refptr<RunInfo> new_run(std::move(runs_.back()));
     runs_.Shrink(runs_.size() - 1);
     runs_.push_front(std::move(new_run));
     return;
@@ -1260,7 +1197,7 @@ void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
 
   // |push_front| is O(n) that we should not call it multiple times.
   // Create a new list in the correct order and swap it.
-  Vector<std::unique_ptr<RunInfo>> new_runs;
+  Vector<scoped_refptr<RunInfo>> new_runs;
   new_runs.ReserveInitialCapacity(runs_.size());
   for (unsigned i = run_size_before; i < runs_.size(); i++)
     new_runs.push_back(std::move(runs_[i]));
@@ -1483,7 +1420,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   const SimpleFontData* font_data = font->PrimaryFont();
   // Tab characters are always LTR or RTL, not TTB, even when
   // isVerticalAnyUpright().
-  std::unique_ptr<ShapeResult::RunInfo> run = std::make_unique<RunInfo>(
+  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
       font_data, text_run.Rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, 0, count, count);
   float position = text_run.XPos() + position_offset;

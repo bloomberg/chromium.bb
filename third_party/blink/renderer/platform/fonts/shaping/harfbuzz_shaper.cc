@@ -336,12 +336,11 @@ void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
   // Here we need to specify glyph positions.
   BufferSlice next_slice;
   for (const BufferSlice* current_slice = &slice;;) {
-    ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
+    auto run = ShapeResult::RunInfo::Create(
         current_font, direction, canvas_rotation, script,
         current_slice->start_character_index, current_slice->num_glyphs,
         current_slice->num_characters);
-    shape_result->InsertRun(base::WrapUnique(run),
-                            current_slice->start_glyph_index,
+    shape_result->InsertRun(run, current_slice->start_glyph_index,
                             current_slice->num_glyphs, range_data->buffer);
     unsigned num_glyphs_inserted = run->NumGlyphs();
     if (num_glyphs_inserted == current_slice->num_glyphs)
