@@ -111,7 +111,9 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       else
         mi->tx_size = mbmi->tx_size;
 
-      mi->tx_type = mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)];
+      mi->tx_type =
+          (mi->skip ? 0 : mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)]);
+
       mi->cdef_level =
           cm->cdef_strengths[mbmi->cdef_strength] / CDEF_SEC_STRENGTHS;
       mi->cdef_strength =
