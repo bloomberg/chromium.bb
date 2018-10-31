@@ -52,6 +52,9 @@ const char kLinkID[] = "linkID";
 const char kTextID[] = "textID";
 const char kPageLoadedString[] = "Page loaded!";
 
+// The title of the test infobar.
+NSString* kTestInfoBarTitle = @"TestInfoBar";
+
 // Defines the visibility of an element, in relation to the toolbar.
 typedef NS_ENUM(NSInteger, ButtonVisibility) {
   ButtonVisibilityNone,
@@ -190,7 +193,9 @@ id<GREYMatcher> Spotlighted() {
 bool AddInfobar() {
   infobars::InfoBarManager* manager =
       InfoBarManagerImpl::FromWebState(chrome_test_util::GetCurrentWebState());
-  return TestInfoBarDelegate::Create(manager);
+  TestInfoBarDelegate* test_infobar_delegate =
+      new TestInfoBarDelegate(kTestInfoBarTitle);
+  return test_infobar_delegate->Create(manager);
 }
 
 // Rotate the device if it is an iPhone or change the trait collection to
@@ -577,7 +582,7 @@ void FocusOmnibox() {
                     [[EarlGrey
                         selectElementWithMatcher:
                             chrome_test_util::StaticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(kTestInfoBarTitle))]
+                                kTestInfoBarTitle)]
                         assertWithMatcher:grey_sufficientlyVisible()
                                     error:&error];
                     return error == nil;
