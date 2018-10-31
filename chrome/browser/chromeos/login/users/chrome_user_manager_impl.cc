@@ -72,6 +72,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "chromeos/login/login_state.h"
@@ -120,6 +121,8 @@ const char kDeviceLocalAccountPendingDataRemoval[] =
     "PublicAccountPendingDataRemoval";
 
 constexpr char kGoogleDotCom[] = "@google.com";
+
+constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
 
 bool FakeOwnership() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -204,9 +207,8 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
   const std::string board_name = board[0];
   if (board_name != "eve" && board_name != "nocturne")
     return;
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartBluetoothLogging();
+  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StartJob(
+      kBluetoothLoggingUpstartJob, {}, EmptyVoidDBusMethodCallback());
 }
 
 }  // namespace
