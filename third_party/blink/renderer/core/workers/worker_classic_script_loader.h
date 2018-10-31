@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -155,6 +156,9 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   mojom::IPAddressSpace response_address_space_;
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
+
+  // TODO(nhiroki): Move this to FetchClientSettingsObject.
+  AllowedByNosniff::MimeTypeCheck mime_type_check_mode_;
 };
 
 }  // namespace blink

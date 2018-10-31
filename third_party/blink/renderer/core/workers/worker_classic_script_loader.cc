@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -48,7 +47,8 @@
 namespace blink {
 
 WorkerClassicScriptLoader::WorkerClassicScriptLoader()
-    : response_address_space_(mojom::IPAddressSpace::kPublic) {}
+    : response_address_space_(mojom::IPAddressSpace::kPublic),
+      mime_type_check_mode_(AllowedByNosniff::MimeTypeCheck::kStrict) {}
 
 WorkerClassicScriptLoader::~WorkerClassicScriptLoader() {
   // If |threadable_loader_| is still working, we have to cancel it here.
@@ -66,6 +66,10 @@ void WorkerClassicScriptLoader::LoadSynchronously(
     mojom::IPAddressSpace creation_address_space) {
   url_ = url;
   execution_context_ = &execution_context;
+
+  // Impose strict MIME-type checks on importScripts(). See
+  // https://crbug.com/794548.
+  mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
 
   ResourceRequest request(url);
   request.SetHTTPMethod(http_names::kGET);
@@ -100,6 +104,20 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   url_ = url;
   execution_context_ = &execution_context;
   forbid_cross_origin_redirects_ = true;
+
+  if (execution_context.IsDocument()) {
+    // For worker creation on a document, don't impose strict MIME-type checks
+    // on the top-level worker script for backward compatibility. Note that
+    // there is a plan to deprecate legacy mime types for workers. See
+    // https://crbug.com/794548.
+    mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
+  } else {
+    // For nested workers, impose the strict MIME-type checks because the
+    // feature is new (enabled by default in M69) and there is no backward
+    // compatibility issue.
+    DCHECK(execution_context.IsWorkerGlobalScope());
+    mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
+  }
 
   ResourceRequest request(url);
   request.SetHTTPMethod(http_names::kGET);
@@ -138,7 +156,8 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     NotifyError();
     return;
   }
-  if (!AllowedByNosniff::MimeTypeAsScript(execution_context_, response)) {
+  if (!AllowedByNosniff::MimeTypeAsScript(execution_context_, response,
+                                          mime_type_check_mode_)) {
     NotifyError();
     return;
   }
