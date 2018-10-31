@@ -454,7 +454,6 @@ source_set("unified_consent_eg_tests") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/base",
