@@ -881,6 +881,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
+  void OnClipboardHostError();
 #endif
 
   // Dispatches the current state of selection on the webpage to the browser if

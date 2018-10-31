@@ -46,6 +46,8 @@ UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBuffer>::GetTag(
       return mojo_base::mojom::BigBufferDataView::Tag::BYTES;
     case mojo_base::BigBuffer::StorageType::kSharedMemory:
       return mojo_base::mojom::BigBufferDataView::Tag::SHARED_MEMORY;
+    case mojo_base::BigBuffer::StorageType::kInvalidBuffer:
+      return mojo_base::mojom::BigBufferDataView::Tag::INVALID_BUFFER;
   }
 
   NOTREACHED();
@@ -67,6 +69,13 @@ UnionTraits<mojo_base::mojom::BigBufferDataView,
 }
 
 // static
+bool UnionTraits<mojo_base::mojom::BigBufferDataView,
+                 mojo_base::BigBuffer>::invalid_buffer(mojo_base::BigBuffer&
+                                                           buffer) {
+  return true;
+}
+
+// static
 bool UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBuffer>::
     Read(mojo_base::mojom::BigBufferDataView data, mojo_base::BigBuffer* out) {
   switch (data.tag()) {
@@ -84,6 +93,10 @@ bool UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBuffer>::
       *out = mojo_base::BigBuffer(std::move(shared_memory));
       return true;
     }
+
+    case mojo_base::mojom::BigBufferDataView::Tag::INVALID_BUFFER:
+      // Always reject an invalid buffer in deserialization.
+      return false;
   }
 
   return false;
@@ -98,6 +111,8 @@ mojo_base::mojom::BigBufferDataView::Tag UnionTraits<
       return mojo_base::mojom::BigBufferDataView::Tag::BYTES;
     case mojo_base::BigBuffer::StorageType::kSharedMemory:
       return mojo_base::mojom::BigBufferDataView::Tag::SHARED_MEMORY;
+    case mojo_base::BigBuffer::StorageType::kInvalidBuffer:
+      return mojo_base::mojom::BigBufferDataView::Tag::INVALID_BUFFER;
   }
 
   NOTREACHED();
@@ -116,6 +131,13 @@ mojo_base::internal::BigBufferSharedMemoryRegion& UnionTraits<
     mojo_base::mojom::BigBufferDataView,
     mojo_base::BigBufferView>::shared_memory(mojo_base::BigBufferView& view) {
   return view.shared_memory();
+}
+
+// static
+bool UnionTraits<mojo_base::mojom::BigBufferDataView,
+                 mojo_base::BigBufferView>::
+    invalid_buffer(mojo_base::BigBufferView& buffer) {
+  return true;
 }
 
 // static
@@ -138,6 +160,10 @@ bool UnionTraits<
       out->SetSharedMemory(std::move(shared_memory));
       return true;
     }
+
+    case mojo_base::mojom::BigBufferDataView::Tag::INVALID_BUFFER:
+      // Always reject an invalid buffer in deserialization.
+      return false;
   }
 
   return false;
