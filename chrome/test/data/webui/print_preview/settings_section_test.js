@@ -1157,6 +1157,7 @@ cr.define('settings_sections_tests', function() {
         // observers only check for |capabilities|, so the order is important.
         page.set('destination_.policies', policies);
         page.set('destination_.capabilities', capabilities);
+        page.$$('print-preview-model').applyDestinationSpecificPolicies();
         assertEquals(
             subtestParams.expectedValue, page.getSettingValue('color'));
         assertEquals(subtestParams.expectedHidden, colorElement.hidden);
