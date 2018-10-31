@@ -1013,7 +1013,11 @@ const IDNTestCase idn_cases[] = {
     // Test that top domains whose skeletons are the same as the domain name are
     // handled properly. In this case, tést.net should match test.net top
     // domain.
-    {"xn--tst-bma.net", L"t\x00e9st.net", false}};
+    {"xn--tst-bma.net", L"t\x00e9st.net", false},
+
+    // Modifier-letter-voicing should be blocked (wwwˬtest.com).
+    {"xn--wwwtest-2be.com", L"www\x02ectest.com", false},
+};
 
 struct AdjustOffsetCase {
   size_t input_offset;
