@@ -34,6 +34,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/resource_scheduler_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1917,6 +1918,178 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayNotSet) {
     EXPECT_EQ(i < max_low_priority_requests_allowed + 1,
               lows_singlehost[i]->started());
   }
+}
+
+// Verify that when the timer for dispatching long queued requests is fired,
+// then the long queued requests are dispatched to the network.
+TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerFires) {
+  base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
+  InitializeMaxQueuingDelayExperiment(max_queuing_time);
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  InitializeScheduler();
+  // The limit will matter only once the page has a body, since delayable
+  // requests are not loaded before that.
+  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
+
+  // Throw in one high priority request to ensure that it does not matter once
+  // a body exists.
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high->started());
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // (ECT) 2G. For ECT of 2G, number of low priority requests allowed are:
+  // 8 - 3 * count of high priority requests in flight. That expression computes
+  // to 8 - 3 * 1  = 5.
+  const int max_low_priority_requests_allowed = 5;
+
+  std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
+  // Queue up to the maximum limit. Use different host names to prevent the
+  // per host limit from kicking in.
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    // Keep unique hostnames to prevent the per host limit from kicking in.
+    std::string url = "http://host" + base::IntToString(i) + "/low";
+    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_EQ(i < max_low_priority_requests_allowed,
+              lows_singlehost[i]->started());
+  }
+
+  // Advance the clock by more than |max_queuing_time|.
+  tick_clock_.SetNowTicks(base::DefaultTickClock::GetInstance()->NowTicks() +
+                          max_queuing_time + base::TimeDelta::FromSeconds(1));
+
+  // Since the requests have been queued for too long, they should now be
+  // dispatched. Trigger the calculation of queuing time by calling
+  // DispatchLongQueuedRequestsForTesting().
+  scheduler()->DispatchLongQueuedRequestsForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    EXPECT_TRUE(lows_singlehost[i]->started());
+  }
+}
+
+// Verify that when the timer for dispatching long queued requests is not fired,
+// then the long queued requests are not dispatched to the network.
+TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerNotFired) {
+  base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
+  InitializeMaxQueuingDelayExperiment(max_queuing_time);
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  InitializeScheduler();
+  // The limit will matter only once the page has a body, since delayable
+  // requests are not loaded before that.
+  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
+
+  // Throw in one high priority request to ensure that it does not matter once
+  // a body exists.
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high->started());
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // (ECT) 2G. For ECT of 2G, number of low priority requests allowed are:
+  // 8 - 3 * count of high priority requests in flight. That expression computes
+  // to 8 - 3 * 1  = 5.
+  const int max_low_priority_requests_allowed = 5;
+
+  std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
+  // Queue up to the maximum limit. Use different host names to prevent the
+  // per host limit from kicking in.
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    // Keep unique hostnames to prevent the per host limit from kicking in.
+    std::string url = "http://host" + base::IntToString(i) + "/low";
+    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_EQ(i < max_low_priority_requests_allowed,
+              lows_singlehost[i]->started());
+  }
+
+  // Advance the clock by more than |max_queuing_time|.
+  tick_clock_.SetNowTicks(base::DefaultTickClock::GetInstance()->NowTicks() +
+                          max_queuing_time + base::TimeDelta::FromSeconds(1));
+
+  // Since the requests have been queued for too long, they are now eligible for
+  // disptaching. However, since the timer is not fired, the requests would not
+  // be dispatched.
+  base::RunLoop().RunUntilIdle();
+
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    EXPECT_EQ(i < max_low_priority_requests_allowed,
+              lows_singlehost[i]->started());
+  }
+}
+
+// Verify that the timer to dispatch long queued requests starts only when there
+// are requests in-flight.
+TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      features::kUnthrottleRequestsAfterLongQueuingDelay.name, "");
+  base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
+  InitializeMaxQueuingDelayExperiment(max_queuing_time);
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // (ECT) 2G. For ECT of 2G, number of low priority requests allowed are:
+  // 8 - 3 * count of high priority requests in flight. That expression computes
+  // to 8 - 3 * 1  = 5.
+  const int max_low_priority_requests_allowed = 5;
+
+  std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
+
+  InitializeScheduler();
+  EXPECT_FALSE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+  // The limit will matter only once the page has a body, since delayable
+  // requests are not loaded before that.
+  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
+
+  // Throw in one high priority request to ensure that it does not matter once
+  // a body exists.
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high->started());
+
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    // Keep unique hostnames to prevent the per host limit from kicking in.
+    std::string url = "http://host" + base::IntToString(i) + "/low";
+    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_EQ(i < max_low_priority_requests_allowed,
+              lows_singlehost[i]->started());
+  }
+  // Timer should be running since there are pending requests.
+  EXPECT_TRUE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+
+  // Simulate firing of timer. The timer should restart since there is at least
+  // one request in flight.
+  scheduler()->DispatchLongQueuedRequestsForTesting();
+  EXPECT_TRUE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+
+  // Simulate firing of timer. The timer should not restart since there is no
+  // request in flight.
+  high.reset();
+  for (auto& request : lows_singlehost) {
+    request.reset();
+  }
+  scheduler()->DispatchLongQueuedRequestsForTesting();
+  EXPECT_FALSE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+
+  // Start a new set of requests, and verify timer still works correctly.
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high2->started());
+  // Timer not started because there is no pending requests.
+  EXPECT_FALSE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+
+  // Start some requests which end up pending.
+  for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
+    // Keep unique hostnames to prevent the per host limit from kicking in.
+    std::string url = "http://host" + base::IntToString(i) + "/low";
+    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+  }
+  EXPECT_TRUE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
 }
 
 }  // unnamed namespace

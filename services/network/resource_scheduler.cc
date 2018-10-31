@@ -85,6 +85,7 @@ enum class RequestStartTrigger {
   SPDY_PROXY_DETECTED,
   REQUEST_REPRIORITIZED,
   START_WAS_YIELDED,
+  LONG_QUEUED_REQUESTS_TIMER_FIRED,
 };
 
 const char* RequestStartTriggerString(RequestStartTrigger trigger) {
@@ -105,9 +106,9 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
       return "REQUEST_REPRIORITIZED";
     case RequestStartTrigger::START_WAS_YIELDED:
       return "START_WAS_YIELDED";
+    case RequestStartTrigger::LONG_QUEUED_REQUESTS_TIMER_FIRED:
+      return "LONG_QUEUED_REQUESTS_TIMER_FIRED";
   }
-  NOTREACHED();
-  return "Unknown";
 }
 
 }  // namespace
@@ -127,6 +128,15 @@ static const net::RequestPriority kDelayablePriorityThreshold = net::MEDIUM;
 // The number of in-flight layout-blocking requests above which all delayable
 // requests should be blocked.
 static const size_t kInFlightNonDelayableRequestCountPerClientThreshold = 1;
+
+// Duration after which the timer to dispatch long queued requests should fire.
+// The request needs to be queued for at least 15 seconds before it can be
+// dispatched. Choosing 5 seconds as the checking interval ensures that the
+// queue is not checked too frequently. The interval is also not too long, so
+// we do not expect too many long queued requests to go on the network at the
+// same time.
+constexpr base::TimeDelta kLongQueuedRequestsDispatchPeriodicity =
+    base::TimeDelta::FromSeconds(5);
 
 struct ResourceScheduler::RequestPriorityParams {
   RequestPriorityParams()
@@ -501,6 +511,13 @@ class ResourceScheduler::Client {
                     ? network_quality_estimator_->GetEffectiveConnectionType()
                     : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
+
+  void OnLongQueuedRequestsDispatchTimerFired() {
+    LoadAnyStartablePendingRequests(
+        RequestStartTrigger::LONG_QUEUED_REQUESTS_TIMER_FIRED);
+  }
+
+  bool HasNoPendingRequests() const { return pending_requests_.IsEmpty(); }
 
  private:
   enum ShouldStartReqResult {
@@ -1021,6 +1038,8 @@ ResourceScheduler::ResourceScheduler(bool enabled,
   // Don't run the two experiments together.
   if (priority_requests_delayable_ && head_priority_requests_delayable_)
     priority_requests_delayable_ = false;
+
+  StartLongQueuedRequestsDispatchTimerIfNeeded();
 }
 
 ResourceScheduler::~ResourceScheduler() {
@@ -1054,6 +1073,10 @@ ResourceScheduler::ScheduleRequest(int child_id,
 
   Client* client = it->second.get();
   client->ScheduleRequest(*url_request, request.get());
+
+  if (!IsLongQueuedRequestsDispatchTimerRunning())
+    StartLongQueuedRequestsDispatchTimerIfNeeded();
+
   return std::move(request);
 }
 
@@ -1086,6 +1109,7 @@ void ResourceScheduler::OnClientCreated(
 
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ClientId client_id = MakeClientId(child_id, route_id);
   ClientMap::iterator it = client_map_.find(client_id);
   // TODO(crbug.com/873959): Turns this CHECK to DCHECK once the investigation
@@ -1095,6 +1119,10 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   Client* client = it->second.get();
   // TODO(crbug.com/873959): Remove this CHECK once the investigation is done.
   CHECK(client);
+  DCHECK(!base::FeatureList::IsEnabled(
+             features::kUnthrottleRequestsAfterLongQueuingDelay) ||
+         client->HasNoPendingRequests() ||
+         IsLongQueuedRequestsDispatchTimerRunning());
   // ResourceDispatcherHost cancels all requests except for cross-renderer
   // navigations, async revalidations and detachable requests after
   // OnClientDeleted() returns.
@@ -1144,6 +1172,40 @@ ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
   if (client_it == client_map_.end())
     return nullptr;
   return client_it->second.get();
+}
+
+void ResourceScheduler::StartLongQueuedRequestsDispatchTimerIfNeeded() {
+  if (!base::FeatureList::IsEnabled(
+          features::kUnthrottleRequestsAfterLongQueuingDelay)) {
+    return;
+  }
+
+  bool pending_request_found = false;
+  for (const auto& client : client_map_) {
+    if (!client.second->HasNoPendingRequests()) {
+      pending_request_found = true;
+      break;
+    }
+  }
+
+  // If there are no pending requests, then do not start the timer. This ensures
+  // that we are not running the periodic timer when Chrome is not being
+  // actively used (e.g., it's in background).
+  if (!pending_request_found)
+    return;
+
+  long_queued_requests_dispatch_timer_.Start(
+      FROM_HERE, kLongQueuedRequestsDispatchPeriodicity, this,
+      &ResourceScheduler::OnLongQueuedRequestsDispatchTimerFired);
+}
+
+void ResourceScheduler::OnLongQueuedRequestsDispatchTimerFired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& client : client_map_)
+    client.second->OnLongQueuedRequestsDispatchTimerFired();
+
+  StartLongQueuedRequestsDispatchTimerIfNeeded();
 }
 
 void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
@@ -1202,6 +1264,11 @@ ResourceScheduler::ClientId ResourceScheduler::MakeClientId(int child_id,
   return (static_cast<ResourceScheduler::ClientId>(child_id) << 32) | route_id;
 }
 
+bool ResourceScheduler::IsLongQueuedRequestsDispatchTimerRunning() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return long_queued_requests_dispatch_timer_.IsRunning();
+}
+
 void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(
     const ResourceSchedulerParamsManager& resource_scheduler_params_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1209,6 +1276,11 @@ void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(
   for (const auto& pair : client_map_) {
     pair.second->UpdateParamsForNetworkQuality();
   }
+}
+
+void ResourceScheduler::DispatchLongQueuedRequestsForTesting() {
+  long_queued_requests_dispatch_timer_.Stop();
+  OnLongQueuedRequestsDispatchTimerFired();
 }
 
 }  // namespace network
