@@ -220,14 +220,22 @@ LayoutTestContentBrowserClient::CreateWindowForPictureInPicture(
   return TestOverlayWindow::Create(controller);
 }
 
-bool LayoutTestContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  if (ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
-          browser_context, effective_site_url))
-    return true;
-  url::Origin origin = url::Origin::Create(effective_site_url);
-  return base::MatchPattern(origin.Serialize(), "*oopif.test");
+std::vector<url::Origin>
+LayoutTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
+  // Unconditionally (with and without --site-per-process) isolate some origins
+  // that may be used by tests that only make sense in presence of an OOPIF.
+  std::vector<std::string> origins_to_isolate = {
+      "http://devtools.oopif.test:8000/", "http://devtools.oopif.test:8003/",
+      "http://devtools-extensions.oopif.test:8000/",
+      "https://devtools.oopif.test:8443/",
+  };
+
+  // Translate std::vector<std::string> into std::vector<url::Origin>.
+  std::vector<url::Origin> result;
+  result.reserve(origins_to_isolate.size());
+  for (const std::string& s : origins_to_isolate)
+    result.push_back(url::Origin::Create(GURL(s)));
+  return result;
 }
 
 PlatformNotificationService*
