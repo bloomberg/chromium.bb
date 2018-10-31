@@ -235,7 +235,8 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, Basic) {
+// Disabled due to flake. https://crbug.com/900631
+IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, DISABLED_Basic) {
   // Initially, the policy has the first value.
   EXPECT_EQ(kTestPolicyValue, GetTestPolicyValue());
 
