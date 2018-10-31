@@ -489,6 +489,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #endif
 #if defined(OS_MACOSX)
     {"tabsToLinks", IDS_SETTINGS_TABS_TO_LINKS_PREF},
+    {"warnBeforeQuitting", IDS_SETTINGS_WARN_BEFORE_QUITTING_PREF},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

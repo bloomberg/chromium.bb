@@ -576,6 +576,9 @@
     <message name="IDS_SETTINGS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
       Pressing Tab on a webpage highlights links, as well as form fields
     </message>
+    <message name="IDS_SETTINGS_WARN_BEFORE_QUITTING_PREF" desc="The documentation string of the 'Warn Before Quitting' preference which is also available in the Chrome app menu.">
+      Show a warning before quitting with ⌘Q
+    </message>
   </if>
 
   <!-- Common -->
