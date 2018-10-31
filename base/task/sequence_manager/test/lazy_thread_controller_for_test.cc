@@ -5,13 +5,14 @@
 #include "base/task/sequence_manager/test/lazy_thread_controller_for_test.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/time/default_tick_clock.h"
 
 namespace base {
 namespace sequence_manager {
 
 LazyThreadControllerForTest::LazyThreadControllerForTest()
-    : ThreadControllerImpl(MessageLoop::current(),
+    : ThreadControllerImpl(MessageLoopCurrent::Get()->ToMessageLoopDeprecated(),
                            nullptr,
                            DefaultTickClock::GetInstance()),
       thread_ref_(PlatformThread::CurrentRef()) {
@@ -25,7 +26,7 @@ void LazyThreadControllerForTest::EnsureMessageLoop() {
   if (message_loop_)
     return;
   DCHECK(RunsTasksInCurrentSequence());
-  message_loop_ = MessageLoop::current();
+  message_loop_ = MessageLoopCurrent::Get()->ToMessageLoopDeprecated();
   DCHECK(message_loop_);
   task_runner_ = message_loop_->task_runner();
   if (pending_observer_) {
@@ -84,7 +85,9 @@ void LazyThreadControllerForTest::RemoveNestingObserver(
     pending_observer_ = false;
     return;
   }
-  if (MessageLoop::current() != message_loop_)
+  // TODO(altimin): We can't use |message_loop_->IsBoundToCurrentThread()| here
+  // because |message_loop_| is probably dead by now.
+  if (MessageLoopCurrent::Get()->ToMessageLoopDeprecated() != message_loop_)
     return;
   RunLoop::RemoveNestingObserverOnCurrentThread(this);
 }
@@ -115,7 +118,7 @@ void LazyThreadControllerForTest::SetDefaultTaskRunner(
 
 void LazyThreadControllerForTest::RestoreDefaultTaskRunner() {
   pending_default_task_runner_ = nullptr;
-  if (HasMessageLoop() && MessageLoop::current() == message_loop_)
+  if (HasMessageLoop() && message_loop_->IsBoundToCurrentThread())
     ThreadControllerImpl::RestoreDefaultTaskRunner();
 }
 

@@ -5,6 +5,8 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
 
+#include <ostream>
+
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,9 +17,21 @@
 #include "base/task/task_observer.h"
 #include "build/build_config.h"
 
+namespace web {
+class TestWebThreadBundle;
+}
+
 namespace base {
 
 class MessageLoop;
+
+namespace sequence_manager {
+class LazyThreadControllerForTest;
+
+namespace internal {
+class SequenceManagerImpl;
+}
+}  // namespace sequence_manager
 
 // MessageLoopCurrent is a proxy to the public interface of the MessageLoop
 // bound to the thread it's obtained on.
@@ -42,10 +56,21 @@ class BASE_EXPORT MessageLoopCurrent {
   // copy/move around.
   MessageLoopCurrent(const MessageLoopCurrent& other) = default;
   MessageLoopCurrent(MessageLoopCurrent&& other) = default;
+  MessageLoopCurrent& operator=(const MessageLoopCurrent& other) = default;
+
+  // TODO(altimin): Remove this. Currently it's used in places where the caller
+  // has access to MessageLoop due to owning it.
+  MessageLoopCurrent& operator=(MessageLoop* message_loop);
+
+  bool operator==(const MessageLoopCurrent& other) const;
 
   // Returns a proxy object to interact with the MessageLoop running the
   // current thread. It must only be used on the thread it was obtained.
   static MessageLoopCurrent Get();
+
+  // Return an empty MessageLoopCurrent. No methods should be called on this
+  // object.
+  static MessageLoopCurrent GetNull();
 
   // Returns true if the current thread is running a MessageLoop. Prefer this to
   // verifying the boolean value of Get() (so that Get() can ultimately DCHECK
@@ -57,10 +82,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // MessageLoop*.
   MessageLoopCurrent* operator->() { return this; }
   explicit operator bool() const { return !!current_; }
-
-  // TODO(gab): Migrate the types of variables that store MessageLoop::current()
-  // and remove this implicit cast back to MessageLoop*.
-  operator MessageLoop*() const { return current_; }
 
   // A DestructionObserver is notified when the current MessageLoop is being
   // destroyed.  These observers are notified prior to MessageLoop::current()
@@ -182,7 +203,24 @@ class BASE_EXPORT MessageLoopCurrent {
  protected:
   explicit MessageLoopCurrent(MessageLoop* current) : current_(current) {}
 
-  MessageLoop* const current_;
+  friend class MessageLoop;
+  friend class MessagePumpLibeventTest;
+  friend class ScheduleWorkTest;
+  friend class Thread;
+  friend class sequence_manager::LazyThreadControllerForTest;
+  friend class sequence_manager::internal::SequenceManagerImpl;
+  friend struct std::hash<MessageLoopCurrent>;
+  friend class MessageLoopTaskRunnerTest;
+  friend class web::TestWebThreadBundle;
+
+  static MessagePump* GetMessagePumpForMessageLoop(MessageLoop* loop);
+
+  // Return the pointer to MessageLoop for internal needs.
+  // All other callers should call MessageLoopCurrent::Get().
+  // TODO(altimin): Remove this.
+  MessageLoop* ToMessageLoopDeprecated() const { return current_; }
+
+  MessageLoop* current_;
 };
 
 #if !defined(OS_NACL)
@@ -293,5 +331,16 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 };
 
 }  // namespace base
+
+namespace std {
+
+template <>
+struct hash<base::MessageLoopCurrent> {
+  size_t operator()(const base::MessageLoopCurrent& loop) {
+    return std::hash<void*>()(loop.current_);
+  }
+};
+
+}  // namespace std
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_

@@ -142,7 +142,7 @@ class WrappedCertVerifierForIOThreadTesting : public net::CertVerifier {
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
+  net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 }
 #endif
 

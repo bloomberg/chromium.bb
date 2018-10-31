@@ -67,10 +67,10 @@ class NET_EXPORT CertDatabase {
   void RemoveObserver(Observer* observer);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Configures the current message loop to observe and forward events from
-  // Keychain services. The MessageLoop must have an associated CFRunLoop,
+  // Start observing and forwarding events from Keychain services on the
+  // current thread. Current thread must have an associated CFRunLoop,
   // which means that this must be called from a MessageLoop of TYPE_UI.
-  void SetMessageLoopForKeychainEvents();
+  void StartListeningForKeychainEvents();
 #endif
 
   // Synthetically injects notifications to all observers. In general, this

@@ -13,7 +13,6 @@
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/surface_layer.h"
@@ -174,7 +173,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   const scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  base::MessageLoop* main_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   base::WeakPtr<WebMediaPlayerMS> player_;
 

@@ -20,6 +20,12 @@ using base::android::JavaParamRef;
 
 namespace cronet {
 
+namespace {
+
+base::MessageLoop* g_message_loop = nullptr;
+
+}  // namespace
+
 jint JNI_CronetTestUtil_GetLoadFlags(JNIEnv* env,
                                      const JavaParamRef<jclass>& jcaller,
                                      const jlong jurl_request_adapter) {
@@ -71,8 +77,8 @@ net::URLRequest* TestUtil::GetURLRequest(jlong jrequest_adapter) {
 }
 
 static void PrepareNetworkThreadOnNetworkThread(jlong jcontext_adapter) {
-  (new base::MessageLoopForIO())
-      ->SetTaskRunner(TestUtil::GetTaskRunner(jcontext_adapter));
+  g_message_loop = new base::MessageLoopForIO();
+  g_message_loop->SetTaskRunner(TestUtil::GetTaskRunner(jcontext_adapter));
 }
 
 // Tests need to call into libcronet.so code on libcronet.so threads.
@@ -92,7 +98,10 @@ void JNI_CronetTestUtil_PrepareNetworkThread(
 }
 
 static void CleanupNetworkThreadOnNetworkThread() {
-  delete base::MessageLoop::current();
+  DCHECK(g_message_loop);
+  DCHECK(g_message_loop->IsBoundToCurrentThread());
+  delete g_message_loop;
+  g_message_loop = nullptr;
 }
 
 // Called from Java CronetTestUtil class.

@@ -320,11 +320,6 @@ MessageLoop::~MessageLoop() {
 }
 
 // static
-MessageLoopCurrent MessageLoop::current() {
-  return MessageLoopCurrent::Get();
-}
-
-// static
 bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
   if (message_pump_for_ui_factory_)
     return false;
@@ -388,7 +383,7 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
 }
 
 bool MessageLoop::IsBoundToCurrentThread() const {
-  return GetCurrentDeprecated() == this;
+  return MessageLoopCurrent::Get()->ToMessageLoopDeprecated() == this;
 }
 
 void MessageLoop::SetAddQueueTimeToTasks(bool enable) {

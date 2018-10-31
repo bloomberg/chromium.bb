@@ -195,8 +195,8 @@ void WebMainLoop::InitializeMainThread() {
   base::PlatformThread::SetName("CrWebMain");
 
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(
-      new WebThreadImpl(WebThread::UI, base::MessageLoop::current()));
+  main_thread_.reset(new WebThreadImpl(
+      WebThread::UI, ios_global_state::GetMainThreadMessageLoop()));
 }
 
 int WebMainLoop::WebThreadsStarted() {

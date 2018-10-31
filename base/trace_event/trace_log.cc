@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
@@ -248,26 +247,29 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
       generation_(trace_log->generation()) {
   // ThreadLocalEventBuffer is created only if the thread has a message loop, so
   // the following message_loop won't be NULL.
-  MessageLoop* message_loop = MessageLoop::current();
-  message_loop->AddDestructionObserver(this);
+  MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   // This is to report the local memory usage when memory-infra is enabled.
   MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ThreadLocalEventBuffer", ThreadTaskRunnerHandle::Get());
 
+  int thread_id = static_cast<int>(PlatformThread::CurrentId());
+
   AutoLock lock(trace_log->lock_);
-  trace_log->thread_message_loops_.insert(message_loop);
+  trace_log->thread_task_runners_[thread_id] = ThreadTaskRunnerHandle::Get();
 }
 
 TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
   CheckThisIsCurrentBuffer();
-  MessageLoop::current()->RemoveDestructionObserver(this);
+  MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
   MemoryDumpManager::GetInstance()->UnregisterDumpProvider(this);
 
   {
     AutoLock lock(trace_log_->lock_);
     FlushWhileLocked();
-    trace_log_->thread_message_loops_.erase(MessageLoop::current());
+
+    int thread_id = static_cast<int>(PlatformThread::CurrentId());
+    trace_log_->thread_task_runners_.erase(thread_id);
   }
   trace_log_->thread_local_event_buffer_.Set(nullptr);
 }
@@ -885,16 +887,15 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
   }
 
   int gen = generation();
-  // Copy of thread_message_loops_ to be used without locking.
-  std::vector<scoped_refptr<SingleThreadTaskRunner>>
-      thread_message_loop_task_runners;
+  // Copy of thread_task_runners_ to be used without locking.
+  std::vector<scoped_refptr<SingleThreadTaskRunner>> task_runners;
   {
     AutoLock lock(lock_);
     DCHECK(!flush_task_runner_);
     flush_task_runner_ = SequencedTaskRunnerHandle::IsSet()
                              ? SequencedTaskRunnerHandle::Get()
                              : nullptr;
-    DCHECK(thread_message_loops_.empty() || flush_task_runner_);
+    DCHECK(thread_task_runners_.empty() || flush_task_runner_);
     flush_output_callback_ = cb;
 
     if (thread_shared_chunk_) {
@@ -902,12 +903,12 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
                                   std::move(thread_shared_chunk_));
     }
 
-    for (MessageLoop* loop : thread_message_loops_)
-      thread_message_loop_task_runners.push_back(loop->task_runner());
+    for (const auto& it : thread_task_runners_)
+      task_runners.push_back(it.second);
   }
 
-  if (!thread_message_loop_task_runners.empty()) {
-    for (auto& task_runner : thread_message_loop_task_runners) {
+  if (!task_runners.empty()) {
+    for (auto& task_runner : task_runners) {
       task_runner->PostTask(
           FROM_HERE, BindOnce(&TraceLog::FlushCurrentThread, Unretained(this),
                               gen, discard_events));
@@ -967,7 +968,7 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
 
     previous_logged_events.swap(logged_events_);
     UseNextTraceBuffer();
-    thread_message_loops_.clear();
+    thread_task_runners_.clear();
 
     flush_task_runner_ = nullptr;
     flush_output_callback = flush_output_callback_;
@@ -1031,7 +1032,7 @@ void TraceLog::FlushCurrentThread(int generation, bool discard_events) {
     AutoLock lock(lock_);
     cached_flush_task_runner = flush_task_runner_;
     if (!CheckGeneration(generation) || !flush_task_runner_ ||
-        !thread_message_loops_.empty())
+        !thread_task_runners_.empty())
       return;
   }
   cached_flush_task_runner->PostTask(
@@ -1052,9 +1053,9 @@ void TraceLog::OnFlushTimeout(int generation, bool discard_events) {
            "If this happens stably for some thread, please call "
            "TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop() from "
            "the thread to avoid its trace events from being lost.";
-    for (auto it = thread_message_loops_.begin();
-         it != thread_message_loops_.end(); ++it) {
-      LOG(WARNING) << "Thread: " << (*it)->GetThreadName();
+    for (const auto& it : thread_task_runners_) {
+      LOG(WARNING) << "Thread: "
+                   << ThreadIdNameManager::GetInstance()->GetName(it.first);
     }
   }
   FinishFlush(generation, discard_events);

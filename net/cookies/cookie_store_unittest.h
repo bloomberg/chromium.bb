@@ -120,8 +120,6 @@ class CookieStoreTest : public testing::Test {
     // have a message loop.
     if (!base::MessageLoopCurrent::Get())
       message_loop_.reset(new base::MessageLoop);
-    weak_factory_.reset(new base::WeakPtrFactory<base::MessageLoop>(
-        base::MessageLoopCurrent::Get()));
   }
 
   // Helper methods for the asynchronous Cookie Store API that call the
@@ -348,7 +346,6 @@ class CookieStoreTest : public testing::Test {
   const CookieURLHelper http_baz_com_;
   const CookieURLHelper http_bar_com_;
 
-  std::unique_ptr<base::WeakPtrFactory<base::MessageLoop>> weak_factory_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
  private:
