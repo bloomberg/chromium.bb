@@ -143,7 +143,8 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     SigninManagerForTest* signin_manager,
     FakeGaiaCookieManagerService* gaia_cookie_manager_service,
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
-    IdentityManager* identity_manager) {
+    IdentityManager* identity_manager)
+    : weak_ptr_factory_(this) {
   if (dependencies_owner) {
     DCHECK(!(account_tracker_service || token_service || signin_manager ||
              gaia_cookie_manager_service || identity_manager));
@@ -333,7 +334,7 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
-                     base::Unretained(this), account_id));
+                     weak_ptr_factory_.GetWeakPtr(), account_id));
 }
 
 void IdentityTestEnvironment::HandleOnAccessTokenRequested(
