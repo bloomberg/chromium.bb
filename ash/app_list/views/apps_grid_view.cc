@@ -1032,9 +1032,7 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   if (!contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
       (event->type() == ui::ET_GESTURE_TAP ||
        event->type() == ui::ET_GESTURE_LONG_PRESS)) {
-    GridIndex nearest_tile_index =
-        GetNearestTileIndexForPoint(event->location());
-    if (IsValidIndex(nearest_tile_index))
+    if (EventIsBetweenOccupiedTiles(event))
       event->SetHandled();
     return;
   }
@@ -1061,6 +1059,16 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
       (folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN)) {
     event->SetHandled();
   }
+}
+
+bool AppsGridView::OnMousePressed(const ui::MouseEvent& event) {
+  return !contents_view_->app_list_view()
+              ->IsHomeLauncherEnabledInTabletMode() &&
+         event.IsLeftMouseButton() && EventIsBetweenOccupiedTiles(&event);
+}
+
+bool AppsGridView::EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event) {
+  return IsValidIndex(GetNearestTileIndexForPoint(event->location()));
 }
 
 void AppsGridView::Update() {
