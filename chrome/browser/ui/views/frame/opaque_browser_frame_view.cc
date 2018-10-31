@@ -639,14 +639,17 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 
 SkColor OpaqueBrowserFrameView::GetReadableFrameForegroundColor(
     ActiveState active_state) const {
+  const SkColor frame_color = GetFrameColor(active_state);
   if (browser_view()->IsBrowserTypeHostedApp()) {
-    base::Optional<SkColor> theme_color =
-        browser_view()->browser()->hosted_app_controller()->GetThemeColor();
-    if (theme_color)
-      return color_utils::GetThemedAssetColor(*theme_color);
+    const bool has_site_theme = browser_view()
+                                    ->browser()
+                                    ->hosted_app_controller()
+                                    ->GetThemeColor()
+                                    .has_value();
+    if (has_site_theme && !platform_observer_->IsUsingSystemTheme())
+      return color_utils::GetThemedAssetColor(frame_color);
   }
-  return color_utils::GetReadableColor(kTitleBarFeatureColor,
-                                       GetFrameColor(active_state));
+  return color_utils::GetReadableColor(kTitleBarFeatureColor, frame_color);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(

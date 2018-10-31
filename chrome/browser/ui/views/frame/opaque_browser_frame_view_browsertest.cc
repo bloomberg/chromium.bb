@@ -7,6 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -82,6 +84,19 @@ IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, NoThemeColor) {
   EXPECT_EQ(hosted_app_button_container_->active_color_for_testing(),
             SK_ColorBLACK);
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(browser()->profile());
+  theme_service->UseSystemTheme();
+  ASSERT_TRUE(theme_service->UsingSystemTheme());
+  ASSERT_TRUE(InstallAndLaunchHostedApp(SK_ColorBLACK));
+
+  EXPECT_EQ(hosted_app_button_container_->active_color_for_testing(),
+            SK_ColorBLACK);
+}
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, LightThemeColor) {
   if (!InstallAndLaunchHostedApp(SK_ColorYELLOW))
