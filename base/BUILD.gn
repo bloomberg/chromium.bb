@@ -303,6 +303,7 @@ jumbo_component("base") {
     "files/platform_file.h",
     "files/scoped_file.cc",
     "files/scoped_file.h",
+    "files/scoped_file_android.cc",
     "files/scoped_temp_dir.cc",
     "files/scoped_temp_dir.h",
     "format_macros.h",
