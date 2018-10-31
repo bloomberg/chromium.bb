@@ -37,11 +37,16 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   // web::WebStateObserver overrides:
   void WebStateDestroyed(web::WebState* web_state) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
 
   // Enable or disable the tab helper.
   void SetActive(bool active);
+
+  // Sets the NTP's NavigationItem title to the appropriate string.
+  void UpdatePendingItemTitle();
 
   // Used to present and dismiss the NTP.
   __weak id<NewTabPageTabHelperDelegate> delegate_ = nil;
