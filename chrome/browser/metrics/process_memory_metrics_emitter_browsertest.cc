@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -49,6 +51,21 @@ using extensions::TestExtensionDir;
 #endif
 
 using UkmEntry = ukm::builders::Memory_Experimental;
+
+// Returns the number of renderers associated with top-level frames in
+// |browser|. There can be other renderers in the process (e.g. spare renderer).
+int GetNumRenderers(Browser* browser) {
+  // Since multiple tabs can be hosted in the same process, RenderProcessHosts
+  // need to be deduped.
+  std::set<content::RenderProcessHost*> render_process_hosts;
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+    render_process_hosts.insert(browser->tab_strip_model()
+                                    ->GetWebContentsAt(i)
+                                    ->GetSiteInstance()
+                                    ->GetProcess());
+  }
+  return static_cast<int>(render_process_hosts.size());
+}
 
 void RequestGlobalDumpCallback(base::Closure quit_closure,
                                bool success,
@@ -117,15 +134,13 @@ void CheckMemoryMetric(const std::string& name,
       histogram_tester.GetHistogramSamplesSinceCreation(name));
   ASSERT_TRUE(samples);
 
-  bool count_matches = samples->TotalCount() == count * number_of_processes;
-  // The exact number of renderers present at the time the metrics are emitted
-  // is not deterministic. Sometimes there is an extra renderer.
   if (name.find("Renderer") != std::string::npos) {
-    count_matches = samples->TotalCount() >= (count * number_of_processes) &&
-                    samples->TotalCount() <= (number_of_processes + 1) * count;
+    // There can be a spare renderer not accounted for in |number_of_processes|.
+    EXPECT_GE(samples->TotalCount(), count * number_of_processes) << name;
+    EXPECT_LE(samples->TotalCount(), count * (number_of_processes + 1)) << name;
+  } else {
+    EXPECT_EQ(samples->TotalCount(), count * number_of_processes) << name;
   }
-
-  EXPECT_TRUE(count_matches);
 
   if (check_minimum)
     EXPECT_GT(samples->sum(), 0u) << name;
@@ -143,21 +158,10 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
                     count, true);
 #endif
-#if !defined(OS_MACOSX)
-  CheckMemoryMetric("Memory.Experimental.Browser2.Resident", histogram_tester,
-                    count, true);
-#endif
-  CheckMemoryMetric("Memory.Experimental.Browser2.PrivateMemoryFootprint",
-                    histogram_tester, count, true);
   if (number_of_renderer_processes) {
 #if !defined(OS_WIN)
     CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
                       count, true, number_of_renderer_processes);
-#endif
-#if !defined(OS_MACOSX)
-    CheckMemoryMetric("Memory.Experimental.Renderer2.Resident",
-                      histogram_tester, count, true,
-                      number_of_renderer_processes);
 #endif
     CheckMemoryMetric("Memory.Experimental.Renderer2.BlinkGC", histogram_tester,
                       count, false, number_of_renderer_processes);
@@ -166,19 +170,11 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                       number_of_renderer_processes);
     CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
                       count, true, number_of_renderer_processes);
-    CheckMemoryMetric("Memory.Experimental.Renderer2.PrivateMemoryFootprint",
-                      histogram_tester, count, true,
-                      number_of_renderer_processes);
   }
   if (number_of_extenstion_processes) {
 #if !defined(OS_WIN)
     CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
                       count, true, number_of_extenstion_processes);
-#endif
-#if !defined(OS_MACOSX)
-    CheckMemoryMetric("Memory.Experimental.Extension2.Resident",
-                      histogram_tester, count, true,
-                      number_of_extenstion_processes);
 #endif
     CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
                       histogram_tester, count, false,
@@ -188,9 +184,6 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                       number_of_extenstion_processes);
     CheckMemoryMetric("Memory.Experimental.Extension2.V8", histogram_tester,
                       count, true, number_of_extenstion_processes);
-    CheckMemoryMetric("Memory.Experimental.Extension2.PrivateMemoryFootprint",
-                      histogram_tester, count, true,
-                      number_of_extenstion_processes);
   }
   CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
                     histogram_tester, count, true);
@@ -221,34 +214,32 @@ class ProcessMemoryMetricsEmitterTest
  protected:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
-  void CheckMetricWithName(const ukm::mojom::UkmEntry* entry,
-                           const char* name,
-                           std::function<bool(int64_t)> check) {
-    const int64_t* value = test_ukm_recorder_->GetEntryMetric(entry, name);
-    EXPECT_TRUE(value && check(*value)) << name;
-  }
-
   void CheckExactMetricWithName(const ukm::mojom::UkmEntry* entry,
                                 const char* name,
                                 int64_t expected_value) {
-    CheckMetricWithName(entry, name, [expected_value](int64_t value) -> bool {
-      return value == expected_value;
-    });
+    const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
+    ASSERT_TRUE(value) << name;
+    EXPECT_EQ(expected_value, *value) << name;
   }
 
   void CheckMemoryMetricWithName(const ukm::mojom::UkmEntry* entry,
                                  const char* name,
-                                 bool can_be_zero) {
-    CheckMetricWithName(entry, name, [can_be_zero](int64_t value) -> bool {
-      return value >= (can_be_zero ? 0 : 1) && value <= 4000;
-    });
+                                 bool can_be_zero = true) {
+    const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
+    ASSERT_TRUE(value) << name;
+    if (can_be_zero)
+      EXPECT_GE(*value, 0) << name;
+    else
+      EXPECT_GT(*value, 0) << name;
+    EXPECT_LE(*value, 4000) << name;
   }
 
   void CheckTimeMetricWithName(const ukm::mojom::UkmEntry* entry,
                                const char* name) {
-    CheckMetricWithName(entry, name, [](int64_t value) -> bool {
-      return value >= 0 && value <= 10;
-    });
+    const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
+    ASSERT_TRUE(value) << name;
+    EXPECT_GE(*value, 0) << name;
+    EXPECT_LE(*value, 10) << name;
   }
 
   void CheckAllUkmEntries(size_t entry_count = 1u) {
@@ -267,6 +258,8 @@ class ProcessMemoryMetricsEmitterTest
         CheckUkmRendererEntry(entry);
       } else if (ProcessHasTypeForEntry(entry, ProcessType::GPU)) {
         CheckUkmGPUEntry(entry);
+      } else if (ProcessHasTypeForEntry(entry, ProcessType::UTILITY)) {
+        // No expectations.
       } else {
         // This must be Total2.
         total_entry_count++;
@@ -322,7 +315,7 @@ class ProcessMemoryMetricsEmitterTest
   bool ProcessHasTypeForEntry(const ukm::mojom::UkmEntry* entry,
                               ProcessType process_type) {
     const int64_t* value =
-        test_ukm_recorder_->GetEntryMetric(entry, UkmEntry::kProcessTypeName);
+        ukm::TestUkmRecorder::GetEntryMetric(entry, UkmEntry::kProcessTypeName);
     return value && *value == static_cast<int64_t>(process_type);
   }
 
@@ -403,9 +396,7 @@ class ProcessMemoryMetricsEmitterTest
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
-#define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
+#define MAYBE_FetchAndEmitMetrics FetchAndEmitMetrics
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetrics) {
@@ -429,7 +420,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  CheckAllMemoryMetrics(histogram_tester, 1);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers);
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
@@ -439,10 +433,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   DISABLED_FetchAndEmitMetricsWithExtensions
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
-  DISABLED_FetchAndEmitMetricsWithExtensions
+  FetchAndEmitMetricsWithExtensions
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithExtensions) {
@@ -476,7 +468,12 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  CheckAllMemoryMetrics(histogram_tester, 1, 1, 2);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+  constexpr int kNumExtensionProcesses = 2;
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers,
+                        kNumExtensionProcesses);
   // Extension processes do not have page_info.
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
@@ -486,10 +483,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
   DISABLED_FetchAndEmitMetricsWithHostedApps
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
-  DISABLED_FetchAndEmitMetricsWithHostedApps
+  FetchAndEmitMetricsWithHostedApps
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithHostedApps) {
@@ -521,18 +516,18 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  // No extensions should be observed
-  CheckAllMemoryMetrics(histogram_tester, 1, 1, 0);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+  constexpr int kNumExtensionProcesses = 0;
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers,
+                        kNumExtensionProcesses);
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
 
-// Breaks when attempting to add tests for new UKMs: crbug.com/761524
-// Re-enable with crrev.com/c/774120.
-#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
-  DISABLED_FetchAndEmitMetricsWithExtensionsAndHostReuse
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse) {
+                       FetchAndEmitMetricsWithExtensionsAndHostReuse) {
   // This test does not work with --site-per-process flag since this test
   // combines multiple extensions in the same process.
   if (content::AreAllSitesIsolatedForTesting())
@@ -569,7 +564,12 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  CheckAllMemoryMetrics(histogram_tester, 1, 1, 1);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+  constexpr int kNumExtensionProcesses = 1;
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers,
+                        kNumExtensionProcesses);
   CheckAllUkmEntries();
   // When hosts share a process, no unique URL is identified, therefore no page
   // info.
@@ -585,9 +585,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
-#define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
+#define MAYBE_FetchDuringTrace FetchDuringTrace
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchDuringTrace) {
@@ -637,7 +635,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
       events, trace_analyzer::Query::EventNameIs(MemoryDumpTypeToString(
                   MemoryDumpType::EXPLICITLY_TRIGGERED))));
 
-  CheckAllMemoryMetrics(histogram_tester, 1);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers);
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
@@ -645,9 +646,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
-#define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
+#define MAYBE_FetchThreeTimes FetchThreeTimes
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -669,7 +668,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
 
   run_loop.Run();
 
-  CheckAllMemoryMetrics(histogram_tester, count);
+  constexpr int kNumRenderers = 2;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+
+  CheckAllMemoryMetrics(histogram_tester, count, kNumRenderers);
   CheckAllUkmEntries(count);
   CheckPageInfoUkmMetrics(url, true, count);
 }
@@ -677,9 +679,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else
-// TODO(michaelpg): Remove this unconditional disabling once new UKM testing
-// style CLs land: crbug.com/761524.
-#define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
+#define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_ForegroundAndBackgroundPages) {
@@ -710,7 +710,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
     run_loop.Run();
   }
 
-  CheckAllMemoryMetrics(histogram_tester, 1, 2);
+  constexpr int kNumRenderers = 3;
+  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
+
+  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers);
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url1, true /* is_visible */);
   CheckPageInfoUkmMetrics(url2, false /* is_visible */);
@@ -725,7 +728,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
     emitter->FetchAndEmitProcessMemoryMetrics();
     run_loop.Run();
   }
-  CheckAllMemoryMetrics(histogram_tester, 2, 2);
+
+  CheckAllMemoryMetrics(histogram_tester, 2, kNumRenderers);
   CheckAllUkmEntries(2);
   CheckPageInfoUkmMetrics(url1, false /* is_visible */, 2);
   CheckPageInfoUkmMetrics(url2, true /* is_visible */, 2);
