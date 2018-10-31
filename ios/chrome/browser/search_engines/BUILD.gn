@@ -68,15 +68,21 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "search_engine_js_unittest.mm",
+    "search_engine_tab_helper_unittest.mm",
   ]
   deps = [
     ":search_engine_js",
+    ":search_engines",
     "//base:base",
     "//base/test:test_support",
+    "//components/search_engines",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

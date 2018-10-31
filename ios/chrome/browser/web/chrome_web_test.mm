@@ -17,12 +17,14 @@
 
 ChromeWebTest::~ChromeWebTest() {}
 
-ChromeWebTest::ChromeWebTest(std::unique_ptr<web::WebClient> web_client)
-    : web::WebTestWithWebState(std::move(web_client)),
+ChromeWebTest::ChromeWebTest(std::unique_ptr<web::WebClient> web_client,
+                             web::TestWebThreadBundle::Options options)
+    : web::WebTestWithWebState(std::move(web_client), options),
       chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
-ChromeWebTest::ChromeWebTest()
-    : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+ChromeWebTest::ChromeWebTest(web::TestWebThreadBundle::Options options)
+    : web::WebTestWithWebState(options),
+      chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
 void ChromeWebTest::SetUp() {
   web::WebTestWithWebState::SetUp();
