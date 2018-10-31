@@ -213,6 +213,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   views::SetHitTestComponent(content_settings_container_,
                              static_cast<int>(HTCLIENT));
   AddChildView(content_settings_container_);
+  UpdateContentSettingViewsVisibility();
 
   views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
@@ -225,6 +226,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(
 
   UpdateChildrenColor();
 
+  DCHECK(!browser_view_->toolbar_button_provider() ||
+         browser_view_->toolbar_button_provider()
+                 ->GetAsAccessiblePaneView()
+                 ->GetClassName() == GetClassName())
+      << "This should be the first ToolbarButtorProvider or a replacement for "
+         "an existing instance of this class during a window frame refresh.";
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
   scoped_widget_observer_.Add(widget);
