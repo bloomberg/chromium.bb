@@ -40,6 +40,7 @@ class BluetoothSystem : public mojom::BluetoothSystem,
   void SetPowered(bool powered, SetPoweredCallback callback) override;
   void GetScanState(GetScanStateCallback callback) override;
   void StartScan(StartScanCallback callback) override;
+  void StopScan(StopScanCallback callback) override;
 
  private:
   bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
@@ -52,6 +53,9 @@ class BluetoothSystem : public mojom::BluetoothSystem,
 
   void OnStartDiscovery(
       StartScanCallback callback,
+      const base::Optional<bluez::BluetoothAdapterClient::Error>& error);
+  void OnStopDiscovery(
+      StopScanCallback callback,
       const base::Optional<bluez::BluetoothAdapterClient::Error>& error);
 
   mojom::BluetoothSystemClientPtr client_ptr_;

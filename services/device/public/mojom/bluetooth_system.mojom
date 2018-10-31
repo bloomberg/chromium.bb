@@ -92,6 +92,26 @@ interface BluetoothSystem {
   //     there is one in progress already.
   //  2. Return more detailed error codes.
   StartScan() => (StartScanResult result);
+
+  enum StopScanResult {
+    // Command successfully sent to BT Radio.
+    kSuccess,
+    // Unknown failure when sending the command to the BT Radio.
+    kFailedUnknownReason,
+    // Can't use Bluetooth right now e.g. BT radio is off, or not present.
+    kBluetoothUnavailable,
+    // TODO(https://crbug.com/897996): Add more specific error codes.
+  };
+
+  // Attempts to stop scanning for Bluetooth devices. Callback is run with
+  // `kSuccess` if the command was successfully sent to the BT Radio. Once the
+  // BT Radio actually stops scanning for devices,
+  // BluetoothSystemClient::OnScanStateChanged will be called.
+  // TODO(https://crbug.com/897996): This function is missing two features:
+  //  1. Support concurrent calls; currently BlueZ just drops other calls if
+  //     there is one in progress already.
+  //  2. Return more detailed error codes.
+  StopScan() => (StopScanResult result);
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events

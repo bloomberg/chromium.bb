@@ -982,10 +982,11 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // bluez::FakeBluetoothAdapterClient's count should be only 1 and a single
   // call to
   // bluez::FakeBluetoothAdapterClient::StopDiscovery should work.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1091,10 +1092,11 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // Stop discovery via D-Bus. The fake client's reference count will drop but
   // the discovery state won't change since our BluetoothAdapter also just
   // requested it via D-Bus.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(5, observer.discovering_changed_count());
   EXPECT_EQ(10, callback_count_);
@@ -1169,10 +1171,11 @@ TEST_F(BluetoothBlueZTest, InvalidatedDiscoverySessions) {
   // should become inactive, but more importantly, we shouldn't run into any
   // memory errors as the sessions that we explicitly deleted should get
   // cleaned up.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
