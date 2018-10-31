@@ -5511,8 +5511,6 @@ crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Cr
 crbug.com/896765 [ Linux Mac Win ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
 
 #Sheriff 2018-10-22
-crbug.com/897849 [ Mac10.13 Debug ] accessibility/element-role-mapping-normal.html [ Pass Timeout ]
-crbug.com/897849 [ Mac10.13 Debug ] accessibility/table-header-column-row.html [ Pass Timeout ]
 crbug.com/897075 [ Win10 ] inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
 
 #Sheriff 2018-10-23
