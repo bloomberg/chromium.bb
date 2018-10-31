@@ -31,11 +31,8 @@ class AlsReaderImpl : public AlsReader {
       base::TimeDelta::FromSeconds(1);
   static constexpr int kMaxInitialAttempts = 20;
 
-  // Interval for polling ambient light values.
-  // TODO(jiameng): currently poll ALS samples every 250ms. May revise.
-  static constexpr int kNumberAlsPollPerSeconds = 4;
   static constexpr base::TimeDelta kAlsPollInterval =
-      base::TimeDelta::FromSecondsD(1.0 / kNumberAlsPollPerSeconds);
+      base::TimeDelta::FromSecondsD(1.0 / kAlsPollFrequency);
 
   AlsReaderImpl();
   ~AlsReaderImpl() override;

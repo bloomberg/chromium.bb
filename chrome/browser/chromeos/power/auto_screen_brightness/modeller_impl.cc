@@ -58,9 +58,8 @@ base::Optional<MonotoneCubicSpline> LoadCurveFromDisk(
 
 // Saves |curve| to disk. This should run in another thread to be non-blocking
 // to the main thread (if |is_testing| is false).
-// TODO(jiameng): alternative to WriteFile is WriteFileAtomically, but the
-// latter is very slow. Investigate whether we need to change to
-// WriteFileAtomically.
+// TODO(jiameng): write to a temp location and rename to |path|. Refactor out
+// the logic that's shared with the unit test to utils.
 void SaveCurveToDisk(const base::FilePath& path,
                      const MonotoneCubicSpline& curve,
                      bool is_testing) {
@@ -120,7 +119,7 @@ void ModellerImpl::AddObserver(Modeller::Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
   if (model_status_ != Modeller::Status::kInitializing) {
-    observer->OnModelInitialized(model_status_, current_curve_);
+    NotifyObserverInitStatus(*observer);
   }
 }
 
@@ -303,24 +302,35 @@ void ModellerImpl::HandleStatusUpdate() {
 }
 
 void ModellerImpl::OnInitializationComplete() {
+  // TODO(jiameng): log model status to UMA.
+  for (auto& observer : observers_) {
+    NotifyObserverInitStatus(observer);
+  }
+}
+
+void ModellerImpl::NotifyObserverInitStatus(Modeller::Observer& observer) {
   DCHECK_NE(model_status_, Status::kInitializing);
-  for (auto& observer : observers_)
-    observer.OnModelInitialized(model_status_, current_curve_);
+  if (model_status_ == Status::kDisabled) {
+    observer.OnModelInitialized(base::nullopt, base::nullopt);
+  } else {
+    observer.OnModelInitialized(global_curve_, personal_curve_);
+  }
 }
 
 void ModellerImpl::OnCurveLoadedFromDisk(
     const base::Optional<MonotoneCubicSpline>& curve) {
   if (!curve.has_value()) {
-    current_curve_.emplace(global_curve_);
     model_status_ = Status::kGlobal;
   } else {
-    current_curve_.emplace(curve.value());
+    personal_curve_.emplace(curve.value());
     model_status_ = Status::kPersonal;
   }
 
   OnInitializationComplete();
 
-  trainer_->SetInitialCurves(global_curve_, current_curve_.value());
+  trainer_->SetInitialCurves(global_curve_, model_status_ == Status::kGlobal
+                                                ? global_curve_
+                                                : personal_curve_.value());
   ScheduleTrainerStart();
 }
 
@@ -346,7 +356,7 @@ void ModellerImpl::StartTraining() {
 }
 
 void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
-  current_curve_.emplace(curve);
+  personal_curve_.emplace(curve);
   for (auto& observer : observers_)
     observer.OnModelTrained(curve);
 
