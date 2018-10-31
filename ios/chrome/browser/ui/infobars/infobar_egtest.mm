@@ -45,25 +45,21 @@ infobars::InfoBarManager* GetCurrentInfoBarManager() {
   return nullptr;
 }
 
-// Adds a TestInfoBar to the current tab.
-bool AddTestInfoBarToCurrentTab() {
+// Adds a TestInfoBar with |message| to the current tab.
+bool AddTestInfoBarToCurrentTabWithMessage(NSString* message) {
   infobars::InfoBarManager* manager = GetCurrentInfoBarManager();
-  return TestInfoBarDelegate::Create(manager);
+  TestInfoBarDelegate* test_infobar_delegate = new TestInfoBarDelegate(message);
+  return test_infobar_delegate->Create(manager);
 }
 
-// Verifies that a single TestInfoBar is either present or absent on the current
-// tab.
-void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
-  // Expected values.
-  bool expected_count = visible ? 1U : 0U;
+// Verifies that a single TestInfoBar with |message| is either present or absent
+// on the current tab.
+void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
   id<GREYMatcher> expected_visibility =
       visible ? grey_sufficientlyVisible() : grey_notVisible();
   NSString* condition_name =
       visible ? @"Waiting for infobar to show" : @"Waiting for infobar to hide";
 
-  infobars::InfoBarManager* manager = GetCurrentInfoBarManager();
-  GREYAssertEqual(expected_count, manager->infobar_count(),
-                  @"Incorrect number of infobars.");
   [[GREYCondition
       conditionWithName:condition_name
                   block:^BOOL {
@@ -71,11 +67,18 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
                     [[EarlGrey
                         selectElementWithMatcher:
                             chrome_test_util::StaticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(kTestInfoBarTitle))]
-                        assertWithMatcher:expected_visibility
-                                    error:&error];
+                                message)] assertWithMatcher:expected_visibility
+                                                      error:&error];
                     return error == nil;
                   }] waitWithTimeout:kTimeout];
+}
+
+// Verifies the number of Infobar currently in the InfobarManager (Thus in the
+// InfobarContainer) is |number_of_infobars|.
+void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
+  infobars::InfoBarManager* manager = GetCurrentInfoBarManager();
+  GREYAssertEqual(number_of_infobars, manager->infobar_count(),
+                  @"Incorrect number of infobars.");
 }
 
 }  // namespace
@@ -96,16 +99,21 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
+  // Infobar Message
+  NSString* infoBarMessage = @"TestInfoBar";
+
   // Add a test infobar to the current tab. Verify that the infobar is present
   // in the model and that the infobar view is visible on screen.
-  GREYAssert(AddTestInfoBarToCurrentTab(),
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(infoBarMessage),
              @"Failed to add infobar to test tab.");
-  VerifyTestInfoBarVisibleForCurrentTab(true);
+  VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
 
   // Navigate to a different page.  Verify that the infobar is dismissed and no
   // longer visible on screen.
   [ChromeEarlGrey loadURL:GURL(url::kAboutBlankURL)];
-  VerifyTestInfoBarVisibleForCurrentTab(false);
+  VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(0);
 }
 
 // Tests that page infobars persist only on the tabs they are opened on, and
@@ -121,18 +129,24 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
   [ChromeEarlGrey loadURL:destinationURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
+  // Infobar Message
+  NSString* infoBarMessage = @"TestInfoBar";
+
   // Create the second tab, navigate to the test page, and add the test infobar.
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:ponyURL];
   [ChromeEarlGrey waitForMainTabCount:2];
-  VerifyTestInfoBarVisibleForCurrentTab(false);
-  GREYAssert(AddTestInfoBarToCurrentTab(),
+  VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(0);
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(infoBarMessage),
              @"Failed to add infobar to second tab.");
-  VerifyTestInfoBarVisibleForCurrentTab(true);
+  VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
 
   // Switch back to the first tab and make sure no infobar is visible.
   chrome_test_util::SelectTabAtIndexInCurrentMode(0U);
-  VerifyTestInfoBarVisibleForCurrentTab(false);
+  VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(0);
 
   // Navigate to a different URL in the first tab, to verify that this
   // navigation does not hide the infobar in the second tab.
@@ -142,7 +156,117 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
   // infobar is visible.
   chrome_test_util::CloseCurrentTab();
   [ChromeEarlGrey waitForMainTabCount:1];
-  VerifyTestInfoBarVisibleForCurrentTab(true);
+  VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
+}
+
+// Tests that the Infobar dissapears once the "OK" button is tapped.
+- (void)testInfobarButtonDismissal {
+  web::test::SetUpFileBasedHttpServer();
+
+  // Open a new tab and navigate to the test page.
+  const GURL testURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // Infobar Message
+  NSString* infoBarMessage = @"TestInfoBar";
+
+  // Add a test infobar to the current tab. Verify that the infobar is present
+  // in the model and that the infobar view is visible on screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(infoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
+
+  // Tap on "OK" which should dismiss the Infobar.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"OK"),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
+  VerifyNumberOfInfobarsInManager(0);
+}
+
+// Tests adding an Infobar on top of an existing one.
+- (void)testInfobarTopMostVisible {
+  web::test::SetUpFileBasedHttpServer();
+
+  // Open a new tab and navigate to the test page.
+  const GURL testURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // First Infobar Message
+  NSString* firstInfoBarMessage = @"TestFirstInfoBar";
+
+  // Add a test infobar to the current tab. Verify that the infobar is present
+  // in the model and that the infobar view is visible on screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(firstInfoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
+
+  // Second Infobar Message
+  NSString* secondInfoBarMessage = @"TestSecondInfoBar";
+
+  // Add a second test infobar to the current tab. Verify that the infobar is
+  // present in the model, and that only this second infobar is now visible on
+  // screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(secondInfoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, secondInfoBarMessage);
+  VerifyTestInfoBarVisibleForCurrentTab(false, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(2);
+}
+
+// Tests that adding an Infobar of lower height on top of a taller Infobar only
+// displays the top shorter one, and that after dismissing the shorter Infobar
+// the taller infobar is now completely displayed again.
+- (void)testInfobarTopMostVisibleHeight {
+  web::test::SetUpFileBasedHttpServer();
+
+  // Open a new tab and navigate to the test page.
+  const GURL testURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // First Infobar Message
+  NSString* firstInfoBarMessage =
+      @"This is a really long message that will cause this infobar height to "
+      @"increase since Confirm Infobar heights changes depending on its "
+      @"message.";
+
+  // Add a test infobar to the current tab. Verify that the infobar is present
+  // in the model and that the infobar view is visible on screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(firstInfoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
+
+  // Second Infobar Message
+  NSString* secondInfoBarMessage = @"TestSecondInfoBar";
+
+  // Add a second test infobar to the current tab. Verify that the infobar is
+  // present in the model, and that only this second infobar is now visible on
+  // screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(secondInfoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, secondInfoBarMessage);
+  VerifyTestInfoBarVisibleForCurrentTab(false, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(2);
+
+  // Dismiss the second Infobar.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"OK"),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  VerifyTestInfoBarVisibleForCurrentTab(false, secondInfoBarMessage);
+  VerifyTestInfoBarVisibleForCurrentTab(true, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
 }
 
 @end
