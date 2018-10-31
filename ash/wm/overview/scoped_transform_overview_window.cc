@@ -186,7 +186,9 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
   type_ = GetWindowDimensionsType(window);
 }
 
-ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
+ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
+  StopObservingImplicitAnimations();
+}
 
 // static
 float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
