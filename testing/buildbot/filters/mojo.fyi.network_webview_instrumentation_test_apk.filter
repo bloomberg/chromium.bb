@@ -9,6 +9,7 @@
 # support running NS OOP, https://crbug.com/882650
 
 # Uncategorized timeouts or test failures.
+-org.chromium.android_webview.test.AwContentsStaticsTest.testSetCheckClearTextPermittedTrue
 
 # https://crbug.com/882650
 -*__multiprocess_mode
