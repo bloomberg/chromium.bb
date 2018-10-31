@@ -738,8 +738,12 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(
         guest_web_contents->GetMainFrame()->GetProcess()->IsForGuestsOnly());
     if (AreCommittedInterstitialsEnabled()) {
-      content::TestNavigationObserver observer(guest_web_contents);
-      observer.Wait();
+      GURL target_url = https_server.GetURL(
+          "/extensions/platform_apps/web_view/interstitial_teardown/"
+          "https_page.html");
+      content::TestNavigationObserver observer(target_url);
+      observer.WatchExistingWebContents();
+      observer.WaitForNavigationFinished();
     } else {
       content::WaitForInterstitialAttach(guest_web_contents);
     }
