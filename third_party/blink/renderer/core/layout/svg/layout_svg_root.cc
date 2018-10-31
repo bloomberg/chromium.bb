@@ -192,18 +192,6 @@ void LayoutSVGRoot::UpdateLayout() {
   const bool viewport_may_have_changed =
       SelfNeedsLayout() || old_size != Size();
 
-  // The scale of one or more of the SVG elements may have changed, content
-  // (the entire SVG) could have moved or new content may have been exposed, so
-  // mark the entire subtree as needing paint invalidation checking.
-  if (transform_change != SVGTransformChange::kNone ||
-      viewport_may_have_changed) {
-    SetSubtreeShouldCheckForPaintInvalidation();
-    SetNeedsPaintPropertyUpdate();
-
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
-  }
-
   SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
   // When hasRelativeLengths() is false, no descendants have relative lengths
@@ -220,6 +208,7 @@ void LayoutSVGRoot::UpdateLayout() {
     needs_boundaries_or_transform_update_ = false;
   }
 
+  const auto& old_overflow_rect = VisualOverflowRect();
   overflow_.reset();
   AddVisualEffectOverflow();
 
@@ -228,6 +217,17 @@ void LayoutSVGRoot::UpdateLayout() {
     content_visual_rect =
         local_to_border_box_transform_.MapRect(content_visual_rect);
     AddContentsVisualOverflow(EnclosingLayoutRect(content_visual_rect));
+  }
+
+  // The scale of one or more of the SVG elements may have changed, content
+  // (the entire SVG) could have moved or new content may have been exposed, so
+  // mark the entire subtree as needing paint invalidation checking.
+  if (transform_change != SVGTransformChange::kNone ||
+      viewport_may_have_changed || old_overflow_rect != VisualOverflowRect()) {
+    SetSubtreeShouldCheckForPaintInvalidation();
+    SetNeedsPaintPropertyUpdate();
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
 
   UpdateAfterLayout();
