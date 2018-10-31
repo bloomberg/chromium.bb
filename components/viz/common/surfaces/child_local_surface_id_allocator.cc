@@ -39,7 +39,7 @@ bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
   return false;
 }
 
-const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
+void ChildLocalSurfaceIdAllocator::GenerateId() {
   // UpdateFromParent must be called before we can generate a valid ID.
   DCHECK_NE(current_local_surface_id_allocation_.local_surface_id_
                 .parent_sequence_number(),
@@ -66,8 +66,6 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
       TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
       current_local_surface_id_allocation_.local_surface_id_.ToString());
-
-  return current_local_surface_id_allocation_.local_surface_id();
 }
 
 }  // namespace viz

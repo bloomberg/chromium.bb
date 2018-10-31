@@ -38,7 +38,7 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
       const LocalSurfaceId& parent_allocated_local_surface_id,
       base::TimeTicks parent_local_surface_id_allocation_time);
 
-  const LocalSurfaceId& GenerateId();
+  void GenerateId();
 
   const LocalSurfaceId& GetCurrentLocalSurfaceId() const {
     return current_local_surface_id_allocation_.local_surface_id();

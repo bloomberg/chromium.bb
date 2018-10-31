@@ -2053,12 +2053,11 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
            metadata.has_transparent_background);
 #endif
 
-  viz::LocalSurfaceId local_surface_id =
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-  if (local_surface_id.is_valid()) {
+  if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
     if (allocate_new_local_surface_id)
-      local_surface_id = child_local_surface_id_allocator_.GenerateId();
-    metadata.local_surface_id = local_surface_id;
+      child_local_surface_id_allocator_.GenerateId();
+    metadata.local_surface_id =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
     metadata.local_surface_id_allocation_time_from_child =
         child_local_surface_id_allocator_.allocation_time();
   }
