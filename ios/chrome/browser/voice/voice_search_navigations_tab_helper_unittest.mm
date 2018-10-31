@@ -51,7 +51,8 @@ class VoiceSearchNavigationsTest
 
 // Tests that a NavigationItem is not marked as a voice search if
 // WillLoadVoiceSearchResult() was not called.
-TEST_P(VoiceSearchNavigationsTest, NotVoiceSearchNavigation) {
+// TODO(crbug.com/900667): Re-enable this test.
+TEST_P(VoiceSearchNavigationsTest, DISABLED_NotVoiceSearchNavigation) {
   LoadHtml(@"<html></html>");
   web::NavigationItem* item =
       web_state()->GetNavigationManager()->GetLastCommittedItem();
