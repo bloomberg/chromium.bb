@@ -41,6 +41,10 @@ void TrayBluetoothHelperExperimental::Initialize() {
       base::BindOnce(&TrayBluetoothHelperExperimental::OnStateChanged,
                      // See base::Unretained() note at the top.
                      base::Unretained(this)));
+  bluetooth_system_ptr_->GetScanState(
+      base::BindOnce(&TrayBluetoothHelperExperimental::OnScanStateChanged,
+                     // See base::Unretained() note at the top.
+                     base::Unretained(this)));
 }
 
 BluetoothDeviceList
@@ -50,7 +54,7 @@ TrayBluetoothHelperExperimental::GetAvailableBluetoothDevices() const {
 }
 
 void TrayBluetoothHelperExperimental::StartBluetoothDiscovering() {
-  NOTIMPLEMENTED();
+  bluetooth_system_ptr_->StartScan(base::DoNothing());
 }
 
 void TrayBluetoothHelperExperimental::StopBluetoothDiscovering() {
@@ -72,8 +76,8 @@ void TrayBluetoothHelperExperimental::SetBluetoothEnabled(bool enabled) {
 }
 
 bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {
-  NOTIMPLEMENTED();
-  return false;
+  return cached_scan_state_ ==
+         device::mojom::BluetoothSystem::ScanState::kScanning;
 }
 
 void TrayBluetoothHelperExperimental::OnStateChanged(
@@ -84,6 +88,7 @@ void TrayBluetoothHelperExperimental::OnStateChanged(
 
 void TrayBluetoothHelperExperimental::OnScanStateChanged(
     device::mojom::BluetoothSystem::ScanState state) {
+  cached_scan_state_ = state;
   Shell::Get()->system_tray_notifier()->NotifyBluetoothDiscoveringChanged();
 }
 

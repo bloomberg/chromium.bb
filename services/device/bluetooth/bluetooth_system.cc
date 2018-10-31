@@ -140,6 +140,24 @@ void BluetoothSystem::GetScanState(GetScanStateCallback callback) {
   std::move(callback).Run(GetScanStateFromActiveAdapter());
 }
 
+void BluetoothSystem::StartScan(StartScanCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+    case State::kPoweredOff:
+    case State::kTransitioning:
+      std::move(callback).Run(StartScanResult::kBluetoothUnavailable);
+      return;
+    case State::kPoweredOn:
+      break;
+  }
+
+  GetBluetoothAdapterClient()->StartDiscovery(
+      active_adapter_.value(),
+      base::BindOnce(&BluetoothSystem::OnStartDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
   // Use AlternateBluetoothAdapterClient to avoid interfering with users of the
   // regular BluetoothAdapterClient.
@@ -179,6 +197,15 @@ void BluetoothSystem::OnSetPoweredFinished(SetPoweredCallback callback,
 
   std::move(callback).Run(succeeded ? SetPoweredResult::kSuccess
                                     : SetPoweredResult::kFailedUnknownReason);
+}
+
+void BluetoothSystem::OnStartDiscovery(
+    StartScanCallback callback,
+    const base::Optional<bluez::BluetoothAdapterClient::Error>& error) {
+  // TODO(https://crbug.com/897996): Use the name and message in |error| to
+  // return more specific error codes.
+  std::move(callback).Run(error ? StartScanResult::kFailedUnknownReason
+                                : StartScanResult::kSuccess);
 }
 
 }  // namespace device
