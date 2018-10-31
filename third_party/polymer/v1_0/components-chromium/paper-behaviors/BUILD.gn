@@ -13,13 +13,6 @@ js_library("paper-button-behavior-extracted") {
   ]
 }
 
-js_library("paper-checked-element-behavior-extracted") {
-  deps = [
-    ":paper-inky-focus-behavior-extracted",
-    "../iron-checked-element-behavior:iron-checked-element-behavior-extracted",
-  ]
-}
-
 js_library("paper-inky-focus-behavior-extracted") {
   deps = [
     ":paper-ripple-behavior-extracted",

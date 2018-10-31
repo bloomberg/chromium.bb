@@ -28,12 +28,6 @@ Tree: v2.1.1
 Revision: a27b45bebb2af58506af77c377dab301bf7406ce
 Tree link: https://github.com/PolymerElements/iron-behaviors/tree/v2.1.1
 
-Name: iron-checked-element-behavior
-Repository: https://github.com/PolymerElements/iron-checked-element-behavior.git
-Tree: v2.1.0
-Revision: 3bd74f1dda95020aad873467ca25c37dc09d6ee4
-Tree link: https://github.com/PolymerElements/iron-checked-element-behavior/tree/v2.1.0
-
 Name: iron-collapse
 Repository: https://github.com/PolymerElements/iron-collapse.git
 Tree: v2.1.0
