@@ -549,12 +549,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"ChromeLoadTimesWasAlternateProtocolAvailable", kUnknown,
               kChromeLoadTimesNextHopProtocol};
 
-    case WebFeature::kDataUriHasOctothorpe:
-      return {"DataUriHasOctothorpe", kM71,
-              ReplacedWillBeRemoved(
-                  "Using unescaped '#' characters in a data URI body", "'%23'",
-                  kM71, "5656049583390720")};
-
     case WebFeature::kMediaElementSourceOnOfflineContext:
       return {"MediaElementAudioSourceNode", kM71,
               WillBeRemoved("Creating a MediaElementAudioSourceNode on an "
