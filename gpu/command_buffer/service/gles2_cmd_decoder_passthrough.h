@@ -435,6 +435,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   error::Error ProcessReadPixels(bool did_finish);
 
+  // Checks to see if the inserted fence has completed.
+  void ProcessDescheduleUntilFinished();
+
   void UpdateTextureBinding(GLenum target,
                             GLuint client_id,
                             TexturePassthrough* texture);
@@ -832,6 +835,11 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::vector<uint8_t> scratch_memory_;
 
   std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
+
+  // After a second fence is inserted, both the GpuChannelMessageQueue and
+  // CommandExecutor are descheduled. Once the first fence has completed, both
+  // get rescheduled.
+  std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
 
