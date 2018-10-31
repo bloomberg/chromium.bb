@@ -4748,9 +4748,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
-  BOOL committedNavigation =
-      [_navigationStates isCommittedNavigation:navigation];
-
   [self didReceiveWebViewNavigationDelegateCallback];
 
   // For reasons not yet fully understood, sometimes WKWebView triggers
@@ -4761,14 +4758,30 @@ registerLoadRequestForURL:(const GURL&)requestURL
       web::WKNavigationState::FINISHED)
     return;
 
+  BOOL committedNavigation =
+      [_navigationStates isCommittedNavigation:navigation];
+  [_navigationStates setState:web::WKNavigationState::COMMITTED
+                forNavigation:navigation];
+
+  DCHECK_EQ(_webView, webView);
+  _certVerificationErrors->Clear();
+
+  // Invariant: Every |navigation| should have a |context|. Note that violation
+  // of this invariant is currently observed in production, but the cause is not
+  // well understood. This DCHECK is meant to catch such cases in testing if
+  // they arise.
+  // TODO(crbug.com/864769): Remove nullptr checks on |context| in this method
+  // once the root cause of the invariant violation is found.
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  DCHECK(context);
+  UMA_HISTOGRAM_BOOLEAN("IOS.CommittedNavigationHasContext", context);
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
   GURL currentWKItemURL =
       net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
   UMA_HISTOGRAM_BOOLEAN("IOS.CommittedURLMatchesCurrentItem",
                         webViewURL == currentWKItemURL);
-
-  web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
 
   // TODO(crbug.com/787497): Always use webView.backForwardList.currentItem.URL
   // to obtain lastCommittedURL once loadHTML: is no longer user for WebUI.
@@ -4788,13 +4801,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // content, which may have already been shown.
   if (!IsPlaceholderUrl(webViewURL))
     [self displayWebView];
-
-  // Record the navigation state.
-  [_navigationStates setState:web::WKNavigationState::COMMITTED
-                forNavigation:navigation];
-
-  DCHECK_EQ(_webView, webView);
-  _certVerificationErrors->Clear();
 
   // Update HTTP response headers.
   _webStateImpl->UpdateHttpResponseHeaders(webViewURL);
@@ -4873,17 +4879,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     [self resetDocumentSpecificState];
     [self didStartLoading];
-  } else {
+  } else if (context) {
     // If |navigation| is nil (which happens for windows open by DOM), then it
     // should be the first and the only pending navigation.
     BOOL isLastNavigation =
         !navigation ||
         [[_navigationStates lastAddedNavigation] isEqual:navigation];
     if (isLastNavigation) {
-      if (context)
-        [self webPageChangedWithContext:context];
-    } else if (web::NavigationContextImpl* context =
-                   [_navigationStates contextForNavigation:navigation]) {
+      [self webPageChangedWithContext:context];
+    } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       // WKWebView has more than one in progress navigation, and committed
       // navigation was not the latest. Change last committed item to one that
       // corresponds to committed navigation.
@@ -4956,6 +4960,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
               [_navigationStates stateForNavigation:navigation]);
   }
 
+  // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
+  // been called. Abort in this case.
+  if ([_navigationStates stateForNavigation:navigation] ==
+      web::WKNavigationState::NONE) {
+    return;
+  }
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
   GURL currentWKItemURL =
       net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
@@ -4964,80 +4975,81 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
+  web::NavigationItemImpl* item =
+      context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
+                                         context->GetNavigationItemUniqueID())
+              : nullptr;
 
-  if (context && context->GetUrl() == currentWKItemURL) {
-    // If webView.backForwardList.currentItem.URL matches |context|, then this
-    // is a known edge case where |webView.URL| is wrong.
-    // TODO(crbug.com/826013): Remove this workaround.
-    webViewURL = currentWKItemURL;
-  }
-
-  // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
-  // been called. Abort in this case.
-  if ([_navigationStates stateForNavigation:navigation] ==
-      web::WKNavigationState::NONE) {
-    return;
-  }
-
-  web::NavigationItemImpl* item = web::GetItemWithUniqueID(
-      self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-  // For reasons not fully understood, |item| may be nullptr. Only apply the
-  // location.replace heuristic if this is not the case.
-  // TODO(crbug.com/864769): Figure out the cause.
-  if (item && !IsWKInternalUrl(currentWKItemURL) &&
-      currentWKItemURL == webViewURL && currentWKItemURL != context->GetUrl()) {
-    // WKWebView sometimes changes URL on the same navigation, likely due to
-    // location.replace() in onload handler that only changes page fragment.
-    // It's safe to update |item| and |context| URL because they are both
-    // associated to WKNavigation*, which is a stable ID for the navigation.
-    // See https://crbug.com/869540 for a real-world case.
-    DCHECK(item->GetURL().EqualsIgnoringRef(currentWKItemURL));
-    item->SetURL(currentWKItemURL);
-    context->SetUrl(currentWKItemURL);
-  }
-
+  // Invariant: every |navigation| should have a |context| and a |item|.
+  // TODO(crbug.com/899383) Fix invariant violation when a new pending item is
+  // created before a placeholder load finishes.
   if (IsPlaceholderUrl(webViewURL)) {
     GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
     if (self.currentNavItem != item &&
         self.currentNavItem->GetVirtualURL() != originalURL) {
-      // The |didFinishNavigation| callback can arrive after another
-      // navigation has started. Abort in this case.
+      // The |didFinishNavigation| callback for placeholder navigation can
+      // arrive after another navigation has started. Abort in this case.
       return;
     }
-
-    if (item->GetURL() == webViewURL) {
-      // Current navigation item is restored from a placeholder URL as part
-      // of session restoration. It is now safe to update the navigation
-      // item URL to the original app-specific URL.
-      item->SetURL(originalURL);
-    }
-
-    if (web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
-        ![_nativeProvider hasControllerForURL:item->GetURL()] &&
-        !_webUIManager) {
-      // WebUIManager is normally created when initiating a new load (in
-      // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
-      // navigation, the WebUI manager would have not been created. Attempt
-      // to create WebUI now. Not all app-specific URLs are WebUI, so WebUI
-      // creation may fail.
-      [self createWebUIForURL:item->GetURL()];
-    }
-
-    if ([self shouldLoadURLInNativeView:item->GetURL()]) {
-      // Native content may have already been presented if this navigation is
-      // started in |-loadCurrentURLInNativeView|. If not, present it now.
-      if (!context || !context->IsNativeContentPresented()) {
-        [self presentNativeContentForNavigationItem:item];
-      }
-      [self didLoadNativeContentForNavigationItem:item];
-    } else if (_webUIManager) {
-      [_webUIManager loadWebUIForURL:item->GetURL()];
-    }
   }
+  DCHECK(context);
+  DCHECK(item);
+  UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasContext", context);
+  UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasItem", item);
 
-  // Handle error display states. For reasons not fully understood, |item| may
-  // be nullptr. TODO(crbug.com/864769): Figure out the cause.
-  if (item) {
+  // TODO(crbug.com/864769): Remove this guard after fixing root cause of
+  // invariant violation in production.
+  if (context && item) {
+    if (context->GetUrl() == currentWKItemURL) {
+      // If webView.backForwardList.currentItem.URL matches |context|, then this
+      // is a known edge case where |webView.URL| is wrong.
+      // TODO(crbug.com/826013): Remove this workaround.
+      webViewURL = currentWKItemURL;
+    }
+
+    if (!IsWKInternalUrl(currentWKItemURL) && currentWKItemURL == webViewURL &&
+        currentWKItemURL != context->GetUrl()) {
+      // WKWebView sometimes changes URL on the same navigation, likely due to
+      // location.replace() in onload handler that only changes page fragment.
+      // It's safe to update |item| and |context| URL because they are both
+      // associated to WKNavigation*, which is a stable ID for the navigation.
+      // See https://crbug.com/869540 for a real-world case.
+      DCHECK(item->GetURL().EqualsIgnoringRef(currentWKItemURL));
+      item->SetURL(currentWKItemURL);
+      context->SetUrl(currentWKItemURL);
+    }
+
+    if (IsPlaceholderUrl(webViewURL)) {
+      if (item->GetURL() == webViewURL) {
+        // Current navigation item is restored from a placeholder URL as part
+        // of session restoration. It is now safe to update the navigation
+        // item URL to the original app-specific URL.
+        item->SetURL(ExtractUrlFromPlaceholderUrl(webViewURL));
+      }
+
+      if (web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
+          ![_nativeProvider hasControllerForURL:item->GetURL()] &&
+          !_webUIManager) {
+        // WebUIManager is normally created when initiating a new load (in
+        // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
+        // navigation, the WebUI manager would have not been created. Attempt
+        // to create WebUI now. Not all app-specific URLs are WebUI, so WebUI
+        // creation may fail.
+        [self createWebUIForURL:item->GetURL()];
+      }
+
+      if ([self shouldLoadURLInNativeView:item->GetURL()]) {
+        // Native content may have already been presented if this navigation is
+        // started in |-loadCurrentURLInNativeView|. If not, present it now.
+        if (!context->IsNativeContentPresented()) {
+          [self presentNativeContentForNavigationItem:item];
+        }
+        [self didLoadNativeContentForNavigationItem:item];
+      } else if (_webUIManager) {
+        [_webUIManager loadWebUIForURL:item->GetURL()];
+      }
+    }
+
     web::ErrorRetryCommand command =
         item->error_retry_state_machine().DidFinishNavigation(webViewURL);
     [self handleErrorRetryCommand:command
