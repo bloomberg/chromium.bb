@@ -87,6 +87,10 @@
             {
                 "domain": "Tracing",
                 "async": ["start", "getCategories", "requestMemoryDump"]
+            },
+            {
+                "domain": "Fetch",
+                "async": ["continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
             }
         ]
     },

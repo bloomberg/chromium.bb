@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
@@ -86,6 +87,7 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
 
   session->AddHandler(std::make_unique<protocol::BrowserHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   session->AddHandler(std::make_unique<protocol::SystemInfoHandler>());

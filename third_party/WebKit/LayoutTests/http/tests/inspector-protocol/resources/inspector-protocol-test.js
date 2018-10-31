@@ -492,7 +492,7 @@ DevToolsAPI.dispatchMessage = function(messageOrObject) {
         DevToolsAPI._die(`Unexpected result id ${messageId}`);
       }
     } else {
-      var session = DevToolsAPI._sessions.get(messageObject.sessionId);
+      var session = DevToolsAPI._sessions.get(messageObject.sessionId || '');
       if (session)
         session._dispatchMessage(messageObject);
     }

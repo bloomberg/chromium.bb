@@ -5478,6 +5478,7 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 
 # The below is only supported with network service.
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Skip ]
+crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
 
 # Sheriff 2018-09-13
 crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]

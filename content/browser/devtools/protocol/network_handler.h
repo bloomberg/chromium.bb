@@ -63,6 +63,15 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
+  // static helpers used by other agents that depend on types defined
+  // in network domain.
+  static net::Error NetErrorFromString(const std::string& error, bool* ok);
+  static std::string NetErrorToString(int net_error);
+  static const char* ResourceTypeToString(ResourceType resource_type);
+  static bool AddInterceptedResourceType(
+      const std::string& resource_type,
+      base::flat_set<ResourceType>* intercepted_resource_types);
+
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderer(int render_process_id,
                    RenderFrameHostImpl* frame_host) override;

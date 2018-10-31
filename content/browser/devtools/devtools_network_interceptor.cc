@@ -39,6 +39,30 @@ DevToolsNetworkInterceptor::FilterEntry::~FilterEntry() {}
 DevToolsNetworkInterceptor::Modifications::Modifications() = default;
 
 DevToolsNetworkInterceptor::Modifications::Modifications(
+    net::Error error_reason)
+    : error_reason(std::move(error_reason)) {}
+
+DevToolsNetworkInterceptor::Modifications::Modifications(
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    std::unique_ptr<std::string> response_body)
+    : response_headers(std::move(response_headers)),
+      response_body(std::move(response_body)) {}
+
+DevToolsNetworkInterceptor::Modifications::Modifications(
+    std::unique_ptr<AuthChallengeResponse> auth_challenge_response)
+    : auth_challenge_response(std::move(auth_challenge_response)) {}
+
+DevToolsNetworkInterceptor::Modifications::Modifications(
+    protocol::Maybe<std::string> modified_url,
+    protocol::Maybe<std::string> modified_method,
+    protocol::Maybe<std::string> modified_post_data,
+    std::unique_ptr<HeadersVector> modified_headers)
+    : modified_url(std::move(modified_url)),
+      modified_method(std::move(modified_method)),
+      modified_post_data(std::move(modified_post_data)),
+      modified_headers(std::move(modified_headers)) {}
+
+DevToolsNetworkInterceptor::Modifications::Modifications(
     base::Optional<net::Error> error_reason,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     std::unique_ptr<std::string> response_body,
