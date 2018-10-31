@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "components/gwp_asan/common/export.h"
 
 namespace gwp_asan {
 namespace internal {
@@ -22,7 +23,7 @@ namespace internal {
 // platforms.)
 unsigned CountTrailingZeroBits64(uint64_t x);
 
-class GuardedPageAllocator {
+class GWP_ASAN_EXPORT GuardedPageAllocator {
  public:
   // Maximum number of pages this class can allocate.
   static constexpr size_t kGpaMaxPages = 64;
