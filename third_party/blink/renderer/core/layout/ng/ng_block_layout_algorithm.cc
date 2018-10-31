@@ -1323,12 +1323,18 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   //
   // The resulting margin strut in the above example will be {40, -30}. See
   // ComputeInflowPosition for how this end margin strut is used.
+  bool empty_block_affected_by_clearance_needs_relayout = false;
   if (empty_block_affected_by_clearance) {
     NGMarginStrut margin_strut;
     margin_strut.Append(child_data.margins.block_start,
                         child.Style().HasMarginBeforeQuirk());
 
-    child_data.margin_strut = margin_strut;
+    // We only need to relayout if the new margin strut is different to the
+    // previous one.
+    if (child_data.margin_strut != margin_strut) {
+      child_data.margin_strut = margin_strut;
+      empty_block_affected_by_clearance_needs_relayout = true;
+    }
   }
 
   // We need to layout a child if we know its BFC block offset and:
@@ -1336,7 +1342,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   //  - It has some unpositioned floats.
   //  - It was affected by clearance.
   if ((layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved ||
-       relayout_child_when_bfc_resolved || empty_block_affected_by_clearance) &&
+       relayout_child_when_bfc_resolved ||
+       empty_block_affected_by_clearance_needs_relayout) &&
       child_bfc_block_offset) {
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, child_data, child_available_size_, child_bfc_block_offset);
