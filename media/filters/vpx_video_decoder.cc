@@ -295,14 +295,12 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
   DCHECK(video_frame);
   DCHECK(!buffer->end_of_stream());
 
-  int64_t timestamp = buffer->timestamp().InMicroseconds();
-  void* user_priv = reinterpret_cast<void*>(&timestamp);
   {
-    TRACE_EVENT2("media", "vpx_codec_decode", "timestamp", timestamp,
-                 "buffer size (B)", buffer->data_size());
+    TRACE_EVENT1("media", "vpx_codec_decode", "buffer",
+                 buffer->AsHumanReadableString());
     vpx_codec_err_t status =
         vpx_codec_decode(vpx_codec_.get(), buffer->data(), buffer->data_size(),
-                         user_priv, 0 /* deadline */);
+                         nullptr /* user_priv */, 0 /* deadline */);
     if (status != VPX_CODEC_OK) {
       DLOG(ERROR) << "vpx_codec_decode() error: "
                   << vpx_codec_err_to_string(status);
@@ -316,11 +314,6 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
   if (!vpx_image) {
     *video_frame = nullptr;
     return true;
-  }
-
-  if (vpx_image->user_priv != user_priv) {
-    DLOG(ERROR) << "Invalid output timestamp.";
-    return false;
   }
 
   const vpx_image_t* vpx_image_alpha = nullptr;
@@ -344,7 +337,7 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
                       (*video_frame)->visible_rect().height());
   }
 
-  (*video_frame)->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
+  (*video_frame)->set_timestamp(buffer->timestamp());
 
   // Default to the color space from the config, but if the bistream specifies
   // one, prefer that instead.
@@ -434,14 +427,13 @@ VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
 
   // Try and decode buffer->side_data() minus the first 8 bytes as a full
   // frame.
-  int64_t timestamp_alpha = buffer->timestamp().InMicroseconds();
-  void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
   {
-    TRACE_EVENT1("media", "vpx_codec_decode_alpha", "timestamp_alpha",
-                 timestamp_alpha);
-    vpx_codec_err_t status = vpx_codec_decode(
-        vpx_codec_alpha_.get(), buffer->side_data() + 8,
-        buffer->side_data_size() - 8, user_priv_alpha, 0 /* deadline */);
+    TRACE_EVENT1("media", "vpx_codec_decode_alpha", "buffer",
+                 buffer->AsHumanReadableString());
+    vpx_codec_err_t status =
+        vpx_codec_decode(vpx_codec_alpha_.get(), buffer->side_data() + 8,
+                         buffer->side_data_size() - 8, nullptr /* user_priv */,
+                         0 /* deadline */);
     if (status != VPX_CODEC_OK) {
       DLOG(ERROR) << "vpx_codec_decode() failed for the alpha: "
                   << vpx_codec_error(vpx_codec_.get());
@@ -453,11 +445,6 @@ VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
   *vpx_image_alpha = vpx_codec_get_frame(vpx_codec_alpha_.get(), &iter_alpha);
   if (!(*vpx_image_alpha)) {
     return kNoAlphaPlaneData;
-  }
-
-  if ((*vpx_image_alpha)->user_priv != user_priv_alpha) {
-    DLOG(ERROR) << "Invalid output timestamp on alpha.";
-    return kAlphaPlaneError;
   }
 
   if ((*vpx_image_alpha)->d_h != vpx_image->d_h ||
