@@ -137,39 +137,33 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
       split_view_controller->IsCurrentScreenOrientationLandscape();
   const int min_length =
       (landscape ? work_area.width() : work_area.height()) / 3;
-  if ((landscape ? bounds.width() : bounds.height()) > min_length)
+  const int current_length = landscape ? bounds.width() : bounds.height();
+
+  if (current_length > min_length)
     return bounds;
 
-  // Helper function which shifts and clamps |out_bounds|. Handles the
-  // orientation and whether |opposite_position| is physically on the left
-  // or top of the screen.
-  auto shift_bounds = [&min_length, &landscape](bool left_or_top,
-                                                gfx::Rect* out_bounds) {
-    // If we are shifting to the left or top we need to update the origin as
-    // well.
-    if (left_or_top) {
-      if (landscape) {
-        out_bounds->set_x(out_bounds->x() - (min_length - out_bounds->width()));
-      } else {
-        out_bounds->set_y(out_bounds->y() -
-                          (min_length - out_bounds->height()));
-      }
-    }
+  // Clamp bounds' length to the minimum length.
+  if (landscape)
+    bounds.set_width(min_length);
+  else
+    bounds.set_height(min_length);
 
-    if (landscape)
-      out_bounds->set_width(min_length);
-    else
-      out_bounds->set_height(min_length);
-  };
-
-  // Shift the opposite direction when |primary| is false because the physical
-  // location will not be aligned with |opposite_position|.
+  // The |opposite_position| will be physically on the left or top of the screen
+  // (depending on whether the orientation is landscape or portrait
+  //  respectively), if |opposite_position| is left AND current orientation is
+  // primary, OR |opposite_position| is right AND current orientation is not
+  // primary. This is an X-NOR condition.
   const bool primary =
       split_view_controller->IsCurrentScreenOrientationPrimary();
-  if (opposite_position == SplitViewController::LEFT)
-    shift_bounds(primary, &bounds);
-  else
-    shift_bounds(!primary, &bounds);
+  const bool left_or_top =
+      (primary == (opposite_position == SplitViewController::LEFT));
+  if (left_or_top) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    const int offset = min_length - current_length;
+    bounds.Offset(landscape ? gfx::Vector2d(-offset, 0)
+                            : gfx::Vector2d(0, -offset));
+  }
 
   return bounds;
 }
@@ -251,20 +245,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   return widget;
 }
 
-// Gets the window that's currently being dragged in |root_window|. Returns
-// nullptr if there is no such window.
-aura::Window* GetDraggedWindow(
-    const aura::Window* root_window,
-    const std::vector<aura::Window*>& mru_window_list) {
-  for (auto* window : mru_window_list) {
-    if (wm::GetWindowState(window)->is_dragged() &&
-        window->GetRootWindow() == root_window) {
-      return window;
-    }
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 // static
@@ -325,9 +305,9 @@ void WindowSelector::Init(const WindowList& windows,
       observed_windows_.insert(container);
     }
 
-    std::unique_ptr<WindowGrid> grid(
-        new WindowGrid(root, windows, this,
-                       GetGridBoundsInScreen(root, /*divider_changed=*/false)));
+    auto grid = std::make_unique<WindowGrid>(
+        root, windows, this,
+        GetGridBoundsInScreen(root, /*divider_changed=*/false));
     num_items_ += grid->size();
     grid_list_.push_back(std::move(grid));
   }
@@ -339,9 +319,6 @@ void WindowSelector::Init(const WindowList& windows,
     // these layouts should be suppressed during overview mode so they don't
     // conflict with overview mode animations.
 
-    WindowList mru_window_list =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-
     // Do not call PrepareForOverview until all items are added to window_list_
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
@@ -351,8 +328,6 @@ void WindowSelector::Init(const WindowList& windows,
       // Do not animate if there is any window that is being dragged in the
       // grid.
       if (enter_exit_overview_type_ == EnterExitOverviewType::kWindowDragged) {
-        if (!mru_window_list.empty())
-          DCHECK(GetDraggedWindow(window_grid->root_window(), mru_window_list));
         window_grid->PositionWindows(/*animate=*/false);
       } else if (enter_exit_overview_type_ ==
                  EnterExitOverviewType::kWindowsMinimized) {
@@ -371,7 +346,7 @@ void WindowSelector::Init(const WindowList& windows,
     }
 
     // Image used for text filter textfield.
-    gfx::ImageSkia search_image =
+    const gfx::ImageSkia search_image =
         gfx::CreateVectorIcon(kOverviewTextFilterSearchIcon,
                               kTextFilterIconSize, kTextFilterIconColor);
 
