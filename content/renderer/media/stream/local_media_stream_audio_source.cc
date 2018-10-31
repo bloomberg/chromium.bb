@@ -63,6 +63,16 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
   if (source_)
     return true;
 
+  std::string str = base::StringPrintf(
+      "LocalMediaStreamAudioSource::EnsureSourceIsStarted. render_frame_id=%d"
+      ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
+      ", session_id=%d, effects=%d. ",
+      consumer_render_frame_id_, device().input.channel_layout(),
+      device().input.sample_rate(), device().input.frames_per_buffer(),
+      device().session_id, device().input.effects());
+  WebRtcLogMessage(str);
+  DVLOG(1) << str;
+
   // Sanity-check that the consuming RenderFrame still exists. This is required
   // by AudioDeviceFactory.
   if (!RenderFrameImpl::FromRoutingID(consumer_render_frame_id_))

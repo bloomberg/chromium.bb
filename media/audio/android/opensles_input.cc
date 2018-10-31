@@ -30,8 +30,10 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
       active_buffer_index_(0),
       buffer_size_bytes_(0),
       started_(false),
-      audio_bus_(media::AudioBus::Create(params)) {
+      audio_bus_(media::AudioBus::Create(params)),
+      no_effects_(params.effects() == AudioParameters::NO_EFFECTS) {
   DVLOG(2) << __PRETTY_FUNCTION__;
+  DVLOG(1) << "Audio effects enabled: " << !no_effects_;
 
   const SampleFormat kSampleFormat = kSampleFormatS16;
 
@@ -164,31 +166,25 @@ void OpenSLESInputStream::Close() {
 }
 
 double OpenSLESInputStream::GetMaxVolume() {
-  NOTIMPLEMENTED();
   return 0.0;
 }
 
 void OpenSLESInputStream::SetVolume(double volume) {
-  NOTIMPLEMENTED();
 }
 
 double OpenSLESInputStream::GetVolume() {
-  NOTIMPLEMENTED();
   return 0.0;
 }
 
 bool OpenSLESInputStream::SetAutomaticGainControl(bool enabled) {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool OpenSLESInputStream::GetAutomaticGainControl() {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool OpenSLESInputStream::IsMuted() {
-  NOTIMPLEMENTED();
   return false;
 }
 
@@ -257,8 +253,11 @@ bool OpenSLESInputStream::CreateRecorder() {
                                      &recorder_config),
       false);
 
-  // Uses the main microphone tuned for audio communications.
-  SLint32 stream_type = SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+  // Uses the main microphone tuned for audio communications if effects are
+  // enabled and disables all audio processing if effects are disabled.
+  SLint32 stream_type = no_effects_
+                            ? SL_ANDROID_RECORDING_PRESET_CAMCORDER
+                            : SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
   LOG_ON_FAILURE_AND_RETURN(
       (*recorder_config)->SetConfiguration(recorder_config,
                                            SL_ANDROID_KEY_RECORDING_PRESET,
