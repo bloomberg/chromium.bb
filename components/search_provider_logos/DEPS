@@ -10,5 +10,6 @@ include_rules = [
   "+services/network/public/mojom",
   "+services/network/test",
   "+third_party/skia/include/core/SkBitmap.h",
+  "+ui/gfx/geometry",
   "+ui/gfx/image",
 ]
