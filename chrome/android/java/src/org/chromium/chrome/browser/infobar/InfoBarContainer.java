@@ -130,7 +130,9 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
             WebContents webContents = tab.getWebContents();
             if (webContents != null && webContents != getWebContents()) {
                 setWebContents(webContents);
-                nativeSetWebContents(mNativeInfoBarContainer, webContents);
+                if (mNativeInfoBarContainer != 0) {
+                    nativeSetWebContents(mNativeInfoBarContainer, webContents);
+                }
             }
 
             mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
@@ -170,11 +172,11 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
     /** Helper class to manage showing in-product help bubbles over specific info bars. */
     private final IPHInfoBarSupport mIPHSupport;
 
-    /** Native InfoBarContainer pointer which will be set by nativeInit(). */
-    private final long mNativeInfoBarContainer;
-
     /** The list of all InfoBars in this container, regardless of whether they've been shown yet. */
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<InfoBar>();
+
+    /** Native InfoBarContainer pointer which will be set by nativeInit(). */
+    private long mNativeInfoBarContainer;
 
     /** True when this container has been emptied and its native counterpart has been destroyed. */
     private boolean mDestroyed;
@@ -429,6 +431,7 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         mDestroyed = true;
         if (mNativeInfoBarContainer != 0) {
             nativeDestroy(mNativeInfoBarContainer);
+            mNativeInfoBarContainer = 0;
         }
     }
 
