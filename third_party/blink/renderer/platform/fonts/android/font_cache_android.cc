@@ -56,7 +56,7 @@ static AtomicString DefaultFontFamily(sk_sp<SkFontMgr> font_manager) {
   // do here, use "Arial", the value LayoutTheme uses for CSS system font
   // keywords such as "menu".
   NOTREACHED();
-  return FontFamilyNames::Arial;
+  return font_family_names::kArial;
 }
 
 static AtomicString DefaultFontFamily() {
@@ -99,7 +99,7 @@ AtomicString FontCache::GetGenericFamilyNameForScript(
   // i18n fonts are likely not monospace. Monospace is mostly used
   // for code, but when i18n characters appear in monospace, system
   // fallback can still render the characters.
-  if (family_name == FontFamilyNames::webkit_monospace)
+  if (family_name == font_family_names::kWebkitMonospace)
     return family_name;
 
   // The CJK hack below should be removed, at latest when we have

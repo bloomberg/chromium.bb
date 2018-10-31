@@ -19,7 +19,7 @@ namespace blink {
 void TestSystemFontContainsString(FontSelectionValue desired_weight,
                                   NSString* substring) {
   NSFont* font =
-      MatchNSFontFamily(FontFamilyNames::system_ui, 0, desired_weight, 11);
+      MatchNSFontFamily(font_family_names::kSystemUi, 0, desired_weight, 11);
   EXPECT_TRUE([font.description containsString:substring]);
 }
 

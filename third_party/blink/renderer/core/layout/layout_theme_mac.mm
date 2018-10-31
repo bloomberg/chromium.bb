@@ -260,7 +260,7 @@ void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
                    : NormalSlopeValue();
   font_weight = ToFontWeight([font_manager weightOfFont:font]);
   font_size = [font pointSize];
-  font_family = FontFamilyNames::system_ui;
+  font_family = font_family_names::kSystemUi;
 }
 
 static RGBA32 ConvertNSColorToColor(NSColor* color) {
@@ -482,7 +482,7 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
     if (!FontSizeMatchesToControlSize(style))
       return true;
     if (style.GetFontDescription().Family().Family() !=
-        FontFamilyNames::system_ui)
+        font_family_names::kSystemUi)
       return true;
     if (!style.Height().IsIntrinsicOrAuto())
       return true;
@@ -648,7 +648,7 @@ void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
 
   NSFont* font = [NSFont
       systemFontOfSize:[NSFont systemFontSizeForControlSize:control_size]];
-  font_description.FirstFamily().SetFamily(FontFamilyNames::system_ui);
+  font_description.FirstFamily().SetFamily(font_family_names::kSystemUi);
   font_description.SetComputedSize([font pointSize] * style.EffectiveZoom());
   font_description.SetSpecifiedSize([font pointSize] * style.EffectiveZoom());
 

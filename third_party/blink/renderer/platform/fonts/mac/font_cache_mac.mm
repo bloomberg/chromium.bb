@@ -63,7 +63,7 @@ const char kColorEmojiFontMac[] = "Apple Color Emoji";
 
 // static
 const AtomicString& FontCache::LegacySystemFontFamily() {
-  return FontFamilyNames::BlinkMacSystemFont;
+  return font_family_names::kBlinkMacSystemFont;
 }
 
 static void InvalidateFontCache() {
@@ -232,7 +232,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   // For now we'll pick the default that the user would get without changing
   // any prefs.
   scoped_refptr<SimpleFontData> simple_font_data =
-      GetFontData(font_description, FontFamilyNames::Times,
+      GetFontData(font_description, font_family_names::kTimes,
                   AlternateFontName::kAllowAlternate, should_retain);
   if (simple_font_data)
     return simple_font_data;
@@ -241,7 +241,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   // where the user doesn't have it, we fall back on Lucida Grande because
   // that's guaranteed to be there, according to Nathan Taylor. This is good
   // enough to avoid a crash at least.
-  return GetFontData(font_description, FontFamilyNames::Lucida_Grande,
+  return GetFontData(font_description, font_family_names::kLucidaGrande,
                      AlternateFontName::kAllowAlternate, should_retain);
 }
 

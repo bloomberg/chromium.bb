@@ -89,10 +89,10 @@ FontPlatformData* FontCache::SystemFontPlatformData(
     const FontDescription& font_description) {
   const AtomicString& family = FontCache::SystemFontFamily();
 #if defined(OS_LINUX)
-  if (family.IsEmpty() || family == FontFamilyNames::system_ui)
+  if (family.IsEmpty() || family == font_family_names::kSystemUi)
     return nullptr;
 #else
-  DCHECK(!family.IsEmpty() && family != FontFamilyNames::system_ui);
+  DCHECK(!family.IsEmpty() && family != font_family_names::kSystemUi);
 #endif
   return GetFontPlatformData(font_description, FontFaceCreationParams(family),
                              AlternateFontName::kNoAlternate);
@@ -110,7 +110,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
 
 #if !defined(OS_MACOSX)
   if (creation_params.CreationType() == kCreateFontByFamily &&
-      creation_params.Family() == FontFamilyNames::system_ui) {
+      creation_params.Family() == font_family_names::kSystemUi) {
     return SystemFontPlatformData(font_description);
   }
 #endif

@@ -379,22 +379,22 @@ bool FontFace::SetFamilyValue(const CSSValue& family_value) {
     // types.
     switch (ToCSSIdentifierValue(family_value).GetValueID()) {
       case CSSValueSerif:
-        family = FontFamilyNames::webkit_serif;
+        family = font_family_names::kWebkitSerif;
         break;
       case CSSValueSansSerif:
-        family = FontFamilyNames::webkit_sans_serif;
+        family = font_family_names::kWebkitSansSerif;
         break;
       case CSSValueCursive:
-        family = FontFamilyNames::webkit_cursive;
+        family = font_family_names::kWebkitCursive;
         break;
       case CSSValueFantasy:
-        family = FontFamilyNames::webkit_fantasy;
+        family = font_family_names::kWebkitFantasy;
         break;
       case CSSValueMonospace:
-        family = FontFamilyNames::webkit_monospace;
+        family = font_family_names::kWebkitMonospace;
         break;
       case CSSValueWebkitPictograph:
-        family = FontFamilyNames::webkit_pictograph;
+        family = font_family_names::kWebkitPictograph;
         break;
       default:
         return false;

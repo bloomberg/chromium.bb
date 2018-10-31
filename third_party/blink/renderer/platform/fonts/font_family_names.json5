@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "FontFamily",
+    namespace: "font_family_names",
     export: "PLATFORM_EXPORT",
   },
 
