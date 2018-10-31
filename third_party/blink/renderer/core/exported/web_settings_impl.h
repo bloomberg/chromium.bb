@@ -137,7 +137,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAvailableHoverTypes(int) override;
   void SetPrimaryHoverType(HoverType) override;
   void SetPreferHiddenVolumeControls(bool) override;
-  void SetShouldThrottlePushState(bool) override;
+  void SetShouldProtectAgainstIpcFlooding(bool) override;
   void SetRenderVSyncNotificationEnabled(bool) override;
   void SetReportScreenSizeInPhysicalPixelsQuirk(bool) override;
   void SetRubberBandingOnCompositorThread(bool) override;

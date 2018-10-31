@@ -947,7 +947,7 @@
       type: "WebEffectiveConnectionType",
     },
     {
-      name: "shouldThrottlePushState",
+      name: "shouldProtectAgainstIpcFlooding",
       initial: true,
     },
 

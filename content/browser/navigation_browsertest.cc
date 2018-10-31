@@ -1343,4 +1343,58 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeReload) {
   CheckResourcesRequested();
 }
 
+// Ensure the renderer process doesn't send too many IPC to the browser process
+// when history.pushState() and history.back() are called in a loop.
+// Failing to do so causes the browser to become unresponsive.
+// See https://crbug.com/882238
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_GoToEntryAtOffset) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Throttling navigation to prevent the browser from hanging. See "
+          "https://crbug.com/882238 and "
+          "chrome://flags/#disable-ipc-flooding-protection"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  EXPECT_TRUE(ExecuteScript(shell(), R"(
+    for(let i = 0; i<1000; ++i) {
+      history.pushState({},"page 2", "bar.html");
+      history.back();
+    }
+  )"));
+
+  console_delegate->Wait();
+}
+
+// Ensure the renderer process doesn't send too many IPC to the browser process
+// when doing a same-document navigation is requested in a loop.
+// Failing to do so causes the browser to become unresponsive.
+// TODO(arthursonzogni): Make the same test, but when the navigation is
+// requested from a remote frame.
+// See https://crbug.com/882238
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_Navigation) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Throttling navigation to prevent the browser from hanging. See "
+          "https://crbug.com/882238 and "
+          "chrome://flags/#disable-ipc-flooding-protection"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  EXPECT_TRUE(ExecuteScript(shell(), R"(
+    for(let i = 0; i<1000; ++i) {
+      location.href = "#" + i;
+      ++i;
+    }
+  )"));
+
+  console_delegate->Wait();
+}
+
 }  // namespace content

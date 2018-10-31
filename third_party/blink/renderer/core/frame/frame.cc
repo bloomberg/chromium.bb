@@ -69,6 +69,7 @@ void Frame::Trace(blink::Visitor* visitor) {
   visitor->Trace(window_proxy_manager_);
   visitor->Trace(dom_window_);
   visitor->Trace(client_);
+  visitor->Trace(navigation_rate_limiter_);
 }
 
 void Frame::Detach(FrameDetachType type) {
@@ -249,6 +250,7 @@ Frame::Frame(FrameClient* client,
       owner_(owner),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
+      navigation_rate_limiter_(*this),
       is_loading_(false),
       devtools_frame_token_(client->GetDevToolsFrameToken()),
       create_stack_(base::debug::StackTrace()) {
