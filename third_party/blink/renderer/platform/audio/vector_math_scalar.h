@@ -14,7 +14,7 @@
 
 namespace blink {
 namespace vector_math {
-namespace Scalar {
+namespace scalar {
 
 static ALWAYS_INLINE void Conv(const float* source_p,
                                int source_stride,
@@ -426,7 +426,7 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
   }
 }
 
-}  // namespace Scalar
+}  // namespace scalar
 }  // namespace vector_math
 }  // namespace blink
 

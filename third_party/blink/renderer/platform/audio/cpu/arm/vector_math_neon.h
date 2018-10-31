@@ -13,10 +13,10 @@
 
 namespace blink {
 namespace vector_math {
-namespace NEON {
+namespace neon {
 
 // TODO: Consider optimizing this.
-using Scalar::Conv;
+using scalar::Conv;
 
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
@@ -43,7 +43,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
     n = tail_frames;
   }
 
-  Scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -71,7 +71,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
+  scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
                 dest_p, dest_stride, n);
 }
 
@@ -101,7 +101,7 @@ static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vmaxmgv(source_p, source_stride, max_p, n);
+  scalar::Vmaxmgv(source_p, source_stride, max_p, n);
 }
 
 static ALWAYS_INLINE void Vmul(const float* source1p,
@@ -129,7 +129,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
     n = tail_frames;
   }
 
-  Scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -159,7 +159,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vsmul(const float* source_p,
@@ -185,7 +185,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vsvesq(const float* source_p,
@@ -214,7 +214,7 @@ static ALWAYS_INLINE void Vsvesq(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsvesq(source_p, source_stride, sum_p, n);
+  scalar::Vsvesq(source_p, source_stride, sum_p, n);
 }
 
 static ALWAYS_INLINE void Zvmul(const float* real1p,
@@ -242,11 +242,11 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
     i += 4;
   }
 
-  Scalar::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
+  scalar::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
                 imag_dest_p + i, frames_to_process - i);
 }
 
-}  // namespace NEON
+}  // namespace neon
 }  // namespace vector_math
 }  // namespace blink
 

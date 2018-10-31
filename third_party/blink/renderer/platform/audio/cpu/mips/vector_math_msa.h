@@ -12,12 +12,12 @@
 
 namespace blink {
 namespace vector_math {
-namespace MSA {
+namespace msa {
 
 // TODO: Consider optimizing these.
-using Scalar::Conv;
-using Scalar::Vsvesq;
-using Scalar::Zvmul;
+using scalar::Conv;
+using scalar::Vsvesq;
+using scalar::Zvmul;
 
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
@@ -48,7 +48,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
     }
   }
 
-  Scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -83,7 +83,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
     }
   }
 
-  Scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
+  scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
                 dest_p, dest_stride, n);
 }
 
@@ -115,7 +115,7 @@ static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
     *max_p = std::max(*max_p, vMax[3]);
   }
 
-  Scalar::Vmaxmgv(source_p, source_stride, max_p, n);
+  scalar::Vmaxmgv(source_p, source_stride, max_p, n);
 }
 
 static ALWAYS_INLINE void Vmul(const float* source1p,
@@ -147,7 +147,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
     }
   }
 
-  Scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -180,7 +180,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
     }
   }
 
-  Scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vsmul(const float* source_p,
@@ -209,10 +209,10 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
     }
   }
 
-  Scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
-}  // namespace MSA
+}  // namespace msa
 }  // namespace vector_math
 }  // namespace blink
 
