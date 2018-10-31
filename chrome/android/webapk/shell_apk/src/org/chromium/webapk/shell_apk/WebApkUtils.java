@@ -241,7 +241,7 @@ public class WebApkUtils {
     /**
      * Returns the Intent to query a list of installed browser apps.
      */
-    static Intent getQueryInstalledBrowsersIntent() {
+    public static Intent getQueryInstalledBrowsersIntent() {
         return new Intent()
                 .setAction(Intent.ACTION_VIEW)
                 .addCategory(Intent.CATEGORY_BROWSABLE)

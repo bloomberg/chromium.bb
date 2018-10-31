@@ -7,7 +7,7 @@ package org.chromium.webapk.shell_apk;
 /**
  * UI-less activity which launches host browser.
  */
-public class TransparentHostBrowserLauncherActivity extends HostBrowserLauncherActivity {
+public class TransparentLauncherActivity extends HostBrowserLauncherActivity {
     @Override
     protected void showSplashScreen() {}
 

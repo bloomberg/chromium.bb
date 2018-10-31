@@ -6,6 +6,7 @@ package org.chromium.webapk.shell_apk.h2o;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -23,6 +24,15 @@ import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Displays splash screen. */
 public class SplashActivity extends HostBrowserLauncherActivity {
+    /** Returns whether {@link SplashActivity} is enabled. */
+    public static boolean checkComponentEnabled(Context context) {
+        PackageManager pm = context.getPackageManager();
+        ComponentName component = new ComponentName(context, SplashActivity.class);
+        int enabledSetting = pm.getComponentEnabledSetting(component);
+        // Component is disabled by default.
+        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+    }
+
     @Override
     protected void showSplashScreen() {
         Bundle metadata = WebApkUtils.readMetaData(this);
@@ -55,7 +65,7 @@ public class SplashActivity extends HostBrowserLauncherActivity {
 
         Context appContext = getApplicationContext();
 
-        if (!H2OLauncher.shouldMainIntentLaunchSplashActivity(params)) {
+        if (!H2OLauncher.shouldIntentLaunchSplashActivity(params)) {
             HostBrowserLauncher.launch(appContext, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OMainActivity.class), getComponentName());
