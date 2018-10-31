@@ -26,6 +26,7 @@ class AudioMediaDataSource : public mojom::AssistantMediaDataSource {
 
   // mojom::MediaDataSource implementation.
   // Called by utility process. Must be called after |set_delegate()|.
+  // The caller must wait for callback to finish before issuing the next read.
   void Read(uint32_t size,
             mojom::AssistantMediaDataSource::ReadCallback callback) override;
 
