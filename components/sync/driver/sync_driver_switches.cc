@@ -75,6 +75,10 @@ const base::Feature kSyncPseudoUSSSupervisedUsers{
 const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether a user can send tabs between synced devices
+const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, allows the Sync machinery ("transport layer") to start
 // independently of Sync-the-feature.
 const base::Feature kSyncStandaloneTransport{"SyncStandaloneTransport",

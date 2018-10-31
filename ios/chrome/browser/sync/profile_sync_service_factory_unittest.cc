@@ -14,6 +14,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -42,7 +43,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
  protected:
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(42 == syncer::MODEL_TYPE_COUNT,
+    static_assert(43 == syncer::MODEL_TYPE_COUNT,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -68,6 +69,9 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
     datatypes.push_back(syncer::USER_EVENTS);
     if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
       datatypes.push_back(syncer::USER_CONSENTS);
+    }
+    if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+      datatypes.push_back(syncer::SEND_TAB_TO_SELF);
     }
 
     return datatypes;

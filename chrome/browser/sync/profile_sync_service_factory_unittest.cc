@@ -45,7 +45,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(42 == syncer::MODEL_TYPE_COUNT,
+    static_assert(43 == syncer::MODEL_TYPE_COUNT,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -95,7 +95,9 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
       datatypes.push_back(syncer::USER_CONSENTS);
     }
-
+    if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+      datatypes.push_back(syncer::SEND_TAB_TO_SELF);
+    }
     return datatypes;
   }
 

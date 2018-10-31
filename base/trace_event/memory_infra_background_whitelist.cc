@@ -337,6 +337,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "sync/0x?/model_type/PRIORITY_PREFERENCE",
     "sync/0x?/model_type/READING_LIST",
     "sync/0x?/model_type/SEARCH_ENGINE",
+    "sync/0x?/model_type/SEND_TAB_TO_SELF",
     "sync/0x?/model_type/SESSION",
     "sync/0x?/model_type/SYNCED_NOTIFICATION",
     "sync/0x?/model_type/SYNCED_NOTIFICATION_APP_INFO",

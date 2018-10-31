@@ -136,6 +136,8 @@ enum ModelType {
   MOUNTAIN_SHARES,
   // Commit only user consents.
   USER_CONSENTS,
+  // Tabs sent between devices.
+  SEND_TAB_TO_SELF,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -214,7 +216,7 @@ constexpr ModelTypeSet ProtocolTypes() {
       DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
       WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS,
       READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES,
-      USER_CONSENTS);
+      USER_CONSENTS, SEND_TAB_TO_SELF);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
