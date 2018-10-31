@@ -213,7 +213,9 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       mouse_actively_entered_(false) {
   DCHECK(delegate_);
   DCHECK(params_.parent_window);
-  DCHECK(anchor_widget());  // Computed by BubbleDialogDelegateView().
+  // anchor_widget() is computed by BubbleDialogDelegateView().
+  DCHECK(((init_params.anchor_mode != TrayBubbleView::AnchorMode::kView) ||
+          anchor_widget()));
   bubble_border_->set_use_theme_background_color(!init_params.bg_color);
   if (init_params.corner_radius)
     bubble_border_->SetCornerRadius(init_params.corner_radius.value());
@@ -231,6 +233,11 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
   layout->SetDefaultFlex(1);
   layout_ = SetLayoutManager(std::move(layout));
+
+  if (init_params.anchor_mode == AnchorMode::kRect) {
+    SetAnchorView(nullptr);
+    SetAnchorRect(init_params.anchor_rect);
+  }
 }
 
 TrayBubbleView::~TrayBubbleView() {
@@ -306,7 +313,18 @@ void TrayBubbleView::ResetDelegate() {
 }
 
 void TrayBubbleView::ChangeAnchorView(views::View* anchor_view) {
+  DCHECK_EQ(AnchorMode::kView, params_.anchor_mode);
   BubbleDialogDelegateView::SetAnchorView(anchor_view);
+}
+
+void TrayBubbleView::ChangeAnchorRect(const gfx::Rect& rect) {
+  DCHECK_EQ(AnchorMode::kRect, params_.anchor_mode);
+  BubbleDialogDelegateView::SetAnchorRect(rect);
+}
+
+void TrayBubbleView::ChangeAnchorAlignment(
+    TrayBubbleView::AnchorAlignment alignment) {
+  SetArrow(GetArrowAlignment(alignment));
 }
 
 int TrayBubbleView::GetDialogButtons() const {

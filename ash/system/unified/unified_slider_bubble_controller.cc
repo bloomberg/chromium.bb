@@ -165,7 +165,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.delegate = this;
   init_params.parent_window = tray_->GetBubbleWindowContainer();
   init_params.anchor_view =
-      tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
+      tray_->shelf()->GetSystemTrayAnchorView()->GetBubbleAnchor();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
 

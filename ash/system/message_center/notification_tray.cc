@@ -368,7 +368,7 @@ bool NotificationTray::ShowMessageCenter(bool show_by_click) {
   // horizontal (i.e. bottom) shelves, anchor to the system tray.
   TrayBackgroundView* anchor_tray = this;
   if (shelf()->IsHorizontalAlignment())
-    anchor_tray = shelf()->GetSystemTrayAnchor();
+    anchor_tray = shelf()->GetSystemTrayAnchorView();
 
   message_center_bubble_ = std::make_unique<NotificationBubbleWrapper>(
       this, anchor_tray, message_center_bubble, show_by_click);
@@ -436,7 +436,7 @@ void NotificationTray::UpdateAfterRootWindowBoundsChange(
     const gfx::Rect& new_bounds) {
   TrayBackgroundView::UpdateAfterRootWindowBoundsChange(old_bounds, new_bounds);
   // Hide the message center bubble, since the bounds may not have enough to
-  // show the current size of the message center. This handler is invoked when
+  // show the current size of the message center. This  handler is invoked when
   // the screen is rotated or the screen size is changed.
   message_center_ui_controller_->HideMessageCenterBubble();
 }
@@ -444,7 +444,7 @@ void NotificationTray::UpdateAfterRootWindowBoundsChange(
 void NotificationTray::AnchorUpdated() {
   if (message_center_bubble()) {
     UpdateClippingWindowBounds();
-    shelf()->GetSystemTrayAnchor()->UpdateClippingWindowBounds();
+    shelf()->GetSystemTrayAnchorView()->UpdateClippingWindowBounds();
     message_center_bubble()->bubble_view()->UpdateBubble();
     // Should check |message_center_bubble_| again here. Since UpdateBubble
     // above set the bounds of the bubble which will stop the current

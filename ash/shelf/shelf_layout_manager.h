@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -52,6 +53,7 @@ class ASH_EXPORT ShelfLayoutManager
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
+      public display::DisplayObserver,
       public SessionObserver,
       public WallpaperControllerObserver {
  public:
@@ -80,7 +82,7 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsVisible() const;
 
   // Returns the ideal bounds of the shelf assuming it is visible.
-  gfx::Rect GetIdealBounds();
+  gfx::Rect GetIdealBounds() const;
 
   // Returns the preferred size of the shelf for the target visibility state.
   gfx::Size GetPreferredSize();
@@ -188,6 +190,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from WallpaperControllerObserver:
   void OnWallpaperBlurChanged() override;
   void OnFirstWallpaperShown() override;
+
+  // DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
