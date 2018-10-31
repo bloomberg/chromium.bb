@@ -34,7 +34,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -49,14 +48,14 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -137,7 +136,7 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
     if (ready_->GetExecutionContext() &&
         !ready_->GetExecutionContext()->IsContextDestroyed()) {
       ready_->Resolve(
-          ServiceWorkerContainerClient::From(
+          ServiceWorkerContainer::From(
               To<Document>(ready_->GetExecutionContext()))
               ->GetOrCreateServiceWorkerRegistration(std::move(info)));
     }
@@ -148,10 +147,37 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
   DISALLOW_COPY_AND_ASSIGN(GetRegistrationForReadyCallback);
 };
 
-ServiceWorkerContainer* ServiceWorkerContainer::Create(
-    ExecutionContext* execution_context,
-    NavigatorServiceWorker* navigator) {
-  return new ServiceWorkerContainer(execution_context, navigator);
+const char ServiceWorkerContainer::kSupplementName[] = "ServiceWorkerContainer";
+
+ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
+  if (!document)
+    return nullptr;
+
+  ServiceWorkerContainer* container =
+      Supplement<Document>::From<ServiceWorkerContainer>(document);
+  if (!container) {
+    // TODO(leonhsl): Figure out whether it's really necessary to create an
+    // instance when there's no frame or frame client for |document|.
+    container = new ServiceWorkerContainer(document);
+    Supplement<Document>::ProvideTo(*document, container);
+    if (document->GetFrame() && document->GetFrame()->Client()) {
+      std::unique_ptr<WebServiceWorkerProvider> provider =
+          document->GetFrame()->Client()->CreateServiceWorkerProvider();
+      if (provider) {
+        provider->SetClient(container);
+        container->provider_ = std::move(provider);
+      }
+    }
+  }
+  return container;
+}
+
+ServiceWorkerContainer* ServiceWorkerContainer::CreateForTesting(
+    Document* document,
+    std::unique_ptr<WebServiceWorkerProvider> provider) {
+  ServiceWorkerContainer* container = new ServiceWorkerContainer(document);
+  container->provider_ = std::move(provider);
+  return container;
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer() {
@@ -164,14 +190,15 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
     provider_ = nullptr;
   }
   controller_ = nullptr;
-  navigator_->ClearServiceWorker();
 }
 
 void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
-  visitor->Trace(navigator_);
+  visitor->Trace(service_worker_registration_objects_);
+  visitor->Trace(service_worker_objects_);
   EventTargetWithInlineData::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 
@@ -476,26 +503,47 @@ void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {
     Deprecation::CountDeprecation(GetExecutionContext(), feature);
 }
 
+ExecutionContext* ServiceWorkerContainer::GetExecutionContext() const {
+  return GetSupplementable();
+}
+
 const AtomicString& ServiceWorkerContainer::InterfaceName() const {
   return EventTargetNames::ServiceWorkerContainer;
 }
 
-ServiceWorkerContainer::ServiceWorkerContainer(
-    ExecutionContext* execution_context,
-    NavigatorServiceWorker* navigator)
-    : ContextLifecycleObserver(execution_context),
-      provider_(nullptr),
-      navigator_(navigator) {
-  if (!execution_context)
-    return;
+ServiceWorkerRegistration*
+ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
+    WebServiceWorkerRegistrationObjectInfo info) {
+  if (info.registration_id == mojom::blink::kInvalidServiceWorkerRegistrationId)
+    return nullptr;
 
-  if (ServiceWorkerContainerClient* client =
-          ServiceWorkerContainerClient::From(To<Document>(execution_context))) {
-    provider_ = client->Provider();
-    if (provider_)
-      provider_->SetClient(this);
+  ServiceWorkerRegistration* registration =
+      service_worker_registration_objects_.at(info.registration_id);
+  if (registration) {
+    registration->Attach(std::move(info));
+    return registration;
   }
+
+  registration =
+      new ServiceWorkerRegistration(GetSupplementable(), std::move(info));
+  service_worker_registration_objects_.Set(info.registration_id, registration);
+  return registration;
 }
+
+ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
+    WebServiceWorkerObjectInfo info) {
+  if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
+    return nullptr;
+  ServiceWorker* worker = service_worker_objects_.at(info.version_id);
+  if (!worker) {
+    worker = new ServiceWorker(GetSupplementable(), std::move(info));
+    service_worker_objects_.Set(info.version_id, worker);
+  }
+  return worker;
+}
+
+ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
+    : Supplement<Document>(*document), ContextLifecycleObserver(document) {}
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {

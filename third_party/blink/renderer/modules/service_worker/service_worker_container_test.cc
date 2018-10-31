@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -154,19 +153,9 @@ class ServiceWorkerContainerTest : public PageTestBase {
     V8GCController::CollectAllGarbageForTesting(GetIsolate());
   }
 
-  ExecutionContext* GetExecutionContext() { return &GetDocument(); }
-  NavigatorServiceWorker* GetNavigatorServiceWorker() {
-    return NavigatorServiceWorker::From(GetDocument());
-  }
   v8::Isolate* GetIsolate() { return v8::Isolate::GetCurrent(); }
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
-  }
-
-  void Provide(std::unique_ptr<WebServiceWorkerProvider> provider) {
-    Supplement<Document>::ProvideTo(
-        GetDocument(),
-        new ServiceWorkerContainerClient(GetDocument(), std::move(provider)));
   }
 
   void SetPageURL(const String& url) {
@@ -187,10 +176,10 @@ class ServiceWorkerContainerTest : public PageTestBase {
                             const ScriptValueTest& value_test) {
     // When the registration is rejected, a register call must not reach
     // the provider.
-    Provide(std::make_unique<NotReachedWebServiceWorkerProvider>());
-
-    ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-        GetExecutionContext(), GetNavigatorServiceWorker());
+    ServiceWorkerContainer* container =
+        ServiceWorkerContainer::CreateForTesting(
+            &GetDocument(),
+            std::make_unique<NotReachedWebServiceWorkerProvider>());
     ScriptState::Scope script_scope(GetScriptState());
     RegistrationOptions options;
     options.setScope(scope);
@@ -201,10 +190,10 @@ class ServiceWorkerContainerTest : public PageTestBase {
 
   void TestGetRegistrationRejected(const String& document_url,
                                    const ScriptValueTest& value_test) {
-    Provide(std::make_unique<NotReachedWebServiceWorkerProvider>());
-
-    ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-        GetExecutionContext(), GetNavigatorServiceWorker());
+    ServiceWorkerContainer* container =
+        ServiceWorkerContainer::CreateForTesting(
+            &GetDocument(),
+            std::make_unique<NotReachedWebServiceWorkerProvider>());
     ScriptState::Scope script_scope(GetScriptState());
     ScriptPromise promise =
         container->getRegistration(GetScriptState(), document_url);
@@ -334,10 +323,8 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {
@@ -363,10 +350,8 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   {
     ScriptState::Scope script_scope(GetScriptState());
@@ -385,10 +370,8 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {
@@ -413,10 +396,8 @@ TEST_F(ServiceWorkerContainerTest, Register_TypeOptionDelegatesToProvider) {
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {

@@ -50,10 +50,9 @@ struct WebServiceWorkerError;
 //
 // It is implemented by content::WebServiceWorkerProviderImpl.
 //
-// WebServiceWorkerProvider is created in ServiceWorkerContainerClient::From(),
-// which is used to instantiate navigator.serviceWorker. It is
-// owned by ServiceWorkerContainerClient, which is a
-// garbage collected Supplement for Document.
+// WebServiceWorkerProvider is created in ServiceWorkerContainer::From(),
+// which is used to instantiate navigator.serviceWorker. It is owned by
+// ServiceWorkerContainer, which is a garbage collected Supplement for Document.
 //
 // Each ServiceWorkerContainer instance has a WebServiceWorkerProvider.
 // ServiceWorkerContainer is called the "client" of the

@@ -109,9 +109,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   void SetRegistration(WebServiceWorkerRegistrationObjectInfo info);
 
-  // Returns the ServiceWorker object described by the object info in current
-  // execution context. Creates a new object if needed, or else returns the
-  // existing one.
+  // Returns the ServiceWorker object described by the given info. Creates a new
+  // object if needed, or else returns the existing one.
   ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
 
   // EventTarget
