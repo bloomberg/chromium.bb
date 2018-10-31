@@ -12,7 +12,6 @@ import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
-import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
@@ -34,6 +33,9 @@ import "services/network/public/mojom/websocket.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+
+[EnableIf=is_ct_supported]
+import "services/network/public/mojom/ct_log_info.mojom";
 
 // Config for setting a custom proxy config that will be used if a request
 // matches the proxy rules and would otherwise be direct. This config allows
@@ -159,6 +161,7 @@ struct NetworkContextParams {
   //
   // See //net/docs/certificate-transparency.md before setting this flag to
   // true.
+  [EnableIf=is_ct_supported]
   bool enforce_chrome_ct_policy = false;
 
   // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
@@ -217,11 +220,13 @@ struct NetworkContextParams {
 
   // Enables Expect CT reporting, which sends reports for opted-in sites that
   // don't serve sufficient Certificate Transparency information.
+  [EnableIf=is_ct_supported]
   bool enable_expect_ct_reporting = false;
 
   // The Certificate Transparency logs that are known to the client. SCTs from
   // these logs will be extracted and verified; other SCTs will be treated as
   // unrecognized.
+  [EnableIf=is_ct_supported]
   array<CTLogInfo> ct_logs;
 
   // Specifies the path to the directory where NSS will store its database.
@@ -494,29 +499,33 @@ interface NetworkContext {
   // If false, the referrer of requests is never populated.
   SetEnableReferrers(bool enable_referrers);
 
+  // Updates the additional trust anchors for certificate verification.
+  [EnableIf=is_chromeos]
+  UpdateTrustAnchors(array<X509Certificate> trust_anchors);
+
   // Updates the CT policy to be used for requests. Only applies if the
   // NetworkContextParams set enforce_chrome_ct_policy to true.
   // TODO(rsleevi): Remove this once Chrome-specific policies are moved out
   // of the network service.
+  [EnableIf=is_ct_supported]
   SetCTPolicy(array<string> required_hosts,
               array<string> excluded_hosts,
               array<string> excluded_spkis,
               array<string> excluded_legacy_spkis);
 
-  // Updates the additional trust anchors for certificate verification.
-  [EnableIf=is_chromeos]
-  UpdateTrustAnchors(array<X509Certificate> trust_anchors);
-
   // Adds explicitly-specified data as if it was processed from an Expect-CT
   // header.
+  [EnableIf=is_ct_supported]
   AddExpectCT(string host, mojo_base.mojom.Time expiry,
               bool enforce, url.mojom.Url report_uri) => (bool success);
 
   // Send a test CT report with dummy data for test purposes.
+  [EnableIf=is_ct_supported]
   SetExpectCTTestReport(url.mojom.Url report_uri) => (bool success);
 
   // Retrieves the expect CT state from the associated network context
   // transport security state.
+  [EnableIf=is_ct_supported]
   GetExpectCTState(string domain) => (mojo_base.mojom.DictionaryValue state);
 
   // Creates a UDP socket. Caller can supply a |receiver| interface pointer

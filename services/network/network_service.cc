@@ -17,8 +17,6 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/certificate_transparency/sth_distributor.h"
-#include "components/certificate_transparency/sth_observer.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
@@ -48,6 +46,10 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "components/certificate_transparency/sth_distributor.h"
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
@@ -198,8 +200,10 @@ NetworkService::NetworkService(
   host_resolver_ = CreateHostResolver(net_log_);
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
+#if BUILDFLAG(IS_CT_SUPPORTED)
   sth_distributor_ =
       std::make_unique<certificate_transparency::STHDistributor>();
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 }
 
@@ -442,9 +446,11 @@ void NetworkService::GetTotalNetworkUsages(
   std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
   sth_distributor_->NewSTHObserved(sth);
 }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
   crl_set_distributor_->OnNewCRLSet(crl_set);
@@ -507,9 +513,11 @@ void NetworkService::OnBeforeURLRequest() {
     MaybeStartUpdateLoadInfoTimer();
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 certificate_transparency::STHReporter* NetworkService::sth_reporter() {
   return sth_distributor_.get();
 }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

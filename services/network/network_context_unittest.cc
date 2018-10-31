@@ -90,6 +90,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -118,10 +119,12 @@ const GURL kURL("http://foo.com");
 const GURL kOtherURL("http://other.com");
 constexpr char kMockHost[] = "mock.host";
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void StoreBool(bool* result, const base::Closure& callback, bool value) {
   *result = value;
   callback.Run();
 }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void StoreValue(base::Value* result,
                 const base::Closure& callback,
@@ -3596,6 +3599,7 @@ TEST_F(NetworkContextTest, CloseIdleConnections) {
       1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 TEST_F(NetworkContextTest, ExpectCT) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
@@ -3715,6 +3719,7 @@ TEST_F(NetworkContextTest, SetExpectCTTestReport) {
 
   EXPECT_TRUE(base::ContainsKey(requested_urls, kReportURL));
 }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 TEST_F(NetworkContextTest, QueryHSTS) {
   const char kTestDomain[] = "example.com";

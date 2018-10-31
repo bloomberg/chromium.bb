@@ -15,6 +15,7 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -81,14 +82,15 @@ class TestNetworkContext : public mojom::NetworkContext {
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
   void SetEnableReferrers(bool enable_referrers) override {}
+#if defined(OS_CHROMEOS)
+  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override {}
+#endif
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(
       const std::vector<std::string>& required_hosts,
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override {}
-#if defined(OS_CHROMEOS)
-  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override {}
-#endif
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,
@@ -98,6 +100,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                              SetExpectCTTestReportCallback callback) override {}
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override {}
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override {}
   void CreateTCPServerSocket(

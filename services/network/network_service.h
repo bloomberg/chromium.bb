@@ -24,6 +24,7 @@
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
@@ -40,10 +41,12 @@ class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 namespace certificate_transparency {
 class STHDistributor;
 class STHReporter;
 }  // namespace certificate_transparency
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 namespace network {
 
@@ -146,7 +149,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::NetworkQualityEstimatorManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
+#endif  // !BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateCRLSet(base::span<const uint8_t> crl_set) override;
   void OnCertDBChanged() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -184,7 +189,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return network_usage_accumulator_.get();
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   certificate_transparency::STHReporter* sth_reporter();
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
   CRLSetDistributor* crl_set_distributor() {
     return crl_set_distributor_.get();
   }
@@ -272,7 +280,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool os_crypt_config_set_ = false;
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending
