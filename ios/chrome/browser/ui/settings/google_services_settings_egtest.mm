@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -44,8 +43,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
 
   // Assert title and accessibility.
@@ -64,8 +61,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // The personalized section is expect to be collapsed and the non-personalized
 // section is expected to be expanded.
 - (void)testOpeningServicesWhileSignedOut {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
   [self assertPersonalizedServicesCollapsed:YES];
   [self assertNonPersonalizedServicesCollapsed:NO];
@@ -77,8 +72,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // The personalized section and the non-personalized section are expected to be
 // expanded.
 - (void)testOpeningServicesWhileSignedIn {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
@@ -93,8 +86,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // The personalized section and the non-personalized section are expected to be
 // collapsed.
 - (void)testOpeningServicesWhileSignedInAndConsentGiven {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
   GREYAssert(prefService->GetBoolean(kUnifiedConsentGiven),
@@ -107,8 +98,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Tests to expand/collapse the personalized section.
 - (void)testTogglePersonalizedServices {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
   [self assertPersonalizedServicesCollapsed:YES];
   [self togglePersonalizedServicesSection];
@@ -122,8 +111,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 
 // Tests to expand/collapse the non-personalized section.
 - (void)testToggleNonPersonalizedServices {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
   [self assertNonPersonalizedServicesCollapsed:NO];
   [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
@@ -138,8 +125,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // Tests the "Manage synced data" cell does nothing when the user is not signed
 // in.
 - (void)testOpenManageSyncedDataWebPage {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [self togglePersonalizedServicesSection];
@@ -153,8 +138,6 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // Tests the "Manage synced data" cell closes the settings, and opens the web
 // page, while the user is signed in without user consent.
 - (void)testOpenManageSyncedDataWebPageWhileSignedIn {
-  if (!IsUIRefreshPhase1Enabled())
-    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
