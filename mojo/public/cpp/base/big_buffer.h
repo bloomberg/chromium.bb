@@ -69,6 +69,7 @@ class COMPONENT_EXPORT(MOJO_BASE) BigBuffer {
   enum class StorageType {
     kBytes,
     kSharedMemory,
+    kInvalidBuffer,
   };
 
   // Defaults to empty vector storage.
@@ -165,6 +166,8 @@ class COMPONENT_EXPORT(MOJO_BASE) BigBufferView {
     DCHECK_EQ(storage_type_, BigBuffer::StorageType::kSharedMemory);
     return shared_memory_.value();
   }
+
+  static BigBufferView CreateInvalidForTest();
 
  private:
   BigBuffer::StorageType storage_type_;
