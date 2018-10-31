@@ -1468,7 +1468,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
-  bool IsSlotAssignmentOrLegacyDistributionDirty();
+  bool IsSlotAssignmentOrLegacyDistributionDirty() const;
 
 #if DCHECK_IS_ON()
   unsigned& SlotAssignmentRecalcForbiddenRecursionDepth() {
