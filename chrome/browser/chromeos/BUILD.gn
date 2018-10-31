@@ -1986,6 +1986,8 @@ static_library("test_support") {
     "extensions/test_external_cache.h",
     "lock_screen_apps/fake_lock_screen_profile_creator.cc",
     "lock_screen_apps/fake_lock_screen_profile_creator.h",
+    "login/demo_mode/demo_mode_test_helper.cc",
+    "login/demo_mode/demo_mode_test_helper.h",
     "login/enrollment/enterprise_enrollment_helper_mock.cc",
     "login/enrollment/enterprise_enrollment_helper_mock.h",
     "login/enrollment/mock_enrollment_screen.cc",
