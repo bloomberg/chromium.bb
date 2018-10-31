@@ -25,19 +25,26 @@ SyncUsernameTestBase::LocalFakeSyncService::GetPreferredDataTypes() const {
 
 SyncUsernameTestBase::SyncUsernameTestBase()
     : signin_client_(&prefs_),
+      token_service_(&prefs_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_,
                       &account_tracker_,
-                      nullptr /* signin_error_controller */) {
+                      nullptr /* signin_error_controller */),
 #else
-      token_service_(&prefs_),
       signin_manager_(&signin_client_,
                       &token_service_,
                       &account_tracker_,
                       nullptr, /* cookie_manager_service */
                       nullptr, /* signin_error_controller */
-                      signin::AccountConsistencyMethod::kDisabled) {
+                      signin::AccountConsistencyMethod::kDisabled),
 #endif
+      gaia_cookie_manager_service_(&token_service_,
+                                   "sync_username_test_base",
+                                   &signin_client_),
+      identity_test_env_(&account_tracker_,
+                         &token_service_,
+                         &signin_manager_,
+                         &gaia_cookie_manager_service_) {
   SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
   AccountTrackerService::RegisterPrefs(prefs_.registry());
 #if !defined(OS_CHROMEOS)
@@ -49,7 +56,18 @@ SyncUsernameTestBase::SyncUsernameTestBase()
 SyncUsernameTestBase::~SyncUsernameTestBase() {}
 
 void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
-  signin_manager_.SetAuthenticatedAccountInfo("12345", email);
+  // This method is called in a roll by some tests. Differently than
+  // SigninManager, IdentityTestEnvironment does not allow logging in
+  // without a previously log-out.
+  // So make sure tests only log in once and that the email is the same
+  // in case of FakeSigninAs calls roll.
+  identity::IdentityManager* identity_manager =
+      identity_test_env_.identity_manager();
+  if (identity_manager->HasPrimaryAccount()) {
+    DCHECK_EQ(identity_manager->GetPrimaryAccountInfo().email, email);
+  } else {
+    identity_test_env_.MakePrimaryAccountAvailable(email);
+  }
 }
 
 // static

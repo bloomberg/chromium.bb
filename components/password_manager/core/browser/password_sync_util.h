@@ -9,37 +9,40 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace password_manager {
 namespace sync_util {
 
-// Returns the sync username received from |signin_manager| (if not null).
+// Returns the sync username received from |identity_manager| (if not null).
 // Moreover, using |sync_service| (if not null), this function also tries to
 // return an empty string if the user isn't syncing passwords, but it is not
 // always possible to determine since this code can be called during sync setup
 // (http://crbug.com/393626).
 std::string GetSyncUsernameIfSyncingPasswords(
     const syncer::SyncService* sync_service,
-    const SigninManagerBase* signin_manager);
+    const identity::IdentityManager* identity_manager);
 
 // Returns true if |form| corresponds to the account specified by
 // GetSyncUsernameIfSyncingPasswords. Returns false if
 // GetSyncUsernameIfSyncingPasswords does not specify any account.
 bool IsSyncAccountCredential(const autofill::PasswordForm& form,
                              const syncer::SyncService* sync_service,
-                             const SigninManagerBase* signin_manager);
+                             const identity::IdentityManager* identity_manager);
 
 // If |form| doesn't match GAIA sign-on realm or enterprise-specified password
 // protection URL, returns false. Otherwise, return true.
 bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
-                            const SigninManagerBase* signin_manager,
+                            const identity::IdentityManager* identity_manager,
                             PrefService* prefs);
 
 // If |username| matches sync account.
 bool IsSyncAccountEmail(const std::string& username,
-                        const SigninManagerBase* signin_manager);
+                        const identity::IdentityManager* identity_manager);
 
 // If |signon_realm| matches Gaia signon realm.
 bool IsGaiaCredentialPage(const std::string& signon_realm);

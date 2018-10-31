@@ -23,7 +23,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
@@ -55,7 +55,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -75,6 +74,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/url_constants.h"
@@ -120,8 +120,9 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-const SigninManagerBase* GetSigninManagerForOriginalProfile(Profile* profile) {
-  return SigninManagerFactory::GetForProfile(profile->GetOriginalProfile());
+const identity::IdentityManager* GetIdentityManagerForOriginalProfile(
+    Profile* profile) {
+  return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }
 
 #if !defined(OS_ANDROID)
@@ -169,7 +170,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       credentials_filter_(
           this,
           base::BindRepeating(&GetSyncService, profile_),
-          base::BindRepeating(&GetSigninManagerForOriginalProfile, profile_)),
+          base::BindRepeating(&GetIdentityManagerForOriginalProfile, profile_)),
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
@@ -186,7 +187,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       *saving_and_filling_passwords_enabled_, this, GetSyncService(profile_),
-      GetSigninManagerForOriginalProfile(profile_), GetPrefs());
+      GetIdentityManagerForOriginalProfile(profile_), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 }
 

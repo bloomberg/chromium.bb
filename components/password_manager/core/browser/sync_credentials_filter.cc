@@ -42,10 +42,10 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
 SyncCredentialsFilter::SyncCredentialsFilter(
     const PasswordManagerClient* client,
     SyncServiceFactoryFunction sync_service_factory_function,
-    SigninManagerFactoryFunction signin_manager_factory_function)
+    IdentityManagerFactoryFunction identity_manager_factory_function)
     : client_(client),
       sync_service_factory_function_(sync_service_factory_function),
-      signin_manager_factory_function_(signin_manager_factory_function) {}
+      identity_manager_factory_function_(identity_manager_factory_function) {}
 
 SyncCredentialsFilter::~SyncCredentialsFilter() {}
 
@@ -81,7 +81,7 @@ bool SyncCredentialsFilter::ShouldSave(
          !form.is_gaia_with_skip_save_password_form &&
          !sync_util::IsSyncAccountCredential(
              form, sync_service_factory_function_.Run(),
-             signin_manager_factory_function_.Run());
+             identity_manager_factory_function_.Run());
 }
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
@@ -102,8 +102,8 @@ bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(
 
 bool SyncCredentialsFilter::IsSyncAccountEmail(
     const std::string& username) const {
-  return sync_util::IsSyncAccountEmail(username,
-                                       signin_manager_factory_function_.Run());
+  return sync_util::IsSyncAccountEmail(
+      username, identity_manager_factory_function_.Run());
 }
 
 void SyncCredentialsFilter::ReportFormLoginSuccess(
@@ -112,7 +112,7 @@ void SyncCredentialsFilter::ReportFormLoginSuccess(
       sync_util::IsSyncAccountCredential(
           form_manager.GetPendingCredentials(),
           sync_service_factory_function_.Run(),
-          signin_manager_factory_function_.Run())) {
+          identity_manager_factory_function_.Run())) {
     base::RecordAction(base::UserMetricsAction(
         "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
   }
