@@ -2898,13 +2898,9 @@
     {
       "id":275,
       "cr_bugs": [838725],
-      "description": "Disable AImageReader on ARM GPUs for Android O+ because of gpu hang",
+      "description": "Disable AImageReader on ARM GPUs as its buggy.",
       "os": {
-        "type": "android",
-        "version": {
-          "op": ">=",
-          "value": "8.0"
-        }
+        "type": "android"
       },
       "gl_vendor": "ARM.*",
       "features": [
@@ -2950,6 +2946,30 @@
       "gl_renderer": "Adreno \\(TM\\) .*",
       "features": [
         "use_copyteximage2d_instead_of_readpixels_on_multisampled_textures"
+      ]
+    },
+    {
+      "id":281,
+      "cr_bugs": [838725],
+      "description": "Disable AImageReader on Imagination Technologies GPU as its buggy.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination Technologies.*",
+      "features": [
+        "disable_aimagereader"
+      ]
+    },
+    {
+      "id":282,
+      "cr_bugs": [838725],
+      "description": "Disable AImageReader on NVIDIA GPU for as its buggy.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "disable_aimagereader"
       ]
     }
   ]
