@@ -768,7 +768,7 @@ void HTMLFormElement::AddToPastNamesMap(Element* element,
   if (past_name.IsEmpty())
     return;
   if (!past_names_map_)
-    past_names_map_ = new PastNamesMap;
+    past_names_map_ = MakeGarbageCollected<PastNamesMap>();
   past_names_map_->Set(past_name, element);
 }
 

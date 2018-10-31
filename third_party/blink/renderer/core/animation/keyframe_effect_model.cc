@@ -310,7 +310,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   if (keyframe_groups_)
     return;
 
-  keyframe_groups_ = new KeyframeGroupMap;
+  keyframe_groups_ = MakeGarbageCollected<KeyframeGroupMap>();
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
   DCHECK_EQ(computed_offsets.size(), keyframes_.size());

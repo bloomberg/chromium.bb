@@ -31,19 +31,22 @@ bool StyleInheritedVariables::operator==(
 }
 
 StyleInheritedVariables::StyleInheritedVariables()
-    : registered_data_(new HeapHashMap<AtomicString, Member<CSSValue>>),
+    : registered_data_(
+          MakeGarbageCollected<HeapHashMap<AtomicString, Member<CSSValue>>>()),
       root_(nullptr),
       needs_resolution_(false) {}
 
 StyleInheritedVariables::StyleInheritedVariables(
     StyleInheritedVariables& other) {
   if (!other.root_) {
-    registered_data_ = new HeapHashMap<AtomicString, Member<CSSValue>>;
+    registered_data_ =
+        MakeGarbageCollected<HeapHashMap<AtomicString, Member<CSSValue>>>();
     root_ = &other;
   } else {
     data_ = other.data_;
-    registered_data_ = new HeapHashMap<AtomicString, Member<CSSValue>>(
-        *other.registered_data_);
+    registered_data_ =
+        MakeGarbageCollected<HeapHashMap<AtomicString, Member<CSSValue>>>(
+            *other.registered_data_);
     root_ = other.root_;
   }
   needs_resolution_ = other.needs_resolution_;

@@ -230,7 +230,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_ptr_(std::move(area)),
       binding_(this),
-      areas_(new HeapHashMap<WeakMember<Source>, String>),
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
@@ -248,7 +248,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_associated_ptr_(std::move(area)),
       binding_(this),
-      areas_(new HeapHashMap<WeakMember<Source>, String>),
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));

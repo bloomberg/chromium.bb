@@ -236,7 +236,7 @@ InspectorDOMAgent::InspectorDOMAgent(
       inspected_frames_(inspected_frames),
       v8_session_(v8_session),
       dom_listener_(nullptr),
-      document_node_to_id_map_(new NodeToIdMap()),
+      document_node_to_id_map_(MakeGarbageCollected<NodeToIdMap>()),
       last_node_id_(1),
       suppress_attribute_modified_event_(false),
       enabled_(&agent_state_, /*default_value=*/false) {}
@@ -712,7 +712,7 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push) {
     node = parent;
 
   // Node being pushed is detached -> push subtree root.
-  NodeToIdMap* new_map = new NodeToIdMap;
+  NodeToIdMap* new_map = MakeGarbageCollected<NodeToIdMap>();
   NodeToIdMap* dangling_map = new_map;
   dangling_node_to_id_maps_.push_back(new_map);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =

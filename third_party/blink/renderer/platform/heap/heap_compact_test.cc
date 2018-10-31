@@ -257,7 +257,7 @@ TEST(HeapCompactTest, CompactVector) {
 TEST(HeapCompactTest, CompactHashMap) {
   ClearOutOldGarbage();
 
-  Persistent<IntMap> int_map = new IntMap();
+  Persistent<IntMap> int_map = MakeGarbageCollected<IntMap>();
   for (wtf_size_t i = 0; i < 100; ++i) {
     IntWrapper* val = IntWrapper::Create(i, HashTablesAreCompacted);
     int_map->insert(val, 100 - i);
@@ -315,7 +315,8 @@ TEST(HeapCompactTest, CompactHashPartVector) {
 
   using IntVectorMap = HeapHashMap<int, IntVector>;
 
-  Persistent<IntVectorMap> int_vector_map = new IntVectorMap();
+  Persistent<IntVectorMap> int_vector_map =
+      MakeGarbageCollected<IntVectorMap>();
   for (wtf_size_t i = 0; i < 10; ++i) {
     IntVector vector;
     for (wtf_size_t j = 0; j < 10; ++j) {
@@ -509,10 +510,11 @@ TEST(HeapCompactTest, CompactInlinedBackingStore) {
   using Value = HeapVector<Member<IntWrapper>, 64>;
   using MapWithInlinedBacking = HeapHashMap<Key, Value>;
 
-  Persistent<MapWithInlinedBacking> map = new MapWithInlinedBacking;
+  Persistent<MapWithInlinedBacking> map =
+      MakeGarbageCollected<MapWithInlinedBacking>();
   {
     // Create a map that is reclaimed during compaction.
-    (new MapWithInlinedBacking)
+    (MakeGarbageCollected<MapWithInlinedBacking>())
         ->insert(IntWrapper::Create(1, HashTablesAreCompacted), Value());
 
     IntWrapper* wrapper = IntWrapper::Create(1, HashTablesAreCompacted);

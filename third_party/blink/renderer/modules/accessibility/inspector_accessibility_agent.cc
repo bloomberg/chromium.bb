@@ -504,7 +504,7 @@ using EnabledAgentsMultimap =
 
 EnabledAgentsMultimap& EnabledAgents() {
   DEFINE_STATIC_LOCAL(Persistent<EnabledAgentsMultimap>, enabled_agents,
-                      (new EnabledAgentsMultimap()));
+                      (MakeGarbageCollected<EnabledAgentsMultimap>()));
   return *enabled_agents;
 }
 

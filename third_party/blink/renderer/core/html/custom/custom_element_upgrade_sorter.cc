@@ -16,7 +16,7 @@ namespace blink {
 
 CustomElementUpgradeSorter::CustomElementUpgradeSorter()
     : elements_(new HeapHashSet<Member<Element>>()),
-      parent_child_map_(new ParentChildMap()) {}
+      parent_child_map_(MakeGarbageCollected<ParentChildMap>()) {}
 
 static HTMLLinkElement* GetLinkElementForImport(const Document& import) {
   if (HTMLImportLoader* loader = import.ImportLoader())

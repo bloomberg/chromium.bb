@@ -76,7 +76,7 @@ using PresentationAttributeCache =
                 AlreadyHashed>;
 static PresentationAttributeCache& GetPresentationAttributeCache() {
   DEFINE_STATIC_LOCAL(Persistent<PresentationAttributeCache>, cache,
-                      (new PresentationAttributeCache));
+                      (MakeGarbageCollected<PresentationAttributeCache>()));
   return *cache;
 }
 
@@ -182,7 +182,7 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element& element) {
     return style;
 
   PresentationAttributeCacheEntry* new_entry =
-      new PresentationAttributeCacheEntry;
+      MakeGarbageCollected<PresentationAttributeCacheEntry>();
   new_entry->key = cache_key;
   new_entry->value = style;
 

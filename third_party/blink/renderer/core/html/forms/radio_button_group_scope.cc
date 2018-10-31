@@ -213,7 +213,7 @@ void RadioButtonGroupScope::AddButton(HTMLInputElement* element) {
     return;
 
   if (!name_to_group_map_)
-    name_to_group_map_ = new NameToGroupMap;
+    name_to_group_map_ = MakeGarbageCollected<NameToGroupMap>();
 
   auto* key_value =
       name_to_group_map_->insert(element->GetName(), nullptr).stored_value;
