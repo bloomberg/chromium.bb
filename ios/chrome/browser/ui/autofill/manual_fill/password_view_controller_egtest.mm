@@ -11,6 +11,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -25,8 +26,10 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -43,6 +46,7 @@ const char kExampleUsername[] = "concrete username";
 const char kExamplePassword[] = "concrete password";
 
 const char kFormHTMLFile[] = "/username_password_field_form.html";
+const char kIFrameHTMLFile[] = "/iframe_form.html";
 
 // Returns a matcher for the password icon in the keyboard accessory bar.
 id<GREYMatcher> PasswordIconMatcher() {
@@ -190,7 +194,17 @@ void SaveExamplePasswordForm() {
   autofill::PasswordForm example;
   example.username_value = base::ASCIIToUTF16(kExampleUsername);
   example.password_value = base::ASCIIToUTF16(kExamplePassword);
-  example.origin = GURL("https://example.com");
+  example.origin = GURL("https://example.com/");
+  example.signon_realm = example.origin.spec();
+  SaveToPasswordStore(example);
+}
+
+// Saves an example form in the store.
+void SaveLocalPasswordForm() {
+  autofill::PasswordForm example;
+  example.username_value = base::ASCIIToUTF16(kExampleUsername);
+  example.password_value = base::ASCIIToUTF16(kExamplePassword);
+  example.origin = GURL("http://127.0.0.1:55264");
   example.signon_realm = example.origin.spec();
   SaveToPasswordStore(example);
 }
@@ -202,6 +216,21 @@ void ClearPasswordStore() {
   TestStoreConsumer consumer;
   GREYAssert(consumer.GetStoreResults().empty(),
              @"PasswordStore was not cleared.");
+}
+
+// Polls the JavaScript query |java_script_condition| until the returned
+// |boolValue| is YES with a kWaitForActionTimeout timeout.
+BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
+  auto verify_block = ^BOOL {
+    id value = chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
+    return [value isEqual:@YES];
+  };
+  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
+  NSString* condition_name = [NSString
+      stringWithFormat:@"Wait for JS condition: %@", java_script_condition];
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:condition_name block:verify_block];
+  return [condition waitWithTimeout:timeout];
 }
 
 }  // namespace
@@ -475,7 +504,7 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_notVisible()];
 }
 
-// Test that after switching fields the content size of the table view didn't
+// Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testPasswordControllerKeepsRightSize {
   // Bring up the keyboard.
@@ -503,7 +532,7 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Test that the Password View Controller stays on rotation.
+// Tests that the Password View Controller stays on rotation.
 - (void)testPasswordControllerSupportsRotation {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -523,6 +552,49 @@ void ClearPasswordStore() {
   // Verify the password controller table view is still visible.
   [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that content is injected in iframe messaging.
+- (void)testPasswordControllerSupportsIFrameMessaging {
+  // Iframe messaging is not supported on iOS < 11.3.
+  if (!base::ios::IsRunningOnOrLater(11, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Skipped for iOS < 11.3");
+  }
+  GREYAssert(base::FeatureList::IsEnabled(web::features::kWebFrameMessaging),
+             @"Frame Messaging must be enabled for this Test Case");
+
+  const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:"iFrame"];
+
+  SaveLocalPasswordForm();
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementInFrame(kFormElementUsername,
+                                                           0)];
+
+  // Wait for the accessory icon to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select a username.
+  [[EarlGrey selectElementWithMatcher:UsernameButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Verify Web Content.
+  NSString* javaScriptCondition = [NSString
+      stringWithFormat:
+          @"window.frames[0].document.getElementById('%s').value === '%s'",
+          kFormElementUsername, kExampleUsername];
+  XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
 }
 
 @end

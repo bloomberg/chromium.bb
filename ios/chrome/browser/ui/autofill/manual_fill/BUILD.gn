@@ -123,6 +123,7 @@ source_set("eg_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
+    "//components/autofill/ios/browser",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//ios/chrome/browser/passwords",
@@ -133,6 +134,6 @@ source_set("eg_tests") {
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test/http_server",
-    "//third_party/ocmock:ocmock",
+    "//third_party/ocmock",
   ]
 }

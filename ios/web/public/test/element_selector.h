@@ -18,6 +18,14 @@ class ElementSelector {
   // Returns an ElementSelector to retrieve an element by ID.
   static const ElementSelector ElementSelectorId(const std::string element_id);
 
+  // Returns an ElementSelector to retrieve an element in iframe by ID. iframe
+  // is an immediate child of the main frame with the given index. The script of
+  // this selector will throw an exception if target iframe has a different
+  // origin from the main frame.
+  static const ElementSelector ElementSelectorIdInFrame(
+      const std::string element_id,
+      const int frame_index);
+
   // Returns an ElementSelector to retrieve an element by a CSS selector.
   static const ElementSelector ElementSelectorCss(
       const std::string css_selector);
