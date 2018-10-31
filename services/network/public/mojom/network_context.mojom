@@ -457,6 +457,23 @@ interface NetworkContext {
   // filter.
   ClearNetworkErrorLogging(ClearDataFilter? filter) => ();
 
+  // Queues a report via the Reporting API. |type| describes the type of report
+  // (as well as what data will contained in |body|). |group| specifies the
+  // endpoint group that the report will be delivered to. |url| indicates the
+  // URL of the resource that the report describes; |user_agent| may be
+  // provided, or will be automatically generated if omitted; |body| holds the
+  // contents of the report.
+  //
+  // Note that this queued report will never be delivered if no reporting
+  // endpoint is registered for this |url|.
+  //
+  // Spec: https://w3c.github.io/reporting/#concept-reports
+  QueueReport(string type,
+              string group,
+              url.mojom.Url url,
+              string? user_agent,
+              mojo_base.mojom.DictionaryValue body);
+
   // Closes all open connections within this context.
   CloseAllConnections() => ();
 

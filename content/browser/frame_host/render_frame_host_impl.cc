@@ -12,7 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
-#include "base/feature_list.h"
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -122,6 +122,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_select_listener.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -155,6 +156,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/url_request/url_request_context.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -2294,12 +2296,17 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 }
 
 void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
+  base::TerminationStatus termination_status =
+      static_cast<base::TerminationStatus>(status);
+
   if (frame_tree_node_->IsMainFrame()) {
     // Keep the termination status so we can get at it later when we
     // need to know why it died.
-    render_view_host_->render_view_termination_status_ =
-        static_cast<base::TerminationStatus>(status);
+    render_view_host_->render_view_termination_status_ = termination_status;
   }
+
+  if (base::FeatureList::IsEnabled(features::kCrashReporting))
+    MaybeGenerateCrashReport(termination_status);
 
   // When a frame's process dies, its RenderFrame no longer exists, which means
   // that its child frames must be cleaned up as well.
@@ -2818,6 +2825,21 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
   if (!is_active())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen);
+}
+
+void RenderFrameHostImpl::NotifyWebReportingCrashID(
+    const std::string& crash_id) {
+  DCHECK(frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe());
+
+  if (base::IsValidGUID(web_reporting_crash_id_)) {
+    web_reporting_crash_id_ = crash_id;
+    return;
+  }
+
+  // If the received crash ID is not valid, then the renderer is misbehaving and
+  // should be killed.
+  bad_message::ReceivedBadMessage(
+      GetProcess(), bad_message::RFH_INVALID_WEB_REPORTING_CRASH_ID);
 }
 
 #if defined(OS_ANDROID)
@@ -5879,6 +5901,56 @@ RenderFrameHostImpl::CommitAsTracedValue(
   }
 
   return value;
+}
+
+void RenderFrameHostImpl::MaybeGenerateCrashReport(
+    base::TerminationStatus status) {
+  if (!last_committed_url_.SchemeIsHTTPOrHTTPS())
+    return;
+
+  // Only generate reports for local root frames.
+  if (!frame_tree_node_->IsMainFrame() && !IsCrossProcessSubframe())
+    return;
+
+  // If there is no |web_reporting_crash_id_| at this point, then the renderer
+  // will not know about it, but create one here anyways so the report can be
+  // uniquely identified.
+  if (web_reporting_crash_id_.empty()) {
+    web_reporting_crash_id_ = base::GenerateGUID();
+  }
+
+  // Check the termination status to see if a crash occurred (and potentially
+  // determine the |reason| for the crash).
+  std::string reason;
+  switch (status) {
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      break;
+    case base::TERMINATION_STATUS_OOM:
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+      reason = "oom";
+      break;
+    default:
+      // Other termination statuses do not indicate a crash.
+      return;
+  }
+
+  // Construct the crash report.
+  DCHECK(base::IsValidGUID(web_reporting_crash_id_));
+  auto body = base::DictionaryValue();
+  body.SetString("crashId", web_reporting_crash_id_);
+  if (!reason.empty())
+    body.SetString("reason", reason);
+
+  // Send the crash report to the Reporting API.
+  GetProcess()->GetStoragePartition()->GetNetworkContext()->QueueReport(
+      "crash" /* type */, "default" /* group */, last_committed_url_,
+      base::nullopt, std::move(body));
 }
 
 }  // namespace content

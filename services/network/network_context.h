@@ -298,6 +298,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override;
   void ResetURLLoaderFactories() override;
+  void QueueReport(const std::string& type,
+                   const std::string& group,
+                   const GURL& url,
+                   const base::Optional<std::string>& user_agent,
+                   base::Value body) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

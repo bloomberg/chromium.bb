@@ -121,6 +121,11 @@ const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables crash reporting via Reporting API.
+// https://www.w3.org/TR/reporting/#crash-report
+const base::Feature kCrashReporting{"CrashReporting",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables specification of a target element in the fragment identifier
 // via a CSS selector.
 const base::Feature kCSSFragmentIdentifiers{"CSSFragmentIdentifiers",

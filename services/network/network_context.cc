@@ -109,7 +109,9 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/http_user_agent_settings.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(USE_NSS_CERTS)
@@ -820,6 +822,38 @@ void NetworkContext::ClearNetworkErrorLogging(
 
   std::move(callback).Run();
 }
+
+void NetworkContext::QueueReport(const std::string& type,
+                                 const std::string& group,
+                                 const GURL& url,
+                                 const base::Optional<std::string>& user_agent,
+                                 base::Value body) {
+  DCHECK(body.is_dict());
+  if (!body.is_dict())
+    return;
+
+  // Get the ReportingService.
+  net::URLRequestContext* request_context = url_request_context();
+  net::ReportingService* reporting_service =
+      request_context->reporting_service();
+  // TODO(paulmeyer): Remove this once the network service ships everywhere.
+  if (!reporting_service) {
+    net::ReportingReport::RecordReportDiscardedForNoReportingService();
+    return;
+  }
+
+  std::string reported_user_agent = user_agent.value_or("");
+  if (reported_user_agent.empty() &&
+      request_context->http_user_agent_settings() != nullptr) {
+    reported_user_agent =
+        request_context->http_user_agent_settings()->GetUserAgent();
+  }
+
+  // Send the crash report to the Reporting API.
+  reporting_service->QueueReport(url, reported_user_agent, group, type,
+                                 base::Value::ToUniquePtrValue(std::move(body)),
+                                 0 /* depth */);
+}
 #else   // BUILDFLAG(ENABLE_REPORTING)
 void NetworkContext::ClearReportingCacheReports(
     mojom::ClearDataFilterPtr filter,
@@ -836,6 +870,14 @@ void NetworkContext::ClearReportingCacheClients(
 void NetworkContext::ClearNetworkErrorLogging(
     mojom::ClearDataFilterPtr filter,
     ClearNetworkErrorLoggingCallback callback) {
+  NOTREACHED();
+}
+
+void NetworkContext::QueueReport(const std::string& type,
+                                 const std::string& group,
+                                 const GURL& url,
+                                 const base::Optional<std::string>& user_agent,
+                                 base::Value body) {
   NOTREACHED();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)

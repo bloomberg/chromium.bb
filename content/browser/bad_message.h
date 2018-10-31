@@ -234,6 +234,7 @@ enum BadMessageReason {
   RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT = 206,
   RFH_CANNOT_RENDER_FALLBACK_CONTENT = 207,
   RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE = 208,
+  RFH_INVALID_WEB_REPORTING_CRASH_ID = 209,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
