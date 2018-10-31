@@ -34,6 +34,13 @@ const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
     "When enabled, shows the Google Pay logo animation when showing payments"
     "credit card suggestions in downstream keyboard accessory";
 
+extern const char kBreakpadNoDelayInitialUploadName[] =
+    "Remove delay on initial crash upload";
+extern const char kBreakpadNoDelayInitialUploadDescription[] =
+    "When enabled, the initial crash uploading will not be delayed. When "
+    "disabled, initial upload is delayed until deferred initialization. This "
+    "does not affect recovery mode.";
+
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
     "Enable updated prompt explanation when offering credit card upload";
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =

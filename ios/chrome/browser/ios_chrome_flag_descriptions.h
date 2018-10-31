@@ -24,6 +24,11 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSName[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 
+// Title and description for the flag to control if initial uploading of crash
+// reports is delayed.
+extern const char kBreakpadNoDelayInitialUploadName[];
+extern const char kBreakpadNoDelayInitialUploadDescription[];
+
 // Title and description for the flag to control the updated prompt explanation
 // when offering credit card upload.
 extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];

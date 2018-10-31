@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include <stddef.h>
 
 #include "base/auto_reset.h"
@@ -19,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
 
 // TODO(stuartmorgan): Move this up where it belongs once
@@ -154,6 +155,14 @@ void SetEnabled(bool enabled) {
 }
 
 void SetUploadingEnabled(bool enabled) {
+  if (enabled &&
+      [UIApplication sharedApplication].applicationState ==
+          UIApplicationStateInactive &&
+      !base::FeatureList::IsEnabled(
+          crash_report::kBreakpadNoDelayInitialUpload)) {
+    return;
+  }
+
   CacheUploadingEnabled(g_crash_reporter_enabled && enabled);
 
   if (!g_crash_reporter_enabled)
