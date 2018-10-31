@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_observer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -372,8 +371,6 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
       HandleAuthFailure(GetAccountId());
   }
 
-  for (EasyUnlockServiceObserver& observer : observers_)
-    observer.OnScreenlockStateChanged(state);
   return true;
 }
 
