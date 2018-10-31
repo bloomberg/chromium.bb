@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.infobar.AdsBlockedInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -103,6 +104,7 @@ public final class SubresourceFilterTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/899903")
     public void resourceFilteredClose() throws Exception {
         String url = mTestServer.getURL(PAGE_WITH_JPG);
         MockSafeBrowsingApiHandler.addMockResponse(url, METADATA_FOR_ENFORCEMENT);
@@ -130,6 +132,7 @@ public final class SubresourceFilterTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/899903")
     public void resourceFilteredClickLearnMore() throws Exception {
         String url = mTestServer.getURL(PAGE_WITH_JPG);
         MockSafeBrowsingApiHandler.addMockResponse(url, METADATA_FOR_ENFORCEMENT);
@@ -170,6 +173,7 @@ public final class SubresourceFilterTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/899903")
     public void resourceFilteredReload() throws Exception {
         String url = mTestServer.getURL(PAGE_WITH_JPG);
         MockSafeBrowsingApiHandler.addMockResponse(url, METADATA_FOR_ENFORCEMENT);
@@ -201,6 +205,7 @@ public final class SubresourceFilterTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/899903")
     @MediumTest
     public void resourceNotFilteredWithWarning() throws Exception {
         String url = mTestServer.getURL(PAGE_WITH_JPG);
