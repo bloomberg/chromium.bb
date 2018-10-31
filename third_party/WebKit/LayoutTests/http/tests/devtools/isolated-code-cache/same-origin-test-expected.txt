@@ -1,0 +1,98 @@
+Tests V8 code cache for javascript resources
+
+--- Trace events for initial set of fetches ------
+v8.compile Properties:
+{
+    data : {
+        columnNumber : 0
+        lineNumber : 0
+        notStreamedReason : "script too small"
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+v8.compile Properties:
+{
+    data : {
+        columnNumber : 0
+        lineNumber : 0
+        notStreamedReason : "resource no longer alive"
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+v8.compile Properties:
+{
+    data : {
+        cacheProduceOptions : "code"
+        columnNumber : 0
+        lineNumber : 0
+        notStreamedReason : "resource no longer alive"
+        producedCacheSize : <number>
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+v8.compile Properties:
+{
+    data : {
+        cacheConsumeOptions : "code"
+        cacheRejected : false
+        columnNumber : 0
+        consumedCacheSize : <number>
+        lineNumber : 0
+        notStreamedReason : "resource no longer alive"
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+--- Trace events when fetching script from diff URL ------
+v8.compile Properties:
+{
+    data : {
+        columnNumber : 0
+        lineNumber : 0
+        notStreamedReason : "script too small"
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+v8.compile Properties:
+{
+    data : {
+        cacheConsumeOptions : "code"
+        cacheRejected : false
+        columnNumber : 0
+        consumedCacheSize : <number>
+        lineNumber : 0
+        notStreamedReason : "resource no longer alive"
+        streamed : <boolean>
+        url : .../devtools/resources/v8-cache-script.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: v8-cache-script.js:1
+-----------------------------------------------
+
