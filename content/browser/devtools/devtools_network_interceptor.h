@@ -74,6 +74,15 @@ class DevToolsNetworkInterceptor {
     using HeadersVector = std::vector<std::pair<std::string, std::string>>;
 
     Modifications();
+    explicit Modifications(net::Error error_reason);
+    explicit Modifications(
+        std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
+    Modifications(scoped_refptr<net::HttpResponseHeaders> response_headers,
+                  std::unique_ptr<std::string> response_body);
+    Modifications(protocol::Maybe<std::string> modified_url,
+                  protocol::Maybe<std::string> modified_method,
+                  protocol::Maybe<std::string> modified_post_data,
+                  std::unique_ptr<HeadersVector> modified_headers);
     Modifications(
         base::Optional<net::Error> error_reason,
         scoped_refptr<net::HttpResponseHeaders> response_headers,

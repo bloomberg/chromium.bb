@@ -331,7 +331,7 @@ class DevToolsURLLoaderInterceptor::Impl
     : public base::SupportsWeakPtr<DevToolsURLLoaderInterceptor::Impl> {
  public:
   explicit Impl(RequestInterceptedCallback callback)
-      : request_intercepted_callback_(callback) {}
+      : request_intercepted_callback_(callback), handle_auth_(false) {}
   ~Impl() {
     for (auto const& entry : jobs_)
       entry.second->Detach();
@@ -357,8 +357,10 @@ class DevToolsURLLoaderInterceptor::Impl
                         std::move(target_factory), std::move(cookie_manager));
   }
 
-  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns) {
+  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
+                   bool handle_auth) {
     patterns_ = std::move(patterns);
+    handle_auth_ = handle_auth;
   }
 
   InterceptionStage GetInterceptionStage(const GURL& url,
@@ -429,6 +431,7 @@ class DevToolsURLLoaderInterceptor::Impl
   std::map<std::string, InterceptionJob*> jobs_;
   RequestInterceptedCallback request_intercepted_callback_;
   std::vector<DevToolsNetworkInterceptor::Pattern> patterns_;
+  bool handle_auth_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
@@ -588,12 +591,14 @@ DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
 DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() = default;
 
 void DevToolsURLLoaderInterceptor::SetPatterns(
-    std::vector<DevToolsNetworkInterceptor::Pattern> patterns) {
+    std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
+    bool handle_auth) {
   enabled_ = !!patterns.size();
+  DCHECK(enabled_ || !handle_auth);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::SetPatterns, base::Unretained(impl_.get()),
-                     std::move(patterns)));
+                     std::move(patterns), handle_auth));
 }
 
 void DevToolsURLLoaderInterceptor::GetResponseBody(
@@ -1420,7 +1425,8 @@ void InterceptionJob::OnAuthRequest(
   DCHECK(pending_auth_callback_.is_null());
   DCHECK(!waiting_for_resolution_);
 
-  if (!(stage_ & InterceptionStage::REQUEST)) {
+  if (!(stage_ & InterceptionStage::REQUEST) || !interceptor_ ||
+      !interceptor_->handle_auth_) {
     std::move(callback).Run(true, base::nullopt);
     return;
   }

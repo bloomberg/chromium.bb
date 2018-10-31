@@ -5,6 +5,7 @@
 
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
@@ -195,12 +196,23 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+  DCHECK(!is_download || is_navigation);
+  bool had_interceptors = false;
+  // TODO(caseq): assure deterministic order of browser agents (or sessions).
+  for (auto* agent_host : BrowserDevToolsAgentHost::Instances()) {
+    const auto& fetch_handlers =
+        protocol::FetchHandler::ForAgentHost(agent_host);
+    for (auto it = fetch_handlers.rbegin(); it != fetch_handlers.rend(); ++it) {
+      had_interceptors =
+          (*it)->MaybeCreateProxyForInterception(
+              rfh, is_navigation, is_download, target_factory_request) ||
+          had_interceptors;
+    }
+  }
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
   if (!agent_host)
-    return false;
-  DCHECK(!is_download || is_navigation);
-  bool had_interceptors = false;
+    return had_interceptors;
   const auto& network_handlers =
       protocol::NetworkHandler::ForAgentHost(agent_host);
   for (auto it = network_handlers.rbegin(); it != network_handlers.rend();

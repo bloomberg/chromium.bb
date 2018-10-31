@@ -32,7 +32,8 @@ class DevToolsURLLoaderInterceptor {
       DevToolsNetworkInterceptor::RequestInterceptedCallback callback);
   ~DevToolsURLLoaderInterceptor();
 
-  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns);
+  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
+                   bool handle_auth);
 
   void GetResponseBody(
       const std::string& interception_id,

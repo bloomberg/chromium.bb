@@ -31,7 +31,8 @@
                                && agentName !== 'ServiceWorker'
                                && agentName !== 'Security'
                                && agentName !== 'Inspector'
-                               && agentName !== 'HeadlessExperimental';
+                               && agentName !== 'HeadlessExperimental'
+                               && agentName !== 'Fetch';
                          })
                          .sort();
 
