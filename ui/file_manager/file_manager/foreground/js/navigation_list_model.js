@@ -187,16 +187,6 @@ function NavigationListModel(
   this.myFilesModel_ = null;
 
   /**
-   * True when MyFiles should be a volume and Downloads just a plain folder
-   * inside it. When false MyFiles is an EntryList, which means UI only type,
-   * which contains Downloads as a child volume.
-   * @private {boolean}
-   */
-  this.myFilesVolumeEnabled_ =
-      loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
-      loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
-
-  /**
    * All root navigation items in display order.
    * @private {!Array<!NavigationModelItem>}
    */
@@ -497,29 +487,12 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
 
   let myFilesEntry, myFilesModel;
   if (!this.myFilesModel_) {
-    if (this.myFilesVolumeEnabled_) {
-      // When MyFilesVolume is enabled we use the Downloads volume to be the
-      // MyFiles volume.
-      const myFilesVolumeModel =
-          getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-      if (myFilesVolumeModel) {
-        myFilesEntry = new VolumeEntry(myFilesVolumeModel.volumeInfo);
-        myFilesModel = new NavigationModelFakeItem(
-            str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
-            myFilesEntry);
-        this.myFilesModel_ = myFilesModel;
-      }
-    } else {
-      // Here is the initial version for MyFiles, which is only an entry in JS
-      // to be displayed in the DirectoryTree, cotaining Downloads, Linux and
-      // Play files volumes.
-      myFilesEntry = new EntryList(
-          str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
-      myFilesModel = new NavigationModelFakeItem(
-          myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
-      myFilesModel.section = NavigationSection.MY_FILES;
-      this.myFilesModel_ = myFilesModel;
-    }
+    myFilesEntry = new EntryList(
+        str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+    myFilesModel = new NavigationModelFakeItem(
+        myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
+    myFilesModel.section = NavigationSection.MY_FILES;
+    this.myFilesModel_ = myFilesModel;
   } else {
     myFilesEntry = this.myFilesModel_.entry;
     myFilesModel = this.myFilesModel_;
@@ -527,18 +500,15 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   this.navigationItems_.push(myFilesModel);
 
   // Add Downloads to My Files.
-  if (!this.myFilesVolumeEnabled_) {
-    const downloadsVolume =
-        getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-    if (downloadsVolume) {
-      // Only add volume if MyFiles doesn't have it yet.
-      if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) ===
-          -1) {
-        myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
-      }
-    } else {
-      myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.DOWNLOADS);
+  const downloadsVolume =
+      getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
+  if (downloadsVolume) {
+    // Only add volume if MyFiles doesn't have it yet.
+    if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) === -1) {
+      myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
     }
+  } else {
+    myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.DOWNLOADS);
   }
 
   // Add Android to My Files.
