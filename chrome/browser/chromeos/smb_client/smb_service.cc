@@ -127,6 +127,7 @@ void SmbService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNetBiosShareDiscoveryEnabled, true);
   registry->RegisterBooleanPref(prefs::kNTLMShareAuthenticationEnabled, true);
   registry->RegisterListPref(prefs::kNetworkFileSharesPreconfiguredShares);
+  registry->RegisterStringPref(prefs::kMostRecentlyUsedNetworkFileShareURL, "");
 }
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,
@@ -207,6 +208,9 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
                      use_chromad_kerberos));
+
+  profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
+                                  share_path.value());
 }
 
 void SmbService::OnMountResponse(

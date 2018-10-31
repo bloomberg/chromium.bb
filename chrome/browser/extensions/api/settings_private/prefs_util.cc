@@ -183,6 +183,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 #if defined(OS_CHROMEOS)
   (*s_whitelist)[::prefs::kNetworkFileSharesAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kMostRecentlyUsedNetworkFileShareURL] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 #endif
 
   // Printing settings.
