@@ -35,6 +35,15 @@ Polymer({
     'returning-user': ['nux-set-as-default'],
   },
 
+  properties: {
+    /** @private */
+    modulesInitialized_: {
+      type: Boolean,
+      // Default to false so view-manager is hidden until views are initialized.
+      value: false,
+    },
+  },
+
   /** @override */
   ready: function() {
     /** @param {!nux.DefaultBrowserInfo} status */
@@ -70,7 +79,10 @@ Polymer({
         welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage(
             /* replace */ true);
       } else {  // Otherwise, go to the chosen step of that route.
-        this.$.viewManager.switchView(`step-${step}`);
+        // At this point, views are ready to be shown.
+        this.modulesInitialized_ = true;
+        this.$.viewManager.switchView(
+            `step-${step}`, 'fade-in', 'no-animation');
       }
     };
 
