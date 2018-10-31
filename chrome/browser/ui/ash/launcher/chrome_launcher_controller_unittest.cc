@@ -552,6 +552,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extension_service_->AddExtension(extension_chrome_.get());
   }
 
+  ui::BaseWindow* GetLastActiveWindowForItemController(
+      AppWindowLauncherItemController* item_controller) {
+    return item_controller->last_active_window_;
+  }
+
   // Creates a running platform V2 app (not pinned) of type |app_id|.
   virtual void CreateRunningV2App(const std::string& app_id) {
     DCHECK(!test_controller_);
@@ -3444,6 +3449,58 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // anymore.
   SwitchActiveUser(account_id);
   EXPECT_EQ(3, model_->item_count());
+}
+
+TEST_F(ChromeLauncherControllerTest, Active) {
+  InitLauncherController();
+
+  // Creates a new app window.
+  int initial_item_count = model_->item_count();
+  V2App app_1(profile(), extension1_.get());
+  EXPECT_TRUE(app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  ash::ShelfItemDelegate* app_item_delegate_1 =
+      model_->GetShelfItemDelegate(model_->items()[initial_item_count].id);
+  ASSERT_TRUE(app_item_delegate_1);
+  AppWindowLauncherItemController* app_item_controller_1 =
+      app_item_delegate_1->AsAppWindowLauncherItemController();
+  ASSERT_TRUE(app_item_controller_1);
+  ui::BaseWindow* last_active =
+      GetLastActiveWindowForItemController(app_item_controller_1);
+  EXPECT_EQ(app_1.window()->GetBaseWindow(), last_active);
+  // Change the status so that we can verify it gets reset when the active
+  // window changes.
+  launcher_controller_->SetItemStatus(app_item_delegate_1->shelf_id(),
+                                      ash::STATUS_ATTENTION);
+
+  // Creates another app window, which should become active and reset |app_1|'s
+  // status (to running).
+  V2App app_2(profile(), extension2_.get());
+  EXPECT_TRUE(app_2.window()->GetNativeWindow()->IsVisible());
+  EXPECT_EQ(initial_item_count + 2, model_->item_count());
+  ash::ShelfItemDelegate* app_item_delegate_2 =
+      model_->GetShelfItemDelegate(model_->items()[initial_item_count + 1].id);
+  ASSERT_TRUE(app_item_delegate_2);
+  AppWindowLauncherItemController* app_item_controller_2 =
+      app_item_delegate_2->AsAppWindowLauncherItemController();
+  ASSERT_TRUE(app_item_controller_2);
+  last_active = GetLastActiveWindowForItemController(app_item_controller_2);
+  EXPECT_EQ(app_2.window()->GetBaseWindow(), last_active);
+  const ash::ShelfItem* shelf_item_1 =
+      launcher_controller_->GetItem(app_item_delegate_1->shelf_id());
+  ASSERT_TRUE(shelf_item_1);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_item_1->status);
+
+  launcher_controller_->SetItemStatus(app_item_delegate_2->shelf_id(),
+                                      ash::STATUS_ATTENTION);
+
+  // Activate the first window, which should reset the status of the
+  // second apps window.
+  app_1.window()->GetBaseWindow()->Activate();
+  const ash::ShelfItem* shelf_item_2 =
+      launcher_controller_->GetItem(app_item_delegate_2->shelf_id());
+  ASSERT_TRUE(shelf_item_2);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_item_2->status);
 }
 
 // Check that V2 applications will be made visible on the target desktop if

@@ -73,6 +73,8 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   const WindowList& windows() const { return windows_; }
 
  private:
+  friend class ChromeLauncherControllerTest;
+
   // Returns the action performed. Should be one of SHELF_ACTION_NONE,
   // SHELF_ACTION_WINDOW_ACTIVATED, or SHELF_ACTION_WINDOW_MINIMIZED.
   ash::ShelfAction ShowAndActivateOrMinimize(ui::BaseWindow* window);
