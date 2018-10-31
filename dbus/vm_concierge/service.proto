@@ -26,6 +26,9 @@ enum DiskImageType {
 
   // A qcow2-compatible disk image.
   DISK_IMAGE_QCOW2 = 1;
+
+  // Automatically choose a disk image type.
+  DISK_IMAGE_AUTO = 2;
 }
 
 // Describes any additional disk images that should be mounted inside the VM.
