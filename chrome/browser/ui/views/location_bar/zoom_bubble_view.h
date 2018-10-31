@@ -104,6 +104,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   void Init() override;
   void WindowClosing() override;
   void CloseBubble() override;
+  void Layout() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
