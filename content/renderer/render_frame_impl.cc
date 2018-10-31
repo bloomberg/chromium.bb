@@ -1298,6 +1298,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   render_frame->render_widget_ = render_widget;
   render_frame->in_frame_tree_ = true;
+  render_frame->Initialize();
+
   return render_frame;
 }
 
@@ -1659,8 +1661,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
 
-  RenderThread::Get()->AddRoute(routing_id_, this);
-
   // Everything below subclasses RenderFrameObserver and is automatically
   // deleted when the RenderFrame gets deleted.
 #if defined(OS_ANDROID)
@@ -1780,6 +1780,10 @@ void RenderFrameImpl::Initialize() {
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     frame_request_blocker_ = base::MakeRefCounted<FrameRequestBlocker>();
+
+  // Bind this frame and the message router. This must be called after |frame_|
+  // is set since binding requires a per-frame task runner.
+  RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
@@ -2141,9 +2145,8 @@ void RenderFrameImpl::BindFrame(
     const service_manager::BindSourceInfo& browser_info,
     mojom::FrameRequest request) {
   browser_info_ = browser_info;
-  frame_binding_.Bind(
-      std::move(request),
-      frame_ ? GetTaskRunner(blink::TaskType::kInternalIPC) : nullptr);
+  frame_binding_.Bind(std::move(request),
+                      GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrameBindingsControl(
