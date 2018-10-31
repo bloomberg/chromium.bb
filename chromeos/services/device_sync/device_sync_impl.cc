@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
@@ -237,6 +238,8 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
                     << "before initialization was complete. Cannot set state.";
     std::move(callback).Run(
         mojom::NetworkRequestResult::kServiceNotYetInitialized);
+
+    RecordSetSoftwareFeatureStateResult(false /* success */);
     return;
   }
 
@@ -483,6 +486,8 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess() {
                << "requesting force sync.";
   cryptauth_device_manager_->ForceSyncNow(
       cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
+
+  RecordSetSoftwareFeatureStateResult(true /* success */);
 }
 
 void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
@@ -499,6 +504,8 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
   it->second->InvokeCallback(
       mojo::ConvertTo<mojom::NetworkRequestResult>(error));
   id_to_pending_set_software_feature_request_map_.erase(it);
+
+  RecordSetSoftwareFeatureStateResult(false /* success */);
 }
 
 void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
@@ -568,12 +575,19 @@ void DeviceSyncImpl::OnSetSoftwareFeatureTimerFired() {
     it->second->InvokeCallback(
         mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult);
     it = id_to_pending_set_software_feature_request_map_.erase(it);
+
+    RecordSetSoftwareFeatureStateResult(false /* success */);
   }
 }
 
 void DeviceSyncImpl::SetPrefConnectionDelegateForTesting(
     std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
   pref_connection_delegate_ = std::move(pref_connection_delegate);
+}
+
+void DeviceSyncImpl::RecordSetSoftwareFeatureStateResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", success);
 }
 
 }  // namespace device_sync

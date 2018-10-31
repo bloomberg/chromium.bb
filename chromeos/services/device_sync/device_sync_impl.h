@@ -203,6 +203,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
+  static void RecordSetSoftwareFeatureStateResult(bool success);
+
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   service_manager::Connector* connector_;
