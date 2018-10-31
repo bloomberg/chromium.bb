@@ -104,7 +104,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  private:
   void PrepareForLayout();
 
-  void FinishLayout(const NGConstraintSpace&,
+  // If this node is a LayoutNGMixin, the caller must pass the layout object for
+  // this node cast to a LayoutBlockFlow as the first argument.
+  void FinishLayout(LayoutBlockFlow*,
+                    const NGConstraintSpace&,
                     const NGBreakToken*,
                     scoped_refptr<NGLayoutResult>);
 

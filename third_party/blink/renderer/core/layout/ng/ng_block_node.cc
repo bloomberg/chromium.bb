@@ -240,7 +240,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                       /* ignored */ nullptr);
 
-  FinishLayout(constraint_space, break_token, layout_result);
+  FinishLayout(block_flow, constraint_space, break_token, layout_result);
   if (old_scrollbars != GetScrollbarSizes()) {
     // If our scrollbars have changed, we need to relayout because either:
     // - Our size has changed (if shrinking to fit), or
@@ -254,7 +254,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
     layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                         /* ignored */ nullptr);
-    FinishLayout(constraint_space, break_token, layout_result);
+    FinishLayout(block_flow, constraint_space, break_token, layout_result);
   }
 
   return layout_result;
@@ -274,7 +274,8 @@ void NGBlockNode::PrepareForLayout() {
     ToLayoutNGListItem(box_)->UpdateMarkerTextIfNeeded();
 }
 
-void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
+void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
+                               const NGConstraintSpace& constraint_space,
                                const NGBreakToken* break_token,
                                scoped_refptr<NGLayoutResult> layout_result) {
   if (!IsBlockLayoutComplete(constraint_space, *layout_result))
@@ -282,8 +283,7 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
 
   DCHECK(layout_result->PhysicalFragment());
 
-  if (box_->IsLayoutNGMixin()) {
-    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
+  if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       *layout_result);
     NGLayoutInputNode first_child = FirstChild();
@@ -799,9 +799,9 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
          ToLayoutBlock(box_)->CreatesNewFormattingContext());
 
   WritingMode writing_mode = Style().GetWritingMode();
+  LayoutBlock* block = box_->IsLayoutBlock() ? ToLayoutBlock(box_) : nullptr;
   const NGConstraintSpace* old_space =
-      box_->IsLayoutBlock() ? ToLayoutBlock(box_)->CachedConstraintSpace()
-                            : nullptr;
+      block ? block->CachedConstraintSpace() : nullptr;
   if (!old_space || box_->NeedsLayout() || *old_space != constraint_space) {
     LayoutUnit inline_size =
         CalculateAvailableInlineSizeForLegacy(*box_, constraint_space);
@@ -835,7 +835,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     }
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
-    if (box_->IsLayoutNGMixin() && box_->NeedsLayout()) {
+    if (box_->NeedsLayout() && box_->IsLayoutNGMixin()) {
       ToLayoutBlockFlow(box_)->LayoutBlockFlow::UpdateBlockLayout(true);
     } else {
       box_->ForceLayout();
@@ -846,8 +846,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     // container (e.g. objects with intrinsic ratio and percentage block size)
     // in a subsequent layout pass might otherwise become wrong.
     box_->ClearOverrideContainingBlockContentSize();
-    if (box_->IsLayoutBlock())
-      ToLayoutBlock(box_)->SetCachedConstraintSpace(constraint_space);
+    if (block)
+      block->SetCachedConstraintSpace(constraint_space);
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.
