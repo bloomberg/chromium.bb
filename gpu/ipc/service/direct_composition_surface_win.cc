@@ -348,7 +348,7 @@ bool CreateSurfaceHandleHelper(HANDLE* handle) {
   HRESULT hr = create_surface_handle_function(COMPOSITIONOBJECT_ALL_ACCESS,
                                               nullptr, handle);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "DCompositionCreateSurfaceHandle failed with error "
+    DLOG(ERROR) << "DCompositionCreateSurfaceHandle failed with error 0x"
                 << std::hex << hr;
     return false;
   }
@@ -635,7 +635,7 @@ bool DCLayerTree::Initialize(
   HRESULT hr = desktop_device->CreateTargetForHwnd(
       window, TRUE, dcomp_target_.GetAddressOf());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateTargetForHwnd failed with error " << std::hex << hr;
+    DLOG(ERROR) << "CreateTargetForHwnd failed with error 0x" << std::hex << hr;
     return false;
   }
 
@@ -670,7 +670,7 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
       &desc, video_processor_enumerator_.GetAddressOf());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error "
+    DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error 0x"
                 << std::hex << hr;
     return false;
   }
@@ -678,7 +678,8 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
                                            video_processor_.GetAddressOf());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateVideoProcessor failed with error " << std::hex << hr;
+    DLOG(ERROR) << "CreateVideoProcessor failed with error 0x" << std::hex
+                << hr;
     return false;
   }
 
@@ -896,9 +897,12 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
     swap_chain_size = GetStableSwapChainSize(swap_chain_size);
   }
 
-  // YUV surfaces must have an even width.
+  // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
+  // subsampled formats like NV12 must have an even width and height.
   if (swap_chain_size.width() % 2 == 1)
     swap_chain_size.set_width(swap_chain_size.width() + 1);
+  if (swap_chain_size.height() % 2 == 1)
+    swap_chain_size.set_height(swap_chain_size.height() + 1);
 
   return swap_chain_size;
 }
@@ -1079,7 +1083,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (first_present) {
     HRESULT hr = swap_chain_->Present(0, 0);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "Present failed with error " << std::hex << hr;
+      DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
       return false;
     }
 
@@ -1115,7 +1119,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   HRESULT hr = swap_chain_->Present(1, 0);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Present failed with error " << std::hex << hr;
+    DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
     return false;
   }
 
@@ -1177,7 +1181,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
         texture.Get(), video_processor_enumerator_.Get(), &out_desc,
         out_view_.GetAddressOf());
     if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error "
+      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error 0x"
                   << std::hex << hr;
       return false;
     }
@@ -1247,7 +1251,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
         input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
         in_view.GetAddressOf());
     if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateVideoProcessorInputView failed with error "
+      DLOG(ERROR) << "CreateVideoProcessorInputView failed with error 0x"
                   << std::hex << hr;
       return false;
     }
@@ -1271,7 +1275,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
                                            out_view_.Get(), 0, 1, &stream);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "VideoProcessorBlt failed with error " << std::hex << hr;
+      DLOG(ERROR) << "VideoProcessorBlt failed with error 0x" << std::hex << hr;
       return false;
     }
   }
@@ -1350,8 +1354,9 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create "
                   << OverlayFormatToString(g_overlay_format_used)
-                  << " swap chain with error " << std::hex << hr
-                  << ". Falling back to BGRA";
+                  << " swap chain of size " << swap_chain_size.ToString()
+                  << " with error 0x" << std::hex << hr
+                  << "\nFalling back to BGRA";
     }
   }
 
@@ -1369,7 +1374,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                                   OverlayFormatToString(OverlayFormat::kBGRA),
                               SUCCEEDED(hr));
     if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to create BGRA swap chain with error " << std::hex
+      DLOG(ERROR) << "Failed to create BGRA swap chain of size "
+                  << swap_chain_size.ToString() << " with error 0x" << std::hex
                   << hr;
       return false;
     }
@@ -1471,7 +1477,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
 
     HRESULT hr = dcomp_device_->Commit();
     if (FAILED(hr)) {
-      DLOG(ERROR) << "Commit failed with error " << std::hex << hr;
+      DLOG(ERROR) << "Commit failed with error 0x" << std::hex << hr;
       return false;
     }
   }
@@ -1546,6 +1552,12 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
 // static
 int DirectCompositionSurfaceWin::GetNumFramesBeforeSwapChainResizeForTesting() {
   return kNumFramesBeforeSwapChainResize;
+}
+
+// static
+void DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting() {
+  g_overlay_format_used = OverlayFormat::kNV12;
+  g_overlay_dxgi_format_used = DXGI_FORMAT_NV12;
 }
 
 // static
