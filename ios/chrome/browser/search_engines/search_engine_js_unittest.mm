@@ -22,6 +22,11 @@ using web::test::SelectWebViewElementWithId;
 
 namespace {
 const char kCommandPrefix[] = "searchEngine";
+const char kCommandOpenSearch[] = "searchEngine.openSearch";
+const char kOpenSearchPageUrlKey[] = "pageUrl";
+const char kOpenSearchOsddUrlKey[] = "osddUrl";
+const char kCommandSearchableUrl[] = "searchEngine.searchableUrl";
+const char kSearchableUrlUrlKey[] = "url";
 // This is for cases where no message should be sent back from Js.
 const NSTimeInterval kWaitForJsNotReturnTimeout = 0.5;
 
@@ -82,8 +87,8 @@ class SearchEngineJsTest : public web::WebJsTest<web::WebTestWithWebState> {
   DISALLOW_COPY_AND_ASSIGN(SearchEngineJsTest);
 };
 
-// Tests that __gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl returns
-// the URL of the first OSDD found in page.
+// Tests that if a OSDD <link> is found in page, __gCrWeb.searchEngine will
+// send a message containing the page's URL and OSDD's URL.
 TEST_F(SearchEngineJsTest, TestGetOpenSearchDescriptionDocumentUrlSucceed) {
   LoadHtmlAndInject(
       @"<html><link rel='search' type='application/opensearchdescription+xml' "
@@ -95,29 +100,36 @@ TEST_F(SearchEngineJsTest, TestGetOpenSearchDescriptionDocumentUrlSucceed) {
       @"<link href='/favicon.ico' rel='shortcut icon' "
       @"type='image/x-icon'></html>",
       GURL("https://cs.chromium.org"));
-
-  id result = ExecuteJavaScript(
-      @"__gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl();");
-
-  ASSERT_TRUE([result isKindOfClass:NSDictionary.class]);
-  NSDictionary* dict = result;
-  ASSERT_EQ(2UL, dict.count);
-  EXPECT_NSEQ(@"https://cs.chromium.org/", dict[@"documentUrl"]);
-  EXPECT_NSEQ(@"https://cs.chromium.org/codesearch/first_opensearch.xml",
-              dict[@"openSearchUrl"]);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received_;
+  }));
+  const base::Value* cmd = message_.FindKey("command");
+  ASSERT_TRUE(cmd);
+  ASSERT_TRUE(cmd->is_string());
+  EXPECT_EQ(kCommandOpenSearch, cmd->GetString());
+  const base::Value* page_url = message_.FindKey(kOpenSearchPageUrlKey);
+  ASSERT_TRUE(page_url);
+  ASSERT_TRUE(page_url->is_string());
+  EXPECT_EQ("https://cs.chromium.org/", page_url->GetString());
+  const base::Value* osdd_url = message_.FindKey(kOpenSearchOsddUrlKey);
+  ASSERT_TRUE(osdd_url);
+  ASSERT_TRUE(osdd_url->is_string());
+  EXPECT_EQ("https://cs.chromium.org/codesearch/first_opensearch.xml",
+            osdd_url->GetString());
 }
 
-// Tests that __gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl returns
-// undefined if no OSDD is found in page.
+// Tests that if no OSDD <link> is found in page, __gCrWeb.searchEngine will
+// not send a message about OSDD.
 TEST_F(SearchEngineJsTest, TestGetOpenSearchDescriptionDocumentUrlFail) {
   LoadHtmlAndInject(
       @"<html><link href='/favicon.ico' rel='shortcut icon' "
       @"type='image/x-icon'></html>",
       GURL("https://cs.chromium.org"));
-
-  id result = ExecuteJavaScript(
-      @"__gCrWeb.searchEngine.getOpenSearchDescriptionDocumentUrl();");
-  EXPECT_FALSE(result);
+  ASSERT_FALSE(WaitUntilConditionOrTimeout(kWaitForJsNotReturnTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received_;
+  }));
 }
 
 // Tests that __gCrWeb.searchEngine generates and sends back a searchable
@@ -130,7 +142,11 @@ TEST_F(SearchEngineJsTest,
     base::RunLoop().RunUntilIdle();
     return message_received_;
   }));
-  const base::Value* url = message_.FindKey("url");
+  const base::Value* cmd = message_.FindKey("command");
+  ASSERT_TRUE(cmd);
+  ASSERT_TRUE(cmd->is_string());
+  EXPECT_EQ(kCommandSearchableUrl, cmd->GetString());
+  const base::Value* url = message_.FindKey(kSearchableUrlUrlKey);
   ASSERT_TRUE(url);
   ASSERT_TRUE(url->is_string());
   EXPECT_EQ(
