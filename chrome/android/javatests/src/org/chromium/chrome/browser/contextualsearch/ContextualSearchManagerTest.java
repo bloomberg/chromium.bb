@@ -146,8 +146,6 @@ public class ContextualSearchManagerTest {
         // Integer values should contain @Feature values only.
         Set<Integer> expectedOutcomes =
                 new HashSet<Integer>(ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
-        expectedOutcomes.remove(ContextualSearchInteractionRecorder.Feature.OUTCOME_DOC_ID);
-        expectedOutcomes.remove(ContextualSearchInteractionRecorder.Feature.OUTCOME_SNIPPET_HASH);
         // We don't log whether the quick action was clicked unless we actually have a quick action.
         expectedOutcomes.remove(
                 ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
@@ -500,7 +498,7 @@ public class ContextualSearchManagerTest {
             mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
                     mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
                     mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                    mQuickActionUri, mQuickActionCategory, 0, 0);
+                    mQuickActionUri, mQuickActionCategory);
         }
     }
 
@@ -3323,40 +3321,5 @@ public class ContextualSearchManagerTest {
                 return selection != null && selection.equals("Search");
             }
         });
-    }
-
-    private void assertRecordedSensitiveDataToUkm(boolean doAssert)
-            throws InterruptedException, TimeoutException {
-        simulateTapSearch("intelligence");
-        // The panel must be closed for outcomes to be logged.
-        // Close the panel by clicking far away in order to make sure the outcomes get logged by
-        // the hideContextualSearchUi call to writeRankerLoggerOutcomesAndReset.
-        clickWordNode("states-far");
-        waitForPanelToClose();
-        Assert.assertEquals(doAssert,
-                getRankerLogger().getOutcomesLogged().containsKey(
-                        ContextualSearchInteractionRecorder.Feature.OUTCOME_DOC_ID));
-        Assert.assertEquals(doAssert,
-                getRankerLogger().getOutcomesLogged().containsKey(
-                        ContextualSearchInteractionRecorder.Feature.OUTCOME_SNIPPET_HASH));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchRankerLoggerImpl.UKM_DEV_DATA_TTS_ENABLE)
-    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
-    public void testCanRecordSensitiveDataToUkm() throws InterruptedException, TimeoutException {
-        assertRecordedSensitiveDataToUkm(true);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
-    public void testDoesNotRecordSensitiveDataToUkmWithoutCommandLineFlag()
-            throws InterruptedException, TimeoutException {
-        // Same test as above, but without the command-line-flag, does not log.
-        assertRecordedSensitiveDataToUkm(false);
     }
 }

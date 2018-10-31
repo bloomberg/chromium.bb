@@ -49,11 +49,11 @@ class ContextualSearchRankerLoggerImpl {
       jobject obj,
       const base::android::JavaParamRef<jobject>& java_web_contents);
 
-  // Logs an int32 value with the given feature name.
-  void LogInt32(JNIEnv* env,
-                jobject obj,
-                const base::android::JavaParamRef<jstring>& j_feature,
-                jint j_int);
+  // Logs a long value with the given feature name.
+  void LogLong(JNIEnv* env,
+               jobject obj,
+               const base::android::JavaParamRef<jstring>& j_feature,
+               jlong j_long);
 
   // Runs the model and returns the inference result as an
   // AssistRankerPrediction enum.

@@ -540,14 +540,11 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   std::string caption;
   std::string quick_action_uri;
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
-  long long doc_id = 0;
-  long long snippet_hash = 0;
 
   delegate_->DecodeSearchTermFromJsonResponse(
       json_with_escape, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
-      &doc_id, &snippet_hash);
+      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
 
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
@@ -559,8 +556,6 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   EXPECT_EQ("", caption);
   EXPECT_EQ("", quick_action_uri);
   EXPECT_EQ(QUICK_ACTION_CATEGORY_NONE, quick_action_category);
-  EXPECT_EQ(0ll, doc_id);
-  EXPECT_EQ(0ll, snippet_hash);
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {

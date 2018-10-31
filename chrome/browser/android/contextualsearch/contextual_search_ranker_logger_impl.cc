@@ -79,13 +79,13 @@ void ContextualSearchRankerLoggerImpl::LogFeature(
   features[feature_name].set_int32_value(value);
 }
 
-void ContextualSearchRankerLoggerImpl::LogInt32(
+void ContextualSearchRankerLoggerImpl::LogLong(
     JNIEnv* env,
     jobject obj,
     const base::android::JavaParamRef<jstring>& j_feature,
-    jint j_int) {
+    jlong j_long) {
   std::string feature = base::android::ConvertJavaStringToUTF8(env, j_feature);
-  LogFeature(feature, j_int);
+  LogFeature(feature, j_long);
 }
 
 AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(

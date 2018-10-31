@@ -979,20 +979,6 @@ be describing additional metrics about the same event.
       this user since M-69.
     </summary>
   </metric>
-  <metric name="OutcomeDocIdHighBits">
-    <summary>
-      Rarely emits an int32 with the high-order bits of a DocID for the base
-      page. This is development-only data for M-72 excluding Beta and Stable.
-      See go/ukm-dev-data and https://crbug.com/894568 for details.
-    </summary>
-  </metric>
-  <metric name="OutcomeDocIdLowBits">
-    <summary>
-      Rarely emits an int32 with the low-order bits of a DocID for the base
-      page. This is development-only data for M-72 excluding Beta and Stable.
-      See go/ukm-dev-data and https://crbug.com/894568 for details.
-    </summary>
-  </metric>
   <metric name="OutcomeRankerDidPredict">
     <summary>
       Emits a 1 or 0 to indicate whether Ranker was able to make a prediction.
@@ -1001,20 +987,6 @@ be describing additional metrics about the same event.
   <metric name="OutcomeRankerPrediction">
     <summary>
       Emits a 1 or 0 to indicate what Ranker's prediction was for this record.
-    </summary>
-  </metric>
-  <metric name="OutcomeSnippetHashHighBits">
-    <summary>
-      Rarely emits an int32 with the high-order bits of a hashed-snippet from
-      the base page. This is development-only data for M-72 excluding Beta and
-      Stable. See go/ukm-dev-data and https://crbug.com/894568 for details.
-    </summary>
-  </metric>
-  <metric name="OutcomeSnippetHashLowBits">
-    <summary>
-      Rarely emits an int32 with the low-order bits of a hashed-snippet from the
-      base page. Development-only data for M-72 excluding Beta and Stable. See
-      go/ukm-dev-data and https://crbug.com/894568 for details.
     </summary>
   </metric>
   <metric name="OutcomeWasCardsDataShown">
