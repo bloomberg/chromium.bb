@@ -16,6 +16,7 @@
 #include "device/base/features.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/keychain.h"
@@ -47,7 +48,6 @@ constexpr char kKeychainAccessGroup[] =
 constexpr char kMetadataSecret[] = "supersecret";
 constexpr char kOtherMetadataSecret[] = "reallynotsosecret";
 
-constexpr std::array<uint8_t, kClientDataHashLength> kClientDataHash = {};
 constexpr char kRpId[] = "rp.example.com";
 const std::vector<uint8_t> kUserId = {10, 11, 12, 13, 14, 15};
 
@@ -123,7 +123,7 @@ class BrowsingDataDeletionTest : public testing::Test {
  protected:
   CtapMakeCredentialRequest MakeRequest() {
     return CtapMakeCredentialRequest(
-        kClientDataHash, PublicKeyCredentialRpEntity(kRpId),
+        test_data::kClientDataJson, PublicKeyCredentialRpEntity(kRpId),
         PublicKeyCredentialUserEntity(kUserId),
         PublicKeyCredentialParams(
             {{PublicKeyCredentialParams::

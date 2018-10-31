@@ -27,8 +27,10 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
 class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
+  using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
+
   CtapMakeCredentialRequest(
-      base::span<const uint8_t, kClientDataHashLength> client_data_hash,
+      std::string client_data_json,
       PublicKeyCredentialRpEntity rp,
       PublicKeyCredentialUserEntity user,
       PublicKeyCredentialParams public_key_credential_params);
@@ -54,6 +56,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
       bool is_individual_attestation);
   CtapMakeCredentialRequest& SetHmacSecret(bool hmac_secret);
 
+  const std::string& client_data_json() const { return client_data_json_; }
   const std::array<uint8_t, kClientDataHashLength>& client_data_hash() const {
     return client_data_hash_;
   }
@@ -77,6 +80,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   }
 
  private:
+  std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   PublicKeyCredentialRpEntity rp_;
   PublicKeyCredentialUserEntity user_;
@@ -92,10 +96,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
 };
-
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<CtapMakeCredentialRequest> ParseCtapMakeCredentialRequest(
-    base::span<const uint8_t> request_bytes);
 
 }  // namespace device
 

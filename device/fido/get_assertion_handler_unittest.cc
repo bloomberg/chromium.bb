@@ -56,14 +56,14 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   CtapGetAssertionRequest CreateTestRequestWithCableExtension() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetCableExtension({});
     return request;
   }
 
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandlerU2f() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetAllowList(
         {{CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -72,7 +72,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandlerCtap() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetAllowList({{CredentialType::kPublicKey,
                            fido_parsing_utils::Materialize(
                                test_data::kTestGetAssertionCredentialId)}});
@@ -183,7 +183,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
 
   EXPECT_EQ(FidoRequestHandlerBase::RequestType::kGetAssertion,
             request_handler->transport_availability_info().request_type);
@@ -252,7 +252,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
 
 TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
+                                         test_data::kClientDataJson);
   request.SetUserVerification(UserVerificationRequirement::kRequired);
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(std::move(request));
@@ -270,7 +270,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
 TEST_F(FidoGetAssertionHandlerTest,
        TestU2fSignRequestWithUserVerificationRequired) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
+                                         test_data::kClientDataJson);
   request.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -289,7 +289,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWith(
@@ -306,7 +306,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
 // is not included in the allowed list.
 TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   request.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha)}});
@@ -332,7 +332,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
   // Use a GetAssertion request with an empty allow list.
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWith(
@@ -408,7 +408,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest,
        CableDisabledIfAllowCredentialsListUndefinedButCableExtensionMissing) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   ASSERT_FALSE(!!request.cable_extension());
   EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
@@ -423,7 +423,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest,
        CableDisabledIfExplicitlyAllowedButCableExtensionMissing) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   ASSERT_FALSE(!!request.cable_extension());
   request.SetAllowList({
       {CredentialType::kPublicKey,

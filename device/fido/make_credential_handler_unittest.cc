@@ -73,7 +73,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         std::vector<PublicKeyCredentialParams::CredentialInfo>(1));
 
     auto request_parameter = CtapMakeCredentialRequest(
-        test_data::kClientDataHash, std::move(rp), std::move(user),
+        test_data::kClientDataJson, std::move(rp), std::move(user),
         std::move(credential_params));
 
     auto handler = std::make_unique<MakeCredentialRequestHandler>(

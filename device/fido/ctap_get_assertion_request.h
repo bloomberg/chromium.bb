@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -25,9 +26,9 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20161004/fido-client-to-authenticator-protocol-v2.0-rd-20161004.html#authenticatorgetassertion
 class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
-  CtapGetAssertionRequest(
-      std::string rp_id,
-      base::span<const uint8_t, kClientDataHashLength> client_data_hash);
+  using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
+
+  CtapGetAssertionRequest(std::string rp_id, std::string client_data_json);
   CtapGetAssertionRequest(const CtapGetAssertionRequest& that);
   CtapGetAssertionRequest(CtapGetAssertionRequest&& that);
   CtapGetAssertionRequest& operator=(const CtapGetAssertionRequest& other);
@@ -58,6 +59,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash);
 
   const std::string& rp_id() const { return rp_id_; }
+  const std::string& client_data_json() const { return client_data_json_; }
   const std::array<uint8_t, kClientDataHashLength>& client_data_hash() const {
     return client_data_hash_;
   }
@@ -88,6 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 
  private:
   std::string rp_id_;
+  std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   UserVerificationRequirement user_verification_ =
       UserVerificationRequirement::kPreferred;
@@ -100,10 +103,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::array<uint8_t, kRpIdHashLength>>
       alternative_application_parameter_;
 };
-
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<CtapGetAssertionRequest> ParseCtapGetAssertionRequest(
-    base::span<const uint8_t> request_bytes);
 
 }  // namespace device
 
