@@ -500,6 +500,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform;
 
+    bool pending_invert_y = false;
+
     // If the current state is fully transparent, the last submitted frame will
     // not include the TextureDrawQuad for the resource, so the resource might
     // have been released and needs to be updated again.
@@ -517,13 +519,21 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
       has_pending_contents_ = false;
+
+      bool current_invert_y =
+          current_buffer_.buffer() && current_buffer_.buffer()->y_invert();
+      pending_invert_y =
+          pending_buffer_.buffer() && pending_buffer_.buffer()->y_invert();
+      if (current_invert_y != pending_invert_y)
+        needs_update_buffer_transform = true;
+
       current_buffer_ = std::move(pending_buffer_);
       if (state_.alpha)
         needs_update_resource_ = true;
     }
 
     if (needs_update_buffer_transform)
-      UpdateBufferTransform();
+      UpdateBufferTransform(pending_invert_y);
 
     // Move pending frame callbacks to the end of |frame_callbacks_|.
     frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
@@ -788,7 +798,7 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
   }
 }
 
-void Surface::UpdateBufferTransform() {
+void Surface::UpdateBufferTransform(bool y_invert) {
   SkMatrix buffer_matrix;
   switch (state_.buffer_transform) {
     case Transform::NORMAL:
@@ -804,6 +814,8 @@ void Surface::UpdateBufferTransform() {
       buffer_matrix.setSinCos(1, 0, 0.5f, 0.5f);
       break;
   }
+  if (y_invert)
+    buffer_matrix.preScale(1, -1, 0.5f, 0.5f);
   buffer_matrix.postIDiv(state_.buffer_scale, state_.buffer_scale);
   buffer_transform_ = gfx::Transform(buffer_matrix);
 }

@@ -388,18 +388,21 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
              GL_TEXTURE_2D /* texture_target */,
              GL_COMMANDS_COMPLETED_CHROMIUM /* query_type */,
              true /* use_zero_copy */,
-             false /* is_overlay_candidate */) {}
+             false /* is_overlay_candidate */,
+             false /* y_invert */) {}
 
 Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target,
                unsigned query_type,
                bool use_zero_copy,
-               bool is_overlay_candidate)
+               bool is_overlay_candidate,
+               bool y_invert)
     : gpu_memory_buffer_(std::move(gpu_memory_buffer)),
       texture_target_(texture_target),
       query_type_(query_type),
       use_zero_copy_(use_zero_copy),
       is_overlay_candidate_(is_overlay_candidate),
+      y_invert_(y_invert),
       wait_for_release_delay_(
           base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs)) {}
 

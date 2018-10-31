@@ -283,7 +283,7 @@ class Surface final : public ui::PropertyHandler {
   void UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder);
 
   // Updates buffer_transform_ to match the current buffer parameters.
-  void UpdateBufferTransform();
+  void UpdateBufferTransform(bool y_invert);
 
   // Puts the current surface into a draw quad, and appends the draw quads into
   // the |frame|.

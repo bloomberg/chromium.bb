@@ -88,7 +88,7 @@ std::unique_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
       // glTexImage2D and the buffer can be reused as soon as that
       // command has been issued.
       GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy,
-      false /* is_overlay_candidate */);
+      false /* is_overlay_candidate */, false /* y_invert */);
 }
 
 }  // namespace exo

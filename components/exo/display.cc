@@ -82,6 +82,7 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const std::vector<gfx::NativePixmapPlane>& planes,
+    bool y_invert,
     std::vector<base::ScopedFD>&& fds) {
   TRACE_EVENT1("exo", "Display::CreateLinuxDMABufBuffer", "size",
                size.ToString());
@@ -114,7 +115,8 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
-      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate);
+      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate,
+      y_invert);
 }
 #endif
 

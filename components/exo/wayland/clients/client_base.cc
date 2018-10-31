@@ -64,6 +64,9 @@ const char kUseDrm[] = "use-drm";
 // Specifies if client should be fullscreen.
 const char kFullscreen[] = "fullscreen";
 
+// Specifies if client should y-invert the dmabuf surfaces.
+const char kYInvert[] = "y-invert";
+
 }  // namespace switches
 
 namespace {
@@ -343,6 +346,8 @@ bool ClientBase::InitParams::FromCommandLine(
   fullscreen = command_line.HasSwitch(switches::kFullscreen);
   transparent_background =
       command_line.HasSwitch(switches::kTransparentBackground);
+
+  y_invert = command_line.HasSwitch(switches::kYInvert);
   return true;
 }
 
@@ -384,6 +389,7 @@ bool ClientBase::Init(const InitParams& params) {
       gfx::ScaleSize(gfx::SizeF(surface_size_), 1.0f / params.scale));
   fullscreen_ = params.fullscreen;
   transparent_background_ = params.transparent_background;
+  y_invert_ = params.y_invert;
 
   display_.reset(wl_display_connect(nullptr));
   if (!display_) {
@@ -719,7 +725,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
-    buffer = CreateDrmBuffer(size, drm_format, bo_usage);
+    buffer = CreateDrmBuffer(size, drm_format, bo_usage, y_invert_);
     CHECK(buffer) << "Can't create drm buffer";
   }
 #endif
@@ -757,7 +763,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     const gfx::Size& size,
     int32_t drm_format,
-    int32_t bo_usage) {
+    int32_t bo_usage,
+    bool y_invert) {
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
@@ -779,8 +786,12 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
                                      stride, 0, 0);
     }
+    uint32_t flags = 0;
+    if (y_invert)
+      flags |= ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
+
     buffer->buffer.reset(zwp_linux_buffer_params_v1_create_immed(
-        buffer->params.get(), size.width(), size.height(), drm_format, 0));
+        buffer->params.get(), size.width(), size.height(), drm_format, flags));
 
     if (gbm_bo_get_num_planes(buffer->bo.get()) != 1)
       return buffer;
