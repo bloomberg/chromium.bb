@@ -276,7 +276,8 @@ class TestGenerator(unittest.TestCase):
       
       
       { void     foo(); 
-      int              bar(int        x,  int y); String    
+      int              bar(int        
+      x,  int y); String    
         foobar(String x, String y); 
       }
 

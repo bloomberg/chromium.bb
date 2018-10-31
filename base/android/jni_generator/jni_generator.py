@@ -66,7 +66,7 @@ _EXTRACT_METHODS_REGEX = re.compile(
     r'((public|private|static|final|abstract|protected|native)\s*)*)\s+'
     r'(?P<return_type>\S*)\s+'
     r'(?P<name>\w+)\((?P<params>.*?)\);',
-    flags=re.MULTILINE)
+    flags=re.DOTALL)
 
 _NATIVE_PROXY_EXTRACTION_REGEX = re.compile(
     r'@JniStaticNatives\s*interface\s*'
