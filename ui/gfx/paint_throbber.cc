@@ -182,4 +182,44 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
                                       effective_elapsed_time, start_angle);
 }
 
+GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
+                                        const RectF& throbber_container_bounds,
+                                        SkColor color,
+                                        const base::TimeDelta& elapsed_time) {
+  constexpr int kAnimationCycleMs = 1000;
+  // The throbber bounces back and forth. We map the elapsed time to 0->2. Time
+  // 0->1 represents when the throbber moves left to right, time 1->2 represents
+  // right to left.
+  float time = 2.0f * (elapsed_time.InMilliseconds() % kAnimationCycleMs) /
+               kAnimationCycleMs;
+  // 1 -> 2 values mirror back to 1 -> 0 values to represent right-to-left.
+  if (time > 1.0f)
+    time = 2.0f - time;
+  const float min_width = throbber_container_bounds.height();
+  const float throbber_width = min_width * 2.5;
+
+  // These bounds keep at least |min_width| of the throbber visible (inside the
+  // throbber bounds).
+  const float min_x =
+      throbber_container_bounds.x() - throbber_width + min_width;
+  const float max_x = throbber_container_bounds.right() - min_width;
+
+  RectF bounds = throbber_container_bounds;
+  // Linear interpolation between |min_x| and |max_x|.
+  bounds.set_x(time * (max_x - min_x) + min_x);
+  bounds.set_width(throbber_width);
+  // The throbber is designed to go out of bounds, but it should not be rendered
+  // outside |throbber_container_bounds|. This clips the throbber to the edges,
+  // which gives a smooth bouncing effect.
+  bounds.Intersect(throbber_container_bounds);
+
+  cc::PaintFlags flags;
+  flags.setColor(color);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+
+  // Draw with circular end caps.
+  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
+}
+
 }  // namespace gfx

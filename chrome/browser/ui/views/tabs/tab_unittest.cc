@@ -299,6 +299,20 @@ class TabTest : public ChromeViewsTestBase {
       fade_animation->Stop();
   }
 
+  static void FinishRunningLoadingAnimations(TabIcon* icon) {
+    for (auto* animation : {&icon->progress_indicator_fade_out_animation_,
+                            &icon->favicon_fade_in_animation_}) {
+      if (!animation->is_animating())
+        continue;
+      animation->Stop();
+      animation->SetCurrentValue(1.0);
+    }
+  }
+
+  static float GetLoadingProgress(TabIcon* icon) {
+    return icon->loading_progress_;
+  }
+
  protected:
   void InitWidget(Widget* widget) {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
@@ -582,6 +596,10 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  // The post-loading animation should still be playing (loading bar fades out).
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab that should hide throbber.
@@ -611,6 +629,9 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  // The post-loading animation should still be playing (loading bar fades out).
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // After loading is done, simulate another resource starting to load.
@@ -630,11 +651,11 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(false);
-  tab.StepLoadingAnimation();
+  tab.StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_FALSE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(true);
-  tab.StepLoadingAnimation();
+  tab.StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
@@ -651,6 +672,78 @@ TEST_F(TabTest, LayeredThrobber) {
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
+}
+
+// This is enforced as the loading progress is used for painting the progress
+// bar. When the progress bar is done loading and is fading out we want it to be
+// painted to the full width.
+TEST_F(TabTest, LoadingProgressIsFixedTo100PercentWhenNotLoading) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.url = GURL("http://example.com");
+  data.network_state = TabNetworkState::kWaiting;
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
+}
+
+TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.network_state = TabNetworkState::kLoading;
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+
+  // Decrease load progress, icon's load progress should not change.
+  data.load_progress = 0.1;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+
+  // Though increasing it should be respected.
+  data.load_progress = 0.5;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(0.5, GetLoadingProgress(icon));
+}
+
+TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.network_state = TabNetworkState::kLoading;
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(0.2, GetLoadingProgress(icon));
+
+  // Finish loading. Regardless of reported |data.load_progress|, load_progress
+  // should be drawn at 100%.
+  data.network_state = TabNetworkState::kNone;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
 }
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {

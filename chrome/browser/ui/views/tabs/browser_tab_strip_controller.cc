@@ -532,6 +532,7 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
   TabRendererData data;
   TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents);
   data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
+  data.load_progress = contents->GetLoadProgress();
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.url = contents->GetURL();

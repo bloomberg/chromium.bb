@@ -394,6 +394,11 @@ const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
 const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
 #endif  // OS_ANDROID
 
+#if !defined(OS_ANDROID)
+const base::Feature kNewTabLoadingAnimation{"NewTabLoadingAnimation",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // !OS_ANDROID
+
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
 const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",

@@ -1426,6 +1426,10 @@ void Browser::LoadingStateChanged(WebContents* source,
   UpdateWindowForLoadingStateChanged(source, to_different_document);
 }
 
+void Browser::LoadProgressChanged(WebContents* source, double progress) {
+  ScheduleUIUpdate(source, content::INVALIDATE_TYPE_LOAD);
+}
+
 void Browser::CloseContents(WebContents* source) {
   bool can_close_contents;
   if (IsFastTabUnloadEnabled())

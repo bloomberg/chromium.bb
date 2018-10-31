@@ -1422,6 +1422,10 @@ bool WebContentsImpl::IsLoading() const {
          !(ShowingInterstitialPage() && interstitial_page_->pause_throbber());
 }
 
+double WebContentsImpl::GetLoadProgress() const {
+  return frame_tree_.load_progress();
+}
+
 bool WebContentsImpl::IsLoadingToDifferentDocument() const {
   return IsLoading() && is_load_to_different_document_;
 }

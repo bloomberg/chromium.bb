@@ -110,8 +110,9 @@ class TabStrip : public views::AccessiblePaneView,
   TabAlertState GetTabAlertState(int tab_index) const;
 
   // Updates the loading animations displayed by tabs in the tabstrip to the
-  // next frame.
-  void UpdateLoadingAnimations();
+  // next frame. The |elapsed_time| parameter is shared between tabs and used to
+  // keep the throbbers in sync.
+  void UpdateLoadingAnimations(const base::TimeDelta& elapsed_time);
 
   // If |adjust_layout| is true the stacked layout changes based on whether the
   // user uses a mouse or a touch device with the tabstrip.

@@ -146,8 +146,10 @@ class Tab : public gfx::AnimationDelegate,
   void SetData(TabRendererData data);
   const TabRendererData& data() const { return data_; }
 
-  // Redraws the loading animation if one is visible. Otherwise, no-op.
-  void StepLoadingAnimation();
+  // Redraws the loading animation if one is visible. Otherwise, no-op. The
+  // |elapsed_time| parameter is shared between tabs and used to keep the
+  // throbbers in sync.
+  void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
   // Starts/Stops a pulse animation.
   void StartPulse();

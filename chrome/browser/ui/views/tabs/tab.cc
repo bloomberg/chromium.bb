@@ -702,12 +702,8 @@ void Tab::SetData(TabRendererData data) {
   TabRendererData old(std::move(data_));
   data_ = std::move(data);
 
-  // Icon updating must be done first because the title depends on whether the
-  // loading animation is showing.
-  icon_->SetIcon(data_.url, data_.favicon);
-  icon_->SetNetworkState(data_.network_state, data_.should_hide_throbber);
+  icon_->SetData(data_);
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
-  icon_->SetIsCrashed(data_.IsCrashed());
   UpdateTabIconNeedsAttentionBlocked();
 
   base::string16 title = data_.title;
@@ -732,8 +728,8 @@ void Tab::SetData(TabRendererData data) {
   SchedulePaint();
 }
 
-void Tab::StepLoadingAnimation() {
-  icon_->StepLoadingAnimation();
+void Tab::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
+  icon_->StepLoadingAnimation(elapsed_time);
 
   // Update the layering if necessary.
   //
