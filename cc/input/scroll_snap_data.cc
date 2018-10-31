@@ -12,8 +12,8 @@ namespace cc {
 namespace {
 
 bool IsMutualVisible(const SnapSearchResult& a, const SnapSearchResult& b) {
-  return a.visible_range().Contains(b.snap_offset()) &&
-         b.visible_range().Contains(a.snap_offset());
+  return a.visible_range().Contains(gfx::RangeF(b.snap_offset())) &&
+         b.visible_range().Contains(gfx::RangeF(a.snap_offset()));
 }
 
 bool SnappableOnAxis(const SnapAreaData& area, SearchAxis search_axis) {
@@ -32,32 +32,26 @@ void SetOrUpdateResult(const SnapSearchResult& candidate,
 
 }  // namespace
 
-bool SnapVisibleRange::Contains(float value) const {
-  if (start_ < end_)
-    return start_ <= value && value <= end_;
-  return end_ <= value && value <= start_;
-}
-
-SnapSearchResult::SnapSearchResult(float offset, const SnapVisibleRange& range)
+SnapSearchResult::SnapSearchResult(float offset, const gfx::RangeF& range)
     : snap_offset_(offset) {
   set_visible_range(range);
 }
 
-void SnapSearchResult::set_visible_range(const SnapVisibleRange& range) {
+void SnapSearchResult::set_visible_range(const gfx::RangeF& range) {
   DCHECK(range.start() <= range.end());
   visible_range_ = range;
 }
 
 void SnapSearchResult::Clip(float max_snap, float max_visible) {
   snap_offset_ = std::max(std::min(snap_offset_, max_snap), 0.0f);
-  visible_range_ = SnapVisibleRange(
-      std::max(std::min(visible_range_.start(), max_visible), 0.0f),
-      std::max(std::min(visible_range_.end(), max_visible), 0.0f));
+  visible_range_ =
+      gfx::RangeF(std::max(std::min(visible_range_.start(), max_visible), 0.0f),
+                  std::max(std::min(visible_range_.end(), max_visible), 0.0f));
 }
 
 void SnapSearchResult::Union(const SnapSearchResult& other) {
   DCHECK(snap_offset_ == other.snap_offset_);
-  visible_range_ = SnapVisibleRange(
+  visible_range_ = gfx::RangeF(
       std::min(visible_range_.start(), other.visible_range_.start()),
       std::max(visible_range_.end(), other.visible_range_.end()));
 }
@@ -115,13 +109,13 @@ bool SnapContainerData::FindSnapPosition(
     // Start from current position in the cross axis and assume it's always
     // visible.
     SnapSearchResult initial_snap_position_y = {
-        base_position.y(), SnapVisibleRange(0, max_position_.x())};
+        base_position.y(), gfx::RangeF(0, max_position_.x())};
     closest_x =
         FindClosestValidArea(SearchAxis::kX, strategy, initial_snap_position_y);
   }
   if (should_snap_on_y) {
     SnapSearchResult initial_snap_position_x = {
-        base_position.x(), SnapVisibleRange(0, max_position_.y())};
+        base_position.x(), gfx::RangeF(0, max_position_.y())};
     closest_y =
         FindClosestValidArea(SearchAxis::kY, strategy, initial_snap_position_x);
   }
@@ -249,8 +243,8 @@ SnapSearchResult SnapContainerData::GetSnapSearchResult(
     const SnapAreaData& area) const {
   SnapSearchResult result;
   if (axis == SearchAxis::kX) {
-    result.set_visible_range(SnapVisibleRange(area.rect.y() - rect_.bottom(),
-                                              area.rect.bottom() - rect_.y()));
+    result.set_visible_range(gfx::RangeF(area.rect.y() - rect_.bottom(),
+                                         area.rect.bottom() - rect_.y()));
     // https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-align
     switch (area.scroll_snap_align.alignment_inline) {
       case SnapAlignment::kStart:
@@ -268,8 +262,8 @@ SnapSearchResult SnapContainerData::GetSnapSearchResult(
     }
     result.Clip(max_position_.x(), max_position_.y());
   } else {
-    result.set_visible_range(SnapVisibleRange(area.rect.x() - rect_.right(),
-                                              area.rect.right() - rect_.x()));
+    result.set_visible_range(gfx::RangeF(area.rect.x() - rect_.right(),
+                                         area.rect.right() - rect_.x()));
     switch (area.scroll_snap_align.alignment_block) {
       case SnapAlignment::kStart:
         result.set_snap_offset(area.rect.y() - rect_.y());
