@@ -147,8 +147,8 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
-  NGPhysicalSize builder_physical_size{
-      Size().ConvertToPhysical(GetWritingMode())};
+  NGPhysicalSize builder_physical_size =
+      ToNGPhysicalSize(Size(), GetWritingMode());
 
   for (NGOutOfFlowPositionedCandidate& candidate : oof_positioned_candidates_) {
     TextDirection direction =

@@ -37,8 +37,8 @@ void LayoutNGTableCaption::CalculateAndSetMargins(
   LayoutUnit caption_inline_size_in_cb_writing_mode = box_fragment.InlineSize();
 
   LayoutUnit available_inline_size_in_cb_writing_mode =
-      constraint_space.AvailableSize()
-          .ConvertToPhysical(constraint_space.GetWritingMode())
+      ToNGPhysicalSize(constraint_space.AvailableSize(),
+                       constraint_space.GetWritingMode())
           .ConvertToLogical(containing_block_style.GetWritingMode())
           .inline_size;
 

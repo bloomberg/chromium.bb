@@ -32,11 +32,19 @@ struct CORE_EXPORT NGMarginStrut {
   void Append(const LayoutUnit& value, bool is_quirky);
 
   // Sum up negative and positive margins of this strut.
-  LayoutUnit Sum() const;
+  LayoutUnit Sum() const {
+    if (discard_margins)
+      return LayoutUnit();
+    return std::max(quirky_positive_margin, positive_margin) + negative_margin;
+  }
 
   // Sum up non-quirky margins of this strut, used by quirky
   // containers to sum up the last margin.
-  LayoutUnit QuirkyContainerSum() const;
+  LayoutUnit QuirkyContainerSum() const {
+    if (discard_margins)
+      return LayoutUnit();
+    return positive_margin + negative_margin;
+  }
 
   // Whether there have been no margins appended to this margin strut.
   bool IsEmpty() const;

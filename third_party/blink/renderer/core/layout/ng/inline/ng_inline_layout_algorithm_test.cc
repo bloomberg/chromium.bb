@@ -45,7 +45,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGConstraintSpace constraint_space =
       NGConstraintSpaceBuilder(
           WritingMode::kHorizontalTb,
-          /* icb_size */ size.ConvertToPhysical(WritingMode::kHorizontalTb))
+          /* icb_size */ ToNGPhysicalSize(size, WritingMode::kHorizontalTb))
           .SetAvailableSize(size)
           .ToConstraintSpace(WritingMode::kHorizontalTb);
 

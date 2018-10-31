@@ -28,8 +28,8 @@ class NGAbsoluteUtilsTest : public testing::Test {
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(
         WritingMode::kHorizontalTb,
-        /* icb_size */ container_size_.ConvertToPhysical(
-            WritingMode::kHorizontalTb));
+        /* icb_size */ ToNGPhysicalSize(container_size_,
+                                        WritingMode::kHorizontalTb));
     builder.SetAvailableSize(container_size_);
     ltr_space_ = builder.SetTextDirection(TextDirection::kLtr)
                      .ToConstraintSpace(WritingMode::kHorizontalTb);

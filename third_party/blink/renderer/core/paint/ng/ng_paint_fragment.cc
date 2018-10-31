@@ -55,7 +55,7 @@ NGPhysicalOffsetRect ComputePhysicalRectFor(
       paint_fragment.PhysicalFragment().ResolvedDirection();
   const NGPhysicalSize outer_size = paint_fragment.Size();
   const NGPhysicalSize physical_size =
-      logical_rect.size.ConvertToPhysical(writing_mode);
+      ToNGPhysicalSize(logical_rect.size, writing_mode);
   const NGPhysicalOffset physical_offset =
       logical_rect.offset.ConvertToPhysical(writing_mode, text_direction,
                                             outer_size, physical_size);

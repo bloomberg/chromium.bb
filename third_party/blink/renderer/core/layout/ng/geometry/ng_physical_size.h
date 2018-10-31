@@ -51,6 +51,13 @@ struct CORE_EXPORT NGPhysicalSize {
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalSize&);
 
+inline NGPhysicalSize ToNGPhysicalSize(const NGLogicalSize& other,
+                                       WritingMode mode) {
+  return mode == WritingMode::kHorizontalTb
+             ? NGPhysicalSize(other.inline_size, other.block_size)
+             : NGPhysicalSize(other.block_size, other.inline_size);
+}
+
 }  // namespace blink
 
 #endif  // NGPhysicalSize_h
