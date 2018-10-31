@@ -91,6 +91,18 @@ TEST_F(SplitStringIntoKeyValuePairsTest, EmptyString) {
   EXPECT_TRUE(kv_pairs.empty());
 }
 
+TEST_F(SplitStringIntoKeyValuePairsTest, MissingKeyValueDelimiter) {
+  EXPECT_FALSE(SplitStringIntoKeyValuePairs("key1,key2:value2",
+                                            ':',  // Key-value delimiter
+                                            ',',  // Key-value pair delimiter
+                                            &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_TRUE(kv_pairs[0].first.empty());
+  EXPECT_TRUE(kv_pairs[0].second.empty());
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
 TEST_F(SplitStringIntoKeyValuePairsTest, EmptyKeyWithKeyValueDelimiter) {
   EXPECT_TRUE(SplitStringIntoKeyValuePairs(":value1,key2:value2",
                                            ':',  // Key-value delimiter
