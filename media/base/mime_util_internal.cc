@@ -120,7 +120,7 @@ static bool IsValidH264Level(uint8_t level_idc) {
           (level_idc >= 20 && level_idc <= 22) ||
           (level_idc >= 30 && level_idc <= 32) ||
           (level_idc >= 40 && level_idc <= 42) ||
-          (level_idc >= 50 && level_idc <= 51));
+          (level_idc >= 50 && level_idc <= 52));
 }
 
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
