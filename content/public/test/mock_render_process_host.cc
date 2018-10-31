@@ -243,11 +243,16 @@ bool MockRenderProcessHost::IsInitializedAndNotDead() const {
   return has_connection_;
 }
 
-void MockRenderProcessHost::SetIgnoreInputEvents(bool ignore_input_events) {
+void MockRenderProcessHost::SetBlocked(bool blocked) {}
+
+bool MockRenderProcessHost::IsBlocked() const {
+  return false;
 }
 
-bool MockRenderProcessHost::IgnoreInputEvents() const {
-  return false;
+std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+MockRenderProcessHost::RegisterBlockStateChangedCallback(
+    const base::RepeatingCallback<void(bool)>& cb) {
+  return nullptr;
 }
 
 static void DeleteIt(base::WeakPtr<MockRenderProcessHost> h) {
@@ -274,12 +279,13 @@ void MockRenderProcessHost::AddPendingView() {
 void MockRenderProcessHost::RemovePendingView() {
 }
 
-void MockRenderProcessHost::AddWidget(RenderWidgetHost* widget) {
-  priority_clients_.insert(static_cast<RenderWidgetHostImpl*>(widget));
+void MockRenderProcessHost::AddPriorityClient(PriorityClient* priority_client) {
+  priority_clients_.insert(priority_client);
 }
 
-void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
-  priority_clients_.erase(static_cast<RenderWidgetHostImpl*>(widget));
+void MockRenderProcessHost::RemovePriorityClient(
+    PriorityClient* priority_client) {
+  priority_clients_.erase(priority_client);
 }
 
 #if defined(OS_ANDROID)

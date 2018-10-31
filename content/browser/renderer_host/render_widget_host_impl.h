@@ -369,8 +369,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool RequestRepaintForTesting();
 
   // Called by the RenderProcessHost to handle the case when the process
-  // changed its state of ignoring input events.
-  void ProcessIgnoreInputEventsChanged(bool ignore_input_events);
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
 
   // Called after every cross-document navigation. If Surface Synchronizaton is
   // on, we send a new LocalSurfaceId to RenderWidget to be used after
@@ -1061,6 +1061,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<TimeoutMonitor> input_event_ack_timeout_;
   base::TimeTicks input_event_ack_start_time_;
+
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 

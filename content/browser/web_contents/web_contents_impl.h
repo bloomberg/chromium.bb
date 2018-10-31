@@ -96,6 +96,7 @@ class RenderWidgetHostInputEventRouter;
 class SavePackage;
 class ScreenOrientationProvider;
 class SiteInstance;
+class TestWCBeforeUnloadDelegate;  // site_per_process_browsertest.cc
 class TestWebContents;
 class TextInputManager;
 class WebContentsAudioMuter;
@@ -998,6 +999,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   friend class RenderFrameHostImplBeforeUnloadBrowserTest;
   friend class WebContentsImplBrowserTest;
+  friend class TestWCBeforeUnloadDelegate;
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);

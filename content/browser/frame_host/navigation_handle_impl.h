@@ -454,6 +454,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // long time.
   void OnCommitTimeout();
 
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
   void RestartCommitTimeout();
 
   // See NavigationHandle for a description of those member variables.
@@ -518,6 +523,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;

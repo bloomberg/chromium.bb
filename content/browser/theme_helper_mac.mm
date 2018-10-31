@@ -10,12 +10,15 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_switches.h"
 
 using content::RenderProcessHost;
@@ -167,8 +170,17 @@ void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
     params->redraw = redraw;
     RenderProcessHostImpl* rphi =
         static_cast<RenderProcessHostImpl*>(it.GetCurrentValue());
-    rphi->RecomputeAndUpdateWebKitPreferences();
     rphi->GetRendererInterface()->UpdateScrollbarTheme(std::move(params));
+  }
+
+  std::unique_ptr<content::RenderWidgetHostIterator> all_widgets(
+      content::RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = all_widgets->GetNextHost()) {
+    content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
+    if (!rvh)
+      continue;
+
+    rvh->OnWebkitPreferencesChanged();
   }
 }
 
@@ -211,8 +223,6 @@ void ThemeHelperMac::Observe(int type,
 
   RenderProcessHostImpl* rphi =
       Source<content::RenderProcessHostImpl>(source).ptr();
-  rphi->RecomputeAndUpdateWebKitPreferences();
-
   content::mojom::Renderer* renderer = rphi->GetRendererInterface();
   renderer->UpdateScrollbarTheme(std::move(params));
   SendSystemColorsChangedMessage(renderer);

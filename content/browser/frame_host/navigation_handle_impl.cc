@@ -964,8 +964,8 @@ void NavigationHandleImpl::DidCommitNavigation(
                                  "DidCommitNavigation");
     state_ = DID_COMMIT;
   }
-  commit_timeout_timer_.Stop();
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
+
+  StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -1449,19 +1449,40 @@ NavigationThrottle* NavigationHandleImpl::GetDeferringThrottle() const {
   return throttles_[next_index_ - 1].get();
 }
 
+void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
+  if (blocked)
+    StopCommitTimeout();
+  else
+    RestartCommitTimeout();
+}
+
+void NavigationHandleImpl::StopCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  render_process_blocked_state_changed_subscription_.reset();
+  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
+}
+
 void NavigationHandleImpl::RestartCommitTimeout() {
   commit_timeout_timer_.Stop();
   if (state_ >= DID_COMMIT)
     return;
 
-  commit_timeout_timer_.Start(
-      FROM_HERE, g_commit_timeout,
-      base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
+  RenderProcessHost* renderer_host =
+      GetRenderFrameHost()->GetRenderWidgetHost()->GetProcess();
+  render_process_blocked_state_changed_subscription_ =
+      renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
+          &NavigationHandleImpl::RenderProcessBlockedStateChanged,
+          base::Unretained(this)));
+  if (!renderer_host->IsBlocked())
+    commit_timeout_timer_.Start(
+        FROM_HERE, g_commit_timeout,
+        base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, state_);
+  render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
                           weak_factory_.GetWeakPtr()));

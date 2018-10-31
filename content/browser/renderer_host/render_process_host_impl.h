@@ -62,7 +62,6 @@
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gl/gpu_switching_observer.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
@@ -92,8 +91,6 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
-class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class ResourceMessageFilter;
 class ServiceWorkerDispatcherHost;
 class SiteInstance;
@@ -127,7 +124,6 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
-      public ui::GpuSwitchingObserver,
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider,
       public mojom::RendererHost {
@@ -172,13 +168,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool InSameStoragePartition(StoragePartition* partition) const override;
   int GetID() const override;
   bool IsInitializedAndNotDead() const override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
-  bool IgnoreInputEvents() const override;
+  void SetBlocked(bool blocked) override;
+  bool IsBlocked() const override;
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  RegisterBlockStateChangedCallback(
+      const base::RepeatingCallback<void(bool)>& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
-  void AddWidget(RenderWidgetHost* widget) override;
-  void RemoveWidget(RenderWidgetHost* widget) override;
+  void AddPriorityClient(PriorityClient* priority_client) override;
+  void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
 #endif
@@ -385,8 +384,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void EarlyZygoteLaunch();
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
-  void RecomputeAndUpdateWebKitPreferences();
-
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;
 
@@ -575,9 +572,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // any other that hang off it.
   void ResetIPC();
 
-  // GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
-
   void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
                                base::TimeTicks start,
                                base::TimeTicks end);
@@ -712,11 +706,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;
 #endif
 
-  // Clients that contribute priority to this proces.
+  // Clients that contribute priority to this process.
   base::flat_set<PriorityClient*> priority_clients_;
-
-  // The set of widgets in this RenderProcessHostImpl.
-  std::set<RenderWidgetHostImpl*> widgets_;
 
   ChildProcessLauncherPriority priority_;
 
@@ -770,9 +761,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // the same process doesn't.
   bool sudden_termination_allowed_;
 
-  // Set to true if we shouldn't send input events.  We actually do the
-  // filtering for this at the render widget level.
-  bool ignore_input_events_;
+  // Set to true if this process is blocked and shouldn't be sent input events.
+  // The checking of this actually happens in the RenderWidgetHost.
+  bool is_blocked_;
+
+  // The clients who want to know when the blocked state has changed.
+  base::CallbackList<void(bool)> blocked_state_changed_callback_list_;
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
@@ -785,10 +779,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // not committed any web content, and it has not been given to a SiteInstance
   // that has a site assigned.
   bool is_unused_;
-
-  // Prevents the class from being added as a GpuDataManagerImpl observer more
-  // than once.
-  bool gpu_observer_registered_;
 
   // Set if a call to Cleanup is required once the RenderProcessHostImpl is no
   // longer within the RenderProcessHostObserver::RenderProcessExited callbacks.
