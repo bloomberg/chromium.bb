@@ -213,7 +213,14 @@ class MetricsCollector(object):
     self.add('python_version', metrics_utils.get_python_version())
     self.add('host_os', gclient_utils.GetMacWinOrLinux())
     self.add('host_arch', detect_host_arch.HostArch())
-    self.add('depot_tools_age', metrics_utils.get_repo_timestamp(DEPOT_TOOLS))
+
+    depot_tools_age = metrics_utils.get_repo_timestamp(DEPOT_TOOLS)
+    if depot_tools_age is not None:
+      self.add('depot_tools_age', depot_tools_age)
+
+    git_version = metrics_utils.get_git_version()
+    if git_version:
+      self.add('git_version', git_version)
 
     self._upload_metrics_data()
     if exception:

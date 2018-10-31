@@ -65,9 +65,12 @@ class MetricsCollectorTest(unittest.TestCase):
                lambda: 'x86').start()
     mock.patch('metrics_utils.get_repo_timestamp',
                lambda _: 1234).start()
+    mock.patch('metrics_utils.get_git_version',
+               lambda: '2.18.1').start()
 
     self.default_metrics = {
         "python_version": "2.7.13",
+        "git_version": "2.18.1",
         "execution_time": 1000,
         "timestamp": 0,
         "exit_code": 0,
@@ -696,6 +699,24 @@ class MetricsUtilsTest(unittest.TestCase):
 
     http_metrics = metrics_utils.extract_http_metrics('', '', 0, 12345.25)
     self.assertEqual(12345.25, http_metrics['response_time'])
+
+  @mock.patch('metrics_utils.subprocess2.Popen')
+  def test_get_git_version(self, mockPopen):
+    """Tests that we can get the git version."""
+    mockProcess = mock.Mock()
+    mockProcess.communicate.side_effect = [('git version 2.18.0.123.foo', '')]
+    mockPopen.side_effect = [mockProcess]
+
+    self.assertEqual('2.18.0', metrics_utils.get_git_version())
+
+  @mock.patch('metrics_utils.subprocess2.Popen')
+  def test_get_git_version_unrecognized(self, mockPopen):
+    """Tests that we can get the git version."""
+    mockProcess = mock.Mock()
+    mockProcess.communicate.side_effect = [('Blah blah blah', 'blah blah')]
+    mockPopen.side_effect = [mockProcess]
+
+    self.assertIsNone(metrics_utils.get_git_version())
 
 
 if __name__ == '__main__':

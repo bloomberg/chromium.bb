@@ -138,10 +138,26 @@ KNOWN_HTTP_ARGS = {
   'LABELS',
 }
 
+GIT_VERSION_RE = re.compile(
+  r'git version (\d)\.(\d{0,2})\.(\d{0,2})'
+)
+
 
 def get_python_version():
   """Return the python version in the major.minor.micro format."""
   return '{v.major}.{v.minor}.{v.micro}'.format(v=sys.version_info)
+
+
+def get_git_version():
+  """Return the Git version in the major.minor.micro format."""
+  p = subprocess2.Popen(
+      ['git', '--version'],
+      stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
+  stdout, _ = p.communicate()
+  match = GIT_VERSION_RE.match(stdout)
+  if not match:
+    return None
+  return '%s.%s.%s' % match.groups()
 
 
 def return_code_from_exception(exception):
