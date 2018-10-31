@@ -814,8 +814,7 @@ bool ValidateLinuxBufferParams(wl_resource* resource,
     return false;
   }
 
-  if (flags & (ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT |
-               ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED)) {
+  if (flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED) {
     wl_resource_post_error(resource,
                            ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
                            "flags not supported");
@@ -883,10 +882,12 @@ void linux_buffer_params_create(wl_client* client,
     fds.push_back(std::move(plane.fd));
   }
 
+  bool y_invert = (flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT) != 0;
+
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
           gfx::Size(width, height), supported_format->buffer_format, planes,
-          std::move(fds));
+          y_invert, std::move(fds));
   if (!buffer) {
     zwp_linux_buffer_params_v1_send_failed(resource);
     return;
@@ -942,10 +943,12 @@ void linux_buffer_params_create_immed(wl_client* client,
     fds.push_back(std::move(plane.fd));
   }
 
+  bool y_invert = flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
+
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
           gfx::Size(width, height), supported_format->buffer_format, planes,
-          std::move(fds));
+          y_invert, std::move(fds));
   if (!buffer) {
     // On import failure in case of a create_immed request, the protocol
     // allows us to raise a fatal error from zwp_linux_dmabuf_v1 version 2+.

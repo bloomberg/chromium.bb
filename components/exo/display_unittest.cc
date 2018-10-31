@@ -74,14 +74,14 @@ TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
   fds.push_back(base::ScopedFD(native_pixmap_handle.fds[0].fd));
 
   std::unique_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(
-      buffer_size, gfx::BufferFormat::RGBA_8888, planes, std::move(fds));
+      buffer_size, gfx::BufferFormat::RGBA_8888, planes, false, std::move(fds));
   EXPECT_TRUE(buffer1);
 
   std::vector<base::ScopedFD> invalid_fds;
   invalid_fds.push_back(base::ScopedFD());
   // Creating a prime buffer using an invalid fd should fail.
   std::unique_ptr<Buffer> buffer2 = display->CreateLinuxDMABufBuffer(
-      buffer_size, gfx::BufferFormat::RGBA_8888, planes,
+      buffer_size, gfx::BufferFormat::RGBA_8888, planes, false,
       std::move(invalid_fds));
   EXPECT_FALSE(buffer2);
 }

@@ -69,6 +69,7 @@ class Display {
       const gfx::Size& size,
       gfx::BufferFormat format,
       const std::vector<gfx::NativePixmapPlane>& planes,
+      bool y_invert,
       std::vector<base::ScopedFD>&& fds);
 #endif
 

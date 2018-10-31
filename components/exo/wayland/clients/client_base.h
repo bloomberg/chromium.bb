@@ -54,6 +54,7 @@ class ClientBase {
     std::string use_drm_value;
     int32_t drm_format = 0;
     int32_t bo_usage = 0;
+    bool y_invert = false;
     bool allocate_buffers_with_output_mode = false;
     bool use_fullscreen_shell = false;
     bool use_touch = false;
@@ -111,7 +112,8 @@ class ClientBase {
                                        int32_t bo_usage);
   std::unique_ptr<Buffer> CreateDrmBuffer(const gfx::Size& size,
                                           int32_t drm_format,
-                                          int32_t bo_usage);
+                                          int32_t bo_usage,
+                                          bool y_invert);
   ClientBase::Buffer* DequeueBuffer();
 
   // wl_output_listener
@@ -174,6 +176,7 @@ class ClientBase {
   gfx::Size surface_size_ = gfx::Size(256, 256);
   bool fullscreen_ = false;
   bool transparent_background_ = false;
+  bool y_invert_ = false;
 
   std::unique_ptr<wl_display> display_;
   std::unique_ptr<wl_registry> registry_;
