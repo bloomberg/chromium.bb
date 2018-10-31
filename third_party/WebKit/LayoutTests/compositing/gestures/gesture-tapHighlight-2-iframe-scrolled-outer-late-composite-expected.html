@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
 <script src="resources/link-highlight-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
@@ -14,10 +13,7 @@ and the outer frame is partially scrolled.
 <script>
 function runTest() {
     var nestingFrame = document.getElementById('nestingFrame');
-    if (window.testRunner) {
-        nestingFrame.contentWindow.scrollTo(0, 20);
-        testRunner.dumpAsTextWithPixelResults();
-    }
+    nestingFrame.contentWindow.scrollTo(0, 20);
 }
 </script>
 </body>

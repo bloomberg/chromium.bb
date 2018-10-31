@@ -6,13 +6,13 @@
     }
 </style>
 </head>
+<script>runPixelTests = true;</script>
 <script src="full-screen-test.js"></script>
 <script>
     function doTest() {
-        if (window.testRunner) {
-            testRunner.dumpAsTextWithPixelResults();
+        if (window.testRunner)
             testRunner.waitUntilDone();
-        }
+
         document.body.offsetTop;
         var fullscreen = document.getElementById('fullscreenme');
 

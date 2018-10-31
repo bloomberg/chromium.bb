@@ -26,10 +26,8 @@ function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     // This test highlights a link in a non-composited overflow-div, then forces that div to become composited,
     // then scrolls that div, then exits. If everything is working correctly, the link highlight will still

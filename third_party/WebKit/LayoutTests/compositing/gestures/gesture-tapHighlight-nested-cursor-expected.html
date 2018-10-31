@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="../../resources/js-test.js"></script>
     <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
     <style>
         #outerDiv {
@@ -13,7 +12,7 @@
         }
     </style>
 </head>
-<body onload="runTest();">
+<body>
     <div class="opaqueHighlight" id="outerDiv" style="cursor: pointer">
         <div style="cursor: pointer;">
             <div style="cursor: default;">
@@ -21,12 +20,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function runTest() {
-            if (window.testRunner)
-                testRunner.dumpAsTextWithPixelResults();
-        }
-    </script>
 </body>
 </html>

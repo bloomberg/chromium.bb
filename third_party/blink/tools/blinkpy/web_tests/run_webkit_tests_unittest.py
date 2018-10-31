@@ -937,9 +937,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(re.search(r'reference_args:\s*ref:', err.getvalue()))
 
     def test_reftest_matching_text_expectation(self):
-        test_name = 'passes/reftest.html'
+        test_name = 'passes/reftest-with-text.html'
         host = MockHost()
-        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'reftest')
         run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
@@ -948,9 +947,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(len(test_result.failures), 0)
 
     def test_reftest_mismatching_text_expectation(self):
-        test_name = 'passes/reftest.html'
+        test_name = 'failures/unexpected/reftest-with-mismatching-text.html'
         host = MockHost()
-        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'mismatch')
         run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
@@ -960,9 +958,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.TEXT)
 
     def test_reftest_mismatching_pixel_matching_text(self):
-        test_name = 'failures/unexpected/reftest.html'
+        test_name = 'failures/unexpected/reftest-with-matching-text.html'
         host = MockHost()
-        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'reftest')
         run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
@@ -1001,15 +998,46 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assert_contains(log_stream, 'Please remove %s' % extra_txt)
         self.assert_contains(log_stream, 'Please remove %s' % extra_wav)
 
+    def test_empty_overriding_baselines(self):
+        host = MockHost()
+        base_baseline = test.LAYOUT_TEST_DIR + '/passes/image-expected.txt'
+        host.filesystem.write_text_file(base_baseline, 'Non-empty')
+        platform_baseline = test.LAYOUT_TEST_DIR + '/platform/test-mac-mac10.10/passes/image-expected.txt'
+        host.filesystem.write_text_file(platform_baseline, '')
+        test_name = 'passes/image.html'
+        run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 0)
+        self.assertNotIn('Please remove', log_stream)
+
     def test_reftest_extra_baselines(self):
         host = MockHost()
         extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
         extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
-        optional_txt = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt'
-        host.filesystem.write_text_file(optional_txt, 'reftest')
         test_name = 'passes/reftest.html'
+        run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertNotEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 1)
+        self.assertTrue(test_failures.has_failure_type(test_failures.FailureAudioMismatch, test_result.failures))
+        # For now extra png baseline is only reported in an error message.
+        self.assert_contains(log_stream, 'Please remove %s' % extra_png)
+        self.assert_contains(log_stream, 'Please remove %s' % extra_wav)
+
+    def test_reftest_with_text_extra_baselines(self):
+        host = MockHost()
+        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.png'
+        host.filesystem.write_text_file(extra_png, 'Extra png')
+        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.wav'
+        host.filesystem.write_text_file(extra_wav, 'Extra wav')
+        test_name = 'passes/reftest-with-text.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
@@ -1390,20 +1418,18 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assert_baselines(
             written_files, log_stream, 'passes/reftest', expected_extensions=[])
 
-    def test_reset_results_reftest_with_baseline_present(self):
+    def test_reset_results_reftest_with_text(self):
         # In this case, there is a text baseline present; a new baseline is
         # written even though this is a reference test.
         host = MockHost()
-        host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', '')
         details, log_stream, _ = logging_run(
-            ['--reset-results', 'passes/reftest.html'],
+            ['--reset-results', 'failures/unexpected/reftest-with-mismatching-text.html'],
             tests_included=True, host=host)
         written_files = host.filesystem.written_files
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(written_files.keys()), 6)
         self.assert_baselines(
-            written_files, log_stream, 'passes/reftest',
+            written_files, log_stream, 'failures/unexpected/reftest-with-mismatching-text',
             expected_extensions=['.txt'])
 
     def test_reset_results_remove_extra_baselines(self):
@@ -1424,14 +1450,14 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             written_files, log_stream, 'failures/unexpected/image-only',
             expected_extensions=['.png'])
 
-    def test_reset_results_reftest_remove_extra_png_baseline(self):
+    def test_reset_results_reftest_remove_extra_baselines(self):
         host = MockHost()
         extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
         extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
-        optional_txt = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt'
-        host.filesystem.write_text_file(optional_txt, 'reftest')
+        extra_txt = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt'
+        host.filesystem.write_text_file(extra_txt, 'reftest')
         details, _, _ = logging_run(['--reset-results', 'passes/reftest.html'],
                                     tests_included=True, host=host)
         written_files = host.filesystem.written_files
@@ -1439,7 +1465,22 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(len(written_files.keys()), 8)
         self.assertIsNone(written_files[extra_png])
         self.assertIsNone(written_files[extra_wav])
-        self.assertEquals('reftest', written_files[optional_txt])
+        self.assertIsNone(written_files[extra_txt])
+
+    def test_reset_results_reftest_with_text_remove_extra_baselines(self):
+        host = MockHost()
+        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.png'
+        host.filesystem.write_text_file(extra_png, 'Extra png')
+        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.wav'
+        host.filesystem.write_text_file(extra_wav, 'Extra wav')
+        details, _, _ = logging_run(['--reset-results', 'passes/reftest-with-text.html'],
+                                    tests_included=True, host=host)
+        written_files = host.filesystem.written_files
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(written_files.keys()), 7)
+        self.assertIsNone(written_files[extra_png])
+        self.assertIsNone(written_files[extra_wav])
+        self.assertNotIn(test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.txt', written_files)
 
     def test_reset_results_passing_testharness_remove_extra_baselines(self):
         host = MockHost()

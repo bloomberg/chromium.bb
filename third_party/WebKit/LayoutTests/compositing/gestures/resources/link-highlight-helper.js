@@ -33,16 +33,24 @@ function useMockHighlight() {
     internals.settings.setMockGestureTapHighlightsEnabled(true);
 }
 
+function description(s) {
+  var div = document.createElement('div');
+  div.textContent = s;
+  document.body.appendChild(div);
+}
+
+function debug(s) {
+  description(s);
+}
+
 function testHighlightTarget(id) {
     useMockHighlight();
 
     var clientRect = document.getElementById('highlightTarget').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureTapDown(x, y, 30, 30);

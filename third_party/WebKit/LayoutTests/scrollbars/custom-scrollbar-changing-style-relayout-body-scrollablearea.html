@@ -53,8 +53,6 @@ function addRule(selector, css){
     }).join(";");
     sheet.insertRule(selector + "{" + propText + "}", sheet.cssRules.length);
 };
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
 runAfterLayoutAndPaint(function() {
     addRule("::-webkit-scrollbar", {width: "400px",});
 }, true);

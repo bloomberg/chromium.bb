@@ -28,10 +28,8 @@ Tests invalidation and painting of a box changing background while composited sc
 </div>
 <script>
 
-if (window.testRunner) {
-  testRunner.dumpAsTextWithPixelResults();
+if (window.testRunner)
   testRunner.waitUntilDone();
-}
 
 runAfterLayoutAndPaint(function() {
   var container = document.querySelector('#container');

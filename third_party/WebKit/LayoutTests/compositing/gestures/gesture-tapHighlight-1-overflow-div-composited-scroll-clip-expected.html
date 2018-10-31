@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onload="runTest();">
@@ -21,10 +20,7 @@ This test is successful if "Target Link" is not visible and no green rectangle w
 <script>
 function runTest() {
     var targetDiv = document.getElementById('targetDiv');
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
-        targetDiv.scrollTop += 20;
-    }
+    targetDiv.scrollTop += 20;
 }
 </script>
 </script>

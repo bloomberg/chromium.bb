@@ -29,12 +29,5 @@ body {
 <meta name="viewport" content="width=800, minimum-scale=0.8, initial-scale=0.8, maximum-scale=1.25">
 <div class="box"></div>
 <script>
-if (window.testRunner) {
-  testRunner.dumpAsTextWithPixelResults();
-  testRunner.waitUntilDone();
-}
-runAfterLayoutAndPaint(function() {
-  if (window.testRunner)
-    testRunner.notifyDone();
-});
+runAfterLayoutAndPaint(function() {}, true);
 </script>

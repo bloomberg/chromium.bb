@@ -7,12 +7,7 @@
       function runTest() {
         var targetDiv = document.getElementById('targetDiv');
         targetDiv.scrollTop += 20;
-
-        var highlight = createCompositedHighlight(document.getElementById('targetLink'));
-
-        if (window.testRunner) {
-          testRunner.dumpAsTextWithPixelResults();
-        }
+        createCompositedHighlight(document.getElementById('targetLink'));
       }
     </script>
     <script src="resources/link-highlight-helper.js"></script>

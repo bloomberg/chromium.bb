@@ -625,15 +625,9 @@ If a test calls `testRunner.dumpAsTextWithPixelResults()` or
 pixel/reference test and a text test. It will output both pixel result and text
 result.
 
-For a test that is both a pixel test and a text test, both pixel and text
-results will be compared to baselines, and the test passes if each result match
-the corresponding baseline.
-
-For a test that is both a reference test and a text test, the text baseline is
-optional. If the text baseline doesn't exist, the test will be treated as a
-normal reference test as if it doesn't produce the text output. Otherwise, both
-pixel and text results will be compared to baselines, and the test passes if
-each result match the corresponding baseline.
+For a test that is both a pixel/reference test and a text test, both pixel and
+text results will be compared to baselines, and the test passes if each result
+matches the corresponding baseline.
 
 Many of the [paint invalidation tests](../../third_party/WebKit/LayoutTests/paint/invalidation)
 are of this type. The pixel results (compared against `-expected.png` or

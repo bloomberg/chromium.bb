@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
 <script src="resources/link-highlight-helper.js"></script>
 </head>
 <body onLoad="runTest();">
@@ -17,10 +16,8 @@ function runTest() {
     var clientRect = targetFrame.contentDocument.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2 + targetFrame.getBoundingClientRect().top;
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);

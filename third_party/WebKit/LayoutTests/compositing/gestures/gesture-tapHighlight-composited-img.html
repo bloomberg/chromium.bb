@@ -2,7 +2,6 @@
 <html>
 <head>
 <script src="resources/link-highlight-helper.js"></script>
-<script src="../../resources/js-test.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onload="runTest();" style="overflow: hidden">
@@ -15,10 +14,8 @@ function runTest() {
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
 
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);

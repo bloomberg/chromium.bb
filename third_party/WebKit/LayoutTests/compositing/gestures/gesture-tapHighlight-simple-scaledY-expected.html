@@ -3,7 +3,6 @@
 <head>
 <script src="resources/link-highlight-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
-<script src="../../resources/js-test.js"></script>
 </head>
 <body onload="runTest();">
 <div id="container" style="position: absolute; left: 40px; top: 80px;">
@@ -27,9 +26,6 @@ function runTest() {
     highlight.style.width = clientRect.width + "px";
     highlight.style.top = clientRect.top + "px";
     highlight.style.left = clientRect.left + "px";
-
-    if (window.testRunner)
-        testRunner.dumpAsTextWithPixelResults();
 }
 </script>
 </script>

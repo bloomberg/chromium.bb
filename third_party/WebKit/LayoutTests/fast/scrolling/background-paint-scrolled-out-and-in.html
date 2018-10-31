@@ -15,10 +15,8 @@ Same as background-paint-scrolled.html but scrolls the changed box out of view t
 <div style="height: 2000px"></div>
 <script>
 
-if (window.testRunner) {
-  testRunner.dumpAsTextWithPixelResults();
+if (window.testRunner)
   testRunner.waitUntilDone();
-}
 
 runAfterLayoutAndPaint(function() {
   var box = document.querySelector("#box");

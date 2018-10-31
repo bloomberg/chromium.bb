@@ -288,11 +288,8 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
     useResultElement = doPixelTest;
 
     if (window.testRunner) {
-        if (doPixelTest) {
-            testRunner.dumpAsTextWithPixelResults();
-        } else {
+        if (!doPixelTest)
             testRunner.dumpAsText();
-        }
         testRunner.waitUntilDone();
     }
 
