@@ -15,7 +15,7 @@
 // ViewController that contains all Infobars. It can contain various at the
 // same time but only the top most one will be visible.
 @interface InfobarContainerViewController
-    : UIViewController<InfobarContainerConsumer, InfobarContainerStateDelegate>
+    : UIViewController<InfobarContainerConsumer>
 
 // The delegate used to position the InfoBarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;

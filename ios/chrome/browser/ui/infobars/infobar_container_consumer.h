@@ -18,6 +18,10 @@ class InfoBarIOS;
 // Sets the Infobar container user interaction to |enabled|.
 - (void)setUserInteractionEnabled:(BOOL)enabled;
 
+// Tells the consumer to update its layout to reflect changes in the contained
+// infobars.
+- (void)updateLayoutAnimated:(BOOL)animated;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONTAINER_CONSUMER_H_
