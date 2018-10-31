@@ -36,23 +36,3 @@ test("sync_listen_notifications") {
     "//net:test_support",
   ]
 }
-
-test("sync_client") {
-  sources = [
-    "sync_client.cc",
-  ]
-
-  defines = [ "SYNC_TEST" ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//components/invalidation/impl",
-    "//components/sync",
-    "//components/sync:test_support_engine",
-    "//jingle:notifier",
-    "//net:test_support",
-    "//services/network:network_service",
-    "//services/network:test_support",
-  ]
-}
