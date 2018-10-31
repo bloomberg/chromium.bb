@@ -50,8 +50,4 @@ bool MockWebDocumentSubresourceFilter::ShouldLogToConsole() {
   return true;
 }
 
-bool MockWebDocumentSubresourceFilter::GetIsAssociatedWithAdSubframe() const {
-  return false;
-}
-
 }  // namespace test_runner

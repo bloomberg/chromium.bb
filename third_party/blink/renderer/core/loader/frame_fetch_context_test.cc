@@ -109,9 +109,7 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
   FixedPolicySubresourceFilter(LoadPolicy policy,
                                int* filtered_load_counter,
                                bool is_associated_with_ad_subframe)
-      : policy_(policy),
-        filtered_load_counter_(filtered_load_counter),
-        is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
+      : policy_(policy), filtered_load_counter_(filtered_load_counter) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                            mojom::RequestContextType) override {
@@ -126,14 +124,9 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
 
   bool ShouldLogToConsole() override { return false; }
 
-  bool GetIsAssociatedWithAdSubframe() const override {
-    return is_associated_with_ad_subframe_;
-  }
-
  private:
   const LoadPolicy policy_;
   int* filtered_load_counter_;
-  bool is_associated_with_ad_subframe_;
 };
 
 class FrameFetchContextTest : public testing::Test {
@@ -1184,17 +1177,6 @@ TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
   EXPECT_EQ(base::nullopt, CanRequestPreload());
-  EXPECT_EQ(0, GetFilteredLoadCallCount());
-}
-
-// Tests that if a subresource is allowed as per subresource filter ruleset but
-// is fetched from a frame that is tagged as an ad, then the subresource should
-// be tagged as well.
-TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
-  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
-                  true /* is_associated_with_ad_subframe */);
-
-  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
