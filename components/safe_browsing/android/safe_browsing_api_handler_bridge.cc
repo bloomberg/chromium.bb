@@ -13,8 +13,6 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -200,15 +198,8 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   ScopedJavaLocalRef<jintArray> j_threat_types =
       SBThreatTypeSetToJavaArray(env, threat_types);
 
-  base::ElapsedTimer check_timer;
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);
-  // TODO(vakh): The following metric isn't very useful now since the
-  // |startUriLookup| method simply posts a task and adds listeners now.
-  // Continue to monitor it to ensure that it keeps falling and then remove it
-  // when it is consistently a low value. (https://crbug.com/839190)
-  UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDispatchTime",
-                           check_timer.Elapsed().InMicroseconds());
 }
 
 }  // namespace safe_browsing
