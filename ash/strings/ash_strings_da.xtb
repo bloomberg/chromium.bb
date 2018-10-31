@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Genopretter forbindelsen til <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Vælg, om websites skal kunne bruge placeringstjenester eller enhedens mikrofon, kamera eller andre funktioner</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
+<translation id="2803734122639935495">Angiv din adgangskode for at låse enheden op</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="2825619548187458965">Hylde</translation>
 <translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
 <translation id="574392208103952083">Mellem</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5750765938512549687">Bluetooth er slået fra</translation>
@@ -297,7 +299,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6284232397434400372">Opløsningen blev ændret</translation>
 <translation id="6297287540776456956">Brug pennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Tastaturoverlejring</translation>
 <translation id="6344698853700675736">Slå Nattelys til/fra</translation>
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
@@ -385,6 +386,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7842211907556571265">Opretter forbindelse til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7868900307798234037">Låser op med fingeraftryk</translation>
 <translation id="7886169021410746335">Juster privatlivsindstillinger</translation>
 <translation id="7886277072580235377">Din internetsession ryddes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send en mail</translation>
@@ -393,6 +395,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Søger efter mobilnetværk...</translation>
 <translation id="7982789257301363584">Netværk</translation>
+<translation id="7984197416080286869">Du har brugt for mange forsøg på at logge ind med fingeraftryk</translation>
 <translation id="7994370417837006925">Samlet login fra flere konti</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="8029241286966751120">Forstørrelse af fuld skærm er aktiveret. Tryk på Ctrl+Søg+M igen for at deaktivere tilstanden.</translation>

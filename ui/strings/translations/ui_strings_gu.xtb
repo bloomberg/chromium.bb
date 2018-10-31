@@ -44,7 +44,7 @@
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">કૅલિબ્રેશન પૂર્ણ થયું</translation>
-<translation id="252373100621549798">અજ્ઞાત પ્રદર્શન</translation>
+<translation id="252373100621549798">અજાણ્યું ડિસ્પ્લે</translation>
 <translation id="2583543531130364912">તમારી ટચસ્ક્રીનને કેલિબ્રેટ કરો</translation>
 <translation id="2666092431469916601">ઉપર</translation>
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">નીચલો એરો</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 દિવસ}one{# દિવસ}other{# દિવસ}}</translation>
 <translation id="335581015389089642">ભાષા</translation>
+<translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 દિવસ બાકી}one{# દિવસ બાકી}other{# દિવસ બાકી}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” શોધો</translation>
 <translation id="364720409959344976">અપલોડ કરવા માટે ફોલ્ડર પસંદ કરો</translation>
@@ -69,7 +70,7 @@
 <translation id="3842239759367498783">તમારા મોબાઇલ ઉપકરણ <ph name="TITLE" />માંથી વાંચવાનું ચાલુ રાખો</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3889424535448813030">જમણો એરો</translation>
-<translation id="3892641579809465218">આંતરિક પ્રદર્શન</translation>
+<translation id="3892641579809465218">આંતરિક ડિસ્પ્લે</translation>
 <translation id="3897092660631435901">મેનૂ</translation>
 <translation id="3909791450649380159">કા&amp;પો</translation>
 <translation id="3990502903496589789">જમણી કિનારી</translation>
@@ -84,7 +85,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 મહિનો બાકી}one{# મહિનો બાકી}other{# મહિના બાકી}}</translation>
 <translation id="4841881773802181781">ઉમેરો</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 સેકન્ડ}one{# સેકન્ડ}other{# સેકન્ડ}}</translation>
-<translation id="4971687151119236543">મીડિયા પહેલાંનું ટ્રૅક</translation>
+<translation id="4971687151119236543">મીડિયા પાછલું ગીત</translation>
 <translation id="5046499563572181734">અહીં ટૅપ કરો</translation>
 <translation id="5076340679995252485">પેસ્ટ કરો</translation>
 <translation id="5137751499640340777">Google આસિસ્ટંટ શરૂ કરો</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">ડાબો એરો</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 મિનિટ}one{# મિનિટ}other{# મિનિટ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 દિવસ અને }one{# દિવસ અને }other{# દિવસ અને }}</translation>
+<translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 સેકન્ડ બાકી}one{# સેકન્ડ બાકી}other{# સેકન્ડ બાકી}}</translation>
 <translation id="5941711191222866238">નાનું કરો</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 કલાક}one{# કલાક}other{# કલાક}}</translation>

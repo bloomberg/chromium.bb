@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Freccia GIÙ</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 giorno}other{# giorni}}</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3479552764303398839">Non adesso</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 giorno rimanente}other{# giorni rimanenti}}</translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Seleziona la cartella da caricare</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">Freccia sinistra</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 giorno e }other{# giorni e }}</translation>
+<translation id="5895138241574237353">Riavvia</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 secondo rimanente}other{# secondi rimanenti}}</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ora}other{# ore}}</translation>

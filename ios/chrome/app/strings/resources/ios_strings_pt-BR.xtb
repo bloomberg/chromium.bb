@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Excluir</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta pai.</translation>
 <translation id="1340643665687018190">Fechar menu</translation>
+<translation id="1360432990279830238">Sair e desativar a sincronização?</translation>
 <translation id="1375321115329958930">Senhas salvas</translation>
 <translation id="1377255359165588604">A sincronização parou de funcionar.</translation>
 <translation id="1377321085342047638">Número do cartão</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1657011748321897393">O compartilhamento falhou porque não há conexão de rede.</translation>
 <translation id="165877110639533037">Não há guias abertas</translation>
+<translation id="168715261339224929">Para ver seus favoritos em todos os seus dispositivos, ative a sincronização.</translation>
 <translation id="1687475363370981210">Marcar todas as entradas como lidas</translation>
 <translation id="1690731385917361335">Nenhum item</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
@@ -315,6 +317,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6196207969502475924">Pesquisa por voz</translation>
 <translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
+<translation id="6303969859164067831">Sair e desativar a sincronização</translation>
 <translation id="6308436439357671616">Isso permite que você tire fotos e faça upload delas.</translation>
 <translation id="6324528485781869530">Mudar conta de sincronização</translation>
 <translation id="6324669097367352121">Configurações de login</translation>
@@ -340,6 +343,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6464071786529933911">Abrir em nova guia anônima</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
 <translation id="6541915733953096570">Da última hora</translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar pasta</translation>
 <translation id="6657585470893396449">Senha</translation>
 <translation id="667999046851023355">Documento</translation>

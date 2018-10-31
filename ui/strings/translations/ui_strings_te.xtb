@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">క్రింది బాణం</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 రోజు}other{# రోజులు}}</translation>
 <translation id="335581015389089642">ప్రసంగం</translation>
+<translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 రోజు మిగిలి ఉంది}other{# రోజులు మిగిలి ఉన్నాయి}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="364720409959344976">అప్‌లోడ్ చేయడానికి ఫోల్డర్‌ని ఎంచుకోండి</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">ఎడమ బాణం</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 నిమి.}other{# నిమి.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 రోజు మరియు }other{# రోజులు మరియు }}</translation>
+<translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 సెకను మిగిలి ఉంది}other{# సెకన్లు మిగిలి ఉన్నాయి}}</translation>
 <translation id="5941711191222866238">కనిష్టీకరించు</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 గంట}other{# గంటలు}}</translation>

@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Piliin kung makakagamit ang mga website ng mga serbisyo ng lokasyon o mikropono, camera, o iba pang feature ng device</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">Para i-unlock, ilagay ang iyong password</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Jack ng mikropono</translation>
 <translation id="5669267381087807207">Ina-activate</translation>
 <translation id="5673434351075758678">Gagawing "<ph name="TO_LOCALE" />" mula "<ph name="FROM_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
+<translation id="5691772641933328258">Hindi nakilala ang fingerprint</translation>
 <translation id="574392208103952083">Katamtaman</translation>
 <translation id="5744083938413354016">Pag-tap upang mag-drag</translation>
 <translation id="5750765938512549687">Naka-off ang Bluetooth</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Binago ang resolution</translation>
 <translation id="6297287540776456956">Gamitin ang stylus upang pumili ng rehiyon</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Overlay ng keyboard</translation>
 <translation id="6344698853700675736">I-toggle ang Night Light</translation>
 <translation id="6376931439017688372">Naka-on ang Bluetooth</translation>
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Kumokonekta sa <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Babala: Pang-eskperimentong feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="7868900307798234037">Ina-unlock gamit ang fingerprint</translation>
 <translation id="7886169021410746335">Isaayos ang mga setting ng privacy</translation>
 <translation id="7886277072580235377">Maki-clear ang iyong session sa internet kapag nag-sign out ka. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Magpadala ng email</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
 <translation id="7977927628060636163">Naghahanap ng mga mobile network...</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="7984197416080286869">Masyadong maraming beses sumubok gamit ang fingerprint</translation>
 <translation id="7994370417837006925">Multiple na pag-sign in</translation>
 <translation id="8000066093800657092">Walang network</translation>
 <translation id="8029241286966751120">Na-enable ang Fullscreen Magnifier. Pinduting muli ang Ctrl+Search+M para i-off ito.</translation>

@@ -79,6 +79,9 @@
       Consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables pour obtenir la liste des variables qui peuvent être utilisées.
 
       Si cette règle n'est pas définie, le répertoire de cache par défaut sera utilisé, et l'utilisateur pourra le remplacer avec l'indicateur de ligne de commande "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Détermine la langue qui peut être utilisée comme langue préférée par <ph name="PRODUCT_OS_NAME" />.
+
+      Si cette règle est définie, l'utilisateur ne peut ajouter qu'une seule des langues qui figurent dans la liste des langues préférées. Si cette règle n'est pas configurée, ou si elle est définie sur une liste vide, l'utilisateur peut choisir n'importe quelle langue comme langue préférée. Si cette règle est configurée sur une liste qui contient des valeurs non valides, celles-ci sont ignorées. Si un utilisateur avait ajouté à la liste des langues préférées des langues qui ne sont pas autorisées par cette règle, ces langues sont supprimées. Si l'utilisateur avait configuré <ph name="PRODUCT_OS_NAME" /> pour qu'il s'affiche dans l'une des langues non autorisées par cette règle, l'une des langues autorisées est utilisée comme langue d'affichage à la connexion suivante de l'utilisateur. Sinon, <ph name="PRODUCT_OS_NAME" /> utilise la première valeur valide spécifiée par cette règle, ou les paramètres régionaux de remplacement (actuellement, "en-US"), si cette règle ne contient que des entrées non valides.</translation>
 <translation id="1135264353752122851">Détermine les dispositions de clavier autorisées pour les sessions utilisateur <ph name="PRODUCT_OS_NAME" />.
 
       Si cette règle est définie, l'utilisateur ne peut sélectionner qu'un seul mode de saisie spécifié par cette règle. Si cette règle n'est pas configurée, ou si elle est définie sur une liste vide, l'utilisateur peut sélectionner tous les modes de saisie acceptés. Si le mode de saisie actuel n'est pas autorisé par cette règle, la disposition du clavier matériel (si autorisée) ou la première entrée valide dans cette liste est utilisée. Tous les modes de saisie non valides ou incompatibles de cette liste sont ignorés.</translation>
@@ -110,9 +113,9 @@
 <translation id="1223789468190631420">Navigation sécurisée activée pour les sources fiables</translation>
 <translation id="122899932962115297">Une liste blanche des modes de déverrouillage rapide pouvant être configurés par l'utilisateur et utilisés pour débloquer l'écran de verrouillage.
 
-          Cette valeur liste des chaînes de caractères ; les entrées valides sont : "all", "PIN", "FINGERPRINT". L'option "all" permet à l'utilisateur d'employer tous les modes de déverrouillage rapide (ceci inclut ceux qui seront ajoutés par la suite). Sans cette option, seuls les modes apparaissant dans la liste sont utilisables.
+          Cette valeur liste des chaînes de caractères ; les entrées valides sont : "all", "PIN", "FINGERPRINT". L'option "all" permet à l'utilisateur d'employer tous les modes de déverrouillage rapide (y compris ceux qui seront ajoutés par la suite). Sans cette option, seuls les modes apparaissant dans la liste sont utilisables.
 
-          Par exemple, pour autoriser tous les modes de déverrouillage rapide, utilisez ["all"]. Pour n'autoriser que le déverrouillage par code, utilisez ["PIN"]. Pour autoriser code et empreinte digitale, utilisez To ["PIN", "FINGERPRINT"]. Pour désactiver tous les modes de déverrouillage rapid, utilisez [].
+          Par exemple, pour autoriser tous les modes de déverrouillage rapide, utilisez ["all"]. Pour n'autoriser que le déverrouillage par code, utilisez ["PIN"]. Pour autoriser code et empreinte digitale, utilisez To ["PIN", "FINGERPRINT"]. Pour désactiver tous les modes de déverrouillage rapide, utilisez [].
 
           Par défaut, aucun mode de déverrouillage rapide n'est activé sur les appareils gérés.</translation>
 <translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
@@ -638,9 +641,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
           Toutes les versions récentes des serveurs Samba et Windows incluent l'authentification NTLMv2. La désactivation de cette fonctionnalité, qui réduit la sécurité de l'authentification, n'est conseillée qu'à des fins de rétrocompatibilité.
 
           Lorsque cette règle n'est pas définie, la valeur par défaut "true" indique que l'authentification NTLMv2 est activée.</translation>
-<translation id="2598508021807251719">Permet de configurer les langues dans lesquelles <ph name="PRODUCT_OS_NAME" /> peut s'afficher.
-
-      Si cette règle est définie, l'utilisateur ne peut configurer l'affichage de <ph name="PRODUCT_OS_NAME" /> que dans l'une des langues spécifiées dans cette règle. Si cette dernière n'est pas configurée ou si elle est définie sur une liste vide, <ph name="PRODUCT_OS_NAME" /> peut s'afficher dans toutes les langues compatibles de l'interface utilisateur. Si cette règle est définie sur une liste contenant des valeurs non valides, ces dernières sont toutes ignorées. Si un utilisateur a auparavant configuré l'affichage de <ph name="PRODUCT_OS_NAME" /> dans une langue non autorisée par cette règle, la langue d'affichage est remplacée par une langue autorisée lors de la prochaine connexion de l'utilisateur. Si l'utilisateur a configuré des langues préférées et que l'une d'entre elles est autorisée par cette règle, <ph name="PRODUCT_OS_NAME" /> s'affiche dans cette langue. Sinon, <ph name="PRODUCT_OS_NAME" /> s'affiche dans la langue définie par la première valeur valide spécifiée par cette règle, ou dans une langue de remplacement (actuellement, en-US), si cette règle contient uniquement des entrées non valides.</translation>
 <translation id="2604182581880595781">Configurer les règles associées à la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1059,7 +1059,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si la règle "EnableMediaRouter" est définie sur "false", la valeur attribuée à la règle "ShowCastIconInToolbar" n'a aucun effet et l'icône de la barre d'outils ne s'affiche pas.</translation>
 <translation id="3788662722837364290">Paramètres de gestion de l'alimentation en cas d'inactivité de l'utilisateur</translation>
-<translation id="3790085888761753785">Si ce paramètre est activé, les utilisateurs seront autorisés à se connecter à leur compte avec Smart Lock. Ce paramètre est plus permissif que le comportement normal de Smart Lock behavior qui permet seulement aux utilisateurs de déverrouiller leur écran.
+<translation id="3790085888761753785">Si ce paramètre est activé, les utilisateurs seront autorisés à se connecter à leur compte avec Smart Lock. Ce paramètre est plus permissif que le comportement normal de Smart Lock qui permet seulement aux utilisateurs de déverrouiller leur écran.
 
       Si ce paramètre est désactivé, les utilisateurs ne seront pas autorisés à se connecter avec Smart Lock.
 
@@ -1125,6 +1125,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
+<translation id="3864129983143201415">Configurer les langues autorisées dans une session utilisateur</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3868347814555911633">Cette règle n'est active qu'en mode "point de vente".
 
@@ -1166,9 +1167,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
-<translation id="3925020515212192040">Spécifie une liste de partages de fichiers par le réseau préconfigurés.
+<translation id="3925020515212192040">Spécifie une liste de partages de fichiers sur le réseau préconfigurés.
 
-      Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'adresse URL du partage "mode" devrait correspondre à "drop_down" pour indiquer que cette "share_url" partagée sera ajoutée à la liste déroulante de découverte des partages.</translation>
+      Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'adresse URL du partage et "mode" devrait correspondre à "drop_down" pour indiquer que cette "share_url" partagée sera ajoutée à la liste déroulante de découverte des partages.</translation>
 <translation id="3939893074578116847">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne, afin de lui permettre
       de détecter si l'appareil est hors connexion
 
@@ -1318,7 +1319,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
 <translation id="437791893267799639">Règle non définie, interdire la migration de données et ARC</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
-<translation id="4408428864159735559">Liste de partages de fichiers par le réseau préconfigurés.</translation>
+<translation id="4408428864159735559">Liste de partages de fichiers sur le réseau préconfigurés.</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
 <translation id="441217499641439905">Désactiver Google Drive en cas de connexion au réseau mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
@@ -1825,7 +1826,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5835124959204887277">Précise les URL et les domaines pour lesquels aucune boîte de dialogue ne s'affiche lorsque les certificats d'attestation de la clé de sécurité sont demandés. Un signal est également envoyé à la clé de sécurité pour indiquer qu'une attestation individuelle peut être utilisée. Dans les autres cas, les utilisateurs sont avertis dans Chrome 65 et versions ultérieures lorsque des sites demandent une attestation des clés de sécurité.
 
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
-<translation id="5835412847081687053">Configurer les langues autorisées de l'interface utilisateur dans une session utilisateur</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="5862253018042179045">Définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion
 
@@ -2078,7 +2078,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
 
       La règle ChromeOsReleaseChannel prévaut sur la version sélectionnée par l'utilisateur. Toutefois, si cette dernière est plus stable que la version installée sur l'appareil, elle n'est remplacée qu'une fois que la version la plus stable atteint un numéro supérieur à celui de la version installée sur l'appareil.</translation>
-<translation id="6553143066970470539">Niveau de luminosité (%)</translation>
+<translation id="6553143066970470539">Niveau de luminosité de l'écran (%)</translation>
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
 <translation id="6565312346072273043">Définir l'état par défaut de la fonctionnalité d'accessibilité du clavier à l'écran sur l'écran de connexion
@@ -2379,7 +2379,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           La lecture automatique n'est autorisée que pour les domaines indiqués dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si vous souhaitez autoriser la lecture automatique pour tous les sites, vous pouvez ajouter http://* et https://* à cette liste.
 
           Si cette règle n'est pas définie, l'utilisateur peut modifier ce paramètre manuellement.</translation>
-<translation id="7229975860249300121">Contient une expression régulière qui est utilisée pour déterminer quels comptes Google peuvent être configurés comme comptes de navigation principaux sur <ph name="PRODUCT_NAME" /> (par exemple, le compte choisi au moment d'activer la synchronisation).
+<translation id="7229975860249300121">Contient une expression régulière utilisée pour déterminer quels comptes Google peuvent être configurés comme comptes de navigation principaux sur <ph name="PRODUCT_NAME" /> (par exemple, le compte choisi au moment d'activer la synchronisation).
 
       Le message d'erreur approprié s'affiche si l'utilisateur essaie de définir un compte de navigation principal dont l'identifiant ne correspond pas à ce format.
 

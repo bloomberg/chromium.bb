@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Elegir si los sitios web pueden usar servicios de ubicación, o el micrófono, la cámara o demás funciones del dispositivo</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
+<translation id="2803734122639935495">Para desbloquear el dispositivo, vuelve a escribir la contraseña</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
@@ -258,6 +259,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5648021990716966815">Conector para micrófono</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración</translation>
+<translation id="5691772641933328258">No se reconoció la huella digital</translation>
 <translation id="574392208103952083">Mediano</translation>
 <translation id="5744083938413354016">Función tocar y arrastrar</translation>
 <translation id="5750765938512549687">Se activó la conexión Bluetooth</translation>
@@ -297,7 +299,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6284232397434400372">Se cambió la resolución</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
-<translation id="632744581670418035">Superposición de teclado</translation>
 <translation id="6344698853700675736">Activar o desactivar la Luz nocturna</translation>
 <translation id="6376931439017688372">Se activó la conexión Bluetooth</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
@@ -385,6 +386,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7842211907556571265">Conectando a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7868900307798234037">Desbloqueando con huella digital</translation>
 <translation id="7886169021410746335">Ajustar la configuración de privacidad</translation>
 <translation id="7886277072580235377">Cuando salgas, se borrarán los datos de tu sesión de Internet. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar un correo electrónico</translation>
@@ -393,6 +395,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="79341161159229895">Cuenta administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
+<translation id="7984197416080286869">Demasiados intentos con la huella digital</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="8029241286966751120">Se habilitó la lupa de pantalla completa. Presiona Ctrl+Buscar+M de nuevo para desactivarla.</translation>

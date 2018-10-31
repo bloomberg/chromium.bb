@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Decydować, czy strony mogą korzystać z usług lokalizacyjnych oraz z mikrofonu, aparatu fotograficznego i innych funkcji urządzenia</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
+<translation id="2803734122639935495">Aby odblokować, wprowadź swoje hasło</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">Gniazdo mikrofonu</translation>
 <translation id="5669267381087807207">Aktywowanie</translation>
 <translation id="5673434351075758678">Z języka: „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />” po zsynchronizowaniu ustawień.</translation>
+<translation id="5691772641933328258">Nie rozpoznano odcisku palca</translation>
 <translation id="574392208103952083">Średni</translation>
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
 <translation id="5750765938512549687">Bluetooth jest wyłączony</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">Rozdzielczość została zmieniona</translation>
 <translation id="6297287540776456956">Zaznacz obszar rysikiem</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Nakładka klawiatury</translation>
 <translation id="6344698853700675736">Włącz lub wyłącz Podświetlenie nocne</translation>
 <translation id="6376931439017688372">Bluetooth jest włączony</translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">Łączę z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ostrzeżenie: funkcja eksperymentalna</translation>
 <translation id="7846634333498149051">Klawiatura</translation>
+<translation id="7868900307798234037">Odblokowano odciskiem palca</translation>
 <translation id="7886169021410746335">Dostosowywać ustawienia prywatności</translation>
 <translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Wyślij e-maila</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">Kontem zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Szukam sieci komórkowych…</translation>
 <translation id="7982789257301363584">Sieć</translation>
+<translation id="7984197416080286869">Zbyt wiele prób odblokowania odciskiem palca</translation>
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8029241286966751120">Lupa pełnego ekranu została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+M.</translation>

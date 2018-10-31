@@ -112,6 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
 <translation id="2790844815106384441">यह चुनें कि वेबसाइटें जगह की जानकारी का इस्तेमाल या डिवाइस के माइक्रोफ़ोन, कैमरे या दूसरी सुविधाओं का इस्तेमाल करें या नहीं</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">अनलॉक करने के लिए, अपना पासवर्ड डालें</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">माइक जैक</translation>
 <translation id="5669267381087807207">सक्रिय कर रहा है</translation>
 <translation id="5673434351075758678">अपनी सेटिंग सिंक करने के बाद "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />".</translation>
+<translation id="5691772641933328258">फ़िंगरप्रिंट नहीं पहचाना गया</translation>
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टैप करके खींचना</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद है</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">रिज़ॉल्यूशन बदला गया</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
-<translation id="632744581670418035">कीबोर्ड ओवरले</translation>
 <translation id="6344698853700675736">नाइट लाइट को टॉगल करें</translation>
 <translation id="6376931439017688372">ब्लूटूथ चालू है</translation>
 <translation id="639644700271529076">CAPS LOCK बंद है</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> से कनेक्ट हो रहा है</translation>
 <translation id="7842569679327885685">चेतावनी: यह फ़ीचर प्रयोग के लिए है</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
+<translation id="7868900307798234037">फ़िंगरप्रिंट से अनलॉक करना</translation>
 <translation id="7886169021410746335">निजता सेटिंग समायोजित करें</translation>
 <translation id="7886277072580235377">जब आप साइन आउट करेंगे तो आपके इंटरनेट सत्र की जानकारी हटा दी जाएगी. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ईमेल भेजो</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> खाता संभालते हैं</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क खोजे जा रहे हैं...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
+<translation id="7984197416080286869">फ़िंगरप्रिंट से बहुत ज़्यादा बार कोशिश की गई</translation>
 <translation id="7994370417837006925">एकाधिक साइन इन</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
 <translation id="8029241286966751120">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+M फिर से दबाएं.</translation>

@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Yhdistetään uudelleen verkkoon <ph name="NAME" /></translation>
 <translation id="2790844815106384441">valita, saavatko verkkosivustot käyttää sijaintipalveluja, laitteen mikrofonia, kameraa tai muita ominaisuuksia</translation>
 <translation id="2792498699870441125">Alt + haku</translation>
+<translation id="2803734122639935495">Avaa lukitus antamalla salasana</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
 <translation id="2825619548187458965">Hylly</translation>
 <translation id="2844169650293029770">C-tyypin USB-laite (vasemman sivun etummainen portti)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">Mikrofoniliitäntä</translation>
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
+<translation id="5691772641933328258">Sormenjälkeä ei tunnistettu</translation>
 <translation id="574392208103952083">Keskikoko</translation>
 <translation id="5744083938413354016">Napauttamalla vetäminen</translation>
 <translation id="5750765938512549687">Bluetooth ei ole käytössä</translation>
@@ -299,7 +301,6 @@
 <translation id="6284232397434400372">Resoluutio vaihdettu</translation>
 <translation id="6297287540776456956">Valitse alue näyttökynällä.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> käännettiin asentoon <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Näppäimistön peitto</translation>
 <translation id="6344698853700675736">Yövalo päälle/pois</translation>
 <translation id="6376931439017688372">Bluetooth on käytössä</translation>
 <translation id="639644700271529076">CAPS LOCK on pois päältä</translation>
@@ -387,6 +388,7 @@
 <translation id="7842211907556571265">Yhdistetään: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varoitus: Kokeellinen ominaisuus</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>
+<translation id="7868900307798234037">Avataan sormenjäljellä</translation>
 <translation id="7886169021410746335">muuttaa tietosuoja-asetuksia</translation>
 <translation id="7886277072580235377">Internetin käyttökertasi tyhjennetään kirjautuessasi ulos. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Lähetä sähköposti</translation>
@@ -395,6 +397,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /> hallinnoivat tiliä</translation>
 <translation id="7977927628060636163">Haetaan mobiiliverkkoja…</translation>
 <translation id="7982789257301363584">Verkko</translation>
+<translation id="7984197416080286869">Liian monta sormenjälkiyritystä</translation>
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="8029241286966751120">Koko näytön suurennus on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + M.</translation>

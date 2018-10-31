@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Aşağı Ok</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 gün}other{# gün}}</translation>
 <translation id="335581015389089642">Konuşma</translation>
+<translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 gün kaldı}other{# gün kaldı}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” Araması Yap</translation>
 <translation id="364720409959344976">Yüklenecek Klasörü Seçin</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">Sol Ok</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 dk.}other{# dk.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 gün ve }other{# gün ve }}</translation>
+<translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 saniye kaldı}other{# saniye kaldı}}</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>

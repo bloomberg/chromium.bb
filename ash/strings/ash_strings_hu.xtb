@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Újracsatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Válassza ki, hogy a webhelyek használhatják-e a helyszolgáltatásokat vagy az eszköz mikrofonját, kameráját vagy más funkcióit</translation>
 <translation id="2792498699870441125">Alt + Keresés</translation>
+<translation id="2803734122639935495">A feloldáshoz adja meg a jelszót</translation>
 <translation id="2819276065543622893">A rendszer most kijelentkezteti Önt.</translation>
 <translation id="2825619548187458965">Polc</translation>
 <translation id="2844169650293029770">C típusú USB-vel kompatibilis eszköz (bal első port)</translation>
@@ -258,6 +259,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5648021990716966815">Mikrofon jack csatlakozója</translation>
 <translation id="5669267381087807207">Aktiválás</translation>
 <translation id="5673434351075758678">Módosítás <ph name="FROM_LOCALE" /> nyelvről <ph name="TO_LOCALE" /> nyelvre a beállítások szinkronizálása után.</translation>
+<translation id="5691772641933328258">Ujjlenyomat felismerése sikertelen</translation>
 <translation id="574392208103952083">Közepes</translation>
 <translation id="5744083938413354016">Érintéssel húzás</translation>
 <translation id="5750765938512549687">Kikapcsolt Bluetooth</translation>
@@ -297,7 +299,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6284232397434400372">A felbontás módosult</translation>
 <translation id="6297287540776456956">Terület kijelöléséhez használja az érintőceruzát</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Billentyűzetkiosztás</translation>
 <translation id="6344698853700675736">Éjszakai fény be-/kikapcsolása</translation>
 <translation id="6376931439017688372">A Bluetooth be van kapcsolva</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
@@ -385,6 +386,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7842211907556571265">Csatlakozás a(z) <ph name="NETWORK_NAME" /> hálózathoz</translation>
 <translation id="7842569679327885685">Figyelem! Kísérleti funkció</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
+<translation id="7868900307798234037">Feloldás ujjlenyomattal</translation>
 <translation id="7886169021410746335">Adatvédelmi beállítások módosítása</translation>
 <translation id="7886277072580235377">Kijelentkezés után az internetes munkamenet törlődik. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-mail küldése</translation>
@@ -393,6 +395,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="79341161159229895">A fiókot a(z) <ph name="FIRST_PARENT_EMAIL" /> és a(z) <ph name="SECOND_PARENT_EMAIL" /> kezeli</translation>
 <translation id="7977927628060636163">Mobilhálózatok keresése…</translation>
 <translation id="7982789257301363584">Hálózat</translation>
+<translation id="7984197416080286869">Túl sok próbálkozás ujjlenyomattal</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
 <translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="8029241286966751120">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+M billentyűparancsot.</translation>

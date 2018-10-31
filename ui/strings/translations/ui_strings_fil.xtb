@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 araw}one{# araw}other{# na araw}}</translation>
 <translation id="335581015389089642">Pananalita</translation>
+<translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 araw na lang ang natitira}one{# araw na lang ang natitira}other{# na araw na lang ang natitira}}</translation>
 <translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pumili ng Folder na I-a-upload</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">KAliwang  Arrow</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 araw at }one{# araw at }other{# na araw at }}</translation>
+<translation id="5895138241574237353">I-restart</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
 <translation id="5941711191222866238">Minimize</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>

@@ -68,6 +68,9 @@
       Na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables možete pronaći popis mogućih varijabli.
 
       Ako se pravilo ne postavi, koristit će se zadani direktorij predmemorije i korisnik će ga moći nadjačati oznakom naredbenog retka "--disk-cache-dir".</translation>
+<translation id="113521240853905588">Konfigurira jezike koje <ph name="PRODUCT_OS_NAME" /> može upotrebljavati kao preferirane.
+
+      Ako se to pravilo postavi, korisnik na popis preferiranih jezika može dodati samo jedan od jezika navedenih u tom pravilu. Ako se to pravilo ne postavi ili se postavi na prazan popis, korisnik može navesti bilo koji jezik kao preferirani. Ako se to pravilo postavi na popis s nevažećim vrijednostima, sve će se nevažeće vrijednosti zanemariti. Ako je korisnik na popis preferiranih jezika prethodno dodao neke jezike koji nisu dopušteni tim pravilom, oni će se ukloniti. Ako je korisnik prethodno konfigurirao da se <ph name="PRODUCT_OS_NAME" /> prikazuje na jednom od jezika koji nisu dopušteni tim pravilom, jezik prikaza prebacit će se na dopušteni jezik korisničkog sučelja sljedeći put kad se korisnik prijavi. U suprotnom, <ph name="PRODUCT_OS_NAME" /> će prijeći na prvu važeću vrijednost navedenu u pravilu ili na zamjenski jezik (trenutačno en-US), ako pravilo sadrži samo nevažeće unose.</translation>
 <translation id="1135264353752122851">Konfigurira koji su rasporedi tipkovnice dopušteni za korisničke sesije za <ph name="PRODUCT_OS_NAME" />.
 
       Ako se to pravilo postavi, korisnik može odabrati samo jedan od načina unosa određenih tim pravilom. Ako se to pravilo ne postavi ili se postavi na prazan popis, korisnik može odabrati sve podržane načine unosa. Ako trenutačni način unosa nije dopušten tim pravilom, način unosa prebacit će se na raspored hardverske tipkovnice (ako je dopušten) ili prvi važeći unos na popisu. Svi nevažeći ili nepodržani načini unosa na popisu zanemarit će se.</translation>
@@ -99,7 +102,7 @@
 <translation id="1223789468190631420">Stanje omogućivanja Sigurnog pregledavanja za pouzdane izvore</translation>
 <translation id="122899932962115297">Popis dopuštenih načina brzog otključavanja koje korisnik može konfigurirati i upotrebljavati za otključavanje zaključanog zaslona.
 
-          Ta je vrijednost popis nizova, a važeće su stavke popisa: "all" (sve), "PIN" i "FINGERPRINT" (otisak prsta). Ako se na popis doda "all", korisniku su dostupni svi načini brzog otključavanja, uključujući one koji se uvedu naknadno. U suprotnom je dostupan samo onaj način brzog otključavanja koji je na popisu.
+          Ta je vrijednost popis nizova, a važeće su stavke popisa: "all", "PIN" i "FINGERPRINT". Ako se na popis doda "all", korisniku su dostupni svi načini brzog otključavanja, uključujući one koji se uvedu naknadno. U suprotnom je dostupan samo onaj način brzog otključavanja koji je na popisu.
 
           Na primjer, da biste omogućili svaki način brzog otključavanja, upotrijebite ["all"]. Da biste omogućili samo otključavanje PIN-om, upotrijebite ["PIN"]. Da biste omogućili PIN i otisak prsta, upotrijebite ["PIN", "FINGERPRINT"]. Da biste onemogućili sve načine brzog otključavanja, upotrijebite [].
 
@@ -602,9 +605,6 @@
           Sve novije verzije poslužitelja Samba i Windows podržavaju NTLMv2. To treba biti onemogućeno samo za kompatibilnost sa starijim verzijama i smanjuje sigurnost autentifikacije.
 
           Ako to pravilo nije postavljeno, zadana je vrijednost True i NTLMv2 je omogućen.</translation>
-<translation id="2598508021807251719">Konfigurira jezike na kojima se <ph name="PRODUCT_OS_NAME" /> može prikazivati.
-
-      Ako se to pravilo postavi, korisnik može konfigurirati da se <ph name="PRODUCT_OS_NAME" /> prikazuje samo na jednom od jezika navedenih ovim pravilom. Ako se to pravilo ne postavi ili se postavi na prazan popis, moguće je prikazivati <ph name="PRODUCT_OS_NAME" /> na svim podržanim jezicima korisničkog sučelja. Ako se to pravilo postavi na popis s nevažećim vrijednostima, sve će se nevažeće vrijednosti zanemariti. Ako je korisnik prethodno konfigurirao da se <ph name="PRODUCT_OS_NAME" /> prikazuje na jeziku koji nije dopušten ovim pravilom, jezik prikaza prebacit će se na dopušteni jezik korisničkog sučelja sljedeći put kada se korisnik prijavi. Ako je korisnik konfigurirao preferirane jezike i jedan od njih dopušten je ovim pravilom, <ph name="PRODUCT_OS_NAME" /> prelazi na taj jezik. U suprotnom, <ph name="PRODUCT_OS_NAME" /> prelazi na prvu važeću vrijednost navedenu tim pravilom ili na zamjenski jezik (trenutačno en-US), ako pravilo sadrži samo nevažeće unose.</translation>
 <translation id="2604182581880595781">Konfiguriranje pravila povezanih s mrežnim dijeljenjem datoteka.</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1072,6 +1072,7 @@
           Googleov URL prijedloga može se navesti kao: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           To će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
+<translation id="3864129983143201415">Konfiguriraj dopuštene jezike u korisničkoj sesiji</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">To je pravilo aktivno samo u prodajnom načinu.
 
@@ -1737,7 +1738,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5835124959204887277">Određuje URL-ove i domene za koje se neće prikazivati upit kada se od sigurnosnih ključeva zatraže certifikati za ovjeru. Osim toga, sigurnosnom ključu bit će poslan signal koji pokazuje da se pojedina ovjera može upotrebljavati. Bez toga, korisnicima će se u Chromeu 65+ prikazati upit kada web-lokacije zatraže ovjeru sigurnosnih ključeva.
 
       URL-ovi (primjerice https://example.com/some/path) bit će odgovarajući samo kao ID-ovi aplikacija za U2F. Domene (primjerice example.com) bit će odgovarajuće samo kao RP ID-ovi za mrežnu provjeru autentičnosti. Znači, kako bi se obuhvatili API-ji i za U2F i za mrežnu provjeru autentičnosti za određenu web-lokaciju, moraju biti navedeni i URL i domena ID-a aplikacije.</translation>
-<translation id="5835412847081687053">Konfiguriranje dopuštenih jezika korisničkog sučelja u korisničkoj sesiji</translation>
 <translation id="5836064773277134605">Ograniči raspon UDP priključaka koji upotrebljava host za daljinski pristup</translation>
 <translation id="5862253018042179045">Postavi zadano stanje značajke pristupačnosti izgovaranja povratnih informacija na zaslonu za prijavu.
 

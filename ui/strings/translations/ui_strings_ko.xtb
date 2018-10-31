@@ -60,6 +60,7 @@
 <translation id="3234408098842461169">아래 화살표</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="335581015389089642">음성</translation>
+<translation id="3479552764303398839">나중에</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' 찾기</translation>
 <translation id="364720409959344976">업로드할 폴더 선택</translation>
@@ -99,6 +100,7 @@
 <translation id="5613020302032141669">왼쪽 화살표</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
+<translation id="5895138241574237353">다시 시작</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>
 <translation id="5941711191222866238">최소화</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1시간}other{#시간}}</translation>

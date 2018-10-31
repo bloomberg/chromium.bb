@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Під’єднання до мережі <ph name="NAME" /></translation>
 <translation id="2790844815106384441">визначати, чи дозволено веб-сайтам використовувати служби локації або мікрофон, камеру чи інші функції пристрою;</translation>
 <translation id="2792498699870441125">Alt+клавіша пошуку</translation>
+<translation id="2803734122639935495">Щоб розблокувати, введіть пароль</translation>
 <translation id="2819276065543622893">Зараз ви вийдете.</translation>
 <translation id="2825619548187458965">Полиця</translation>
 <translation id="2844169650293029770">Пристрій, під’єднаний до порту USB-C (ліворуч на передній панелі)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Гніздо для мікрофона</translation>
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5673434351075758678">Після синхронізації налаштувань мову змінено. Попередня мова: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
+<translation id="5691772641933328258">Відбиток не розпізнано</translation>
 <translation id="574392208103952083">Середній</translation>
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5750765938512549687">Bluetooth вимкнено</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Роздільну здатність змінено</translation>
 <translation id="6297287540776456956">Виберіть область за допомогою стилуса</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> обернено на <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Накладання клавіатури</translation>
 <translation id="6344698853700675736">Увімкнути або вимкнути нічний режим</translation>
 <translation id="6376931439017688372">Bluetooth увімкнено</translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Під’єднання до мережі: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Попередження. Експериментальна функція</translation>
 <translation id="7846634333498149051">Клавіатура</translation>
+<translation id="7868900307798234037">Розблокування відбитком</translation>
 <translation id="7886169021410746335">змінювати налаштування конфіденційності.</translation>
 <translation id="7886277072580235377">Коли ви вийдете з облікового запису, дані інтернет-сеансу буде стерто. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Надішли електронний лист</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Обліковим записом керують <ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Пошук мобільних мереж…</translation>
 <translation id="7982789257301363584">Мережа</translation>
+<translation id="7984197416080286869">Забагато спроб розблокування відбитком</translation>
 <translation id="7994370417837006925">Паралельний вхід</translation>
 <translation id="8000066093800657092">Немає мережі</translation>
 <translation id="8029241286966751120">Увімкнено лупу для всього екрана. Щоб вимкнути її, знову натисніть комбінацію Ctrl + клавіша пошуку + M.</translation>

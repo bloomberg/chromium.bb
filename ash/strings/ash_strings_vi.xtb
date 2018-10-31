@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Chọn xem các trang web có thể sử dụng dịch vụ vị trí hoặc micrô, camera hay các tính năng khác của thiết bị hay không</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2803734122639935495">Nhập mật khẩu để mở khóa</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">Giắc cắm micrô</translation>
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5673434351075758678">Từ "<ph name="FROM_LOCALE" />" sang "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
+<translation id="5691772641933328258">Không nhận dạng được vân tay</translation>
 <translation id="574392208103952083">Trung bình</translation>
 <translation id="5744083938413354016">Kéo nhấn</translation>
 <translation id="5750765938512549687">Bluetooth đang tắt</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Lớp phủ bàn phím</translation>
 <translation id="6344698853700675736">Bật/tắt Chế độ ánh sáng ban đêm</translation>
 <translation id="6376931439017688372">Bluetooth đang bật</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">Đang kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
+<translation id="7868900307798234037">Mở khóa bằng vân tay</translation>
 <translation id="7886169021410746335">Điều chỉnh các tùy chọn cài đặt quyền riêng tư</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Gửi email</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
 <translation id="7982789257301363584">Mạng</translation>
+<translation id="7984197416080286869">Bạn đã nhập vân tay quá nhiều lần</translation>
 <translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8029241286966751120">Đã bật tính năng Phóng to toàn bộ màn hình. Hãy nhấn lại tổ hợp phím Ctrl+Search+M để tắt tính năng này.</translation>

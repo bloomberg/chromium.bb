@@ -68,6 +68,9 @@
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未設定這項政策，系統會使用預設的快取目錄，日後使用者可以自行透過「--disk-cache-dir」命令列標記覆寫這個目錄。</translation>
+<translation id="113521240853905588">設定 <ph name="PRODUCT_OS_NAME" />所用的偏好語言。
+
+      如果設定這項政策，使用者只能從政策所列的語言中擇一新增至偏好語言清單。如不設定這項政策或設為空白清單，使用者可以可以指定任何偏好語言。如果設定這項政策後清單中含有無效的值，所有無效值都會遭到略過。若是使用者先前將這項政策不允許的語言新增到偏好語言清單，這些語言會遭到移除。此外，如果使用者先前設定以政策不允許的語言顯示 <ph name="PRODUCT_OS_NAME" />內容，下次使用者登入時，系統會將顯示語言切換為允許的 UI 語言。如果是其他情況，<ph name="PRODUCT_OS_NAME" />會切換為這項政策指定的第一個有效值；萬一這項政策只包含無效項目，則會改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="1135264353752122851">設定可供 <ph name="PRODUCT_OS_NAME" />使用者工作階段使用的鍵盤配置。
 
       如果設定這項政策，使用者就只能選取這項政策指定的其中一種輸入法。如果設定這項政策，或是將這項政策設為空白清單，則使用者可以選取所有支援的輸入法。如果目前的輸入法遭到這項政策禁止，則會切換成硬體鍵盤配置 (如果允許的話) 或這份清單中第一個有效的項目。這份清單中無效或不支援的輸入法會全部遭到忽略。</translation>
@@ -600,9 +603,6 @@
           近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
 
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
-<translation id="2598508021807251719">控制 <ph name="PRODUCT_OS_NAME" />顯示語言的語言代碼。
-
-      如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為無效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言代碼不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的 UI 語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼，否則 <ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
@@ -1008,11 +1008,11 @@
 
           如果「EnableMediaRouter」政策設為 False，這項政策的值則沒有效用，系統不會顯示工具列圖示。</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
-<translation id="3790085888761753785">如果啟用這項設定，使用者將可透過 Smart Lock 登入帳戶。一般 Smart Lock 只能讓使用者解鎖螢幕畫面，相較之下這項設定的功能更強大。
+<translation id="3790085888761753785">如果啟用這項設定，使用者將可透過 Smart Lock 登入帳戶。一般 Smart Lock 只能讓使用者解鎖螢幕畫面，相較之下這項設定提供了更高的權限。
 
-      如果停用這項設定，使用者將無法使用 Smart Lock 登入。
+      如果停用這項設定，使用者將無法透過 Smart Lock 登入帳戶。
 
-      如未設定這項政策，在預設情況下，系統會為受企業管理的使用者停用 Smart Lock 登入，並為未受管理的使用者啟用 Smart Lock 登入。</translation>
+      如未設定這項政策，在預設情況下，受企業管理的使用者將無法使用 Smart Lock 登入功能，其他一般的使用者則可使用這項登入功能。</translation>
 <translation id="379602782757302612">讓你指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到停用 (使用者無法啟用)。因列入黑名單而遭到停用的擴充功能一旦從黑名單中移除，就會自動重新啟用。
 
           星號「*」代表一律不允許使用者安裝擴充功能 (特別加入許可清單者除外)。
@@ -1071,6 +1071,7 @@
           您可以使用以下形式指定 Google 的建議網址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
+<translation id="3864129983143201415">設定可在使用者工作階段中使用的語言</translation>
 <translation id="3866249974567520381">說明</translation>
 <translation id="3868347814555911633">這項政策僅在零售模式下有效。
 
@@ -1730,7 +1731,6 @@
 <translation id="5835124959204887277">指定在必須取得安全金鑰認證憑證的情況下不會顯示提示的網址和網域。此外，系統會傳送信號給安全金鑰，指出可能會使用個別認證。如未設定這項政策，當網站要求安全金鑰認證時，Chrome 65 以上版本的使用者會收到提示。
 
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
-<translation id="5835412847081687053">設定可在使用者工作階段中使用的 UI 語言代碼</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="5862253018042179045">設定互動朗讀協助功能在登入畫面的預設狀態。
 

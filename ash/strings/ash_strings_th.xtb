@@ -112,6 +112,7 @@
 <translation id="277257480934873581">กำลังเชื่อมต่อ <ph name="NAME" /> อีกครั้ง</translation>
 <translation id="2790844815106384441">เลือกว่าเว็บไซต์จะใช้บริการตำแหน่งหรือไมโครโฟน กล้อง หรือฟีเจอร์อื่นๆ ของอุปกรณ์ได้หรือไม่</translation>
 <translation id="2792498699870441125">Alt+ค้นหา</translation>
+<translation id="2803734122639935495">ป้อนรหัสผ่านเพื่อปลดล็อก</translation>
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
@@ -258,6 +259,7 @@
 <translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
 <translation id="5673434351075758678">เปลี่ยนจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังการซิงก์การตั้งค่า</translation>
+<translation id="5691772641933328258">ระบบไม่รู้จักลายนิ้วมือนี้</translation>
 <translation id="574392208103952083">ขนาดกลาง</translation>
 <translation id="5744083938413354016">การแตะลาก</translation>
 <translation id="5750765938512549687">ปิดบลูทูธแล้ว</translation>
@@ -297,7 +299,6 @@
 <translation id="6284232397434400372">เปลี่ยนความละเอียดแล้ว</translation>
 <translation id="6297287540776456956">ใช้สไตลัสเพื่อเลือกพื้นที่</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="6344698853700675736">เปิด/ปิดแสงตอนกลางคืน</translation>
 <translation id="6376931439017688372">บลูทูธเปิดอยู่</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
@@ -385,6 +386,7 @@
 <translation id="7842211907556571265">กำลังเชื่อมต่อ <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">คำเตือน: ฟีเจอร์ทดลอง</translation>
 <translation id="7846634333498149051">แป้นพิมพ์</translation>
+<translation id="7868900307798234037">กำลังปลดล็อกด้วยลายนิ้วมือ</translation>
 <translation id="7886169021410746335">ปรับการตั้งค่าความเป็นส่วนตัว</translation>
 <translation id="7886277072580235377">ระบบจะล้างเซสชันอินเทอร์เน็ตของคุณเมื่อออกจากระบบ <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ส่งอีเมล</translation>
@@ -393,6 +395,7 @@
 <translation id="79341161159229895">บัญชีที่จัดการโดย <ph name="FIRST_PARENT_EMAIL" /> และ <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">กำลังค้นหาเครือข่ายมือถือ...</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
+<translation id="7984197416080286869">พยายามปลดล็อกด้วยลายนิ้วมือหลายครั้งเกินไป</translation>
 <translation id="7994370417837006925">การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="8029241286966751120">เปิดใช้แว่นขยายทั้งหน้าจอแล้ว กด Ctrl+Search+M อีกครั้งเพื่อสลับเป็นปิด</translation>

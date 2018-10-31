@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Určete, zda weby mohou používat určování polohy nebo mikrofon, fotoaparát a další funkce zařízení</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
+<translation id="2803734122639935495">Chcete-li zařízení odemknout, zadejte heslo</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Konektor mikrofonu</translation>
 <translation id="5669267381087807207">Probíhá aktivace</translation>
 <translation id="5673434351075758678">Po synchronizaci nastavení se oznámení změní z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
+<translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="574392208103952083">Střední</translation>
 <translation id="5744083938413354016">Přetažení klepnutím</translation>
 <translation id="5750765938512549687">Rozhraní Bluetooth je vypnuté</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Rozlišení se změnilo</translation>
 <translation id="6297287540776456956">Vyberte pomocí dotykového pera oblast.</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Překryvná klávesnice</translation>
 <translation id="6344698853700675736">Zapnout nebo vypnout Noční režim</translation>
 <translation id="6376931439017688372">Rozhraní Bluetooth je zapnuté</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Připojování k síti <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozornění: Experimentální funkce</translation>
 <translation id="7846634333498149051">Klávesnice</translation>
+<translation id="7868900307798234037">Odemknutí otiskem prstu</translation>
 <translation id="7886169021410746335">Upravit nastavení soukromí</translation>
 <translation id="7886277072580235377">Když se odhlásíte, vaše relace internetu se vymaže. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Poslat e‑mail</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Správci účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
 <translation id="7982789257301363584">Síť</translation>
+<translation id="7984197416080286869">Příliš mnoho pokusů o odemknutí otiskem prstu</translation>
 <translation id="7994370417837006925">Vícenásobné přihlášení</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="8029241286966751120">Je zapnutá lupa celé obrazovky. Vypnete ji opětovným stisknutím kombinace kláves Ctrl+Hledat+M.</translation>

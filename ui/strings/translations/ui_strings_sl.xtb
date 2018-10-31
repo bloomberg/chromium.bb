@@ -56,6 +56,7 @@
 <translation id="3234408098842461169">Puščica dol</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dan}one{# dan}two{# dneva}few{# dni}other{# dni}}</translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3479552764303398839">Ne zdaj</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Še 1 dan}one{Še # dan}two{Še # dneva}few{Še # dni}other{Še # dni}}</translation>
 <translation id="3618849550573277856">Poišči »<ph name="LOOKUP_STRING" />«</translation>
 <translation id="364720409959344976">Izberite mapo, ki jo želite prenesti</translation>
@@ -93,6 +94,7 @@
 <translation id="5613020302032141669">Puščica levo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dan in }one{# dan in }two{# dneva in }few{# dni in }other{# dni in }}</translation>
+<translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>

@@ -79,6 +79,9 @@
       Galimų naudoti kintamųjų sąrašą rasite apsilankę adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jei ši politika nenustatyta, bus naudojamas numatytasis talpyklos katalogas ir naudotojas galės jo nepaisyti naudodamas komandos eilutės žymą „--disk-cache-dir“.</translation>
+<translation id="113521240853905588">Konfigūruojamos kalbos, kurios gali būti naudojamos kaip pageidaujamos „<ph name="PRODUCT_OS_NAME" />“ kalbos.
+
+      Jei nustatyta ši politika, naudotojas prie pageidaujamų kalbų sąrašo gali pridėti tik vieną iš šioje politikoje nurodytų kalbų. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, naudotojas gali nurodyti bet kokias pageidaujamas kalbas. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas prie pageidaujamų kalbų sąrašo anksčiau pridėjo kalbų, kurios neleidžiamos pagal šią politiką, šios kalbos bus pašalintos. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikiama kalba, kuri nėra leidžiama pagal šią politiką, kitą kartą naudotojui prisijungus pateikties kalba bus pakeista į leidžiamą NS kalbą. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
 <translation id="1135264353752122851">Konfigūruojama, kurie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ naudotojų sesijoms.
 
       Jei ši politika nustatyta, naudotojas gali pasirinkti tik vieną iš šios politikos nurodytų įvesties metodų. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, naudotojas gali pasirinkti visus palaikomus įvesties metodus. Jei dabartinis įvesties metodas neleidžiamas pagal šią politiką, įvesties metodas bus perjungtas į aparatinės įrangos klaviatūros išdėstymą (jei leidžiama) arba pirmą tinkamą įrašą šiame sąraše. Visų netinkamų ar nepalaikomų įvesties metodų šiame sąraše bus nepaisoma.</translation>
@@ -630,9 +633,6 @@
           Visų naujausių versijų „Samba“ ir „Windows“ serveriai palaiko NTLMv2. Tai turėtų būti išjungta tik atgalinio suderinamumo tikslais, nes suprastėja autentifikavimo sauga.
 
           Jei ši politika nenustatyta, numatytasis nustatymas yra „true“ ir NTLMv2 yra įgalinta.</translation>
-<translation id="2598508021807251719">Konfigūruojamos lokalės, kuriose galima pateikti „<ph name="PRODUCT_OS_NAME" />“.
-
-      Jei ši politika nustatyta, naudotojas gali konfigūruoti, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta tik vienoje iš lokalių, nurodytų pagal šią politiką. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, „<ph name="PRODUCT_OS_NAME" />“ galima pateikti visose palaikomose NS lokalėse. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta pagal šią politiką neleidžiamoje lokalėje, pateikimo lokalė bus perjungta į leidžiamą NS lokalę kitą kartą naudotojui prisijungus. Jei naudotojas sukonfigūravo pageidaujamas lokales ir viena iš pageidaujamų lokalių leidžiama pagal šią politiką, „<ph name="PRODUCT_OS_NAME" />“ bus perjungta į šią lokalę. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
 <translation id="2604182581880595781">Konfigūruojama su tinklo failų bendrinimo įrenginiu susijusi politika.</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
@@ -1115,6 +1115,7 @@
           „Google“ siūlomą URL galima nurodyti kaip: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
+<translation id="3864129983143201415">Naudotojo sesijoje leidžiamų kalbų konfigūravimas</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="3868347814555911633">Ši politika taikoma tik mažmeninės prekybos režimu.
 
@@ -1814,7 +1815,6 @@
 <translation id="5835124959204887277">Nurodomi URL ir domenai, kuriuose nebus rodomas raginimas, kai bus pateikiamos saugos raktų atestacijos sertifikatų užklausos. Be to, saugos raktui bus išsiunčiamas signalas, nurodantis, kad galima naudoti individualią atestaciją. Nenustačius šios politikos, naudotojams bus pateikiami raginimai 65 ir naujesnių versijų „Chrome“, kai svetainėse bus reikalaujama saugos raktų atestacijos.
 
       URL (pvz., https://example.com/some/path) atitiks tik kaip U2F „appID“. Domenai (pvz., example.com) atitiks tik kaip „webauthn“ RP ID. Todėl, kad būtų įtrauktos ir tam tikros svetainės U2F, ir „webauthn“ API, sąraše turi būti ir „appID“ URL, ir domenas.</translation>
-<translation id="5835412847081687053">Naudotojo sesijoje leidžiamų UI lokalių konfigūravimas</translation>
 <translation id="5836064773277134605">Apriboti UDP prievado diapazoną, naudojamą nuotolinės prieigos prieglobos</translation>
 <translation id="5862253018042179045">Nustatyti numatytąją ekrano skaitymo balsu būklę prisijungimo ekrane.
 
@@ -2065,7 +2065,7 @@
 <translation id="6544897973797372144">Jei šios politikos nustatymas yra „True“ (tiesa) ir politika „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas) nenurodyta, tada užregistruoto domeno naudotojams leidžiama keisti įrenginio paleidimo kanalą. Jei šios politikos nustatymas yra „False“ (netiesa), įrenginys užrakinamas bet kuriame kanale, kuriame paskutinį kartą buvo nustatytas.
 
       Naudotojo (-os) pasirinktas kanalas bus pakeistas taikant politiką „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas), bet jei politikos kanalas stabilesnis nei tas, kuris įdiegtas įrenginyje, kanalas perjungiamas, tik kai stabilesnio kanalo versija yra naujesnė nei įdiegta įrenginyje.</translation>
-<translation id="6553143066970470539">Ekrano skaisčio procentas</translation>
+<translation id="6553143066970470539">Ekrano šviesumo procentas</translation>
 <translation id="6559057113164934677">Neleisti jokiai svetainei pasiekti kameros ir mikrofono</translation>
 <translation id="6561396069801924653">Rodyti pasiekiamumo parinktis sistemos dėklo meniu</translation>
 <translation id="6565312346072273043">Nustatyti numatytąją ekrano klaviatūros pasiekiamumo funkcijos būseną prisijungimo ekrane.
@@ -2528,7 +2528,7 @@
       </translation>
 <translation id="7511361072385293666">Jei ši politika nustatyta į „true“ arba yra nenustatyta, QUIC protokolo naudojimas sistemoje „<ph name="PRODUCT_NAME" />“ leidžiamas.
       Jei ši politika nustatyta į „false“ QUIC protokolo naudojimas neleidžiamas.</translation>
-<translation id="7517845714620372896">Nurodomas ekrano skaisčio procentas.
+<translation id="7517845714620372896">Nurodomas ekrano šviesumo procentas.
           Kai ši politika nustatyta, pirminis ekrano skaistis koreguojamas pagal politikos vertę, bet naudotojas vėliau gali ją pakeisti. Automatinio skaisčio funkcijos išjungtos.
           Kai ši politika nenustatyta, tai neturi įtakos naudotojo ekrano valdikliams ir automatinio skaisčio funkcijoms.
           Politikos vertės turi būti nurodytos procentais nuo 0 iki 100.</translation>

@@ -67,6 +67,9 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
       Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ak toto pravidlo ponecháte nenastavené, použije sa predvolený adresár vyrovnávacej pamäte a používateľ ho bude môcť prepísať zadaním príznaku „--disk-cache-dir“ do príkazového riadka.</translation>
+<translation id="113521240853905588">Konfiguruje jazyky, ktoré môže <ph name="PRODUCT_OS_NAME" /> používať ako preferované.
+
+      Ak je toto pravidlo nastavené, používateľ môže do zoznamu preferovaných jazykov pridať iba jeden z jazykov uvedených v tomto pravidle. Ak toto pravidlo nie je nastavené alebo je nastavené na prázdny zoznam, používateľ môže ako preferované nastaviť ľubovoľné jazyky. Ak je toto pravidlo nastavené na zoznam s neplatnými hodnotami, všetky neplatné hodnoty sa budú ignorovať. Ak používateľ v minulosti pridal do zoznamu preferovaných jazykov niektoré jazyky, ktoré toto pravidlo nepovoľuje, budú odstránené. Ak používateľ v minulosti nakonfiguroval, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jednom z jazykov, ktoré toto pravidlo nepovoľuje, zobrazovaný jazyk sa pri najbližšom prihlásení používateľa prepne na povolený jazyk používateľského rozhrania. V opačnom prípade sa <ph name="PRODUCT_OS_NAME" /> prepne na prvú platnú hodnotu špecifikovanú týmto pravidlom alebo na záložné miestne nastavenie (aktuálne en-US), ak pravidlo obsahuje iba neplatné záznamy.</translation>
 <translation id="1135264353752122851">Umožňuje konfigurovať, ktoré rozloženia klávesnice sú povolené pre relácie používateľa systému <ph name="PRODUCT_OS_NAME" />.
 
       Ak toto pravidlo nastavíte, používateľ môže vybrať iba jednu z metód vstupu určených týmto pravidlom. Ak ho nenastavíte alebo nastavíte na prázdny zoznam, používateľ môže vybrať všetky podporované metódy vstupu. Ak toto pravidlo nepovoľuje aktuálnu metódu vstupu, metóda vstupu sa prepne na rozloženie hardvérovej klávesnice (ak je povolená) alebo prvý platný záznam v tomto zozname. Všetky neplatné alebo nepodporované metódy vstupu v tomto zozname budú ignorované.</translation>
@@ -606,9 +609,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Všetky nedávne verzie serverov Samba a Windows podporujú protokol NTLMv2. Mali by ste ho deaktivovať iba vtedy, ak potrebujete zaistiť spätnú kompatibilitu, pretože to znižuje zabezpečenie overenia totožnosti.
 
           Ak toto pravidlo nenastavíte, predvolená hodnota je True (Pravda) a protokol NTLMv2 je aktivovaný.</translation>
-<translation id="2598508021807251719">Konfiguruje miestne nastavenia, v ktorých sa <ph name="PRODUCT_OS_NAME" /> môže zobrazovať.
-
-      Ak toto pravidlo nastavíte, používateľ môže nakonfigurovať iba to, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jednom z miestnych nastavení špecifikovaných týmto pravidlom. Ak toto pravidlo nenastavíte alebo ho nastavíte na prázdny zoznam, <ph name="PRODUCT_OS_NAME" /> sa môže zobrazovať vo všetkých podporovaných miestnych nastaveniach používateľského rozhrania. Ak pravidlo nastavíte na zoznam s neplatnými hodnotami, všetky neplatné hodnoty sa budú ignorovať. Ak používateľ predtým nakonfiguroval, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jazyku, ktorý toto pravidlo nepovoľuje, pri najbližšom prihlásení používateľa sa zobrazené miestne nastavenie prepne na povolené miestne nastavenie používateľského rozhrania. Ak používateľ nakonfiguroval preferované miestne nastavenia a jedno z týchto nastavení je povolené týmto pravidlom, <ph name="PRODUCT_OS_NAME" /> sa prepne na toto miestne nastavenie. V opačnom prípade sa <ph name="PRODUCT_OS_NAME" /> prepne na prvú platnú hodnotu špecifikovanú týmto pravidlom alebo na záložné miestne nastavenie (aktuálne en-US), ak pravidlo obsahuje iba neplatné záznamy.</translation>
 <translation id="2604182581880595781">Konfigurácia pravidiel súvisiacich so zdieľaním súborov v sieti</translation>
 <translation id="2623014935069176671">Počkať na aktivitu používateľa</translation>
 <translation id="262740370354162807">Povolí odoslanie dokumentov do služby <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1026,7 +1026,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak je pravidlo EnableMediaRouter nastavené na hodnotu False, hodnota tohto pravidla sa nijak neprejaví a ikona sa na paneli s nástrojmi nebude zobrazovať.</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
-<translation id="3790085888761753785">Ak povolíte toto nastavenie, používatelia sa budú môcť prihlásiť do svojich účtov pomocou funkcie Smart Lock. Ide o benevolentnejší postup narozdiel od zvyčajného správania funkcie Smart Lock, ktoré používateľom umožňuje odomknúť iba obrazovku.
+<translation id="3790085888761753785">Ak povolíte toto nastavenie, používatelia sa budú môcť prihlásiť do svojich účtov pomocou funkcie Smart Lock. Ide o benevolentnejší postup na rozdiel od zvyčajného správania funkcie Smart Lock, ktoré používateľom umožňuje odomknúť iba obrazovku.
 
       Ak toto nastavenie zakážete, používatelia nebudú môcť používať prihlásenie pomocou funkcie Smart Lock.
 
@@ -1092,6 +1092,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Webovú adresu návrhu Google je možné špecifikovať ako: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Toto pravidlo bude uplatnené len v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="3864129983143201415">Konfigurovať povolené jazyky v relácii používateľa</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3868347814555911633">Toto pravidlo je aktívne iba v režime predaja.
 
@@ -1789,7 +1790,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5835124959204887277">Umožňuje určiť webové adresy a domény, pri ktorých sa nebude zobrazovať žiadna výzva, keď sa budú vyžadovať atestačné certifikáty z bezpečnostných kľúčov. Okrem toho bude do bezpečnostného kľúča odoslaný signál označujúci, že je možné použiť individuálnu atestáciu. Bez toho sa používateľom v Chrome 65 alebo novšom zobrazí výzva, keď budú weby požadovať atestáciu bezpečnostných kľúčov.
 
       Webové adresy (ako https://príklad.com/nejaká/cesta) sa budú zhodovať iba ako identifikátory aplikácie U2F. Domény (ako príklad.com) sa budú zhodovať iba ako identifikátory webauthn RP. Ak majú byť pokryté obe rozhrania U2F aj webauthn API pre daný web, je potrebné uviesť webovú adresu a doménu identifikátora aplikácie.</translation>
-<translation id="5835412847081687053">Konfigurácia povolených miestnych nastavení používateľského rozhrania v relácii používateľa</translation>
 <translation id="5836064773277134605">Obmedzí rozsah portov UDP používaných hostiteľom vzdialeného prístupu</translation>
 <translation id="5862253018042179045">Nastaví predvolený stav hlasovej odozvy (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 

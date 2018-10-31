@@ -54,7 +54,7 @@
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2723001399770238859">ઑડિઓ</translation>
 <translation id="2746543609216772311">મૂલ્ય <ph name="MINIMUM_DATE_OR_TIME" /> અથવા પછીનું હોવું આવશ્યક છે.</translation>
-<translation id="2759744352195237655">પોપ અપ બટન</translation>
+<translation id="2759744352195237655">પૉપ-અપ બટન</translation>
 <translation id="2761667185364618470">જો તમે આગળ વધવા માંગતા હો તો કૃપા કરીને આ બૉક્સને ચેક કરો.</translation>
 <translation id="2896972712917208084">રેડિઓ જૂથ</translation>
 <translation id="2908441821576996758">કૃપા કરીને અલ્પવિરામથી વિભાજિત ઇમેઇલ સરનામાંઓની સૂચિ દાખલ કરો.</translation>
@@ -87,7 +87,7 @@
 <translation id="4103419683916926126">મીલીસેકન્ડ</translation>
 <translation id="4151657705144244502">ગ્રાફિક</translation>
 <translation id="4193965531860883258">આમુખ</translation>
-<translation id="4201051445878709314">પહેલાનો મહિનો દર્શાવો</translation>
+<translation id="4201051445878709314">પાછળનો મહિનો બતાવો</translation>
 <translation id="421884353938374759">રંગ ચૂંટનાર</translation>
 <translation id="4248100235867064564">મેનૂ બાર</translation>
 <translation id="4254339807215791271">કન્ટેન્ટની માહિતી</translation>
@@ -163,7 +163,7 @@
 <translation id="6820615603175220800">ગ્રંથસૂચિનો સંદર્ભ</translation>
 <translation id="6843725295806269523">બંધ કરો</translation>
 <translation id="6853785296079745596">ઉપશીર્ષક છુપાવો</translation>
-<translation id="6885760532393684712">નિર્દેશિકા</translation>
+<translation id="6885760532393684712">ડિરેક્ટરી</translation>
 <translation id="689129560213475294">પ્રકાશકની માહિતી</translation>
 <translation id="6934078000481955284">બ્લૉકક્વોટ</translation>
 <translation id="6941933287844615239">મીડિયા ડાઉનલોડ કરો</translation>
@@ -181,7 +181,7 @@
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">ટેબ</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
-<translation id="7529102961911894712">બૅક લિંક</translation>
+<translation id="7529102961911894712">પાછળ લઈ જતી લિંક</translation>
 <translation id="7647456547678091388">ટિપ</translation>
 <translation id="7661956066982048809">ગ્રાફિક્સ દસ્તાવેજ</translation>
 <translation id="7673697353781729403">કલાક</translation>

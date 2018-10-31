@@ -112,6 +112,7 @@
 <translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Izberite, ali lahko spletna mesta uporabljajo lokacijske storitve ali mikrofon, fotoaparat ali druge funkcije naprave</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
+<translation id="2803734122639935495">Če želite odkleniti, vnesite geslo</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
@@ -257,6 +258,7 @@
 <translation id="5648021990716966815">Vtič za mikrofon</translation>
 <translation id="5669267381087807207">Aktiviranje</translation>
 <translation id="5673434351075758678">Iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />« po sinhronizaciji nastavitev.</translation>
+<translation id="5691772641933328258">Prstni odtis ni prepoznan</translation>
 <translation id="574392208103952083">Srednja</translation>
 <translation id="5744083938413354016">Vlečenje z dotikom</translation>
 <translation id="5750765938512549687">Bluetooth je izklopljen</translation>
@@ -296,7 +298,6 @@
 <translation id="6284232397434400372">Ločljivost je bila spremenjena</translation>
 <translation id="6297287540776456956">S pisalom izberite območje</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> – zasuk na <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Prekrivna tipkovnica</translation>
 <translation id="6344698853700675736">Preklop Nočne svetlobe</translation>
 <translation id="6376931439017688372">Bluetooth je vklopljen</translation>
 <translation id="639644700271529076">Tipka CAPS LOCK je izklopljena</translation>
@@ -384,6 +385,7 @@
 <translation id="7842211907556571265">Vzpostavljanje povezave z omrežjem <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
+<translation id="7868900307798234037">Odklepanje s prstnim odtisom</translation>
 <translation id="7886169021410746335">Prilagodite nastavitve zasebnosti</translation>
 <translation id="7886277072580235377">Seja interneta bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Pošlji e-poštno sporočilo</translation>
@@ -392,6 +394,7 @@
 <translation id="79341161159229895">Račun upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
 <translation id="7982789257301363584">Omrežje</translation>
+<translation id="7984197416080286869">Preveč poskusov odklepanja s prstnim odtisom</translation>
 <translation id="7994370417837006925">Prijava z več računi</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8029241286966751120">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>

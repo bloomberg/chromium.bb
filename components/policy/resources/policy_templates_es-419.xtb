@@ -80,6 +80,9 @@
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
 
       Si no estableces esta política, se usará el directorio de caché predeterminado, y el usuario podrá anularlo con la marca '--disk-cache-dir' en la línea de comandos.</translation>
+<translation id="113521240853905588">Configura los idiomas que <ph name="PRODUCT_OS_NAME" /> puede usar como preferidos.
+
+      Si se establece esta política, el usuario podrá agregar solo uno de los idiomas enumerados en esta política a la lista de idiomas preferidos. Si no se establece esta política o se establece como una lista vacía, el usuario podrá especificar cualquier idioma como preferido. Si se establece esta política como una lista con valores no válidos, se ignorarán todos estos valores. Si un usuario había agregado a la lista de idiomas preferidos alguno que la política no permite, este se quitará. Si el usuario había configurado <ph name="PRODUCT_OS_NAME" /> con un idioma de visualización que esta política no permite, se lo cambiará por uno permitido para la IU la próxima vez que el usuario acceda. De lo contrario, <ph name="PRODUCT_OS_NAME" /> seleccionará el primer valor válido que especifica esta política o la configuración regional de resguardo (actualmente en-US) en caso de que esta política solo contenga entradas no válidas.</translation>
 <translation id="1135264353752122851">Configura cuáles son los diseños de teclado permitidos para las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
 
       Si se establece esta política, el usuario solo podrá elegir uno de los métodos de entrada que se especifican aquí. Si no se establece o se establece como una lista vacía, el usuario podrá seleccionar todos los métodos de entrada compatibles. Si la política no permite el método de entrada actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida en esta lista. Se ignorarán todos los métodos de entrada no válidos o no compatibles.</translation>
@@ -110,10 +113,10 @@
 <translation id="1223789468190631420">La Navegación segura habilita el estado para las fuentes de confianza</translation>
 <translation id="122899932962115297">Una lista blanca que controla los métodos de desbloqueo rápido que el usuario puede configurar y usar para desbloquear la pantalla bloqueada.
 
-          Este valor es una lista de strings; las entradas válidas para la lista son las siguientes: "todos", "PIN", "HUELLA DIGITAL". Si se agrega "todos" a la lista, el usuario podrá usar todos los métodos de desbloqueo rápido, entre los que se incluyen aquellos que se implementen en el futuro. De lo contrario, solo estarán disponibles los métodos de desbloqueo rápido que se enumeran en la lista.
+          Este valor es una lista de strings; las entradas válidas para la lista son las siguientes: "all", "PIN", "FINGERPRINT". Si se agrega "all" a la lista, el usuario podrá usar todos los métodos de desbloqueo rápido, entre los que se incluyen aquellos que se implementen en el futuro. De lo contrario, solo estarán disponibles los métodos de desbloqueo rápido que se enumeran en la lista.
 
 
-          Por ejemplo, para permitir todos los métodos de desbloqueo rápido, se debe usar ["todos"]. Para permitir solo el desbloqueo con PIN, se debe usar ["PIN"]. Para permitir el desbloqueo con PIN y huella digital, se debe usar ["PIN", "HUELLA DIGITAL"]. Para inhabilitar todos los métodos de desbloqueo rápido, se debe usar [].
+          Por ejemplo, para permitir todos los métodos de desbloqueo rápido, se debe usar ["all"]. Para permitir solo el desbloqueo con PIN, se debe usar ["PIN"]. Para permitir el desbloqueo con PIN y huella digital, se debe usar ["PIN", "FINGERPRINT"]. Para inhabilitar todos los métodos de desbloqueo rápido, se debe usar [].
 
           De manera predeterminada, no está disponible ningún método de desbloqueo rápido para los dispositivos administrados.</translation>
 <translation id="123081309365616809">Permite transmitir contenido al dispositivo</translation>
@@ -607,9 +610,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Esta política solo debe inhabilitarse para garantizar la compatibilidad con versiones anteriores. Además, reduce la seguridad de la autenticación.
 
           Si no se establece esta política, el valor predeterminado es verdadero y se habilita NTLMv2.</translation>
-<translation id="2598508021807251719">Permite configurar los idiomas en que se puede mostrar <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece esta política, el usuario solo puede configurar <ph name="PRODUCT_OS_NAME" /> para que se muestre en uno de los idiomas especificados por esta política. Si se establece con una lista vacía o no se establece, <ph name="PRODUCT_OS_NAME" /> se puede mostrar en todos los idiomas de IU compatibles. Si se establece con una lista de valores no válidos, se ignorarán todos estos. Si un usuario configuró anteriormente <ph name="PRODUCT_OS_NAME" /> para que se mostrara en un idioma de IU que no se permite según esta política, el idioma de visualización se cambiará a uno permitido la próxima vez que acceda el usuario. Si este configuró los idiomas preferidos y la política permite uno de ellos, <ph name="PRODUCT_OS_NAME" /> se cambiará a ese idioma. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará al primer valor válido que especifica esta política o a un idioma alternativo (actualmente en-US) si esta política solo contiene entradas no válidas.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -977,7 +977,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita, no se aplicará el aislamiento explícito de sitios, y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar IsolateOrigins de forma manual.
       Si no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
-<translation id="3748900290998155147">Permite especificar si se permiten los bloqueos de activación. Estos pueden solicitarlos las apps de ARC y las extensiones mediante la API de extensión de administración de energía.
+<translation id="3748900290998155147">Permite especificar si se permiten los bloqueos de activación. Las extensiones pueden solicitar estos bloqueos mediante la API de extensión de administración de energía. Las apps de ARC también pueden solicitarlos.
 
           Si se establece esta política como verdadera o no se establece, los bloqueos de activación serán válidos para la administración de energía.
 
@@ -1079,6 +1079,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           La URL de sugerencias de Google se puede especificar como: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política se aplica solo si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="3864129983143201415">Configurar los idiomas permitidos en una sesión de usuario</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo de venta.
 
@@ -1122,7 +1123,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3915395663995367577">URL a un archivo proxy .pac</translation>
 <translation id="3925020515212192040">Permite especificar una lista de archivos compartidos de red configurados previamente.
 
-      Cada elemento de la lista de la política es un objeto con dos variables: "share_url" y "mode". "share_url" debe ser la URL del archivo compartido y "mode" debe ser "drop_down", lo que indica que se agregará "share_url" a la lista desplegable de detección de archivos compartidos.</translation>
+      Cada elemento de la lista de la política es un objeto con dos variables: "share_url" y "mode". "share_url" debe ser la URL del recurso compartido y "mode" debe ser "drop_down", lo que indica que se agregará "share_url" a la lista desplegable de detección de recursos compartidos.</translation>
 <translation id="3939893074578116847">Envía paquetes de red al servidor de administración para controlar el estado en
       línea, lo que permite que el servidor detecte si el dispositivo está sin
       conexión.
@@ -1734,7 +1735,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5835124959204887277">Especifica los dominios y URL para los cuales no se mostrarán mensajes cuando se solicitan certificados de atestación de las llaves de seguridad. Además, se enviará una señal a la llave de seguridad para indicar que se puede usar la atestación individual. Sin esto, se mostrará un mensaje a los usuarios con Chrome 65 y versiones posteriores cuando los sitios soliciten atestaciones de llaves de seguridad.
 
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
-<translation id="5835412847081687053">Configurar los idiomas de IU permitidos en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
 
@@ -2256,7 +2256,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (dejó de estar disponible)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
 <translation id="717630378807352957">Permite todas las impresoras del archivo de configuración.</translation>
-<translation id="7176721759719212761">Permite especificar si se permiten los bloqueos de activación de pantalla. Estos pueden solicitarlos apps de ARC y extensiones mediante la API de extensión de administración de energía.
+<translation id="7176721759719212761">Permite especificar si se permiten los bloqueos de activación de pantalla. Las extensiones pueden solicitar estos bloqueos mediante la API de extensión de administración de energía. Las apps de ARC también pueden solicitarlos.
 
           Si se establece esta política como verdadera o no se establece, los bloqueos de activación de pantalla serán válidos para la administración de energía, a menos que se establezca AllowWakeLocks como falsa.
 
@@ -2274,7 +2274,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
 
           Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
-<translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué Cuentas de Google se pueden establecer como principales del navegador en <ph name="PRODUCT_NAME" /> (es decir, la cuenta que se elige en el proceso de aceptación de la sincronización).
+<translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /> (es decir, la cuenta que se elige en el proceso de aceptación de la sincronización).
 
       Si un usuario intenta establecer una cuenta principal en el navegador con un nombre de usuario que no coincida con este patrón, se mostrará un error.
 
@@ -2539,7 +2539,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Los identificadores de tipos de conexión reconocidos son "ethernet", "wifi", "wimax", "bluetooth" y "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
-<translation id="7765879851993224640">Permitir el uso del acceso mediante Smart Lock</translation>
+<translation id="7765879851993224640">Permitir el acceso mediante Smart Lock</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>
 <translation id="7775831859772431793">Puedes especificar la URL del servidor proxy aquí.
 
@@ -2648,7 +2648,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.
       Si no se establece esta política en un dispositivo administrado, el dispositivo no podrá ejecutar máquinas virtuales.
       Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
-<translation id="8001701200415781021">Determinar qué Cuentas de Google pueden establecerse como principales del navegador en <ph name="PRODUCT_NAME" /></translation>
+<translation id="8001701200415781021">Determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotar la pantalla 0 grados</translation>
 <translation id="8033913082323846868">Esta política deja de estar disponible en M70. En su lugar, utiliza AutofillAddressEnabled y AutofillCreditCardEnabled.
 

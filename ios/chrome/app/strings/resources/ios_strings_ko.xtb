@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">삭제</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
 <translation id="1340643665687018190">메뉴 닫기</translation>
+<translation id="1360432990279830238">로그아웃하고 동기화를 사용 중지하시겠습니까?</translation>
 <translation id="1375321115329958930">저장된 비밀번호</translation>
 <translation id="1377255359165588604">동기화가 중지되었습니다.</translation>
 <translation id="1377321085342047638">카드 번호</translation>
@@ -49,6 +50,7 @@
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1657011748321897393">네트워크에 연결되어 있지 않아 공유하지 못했습니다.</translation>
 <translation id="165877110639533037">열린 탭 없음</translation>
+<translation id="168715261339224929">어느 기기에서나 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="1687475363370981210">모두 읽음으로 표시</translation>
 <translation id="1690731385917361335">항목 없음</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 선택됨</translation>
@@ -315,6 +317,7 @@
 <translation id="6196207969502475924">음성 검색</translation>
 <translation id="6254066287920239840">브라우저 대신 앱에서 링크 열기</translation>
 <translation id="6255097610484507482">신용카드 수정</translation>
+<translation id="6303969859164067831">로그아웃하고 동기화 사용 중지</translation>
 <translation id="6308436439357671616">액세스를 허용하면 사진을 찍고 업로드할 수 있습니다.</translation>
 <translation id="6324528485781869530">동기화 계정 전환</translation>
 <translation id="6324669097367352121">로그인 설정</translation>
@@ -340,6 +343,7 @@
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6541915733953096570">지난 1시간</translation>
+<translation id="6643016212128521049">삭제</translation>
 <translation id="6656103420185847513">폴더 수정</translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="667999046851023355">문서</translation>
