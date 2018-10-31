@@ -15,7 +15,7 @@ suite('cr-radio-group', () => {
     document.body.innerHTML = `
         <cr-radio-group>
           <cr-radio-button name="1"></cr-radio-button>
-          <cr-radio-button name="2"></cr-radio-button>
+          <cr-radio-button name="2"><input></input></cr-radio-button>
           <cr-radio-button name="3"><a></a></cr-radio-button>
         </cr-radio-group>`;
     radioGroup = document.body.querySelector('cr-radio-group');
@@ -44,7 +44,8 @@ suite('cr-radio-group', () => {
    * @param {Element=} target
    */
   function press(key, target) {
-    MockInteractions.pressAndReleaseKeyOn(target || radioGroup, -1, [], key);
+    target = target || radioGroup.querySelector('[name="1"]');
+    MockInteractions.pressAndReleaseKeyOn(target, -1, [], key);
   }
 
   /**
@@ -76,6 +77,7 @@ suite('cr-radio-group', () => {
   });
 
   test('key events when initially nothing checked', () => {
+    const firstRadio = radioGroup.querySelector('[name="1"]');
     press('Enter');
     checkSelected(1);
     radioGroup.selected = '';
@@ -160,5 +162,30 @@ suite('cr-radio-group', () => {
     press(' ', a);
     a.click();
     checkSelected(1);
+  });
+
+  test('radios with input', () => {
+    const input = radioGroup.querySelector('input');
+    assertTrue(!!input);
+    noneSelectedOneFocusable(1);
+    press('Enter', input);
+    press(' ', input);
+    noneSelectedOneFocusable(1);
+    input.click();
+    checkSelected(2);
+    radioGroup.querySelector('[name="1"]').click();
+    press('Enter', input);
+    press(' ', input);
+    checkSelected(1);
+    input.click();
+    checkSelected(2);
+  });
+
+  test('select the radio that has focus when space or enter pressed', () => {
+    noneSelectedOneFocusable(1);
+    press('Enter', radioGroup.querySelector('[name="3"]'));
+    checkSelected(3);
+    press(' ', radioGroup.querySelector('[name="2"]'));
+    checkSelected(2);
   });
 });
