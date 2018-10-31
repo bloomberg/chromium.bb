@@ -333,12 +333,12 @@ class NET_EXPORT HttpUtil {
   //
   // This iterator is careful to skip over delimiters found inside an HTTP
   // quoted string.
-  //
   class NET_EXPORT_PRIVATE ValuesIterator {
    public:
     ValuesIterator(std::string::const_iterator values_begin,
                    std::string::const_iterator values_end,
-                   char delimiter);
+                   char delimiter,
+                   bool ignore_empty_values = true);
     ValuesIterator(const ValuesIterator& other);
     ~ValuesIterator();
 
@@ -360,6 +360,7 @@ class NET_EXPORT HttpUtil {
     base::StringTokenizer values_;
     std::string::const_iterator value_begin_;
     std::string::const_iterator value_end_;
+    bool ignore_empty_values_;
   };
 
   // Iterates over a delimited sequence of name-value pairs in an HTTP header.

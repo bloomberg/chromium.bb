@@ -778,7 +778,8 @@ void HttpResponseHeaders::AddHeader(std::string::const_iterator name_begin,
       HttpUtil::IsNonCoalescingHeader(name_begin, name_end)) {
     AddToParsed(name_begin, name_end, values_begin, values_end);
   } else {
-    HttpUtil::ValuesIterator it(values_begin, values_end, ',');
+    HttpUtil::ValuesIterator it(values_begin, values_end, ',',
+                                false /* ignore_empty_values */);
     while (it.GetNext()) {
       AddToParsed(name_begin, name_end, it.value_begin(), it.value_end());
       // clobber these so that subsequent values are treated as continuations

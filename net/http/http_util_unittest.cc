@@ -184,7 +184,8 @@ TEST(HttpUtilTest, HeadersIterator_Reset) {
 TEST(HttpUtilTest, ValuesIterator) {
   std::string values = " must-revalidate,   no-cache=\"foo, bar\"\t, private ";
 
-  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',');
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
 
   ASSERT_TRUE(it.GetNext());
   EXPECT_EQ(std::string("must-revalidate"), it.value());
@@ -198,12 +199,50 @@ TEST(HttpUtilTest, ValuesIterator) {
   EXPECT_FALSE(it.GetNext());
 }
 
+TEST(HttpUtilTest, ValuesIterator_EmptyValues) {
+  std::string values = ", foopy , \t ,,,";
+
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
+  ASSERT_TRUE(it.GetNext());
+  EXPECT_EQ(std::string("foopy"), it.value());
+  EXPECT_FALSE(it.GetNext());
+
+  HttpUtil::ValuesIterator it_with_empty_values(
+      values.begin(), values.end(), ',', false /* ignore_empty_values */);
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string("foopy"), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  EXPECT_FALSE(it_with_empty_values.GetNext());
+}
+
 TEST(HttpUtilTest, ValuesIterator_Blanks) {
   std::string values = " \t ";
 
-  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',');
-
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
   EXPECT_FALSE(it.GetNext());
+
+  HttpUtil::ValuesIterator it_with_empty_values(
+      values.begin(), values.end(), ',', false /* ignore_empty_values */);
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+  EXPECT_FALSE(it_with_empty_values.GetNext());
 }
 
 TEST(HttpUtilTest, Unquote) {

@@ -504,19 +504,28 @@ TEST(HttpResponseHeadersTest, EnumerateHeader_Coalesced) {
   // Ensure that whitespace following a value is trimmed properly.
   std::string headers =
       "HTTP/1.1 200 OK\n"
-      "Cache-control:private , no-cache=\"set-cookie,server\" \n"
-      "cache-Control: no-store\n";
+      "Cache-control:,,private , no-cache=\"set-cookie,server\",\n"
+      "cache-Control: no-store\n"
+      "cache-Control:\n";
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
   size_t iter = 0;
   std::string value;
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("private", value);
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("no-cache=\"set-cookie,server\"", value);
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("no-store", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
   EXPECT_FALSE(parsed->EnumerateHeader(&iter, "cache-control", &value));
 }
 
@@ -1185,27 +1194,27 @@ TEST_P(EnumerateHeaderLinesTest, EnumerateHeaderLines) {
 }
 
 const EnumerateHeaderTestData enumerate_header_tests[] = {
-  { "HTTP/1.1 200 OK\n",
+    {"HTTP/1.1 200 OK\n",
 
-    ""
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n",
+     ""},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n",
 
-    "Foo: 1\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n"
-    "Bar: 2\n"
-    "Foo: 3\n",
+     "Foo: 1\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n"
+     "Bar: 2\n"
+     "Foo: 3\n",
 
-    "Foo: 1\nBar: 2\nFoo: 3\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1, 2, 3\n",
+     "Foo: 1\nBar: 2\nFoo: 3\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1, 2, 3\n",
 
-    "Foo: 1, 2, 3\n"
-  },
+     "Foo: 1, 2, 3\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: ,, 1,, 2, 3,, \n",
+
+     "Foo: ,, 1,, 2, 3,,\n"},
 };
 
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
@@ -1729,6 +1738,34 @@ TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithEmptyValues) {
   EXPECT_EQ(value, "*, *");
   EXPECT_TRUE(parsed->GetNormalizedHeader("e", &value));
   EXPECT_EQ(value, "");
+  EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
+}
+
+TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithCommas) {
+  std::string headers(
+      "HTTP/1.1 200 OK\n"
+      "a: foo, bar\n"
+      "b: , foo, bar,\n"
+      "c: ,,,\n"
+      "d:  ,  ,  ,  \n"
+      "e:\t,\t,\t,\t\n"
+      "a: ,");
+  HeadersToRaw(&headers);
+  auto parsed = base::MakeRefCounted<HttpResponseHeaders>(headers);
+  std::string value;
+
+  // TODO(mmenke): "Normalized" headers probably should preserve the
+  // leading/trailing whitespace from the original headers.
+  ASSERT_TRUE(parsed->GetNormalizedHeader("a", &value));
+  EXPECT_EQ("foo, bar, ,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("b", &value));
+  EXPECT_EQ(", foo, bar,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("c", &value));
+  EXPECT_EQ(",,,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("d", &value));
+  EXPECT_EQ(",  ,  ,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("e", &value));
+  EXPECT_EQ(",\t,\t,", value);
   EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
 }
 
