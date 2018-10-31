@@ -6,13 +6,20 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/resource_coordinator/observers/ipc_volume_reporter.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
 #include "services/resource_coordinator/observers/page_signal_generator_impl.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/service_context.h"
+
+#if defined(OS_WIN)
+#include "services/resource_coordinator/observers/working_set_trimmer_win.h"
+#endif
 
 namespace resource_coordinator {
 
@@ -51,6 +58,13 @@ void ResourceCoordinatorService::OnStart() {
 
   coordination_unit_graph_.RegisterObserver(std::make_unique<IPCVolumeReporter>(
       std::make_unique<base::OneShotTimer>()));
+
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet)) {
+    coordination_unit_graph_.RegisterObserver(
+        std::make_unique<WorkingSetTrimmer>());
+  }
+#endif
 
   coordination_unit_graph_.OnStart(&registry_, ref_factory_.get());
   coordination_unit_graph_.set_ukm_recorder(ukm_recorder_.get());
