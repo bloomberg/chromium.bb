@@ -41,7 +41,11 @@ struct PLATFORM_EXPORT HitTestData {
   static void RecordHitTestRect(GraphicsContext&,
                                 const DisplayItemClient&,
                                 const HitTestRect&);
+
+  String ToString() const;
 };
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestData&);
 
 }  // namespace blink
 

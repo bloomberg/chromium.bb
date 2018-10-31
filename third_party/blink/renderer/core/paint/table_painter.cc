@@ -61,11 +61,12 @@ void TablePainter::PaintBoxDecorationBackground(
   if (layout_table_.HasBoxDecorationBackground() &&
       layout_table_.StyleRef().Visibility() == EVisibility::kVisible) {
     BoxPainter(layout_table_)
-        .PaintBoxDecorationBackgroundWithRect(paint_info, rect);
+        .PaintBoxDecorationBackgroundWithRect(paint_info, rect, layout_table_);
   }
 
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    BoxPainter(layout_table_).RecordHitTestData(paint_info, paint_offset, rect);
+    BoxPainter(layout_table_)
+        .RecordHitTestData(paint_info, paint_offset, rect, layout_table_);
   }
 }
 

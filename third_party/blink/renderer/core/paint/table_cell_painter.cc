@@ -120,7 +120,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
     LayoutRect rect = PaintRectNotIncludingVisualOverflow(paint_offset);
     BoxPainter(layout_table_cell_)
-        .RecordHitTestData(paint_info, paint_offset, rect);
+        .RecordHitTestData(paint_info, paint_offset, rect, layout_table_cell_);
   }
 }
 
