@@ -508,25 +508,28 @@ NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
     const LayoutUnit available_inline_size,
     const NGLogicalSize& minimum_size) const {
   // TODO(ikilpatrick): Determine what to do for a -ve available_inline_size.
-  // TODO(ikilpatrick): Change this so that it iterates over the
-  // shelves/opportunities instead for querying for all of them.
-  LayoutOpportunityVector opportunities =
-      AllLayoutOpportunities(offset, available_inline_size);
 
-  for (const auto& opportunity : opportunities) {
-    // Determine if this opportunity will fit the given size.
-    //
-    // NOTE: There are cases where the available_inline_size may be smaller
-    // than the minimum_size.inline_size. In such cases if the opportunity is
-    // the same as the available_inline_size, it pretends that it "fits".
-    if ((opportunity.rect.InlineSize() >= minimum_size.inline_size ||
-         opportunity.rect.InlineSize() == available_inline_size) &&
-        opportunity.rect.BlockSize() >= minimum_size.block_size)
-      return opportunity;
-  }
+  NGLayoutOpportunity return_opportunity;
+  IterateAllLayoutOpportunities(
+      offset, available_inline_size,
+      [&return_opportunity, &minimum_size,
+       &available_inline_size](const NGLayoutOpportunity opportunity) -> bool {
+        // Determine if this opportunity will fit the given size.
+        //
+        // NOTE: There are cases where the available_inline_size may be smaller
+        // than the minimum_size.inline_size. In such cases if the opportunity
+        // is the same as the available_inline_size, it pretends that it "fits".
+        if ((opportunity.rect.InlineSize() >= minimum_size.inline_size ||
+             opportunity.rect.InlineSize() == available_inline_size) &&
+            opportunity.rect.BlockSize() >= minimum_size.block_size) {
+          return_opportunity = opportunity;
+          return true;
+        }
 
-  NOTREACHED();
-  return NGLayoutOpportunity();
+        return false;
+      });
+
+  return return_opportunity;
 }
 
 LayoutOpportunityVector
@@ -535,6 +538,21 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
     const LayoutUnit available_inline_size) const {
   LayoutOpportunityVector opportunities;
 
+  IterateAllLayoutOpportunities(
+      offset, available_inline_size,
+      [&opportunities](const NGLayoutOpportunity opportunity) -> bool {
+        opportunities.push_back(opportunity);
+        return false;
+      });
+
+  return opportunities;
+}
+
+template <typename LambdaFunc>
+void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
+    const NGBfcOffset& offset,
+    const LayoutUnit available_inline_size,
+    const LambdaFunc& lambda) const {
   auto* shelves_it = shelves_.begin();
   auto* opps_it = opportunities_.begin();
 
@@ -563,8 +581,10 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
       // We always prefer the closed-off opportunity, instead of the shelf
       // opportunity if they exist at the some offset.
       if (opportunity.rect.BlockStartOffset() <= shelf.block_offset) {
-        opportunities.push_back(CreateLayoutOpportunity(opportunity, offset,
-                                                        available_inline_size));
+        if (lambda(CreateLayoutOpportunity(opportunity, offset,
+                                           available_inline_size)))
+          return;
+
         ++opps_it;
         continue;
       }
@@ -577,13 +597,11 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
         HasSolidEdges(shelf.line_right_edges, offset.block_offset,
                       LayoutUnit::Max());
     if (has_solid_edges) {
-      opportunities.push_back(
-          CreateLayoutOpportunity(shelf, offset, available_inline_size));
+      if (lambda(CreateLayoutOpportunity(shelf, offset, available_inline_size)))
+        return;
     }
     ++shelves_it;
   }
-
-  return opportunities;
 }
 
 LayoutUnit NGExclusionSpaceInternal::DerivedGeometry::ClearanceOffset(
