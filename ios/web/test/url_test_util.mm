@@ -16,4 +16,8 @@ base::string16 GetDisplayTitleForUrl(const GURL& url) {
   return NavigationItemImpl::GetDisplayTitleForURL(url);
 }
 
+std::string GetContentAndFragmentForUrl(const GURL& url) {
+  return url.GetContent() + (url.has_ref() ? "#" + url.ref() : "");
+}
+
 }  // namespace web

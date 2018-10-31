@@ -99,7 +99,7 @@ class DisplayCutoutWebContentsDelegate : public WebContentsDelegate {
 const char kTestHTML[] =
     "<!DOCTYPE html>"
     "<style>"
-    "  #target {"
+    "  %23target {"
     "    margin-top: env(safe-area-inset-top);"
     "    margin-left: env(safe-area-inset-left);"
     "    margin-bottom: env(safe-area-inset-bottom);"
