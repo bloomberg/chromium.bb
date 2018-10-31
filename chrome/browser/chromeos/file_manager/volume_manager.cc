@@ -416,13 +416,14 @@ void VolumeManager::Initialize() {
     return;
   }
 
-  const base::FilePath localVolume =
-      file_manager::util::GetMyFilesFolderForProfile(profile_);
-  const bool success = RegisterDownloadsMountPoint(profile_, localVolume);
+  // Register 'Downloads' folder for the profile to the file system.
+  const base::FilePath downloads =
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  const bool success = RegisterDownloadsMountPoint(profile_, downloads);
   DCHECK(success);
 
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               Volume::CreateForDownloads(localVolume));
+               Volume::CreateForDownloads(downloads));
 
   // Subscribe to DriveIntegrationService.
   drive_integration_service_->AddObserver(this);

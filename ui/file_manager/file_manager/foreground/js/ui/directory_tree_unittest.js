@@ -502,9 +502,8 @@ function testUpdateSubElementsFromListSections() {
   assertEquals(NavigationSection.CLOUD, driveItem.section);
 
   const metadataModel = mockMetadataModel();
-  DirectoryTree.decorate(
-      directoryTree, directoryModel, volumeManager, metadataModel,
-      fileOperationManager, true);
+  DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
+      metadataModel, fileOperationManager, true);
   directoryTree.dataModel = treeModel;
   directoryTree.updateSubElementsFromList(false);
 
