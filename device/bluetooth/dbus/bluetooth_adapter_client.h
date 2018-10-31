@@ -172,8 +172,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
   // Cancels any previous device discovery on the adapter with object path
   // |object_path|.
   virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const base::Closure& callback,
-                             ErrorCallback error_callback) = 0;
+                             ResponseCallback callback) = 0;
+  // DEPRECATED: Use StopDiscovery() above.
+  void StopDiscovery(const dbus::ObjectPath& object_path,
+                     const base::Closure& callback,
+                     ErrorCallback error_callback);
 
   // Pauses all discovery sessions.
   virtual void PauseDiscovery(const dbus::ObjectPath& object_path,

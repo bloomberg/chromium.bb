@@ -5,6 +5,7 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -254,25 +255,21 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
 
   // BluetoothAdapterClient override.
   void StopDiscovery(const dbus::ObjectPath& object_path,
-                     const base::Closure& callback,
-                     ErrorCallback error_callback) override {
+                     ResponseCallback callback) override {
     dbus::MethodCall method_call(bluetooth_adapter::kBluetoothAdapterInterface,
                                  bluetooth_adapter::kStopDiscovery);
 
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
-      std::move(error_callback).Run(kUnknownAdapterError, "");
+      std::move(callback).Run(Error(kUnknownAdapterError, ""));
       return;
     }
 
-    object_proxy->CallMethodWithErrorCallback(
+    object_proxy->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&BluetoothAdapterClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
-        base::BindOnce(&BluetoothAdapterClientImpl::OnError,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(error_callback)));
+        base::BindOnce(&BluetoothAdapterClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // BluetoothAdapterClient override.
@@ -604,6 +601,13 @@ void BluetoothAdapterClient::StartDiscovery(const dbus::ObjectPath& object_path,
                                             ErrorCallback error_callback) {
   StartDiscovery(object_path, base::BindOnce(&OnResponseAdapter, callback,
                                              std::move(error_callback)));
+}
+
+void BluetoothAdapterClient::StopDiscovery(const dbus::ObjectPath& object_path,
+                                           const base::Closure& callback,
+                                           ErrorCallback error_callback) {
+  StopDiscovery(object_path, base::BindOnce(&OnResponseAdapter, callback,
+                                            std::move(error_callback)));
 }
 
 }  // namespace bluez

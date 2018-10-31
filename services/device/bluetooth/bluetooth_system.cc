@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -158,6 +159,24 @@ void BluetoothSystem::StartScan(StartScanCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void BluetoothSystem::StopScan(StopScanCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+    case State::kPoweredOff:
+    case State::kTransitioning:
+      std::move(callback).Run(StopScanResult::kBluetoothUnavailable);
+      return;
+    case State::kPoweredOn:
+      break;
+  }
+
+  GetBluetoothAdapterClient()->StopDiscovery(
+      active_adapter_.value(),
+      base::BindOnce(&BluetoothSystem::OnStopDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
   // Use AlternateBluetoothAdapterClient to avoid interfering with users of the
   // regular BluetoothAdapterClient.
@@ -206,6 +225,15 @@ void BluetoothSystem::OnStartDiscovery(
   // return more specific error codes.
   std::move(callback).Run(error ? StartScanResult::kFailedUnknownReason
                                 : StartScanResult::kSuccess);
+}
+
+void BluetoothSystem::OnStopDiscovery(
+    StopScanCallback callback,
+    const base::Optional<bluez::BluetoothAdapterClient::Error>& error) {
+  // TODO(https://crbug.com/897996): Use the name and message in |error| to
+  // return more specific error codes.
+  std::move(callback).Run(error ? StopScanResult::kFailedUnknownReason
+                                : StopScanResult::kSuccess);
 }
 
 }  // namespace device
