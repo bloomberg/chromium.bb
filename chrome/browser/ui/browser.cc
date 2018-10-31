@@ -1255,13 +1255,13 @@ bool Browser::ShouldAllowRunningInsecureContent(
 
 void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
                                   const GURL& url) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  DCHECK(content_settings);
-  // TODO(csharrison): Add a click callback here to collect framebusting
-  // click-through metrics.
-  content_settings->OnFramebustBlocked(
-      url, FramebustBlockTabHelper::ClickCallback());
+  if (auto* framebust_helper =
+          FramebustBlockTabHelper::FromWebContents(web_contents)) {
+    // TODO(csharrison): Add a click callback here to collect framebusting
+    // click-through metrics.
+    framebust_helper->AddBlockedUrl(url,
+                                    FramebustBlockTabHelper::ClickCallback());
+  }
 }
 
 gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,

@@ -9,6 +9,17 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 
+namespace {
+
+void UpdateLocationBarUI(content::WebContents* contents) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<content::WebContents>(contents),
+      content::NotificationService::NoDetails());
+}
+
+}  // namespace
+
 FramebustBlockTabHelper::~FramebustBlockTabHelper() = default;
 
 void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,
@@ -20,6 +31,7 @@ void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,
   for (Observer& observer : observers_) {
     observer.OnBlockedUrlAdded(blocked_url);
   }
+  UpdateLocationBarUI(web_contents());
 }
 
 bool FramebustBlockTabHelper::HasBlockedUrls() const {
@@ -60,13 +72,5 @@ void FramebustBlockTabHelper::DidFinishNavigation(
   callbacks_.clear();
   animation_has_run_ = false;
 
-  // TODO(csharrison): It is a bit ugly that this tab helper has to notify this
-  // change directly. Consider improving this by integrating framebust
-  // information with the TabSpecificContentSetting class. This may be
-  // challenging, since popups and framebusts are controlled by the same content
-  // setting.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<content::WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  UpdateLocationBarUI(web_contents());
 }
