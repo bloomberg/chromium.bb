@@ -114,31 +114,25 @@ void AudioRecordInputStream::Close() {
 }
 
 double AudioRecordInputStream::GetMaxVolume() {
-  NOTIMPLEMENTED();
   return 0.0;
 }
 
 void AudioRecordInputStream::SetVolume(double volume) {
-  NOTIMPLEMENTED();
 }
 
 double AudioRecordInputStream::GetVolume() {
-  NOTIMPLEMENTED();
   return 0.0;
 }
 
 bool AudioRecordInputStream::SetAutomaticGainControl(bool enabled) {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool AudioRecordInputStream::GetAutomaticGainControl() {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool AudioRecordInputStream::IsMuted() {
-  NOTIMPLEMENTED();
   return false;
 }
 
