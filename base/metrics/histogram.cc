@@ -170,29 +170,6 @@ HistogramBase* Histogram::Factory::Build() {
 
 // Temporary check for https://crbug.com/836238
 #if defined(OS_WIN)  // Only Windows has a debugger that makes this useful.
-    if (bucket_count_ > 0 &&
-        maximum_ != created_ranges->range(bucket_count_ - 1)) {
-      // Create local copies of the parameters to be sure they'll be available
-      // in the crash dump for the debugger to see.
-      DEBUG_ALIAS_FOR_CSTR(h_name, name_.c_str(), 100);
-      HistogramType h_type = histogram_type_;
-      Sample h_min = minimum_;
-      Sample h_max = maximum_;
-      uint32_t h_count = bucket_count_;
-      debug::Alias(&h_type);
-      debug::Alias(&h_min);
-      debug::Alias(&h_max);
-      debug::Alias(&h_count);
-      uint32_t ranges_min = created_ranges->range(1);
-      uint32_t ranges_max = created_ranges->range(bucket_count_ - 1);
-      debug::Alias(&ranges_min);
-      debug::Alias(&ranges_max);
-      CHECK(false) << name_;
-    }
-#endif
-
-// Temporary check for https://crbug.com/836238
-#if defined(OS_WIN)  // Only Windows has a debugger that makes this useful.
     std::unique_ptr<const BucketRanges> recreated_ranges(CreateRanges());
     // Most histograms have 50 buckets plus underflow and overflow.
     const size_t capture_boundaries = 52;
@@ -205,15 +182,18 @@ HistogramBase* Histogram::Factory::Build() {
     debug::Alias(created_boundaries);
     debug::Alias(recreated_boundaries);
     for (uint32_t i = 0; i < bucket_count_; ++i) {
-      uint32_t created_range = created_ranges->range(i);
-      uint32_t recreated_range = recreated_ranges->range(i);
+      Sample created_range = created_ranges->range(i);
+      Sample recreated_range = recreated_ranges->range(i);
       debug::Alias(&created_range);
       debug::Alias(&recreated_range);
-      if (created_range != recreated_range) {
+      if (created_range != recreated_range ||
+          (i == bucket_count_ - 1 && created_range != maximum_)) {
         // Create local copies of the parameters to be sure they'll be available
         // in the crash dump for the debugger to see.
         DEBUG_ALIAS_FOR_CSTR(h_name, name_.c_str(), 100);
         HistogramType h_type = histogram_type_;
+        Sample h_min = minimum_;
+        Sample h_max = maximum_;
         uint32_t b_count = bucket_count_;
         size_t c_count = created_ranges->size() - 1;
         size_t r_count = recreated_ranges->size() - 1;
@@ -221,6 +201,8 @@ HistogramBase* Histogram::Factory::Build() {
         bool r_valid = recreated_ranges->HasValidChecksum();
         CHECK(recreated_ranges->Equals(created_ranges)) << name_;
         debug::Alias(&h_type);
+        debug::Alias(&h_min);
+        debug::Alias(&h_max);
         debug::Alias(&b_count);
         debug::Alias(&c_count);
         debug::Alias(&r_count);
