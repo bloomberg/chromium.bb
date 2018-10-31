@@ -276,7 +276,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
                       TestCase("selectCreateFolderDownloads"),
+// This test is flaky in MSAN, disabling until is fixed: crbug.com/899664.
+#if !defined(MEMORY_SANITIZER)
                       TestCase("createFolderDownloads").InGuestMode(),
+#endif
                       TestCase("createFolderDownloads"),
                       TestCase("createFolderNestedDownloads"),
                       TestCase("createFolderDrive").DisableDriveFs(),
