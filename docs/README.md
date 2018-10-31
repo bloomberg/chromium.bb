@@ -89,6 +89,8 @@ used when committed.
     to perform refactorings that are AST-aware
 *   [The Clang Static Analyzer](clang_static_analyzer.md) - How to enable static
     analysis at build time
+*   [Clang Code Coverage Wrapper](clang_code_coverage_wrapper.md) - Enable Clang
+    code coverage instrumentation for a subset of source files.
 *   [Writing Clang Plugins](writing_clang_plugins.md) - Don't write a clang
     plugin, but if you do, read this
 *   [Updating Clang](updating_clang.md) - Updating the version of Clang used to
