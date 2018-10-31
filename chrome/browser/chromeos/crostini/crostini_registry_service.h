@@ -91,6 +91,9 @@ class CrostiniRegistryService : public KeyedService {
     // Whether this app should scale up when displayed.
     bool IsScaled() const;
 
+    // Whether this app is the default terminal app.
+    bool is_terminal_app() const { return is_terminal_app_; }
+
    private:
     std::string LocalizedString(base::StringPiece key) const;
 
