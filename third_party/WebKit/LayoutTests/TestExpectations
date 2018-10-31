@@ -331,6 +331,7 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
+crbug.com/841567 virtual/fractional_scrolling_threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ Failure Pass Timeout ]
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
