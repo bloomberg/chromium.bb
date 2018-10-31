@@ -1088,9 +1088,13 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClientId client_id = MakeClientId(child_id, route_id);
   ClientMap::iterator it = client_map_.find(client_id);
-  DCHECK(it != client_map_.end());
+  // TODO(crbug.com/873959): Turns this CHECK to DCHECK once the investigation
+  // is done.
+  CHECK(it != client_map_.end());
 
   Client* client = it->second.get();
+  // TODO(crbug.com/873959): Remove this CHECK once the investigation is done.
+  CHECK(client);
   // ResourceDispatcherHost cancels all requests except for cross-renderer
   // navigations, async revalidations and detachable requests after
   // OnClientDeleted() returns.
