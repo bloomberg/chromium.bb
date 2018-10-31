@@ -199,6 +199,31 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns true if a drag session is currently active.
   bool IsDragSessionActive() const;
 
+  // Returns the index where the dragged WebContents should be inserted into
+  // this tabstrip given the DraggedTabView's bounds |dragged_bounds| in
+  // coordinates relative to |attached_tabstrip_| and has had the mirroring
+  // transformation applied.
+  // |mouse_has_ever_moved_left| and |mouse_has_ever_moved_right| are used
+  // only in stacked tabs cases.
+  // NOTE: this is invoked from Attach() before the tabs have been inserted.
+  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds,
+                                        bool attaching,
+                                        int num_dragged_tabs,
+                                        bool mouse_has_ever_moved_left,
+                                        bool mouse_has_ever_moved_right) const;
+
+  // Returns true if |dragged_bounds| is close enough to the next stacked tab
+  // so that the active tab should be dragged there.
+  bool ShouldDragToNextStackedTab(const gfx::Rect& dragged_bounds,
+                                  int index,
+                                  bool mouse_has_ever_moved_right) const;
+
+  // Returns true if |dragged_bounds| is close enough to the previous stacked
+  // tab so that the active tab should be dragged there.
+  bool ShouldDragToPreviousStackedTab(const gfx::Rect& dragged_bounds,
+                                      int index,
+                                      bool mouse_has_ever_moved_left) const;
+
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
@@ -383,6 +408,22 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the bounds needed for each of the tabs, relative to a leading
   // coordinate of 0 for the left edge of the first tab's bounds.
   static std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(const Tabs& tabs);
+
+  // Used by GetInsertionIndexForDraggedBounds() when the tabstrip is stacked.
+  int GetInsertionIndexForDraggedBoundsStacked(
+      const gfx::Rect& dragged_bounds,
+      bool mouse_has_ever_moved_left,
+      bool mouse_has_ever_moved_right) const;
+
+  // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
+  // the tab being dragged, |start| the index of the tab to start looking from.
+  // The search proceeds to the end of the strip.
+  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
+
+  // Like GetInsertionIndexFrom(), but searches backwards from |start| to the
+  // beginning of the strip.
+  int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
+                                    int start) const;
 
   // Returns the X coordinate the first tab should start at.
   int TabStartX() const;
