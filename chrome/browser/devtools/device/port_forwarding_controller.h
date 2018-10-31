@@ -40,6 +40,7 @@ class PortForwardingController {
 
   void UpdateConnections();
 
+  Profile* profile_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   Registry registry_;
