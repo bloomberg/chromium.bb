@@ -80,19 +80,18 @@
         <org.chromium.chrome.browser.widget.MaterialProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
-            app:colorBackground="@color/modern_grey_300"
-            app:colorProgress="@color/modern_blue_600"
-            android:visibility="invisible" />
+            android:layout_height="6dp"
+            app:colorBackground="@color/modern_grey_100"
+            app:colorProgress="@color/modern_blue_600" />
 
         <LinearLayout
             android:id="@+id/details"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="24dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/autofill_assistant_details_bg"
             android:padding="8dp"
             android:visibility="gone"
@@ -139,7 +138,7 @@
                 android:id="@+id/carousel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="8dp"
+                android:paddingBottom="16dp"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:gravity="center_vertical"

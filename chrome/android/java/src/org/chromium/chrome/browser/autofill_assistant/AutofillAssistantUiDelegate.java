@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -61,7 +60,7 @@ class AutofillAssistantUiDelegate {
     private final HorizontalScrollView mCarouselScroll;
     private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
-    private final MaterialProgressBar mProgressBar;
+    private final AnimatedProgressBar mProgressBar;
 
     private final ViewGroup mDetails;
     private final AppCompatImageView mDetailsImage;
@@ -210,7 +209,9 @@ class AutofillAssistantUiDelegate {
         mCarouselScroll = mBottomBar.findViewById(R.id.carousel_scroll);
         mChipsViewContainer = mCarouselScroll.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
-        mProgressBar = mBottomBar.findViewById(R.id.progress_bar);
+        mProgressBar = new AnimatedProgressBar(mBottomBar.findViewById(R.id.progress_bar),
+                mActivity.getColor(R.color.modern_blue_600),
+                mActivity.getColor(R.color.modern_blue_600_alpha_38_opaque));
 
         mDetails = (ViewGroup) mBottomBar.findViewById(R.id.details);
         mDetailsImage = (AppCompatImageView) mDetails.findViewById(R.id.details_image);
@@ -220,6 +221,8 @@ class AutofillAssistantUiDelegate {
                 R.dimen.autofill_assistant_details_image_size);
         mDetailsImageHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
+
+        setCarouselTopPadding();
 
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
     }
@@ -299,7 +302,7 @@ class AutofillAssistantUiDelegate {
         if (mChipsViewContainer.getChildCount() > 0) {
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(newChild.getLayoutParams());
-            int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,
+            int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16,
                     newChild.getContext().getResources().getDisplayMetrics());
             layoutParams.setMargins(leftMargin, 0, 0, 0);
             newChild.setLayoutParams(layoutParams);
@@ -390,7 +393,7 @@ class AutofillAssistantUiDelegate {
         int topPadding = 0;
         if (mDetails.getVisibility() != View.VISIBLE) {
             topPadding = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 8, mActivity.getResources().getDisplayMetrics());
+                    TypedValue.COMPLEX_UNIT_DIP, 16, mActivity.getResources().getDisplayMetrics());
         }
         mChipsViewContainer.setPadding(mChipsViewContainer.getPaddingLeft(), topPadding,
                 mChipsViewContainer.getPaddingRight(), mChipsViewContainer.getPaddingBottom());
@@ -424,9 +427,8 @@ class AutofillAssistantUiDelegate {
 
     public void showProgressBar(int progress, String message) {
         ensureFullContainerIsShown();
-        // TODO(crbug.com/806868): Animate the progress change.
+        mProgressBar.show();
         mProgressBar.setProgress(progress);
-        mProgressBar.setVisibility(View.VISIBLE);
 
         if (!message.isEmpty()) {
             mStatusMessageView.setText(message);
@@ -434,7 +436,15 @@ class AutofillAssistantUiDelegate {
     }
 
     public void hideProgressBar() {
-        mProgressBar.setVisibility(View.INVISIBLE);
+        mProgressBar.hide();
+    }
+
+    public void enableProgressBarPulsing() {
+        mProgressBar.enablePulsing();
+    }
+
+    public void disableProgressBarPulsing() {
+        mProgressBar.disablePulsing();
     }
 
     /**
