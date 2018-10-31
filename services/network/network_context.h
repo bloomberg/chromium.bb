@@ -32,6 +32,7 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -196,14 +197,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
   void SetEnableReferrers(bool enable_referrers) override;
+#if defined(OS_CHROMEOS)
+  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override;
+#endif
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(
       const std::vector<std::string>& required_hosts,
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override;
-#if defined(OS_CHROMEOS)
-  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override;
-#endif
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,
@@ -213,6 +215,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                              SetExpectCTTestReportCallback callback) override;
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override;
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
   void CreateTCPServerSocket(
@@ -365,11 +368,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void TrustAnchorUsed();
 #endif
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void OnSetExpectCTTestReportSuccess();
 
   void LazyCreateExpectCTReporter(net::URLRequestContext* url_request_context);
 
   void OnSetExpectCTTestReportFailure();
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   NetworkService* const network_service_;
 
@@ -443,11 +448,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLRequestContext), and must be disconnected from it before it's destroyed.
   std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<ExpectCTReporter> expect_ct_reporter_;
 
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
+
+  std::queue<SetExpectCTTestReportCallback>
+      outstanding_set_expect_ct_callbacks_;
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_CHROMEOS)
   CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
@@ -485,9 +495,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
-
-  std::queue<SetExpectCTTestReportCallback>
-      outstanding_set_expect_ct_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

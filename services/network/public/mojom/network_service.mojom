@@ -16,11 +16,13 @@ import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
-import "services/network/public/mojom/signed_tree_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+
+[EnableIf=is_ct_supported]
+import "services/network/public/mojom/signed_tree_head.mojom";
 
 // The content/browser implementation of this SSLPrivateKey interface wraps the
 // scoped_refptr<net::SSLPrivateKey> that is received from
@@ -298,6 +300,7 @@ interface NetworkService {
   // Updates Signed Tree Heads (STH) used in the handling of Certificate
   // Transparency. Broadcast to each NetworkContext using the NetworkService.
   // NetworkContextes ignore STHs from unrecognized logs.
+  [EnableIf=is_ct_supported]
   UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
 
   // Updates the CRLSet used in the verification of certificates. CRLSets that

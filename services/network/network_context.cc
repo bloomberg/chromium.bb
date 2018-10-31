@@ -23,12 +23,6 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
-#include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
-#include "components/certificate_transparency/chrome_require_ct_delegate.h"
-#include "components/certificate_transparency/features.h"
-#include "components/certificate_transparency/sth_distributor.h"
-#include "components/certificate_transparency/sth_reporter.h"
-#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -42,8 +36,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -67,7 +60,6 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
-#include "services/network/expect_ct_reporter.h"
 #include "services/network/host_resolver.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
@@ -91,6 +83,18 @@
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
+#include "components/certificate_transparency/chrome_require_ct_delegate.h"
+#include "components/certificate_transparency/features.h"
+#include "components/certificate_transparency/sth_distributor.h"
+#include "components/certificate_transparency/sth_reporter.h"
+#include "components/certificate_transparency/tree_state_tracker.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
+#include "services/network/expect_ct_reporter.h"
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_CHROMEOS)
 #include "crypto/nss_util_internal.h"
@@ -132,6 +136,7 @@ namespace network {
 
 namespace {
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 // A Base-64 encoded DER certificate for use in test Expect-CT reports. The
 // contents of the certificate don't matter.
 const char kTestReportCert[] =
@@ -156,6 +161,7 @@ const char kTestReportCert[] =
     "EfELR8Hn6WjZ8wAbvO4p7RTrzu1c/RZ0M+NLkID56Brbl70GC2h5681LPwAOaZ7/"
     "mWQ5kekSyJjmLfF12b+h9RVAt5MrXZgk2vNujssgGf4nbWh4KZyQ6qrs778ZdDLm"
     "yfUn";
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
@@ -582,6 +588,7 @@ NetworkContext::~NetworkContext() {
       certificate_report_sender_.reset();
     }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
     if (expect_ct_reporter_) {
       url_request_context_->transport_security_state()->SetExpectCTReporter(
           nullptr);
@@ -592,8 +599,10 @@ NetworkContext::~NetworkContext() {
       url_request_context_->transport_security_state()->SetRequireCTDelegate(
           nullptr);
     }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   if (url_request_context_ &&
       url_request_context_->cert_transparency_verifier()) {
     url_request_context_->cert_transparency_verifier()->SetObserver(nullptr);
@@ -604,6 +613,7 @@ NetworkContext::~NetworkContext() {
     network_service_->sth_reporter()->UnregisterObserver(
         ct_tree_tracker_.get());
   }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 }
 
 void NetworkContext::SetCertVerifierForTesting(
@@ -930,6 +940,14 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   context_network_delegate_->set_enable_referrers(enable_referrers);
 }
 
+#if defined(OS_CHROMEOS)
+void NetworkContext::UpdateTrustAnchors(
+    const net::CertificateList& trust_anchors) {
+  cert_verifier_with_trust_anchors_->SetTrustAnchors(trust_anchors);
+}
+#endif
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(
     const std::vector<std::string>& required_hosts,
     const std::vector<std::string>& excluded_hosts,
@@ -941,13 +959,6 @@ void NetworkContext::SetCTPolicy(
   require_ct_delegate_->UpdateCTPolicies(required_hosts, excluded_hosts,
                                          excluded_spkis, excluded_legacy_spkis);
 }
-
-#if defined(OS_CHROMEOS)
-void NetworkContext::UpdateTrustAnchors(
-    const net::CertificateList& trust_anchors) {
-  cert_verifier_with_trust_anchors_->SetTrustAnchors(trust_anchors);
-}
-#endif
 
 void NetworkContext::AddExpectCT(const std::string& domain,
                                  base::Time expiry,
@@ -1053,6 +1064,7 @@ void NetworkContext::GetExpectCTState(const std::string& domain,
 
   std::move(callback).Run(std::move(result));
 }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
                                      mojom::UDPSocketReceiverPtr receiver) {
@@ -1633,10 +1645,12 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       base::FeatureList::IsEnabled(features::kNetworkErrorLogging));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enforce_chrome_ct_policy) {
     builder->set_ct_policy_enforcer(
         std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>());
   }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   net::HttpNetworkSession::Params session_params;
   bool is_quic_force_disabled = false;
@@ -1683,6 +1697,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       },
       params_.get(), &context_network_delegate_, this));
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
   if (!params_->ct_logs.empty()) {
     for (const auto& log : params_->ct_logs) {
@@ -1699,6 +1714,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     ct_verifier->AddLogs(ct_logs);
     builder->set_ct_verifier(std::move(ct_verifier));
   }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());
@@ -1748,13 +1764,13 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         certificate_report_sender_.get());
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enable_expect_ct_reporting) {
     LazyCreateExpectCTReporter(result.url_request_context.get());
     result.url_request_context->transport_security_state()->SetExpectCTReporter(
         expect_ct_reporter_.get());
   }
 
-#if !defined(OS_IOS)
   if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing) &&
       network_service_ && !ct_logs.empty()) {
     net::URLRequestContext* context = result.url_request_context.get();
@@ -1764,7 +1780,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     context->cert_transparency_verifier()->SetObserver(ct_tree_tracker_.get());
     network_service_->sth_reporter()->RegisterObserver(ct_tree_tracker_.get());
   }
-#endif
 
   if (params_->enforce_chrome_ct_policy) {
     require_ct_delegate_ =
@@ -1772,6 +1787,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     result.url_request_context->transport_security_state()
         ->SetRequireCTDelegate(require_ct_delegate_.get());
   }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   // These must be matched by cleanup code just before the URLRequestContext is
   // destroyed.
@@ -1919,6 +1935,7 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
   cert_verifier_requests_.erase(iter);
 
   net::ct::CTVerifyResult ct_verify_result;
+#if BUILDFLAG(IS_CT_SUPPORTED)
   if (result == net::OK) {
     net::X509Certificate* verified_cert =
         pending_cert_verify->result->verified_cert.get();
@@ -1993,6 +2010,7 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
         result = net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
     }
   }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   std::move(pending_cert_verify->callback)
       .Run(result, *pending_cert_verify->result.get(), ct_verify_result);

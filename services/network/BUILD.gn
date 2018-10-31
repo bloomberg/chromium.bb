@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
+import("//services/network/public/cpp/features.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
@@ -35,8 +36,6 @@ jumbo_component("network_service") {
     "data_pipe_element_reader.h",
     "empty_url_loader_client.cc",
     "empty_url_loader_client.h",
-    "expect_ct_reporter.cc",
-    "expect_ct_reporter.h",
     "host_resolver.cc",
     "host_resolver.h",
     "http_cache_data_counter.cc",
@@ -183,7 +182,6 @@ jumbo_component("network_service") {
 
   deps = [
     "//base",
-    "//components/certificate_transparency",
     "//components/content_settings/core/common",
     "//components/cookie_config",
     "//components/network_session_configurator/browser",
@@ -207,6 +205,18 @@ jumbo_component("network_service") {
     "//third_party/webrtc_overrides:init_webrtc",
     "//url",
   ]
+
+  public_deps = [
+    "//services/network/public/cpp:buildflags",
+  ]
+
+  if (is_ct_supported) {
+    sources += [
+      "expect_ct_reporter.cc",
+      "expect_ct_reporter.h",
+    ]
+    deps += [ "//components/certificate_transparency" ]
+  }
 
   if (is_linux) {
     deps += [
@@ -252,7 +262,6 @@ source_set("tests") {
     "cors/preflight_controller_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",
     "data_pipe_element_reader_unittest.cc",
-    "expect_ct_reporter_unittest.cc",
     "host_resolver_unittest.cc",
     "http_cache_data_counter_unittest.cc",
     "http_cache_data_remover_unittest.cc",
@@ -294,7 +303,6 @@ source_set("tests") {
 
   if (!is_ios) {
     sources += [
-      "network_context_cert_transparency_unittest.cc",
       "proxy_resolver_factory_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
@@ -319,7 +327,6 @@ source_set("tests") {
     ":network_service",
     ":test_support",
     "//base",
-    "//components/certificate_transparency",
     "//components/network_session_configurator/browser",
     "//crypto:test_support",
     "//jingle:jingle_fake_socket",
@@ -331,11 +338,20 @@ source_set("tests") {
     "//net:test_support",
     "//net/http:transport_security_state_unittest_data_default",
     "//services/network/public/cpp",
+    "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//testing/gtest",
   ]
+
+  if (is_ct_supported) {
+    sources += [
+      "expect_ct_reporter_unittest.cc",
+      "network_context_cert_transparency_unittest.cc",
+    ]
+    deps += [ "//components/certificate_transparency" ]
+  }
 }
 
 jumbo_source_set("test_support") {
@@ -367,6 +383,7 @@ jumbo_source_set("test_support") {
 
   public_deps = [
     "//services/network/public/cpp",
+    "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
   ]
 
