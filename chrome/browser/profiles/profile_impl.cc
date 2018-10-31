@@ -683,10 +683,12 @@ void ProfileImpl::DoFinalInit() {
       this, io_data_.GetResourceContextNoInit());
 #endif
 
-  TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
-  content::BrowserContext::GetDefaultStoragePartition(this)
-      ->GetDOMStorageContext()
-      ->SetSaveSessionStorageOnDisk();
+  {
+    TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
+    content::BrowserContext::GetDefaultStoragePartition(this)
+        ->GetDOMStorageContext()
+        ->SetSaveSessionStorageOnDisk();
+  }
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
