@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
@@ -225,6 +226,27 @@ inline void SVGLayoutSupport::UpdateObjectBoundingBox(
   object_bounding_box.UniteEvenIfEmpty(other_bounding_box);
 }
 
+static bool HasValidBoundingBoxForContainer(const LayoutObject* object) {
+  if (object->IsSVGShape())
+    return !ToLayoutSVGShape(object)->IsShapeEmpty();
+
+  if (object->IsSVGText())
+    return ToLayoutSVGText(object)->IsObjectBoundingBoxValid();
+
+  if (object->IsSVGHiddenContainer())
+    return false;
+
+  if (object->IsSVGForeignObject())
+    return ToLayoutSVGForeignObject(object)->IsObjectBoundingBoxValid();
+
+  if (object->IsSVGImage())
+    return ToLayoutSVGImage(object)->IsObjectBoundingBoxValid();
+
+  // TODO(fs): Can we refactor this code to include the container case
+  // in a more natural way?
+  return true;
+}
+
 void SVGLayoutSupport::ComputeContainerBoundingBoxes(
     const LayoutObject* container,
     FloatRect& object_bounding_box,
@@ -243,15 +265,8 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
   // situation also.
   for (LayoutObject* current = container->SlowFirstChild(); current;
        current = current->NextSibling()) {
-    if (current->IsSVGHiddenContainer())
-      continue;
-
-    // Don't include elements in the union that do not layout.
-    if (current->IsSVGShape() && ToLayoutSVGShape(current)->IsShapeEmpty())
-      continue;
-
-    if (current->IsSVGText() &&
-        !ToLayoutSVGText(current)->IsObjectBoundingBoxValid())
+    // Don't include elements that are not rendered in the union.
+    if (!HasValidBoundingBoxForContainer(current))
       continue;
 
     const AffineTransform& transform = current->LocalToSVGParentTransform();
