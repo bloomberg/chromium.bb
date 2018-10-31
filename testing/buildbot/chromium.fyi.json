@@ -5852,7 +5852,7 @@
       }
     ]
   },
-  "linux-code-coverage-tester": {
+  "linux-code-coverage": {
     "gtest_tests": [
       {
         "isolate_coverage_data": true,
