@@ -295,6 +295,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
 
+  base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };
 
