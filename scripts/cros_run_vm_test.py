@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script for running tests in a VM."""
+"""Script for running Chrome OS tests."""
 
 from __future__ import print_function
 
@@ -18,11 +18,11 @@ from chromite.lib import osutils
 from chromite.scripts import cros_vm
 
 
-class VMTest(object):
-  """Class for running VM tests."""
+class CrOSTest(object):
+  """Class for running Chrome OS tests."""
 
   def __init__(self, opts):
-    """Initialize VMTest.
+    """Initialize CrOSTest.
 
     Args:
       opts: command line options.
@@ -56,7 +56,7 @@ class VMTest(object):
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
 
-    self._vm = cros_vm.VM(opts)
+    self._device = cros_vm.Device.Create(opts)
 
   def __del__(self):
     self._StopVM()
@@ -65,8 +65,9 @@ class VMTest(object):
                  datetime.datetime.utcnow() - self.start_time)
 
   def Run(self):
-    """Start a VM, build/deploy, run tests, and stop the VM."""
+    """Start a VM, build/deploy, run tests, stop the VM."""
     self._StartVM()
+    self._device.WaitForBoot()
 
     self._Build()
     self._Deploy()
@@ -82,20 +83,22 @@ class VMTest(object):
     If --start-vm is specified, we launch a new VM, otherwise we use an
     existing VM.
     """
-    if not self._vm.IsRunning():
+    if not self._device.is_vm:
+      return
+
+    if not self._device.IsRunning():
       self.start_vm = True
 
     if self.start_vm:
-      self._vm.Start()
-    self._vm.WaitForBoot()
+      self._device.Start()
 
   def _StopVM(self):
     """Stop the VM if necessary.
 
     If --start-vm was specified, we launched this VM, so we now stop it.
     """
-    if self._vm and self.start_vm:
-      self._vm.Stop()
+    if self._device and self.start_vm:
+      self._device.Stop()
 
   def _Build(self):
     """Build chrome."""
@@ -114,11 +117,12 @@ class VMTest(object):
         'deploy_chrome', '--force',
         '--build-dir', self.build_dir,
         '--process-timeout', '180',
-        '--to', 'localhost',
-        '--port', str(self._vm.ssh_port),
+        '--to', self._device.device
     ]
-    if self._vm.board:
-      deploy_cmd += ['--board', self._vm.board]
+    if self._device.ssh_port:
+      deploy_cmd += ['--port', str(self._device.ssh_port)]
+    if self._device.board:
+      deploy_cmd += ['--board', self._device.board]
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
     if self.nostrip:
@@ -130,7 +134,7 @@ class VMTest(object):
           '--mount',
       ]
     cros_build_lib.RunCommand(deploy_cmd)
-    self._vm.WaitForBoot()
+    self._device.WaitForBoot()
 
   def _RunCatapultTests(self):
     """Run catapult tests matching a pattern using run_tests.
@@ -140,7 +144,7 @@ class VMTest(object):
     """
 
     browser = 'system-guest' if self.guest else 'system'
-    return self._vm.RemoteCommand([
+    return self._device.RemoteCommand([
         'python',
         '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests',
         '--browser=%s' % browser,
@@ -153,21 +157,25 @@ class VMTest(object):
       cros_build_lib.CommandResult object.
     """
     cmd = ['test_that']
-    if self._vm.board:
-      cmd += ['--board', self._vm.board]
+    if self._device.board:
+      cmd += ['--board', self._device.board]
     if self.results_dir:
       cmd += ['--results_dir', self.results_dir]
-    if self._vm.private_key:
-      cmd += ['--ssh_private_key', self._vm.private_key]
-    if self._vm.log_level == 'debug':
+    if self._device.private_key:
+      cmd += ['--ssh_private_key', self._device.private_key]
+    if self._device.log_level == 'debug':
       cmd += ['--debug']
     if self.test_that_args:
       cmd += self.test_that_args[1:]
     cmd += [
         '--no-quickmerge',
         '--ssh_options', '-F /dev/null -i /dev/null',
-        'localhost:%d' % self._vm.ssh_port,
-    ] + self.autotest
+    ]
+    if self._device.ssh_port:
+      cmd += ['%s:%d' % (self._device.device, self._device.ssh_port)]
+    else:
+      cmd += [self._device.device]
+    cmd += self.autotest
     return cros_build_lib.RunCommand(cmd)
 
   def _RunTests(self):
@@ -180,7 +188,7 @@ class VMTest(object):
       Command execution return code.
     """
     if self.remote_cmd:
-      result = self._RunVMCmd()
+      result = self._RunDeviceCmd()
     elif self.host_cmd:
       # Don't raise an exception if the command fails.
       result = cros_build_lib.RunCommand(self.args, error_code_ok=True)
@@ -189,8 +197,8 @@ class VMTest(object):
     elif self.autotest:
       result = self._RunAutotest()
     else:
-      result = self._vm.RemoteCommand(['/usr/local/autotest/bin/vm_sanity.py'],
-                                      stream_output=True)
+      result = self._device.RemoteCommand(
+          ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
 
     self._OutputResults(result)
     self._FetchResults()
@@ -224,57 +232,58 @@ class VMTest(object):
     osutils.SafeMakedirs(self.results_dest_dir)
     for src in self.results_src:
       logging.info('Fetching %s to %s', src, self.results_dest_dir)
-      self._vm.remote.CopyFromDevice(src=src, dest=self.results_dest_dir,
-                                     mode='scp', error_code_ok=True,
-                                     debug_level=logging.INFO)
+      self._device.remote.CopyFromDevice(src=src, dest=self.results_dest_dir,
+                                         mode='scp', error_code_ok=True,
+                                         debug_level=logging.INFO)
 
-  def _RunVMCmd(self):
-    """Run a command in the VM.
+  def _RunDeviceCmd(self):
+    """Run a command on the device.
 
-    Copy src files to /usr/local/vm_test/, change working directory to self.cwd,
-    run the command in self.args, and cleanup.
+    Copy src files to /usr/local/cros_test/, change working directory to
+    self.cwd, run the command in self.args, and cleanup.
 
     Returns:
       cros_build_lib.CommandResult object.
     """
-    DEST_BASE = '/usr/local/vm_test'
+    DEST_BASE = '/usr/local/cros_test'
     files = FileList(self.files, self.files_from)
     # Copy files, preserving the directory structure.
     for f in files:
       # Trailing / messes up dirname.
       f = f.rstrip('/')
       dirname = os.path.join(DEST_BASE, os.path.dirname(f))
-      self._vm.RemoteCommand(['mkdir', '-p', dirname])
-      self._vm.remote.CopyToDevice(src=f, dest=dirname, mode='scp',
-                                   debug_level=logging.INFO)
+      self._device.RemoteCommand(['mkdir', '-p', dirname])
+      self._device.remote.CopyToDevice(src=f, dest=dirname, mode='scp',
+                                       debug_level=logging.INFO)
 
     # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
     cwd = self.cwd
     if files and not (cwd and os.path.isabs(cwd)):
       cwd = os.path.join(DEST_BASE, cwd) if cwd else DEST_BASE
-      self._vm.RemoteCommand(['mkdir', '-p', cwd])
+      self._device.RemoteCommand(['mkdir', '-p', cwd])
 
     if self.as_chronos:
       # This authorizes the test ssh keys with chronos.
-      self._vm.RemoteCommand(['cp', '-r', '/root/.ssh/', '/home/chronos/user/'])
+      self._device.RemoteCommand(['cp', '-r', '/root/.ssh/',
+                                  '/home/chronos/user/'])
       if files:
         # The trailing ':' after the user also changes the group to the user's
         # primary group.
-        self._vm.RemoteCommand(['chown', '-R', 'chronos:', DEST_BASE])
+        self._device.RemoteCommand(['chown', '-R', 'chronos:', DEST_BASE])
 
     user = 'chronos' if self.as_chronos else None
     if cwd:
       # Run the remote command with cwd.
       cmd = '"cd %s && %s"' % (cwd, ' '.join(self.args))
-      result = self._vm.RemoteCommand(cmd, stream_output=True, shell=True,
-                                      remote_user=user)
+      result = self._device.RemoteCommand(cmd, stream_output=True, shell=True,
+                                          remote_user=user)
     else:
-      result = self._vm.RemoteCommand(self.args, stream_output=True,
-                                      remote_user=user)
+      result = self._device.RemoteCommand(self.args, stream_output=True,
+                                          remote_user=user)
 
     # Cleanup.
     if files:
-      self._vm.RemoteCommand(['rm', '-rf', DEST_BASE])
+      self._device.RemoteCommand(['rm', '-rf', DEST_BASE])
 
     return result
 
@@ -285,7 +294,7 @@ def ParseCommandLine(argv):
     argv: Command arguments.
 
   Returns:
-    List of parsed options for VMTest, and args to pass to VM.
+    List of parsed options for CrOSTest.
   """
 
   cros_vm_parser = cros_vm.VM.GetParser()
@@ -307,7 +316,7 @@ def ParseCommandLine(argv):
                       help='Before running tests, build chrome using ninja, '
                       '--build-dir must be specified.')
   parser.add_argument('--deploy', action='store_true', default=False,
-                      help='Before running tests, deploy chrome to the VM, '
+                      help='Before running tests, deploy chrome, '
                       '--build-dir must be specified.')
   parser.add_argument('--nostrip', action='store_true', default=False,
                       help="Don't strip symbols from binaries if deploying.")
@@ -316,19 +325,19 @@ def ParseCommandLine(argv):
   parser.add_argument('--cwd', help='Change working directory. '
                       'An absolute path or a path relative to CWD on the host.')
   parser.add_argument('--files', default=[], action='append',
-                      help='Files to scp to the VM.')
+                      help='Files to scp to the device.')
   parser.add_argument('--files-from', type='path',
-                      help='File with list of files to copy to the VM.')
+                      help='File with list of files to copy.')
   parser.add_argument('--results-src', default=[], action='append',
                       help='Files/Directories to copy from '
-                      'the VM into CWD after running the test.')
+                      'the device into CWD after running the test.')
   parser.add_argument('--results-dest-dir', type='path',
                       help='Destination directory to copy results to.')
   parser.add_argument('--remote-cmd', action='store_true', default=False,
-                      help='Run a command in the VM.')
+                      help='Run a command on the device.')
   parser.add_argument('--as-chronos', action='store_true',
-                      help='Runs the remote test as the chronos user in '
-                           'the VM. Only supported for --remote-cmd tests. '
+                      help='Runs the remote test as the chronos user on '
+                           'the device. Only supported for --remote-cmd tests. '
                            'Runs as root if not set.')
   parser.add_argument('--host-cmd', action='store_true', default=False,
                       help='Run a command on the host.')
@@ -341,7 +350,7 @@ def ParseCommandLine(argv):
 
   if opts.build or opts.deploy:
     if not opts.build_dir:
-      parser.error('Must specifiy --build-dir with --build or --deploy.')
+      parser.error('Must specify --build-dir with --build or --deploy.')
     if not os.path.isdir(opts.build_dir):
       parser.error('%s is not a directory.' % opts.build_dir)
 
@@ -358,7 +367,7 @@ def ParseCommandLine(argv):
       parser.error('results-dest-dir %s is an existing file.'
                    % opts.results_dest_dir)
 
-  # Ensure command is provided. For eg, to copy out to the VM and run
+  # Ensure command is provided. For e.g. to copy out to the device and run
   # out/unittest:
   # cros_run_vm_test --files out --cwd out --cmd -- ./unittest
   # Treat --cmd as --remote-cmd.
@@ -418,4 +427,4 @@ def FileList(files, files_from):
   return files
 
 def main(argv):
-  return VMTest(ParseCommandLine(argv)).Run()
+  return CrOSTest(ParseCommandLine(argv)).Run()
