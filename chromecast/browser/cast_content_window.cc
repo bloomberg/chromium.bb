@@ -11,6 +11,8 @@ CastContentWindow::CastContentWindow() = default;
 
 CastContentWindow::~CastContentWindow() = default;
 
+CastContentWindow::CreateParams::CreateParams() = default;
+
 void CastContentWindow::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

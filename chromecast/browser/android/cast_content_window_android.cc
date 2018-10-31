@@ -28,11 +28,13 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
     bool is_headless,
     bool enable_touch_input,
     bool is_remote_control_mode,
-    bool turn_on_screen) {
+    bool turn_on_screen,
+    const std::string& session_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_CastContentWindowAndroid_create(
       env, native_window, is_headless, enable_touch_input,
-      is_remote_control_mode, turn_on_screen);
+      is_remote_control_mode, turn_on_screen,
+      ConvertUTF8ToJavaString(env, session_id));
 }
 
 }  // namespace
@@ -50,7 +52,8 @@ CastContentWindowAndroid::CastContentWindowAndroid(
                                     params.is_headless,
                                     params.enable_touch_input,
                                     params.is_remote_control_mode,
-                                    params.turn_on_screen)) {
+                                    params.turn_on_screen,
+                                    params.session_id)) {
   DCHECK(delegate_);
 }
 
@@ -143,6 +146,5 @@ base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
     const base::android::JavaParamRef<jobject>& jcaller) {
   return ConvertUTF8ToJavaString(env, delegate_->GetId());
 }
-
 }  // namespace shell
 }  // namespace chromecast
