@@ -46,6 +46,8 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -598,6 +600,14 @@ void NewTab(Browser* browser) {
   // user-initiated commands.
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_COMMAND,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Notify IPH that new tab was opened.
+  auto* reopen_tab_iph =
+      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
+          browser->profile());
+  reopen_tab_iph->NewTabOpened();
+#endif
 
   if (browser->is_type_tabbed()) {
     AddTabAt(browser, GURL(), -1, true);
