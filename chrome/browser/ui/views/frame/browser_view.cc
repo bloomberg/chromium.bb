@@ -812,6 +812,7 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
     if (!loading_animation_timer_.IsRunning()) {
       // Loads are happening, and the timer isn't running, so start it.
+      loading_animation_start_ = base::TimeTicks::Now();
       loading_animation_timer_.Start(FROM_HERE,
           TimeDelta::FromMilliseconds(kLoadingAnimationFrameTimeMs), this,
           &BrowserView::LoadingAnimationCallback);
@@ -2504,7 +2505,8 @@ void BrowserView::LoadingAnimationCallback() {
     // will return false for fullscreen windows, but we still need to update
     // their animations (so that when they come out of fullscreen mode they'll
     // be correct).
-    tabstrip_->UpdateLoadingAnimations();
+    tabstrip_->UpdateLoadingAnimations(base::TimeTicks::Now() -
+                                       loading_animation_start_);
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
     WebContents* web_contents =

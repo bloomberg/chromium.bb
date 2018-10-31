@@ -772,8 +772,13 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<LoadCompleteListener> load_complete_listener_;
 #endif
 
-  // The timer used to update frames for the Loading Animation.
+  // The timer used to update frames for tab-loading animations.
   base::RepeatingTimer loading_animation_timer_;
+
+  // Start timestamp for all throbbers. Set when |loading_animation_timer_|
+  // starts and used for all consecutive tabs (while any are loading) to keep
+  // throbbers in sync.
+  base::TimeTicks loading_animation_start_;
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

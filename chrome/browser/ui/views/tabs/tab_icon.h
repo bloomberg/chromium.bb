@@ -8,11 +8,14 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/view.h"
 
 class GURL;
+struct TabRendererData;
 
 // View that displays the favicon, sad tab, throbber, and attention indicator
 // in a tab.
@@ -22,7 +25,7 @@ class GURL;
 // the width is TabIcon::GetIdealWidth(), and the height goes down to the
 // bottom of the enclosing view (this is so the crashed tab can animate out of
 // the bottom).
-class TabIcon : public views::View {
+class TabIcon : public views::View, public gfx::AnimationDelegate {
  public:
   // Attention indicator types (use as a bitmask). There is only one visual
   // representation, but the state of each of these is tracked separately and
@@ -35,21 +38,9 @@ class TabIcon : public views::View {
   TabIcon();
   ~TabIcon() override;
 
-  // NOTE The state setting functions below do not automatically scheule a
-  // repaint. They are normally updated all at once, and if each scheduled
-  // a paint it would be extra work. The caller should SchedulePaint() when the
-  // state changes.
-
-  // Sets the icon. Depending on the URL the icon may be automatically themed.
-  void SetIcon(const GURL& url, const gfx::ImageSkia& favicon);
-
-  // For certain types of tabs the loading animation is not desired so the
-  // caller can set inhibit_loading_animation to true. When false, the loading
-  // animation state will be derived from the network state.
-  void SetNetworkState(TabNetworkState network_state,
-                       bool inhibit_loading_animation);
-
-  void SetIsCrashed(bool is_crashed);
+  // Sets the tab data (network state, favicon, load progress, etc.) that are
+  // used to render the tab icon.
+  void SetData(const TabRendererData& data);
 
   // Enables or disables the given attention type. The attention indicator
   // will be shown as long as any of the types are enabled.
@@ -64,25 +55,58 @@ class TabIcon : public views::View {
   // won't work.
   void SetCanPaintToLayer(bool can_paint_to_layer);
 
-  // The loading animation only steps when this function is called. This
-  // ensures that all loading animations step at the same time and it keeps the
-  // number of timers down when lots of tabs are loading.
-  void StepLoadingAnimation();
+  // The loading animation only steps when this function is called. The
+  // |elapsed_time| parameter is expected to be the same among all tabs in a tab
+  // strip in order to keep the throbbers in sync.
+  void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
  private:
   class CrashAnimation;
   friend CrashAnimation;
+  friend class TabTest;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Paints the attention indicator and |favicon_| at the given location.
   void PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
                                       const gfx::ImageSkia& icon,
                                       const gfx::Rect& bounds);
 
+  // Draws a progress bar at the bottom of the tab icon to indicate loading
+  // progress.
+  void PaintLoadingProgressIndicator(gfx::Canvas* canvas,
+                                     gfx::RectF bounds,
+                                     SkColor color);
+
+  // Paint either the indeterimate throbber or progress indicator according to
+  // current tab state.
   void PaintLoadingAnimation(gfx::Canvas* canvas, const gfx::Rect& bounds);
+
+  // Gets either the crashed icon or favicon to be rendered for the tab.
+  const gfx::ImageSkia& GetIconToPaint();
+
+  // Paints a placeholder image for the favicon if one should be painted.
+  void PaintFaviconPlaceholder(gfx::Canvas* canvas, const gfx::Rect& bounds);
+  // Paint the favicon if it's available. Returns true if the icon was painted.
+  bool MaybePaintFavicon(gfx::Canvas* canvas,
+                         const gfx::ImageSkia& icon,
+                         const gfx::Rect& bounds);
+
+  // Sets the icon. Depending on the URL the icon may be automatically themed.
+  void SetIcon(const GURL& url, const gfx::ImageSkia& favicon);
+
+  // For certain types of tabs the loading animation is not desired so the
+  // caller can set inhibit_loading_animation to true. When false, the loading
+  // animation state will be derived from the network state.
+  void SetNetworkState(TabNetworkState network_state, float load_progress);
+
+  // Sets whether the tab should paint as crashed or not.
+  void SetIsCrashed(bool is_crashed);
 
   // Creates or destroys the layer according to the current animation state and
   // whether a layer can be used.
@@ -101,13 +125,12 @@ class TabIcon : public views::View {
   // animation will not be shown.
   bool inhibit_loading_animation_ = false;
 
-  // The point in time when the tab icon was first painted in the waiting state.
-  base::TimeTicks waiting_start_time_;
-
   // The point in time when the tab icon was first painted in the loading state.
   base::TimeTicks loading_start_time_;
 
   // Paint state for the loading animation after the most recent waiting paint.
+  // TODO(pbos): After |kNewTabLoadingAnimation| launches, remove the need for
+  // |waiting_state_|, the new animation only uses the |elapsed_time| member.
   gfx::ThrobberWaitingState waiting_state_;
 
   // When the favicon_ has theming applied to it, the themed version will be
@@ -125,6 +148,17 @@ class TabIcon : public views::View {
   // When this is 0 it will be drawn at the normal location, and when this is 1
   // it will be drawn off the bottom.
   double hiding_fraction_ = 0.0;
+
+  // Fade-out animation after a tab has loaded to not instantly remove the
+  // progress bar at 100%.
+  gfx::LinearAnimation progress_indicator_fade_out_animation_;
+
+  // Fade-in animation for the favicon. Starts when a favicon loads or the tab
+  // is no longer loading. The latter case will fade into a placeholder icon.
+  gfx::LinearAnimation favicon_fade_in_animation_;
+
+  // Loading progress used for drawing the progress indicator.
+  double loading_progress_ = 1.0;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.

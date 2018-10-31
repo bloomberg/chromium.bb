@@ -226,7 +226,7 @@ class CONTENT_EXPORT FrameTree {
   void UpdateLoadProgress(double progress);
 
   // Returns this FrameTree's total load progress.
-  double load_progress() { return load_progress_; }
+  double load_progress() const { return load_progress_; }
 
   // Resets the load progress on all nodes in this FrameTree.
   void ResetLoadProgress();

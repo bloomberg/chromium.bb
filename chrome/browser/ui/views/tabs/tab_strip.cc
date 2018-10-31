@@ -375,9 +375,9 @@ TabAlertState TabStrip::GetTabAlertState(int tab_index) const {
   return tab_at(tab_index)->data().alert_state;
 }
 
-void TabStrip::UpdateLoadingAnimations() {
+void TabStrip::UpdateLoadingAnimations(const base::TimeDelta& elapsed_time) {
   for (int i = 0; i < tab_count(); i++)
-    tab_at(i)->StepLoadingAnimation();
+    tab_at(i)->StepLoadingAnimation(elapsed_time);
 }
 
 void TabStrip::SetStackedLayout(bool stacked_layout) {

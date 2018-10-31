@@ -324,6 +324,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            const base::string16& title) override;
   SiteInstanceImpl* GetSiteInstance() const override;
   bool IsLoading() const override;
+  double GetLoadProgress() const override;
   bool IsLoadingToDifferentDocument() const override;
   bool IsWaitingForResponse() const override;
   const net::LoadStateWithParam& GetLoadState() const override;

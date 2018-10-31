@@ -415,6 +415,9 @@ class WebContents : public PageNavigator,
   // Returns whether this WebContents is loading a resource.
   virtual bool IsLoading() const = 0;
 
+  // Returns the current load progress.
+  virtual double GetLoadProgress() const = 0;
+
   // Returns whether this WebContents is loading and and the load is to a
   // different top-level document (rather than being a navigation within the
   // same document) in the main frame. This being true implies that IsLoading()
