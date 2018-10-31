@@ -23,79 +23,11 @@
 #include "components/search_provider_logos/switches.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/gfx/image/image.h"
 
-using search_provider_logos::LogoDelegate;
 using search_provider_logos::LogoTracker;
 
 namespace search_provider_logos {
 namespace {
-
-const int kDecodeLogoTimeoutSeconds = 30;
-
-// Implements a callback for image_fetcher::ImageDecoder. If Run() is called on
-// a callback returned by GetCallback() within 30 seconds, forwards the decoded
-// image to the wrapped callback. If not, sends an empty image to the wrapped
-// callback instead. Either way, deletes the object and prevents further calls.
-//
-// TODO(sfiera): find a more idiomatic way of setting a deadline on the
-// callback. This is implemented as a self-deleting object in part because it
-// needed to when it used to be a delegate and in part because I couldn't figure
-// out a better way, now that it isn't.
-class ImageDecodedHandlerWithTimeout {
- public:
-  static base::Callback<void(const gfx::Image&)> Wrap(
-      const base::Callback<void(const SkBitmap&)>& image_decoded_callback) {
-    auto* handler = new ImageDecodedHandlerWithTimeout(image_decoded_callback);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
-                       handler->weak_ptr_factory_.GetWeakPtr(), gfx::Image()),
-        base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
-    return base::Bind(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
-                      handler->weak_ptr_factory_.GetWeakPtr());
-  }
-
- private:
-  explicit ImageDecodedHandlerWithTimeout(
-      const base::Callback<void(const SkBitmap&)>& image_decoded_callback)
-      : image_decoded_callback_(image_decoded_callback),
-        weak_ptr_factory_(this) {}
-
-  void OnImageDecoded(const gfx::Image& decoded_image) {
-    image_decoded_callback_.Run(decoded_image.AsBitmap());
-    delete this;
-  }
-
-  base::Callback<void(const SkBitmap&)> image_decoded_callback_;
-  base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageDecodedHandlerWithTimeout);
-};
-
-class LogoDelegateImpl : public search_provider_logos::LogoDelegate {
- public:
-  explicit LogoDelegateImpl(
-      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder)
-      : image_decoder_(std::move(image_decoder)) {}
-
-  ~LogoDelegateImpl() override = default;
-
-  // search_provider_logos::LogoDelegate:
-  void DecodeUntrustedImage(
-      const scoped_refptr<base::RefCountedString>& encoded_image,
-      base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
-    image_decoder_->DecodeImage(
-        encoded_image->data(),
-        gfx::Size(),  // No particular size desired.
-        ImageDecodedHandlerWithTimeout::Wrap(image_decoded_callback));
-  }
-
- private:
-  const std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
-
-  DISALLOW_COPY_AND_ASSIGN(LogoDelegateImpl);
-};
 
 void ObserverOnLogoAvailable(LogoObserver* observer,
                              bool from_cache,
@@ -303,10 +235,9 @@ void LogoServiceImpl::InitializeLogoTrackerIfNecessary() {
     clock = base::DefaultClock::GetInstance();
   }
 
-  logo_tracker_ = std::make_unique<LogoTracker>(
-      url_loader_factory_,
-      std::make_unique<LogoDelegateImpl>(std::move(image_decoder_)),
-      std::move(logo_cache), clock);
+  logo_tracker_ = std::make_unique<LogoTracker>(url_loader_factory_,
+                                                std::move(image_decoder_),
+                                                std::move(logo_cache), clock);
 }
 
 void LogoServiceImpl::SigninStatusChanged() {

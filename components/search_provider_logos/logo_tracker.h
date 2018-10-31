@@ -23,6 +23,10 @@
 #include "components/search_provider_logos/logo_common.h"
 #include "url/gurl.h"
 
+namespace image_fetcher {
+class ImageDecoder;
+}
+
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -51,21 +55,6 @@ class LogoObserver {
   virtual void OnObserverRemoved() = 0;
 };
 
-// Provides a LogoTracker with methods it needs to download and cache logos.
-class LogoDelegate {
- public:
-  virtual ~LogoDelegate() {}
-
-  // Decodes an untrusted image safely and returns it as an SkBitmap via
-  // |image_decoded_callback|. If image decoding fails, |image_decoded_callback|
-  // should be called with NULL. This will be called on the thread that
-  // LogoTracker lives on and |image_decoded_callback| must be called on the
-  // same thread.
-  virtual void DecodeUntrustedImage(
-      const scoped_refptr<base::RefCountedString>& encoded_image,
-      base::Callback<void(const SkBitmap&)> image_decoded_callback) = 0;
-};
-
 // This class provides the logo for a search provider. Logos are downloaded from
 // the search provider's logo URL and cached on disk.
 //
@@ -87,7 +76,7 @@ class LogoTracker {
   // the logo.
   explicit LogoTracker(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<LogoDelegate> delegate,
+      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       std::unique_ptr<LogoCache> logo_cache,
       base::Clock* clock);
 
@@ -213,7 +202,7 @@ class LogoTracker {
   std::vector<LogoCallback> on_fresh_decoded_logo_;
   std::vector<EncodedLogoCallback> on_fresh_encoded_logo_;
 
-  std::unique_ptr<LogoDelegate> logo_delegate_;
+  const std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
 
   // The SequencedTaskRunner on which the cache lives.
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
