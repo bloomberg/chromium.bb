@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
@@ -29,6 +28,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_cache.h"
@@ -307,7 +307,6 @@ void EasyUnlockServiceSignin::InitializeInternal() {
   pref_manager_.reset(new proximity_auth::ProximityAuthLocalStatePrefManager(
       g_browser_process->local_state()));
 
-  LoginState::Get()->AddObserver(this);
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
   screenlock_bridge->AddObserver(this);
@@ -322,7 +321,6 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
-  LoginState::Get()->RemoveObserver(this);
   user_data_.clear();
 }
 
@@ -382,8 +380,6 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
       proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
-  DisableAppWithoutResettingScreenlockState();
-
   Shutdown();
 }
 
@@ -427,12 +423,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // The system token will be needed to sign a nonce using TPM private key
   // during the sign-in protocol.
   TPMTokenLoader::Get()->EnsureStarted();
-}
-
-void EasyUnlockServiceSignin::LoggedInStateChanged() {
-  if (!LoginState::Get()->IsUserLoggedIn())
-    return;
-  DisableAppWithoutResettingScreenlockState();
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {

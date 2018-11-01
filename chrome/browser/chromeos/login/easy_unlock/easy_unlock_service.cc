@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
@@ -257,12 +256,10 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 }
 
-void EasyUnlockService::Initialize(
-    std::unique_ptr<EasyUnlockAppManager> app_manager) {
-  app_manager_ = std::move(app_manager);
-  app_manager_->EnsureReady(
-      base::Bind(&EasyUnlockService::InitializeOnAppManagerReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+void EasyUnlockService::Initialize() {
+  InitializeInternal();
+
+  bluetooth_detector_->Initialize();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -512,7 +509,6 @@ void EasyUnlockService::Shutdown() {
 void EasyUnlockService::UpdateAppState() {
   if (IsAllowed()) {
     EnsureTpmKeyPresentIfNeeded();
-    app_manager_->LoadApp();
 
     if (proximity_auth_system_)
       proximity_auth_system_->Start();
@@ -524,23 +520,17 @@ void EasyUnlockService::UpdateAppState() {
 
     // If the service is not allowed due to bluetooth not being detected just
     // after system suspend is done, give bluetooth more time to be detected
-    // before disabling the app (and resetting screenlock state).
+    // before resetting screenlock state.
     bluetooth_waking_up = power_monitor_.get() && power_monitor_->waking_up() &&
                           !bluetooth_detector_->IsPresent();
 
     if (!bluetooth_waking_up) {
-      app_manager_->DisableAppIfLoaded();
-
       if (proximity_auth_system_)
         proximity_auth_system_->Stop();
 
       power_monitor_.reset();
     }
   }
-}
-
-void EasyUnlockService::DisableAppWithoutResettingScreenlockState() {
-  app_manager_->DisableAppIfLoaded();
 }
 
 void EasyUnlockService::ResetScreenlockState() {
@@ -556,14 +546,6 @@ void EasyUnlockService::SetScreenlockHardlockedState(
   }
   if (state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
     auth_attempt_.reset();
-}
-
-void EasyUnlockService::InitializeOnAppManagerReady() {
-  CHECK(app_manager_.get());
-
-  InitializeInternal();
-
-  bluetooth_detector_->Initialize();
 }
 
 void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
@@ -704,7 +686,6 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
 }
 
 void EasyUnlockService::PrepareForSuspend() {
-  app_manager_->DisableAppIfLoaded();
   if (screenlock_state_handler_ && screenlock_state_handler_->IsActive())
     UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
   if (proximity_auth_system_)

@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
@@ -124,9 +123,7 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
                                       ? GetEasyUnlockAppPath()
                                       : app_path_for_testing_;
 
-  service->Initialize(EasyUnlockAppManager::Create(
-      extensions::ExtensionSystem::Get(context), manifest_id, app_path));
-
+  service->Initialize();
   return service;
 }
 
