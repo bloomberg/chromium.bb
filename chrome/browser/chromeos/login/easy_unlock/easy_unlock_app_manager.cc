@@ -39,7 +39,6 @@ class EasyUnlockAppManagerImpl : public EasyUnlockAppManager {
   void EnsureReady(const base::Closure& ready_callback) override;
   void LoadApp() override;
   void DisableAppIfLoaded() override;
-  bool SendAuthAttemptEvent() override;
 
  private:
   extensions::ExtensionSystem* extension_system_;
@@ -104,20 +103,6 @@ void EasyUnlockAppManagerImpl::DisableAppIfLoaded() {
 
   extension_service->DisableExtension(
       app_id_, extensions::disable_reason::DISABLE_RELOAD);
-}
-
-bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
-  extensions::ExtensionService* extension_service =
-      extension_system_->extension_service();
-  if (!extension_service)
-    return false;
-
-  // TODO(tbarzic): Restrict this to EasyUnlock app.
-  extensions::ScreenlockPrivateEventRouter* screenlock_router =
-      extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
-          extension_service->profile());
-  return screenlock_router->OnAuthAttempted(
-      proximity_auth::mojom::AuthType::USER_CLICK, std::string());
 }
 
 }  // namespace

@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -33,14 +32,9 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
-#include "extensions/browser/test_event_router.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace easy_unlock_private_api = chrome_apps::api::easy_unlock_private;
-namespace screenlock_private_api = extensions::api::screenlock_private;
-namespace app_runtime_api = extensions::api::app_runtime;
 
 namespace chromeos {
 namespace {
@@ -75,11 +69,6 @@ class TestProcessManager : public extensions::ProcessManager {
 std::unique_ptr<KeyedService> CreateTestProcessManager(
     content::BrowserContext* context) {
   return std::make_unique<TestProcessManager>(context);
-}
-
-std::unique_ptr<KeyedService> CreateScreenlockPrivateEventRouter(
-    content::BrowserContext* context) {
-  return std::make_unique<extensions::ScreenlockPrivateEventRouter>(context);
 }
 
 // Observes extension registry for unload and load events (in that order) of an
@@ -128,80 +117,6 @@ class ExtensionReloadTracker : public extensions::ExtensionRegistryObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionReloadTracker);
 };
 
-// Consumes events dispatched from test event router.
-class EasyUnlockAppEventConsumer
-    : public extensions::TestEventRouter::EventObserver {
- public:
-  EasyUnlockAppEventConsumer() = default;
-  ~EasyUnlockAppEventConsumer() override = default;
-
-  // extensions::TestEventRouter::EventObserver:
-  void OnDispatchEventToExtension(const std::string& extension_id,
-                                  const extensions::Event& event) override {
-    if (event.event_name ==
-               screenlock_private_api::OnAuthAttempted::kEventName) {
-      ConsumeAuthAttempted(event.event_args.get());
-    } else {
-      ASSERT_EQ(app_runtime_api::OnLaunched::kEventName, event.event_name)
-          << "Unexpected event: " << event.event_name;
-    }
-  }
-
-  void OnBroadcastEvent(const extensions::Event& event) override {
-    ASSERT_EQ(screenlock_private_api::OnAuthAttempted::kEventName,
-              event.event_name);
-    ConsumeAuthAttempted(event.event_args.get());
-  }
-
-  // The data carried by the last UserInfoUpdated event:
-  std::string user_id() const { return user_id_; }
-  bool user_logged_in() const { return user_logged_in_; }
-  bool user_data_ready() const { return user_data_ready_; }
-
- private:
-  // Processes easyUnlockPrivate.onUserInfoUpdated event.
-  void ConsumeUserInfoUpdated(base::ListValue* args) {
-    if (!args) {
-      ADD_FAILURE() << "No argument list for onUserInfoUpdated event.";
-      return;
-    }
-
-    if (args->GetSize() != 1u) {
-      ADD_FAILURE()
-          << "Invalid argument list size for onUserInfoUpdated event: "
-          << args->GetSize() << " expected: " << 1u;
-      return;
-    }
-
-    base::DictionaryValue* user_info;
-    if (!args->GetDictionary(0u, &user_info) || !user_info) {
-      ADD_FAILURE() << "Unabled to get event argument as dictionary for "
-                    << "onUserInfoUpdated event.";
-      return;
-    }
-
-    EXPECT_TRUE(user_info->GetString("userId", &user_id_));
-    EXPECT_TRUE(user_info->GetBoolean("loggedIn", &user_logged_in_));
-    EXPECT_TRUE(user_info->GetBoolean("dataReady", &user_data_ready_));
-  }
-
-  // Processes screenlockPrivate.onAuthAttempted event.
-  void ConsumeAuthAttempted(base::ListValue* args) {
-    ASSERT_TRUE(args);
-    ASSERT_EQ(2u, args->GetSize());
-
-    std::string auth_type;
-    ASSERT_TRUE(args->GetString(0u, &auth_type));
-    EXPECT_EQ("userClick", auth_type);
-  }
-
-  std::string user_id_;
-  bool user_logged_in_;
-  bool user_data_ready_;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockAppEventConsumer);
-};
-
 class EasyUnlockAppManagerTest : public testing::Test {
  public:
   EasyUnlockAppManagerTest() : command_line_(base::CommandLine::NO_PROGRAM) {}
@@ -230,16 +145,6 @@ class EasyUnlockAppManagerTest : public testing::Test {
         .AppendASCII("easy_unlock");
   }
 
-  int AuthAttemptedCount() const {
-    return event_router_->GetEventCount(
-        screenlock_private_api::OnAuthAttempted::kEventName);
-  }
-
-  int AppLaunchedCount() const {
-    return event_router_->GetEventCount(
-        app_runtime_api::OnLaunched::kEventName);
-  }
-
  private:
   // Initializes test extension system.
   extensions::ExtensionSystem* SetUpExtensionSystem() {
@@ -252,14 +157,6 @@ class EasyUnlockAppManagerTest : public testing::Test {
 
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
         &profile_, base::BindRepeating(&CreateTestProcessManager));
-    extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()
-        ->SetTestingFactory(
-            &profile_,
-            base::BindRepeating(&CreateScreenlockPrivateEventRouter));
-
-    event_router_ = extensions::CreateAndUseTestEventRouter(&profile_);
-    event_router_->AddEventObserver(&event_consumer_);
-    event_router_->set_expected_extension_id(extension_misc::kEasyUnlockAppId);
 
     extension_service_->component_loader()->set_ignore_whitelist_for_testing(
         true);
@@ -280,9 +177,7 @@ class EasyUnlockAppManagerTest : public testing::Test {
 
   TestingProfile profile_;
 
-  EasyUnlockAppEventConsumer event_consumer_;
   extensions::ExtensionService* extension_service_;
-  extensions::TestEventRouter* event_router_;
 
   base::CommandLine command_line_;
 
@@ -390,44 +285,6 @@ TEST_F(EasyUnlockAppManagerTest, EnsureReadyAfterExtesionSystemReady) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(ready);
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendAuthAttempted) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-  event_router_->AddLazyEventListener(
-      screenlock_private_api::OnAuthAttempted::kEventName,
-      extension_misc::kEasyUnlockAppId);
-
-  EXPECT_TRUE(app_manager_->SendAuthAttemptEvent());
-  EXPECT_EQ(1, AuthAttemptedCount());
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendAuthAttemptedNoRegisteredListeners) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-
-  ASSERT_EQ(0, AuthAttemptedCount());
-
-  EXPECT_FALSE(app_manager_->SendAuthAttemptEvent());
-  EXPECT_EQ(0, AuthAttemptedCount());
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendAuthAttemptedAppDisabled) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-  event_router_->AddLazyEventListener(
-      screenlock_private_api::OnAuthAttempted::kEventName,
-      extension_misc::kEasyUnlockAppId);
-  app_manager_->DisableAppIfLoaded();
-
-  ASSERT_EQ(0, AuthAttemptedCount());
-
-  EXPECT_FALSE(app_manager_->SendAuthAttemptEvent());
-  EXPECT_EQ(0, AuthAttemptedCount());
 }
 
 }  // namespace

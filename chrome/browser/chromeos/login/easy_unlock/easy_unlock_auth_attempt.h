@@ -13,8 +13,6 @@
 
 namespace chromeos {
 
-class EasyUnlockAppManager;
-
 // Class responsible for handling easy unlock auth attempts (both for unlocking
 // the screen and logging in). The auth protocol is started by calling |Start|,
 // which notifies the easy unlock app about auth attempt. When the auth result
@@ -27,9 +25,7 @@ class EasyUnlockAuthAttempt {
   // The auth type.
   enum Type { TYPE_UNLOCK, TYPE_SIGNIN };
 
-  EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
-                        const AccountId& account_id,
-                        Type type);
+  EasyUnlockAuthAttempt(const AccountId& account_id, Type type);
   ~EasyUnlockAuthAttempt();
 
   // Starts the auth attempt by sending screenlockPrivate.onAuthAttempted event
@@ -57,7 +53,6 @@ class EasyUnlockAuthAttempt {
   // Cancels the attempt.
   void Cancel(const AccountId& account_id);
 
-  EasyUnlockAppManager* app_manager_;
   State state_;
   const AccountId account_id_;
   Type type_;
