@@ -48,7 +48,14 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
                           base::Unretained(this), net::ERR_FAILED));
 }
 
-WebRequestProxyingWebSocket::~WebRequestProxyingWebSocket() = default;
+WebRequestProxyingWebSocket::~WebRequestProxyingWebSocket() {
+  // This is important to ensure that no outstanding blocking requests continue
+  // to reference state owned by this object.
+  if (info_) {
+    ExtensionWebRequestEventRouter::GetInstance()->OnRequestWillBeDestroyed(
+        browser_context_, &info_.value());
+  }
+}
 
 void WebRequestProxyingWebSocket::AddChannelRequest(
     const GURL& url,
