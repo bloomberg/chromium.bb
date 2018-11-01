@@ -631,18 +631,18 @@ TEST_F(UDPSocketTest, CloseWithPendingRead) {
 // Some Android devices do not support multicast socket.
 // The ones supporting multicast need WifiManager.MulitcastLock to enable it.
 // http://goo.gl/jjAk9
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 TEST_F(UDPSocketTest, JoinMulticastGroup) {
   const uint16_t kPort = 9999;
   const char kGroup[] = "237.132.100.17";
 
   IPAddress group_ip;
   EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
   IPEndPoint bind_address(IPAddress::AllZeros(group_ip.size()), kPort);
 #else
   IPEndPoint bind_address(group_ip, kPort);
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) || defined(OS_FUCHSIA)
 
   UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
   EXPECT_THAT(socket.Open(bind_address.GetFamily()), IsOk());
@@ -669,6 +669,8 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
   socket.Close();
 }
 
+#if !defined(OS_FUCHSIA)
+// TODO(https://crbug.com/900709): SO_REUSEPORT doesn't work on Fuchsia.
 TEST_F(UDPSocketTest, SharedMulticastAddress) {
   const uint16_t kPort = 9999;
   const char kGroup[] = "224.0.0.251";
@@ -676,11 +678,11 @@ TEST_F(UDPSocketTest, SharedMulticastAddress) {
   IPAddress group_ip;
   ASSERT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
   IPEndPoint send_address(group_ip, kPort);
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
   IPEndPoint receive_address(IPAddress::AllZeros(group_ip.size()), kPort);
 #else
   IPEndPoint receive_address(send_address);
-#endif  // OS_WINDOWS
+#endif  // defined(OS_WIN) || defined(OS_FUCHSIA)
 
   NetworkInterfaceList interfaces;
   ASSERT_TRUE(GetNetworkList(&interfaces, 0));
@@ -707,7 +709,7 @@ TEST_F(UDPSocketTest, SharedMulticastAddress) {
                                 NetLogSource());
   ASSERT_THAT(client_socket.Connect(send_address), IsOk());
 
-#ifndef OS_CHROMEOS
+#if !defined(OS_CHROMEOS)
   // Send a message via the multicast group. That message is expected be be
   // received by both receving sockets.
   //
@@ -717,9 +719,10 @@ TEST_F(UDPSocketTest, SharedMulticastAddress) {
   ASSERT_GE(WriteSocket(&client_socket, kMessage), 0);
   EXPECT_EQ(kMessage, RecvFromSocket(&socket1));
   EXPECT_EQ(kMessage, RecvFromSocket(&socket2));
-#endif  // OS_CHROMEOS
+#endif  // !defined(OS_CHROMEOS)
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_FUCHSIA)
+#endif  // !defined(OS_ANDROID)
 
 TEST_F(UDPSocketTest, MulticastOptions) {
   const uint16_t kPort = 9999;
