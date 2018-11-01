@@ -137,3 +137,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
+    # Rebaslining due to GPU raster enablement. https://crbug.com/900599
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D')
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing')
