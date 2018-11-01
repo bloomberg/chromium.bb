@@ -56,8 +56,12 @@ class WindowTreeClientPrivate {
   // the WindowTree calling OnEmbedFromToken().
   void CallOnEmbedFromToken(EmbedRoot* embed_root);
 
-  // Sets the WindowTree.
+  // Sets the WindowTree. This calls WindowTreeConnectionEstablished(), which
+  // means it should only be called once, during setup.
   void SetTree(ws::mojom::WindowTree* window_tree);
+
+  // Swaps the existing WindowTree reference to a new one. Returns the old.
+  ws::mojom::WindowTree* SwapTree(ws::mojom::WindowTree* window_tree);
 
   bool HasEventObserver();
 

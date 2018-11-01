@@ -309,6 +309,10 @@ void DesktopWindowTreeHostMus::SendClientAreaToServer() {
   if (!non_client_view || !non_client_view->client_view())
     return;
 
+  View* client_view = non_client_view->client_view();
+  if (!observed_client_view_.IsObserving(client_view))
+    observed_client_view_.Add(client_view);
+
   const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
   SetClientArea(
       gfx::Insets(
@@ -843,10 +847,7 @@ NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
   if (!ShouldSendClientAreaToServer())
     return nullptr;
 
-  auto* frame =
-      new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
-  observed_frame_.Add(frame);
-  return frame;
+  return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
 }
 
 bool DesktopWindowTreeHostMus::ShouldUseNativeFrame() const {
@@ -1008,13 +1009,13 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
 void DesktopWindowTreeHostMus::OnViewBoundsChanged(views::View* observed_view) {
   DCHECK_EQ(
       observed_view,
-      native_widget_delegate_->AsWidget()->non_client_view()->frame_view());
+      native_widget_delegate_->AsWidget()->non_client_view()->client_view());
 
   SendClientAreaToServer();
 }
 
 void DesktopWindowTreeHostMus::OnViewIsDeleting(View* observed_view) {
-  observed_frame_.Remove(observed_view);
+  observed_client_view_.Remove(observed_view);
 }
 
 aura::Window* DesktopWindowTreeHostMus::content_window() {
