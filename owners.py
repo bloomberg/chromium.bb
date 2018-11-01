@@ -149,6 +149,12 @@ class Database(object):
     # File with global status lines for owners.
     self._status_file = None
 
+  def _file_affects_ownership(self, path):
+    """Returns true if the path refers to a file that could affect ownership."""
+    filename = self.os_path.split(path)[-1]
+    return filename == 'OWNERS' or filename.endswith('_OWNERS')
+
+
   def reviewers_for(self, files, author):
     """Returns a suggested set of reviewers that will cover the files.
 
@@ -395,7 +401,7 @@ class Database(object):
     # Paths included via "file:" must end in OWNERS or _OWNERS. Files that can
     # affect ownership have a different set of ownership rules, so that users
     # cannot self-approve changes adding themselves to an OWNERS file.
-    if not (owners_path.endswith('/OWNERS') or owners_path.endswith('_OWNERS')):
+    if not self._file_affects_ownership(owners_path):
       raise SyntaxErrorInOwnersFile(start, lineno, 'file: include must specify '
                                     'a file named OWNERS or ending in _OWNERS')
 
