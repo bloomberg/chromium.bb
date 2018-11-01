@@ -5,42 +5,148 @@
 #include "ash/wm/pip/pip_window_resizer.h"
 
 #include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
 namespace {
+// Radius in which the touch can move in a non-dismiss direction before we
+// no longer consider this gesture as a candidate for swipe-to-dismiss.
+const int kPipDismissSlop = 8;
+// How much area by proportion needs to be off-screen to consider this
+// a dismissal during swipe-to-dismiss.
+const float kPipDismissFraction = 0.5f;
 // TODO(edcourtney): Consider varying the animation duration based on how far
 // the pip window has to move.
 const int kPipSnapToEdgeAnimationDurationMs = 50;
+
+bool IsAtTopOrBottomEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
+  return (bounds.y() < area.y() + kPipDismissSlop && bounds.y() >= area.y()) ||
+         (bounds.bottom() > area.bottom() - kPipDismissSlop &&
+          bounds.bottom() <= area.bottom());
+}
+
+bool IsPastTopOrBottomEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
+  return bounds.y() < area.y() || bounds.bottom() > area.bottom();
+}
+
+bool IsAtLeftOrRightEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
+  return (bounds.x() < area.x() + kPipDismissSlop && bounds.x() >= area.x()) ||
+         (bounds.right() > area.right() - kPipDismissSlop &&
+          bounds.right() <= area.right());
+}
+
+bool IsPastLeftOrRightEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
+  return bounds.x() < area.x() || bounds.right() > area.right();
+}
+
 }  // namespace
 
 PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
     : WindowResizer(window_state) {
   window_state->OnDragStarted(details().window_component);
+
+  bool is_resize = details().bounds_change & kBoundsChange_Resizes;
+  // Don't allow swipe-to-dismiss for resizes.
+  if (!is_resize) {
+    gfx::Rect area = PipPositioner::GetMovementArea(window_state->GetDisplay());
+    // Check in which directions we can dismiss. Usually this is only in one
+    // direction, except when the PIP window is in the corner. In that case,
+    // we initially mark both directions as viable, and later choose one based
+    // on the direction of drag.
+    may_dismiss_horizontally_ =
+        IsAtLeftOrRightEdge(GetTarget()->GetBoundsInScreen(), area);
+    may_dismiss_vertically_ =
+        IsAtTopOrBottomEdge(GetTarget()->GetBoundsInScreen(), area);
+  }
 }
 
 PipWindowResizer::~PipWindowResizer() {}
 
+// TODO(edcourtney): Implement swipe-to-dismiss on fling.
 void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
                             int event_flags) {
   last_location_in_screen_ = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_in_screen_);
 
-  gfx::Rect bounds = CalculateBoundsForDrag(location_in_parent);
+  gfx::Vector2d movement_direction =
+      location_in_parent - details().initial_location_in_parent;
+  // If we are not sure if this is a swipe or not yet, don't modify any bounds.
+  int movement_distance2 = movement_direction.x() * movement_direction.x() +
+                           movement_direction.y() * movement_direction.y();
+  if ((may_dismiss_horizontally_ || may_dismiss_vertically_) &&
+      movement_distance2 <= kPipDismissSlop * kPipDismissSlop) {
+    return;
+  }
+
+  gfx::Rect new_bounds = CalculateBoundsForDrag(location_in_parent);
   display::Display display = window_state()->GetDisplay();
+  gfx::Rect area = PipPositioner::GetMovementArea(display);
 
-  ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds);
-  bounds = PipPositioner::GetBoundsForDrag(display, bounds);
-  ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
+  // If the PIP window is at a corner, lock swipe to dismiss to the axis
+  // of movement. Require that the direction of movement is mainly in the
+  // direction of dismissing to start a swipe-to-dismiss gesture.
+  if (dismiss_fraction_ == 1.f) {
+    bool swipe_is_horizontal =
+        std::abs(movement_direction.x()) > std::abs(movement_direction.y());
+    may_dismiss_horizontally_ =
+        may_dismiss_horizontally_ && swipe_is_horizontal;
+    may_dismiss_vertically_ = may_dismiss_vertically_ && !swipe_is_horizontal;
+  }
 
-  if (bounds != GetTarget()->bounds()) {
+  // Lock to the axis if we've started the swipe-to-dismiss, or, if the PIP
+  // window is no longer poking outside of the movement area, disable any
+  // further swipe-to-dismiss gesture for this drag. Use the initial bounds
+  // to decide the locked axis position.
+  if (may_dismiss_horizontally_) {
+    if (IsPastLeftOrRightEdge(new_bounds, area))
+      new_bounds.set_y(details().initial_bounds_in_parent.y());
+    else if (!IsAtLeftOrRightEdge(new_bounds, area))
+      may_dismiss_horizontally_ = false;
+  } else if (may_dismiss_vertically_) {
+    if (IsPastTopOrBottomEdge(new_bounds, area))
+      new_bounds.set_x(details().initial_bounds_in_parent.x());
+    else if (!IsAtTopOrBottomEdge(new_bounds, area))
+      may_dismiss_vertically_ = false;
+  }
+
+  // If we aren't dismissing, make sure to collide with objects.
+  if (!may_dismiss_horizontally_ && !may_dismiss_vertically_) {
+    // Reset opacity if it's not a dismiss gesture.
+    GetTarget()->layer()->SetOpacity(1.f);
+    ::wm::ConvertRectToScreen(GetTarget()->parent(), &new_bounds);
+    new_bounds = PipPositioner::GetBoundsForDrag(display, new_bounds);
+    ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
+  } else {
+    gfx::Rect dismiss_bounds = new_bounds;
+    dismiss_bounds.Intersect(area);
+    float bounds_area = new_bounds.width() * new_bounds.height();
+    float dismiss_area = dismiss_bounds.width() * dismiss_bounds.height();
+    if (bounds_area != 0.f) {
+      dismiss_fraction_ = dismiss_area / bounds_area;
+      GetTarget()->layer()->SetOpacity(dismiss_fraction_);
+    }
+  }
+
+  // If the user has dragged the PIP window more than kPipDismissSlop distance
+  // and no dismiss gesture has begun, make it impossible to initiate one for
+  // the rest of the drag.
+  if (dismiss_fraction_ == 1.f &&
+      movement_distance2 > kPipDismissSlop * kPipDismissSlop) {
+    may_dismiss_horizontally_ = false;
+    may_dismiss_vertically_ = false;
+  }
+
+  if (new_bounds != GetTarget()->bounds()) {
     moved_or_resized_ = true;
-    GetTarget()->SetBounds(bounds);
+    GetTarget()->SetBounds(new_bounds);
   }
 }
 
@@ -50,21 +156,37 @@ void PipWindowResizer::CompleteDrag() {
   window_state()->ClearRestoreBounds();
   window_state()->set_bounds_changed_by_user(moved_or_resized_);
 
-  // Animate the PIP window to its resting position.
-  gfx::Rect bounds = PipPositioner::GetRestingPosition(
-      window_state()->GetDisplay(), GetTarget()->GetBoundsInScreen());
-  base::TimeDelta duration =
-      base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
-  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
-                           duration);
-  window_state()->OnWMEvent(&event);
+  if (dismiss_fraction_ < kPipDismissFraction) {
+    // Close the widget. This will trigger an animation dismissing the PIP
+    // window.
+    auto* widget = GetInternalWidgetForWindow(window_state()->window());
+    if (widget)
+      widget->Close();
+  } else {
+    // Animate the PIP window to its resting position.
+    gfx::Rect bounds = PipPositioner::GetRestingPosition(
+        window_state()->GetDisplay(), GetTarget()->GetBoundsInScreen());
+    base::TimeDelta duration =
+        base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
+    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
+                             duration);
+    window_state()->OnWMEvent(&event);
 
-  // If the pip work area changes (e.g. message center, virtual keyboard),
-  // we want to restore to the last explicitly set position.
-  // TODO(edcourtney): This may not be the best place for this. Consider
-  // doing this a different way or saving these bounds at a later point when
-  // the work area changes.
-  window_state()->SaveCurrentBoundsForRestore();
+    // Animate opacity back to normal opacity:
+    ui::Layer* layer = GetTarget()->layer();
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.SetTransitionDuration(duration);
+    layer->SetOpacity(1.f);
+
+    // If the pip work area changes (e.g. message center, virtual keyboard),
+    // we want to restore to the last explicitly set position.
+    // TODO(edcourtney): This may not be the best place for this. Consider
+    // doing this a different way or saving these bounds at a later point when
+    // the work area changes.
+    window_state()->SaveCurrentBoundsForRestore();
+  }
 }
 
 void PipWindowResizer::RevertDrag() {

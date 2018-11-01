@@ -37,7 +37,10 @@ class ASH_EXPORT PipWindowResizer : public WindowResizer {
   wm::WindowState* window_state() { return window_state_; }
 
   gfx::Point last_location_in_screen_;
+  float dismiss_fraction_ = 1.f;
   bool moved_or_resized_ = false;
+  bool may_dismiss_horizontally_ = false;
+  bool may_dismiss_vertically_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PipWindowResizer);
 };
