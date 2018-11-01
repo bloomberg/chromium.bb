@@ -603,6 +603,14 @@ be describing additional metrics about the same event.
       The average time taken by the compositing phase in microseconds in the
       event period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Compositing.AverageRatio">
     <summary>
@@ -628,6 +636,14 @@ be describing additional metrics about the same event.
       The average time taken by the compositing commit at the end of the blink
       lifecycle, in microseconds in the event period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="CompositingCommit.AverageRatio">
     <summary>
@@ -654,6 +670,14 @@ be describing additional metrics about the same event.
       The average time taken by all forced style recalcs and layouts in
       microseconds in the event period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ForcedStyleAndLayout.AverageRatio">
     <summary>
@@ -680,6 +704,14 @@ be describing additional metrics about the same event.
       The average time taken to compute IntersectionObserver observations in
       microseconds in the event period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="IntersectionObservation.AverageRatio">
     <summary>
@@ -706,6 +738,14 @@ be describing additional metrics about the same event.
       The average time between a BeginMainFrame and the commit of paint results,
       in microseconds.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="MainFrame.WorstCase">
     <summary>
@@ -718,6 +758,14 @@ be describing additional metrics about the same event.
       The average time taken by the paint phase in microseconds in the event
       period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Paint.AverageRatio">
     <summary>
@@ -743,6 +791,14 @@ be describing additional metrics about the same event.
       The average time taken by the pre-paint phase in microseconds in the event
       period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PrePaint.AverageRatio">
     <summary>
@@ -768,6 +824,14 @@ be describing additional metrics about the same event.
       The average time taken by the style and layout phases in microseconds in
       the event period.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="StyleAndLayout.AverageRatio">
     <summary>
@@ -802,6 +866,14 @@ be describing additional metrics about the same event.
     <summary>
       Opt-in UseCounter feature.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -1426,6 +1498,13 @@ be describing additional metrics about the same event.
       the event, no recording is made. The first GSU of every scrolling sequence
       is excluded from this metric.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -1456,6 +1535,13 @@ be describing additional metrics about the same event.
       a given scroll gesture event sequence. If no swap was induced by the
       event, no recording is made.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -3003,12 +3089,26 @@ be describing additional metrics about the same event.
       start to the time the DOMContentLoaded event is fired, for main frame
       documents.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="DocumentTiming.NavigationToLoadEventFired">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time the load event is fired, for main frame documents.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Experimental.InputToNavigationStart">
     <summary>
@@ -3031,6 +3131,13 @@ be describing additional metrics about the same event.
       start to the first meaningful paint (http://bit.ly/ttfmp-doc), for main
       frame documents.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestImagePaint">
     <summary>
@@ -3071,6 +3178,13 @@ be describing additional metrics about the same event.
       meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
       explanation. In ms.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputTimestamp">
     <summary>
@@ -3222,12 +3336,26 @@ be describing additional metrics about the same event.
       start to the time when the page first paints content. A contentful paint
       includes a paint of text, image, SVG, or canvas.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PaintTiming.NavigationToFirstPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time the first paint is performed.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ParseTiming.NavigationToParseStart">
     <summary>
@@ -4038,12 +4166,28 @@ be describing additional metrics about the same event.
       The final SecurityLevel of the page before it is closed or another
       navigation occurs. Based on the enum security_state::SecurityLevel.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="InitialSecurityLevel">
     <summary>
       The initial SecurityLevel of the page when the navigation commits. Based
       on the enum security_state::SecurityLevel.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ScoreDelta">
     <summary>
