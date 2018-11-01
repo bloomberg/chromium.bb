@@ -886,7 +886,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   // and the |CORS flag| is unset, and unset otherwise."
 
   ResourceLoaderOptions resource_loader_options;
-  resource_loader_options.initiator_info.name = FetchInitiatorTypeNames::fetch;
+  resource_loader_options.initiator_info.name =
+      fetch_initiator_type_names::kFetch;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   if (fetch_request_data_->URLLoaderFactory()) {
     network::mojom::blink::URLLoaderFactoryPtr factory_clone;

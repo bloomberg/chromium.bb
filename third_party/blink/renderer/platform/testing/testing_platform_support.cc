@@ -187,7 +187,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr, nullptr,
                                                    nullptr);
   http_names::init();
-  FetchInitiatorTypeNames::init();
+  fetch_initiator_type_names::init();
 
   InitializePlatformLanguage();
   font_family_names::init();

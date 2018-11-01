@@ -411,7 +411,7 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
   ResourceRequest resource_request(test_url);
   resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+  options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
@@ -445,7 +445,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ResourceRequest resource_request(data_url);
   resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+  options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(

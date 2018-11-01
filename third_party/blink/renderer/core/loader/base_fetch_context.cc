@@ -331,7 +331,7 @@ BaseFetchContext::CanRequestInternal(
 
   // User Agent CSS stylesheets should only support loading images and should be
   // restricted to data urls.
-  if (options.initiator_info.name == FetchInitiatorTypeNames::uacss) {
+  if (options.initiator_info.name == fetch_initiator_type_names::kUacss) {
     if (type == ResourceType::kImage && url.ProtocolIsData()) {
       return base::nullopt;
     }

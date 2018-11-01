@@ -1008,7 +1008,7 @@ Resource* ResourceFetcher::CreateResourceForLoading(
 void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
     Resource* resource) {
   const AtomicString& fetch_initiator = resource->Options().initiator_info.name;
-  if (fetch_initiator == FetchInitiatorTypeNames::internal)
+  if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
 
   bool is_main_resource = resource->GetType() == ResourceType::kMainResource;
@@ -1676,7 +1676,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   resource_timing_info_map_.Take(resource);
 
   bool is_internal_request = resource->Options().initiator_info.name ==
-                             FetchInitiatorTypeNames::internal;
+                             fetch_initiator_type_names::kInternal;
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
   Context().DispatchDidFail(

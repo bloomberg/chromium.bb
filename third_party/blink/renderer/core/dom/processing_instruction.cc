@@ -151,7 +151,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     return;
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::processinginstruction;
+  options.initiator_info.name =
+      fetch_initiator_type_names::kProcessinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
                          options);
   loading_ = true;

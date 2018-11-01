@@ -602,7 +602,7 @@ static void* OpenFunc(const char* uri) {
     XMLDocumentParserScope scope(nullptr);
     // FIXME: We should restore the original global error handler as well.
     ResourceLoaderOptions options;
-    options.initiator_info.name = FetchInitiatorTypeNames::xml;
+    options.initiator_info.name = fetch_initiator_type_names::kXml;
     FetchParameters params(ResourceRequest(url), options);
     params.MutableResourceRequest().SetFetchRequestMode(
         network::mojom::FetchRequestMode::kSameOrigin);

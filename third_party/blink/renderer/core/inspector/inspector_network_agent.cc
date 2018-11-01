@@ -748,9 +748,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 
   resources_data_->ResourceCreated(execution_context, request_id, loader_id,
                                    request.Url(), post_data);
-  if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
+  if (initiator_info.name == fetch_initiator_type_names::kXmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
-  else if (initiator_info.name == FetchInitiatorTypeNames::fetch)
+  else if (initiator_info.name == fetch_initiator_type_names::kFetch)
     type = InspectorPageAgent::kFetchResource;
 
   if (pending_request_)
@@ -818,10 +818,10 @@ void InspectorNetworkAgent::WillSendRequest(
     const FetchInitiatorInfo& initiator_info,
     ResourceType resource_type) {
   // Ignore the request initiated internally.
-  if (initiator_info.name == FetchInitiatorTypeNames::internal)
+  if (initiator_info.name == fetch_initiator_type_names::kInternal)
     return;
 
-  if (initiator_info.name == FetchInitiatorTypeNames::document &&
+  if (initiator_info.name == fetch_initiator_type_names::kDocument &&
       loader->GetSubstituteData().IsValid())
     return;
 

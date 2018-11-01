@@ -380,7 +380,7 @@ TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
-  options.initiator_info.name = FetchInitiatorTypeNames::internal;
+  options.initiator_info.name = fetch_initiator_type_names::kInternal;
   FetchParameters fetch_params(request, options);
   Resource* resource1 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);
   Resource* resource2 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);

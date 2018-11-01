@@ -91,7 +91,7 @@ void InspectorResourceContentLoader::Start() {
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());
       ResourceLoaderOptions options;
-      options.initiator_info.name = FetchInitiatorTypeNames::internal;
+      options.initiator_info.name = fetch_initiator_type_names::kInternal;
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client = new ResourceClient(this);
       // Prevent garbage collection by holding a reference to this resource.
@@ -112,7 +112,7 @@ void InspectorResourceContentLoader::Start() {
       ResourceRequest resource_request(url);
       resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
       ResourceLoaderOptions options;
-      options.initiator_info.name = FetchInitiatorTypeNames::internal;
+      options.initiator_info.name = fetch_initiator_type_names::kInternal;
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client = new ResourceClient(this);
       // Prevent garbage collection by holding a reference to this resource.

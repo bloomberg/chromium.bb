@@ -787,7 +787,7 @@ void FrameFetchContext::RecordLoadingActivity(
       !request.Url().IsValid())
     return;
   V8DOMActivityLogger* activity_logger = nullptr;
-  if (fetch_initiator_name == FetchInitiatorTypeNames::xmlhttprequest) {
+  if (fetch_initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
     activity_logger = V8DOMActivityLogger::CurrentActivityLogger();
   } else {
     activity_logger =

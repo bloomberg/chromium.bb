@@ -64,7 +64,7 @@ StyleImage* CSSImageValue::CacheImage(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
     ResourceLoaderOptions options;
     options.initiator_info.name = initiator_name_.IsEmpty()
-                                      ? FetchInitiatorTypeNames::css
+                                      ? fetch_initiator_type_names::kCSS
                                       : initiator_name_;
     FetchParameters params(resource_request, options);
 
@@ -97,7 +97,7 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
 
   resource->EmulateLoadStartedForInspector(
       document.Fetcher(), KURL(absolute_url_),
-      initiator_name_.IsEmpty() ? FetchInitiatorTypeNames::css
+      initiator_name_.IsEmpty() ? fetch_initiator_type_names::kCSS
                                 : initiator_name_);
 }
 

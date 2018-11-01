@@ -435,10 +435,10 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       new_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     } else if (context == mojom::RequestContextType::VIDEO) {
       resource_loader_options.initiator_info.name =
-          FetchInitiatorTypeNames::video;
+          fetch_initiator_type_names::kVideo;
     } else if (context == mojom::RequestContextType::AUDIO) {
       resource_loader_options.initiator_info.name =
-          FetchInitiatorTypeNames::audio;
+          fetch_initiator_type_names::kAudio;
     }
 
     if (observer_) {

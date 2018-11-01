@@ -107,7 +107,7 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       xmlFree(base);
 
       ResourceLoaderOptions fetch_options;
-      fetch_options.initiator_info.name = FetchInitiatorTypeNames::xml;
+      fetch_options.initiator_info.name = fetch_initiator_type_names::kXml;
       FetchParameters params(ResourceRequest(url), fetch_options);
       params.MutableResourceRequest().SetFetchRequestMode(
           network::mojom::FetchRequestMode::kSameOrigin);
