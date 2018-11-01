@@ -89,7 +89,10 @@ public class AutofillPopup extends DropdownPopupWindow
             }
         }
 
-        if (!footerRows.isEmpty()) {
+        // TODO(crbug.com/896349): Ideally, we would set the footer each time, as this guard assumes
+        // the footer is unchanged between calls to filterAndShow. However, the JellyBean popup
+        // implementation will not draw footers added after the initial call to show().
+        if (!footerRows.isEmpty() && !isShowing()) {
             setFooterView(new AutofillDropdownFooter(mContext, footerRows, this));
         }
 
@@ -139,7 +142,24 @@ public class AutofillPopup extends DropdownPopupWindow
 
     @Override
     public void onFooterSelection(DropdownItem item) {
-        int index = mSuggestions.indexOf(item);
+        // TODO(crbug.com/896349): Finding the suggestion index by its frontend id is a workaround
+        // for the fact that footer items are not redrawn on each call to filterAndShow, and so
+        // |item| will be identical to, but not equal to, an element in |mSuggestions|. Once this
+        // workaround is no longer needed, this should be changed to simply use
+        // mSuggestions.indexOf(item).
+        int index = -1;
+
+        for (int i = 0; i < mSuggestions.size(); i++) {
+            // Cast from DropdownItem to AutofillSuggestion is safe because filterAndShow creates
+            // the AutofillDropdownFooter which invokes this, and passes an AutofillSuggestion to
+            // the constructor.
+            if ((mSuggestions.get(i).getSuggestionId()
+                        == ((AutofillSuggestion) item).getSuggestionId())) {
+                index = i;
+                break;
+            }
+        }
+
         assert index > -1;
         mAutofillDelegate.suggestionSelected(index);
     }

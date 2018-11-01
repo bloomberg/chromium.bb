@@ -7,10 +7,12 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
@@ -36,6 +38,7 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
     private PopupWindow.OnDismissListener mOnDismissListener;
     private CharSequence mDescription;
     private ListPopupWindow mListPopupWindow;
+    private View mFooterView;
     ListAdapter mAdapter;
 
     /**
@@ -102,7 +105,7 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
         mListPopupWindow.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
 
         assert mAdapter != null : "Set the adapter before showing the popup.";
-        final int contentWidth = UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
+        final int contentWidth = measureContentWidth();
         final float anchorWidth = mAnchorView.getLayoutParams().width;
         assert anchorWidth > 0;
         Rect padding = new Rect();
@@ -193,7 +196,13 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
 
     @Override
     public void setFooterView(View footerView) {
-        // TODO(crbug.com/874077): Implement this before using footer views.
+        mFooterView = footerView;
+        if (footerView != null) {
+            footerView.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        mListPopupWindow.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
+        mListPopupWindow.setPromptView(footerView);
     }
 
     /**
@@ -235,6 +244,16 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
      */
     private int measureContentWidth() {
         assert mAdapter != null : "Set the adapter before showing the popup.";
-        return UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
+        int adapterWidth = UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
+        if (mFooterView != null) {
+            if (mFooterView.getLayoutParams() == null) {
+                mFooterView.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+            mFooterView.measure(measureSpec, measureSpec);
+            return Math.max(mFooterView.getMeasuredWidth(), adapterWidth);
+        }
+        return adapterWidth;
     }
 }
