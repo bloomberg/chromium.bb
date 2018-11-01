@@ -205,7 +205,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     if (!margin_left && !margin_right) {
       if (margin_space > 0) {
         margin_left = margin_space / 2;
-        margin_right = margin_space / 2;
+        margin_right = margin_space - *margin_left;
       } else {
         // Margins are negative.
         if (IsLeftDominant(container_writing_mode, container_direction)) {
