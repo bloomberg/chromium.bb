@@ -130,7 +130,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   // the requested color type from N32.
   SkImageInfo target_info = dst_info;
   char* memory = static_cast<char*>(pixels);
-  std::unique_ptr<char*> memory_ref_ptr;
+  std::unique_ptr<char[]> memory_ref_ptr;
   size_t adjusted_row_bytes = row_bytes;
   if ((target_info.colorType() != kN32_SkColorType) &&
       (target_info.colorType() != kRGBA_F16_SkColorType)) {
@@ -141,8 +141,8 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     DCHECK_EQ(0ul, row_bytes % dst_info.bytesPerPixel());
     adjusted_row_bytes =
         target_info.bytesPerPixel() * (row_bytes / dst_info.bytesPerPixel());
-    memory = new char[target_info.computeMinByteSize()];
-    memory_ref_ptr = std::make_unique<char*>(memory);
+    memory_ref_ptr.reset(new char[target_info.computeMinByteSize()]);
+    memory = memory_ref_ptr.get();
   }
 
   // Skip the check for alphaType.  blink::ImageFrame may have changed the
