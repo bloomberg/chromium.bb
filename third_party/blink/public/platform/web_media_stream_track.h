@@ -51,6 +51,9 @@ class WebMediaStreamTrack {
   };
   enum class CursorCaptureType { kNever, kAlways, kMotion };
 
+  BLINK_PLATFORM_EXPORT static const char kResizeModeNone[];
+  BLINK_PLATFORM_EXPORT static const char kResizeModeRescale[];
+
   struct Settings {
     bool HasFrameRate() const { return frame_rate >= 0.0; }
     bool HasWidth() const { return width >= 0; }
@@ -76,6 +79,7 @@ class WebMediaStreamTrack {
     WebString device_id;
     WebString group_id;
     FacingMode facing_mode = FacingMode::kNone;
+    WebString resize_mode;
     base::Optional<bool> echo_cancellation;
     base::Optional<bool> auto_gain_control;
     base::Optional<bool> noise_supression;

@@ -382,6 +382,11 @@ void MediaStreamVideoTrack::GetSettings(
     settings.video_kind = GetVideoKindForFormat(*format);
   }
   settings.facing_mode = ToWebFacingMode(source_->device().video_facing);
+  settings.resize_mode = blink::WebString::FromASCII(
+      std::string(adapter_settings().target_size()
+                      ? blink::WebMediaStreamTrack::kResizeModeRescale
+                      : blink::WebMediaStreamTrack::kResizeModeNone));
+
   const base::Optional<CameraCalibration> calibration =
       source_->device().camera_calibration;
   if (calibration) {

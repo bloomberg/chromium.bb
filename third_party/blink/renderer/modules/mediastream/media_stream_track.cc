@@ -480,6 +480,8 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
         break;
     }
   }
+  if (!platform_settings.resize_mode.IsNull())
+    settings->setResizeMode(platform_settings.resize_mode);
 
   if (platform_settings.echo_cancellation)
     settings->setEchoCancellation(*platform_settings.echo_cancellation);
