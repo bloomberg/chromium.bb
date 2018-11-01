@@ -164,12 +164,6 @@ const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
 }
 
-void BubbleDialogDelegateView::AddedToWidget() {
-  DialogDelegateView::AddedToWidget();
-  if (GetAnchorView())
-    EnableFocusTraversalFromAnchorView();
-}
-
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
     SetAnchorView(NULL);
@@ -271,17 +265,6 @@ void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }
 
-void BubbleDialogDelegateView::EnableFocusTraversalFromAnchorView() {
-  DCHECK(GetWidget());
-  DCHECK(GetAnchorView());
-  DCHECK(anchor_widget());
-  GetWidget()->SetFocusTraversableParent(
-      anchor_widget()->GetFocusTraversable());
-  GetWidget()->SetFocusTraversableParentView(GetAnchorView());
-  GetAnchorView()->SetProperty(kAnchoredDialogKey,
-                               static_cast<BubbleDialogDelegateView*>(this));
-}
-
 BubbleDialogDelegateView::BubbleDialogDelegateView()
     : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
 
@@ -349,13 +332,8 @@ void BubbleDialogDelegateView::OnNativeThemeChanged(
 void BubbleDialogDelegateView::Init() {}
 
 void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
-  if (GetAnchorView()) {
-    if (GetWidget()) {
-      GetWidget()->SetFocusTraversableParent(nullptr);
-      GetWidget()->SetFocusTraversableParentView(nullptr);
-    }
+  if (GetAnchorView())
     GetAnchorView()->ClearProperty(kAnchoredDialogKey);
-  }
 
   // When the anchor view gets set the associated anchor widget might
   // change as well.
@@ -388,10 +366,12 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     // point. (It's safe to skip this, since if we were to update the
     // bounds when |anchor_view| is NULL, the bubble won't move.)
     OnAnchorBoundsChanged();
+  }
 
-    // Make sure that focus can move into here from the anchor view. If there's
-    // no widget yet, focus traversal will be set up in ::AddedToWidget().
-    EnableFocusTraversalFromAnchorView();
+  if (anchor_view) {
+    // Make sure that focus can move into here from the anchor view (but not
+    // out, focus will cycle inside the dialog once it gets here).
+    anchor_view->SetProperty(kAnchoredDialogKey, this);
   }
 }
 

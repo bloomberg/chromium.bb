@@ -942,7 +942,10 @@ TEST_F(FocusManagerTest, NavigateIntoAnchoredDialog) {
       new TestBubbleDialogDelegateView(parent3);
   test::WidgetTest::WidgetAutoclosePtr bubble_widget(
       BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  bubble_widget->SetFocusTraversableParent(
+      bubble_delegate->anchor_widget()->GetFocusTraversable());
+
+  bubble_widget->SetFocusTraversableParentView(parent3);
   View* child1 = new View();
   View* child2 = new View();
   child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -1003,7 +1006,9 @@ TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
       new TestBubbleDialogDelegateView(parent_group);
   test::WidgetTest::WidgetAutoclosePtr bubble_widget(
       BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  bubble_widget->SetFocusTraversableParent(
+      bubble_delegate->anchor_widget()->GetFocusTraversable());
+  bubble_widget->SetFocusTraversableParentView(parent_group);
   View* child1 = new View();
   View* child2 = new View();
   child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -1067,7 +1072,9 @@ TEST_F(FocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   bubble_delegate->UseNativeWidgetAura();
   test::WidgetTest::WidgetAutoclosePtr bubble_widget(
       BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  bubble_widget->SetFocusTraversableParent(
+      bubble_delegate->anchor_widget()->GetFocusTraversable());
+  bubble_widget->SetFocusTraversableParentView(parent2);
   View* child = new View();
   child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   bubble_widget->GetRootView()->AddChildView(child);
