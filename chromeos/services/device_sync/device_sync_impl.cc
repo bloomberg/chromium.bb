@@ -102,6 +102,19 @@ void RecordSetSoftwareFeatureStateResultFailureReason(
       failure_reason);
 }
 
+void RecordFindEligibleDevicesResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", success);
+}
+
+void RecordFindEligibleDevicesResultFailureReason(
+    DeviceSyncRequestFailureReason failure_reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result."
+      "FailureReason",
+      failure_reason);
+}
+
 }  // namespace
 
 // static
@@ -605,6 +618,8 @@ void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
   callback.Run(mojom::NetworkRequestResult::kSuccess,
                mojom::FindEligibleDevicesResponse::New(
                    eligible_remote_devices, ineligible_remote_devices));
+
+  RecordFindEligibleDevicesResult(true /* success */);
 }
 
 void DeviceSyncImpl::OnFindEligibleDevicesError(
@@ -614,6 +629,11 @@ void DeviceSyncImpl::OnFindEligibleDevicesError(
     cryptauth::NetworkRequestError error) {
   callback.Run(mojo::ConvertTo<mojom::NetworkRequestResult>(error),
                nullptr /* response */);
+
+  RecordFindEligibleDevicesResult(false /* success */);
+  RecordFindEligibleDevicesResultFailureReason(
+      GetDeviceSyncRequestFailureReason(
+          mojo::ConvertTo<mojom::NetworkRequestResult>(error)));
 }
 
 void DeviceSyncImpl::StartSetSoftwareFeatureTimer() {
