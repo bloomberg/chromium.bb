@@ -148,7 +148,7 @@ Polymer({
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
-  /** @private {?cloudprint.CloudPrintInterfaceJS} */
+  /** @private {?cloudprint.CloudPrintInterface} */
   cloudPrintInterface_: null,
 
   /** @private {!EventTracker} */
@@ -367,11 +367,11 @@ Polymer({
    */
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
     assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = new cloudprint.CloudPrintInterfaceJS(
+    this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
         cloudPrintUrl, assert(this.nativeLayer_), assert(this.userInfo_),
         appKioskMode);
     this.tracker_.add(
-        assert(this.cloudPrintInterface_),
+        assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
         this.close_.bind(this));
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
@@ -379,7 +379,7 @@ Polymer({
      cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
-          assert(this.cloudPrintInterface_), eventType,
+          assert(this.cloudPrintInterface_).getEventTarget(), eventType,
           this.onCloudPrintError_.bind(this));
     });
 

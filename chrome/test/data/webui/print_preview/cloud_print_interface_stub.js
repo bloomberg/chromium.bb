@@ -5,13 +5,28 @@
 cr.define('print_preview', function() {
   /**
    * Test version of the cloud print interface.
+   * @implements {cloudprint.CloudPrintInterface}
    */
-  class CloudPrintInterfaceStub extends cr.EventTarget {
+  class CloudPrintInterfaceStub {
     constructor() {
-      super();
+      /** @private {!cr.EventTarget} */
+      this.eventTarget_ = new cr.EventTarget();
+
+      /** @private {boolean} */
+      this.searchInProgress_ = false;
 
       /** @private {!Map<string, !print_preview.Destination>} */
       this.cloudPrintersMap_ = new Map();
+    }
+
+    /** @override */
+    getEventTarget() {
+      return this.eventTarget_;
+    }
+
+    /** @override */
+    isCloudDestinationSearchInProgress() {
+      return this.searchInProgress_;
     }
 
     /**
@@ -26,8 +41,10 @@ cr.define('print_preview', function() {
     /**
      * Dispatches a CloudPrintInterfaceEventType.SEARCH_DONE event with the
      * printers that have been set so far using setPrinter().
+     * @override
      */
     search() {
+      this.searchInProgress_ = true;
       const searchDoneEvent =
           new Event(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
       searchDoneEvent.origin = print_preview.DestinationOrigin.COOKIES;
@@ -38,18 +55,17 @@ cr.define('print_preview', function() {
       searchDoneEvent.isRecent = true;
       searchDoneEvent.user = 'foo@chromium.org';
       searchDoneEvent.searchDone = true;
-      this.dispatchEvent(searchDoneEvent);
+      this.searchInProgress_ = false;
+      this.eventTarget_.dispatchEvent(searchDoneEvent);
     }
 
-    /** @param {string} account Account the request is sent for. */
+    /** @override */
     invites(account) {}
 
     /**
      * Dispatches a CloudPrintInterfaceEventType.PRINTER_DONE event with the
      * printer details if the printer has been added by calling setPrinter().
-     * @param {string} printerId ID of the printer to lookup.
-     * @param {!print_preview.DestinationOrigin} origin Origin of the printer.
-     * @param {string=} account Account this printer is registered for.
+     * @override
      */
     printer(printerId, origin, account) {
       const printer = this.cloudPrintersMap_.get(printerId);
@@ -59,7 +75,7 @@ cr.define('print_preview', function() {
         printerDoneEvent.printer = printer;
         printerDoneEvent.printer.capabilities =
             print_preview_test_utils.getCddTemplate(printerId);
-        this.dispatchEvent(printerDoneEvent);
+        this.eventTarget_.dispatchEvent(printerDoneEvent);
       }
     }
   }
