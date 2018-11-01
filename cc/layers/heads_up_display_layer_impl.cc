@@ -503,7 +503,7 @@ int HeadsUpDisplayLayerImpl::MeasureText(SkPaint* paint,
 void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
                                        SkPaint* paint,
                                        const std::string& text,
-                                       SkPaint::Align align,
+                                       TextAlign align,
                                        int size,
                                        int x,
                                        int y) const {
@@ -514,12 +514,12 @@ void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
   paint->setTextSize(size);
   paint->setTypeface(typeface_);
 
-  if (align != SkPaint::kLeft_Align) {
+  if (align != TextAlign::kLeft) {
     SkScalar width = paint->measureText(text.c_str(), text.length(), nullptr);
-    if (align == SkPaint::kCenter_Align) {
+    if (align == TextAlign::kCenter) {
       x -= width * 0.5f;
     } else {
-      DCHECK_EQ(align, SkPaint::kRight_Align);
+      DCHECK_EQ(align, TextAlign::kRight);
       x -= width;
     }
   }
@@ -531,7 +531,7 @@ void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
 void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
                                        SkPaint* paint,
                                        const std::string& text,
-                                       SkPaint::Align align,
+                                       TextAlign align,
                                        int size,
                                        const SkPoint& pos) const {
   DrawText(canvas, paint, text, align, size, pos.x(), pos.y());
@@ -622,24 +622,14 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   VLOG(1) << value_text;
 
   paint.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &paint, title, SkPaint::kLeft_Align, kTitleFontHeight,
+  DrawText(canvas, &paint, title, TextAlign::kLeft, kTitleFontHeight,
            title_bounds.left(), title_bounds.bottom());
 
   paint.setColor(DebugColors::FPSDisplayTextAndGraphColor());
-  DrawText(canvas,
-           &paint,
-           value_text,
-           SkPaint::kLeft_Align,
-           kFontHeight,
-           text_bounds.left(),
-           text_bounds.bottom());
-  DrawText(canvas,
-           &paint,
-           min_max_text,
-           SkPaint::kRight_Align,
-           kFontHeight,
-           text_bounds.right(),
-           text_bounds.bottom());
+  DrawText(canvas, &paint, value_text, TextAlign::kLeft, kFontHeight,
+           text_bounds.left(), text_bounds.bottom());
+  DrawText(canvas, &paint, min_max_text, TextAlign::kRight, kFontHeight,
+           text_bounds.right(), text_bounds.bottom());
 
   DrawGraphLines(canvas, &paint, graph_bounds, fps_graph_);
 
@@ -746,19 +736,19 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
                                     top + 2 * kPadding + 3 * kFontHeight);
 
   paint.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &paint, "GPU Memory", SkPaint::kLeft_Align, kTitleFontHeight,
+  DrawText(canvas, &paint, "GPU Memory", TextAlign::kLeft, kTitleFontHeight,
            title_pos);
 
   paint.setColor(DebugColors::MemoryDisplayTextColor());
   std::string text = base::StringPrintf(
       "%6.1f MB used", memory_entry_.total_bytes_used / kMegabyte);
-  DrawText(canvas, &paint, text, SkPaint::kRight_Align, kFontHeight, stat1_pos);
+  DrawText(canvas, &paint, text, TextAlign::kRight, kFontHeight, stat1_pos);
 
   if (!memory_entry_.had_enough_memory)
     paint.setColor(SK_ColorRED);
   text = base::StringPrintf("%6.1f MB max ",
                             memory_entry_.total_budget_in_bytes / kMegabyte);
-  DrawText(canvas, &paint, text, SkPaint::kRight_Align, kFontHeight, stat2_pos);
+  DrawText(canvas, &paint, text, TextAlign::kRight, kFontHeight, stat2_pos);
 
   // Draw memory graph.
   int length = 2 * kFontHeight + kPadding + 12;
@@ -846,10 +836,10 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
   SkPoint gpu_status_pos = SkPoint::Make(left + width - kPadding,
                                          top + 2 * kFontHeight + 2 * kPadding);
   paint.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &paint, "GPU Raster", SkPaint::kLeft_Align, kTitleFontHeight,
+  DrawText(canvas, &paint, "GPU Raster", TextAlign::kLeft, kTitleFontHeight,
            left + kPadding, top + kFontHeight + kPadding);
   paint.setColor(color);
-  DrawText(canvas, &paint, status, SkPaint::kRight_Align, kFontHeight,
+  DrawText(canvas, &paint, status, TextAlign::kRight, kFontHeight,
            gpu_status_pos);
 
   return area;
