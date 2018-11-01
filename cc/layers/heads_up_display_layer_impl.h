@@ -32,6 +32,8 @@ namespace cc {
 class FrameRateCounter;
 class LayerTreeFrameSink;
 
+enum class TextAlign { kLeft, kCenter, kRight };
+
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
  public:
   static std::unique_ptr<HeadsUpDisplayLayerImpl> Create(
@@ -99,14 +101,14 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void DrawText(SkCanvas* canvas,
                 SkPaint* paint,
                 const std::string& text,
-                SkPaint::Align align,
+                TextAlign align,
                 int size,
                 int x,
                 int y) const;
   void DrawText(SkCanvas* canvas,
                 SkPaint* paint,
                 const std::string& text,
-                SkPaint::Align align,
+                TextAlign align,
                 int size,
                 const SkPoint& pos) const;
   void DrawGraphBackground(SkCanvas* canvas,
