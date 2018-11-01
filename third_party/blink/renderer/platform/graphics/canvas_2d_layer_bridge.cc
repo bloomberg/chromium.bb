@@ -373,10 +373,8 @@ void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
   if (!is_deferral_enabled_ || !resource_host_)
     return;
 
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, gpu_disabled_histogram,
-                      ("Canvas.GPUAccelerated2DCanvasDisableDeferralReason",
-                       kDisableDeferralReasonCount));
-  gpu_disabled_histogram.Count(reason);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Blink.Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason);
   FlushRecording();
   // Because we will be discarding the recorder, if the flush failed
   // content will be lost -> force m_haveRecordedDrawCommands to false
@@ -698,9 +696,7 @@ void Canvas2DLayerBridge::WillOverwriteCanvas() {
 
 void Canvas2DLayerBridge::Logger::ReportHibernationEvent(
     HibernationEvent event) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, hibernation_histogram,
-                      ("Canvas.HibernationEvents", kHibernationEventCount));
-  hibernation_histogram.Count(event);
+  UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.HibernationEvents", event);
 }
 
 }  // namespace blink

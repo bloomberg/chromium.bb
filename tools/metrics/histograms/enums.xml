@@ -5472,14 +5472,14 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="CanvasCreateImageBitmapSource">
-  <int value="0" label="CreateImageBitmapFromBlob"/>
-  <int value="1" label="CreateImageBitmapFromImageBitmap"/>
-  <int value="2" label="CreateImageBitmapFromImageData"/>
-  <int value="3" label="CreateImageBitmapFromHTMLCanvasElement"/>
-  <int value="4" label="CreateImageBitmapFromHTMLImageElement"/>
-  <int value="5" label="CreateImageBitmapFromHTMLVideoElement"/>
-  <int value="6" label="CreateImageBitmapFromOffscreenCanvas"/>
-  <int value="7" label="CreateImageBitmapFromSVGImageElement"/>
+  <int value="0" label="Blob"/>
+  <int value="1" label="ImageBitmap"/>
+  <int value="2" label="ImageData"/>
+  <int value="3" label="HTML Canvas Element"/>
+  <int value="4" label="HTML Image Element"/>
+  <int value="5" label="HTML Video Element"/>
+  <int value="6" label="OffscreenCanvas"/>
+  <int value="7" label="SVG Image Element"/>
 </enum>
 
 <enum name="CanvasDisplayListFallbackReason">
@@ -5526,31 +5526,30 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="CanvasGPUAccelerated2DCanvasDisableDeferralReason">
-  <int value="0" label="Unknown (Should not be seen in production)."/>
-  <int value="1" label="Canvas not cleared between consecutive frames."/>
-  <int value="2"
-      label="Canvas state stack too large (unbalanced save/restore?)."/>
-  <int value="3" label="Direct pixel write."/>
-  <int value="4" label="Draw image of animated 2d canvas"/>
-  <int value="5" label="Sub-pixel text anti-aliasing support (expect 0)"/>
+  <int value="0" label="Unknown (Should not be seen in production)"/>
+  <int value="1" label="Expensive overdraw heuristic"/>
+  <int value="2" label="Using texture backed pattern"/>
+  <int value="3" label="Draw image of video"/>
+  <int value="4" label="Draw image of animated 2D canvas"/>
+  <int value="5" label="Sub-pixel text anti-aliasing support"/>
   <int value="6" label="drawImage called with a texture backed source image"/>
   <int value="7" label="Running on low-end device"/>
 </enum>
 
 <enum name="CanvasHibernationEvent">
-  <int value="0" label="HibernationScheduled"/>
+  <int value="0" label="Scheduled"/>
   <int value="1"
-      label="HibernationAbortedDueToDestructionWhileHibernatePending"/>
-  <int value="2" label="HibernationAbortedDueToPendingDestruction (obsolete)"/>
-  <int value="3" label="HibernationAbortedDueToVisibilityChange"/>
-  <int value="4" label="HibernationAbortedDueGpuContextLoss"/>
-  <int value="5" label="HibernationAbortedDueToSwitchToUnacceleratedRendering"/>
-  <int value="6" label="HibernationAbortedDueToAllocationFailure"/>
-  <int value="7" label="HibernationEndedNormally"/>
-  <int value="8" label="HibernationEndedWithSwitchToBackgroundRendering"/>
-  <int value="9" label="HibernationEndedWithFallbackToSW"/>
-  <int value="10" label="HibernationEndedWithTeardown"/>
-  <int value="11" label="HibernationAbortedBecauseNoSurface"/>
+      label="Aborted due to destruction while hibernate was pending"/>
+  <int value="2" label="Aborted due to pending destruction (obsolete)"/>
+  <int value="3" label="Aborted due to visibility change"/>
+  <int value="4" label="Aborted due to GPU Context loss"/>
+  <int value="5" label="Aborted due to switch to unaccelerated rendering"/>
+  <int value="6" label="Aborted due to allocation failure"/>
+  <int value="7" label="Ended normally"/>
+  <int value="8" label="Ended with switch to background rendering"/>
+  <int value="9" label="Ended with fallback to software"/>
+  <int value="10" label="Ended with teardown"/>
+  <int value="11" label="Aborted because there was no surface"/>
 </enum>
 
 <enum name="CanvasResourceProviderType">
