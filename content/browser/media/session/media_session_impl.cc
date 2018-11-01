@@ -37,10 +37,6 @@ const double kUnduckedVolumeMultiplier = 1.0;
 const double kDefaultDuckingVolumeMultiplier = 0.2;
 
 const char kDebugInfoOwnerSeparator[] = " - ";
-const char kDebugInfoDucked[] = "Ducked";
-const char kDebugInfoActive[] = "Active";
-const char kDebugInfoInactive[] = "Inactive";
-const char kDebugInfoStateSeparator[] = " ";
 
 using MapRenderFrameHostToDepth = std::map<RenderFrameHost*, size_t>;
 
@@ -660,11 +656,6 @@ void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
   media_session::mojom::MediaSessionDebugInfoPtr info(
       media_session::mojom::MediaSessionDebugInfo::New());
 
-  // Convert the address of |this| to a string and use it as the name.
-  std::stringstream stream;
-  stream << this;
-  info->name = stream.str();
-
   // Add the title and the url to the owner.
   std::vector<std::string> owner_parts;
   MaybePushBackString(owner_parts,
@@ -672,13 +663,6 @@ void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
   MaybePushBackString(owner_parts,
                       web_contents()->GetLastCommittedURL().spec());
   info->owner = base::JoinString(owner_parts, kDebugInfoOwnerSeparator);
-
-  // Add the ducking state to state.
-  std::vector<std::string> state_parts;
-  MaybePushBackString(state_parts,
-                      IsActive() ? kDebugInfoActive : kDebugInfoInactive);
-  MaybePushBackString(state_parts, is_ducking_ ? kDebugInfoDucked : "");
-  info->state = base::JoinString(state_parts, kDebugInfoStateSeparator);
 
   std::move(callback).Run(std::move(info));
 }

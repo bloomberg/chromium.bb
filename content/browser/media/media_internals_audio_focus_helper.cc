@@ -27,6 +27,20 @@ const char kAudioFocusFunction[] = "media.onReceiveAudioFocusState";
 const char kAudioFocusIdKey[] = "id";
 const char kAudioFocusSessionsKey[] = "sessions";
 
+const char kAudioFocusForceDuck[] = "ForceDuck";
+
+const char kAudioFocusTypeGain[] = "Gain";
+const char kAudioFocusTypeGainTransient[] = "GainTransient";
+const char kAudioFocusTypeGainTransientMayDuck[] = "GainTransientMayDuck";
+
+const char kMediaSessionStateActive[] = "Active";
+const char kMediaSessionStateDucking[] = "Ducking";
+const char kMediaSessionStateSuspended[] = "Suspended";
+const char kMediaSessionStateInactive[] = "Inactive";
+
+const char kMediaSessionPlaybackStatePaused[] = "Paused";
+const char kMediaSessionPlaybackStatePlaying[] = "Playing";
+
 }  // namespace
 
 MediaInternalsAudioFocusHelper::MediaInternalsAudioFocusHelper() = default;
@@ -135,6 +149,7 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
     return;
 
   audio_focus_data_.Clear();
+  request_state_.clear();
 
   // We should go backwards through the stack so the top of the stack is
   // always shown first in the list.
@@ -147,6 +162,8 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
     base::DictionaryValue media_session_data;
     media_session_data.SetKey(kAudioFocusIdKey, base::Value(id_string));
     stack_data.GetList().push_back(std::move(media_session_data));
+
+    request_state_.emplace(id_string, session.Clone());
 
     audio_focus_debug_ptr_->GetDebugInfoForRequest(
         session->request_id.value(),
@@ -180,9 +197,14 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusDebugInfo(
     if (session.FindKey(kAudioFocusIdKey)->GetString() != id)
       continue;
 
-    session.SetKey("name", base::Value(info->name));
+    auto state = request_state_.find(id);
+    DCHECK(state != request_state_.end());
+
+    session.SetKey("name",
+                   base::Value(BuildNameString(state->second, info->name)));
     session.SetKey("owner", base::Value(info->owner));
-    session.SetKey("state", base::Value(info->state));
+    session.SetKey("state",
+                   base::Value(BuildStateString(state->second, info->state)));
     updated = true;
   }
 
@@ -203,6 +225,78 @@ void MediaInternalsAudioFocusHelper::SerializeAndSendUpdate(
   return MediaInternals::GetInstance()->SendUpdate(
       content::WebUI::GetJavascriptCall(
           function, std::vector<const base::Value*>(1, value)));
+}
+
+std::string MediaInternalsAudioFocusHelper::BuildNameString(
+    const media_session::mojom::AudioFocusRequestStatePtr& state,
+    const std::string& provided_name) const {
+  std::stringstream stream;
+
+  // Add the |source_name| (optional).
+  if (state->source_name.has_value()) {
+    stream << state->source_name.value();
+    stream << ":";
+  }
+
+  // Add the |request_id|.
+  stream << state->request_id.value().ToString();
+
+  if (!provided_name.empty())
+    stream << " " << provided_name;
+  return stream.str();
+}
+
+std::string MediaInternalsAudioFocusHelper::BuildStateString(
+    const media_session::mojom::AudioFocusRequestStatePtr& state,
+    const std::string& provided_state) const {
+  std::stringstream stream;
+
+  // Convert the AudioFocusType mojo enum to a string.
+  switch (state->audio_focus_type) {
+    case media_session::mojom::AudioFocusType::kGain:
+      stream << " " << kAudioFocusTypeGain;
+      break;
+    case media_session::mojom::AudioFocusType::kGainTransient:
+      stream << " " << kAudioFocusTypeGainTransient;
+      break;
+    case media_session::mojom::AudioFocusType::kGainTransientMayDuck:
+      stream << " " << kAudioFocusTypeGainTransientMayDuck;
+      break;
+  }
+
+  // Convert the MediaSessionInfo::SessionState mojo enum to a string.
+  switch (state->session_info->state) {
+    case media_session::mojom::MediaSessionInfo::SessionState::kActive:
+      stream << " " << kMediaSessionStateActive;
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kDucking:
+      stream << " " << kMediaSessionStateDucking;
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kSuspended:
+      stream << " " << kMediaSessionStateSuspended;
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kInactive:
+      stream << " " << kMediaSessionStateInactive;
+      break;
+  }
+
+  // Convert the MediaPlaybackState mojo enum to a string.
+  switch (state->session_info->playback_state) {
+    case media_session::mojom::MediaPlaybackState::kPaused:
+      stream << " " << kMediaSessionPlaybackStatePaused;
+      break;
+    case media_session::mojom::MediaPlaybackState::kPlaying:
+      stream << " " << kMediaSessionPlaybackStatePlaying;
+      break;
+  }
+
+  // Convert the |force_duck| boolean into a string.
+  if (state->session_info->force_duck)
+    stream << " " << kAudioFocusForceDuck;
+
+  if (!provided_state.empty())
+    stream << " " << provided_state;
+  return stream.str();
 }
 
 }  // namespace content
