@@ -747,6 +747,16 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
+  if (key == kWindowPipTypeKey) {
+    if (window->GetProperty(kWindowPipTypeKey)) {
+      WMEvent event(WM_EVENT_PIP);
+      OnWMEvent(&event);
+    } else {
+      // Currently "restore" is not implemented.
+      NOTIMPLEMENTED();
+    }
+    return;
+  }
   if (key == kWindowStateTypeKey) {
     if (!ignore_property_change_) {
       // This change came from somewhere else. Revert it.

@@ -33,6 +33,11 @@
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resize_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"  // nogncheck
+#include "ui/aura/window.h"
+#endif
+
 // static
 std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
     content::PictureInPictureWindowController* controller) {
@@ -183,12 +188,17 @@ OverlayWindowViews::OverlayWindowViews(
   params.keep_on_top = true;
   params.visible_on_all_workspaces = true;
   params.remove_standard_frame = true;
+  params.name = "PictureInPictureWindow";
 
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(this);
 
   Init(params);
   SetUpViews();
+
+#if defined(OS_CHROMEOS)
+  GetNativeWindow()->SetProperty(ash::kWindowPipTypeKey, true);
+#endif  // defined(OS_CHROMEOS)
 
   is_initialized_ = true;
 }

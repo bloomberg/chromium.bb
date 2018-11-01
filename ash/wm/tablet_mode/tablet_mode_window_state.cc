@@ -223,6 +223,12 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
         UpdateWindow(window_state, mojom::WindowStateType::PINNED,
                      true /* animated */);
       break;
+    case wm::WM_EVENT_PIP:
+      if (!window_state->IsPip()) {
+        UpdateWindow(window_state, mojom::WindowStateType::PIP,
+                     true /* animated */);
+      }
+      break;
     case wm::WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
         UpdateWindow(window_state, mojom::WindowStateType::TRUSTED_PINNED,
