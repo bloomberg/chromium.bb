@@ -58,7 +58,8 @@ class EventRouter : public KeyedService,
                     public drive::FileSystemObserver,
                     public drive::DriveServiceObserver,
                     public VolumeManagerObserver,
-                    public arc::ArcIntentHelperObserver {
+                    public arc::ArcIntentHelperObserver,
+                    public drive::DriveIntegrationServiceObserver {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -147,6 +148,9 @@ class EventRouter : public KeyedService,
   // Set custom dispatch directory change event implementation for testing.
   void SetDispatchDirectoryChangeEventImplForTesting(
       const DispatchDirectoryChangeEventImplCallback& callback);
+
+  // DriveIntegrationServiceObserver override.
+  void OnFileSystemMountFailed() override;
 
   // Returns a weak pointer for the event router.
   base::WeakPtr<EventRouter> GetWeakPtr();

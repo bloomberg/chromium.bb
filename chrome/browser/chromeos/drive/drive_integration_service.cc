@@ -760,6 +760,7 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
     enabled_ = false;
     drivefs_total_failures_count_ = 0;
     drivefs_consecutive_failures_count_ = 0;
+    mount_failed_ = false;
   }
 }
 
@@ -989,13 +990,19 @@ void DriveIntegrationService::MaybeRemountFileSystem(
     ++drivefs_consecutive_failures_count_;
     ++drivefs_total_failures_count_;
     if (drivefs_total_failures_count_ > 10) {
+      mount_failed_ = true;
       logger_->Log(logging::LOG_ERROR,
                    "DriveFs is too crashy. Leaving it alone.");
+      for (auto& observer : observers_)
+        observer.OnFileSystemMountFailed();
       return;
     }
     if (drivefs_consecutive_failures_count_ > 3) {
+      mount_failed_ = true;
       logger_->Log(logging::LOG_ERROR,
                    "DriveFs keeps failing at start. Giving up.");
+      for (auto& observer : observers_)
+        observer.OnFileSystemMountFailed();
       return;
     }
     remount_delay = base::TimeDelta::FromSeconds(

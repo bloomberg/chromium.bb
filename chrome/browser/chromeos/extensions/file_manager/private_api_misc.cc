@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -205,8 +206,12 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   api::file_manager_private::Preferences result;
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const PrefService* const service = profile->GetPrefs();
+  auto* drive_integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
 
-  result.drive_enabled = drive::util::IsDriveEnabledForProfile(profile);
+  result.drive_enabled = drive::util::IsDriveEnabledForProfile(profile) &&
+                         drive_integration_service &&
+                         !drive_integration_service->mount_failed();
   result.cellular_disabled =
       service->GetBoolean(drive::prefs::kDisableDriveOverCellular);
   result.hosted_files_disabled =
