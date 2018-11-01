@@ -126,6 +126,7 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
       base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
                      weak_ptr_factory_.GetWeakPtr()),
       app_list::AppListConfig::instance().search_tile_icon_dimension());
+  icon_decode_request_->set_normalized(true);
   icon_decode_request_->StartWithOptions(icon_png_data());
 }
 
