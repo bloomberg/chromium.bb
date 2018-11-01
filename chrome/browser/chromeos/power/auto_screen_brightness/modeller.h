@@ -16,16 +16,6 @@ namespace auto_screen_brightness {
 // Interface to on-device adaptive model.
 class Modeller {
  public:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class Status {
-    kInitializing = 0,
-    kDisabled = 1,
-    kGlobal = 2,
-    kPersonal = 3,
-    kMaxValue = kPersonal
-  };
-
   // Modeller must outlive its observers.
   class Observer : public base::CheckedObserver {
    public:

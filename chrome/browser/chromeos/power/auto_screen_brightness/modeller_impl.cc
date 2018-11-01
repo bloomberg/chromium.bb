@@ -118,7 +118,7 @@ ModellerImpl::~ModellerImpl() = default;
 void ModellerImpl::AddObserver(Modeller::Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
-  if (model_status_ != Modeller::Status::kInitializing) {
+  if (is_modeller_enabled_.has_value()) {
     NotifyObserverInitStatus(*observer);
   }
 }
@@ -129,7 +129,7 @@ void ModellerImpl::RemoveObserver(Modeller::Observer* observer) {
 }
 
 void ModellerImpl::OnAmbientLightUpdated(int lux) {
-  if (model_status_ == Status::kDisabled)
+  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
     return;
 
   const AmbientLightSample sample = {lux, tick_clock_->NowTicks()};
@@ -137,8 +137,7 @@ void ModellerImpl::OnAmbientLightUpdated(int lux) {
 }
 
 void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
-  if (als_init_status_.has_value())
-    return;
+  DCHECK(!als_init_status_);
 
   als_init_status_ = status;
 
@@ -146,8 +145,7 @@ void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
 }
 
 void ModellerImpl::OnBrightnessMonitorInitialized(bool success) {
-  if (brightness_monitor_success_.has_value())
-    return;
+  DCHECK(!brightness_monitor_success_.has_value());
 
   brightness_monitor_success_ = success;
   HandleStatusUpdate();
@@ -155,7 +153,7 @@ void ModellerImpl::OnBrightnessMonitorInitialized(bool success) {
 
 void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
                                            double new_brightness_percent) {
-  if (model_status_ == Status::kDisabled)
+  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
     return;
 
   // We don't add any training data if there is no ambient light sample.
@@ -236,13 +234,18 @@ ModellerImpl::ModellerImpl(
   DCHECK(user_activity_detector);
 
   if (!profile) {
-    model_status_ = Status::kDisabled;
+    is_modeller_enabled_ = false;
+    return;
+  }
+
+  if (!trainer_->HasValidConfiguration()) {
+    is_modeller_enabled_ = false;
     return;
   }
 
   curve_path_ = GetCurvePathFromProfile(profile);
   if (curve_path_.empty()) {
-    model_status_ = Status::kDisabled;
+    is_modeller_enabled_ = false;
     return;
   }
 
@@ -271,16 +274,16 @@ base::FilePath ModellerImpl::GetCurvePathFromProfile(Profile* profile) const {
 }
 
 void ModellerImpl::HandleStatusUpdate() {
-  if (model_status_ != Modeller::Status::kInitializing)
+  if (is_modeller_enabled_.has_value())
     return;
 
-  if (!als_init_status_.has_value()) {
+  if (!als_init_status_)
     return;
-  }
+
   const bool als_success =
-      als_init_status_.value() == AlsReader::AlsInitStatus::kSuccess;
+      *als_init_status_ == AlsReader::AlsInitStatus::kSuccess;
   if (!als_success) {
-    model_status_ = Modeller::Status::kDisabled;
+    is_modeller_enabled_ = false;
     OnInitializationComplete();
     return;
   }
@@ -288,8 +291,8 @@ void ModellerImpl::HandleStatusUpdate() {
   if (!brightness_monitor_success_.has_value()) {
     return;
   }
-  if (!brightness_monitor_success_.value()) {
-    model_status_ = Modeller::Status::kDisabled;
+  if (!*brightness_monitor_success_) {
+    is_modeller_enabled_ = false;
     OnInitializationComplete();
     return;
   }
@@ -309,28 +312,31 @@ void ModellerImpl::OnInitializationComplete() {
 }
 
 void ModellerImpl::NotifyObserverInitStatus(Modeller::Observer& observer) {
-  DCHECK_NE(model_status_, Status::kInitializing);
-  if (model_status_ == Status::kDisabled) {
+  DCHECK(is_modeller_enabled_.has_value());
+  if (!*is_modeller_enabled_) {
     observer.OnModelInitialized(base::nullopt, base::nullopt);
   } else {
-    observer.OnModelInitialized(global_curve_, personal_curve_);
+    base::Optional<MonotoneCubicSpline> personal_curve;
+    if (has_initial_personal_curve_)
+      personal_curve.emplace(trainer_->GetCurrentCurve());
+
+    observer.OnModelInitialized(global_curve_, personal_curve);
   }
 }
 
 void ModellerImpl::OnCurveLoadedFromDisk(
     const base::Optional<MonotoneCubicSpline>& curve) {
-  if (!curve.has_value()) {
-    model_status_ = Status::kGlobal;
-  } else {
-    personal_curve_.emplace(curve.value());
-    model_status_ = Status::kPersonal;
-  }
+  const bool is_personal_curve_valid =
+      trainer_->SetInitialCurves(global_curve_, curve ? *curve : global_curve_);
 
+  has_initial_personal_curve_ = is_personal_curve_valid && curve;
+  DCHECK(trainer_->GetGlobalCurve() == global_curve_);
+  DCHECK(trainer_->GetCurrentCurve() ==
+         (has_initial_personal_curve_ ? *curve : global_curve_));
+
+  is_modeller_enabled_ = true;
   OnInitializationComplete();
 
-  trainer_->SetInitialCurves(global_curve_, model_status_ == Status::kGlobal
-                                                ? global_curve_
-                                                : personal_curve_.value());
   ScheduleTrainerStart();
 }
 
@@ -356,7 +362,6 @@ void ModellerImpl::StartTraining() {
 }
 
 void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
-  personal_curve_.emplace(curve);
   for (auto& observer : observers_)
     observer.OnModelTrained(curve);
 
