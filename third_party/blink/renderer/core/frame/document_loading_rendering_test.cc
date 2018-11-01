@@ -457,7 +457,7 @@ TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
   // during import loading.
   const auto recalc_and_check = [this]() {
     GetDocument().SetNeedsStyleRecalc(
-        kNeedsReattachStyleChange,
+        kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create("test reason"));
     GetDocument().UpdateStyleAndLayout();
 
