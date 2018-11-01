@@ -3,7 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import json5_generator
 import trie_builder
@@ -20,7 +22,7 @@ class UnitTrieWriter(json5_generator.Writer):
             'css_primitive_value_unit_trie.cc': self.generate_implementation
         }
 
-    @template_expander.use_jinja('templates/css_primitive_value_unit_trie.cc.tmpl')
+    @template_expander.use_jinja('core/css/templates/css_primitive_value_unit_trie.cc.tmpl')
     def generate_implementation(self):
         return {
             'input_files': self._input_files,
