@@ -65,13 +65,10 @@ class AnswerTextBuilder {
      *
      * @param line All text fields within this line will be added to the returned Spannable.
      *             types.
-     * @param metrics Font metrics which will be used to properly size and layout images and top-
-     *                aligned text.
      * @param density Screen density which will be used to properly size and layout images and top-
      *                aligned text.
      */
-    static Spannable buildSpannable(
-            SuggestionAnswer.ImageLine line, Paint.FontMetrics metrics, float density) {
+    static Spannable buildSpannable(SuggestionAnswer.ImageLine line, float density) {
         SpannableStringBuilder builder = new SpannableStringBuilder();
 
         // Determine the height of the largest text element in the line.  This
@@ -80,17 +77,17 @@ class AnswerTextBuilder {
 
         List<SuggestionAnswer.TextField> textFields = line.getTextFields();
         for (int i = 0; i < textFields.size(); i++) {
-            appendAndStyleText(builder, textFields.get(i), maxTextHeightSp, metrics, density);
+            appendAndStyleText(builder, textFields.get(i), maxTextHeightSp, density);
         }
         if (line.hasAdditionalText()) {
             builder.append("  ");
             SuggestionAnswer.TextField additionalText = line.getAdditionalText();
-            appendAndStyleText(builder, additionalText, maxTextHeightSp, metrics, density);
+            appendAndStyleText(builder, additionalText, maxTextHeightSp, density);
         }
         if (line.hasStatusText()) {
             builder.append("  ");
             SuggestionAnswer.TextField statusText = line.getStatusText();
-            appendAndStyleText(builder, statusText, maxTextHeightSp, metrics, density);
+            appendAndStyleText(builder, statusText, maxTextHeightSp, density);
         }
 
         return builder;
@@ -135,15 +132,12 @@ class AnswerTextBuilder {
      * @param textField The text field (with text and type) to append.
      * @param maxTextHeightSp The height in SP of the largest text field in the entire line. Used to
      *                        top-align text when specified.
-     * @param metrics Font metrics which will be used to properly size and layout images and top-
-     *                aligned text.
      * @param density Screen density which will be used to properly size and layout images and top-
      *                aligned text.
      */
     @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
     private static void appendAndStyleText(SpannableStringBuilder builder,
-            SuggestionAnswer.TextField textField, int maxTextHeightSp, Paint.FontMetrics metrics,
-            float density) {
+            SuggestionAnswer.TextField textField, int maxTextHeightSp, float density) {
         String text = textField.getText();
         int type = textField.getType();
 
@@ -163,8 +157,8 @@ class AnswerTextBuilder {
         builder.setSpan(colorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         if (type == ANSWERS_TOP_ALIGNED_TEXT_TYPE) {
-            TopAlignedSpan topAlignedSpan = new TopAlignedSpan(
-                    ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP, maxTextHeightSp, metrics, density);
+            TopAlignedSpan topAlignedSpan =
+                    new TopAlignedSpan(ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP, maxTextHeightSp, density);
             builder.setSpan(topAlignedSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
@@ -243,35 +237,46 @@ class AnswerTextBuilder {
      * the top of the ascent).
      */
     private static class TopAlignedSpan extends MetricAffectingSpan {
-        private int mBaselineShift;
+        private final int mTextHeightSp;
+        private final int mMaxTextHeightSp;
+        private final float mDensity;
+
+        private Integer mBaselineShift;
 
         /**
          * Constructor for TopAlignedSpan.
          *
          * @param textHeightSp The total height in SP of the text covered by this span.
          * @param maxTextHeightSp The total height in SP of the text we wish to top-align with.
-         * @param metrics The font metrics used to determine what proportion of the font height is
-         *                the ascent.
          * @param density The display density.
          */
-        public TopAlignedSpan(
-                int textHeightSp, int maxTextHeightSp, Paint.FontMetrics metrics, float density) {
-            float ascentProportion = metrics.ascent / (metrics.top - metrics.bottom);
-
-            int textAscentPx = (int) (textHeightSp * ascentProportion * density);
-            int maxTextAscentPx = (int) (maxTextHeightSp * ascentProportion * density);
-
-            this.mBaselineShift = -(maxTextAscentPx - textAscentPx); // Up is -y.
+        public TopAlignedSpan(int textHeightSp, int maxTextHeightSp, float density) {
+            mTextHeightSp = textHeightSp;
+            mMaxTextHeightSp = maxTextHeightSp;
+            mDensity = density;
         }
 
         @Override
         public void updateDrawState(TextPaint tp) {
+            initBaselineShift(tp);
             tp.baselineShift += mBaselineShift;
         }
 
         @Override
         public void updateMeasureState(TextPaint tp) {
+            initBaselineShift(tp);
             tp.baselineShift += mBaselineShift;
+        }
+
+        private void initBaselineShift(TextPaint tp) {
+            if (mBaselineShift != null) return;
+            Paint.FontMetrics metrics = tp.getFontMetrics();
+            float ascentProportion = metrics.ascent / (metrics.top - metrics.bottom);
+
+            int textAscentPx = (int) (mTextHeightSp * ascentProportion * mDensity);
+            int maxTextAscentPx = (int) (mMaxTextHeightSp * ascentProportion * mDensity);
+
+            mBaselineShift = -(maxTextAscentPx - textAscentPx); // Up is -y.
         }
     }
 }

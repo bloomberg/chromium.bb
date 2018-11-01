@@ -126,8 +126,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
         if (suggestion.hasAnswer()) {
-            setStateForAnswerSuggestion(model, suggestion.getAnswer(), item.getAnswerImage(),
-                    textLine1Paint, textLine2Paint);
+            setStateForAnswerSuggestion(model, suggestion.getAnswer(), item.getAnswerImage());
         } else {
             setStateForTextSuggestion(model, item, textLine1Paint);
         }
@@ -320,8 +319,8 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     /**
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      */
-    private void setStateForAnswerSuggestion(PropertyModel model, SuggestionAnswer answer,
-            Bitmap answerImage, Paint textLine1Paint, Paint textLine2Paint) {
+    private void setStateForAnswerSuggestion(
+            PropertyModel model, SuggestionAnswer answer, Bitmap answerImage) {
         float density = mContext.getResources().getDisplayMetrics().density;
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
@@ -333,15 +332,13 @@ public class OmniboxResultsAdapter extends BaseAdapter {
                 Pair.create(TypedValue.COMPLEX_UNIT_SP,
                         (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(
-                        firstLine, textLine1Paint.getFontMetrics(), density)));
+                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(firstLine, density)));
 
         model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
                 Pair.create(TypedValue.COMPLEX_UNIT_SP,
                         (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(
-                        secondLine, textLine2Paint.getFontMetrics(), density)));
+                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(secondLine, density)));
         model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, numAnswerLines);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
                 SuggestionViewViewBinder.getStandardFontColor(
