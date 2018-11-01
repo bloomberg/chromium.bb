@@ -51,7 +51,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   gfx::Rect GetSwipeInputRect() const override;
   const std::string& GetNotificationKey() const override;
   const std::string& GetNotificationId() const override;
-  void CancelLongPress() override;
+  void CancelPress() override;
 
  private:
   ArcNotificationManager* const manager_;

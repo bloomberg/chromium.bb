@@ -69,7 +69,7 @@ class ArcNotificationManager
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
   void SetDoNotDisturbStatusOnAndroid(bool enabled);
-  void CancelLongPress(const std::string& key);
+  void CancelPress(const std::string& key);
   void SetNotificationConfiguration();
 
  private:

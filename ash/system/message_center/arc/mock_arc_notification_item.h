@@ -44,7 +44,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
   void OnRemoteInputActivationChanged(bool activate) override {}
-  void CancelLongPress() override {}
+  void CancelPress() override {}
 
   arc::mojom::ArcNotificationType GetNotificationType() const override;
   arc::mojom::ArcNotificationExpandState GetExpandState() const override;

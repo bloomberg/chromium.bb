@@ -105,7 +105,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         widget->OnMouseEvent(located_event->AsMouseEvent());
       } else if (located_event->IsScrollEvent()) {
         widget->OnScrollEvent(located_event->AsScrollEvent());
-        owner_->item_->CancelLongPress();
+        owner_->item_->CancelPress();
       } else if (located_event->IsGestureEvent() &&
                  event->type() != ui::ET_GESTURE_TAP) {
         bool slide_handled_by_android = false;
@@ -128,7 +128,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         }
 
         if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
-          owner_->item_->CancelLongPress();
+          owner_->item_->CancelPress();
 
         if (event->type() == ui::ET_GESTURE_SCROLL_END)
           swipe_captured_ = false;

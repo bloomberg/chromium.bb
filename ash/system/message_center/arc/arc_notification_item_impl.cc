@@ -265,8 +265,8 @@ const std::string& ArcNotificationItemImpl::GetNotificationId() const {
   return notification_id_;
 }
 
-void ArcNotificationItemImpl::CancelLongPress() {
-  manager_->CancelLongPress(notification_key_);
+void ArcNotificationItemImpl::CancelPress() {
+  manager_->CancelPress(notification_key_);
 }
 
 }  // namespace ash

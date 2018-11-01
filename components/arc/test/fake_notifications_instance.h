@@ -32,7 +32,7 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   void OpenNotificationSnoozeSettings(const std::string& key) override;
   void SetDoNotDisturbStatusOnAndroid(
       mojom::ArcDoNotDisturbStatusPtr status) override;
-  void CancelLongPress(const std::string& key) override;
+  void CancelPress(const std::string& key) override;
   void PerformDeferredUserAction(uint32_t action_id) override;
   void CancelDeferredUserAction(uint32_t action_id) override;
   void SetLockScreenSettingOnAndroid(
