@@ -87,8 +87,21 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     bool dirty = false;
   };
 
+  // Holds occlusion related information for tracked windows.
+  struct OcclusionData {
+    // Occlusion state for a tracked window.
+    Window::OcclusionState occlusion_state = Window::OcclusionState::UNKNOWN;
+    // Region in root window coordinates that is occluded.
+    SkRegion occluded_region;
+  };
+
   WindowOcclusionTracker();
   ~WindowOcclusionTracker() override;
+
+  // Returns true iff the occlusion states in |tracked_windows| match those
+  // returned by Window::occlusion_state().
+  static bool OcclusionStatesMatch(
+      const base::flat_map<Window*, OcclusionData>& tracked_windows);
 
   // Recomputes the occlusion state of tracked windows under roots marked as
   // dirty in |root_windows_| if there are no active ScopedPause instance.
@@ -126,9 +139,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void SetWindowAndDescendantsAreOccluded(Window* window, bool is_occluded);
 
   // Updates the occlusion state of |window| in |tracked_windows_|, based on
-  // |is_occluded| and window->IsVisible(). No-op if |window| is not in
+  // |is_occluded| and window->IsVisible(). Updates the occluded region of
+  // |window| using |occluded_region|. No-op if |window| is not in
   // |tracked_windows_|.
-  void SetOccluded(Window* window, bool is_occluded);
+  void SetOccluded(Window* window,
+                   bool is_occluded,
+                   const SkRegion& occluded_region);
 
   // Returns true if |window| is in |tracked_windows_|.
   bool WindowIsTracked(Window* window) const;
@@ -214,8 +230,8 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
                                       Window* new_root) override;
   void OnWindowLayerRecreated(Window* window) override;
 
-  // Windows whose occlusion state is tracked.
-  base::flat_map<Window*, Window::OcclusionState> tracked_windows_;
+  // Windows whose occlusion data is tracked.
+  base::flat_map<Window*, OcclusionData> tracked_windows_;
 
   // Windows whose bounds or transform are animated.
   //

@@ -887,11 +887,14 @@ void Window::SetVisible(bool visible) {
   NotifyWindowVisibilityChanged(this, visible);
 }
 
-void Window::SetOcclusionState(OcclusionState occlusion_state) {
-  if (occlusion_state != occlusion_state_) {
+void Window::SetOcclusionInfo(OcclusionState occlusion_state,
+                              const SkRegion& occluded_region) {
+  if (occlusion_state != occlusion_state_ ||
+      occluded_region_ != occluded_region) {
     occlusion_state_ = occlusion_state;
+    occluded_region_ = occluded_region;
     if (delegate_)
-      delegate_->OnWindowOcclusionChanged(occlusion_state);
+      delegate_->OnWindowOcclusionChanged(occlusion_state, occluded_region);
   }
 }
 
