@@ -841,10 +841,10 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
       bool has_fetch_handler,
-      base::TimeTicks dispatch_event_time) {
+      base::TimeTicks /* dispatch_event_time */) {
     version_->FinishRequest(
-        request_id, status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-        dispatch_event_time);
+        request_id,
+        status == blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     version_->set_fetch_handler_existence(
         has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS

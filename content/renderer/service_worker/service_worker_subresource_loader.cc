@@ -290,13 +290,6 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
   SettleFetchEventDispatch(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
 
-  // TODO(bashi): Remove these histograms. They are replaced with
-  // ServiceWorker.LoadTiming.Subresource UMAs.
-  base::TimeDelta delay = actual_dispatch_time - request_dispatch_time;
-  UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay", delay);
-  UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay_FETCH_SUB_RESOURCE",
-                      delay);
-
   switch (status) {
     case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
       // ServiceWorkerFetchResponseCallback interface (OnResponse*() or

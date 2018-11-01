@@ -326,9 +326,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Pass the result of the event to |was_handled|, which is used to record
   // statistics based on the event status.
   // TODO(mek): Use something other than a bool for event status.
-  bool FinishRequest(int request_id,
-                     bool was_handled,
-                     base::TimeTicks dispatch_event_time);
+  bool FinishRequest(int request_id, bool was_handled);
 
   // Finishes an external request that was started by StartExternalRequest().
   // Returns false if there was an error finishing the request: e.g. the request

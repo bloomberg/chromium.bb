@@ -360,8 +360,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       FetchEventResult fetch_result,
       blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
     if (!version->FinishRequest(fetch_event_id.value(),
-                                fetch_result == FetchEventResult::kGotResponse,
-                                timing->dispatch_event_time))
+                                fetch_result == FetchEventResult::kGotResponse))
       NOTREACHED() << "Should only receive one reply per event";
     // |fetch_dispatcher| is null if the URLRequest was killed.
     if (!fetch_dispatcher)
@@ -760,11 +759,10 @@ void ServiceWorkerFetchDispatcher::OnFetchEventFinished(
     int event_finish_id,
     scoped_refptr<URLLoaderAssets> url_loader_assets,
     blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks dispatch_event_time) {
+    base::TimeTicks /* dispatch_event_time */) {
   version->FinishRequest(
       event_finish_id,
-      status != blink::mojom::ServiceWorkerEventStatus::ABORTED,
-      dispatch_event_time);
+      status != blink::mojom::ServiceWorkerEventStatus::ABORTED);
 }
 
 }  // namespace content

@@ -406,12 +406,6 @@ class ServiceWorkerMetrics {
                                   base::TimeDelta time,
                                   bool was_handled);
 
-  // Records the time taken between sending an event IPC from the browser
-  // process to a Service Worker and executing the event handler in the Service
-  // Worker.
-  static void RecordEventDispatchingDelay(EventType event,
-                                          base::TimeDelta time);
-
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
                                      blink::ServiceWorkerStatusCode status);

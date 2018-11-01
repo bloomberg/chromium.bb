@@ -524,8 +524,7 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
     EXPECT_TRUE(helper_->is_zero_idle_timer_delay());
 
   // Finish the request. Activation should happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
@@ -551,8 +550,7 @@ TEST_P(ServiceWorkerActivationTest, NoControllee) {
 
   // Finish the request. Since there is a controllee, activation should not yet
   // happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
@@ -584,8 +582,7 @@ TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   // S13nServiceWorker: FinishRequest() doesn't immediately make the worker
   // "no work" state. It needs to be notfied the idle state by
   // RequestTermination().
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     EXPECT_EQ(version_1.get(), reg->active_version());
@@ -611,8 +608,7 @@ TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
 
   // Finish the in-flight request. Since there is a controllee,
   // activation should not happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
