@@ -1,3 +1,5 @@
+// TODO(xiaochengh): Convert all setRangeText tests to use testharness.
+
 function runTestsShouldPass(tagName, attributes)
 {
     attributes = attributes || {};
@@ -162,4 +164,25 @@ function runTestsShouldFail(tagName, attributes)
     shouldBeEqualToString("element.value", initialValue);
 }
 
+function runTestsShouldFailTestHarness(tagName, attributes, descriptions, title) {
+  attributes = attributes || {};
+  window.element = document.createElement(tagName);
+  for (var key in attributes)
+    element.setAttribute(key, attributes[key]);
+
+  document.body.appendChild(element);
+  test(() => {
+    if (element.getAttribute("type") == "file") {
+      assert_throws('InvalidStateError', () => element.value = '0123456789XYZ', descriptions.shift());
+    } else {
+      element.value = '0123456789XYZ';
+    }
+
+    var initialValue = element.value;
+    assert_throws('InvalidStateError', () => element.setRangeText('ABC', 0, 0), descriptions.shift());
+
+    // setRangeText() shouldn't do anything on non-text form controls.
+    assert_equals(element.value, initialValue);
+  }, title);
+}
 
