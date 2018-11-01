@@ -23,18 +23,18 @@ var testPresentationRequestStart = function(t, requestArgument, connectionUrl) {
 };
 
 async_test(t => {
-  var presentationUrl = "http://example.com/example.html";
+  var presentationUrl = "https://example.com/example.html";
   testPresentationRequestStart(t, presentationUrl, presentationUrl);
 }, "Test that the PresentationRequest.start() with single URL resolves with correct PresentationConnection object.");
 
 async_test(t => {
-  var presentationUrls = ["http://example.com/example.html", "cast://google.com/app_id=deadbeef"];
+  var presentationUrls = ["https://example.com/example.html", "cast://google.com/app_id=deadbeef"];
   testPresentationRequestStart(t, presentationUrls, presentationUrls[0]);
 }, "Test that the PresentationRequest.start() with multiple URLs resolves with correct PresentationConnection object.");
 
 async_test(t => {
-  var presentationUrl = "http://example.com/\ud801/example.html";
-  var connectionUrl = "http://example.com/" + encodeURIComponent('\ufffd') + "/example.html"
+  var presentationUrl = "https://example.com/\ud801/example.html";
+  var connectionUrl = "https://example.com/" + encodeURIComponent('\ufffd') + "/example.html"
 
   testPresentationRequestStart(t, presentationUrl, connectionUrl);
 }, "Test that the PresentationRequest.start() with single URL containing special symbol resolves with correct PresentationConnection object.");

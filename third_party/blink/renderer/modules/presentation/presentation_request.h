@@ -44,8 +44,6 @@ class MODULES_EXPORT PresentationRequest final
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  static void RecordStartOriginTypeAccess(ExecutionContext&);
-
   ScriptPromise start(ScriptState*);
   ScriptPromise reconnect(ScriptState*, const String& id);
   ScriptPromise getAvailability(ScriptState*);
@@ -63,7 +61,6 @@ class MODULES_EXPORT PresentationRequest final
 
  private:
   PresentationRequest(ExecutionContext*, const Vector<KURL>&);
-  static void RecordConstructorOriginTypeAccess(ExecutionContext&);
 
   Member<PresentationAvailabilityProperty> availability_property_;
   Vector<KURL> urls_;

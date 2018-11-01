@@ -12,7 +12,7 @@ async_test(t => {
   internals.settings.setPresentationReceiver(true);
   t.add_cleanup(_ => { internals.settings.setPresentationReceiver(false); });
 
-  const url = 'http://example.com/a.html';
+  const url = 'https://example.com/a.html';
   const id = 'fakePresentationId';
 
     presentationServiceMock.onSetReceiver = () => {

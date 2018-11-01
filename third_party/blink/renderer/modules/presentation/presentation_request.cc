@@ -38,7 +38,6 @@ Settings* GetSettings(ExecutionContext* execution_context) {
 }
 
 bool IsKnownProtocolForPresentationUrl(const KURL& url) {
-  // TODO(crbug.com/733381): Restrict to https + custom schemes.
   return url.ProtocolIsInHTTPFamily() || url.ProtocolIs("cast") ||
          url.ProtocolIs("cast-dial");
 }
@@ -132,19 +131,6 @@ bool PresentationRequest::HasPendingActivity() const {
                                        ScriptPromisePropertyBase::kPending;
 }
 
-// static
-void PresentationRequest::RecordStartOriginTypeAccess(
-    ExecutionContext& execution_context) {
-  if (execution_context.IsSecureContext()) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestStartSecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        &execution_context,
-        WebFeature::kPresentationRequestStartInsecureOrigin);
-  }
-}
-
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {
   ExecutionContext* execution_context = GetExecutionContext();
   Settings* context_settings = GetSettings(execution_context);
@@ -171,7 +157,6 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  RecordStartOriginTypeAccess(*execution_context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   controller->GetPresentationService()->StartPresentation(
@@ -247,20 +232,6 @@ void PresentationRequest::Trace(blink::Visitor* visitor) {
 
 PresentationRequest::PresentationRequest(ExecutionContext* execution_context,
                                          const Vector<KURL>& urls)
-    : ContextClient(execution_context), urls_(urls) {
-  RecordConstructorOriginTypeAccess(*execution_context);
-}
-
-// static
-void PresentationRequest::RecordConstructorOriginTypeAccess(
-    ExecutionContext& execution_context) {
-  if (execution_context.IsSecureContext()) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestSecureOrigin);
-  } else {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestInsecureOrigin);
-  }
-}
+    : ContextClient(execution_context), urls_(urls) {}
 
 }  // namespace blink

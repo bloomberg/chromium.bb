@@ -9,6 +9,7 @@ enum PresentationConnectionCloseReason { "error", "closed", "wentaway" };
 [
     Constructor(DOMString type, PresentationConnectionCloseEventInit eventInitDict),
     RuntimeEnabled=Presentation,
+    SecureContext,
     Exposed=Window
 ] interface PresentationConnectionCloseEvent : Event {
     readonly attribute PresentationConnectionCloseReason reason;

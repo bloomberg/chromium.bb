@@ -121,7 +121,6 @@ void PresentationController::OnDefaultPresentationStarted(
   if (!presentation_ || !presentation_->defaultRequest())
     return;
 
-  PresentationRequest::RecordStartOriginTypeAccess(*GetExecutionContext());
   auto* connection = ControllerPresentationConnection::Take(
       this, *result->presentation_info, presentation_->defaultRequest());
   // TODO(btolsch): Convert this and similar calls to just use InterfacePtrInfo
