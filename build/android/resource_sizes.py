@@ -41,6 +41,9 @@ _APK_PATCH_SIZE_ESTIMATOR_PATH = os.path.join(
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import perf_tests_results_helper # pylint: disable=import-error
 
+with host_paths.SysPath(host_paths.TRACING_PATH):
+  from tracing.value import convert_chart_json # pylint: disable=import-error
+
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
   from util import build_utils # pylint: disable=import-error
 
@@ -715,7 +718,12 @@ def main():
                          help='Location of the build artifacts.')
   argparser.add_argument('--chartjson',
                          action='store_true',
-                         help='Sets output mode to chartjson.')
+                         help='DEPRECATED. Use --output-format=chartjson '
+                              'instead.')
+  argparser.add_argument('--output-format',
+                         choices=['chartjson', 'histograms'],
+                         help='Output the results to a file in the given '
+                              'format instead of printing the results.')
   argparser.add_argument('--output-dir',
                          default='.',
                          help='Directory to save chartjson to.')
@@ -742,7 +750,11 @@ def main():
   argparser.add_argument('apk', help='APK file path.')
   args = argparser.parse_args()
 
-  chartjson = _BASE_CHART.copy() if args.chartjson else None
+  # TODO(bsheedy): Remove this once uses of --chartjson have been removed.
+  if args.chartjson:
+    args.output_format = 'chartjson'
+
+  chartjson = _BASE_CHART.copy() if args.output_format else None
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
   if args.dump_sis and not out_dir:
     argparser.error(
@@ -764,11 +776,30 @@ def main():
   if args.estimate_patch_size:
     _PrintPatchSizeEstimate(args.apk, args.reference_apk_builder,
                             args.reference_apk_bucket, chartjson=chartjson)
+
   if chartjson:
     results_path = os.path.join(args.output_dir, 'results-chart.json')
-    logging.critical('Dumping json to %s', results_path)
+    logging.critical('Dumping chartjson to %s', results_path)
     with open(results_path, 'w') as json_file:
       json.dump(chartjson, json_file)
+
+    # We would ideally generate a histogram set directly instead of generating
+    # chartjson then converting. However, perf_tests_results_helper is in
+    # //build, which doesn't seem to have any precedent for depending on
+    # anything in Catapult. This can probably be fixed, but since this doesn't
+    # need to be super fast or anything, converting is a good enough solution
+    # for the time being.
+    if args.output_format == 'histograms':
+      histogram_result = convert_chart_json.ConvertChartJson(results_path)
+      if histogram_result.returncode != 0:
+        logging.error('chartjson conversion failed with error: %s',
+            histogram_result.stdout)
+        return 1
+
+      histogram_path = os.path.join(args.output_dir, 'perf_results.json')
+      logging.critical('Dumping histograms to %s', histogram_path)
+      with open(histogram_path, 'w') as json_file:
+        json_file.write(histogram_result.stdout)
 
 
 if __name__ == '__main__':
