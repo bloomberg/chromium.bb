@@ -53,12 +53,19 @@ void WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete(
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
       receiver_only_transceivers;
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
-  if (surface_receivers_only_) {
-    for (const auto& receiver : pc_->GetReceivers()) {
-      transceivers.push_back(new SurfaceReceiverStateOnly(receiver));
+  // Only surface transceiver/receiver states if the peer connection is not
+  // closed. If the peer connection is closed, the peer connection handler may
+  // have been destroyed along with any track adapters that
+  // TransceiverStateSurfacer assumes exist. This is treated as a special case
+  // due to https://crbug.com/897251.
+  if (pc_->signaling_state() != webrtc::PeerConnectionInterface::kClosed) {
+    if (surface_receivers_only_) {
+      for (const auto& receiver : pc_->GetReceivers()) {
+        transceivers.push_back(new SurfaceReceiverStateOnly(receiver));
+      }
+    } else {
+      transceivers = pc_->GetTransceivers();
     }
-  } else {
-    transceivers = pc_->GetTransceivers();
   }
   TransceiverStateSurfacer transceiver_state_surfacer(main_task_runner_,
                                                       signaling_task_runner_);
