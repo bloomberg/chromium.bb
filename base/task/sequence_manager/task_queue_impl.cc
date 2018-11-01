@@ -54,7 +54,8 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
       main_thread_only_(sequence_manager, this, time_domain),
       proxy_(MakeRefCounted<TaskQueueProxy>(this, associated_thread_)),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
-      should_notify_observers_(spec.should_notify_observers) {
+      should_notify_observers_(spec.should_notify_observers),
+      delayed_fence_allowed_(spec.delayed_fence_allowed) {
   DCHECK(time_domain);
   // SequenceManager can't be set later, so we need to prevent task runners
   // from posting any tasks.
@@ -184,9 +185,10 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task) {
   EnqueueOrder sequence_number =
       any_thread().sequence_manager->GetNextSequenceNumber();
 
-  PushOntoImmediateIncomingQueueLocked(Task(std::move(task),
-                                            any_thread().time_domain->Now(),
-                                            sequence_number, sequence_number));
+  PushOntoImmediateIncomingQueueLocked(Task(
+      std::move(task),
+      delayed_fence_allowed_ ? any_thread().time_domain->Now() : TimeTicks(),
+      sequence_number, sequence_number));
 }
 
 void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
@@ -659,6 +661,10 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
 }
 
 void TaskQueueImpl::InsertFenceAt(TimeTicks time) {
+  DCHECK(delayed_fence_allowed_)
+      << "Delayed fences are not supported for this queue. Enable them "
+         "explicitly in TaskQueue::Spec when creating the queue";
+
   // Task queue can have only one fence, delayed or not.
   RemoveFence();
   main_thread_only().delayed_fence = time;

@@ -100,11 +100,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   // Options for constructing a TaskQueue.
   struct Spec {
-    explicit Spec(const char* name)
-        : name(name),
-          should_monitor_quiescence(false),
-          time_domain(nullptr),
-          should_notify_observers(true) {}
+    explicit Spec(const char* name) : name(name) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
       should_monitor_quiescence = should_monitor;
@@ -116,15 +112,23 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
       return *this;
     }
 
+    // Delayed fences require Now() to be sampled when posting immediate tasks
+    // which is not free.
+    Spec SetDelayedFencesAllowed(bool allow_delayed_fences) {
+      delayed_fence_allowed = allow_delayed_fences;
+      return *this;
+    }
+
     Spec SetTimeDomain(TimeDomain* domain) {
       time_domain = domain;
       return *this;
     }
 
     const char* name;
-    bool should_monitor_quiescence;
-    TimeDomain* time_domain;
-    bool should_notify_observers;
+    bool should_monitor_quiescence = false;
+    TimeDomain* time_domain = nullptr;
+    bool should_notify_observers = true;
+    bool delayed_fence_allowed = false;
   };
 
   // Information about task execution.
@@ -275,6 +279,10 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // Only one fence can be scheduled at a time. Inserting a new fence
   // will automatically remove the previous one, regardless of fence type.
   void InsertFence(InsertFencePosition position);
+
+  // Delayed fences are only allowed for queues created with
+  // SetDelayedFencesAllowed(true) because this feature implies sampling Now()
+  // (which isn't free) for every PostTask, even those with zero delay.
   void InsertFenceAt(TimeTicks time);
 
   // Removes any previously added fence and unblocks execution of any tasks

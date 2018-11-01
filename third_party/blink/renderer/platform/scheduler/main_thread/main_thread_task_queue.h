@@ -177,31 +177,37 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     QueueCreationParams SetCanBeDeferred(bool value) {
       queue_traits = queue_traits.SetCanBeDeferred(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBeThrottled(bool value) {
       queue_traits = queue_traits.SetCanBeThrottled(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBePaused(bool value) {
       queue_traits = queue_traits.SetCanBePaused(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBeFrozen(bool value) {
       queue_traits = queue_traits.SetCanBeFrozen(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanRunInBackground(bool value) {
       queue_traits = queue_traits.SetCanRunInBackground(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetQueueTraits(QueueTraits value) {
       queue_traits = value;
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
@@ -234,6 +240,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     FrameSchedulerImpl* frame_scheduler;
     QueueTraits queue_traits;
     bool freeze_when_keep_active;
+
+   private:
+    void ApplyQueueTraitsToSpec() {
+      spec = spec.SetDelayedFencesAllowed(queue_traits.can_be_throttled);
+    }
   };
 
   ~MainThreadTaskQueue() override;
