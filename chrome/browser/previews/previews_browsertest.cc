@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -25,6 +26,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
 
@@ -64,6 +66,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   ~PreviewsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -102,7 +108,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
-    cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -199,7 +204,9 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   void SetUp() override {
     // Explicitly disable server hints.
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kNoScriptPreviews},
+        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
         {previews::features::kOptimizationHints});
     PreviewsBrowserTest::SetUp();
   }
