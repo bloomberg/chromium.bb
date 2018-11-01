@@ -5,6 +5,8 @@
 #ifndef ASH_WM_PIP_PIP_POSITIONER_H_
 #define ASH_WM_PIP_PIP_POSITIONER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -57,6 +59,20 @@ class ASH_EXPORT PipPositioner {
 
  private:
   friend class PipPositionerTest;
+
+  // Moves |bounds| such that it does not intersect with system ui areas, such
+  // as the unified system tray or the floating keyboard.
+  static gfx::Rect AvoidObstacles(const display::Display& display,
+                                  const gfx::Rect& bounds);
+
+  // Internal method for collision resolution. Returns a gfx::Rect with the
+  // same size as |bounds|. That rectangle will not intersect any of the
+  // rectangles in |rects| and will be completely inside |work_area|. If such a
+  // rectangle does not exist, returns |bounds|. Otherwise, it will be the
+  // closest such rectangle to |bounds|.
+  static gfx::Rect AvoidObstaclesInternal(const gfx::Rect& work_area,
+                                          const std::vector<gfx::Rect>& rects,
+                                          const gfx::Rect& bounds);
 
   DISALLOW_COPY_AND_ASSIGN(PipPositioner);
 };
