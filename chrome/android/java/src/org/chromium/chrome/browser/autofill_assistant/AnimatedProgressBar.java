@@ -81,7 +81,11 @@ public class AnimatedProgressBar {
         mProgressBar.setVisibility(View.INVISIBLE);
     }
 
-    public void setProgress(int progress) {
+    /**
+     * Set the progress to {@code progress} if it is higher than the current progress, or do nothing
+     * if it is not (hence it is OK to call this method with the same value multiple times).
+     */
+    public void maybeIncreaseProgress(int progress) {
         if (progress > mLastProgress) {
             ObjectAnimator progressAnimation =
                     ObjectAnimator.ofInt(mProgressBar, PROGRESS_PROPERTY, mLastProgress, progress);

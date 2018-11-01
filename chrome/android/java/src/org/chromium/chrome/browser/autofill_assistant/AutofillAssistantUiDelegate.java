@@ -45,6 +45,7 @@ import java.util.Locale;
 class AutofillAssistantUiDelegate {
     private static final String FEEDBACK_CATEGORY_TAG =
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
+    private static final int PROGRESS_BAR_INITIAL_PROGRESS = 10;
 
     // TODO(crbug.com/806868): Use correct user locale.
     private static final SimpleDateFormat sDetailsTimeFormat =
@@ -233,13 +234,9 @@ class AutofillAssistantUiDelegate {
      * @param message Message to display.
      */
     public void showStatusMessage(@Nullable String message) {
-        ensureFullContainerIsShown();
+        show();
 
         mStatusMessageView.setText(message);
-    }
-
-    private void ensureFullContainerIsShown() {
-        if (!mFullContainer.isShown()) show();
     }
 
     /**
@@ -274,7 +271,7 @@ class AutofillAssistantUiDelegate {
         }
 
         setChipViewContainerGravity(hasHighlightedScript);
-        ensureFullContainerIsShown();
+        show();
     }
 
     private boolean hasHighlightedScript(ArrayList<ScriptHandle> scripts) {
@@ -333,7 +330,13 @@ class AutofillAssistantUiDelegate {
     }
 
     public void show() {
-        mFullContainer.setVisibility(View.VISIBLE);
+        if (!mFullContainer.isShown()) {
+            mFullContainer.setVisibility(View.VISIBLE);
+
+            // Set the initial progress. It is OK to make multiple calls to this method as it will
+            // have an effect only on the first one.
+            mProgressBar.maybeIncreaseProgress(PROGRESS_BAR_INITIAL_PROGRESS);
+        }
     }
 
     public void hide() {
@@ -384,7 +387,7 @@ class AutofillAssistantUiDelegate {
         mDetailsImage.setVisibility(View.INVISIBLE);
         mDetails.setVisibility(View.VISIBLE);
         setCarouselTopPadding();
-        ensureFullContainerIsShown();
+        show();
 
         String url = details.getUrl();
         if (!url.isEmpty()) {
@@ -434,9 +437,9 @@ class AutofillAssistantUiDelegate {
     }
 
     public void showProgressBar(int progress, String message) {
-        ensureFullContainerIsShown();
+        show();
         mProgressBar.show();
-        mProgressBar.setProgress(progress);
+        mProgressBar.maybeIncreaseProgress(progress);
 
         if (!message.isEmpty()) {
             mStatusMessageView.setText(message);
@@ -481,7 +484,7 @@ class AutofillAssistantUiDelegate {
         }
 
         setChipViewContainerGravity(false);
-        ensureFullContainerIsShown();
+        show();
     }
 
     private void clearChipsViewContainer() {
@@ -515,7 +518,7 @@ class AutofillAssistantUiDelegate {
         }
 
         setChipViewContainerGravity(false);
-        ensureFullContainerIsShown();
+        show();
     }
 
     private Promise<Bitmap> downloadImage(String url) {
