@@ -4,12 +4,15 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/fetch/body.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -23,6 +26,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -114,6 +118,37 @@ bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
   }
 
   return false;
+}
+
+scoped_refptr<BlobDataHandle> ExtractBlobHandle(
+    Request* request,
+    ExceptionState& exception_state) {
+  DCHECK(request);
+
+  if (!RuntimeEnabledFeatures::BackgroundFetchUploadsEnabled())
+    return nullptr;
+
+  if (request->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked ||
+      request->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
+    DCHECK(!exception_state.HadException());
+    exception_state.ThrowTypeError("Request body is already used");
+    return nullptr;
+  }
+
+  if (exception_state.HadException())
+    return nullptr;
+
+  BodyStreamBuffer* buffer = request->BodyBuffer();
+  if (!buffer)
+    return nullptr;
+
+  auto blob_handle = buffer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize,
+      exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  return blob_handle;
 }
 
 }  // namespace
@@ -414,6 +449,10 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
       // TODO(crbug.com/774054): Set blob data handle when adding support for
       // requests with body.
       request->PopulateWebServiceWorkerRequest(web_requests[i]);
+      web_requests[i].SetBlobDataHandle(
+          ExtractBlobHandle(request, exception_state));
+      if (exception_state.HadException())
+        return Vector<WebServiceWorkerRequest>();
     }
   } else if (requests.IsRequest()) {
     auto* request = requests.GetAsRequest();
@@ -425,6 +464,10 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
     *has_requests_with_body = request->HasBody();
     web_requests.resize(1);
     request->PopulateWebServiceWorkerRequest(web_requests[0]);
+    web_requests[0].SetBlobDataHandle(
+        ExtractBlobHandle(requests.GetAsRequest(), exception_state));
+    if (exception_state.HadException())
+      return Vector<WebServiceWorkerRequest>();
   } else if (requests.IsUSVString()) {
     Request* request = Request::Create(script_state, requests.GetAsUSVString(),
                                        exception_state);
