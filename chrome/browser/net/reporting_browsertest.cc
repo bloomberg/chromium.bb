@@ -175,6 +175,12 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
   EXPECT_EQ(*expected, *actual);
 }
 
+// This test intentionally crashes a render process, and so fails ASan tests.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CrashReport DISABLED_CrashReport
+#else
+#define MAYBE_CrashReport CrashReport
+#endif
 IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, CrashReport) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
