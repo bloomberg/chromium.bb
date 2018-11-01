@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
@@ -26,13 +27,14 @@ namespace {
 constexpr char kJsScreenPath[] = "login.AssistantOptInFlowScreen";
 constexpr char kSkipPressed[] = "skip-pressed";
 constexpr char kNextPressed[] = "next-pressed";
+constexpr char kRecordPressed[] = "record-pressed";
 constexpr char kFlowFinished[] = "flow-finished";
 constexpr char kReloadRequested[] = "reload-requested";
 
 }  // namespace
 
 AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler()
-    : BaseScreenHandler(kScreenId), weak_factory_(this) {
+    : BaseScreenHandler(kScreenId), client_binding_(this), weak_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -58,6 +60,25 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
                IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON);
   builder->Add("assistantOptinRetryButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
+  builder->Add("assistantVoiceMatchTitle", IDS_ASSISTANT_VOICE_MATCH_TITLE);
+  builder->Add("assistantVoiceMatchMessage", IDS_ASSISTANT_VOICE_MATCH_MESSAGE);
+  builder->Add("assistantVoiceMatchRecording",
+               IDS_ASSISTANT_VOICE_MATCH_RECORDING);
+  builder->Add("assistantVoiceMatchCompleted",
+               IDS_ASSISTANT_VOICE_MATCH_COMPLETED);
+  builder->Add("assistantVoiceMatchFooter", IDS_ASSISTANT_VOICE_MATCH_FOOTER);
+  builder->Add("assistantVoiceMatchInstruction0",
+               IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0);
+  builder->Add("assistantVoiceMatchInstruction1",
+               IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION1);
+  builder->Add("assistantVoiceMatchInstruction2",
+               IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION2);
+  builder->Add("assistantVoiceMatchInstruction3",
+               IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION3);
+  builder->Add("assistantVoiceMatchComplete",
+               IDS_ASSISTANT_VOICE_MATCH_COMPLETE);
+  builder->Add("assistantVoiceMatchUploading",
+               IDS_ASSISTANT_VOICE_MATCH_UPLOADING);
   builder->Add("assistantOptinOKButton", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("assistantReadyTitle", IDS_ASSISTANT_READY_SCREEN_TITLE);
   builder->Add("assistantReadyMessage", IDS_ASSISTANT_READY_SCREEN_MESSAGE);
@@ -73,6 +94,9 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
   AddPrefixedCallback(
       "ThirdPartyScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction);
+  AddPrefixedCallback(
+      "VoiceMatchScreen.userActed",
+      &AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction);
   AddPrefixedCallback(
       "GetMoreScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
@@ -131,6 +155,23 @@ void AssistantOptInFlowScreenHandler::Initialize() {
 
   Show();
   show_on_init_ = false;
+}
+
+void AssistantOptInFlowScreenHandler::OnListeningHotword() {
+  CallJS("onVoiceMatchUpdate", base::Value("listen"));
+}
+
+void AssistantOptInFlowScreenHandler::OnProcessingHotword() {
+  CallJS("onVoiceMatchUpdate", base::Value("process"));
+}
+
+void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentDone() {
+  CallJS("onVoiceMatchUpdate", base::Value("done"));
+}
+
+void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
+  // TODO(updowndota): Show an error message to user, and add an UMA metric.
+  LOG(ERROR) << "Speaker ID enrollmend failure.";
 }
 
 void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
@@ -201,6 +242,7 @@ void AssistantOptInFlowScreenHandler::BindAssistantSettingsManager() {
           ProfileManager::GetActiveUserProfile());
   connector->BindInterface(assistant::mojom::kServiceName,
                            mojo::MakeRequest(&settings_manager_));
+  client_binding_.Bind(mojo::MakeRequest(&client_ptr_));
 
   SendGetSettingsRequest();
 }
@@ -353,6 +395,24 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction(
   if (action == kNextPressed) {
     RecordAssistantOptInStatus(THIRD_PARTY_CONTINUED);
     ShowNextScreen();
+    if (!base::FeatureList::IsEnabled(
+            assistant::features::kAssistantVoiceMatch)) {
+      // Skip the voice match enrollment if feature is disabled.
+      ShowNextScreen();
+    }
+  }
+}
+
+void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
+    const std::string& action) {
+  if (!base::FeatureList::IsEnabled(
+          assistant::features::kAssistantVoiceMatch)) {
+    return;
+  }
+  if (action == kNextPressed || action == kSkipPressed) {
+    ShowNextScreen();
+  } else if (action == kRecordPressed) {
+    settings_manager_->StartSpeakerIdEnrollment(true, std::move(client_ptr_));
   }
 }
 

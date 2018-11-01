@@ -9,7 +9,10 @@
 login.createScreen(
     'AssistantOptInFlowScreen', 'assistant-optin-flow', function() {
       return {
-        EXTERNAL_API: ['reloadContent', 'addSettingZippy', 'showNextScreen'],
+        EXTERNAL_API: [
+          'reloadContent', 'addSettingZippy', 'showNextScreen',
+          'onVoiceMatchUpdate'
+        ],
 
         /** @Override */
         onBeforeShow: function(data) {
@@ -39,6 +42,14 @@ login.createScreen(
          */
         showNextScreen: function() {
           $('assistant-optin-flow-card').showNextScreen();
+        },
+
+        /**
+         * Called when the Voice match state is updated.
+         * @param {string} state the voice match state.
+         */
+        onVoiceMatchUpdate: function(state) {
+          $('assistant-optin-flow-card').onVoiceMatchUpdate(state);
         },
       };
     });

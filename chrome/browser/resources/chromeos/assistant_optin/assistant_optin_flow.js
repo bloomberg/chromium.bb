@@ -4,11 +4,13 @@
 
 // <include src="utils.js">
 // <include src="setting_zippy.js">
+// <include src="voice_match_entry.js">
 // <include src="assistant_get_more.js">
 // <include src="assistant_loading.js">
 // <include src="assistant_ready.js">
 // <include src="assistant_third_party.js">
 // <include src="assistant_value_prop.js">
+// <include src="assistant_voice_match.js">
 
 /**
  * @fileoverview Polymer element for displaying material design assistant
@@ -78,6 +80,9 @@ Polymer({
         this.showScreen(this.$['third-party']);
         break;
       case this.$['third-party']:
+        this.showScreen(this.$['voice-match']);
+        break;
+      case this.$['voice-match']:
         this.showScreen(this.$['get-more']);
         break;
       case this.$['get-more']:
@@ -86,6 +91,29 @@ Polymer({
       default:
         console.error('Undefined');
         chrome.send('dialogClose');
+    }
+  },
+
+  /**
+   * Called when the Voice match state is updated.
+   * @param {string} state the voice match state.
+   */
+  onVoiceMatchUpdate: function(state) {
+    if (!this.currentScreen == this.$['voice-match']) {
+      return;
+    }
+    switch (state) {
+      case 'listen':
+        this.$['voice-match'].listenForHotword();
+        break;
+      case 'process':
+        this.$['voice-match'].processingHotword();
+        break;
+      case 'done':
+        this.$['voice-match'].voiceMatchDone();
+        break;
+      default:
+        break;
     }
   },
 

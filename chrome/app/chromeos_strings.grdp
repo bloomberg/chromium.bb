@@ -3181,6 +3181,39 @@
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
   </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_TITLE" desc="Title for assistant voice match screen.">
+    Access your Assistant with Voice Match
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for assistant voice match screen.">
+    Your Assisatant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in assistant settings. View or delete voice commands in your Google activity controls.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
+    Teach Assistant to recognize your voice
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
+    Ok Google is all set
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for assistant voice match screen.">
+    Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in assistant settings. View or delete voice commands in your Google activity controls.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
+    Say "Ok Google"
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION1" desc="Instruction message for assistant voice match recording.">
+    Say "Ok Google" again
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION2" desc="Instruction message for assistant voice match recording.">
+    Now say "Hey Google"
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION3" desc="Instruction message for assistant voice match recording.">
+    Say "Hey Google" again
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETE" desc="Complete message for assistant voice match recording.">
+    Complete
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_UPLOADING" desc="Uploading message for assistant voice match recording.">
+    Uploading...
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">

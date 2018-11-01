@@ -44,6 +44,14 @@ cr.define('login.AssistantOptInFlowScreen', function() {
       $('assistant-optin-flow-card').showNextScreen();
     },
 
+    /**
+     * Called when the Voice match state is updated.
+     * @param {string} state the voice match state.
+     */
+    onVoiceMatchUpdate: function(state) {
+      $('assistant-optin-flow-card').onVoiceMatchUpdate(state);
+    },
+
     closeDialog: function() {
       chrome.send('dialogClose');
     },
