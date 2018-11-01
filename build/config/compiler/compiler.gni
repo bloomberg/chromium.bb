@@ -63,9 +63,6 @@ declare_args() {
   # Windows build.
   use_incremental_wpo = false
 
-  # Whether or not we should use position independent code.
-  use_pic = true
-
   # Whether we're using a sample profile collected on an architecture different
   # than the one we're compiling for.
   #
