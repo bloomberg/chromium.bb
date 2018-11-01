@@ -1438,21 +1438,21 @@ action("make_core_generated_css_tokenizer_codepoints") {
 action("make_core_generated_css_primitive_value_unit_trie") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
-  script = "../build/scripts/make_css_primitive_value_unit_trie.py"
+  script = "../build/scripts/core/css/make_css_primitive_value_unit_trie.py"
 
   input_file = "css/css_primitive_value_units.json5"
   inputs = make_trie_helpers_files + [
              input_file,
-             "../build/scripts/templates/css_primitive_value_unit_trie.cc.tmpl",
+             "../build/scripts/core/css/templates/css_primitive_value_unit_trie.cc.tmpl",
            ]
   outputs = [
-    "$blink_core_output_dir/css_primitive_value_unit_trie.cc",
+    "$blink_core_output_dir/css/css_primitive_value_unit_trie.cc",
   ]
 
   args = [
     rebase_path(input_file, root_build_dir),
     "--output_dir",
-    rel_blink_core_gen_dir,
+    "$rel_blink_core_gen_dir/css",
   ]
   if (is_mac && !use_system_xcode) {
     args += [
