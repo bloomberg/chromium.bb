@@ -142,7 +142,6 @@ public class SearchActivity extends AsyncInitializationActivity
 
         // Kick off everything needed for the user to type into the box.
         beginQuery();
-        mSearchBox.getAutocompleteCoordinator().showCachedZeroSuggestResultsIfAvailable();
 
         // Kick off loading of the native library.
         if (!getActivityDelegate().shouldDelayNativeInitialization()) {
