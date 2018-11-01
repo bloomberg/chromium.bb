@@ -290,6 +290,7 @@ class DriveFsHost::MountState
 
   void OnMounted() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    DCHECK(!drivefs_has_mounted_);
     drivefs_has_mounted_ = true;
     MaybeNotifyDelegateOnMounted();
   }
@@ -409,6 +410,7 @@ class DriveFsHost::MountState
     }
     DCHECK(!mount_info.mount_path.empty());
     mount_path_ = base::FilePath(mount_info.mount_path);
+    host_->disk_mount_manager_->RemoveObserver(this);
     MaybeNotifyDelegateOnMounted();
   }
 

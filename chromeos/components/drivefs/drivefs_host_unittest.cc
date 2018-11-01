@@ -373,10 +373,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   }
 
   void EstablishConnection() {
-    auto token = StartMount();
-    DispatchMountSuccessEvent(token);
+    token_ = StartMount();
+    DispatchMountSuccessEvent(token_);
 
-    ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
+    ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token_, {}));
     {
       base::RunLoop run_loop;
       bootstrap_binding_.set_connection_error_handler(run_loop.QuitClosure());
@@ -448,6 +448,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   mojo::Binding<mojom::DriveFs> binding_;
   mojom::DriveFsDelegatePtr delegate_ptr_;
   mojom::DriveFsDelegateRequest pending_delegate_request_;
+  std::string token_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFsHostTest);
@@ -690,6 +691,16 @@ TEST_F(DriveFsHostTest, MountTimeout) {
   base::Optional<base::TimeDelta> empty;
   EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kTimeout, empty));
   timer_->Fire();
+}
+
+// DiskMountManager sometimes sends mount events for all existing mount points.
+// Mount events beyond the first should be ignored.
+TEST_F(DriveFsHostTest, MultipleMountNotifications) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  // That is event is ignored is verified the the expectations set in DoMount().
+  // OnMounted() should only be invoked once.
+  DispatchMountSuccessEvent(token_);
 }
 
 TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
