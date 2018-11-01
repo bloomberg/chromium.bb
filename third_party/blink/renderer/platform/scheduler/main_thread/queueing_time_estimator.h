@@ -90,7 +90,7 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     // In this case:
     // |steps_per_window_| = 3, because each window is the length of 3 steps.
     base::TimeDelta step_expected_queueing_time_;
-    RunningAverage step_queueing_times_;
+    RunningAverage sliding_window_;
 
     // Variables to split Expected Queueing Time by task queue type.
     std::array<base::TimeDelta,

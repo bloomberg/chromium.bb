@@ -143,8 +143,7 @@ bool QueueingTimeEstimator::TimePastStepEnd(base::TimeTicks time) {
 }
 
 QueueingTimeEstimator::Calculator::Calculator(int steps_per_window)
-    : steps_per_window_(steps_per_window),
-      step_queueing_times_(steps_per_window) {}
+    : steps_per_window_(steps_per_window), sliding_window_(steps_per_window) {}
 
 void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
     MainThreadTaskQueue* queue) {
@@ -164,7 +163,7 @@ void QueueingTimeEstimator::Calculator::AddQueueingTime(
 }
 
 void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
-  step_queueing_times_.Add(step_expected_queueing_time_);
+  sliding_window_.Add(step_expected_queueing_time_);
 
   DCHECK(client);
   // MainThreadSchedulerImpl reports the queueing time once per disjoint window.
@@ -173,10 +172,10 @@ void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
   // Discard:         |-------window EQT------|
   // Discard:                 |-------window EQT------|
   // Report:                          |-------window EQT------|
-  client->OnQueueingTimeForWindowEstimated(step_queueing_times_.GetAverage(),
-                                           step_queueing_times_.IndexIsZero());
+  client->OnQueueingTimeForWindowEstimated(sliding_window_.GetAverage(),
+                                           sliding_window_.IndexIsZero());
   ResetStep();
-  if (!step_queueing_times_.IndexIsZero())
+  if (!sliding_window_.IndexIsZero())
     return;
 
 // Report splits by task queue type.
@@ -247,10 +246,8 @@ void QueueingTimeEstimator::Calculator::ResetStep() {
   step_expected_queueing_time_ = base::TimeDelta();
 }
 
-QueueingTimeEstimator::RunningAverage::RunningAverage(int size) {
-  circular_buffer_.resize(size);
-  index_ = 0;
-}
+QueueingTimeEstimator::RunningAverage::RunningAverage(int size)
+    : index_(0), circular_buffer_(size), running_sum_() {}
 
 int QueueingTimeEstimator::RunningAverage::GetStepsPerWindow() const {
   return static_cast<int>(circular_buffer_.size());
