@@ -378,7 +378,6 @@ message ShowProgressBarProto {
 
   // Value between 0 and 100 indicating the current progress. Values above 100
   // will be capped to 100, values below 0 will be capped to 0 by the client.
-  // NOTE: Setting |progress| to 100 is an equivalent of setting |done| to true.
   optional int32 progress = 6;
 }
 

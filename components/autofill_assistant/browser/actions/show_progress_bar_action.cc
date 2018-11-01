@@ -24,11 +24,11 @@ ShowProgressBarAction::~ShowProgressBarAction() {}
 void ShowProgressBarAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  int progress =
-      std::min(100, std::max(0, proto_.show_progress_bar().progress()));
-  if (proto_.show_progress_bar().done() || progress == 100) {
+  if (proto_.show_progress_bar().done()) {
     delegate->HideProgressBar();
   } else {
+    int progress =
+        std::min(100, std::max(0, proto_.show_progress_bar().progress()));
     delegate->ShowProgressBar(progress, proto_.show_progress_bar().message());
   }
 
