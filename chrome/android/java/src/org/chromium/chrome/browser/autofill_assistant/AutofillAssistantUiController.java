@@ -116,7 +116,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
                 if (!isAttached) {
                     activityTab.removeObserver(this);
-                    nativeDestroy(mUiControllerAndroid);
+                    mUiDelegateHolder.shutdown();
                 }
             }
         });
@@ -129,7 +129,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 currentTabModel.removeObserver(this);
 
                 // Assume newly selected tab is always different from the last one.
-                nativeDestroy(mUiControllerAndroid);
+                mUiDelegateHolder.shutdown();
                 // TODO(crbug.com/806868): May start a new Autofill Assistant instance for the newly
                 // selected Tab.
             }
@@ -138,29 +138,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void onDismiss() {
-        mUiDelegateHolder.performUiOperation(uiDelegate -> {
-            uiDelegate.hide();
-            mUiDelegateHolder.pauseUiOperations();
-
-            // Show the UI back when unpaused.
-            mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::show);
-
-            // We show a snackbar with "undo" button for a few seconds, and shutdown only if it is
-            // not cancelled.
-            uiDelegate.showAutofillAssistantStoppedSnackbar(
-                    new SnackbarManager.SnackbarController() {
-                        @Override
-                        public void onAction(Object actionData) {
-                            // Shutdown was cancelled.
-                            mUiDelegateHolder.unpauseUiOperations();
-                        }
-
-                        @Override
-                        public void onDismissNoAction(Object actionData) {
-                            nativeDestroy(mUiControllerAndroid);
-                        }
-                    });
-        });
+        mUiDelegateHolder.showDismissSnackbar();
     }
 
     @Override
@@ -222,7 +200,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onShutdown() {
-        nativeDestroy(mUiControllerAndroid);
+        mUiDelegateHolder.shutdown();
     }
 
     @CalledByNative
@@ -323,35 +301,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      * Class holder for the AutofillAssistantUiDelegate to make sure we don't make UI changes when
      * we are in a pause state (i.e. few seconds before stopping completely).
      */
-    private static class UiDelegateHolder {
+    private class UiDelegateHolder {
         private final AutofillAssistantUiDelegate mUiDelegate;
 
         private boolean mShouldQueueUiOperations = false;
+        private boolean mHasBeenShutdown = false;
+        private SnackbarManager.SnackbarController mDismissSnackbar;
         private final ArrayList<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
                 new ArrayList<>();
 
         private UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate) {
             mUiDelegate = uiDelegate;
-        }
-
-        /**
-         * Pause all UI operations such that they can potentially be ran later using {@link
-         * #unpauseUiOperations()}.
-         */
-        public void pauseUiOperations() {
-            mShouldQueueUiOperations = true;
-        }
-
-        /**
-         * Unpause and trigger all UI operations received by {@link #performUiOperation(Callback)}
-         * since the last {@link #pauseUiOperations()}.
-         */
-        public void unpauseUiOperations() {
-            mShouldQueueUiOperations = false;
-            for (int i = 0; i < mPendingUiOperations.size(); i++) {
-                mPendingUiOperations.get(i).onResult(mUiDelegate);
-            }
-            mPendingUiOperations.clear();
         }
 
         /**
@@ -361,12 +321,75 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
          *  - never if Autofill Assistant is shut down.
          */
         public void performUiOperation(Callback<AutofillAssistantUiDelegate> operation) {
+            assert !mHasBeenShutdown;
+
             if (mShouldQueueUiOperations) {
                 mPendingUiOperations.add(operation);
                 return;
             }
 
             operation.onResult(mUiDelegate);
+        }
+
+        /**
+         * Hides the UI, pauses UI operations and, unless undone within the time delay, eventually
+         * destroy everything.
+         */
+        public void showDismissSnackbar() {
+            assert !mHasBeenShutdown;
+
+            pauseUiOperations();
+            mUiDelegate.hide();
+            mDismissSnackbar = new SnackbarManager.SnackbarController() {
+                @Override
+                public void onAction(Object actionData) {
+                    // Shutdown was cancelled.
+                    mDismissSnackbar = null;
+                    mUiDelegate.show();
+                    unpauseUiOperations();
+                }
+
+                @Override
+                public void onDismissNoAction(Object actionData) {
+                    shutdown();
+                }
+            };
+            mUiDelegate.showAutofillAssistantStoppedSnackbar(mDismissSnackbar);
+        }
+
+        /** Hides the UI and destroys everything. */
+        public void shutdown() {
+            if (mHasBeenShutdown) {
+                return;
+            }
+
+            mHasBeenShutdown = true;
+            mPendingUiOperations.clear();
+            if (mDismissSnackbar != null) {
+                mUiDelegate.dismissSnackbar(mDismissSnackbar);
+            }
+            mUiDelegate.hide();
+            nativeDestroy(mUiControllerAndroid);
+        }
+
+        /**
+         * Pause all UI operations such that they can potentially be ran later using {@link
+         * #unpauseUiOperations()}.
+         */
+        private void pauseUiOperations() {
+            mShouldQueueUiOperations = true;
+        }
+
+        /**
+         * Unpause and trigger all UI operations received by {@link #performUiOperation(Callback)}
+         * since the last {@link #pauseUiOperations()}.
+         */
+        private void unpauseUiOperations() {
+            mShouldQueueUiOperations = false;
+            for (int i = 0; i < mPendingUiOperations.size(); i++) {
+                mPendingUiOperations.get(i).onResult(mUiDelegate);
+            }
+            mPendingUiOperations.clear();
         }
     }
 
