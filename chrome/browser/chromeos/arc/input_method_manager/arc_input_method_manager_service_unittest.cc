@@ -315,14 +315,6 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
 
 }  // anonymous namespace
 
-TEST_F(ArcInputMethodManagerServiceTest, ConstructAndDestruct) {
-  // These two method are not implemented yet.
-  ASSERT_TRUE(service() != nullptr);
-  service()->OnActiveImeChanged("");
-  service()->OnImeInfoChanged({});
-  SUCCEED();
-}
-
 TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
