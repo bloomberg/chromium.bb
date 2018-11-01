@@ -11,10 +11,21 @@
  */
 let NuxOnboardingModules;
 
-// This list needs to be updated if new modules that need step-indicators are
-// added.
-const MODELS_NEEDING_INDICATOR =
-    ['nux-email', 'nux-google-apps', 'nux-set-as-default'];
+/**
+ * This list needs to be updated if new modules need to be supported in the
+ * onboarding flow.
+ * @const {!Set<string>}
+ */
+const MODULES_WHITELIST = new Set(
+    ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view']);
+
+/**
+ * This list needs to be updated if new modules that need step-indicators are
+ * added.
+ * @const {!Set<string>}
+ */
+const MODULES_NEEDING_INDICATOR =
+    new Set(['nux-email', 'nux-google-apps', 'nux-set-as-default']);
 
 Polymer({
   is: 'welcome-app',
@@ -27,12 +38,11 @@ Polymer({
   /** @private {!PromiseResolver} */
   defaultCheckPromise_: new PromiseResolver(),
 
-  // TODO(scottchen): instead of dummy, get data from finch/load time data.
   /** @private {NuxOnboardingModules} */
   modules_: {
-    'new-user':
-        ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view'],
-    'returning-user': ['nux-set-as-default'],
+    'new-user': loadTimeData.getString('new_user_modules').split(','),
+    'returning-user':
+        loadTimeData.getString('returning_user_modules').split(','),
   },
 
   properties: {
@@ -113,20 +123,22 @@ Polymer({
             element.remove();
           });
 
-      let indicatorElementCount = 0;
-      for (let i = 0; i < modules.length; i++) {
-        if (MODELS_NEEDING_INDICATOR.includes(modules[i]))
-          indicatorElementCount++;
-      }
+      const indicatorElementCount = modules.reduce((count, module) => {
+        return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
+      }, 0);
 
       let indicatorActiveCount = 0;
       modules.forEach((elementTagName, index) => {
+        // Makes sure the module specified by the feature configuration is
+        // whitelisted.
+        assert(MODULES_WHITELIST.has(elementTagName));
+
         const element = document.createElement(elementTagName);
         element.id = 'step-' + (index + 1);
         element.setAttribute('slot', 'view');
         this.$.viewManager.appendChild(element);
 
-        if (MODELS_NEEDING_INDICATOR.includes(elementTagName)) {
+        if (MODULES_NEEDING_INDICATOR.has(elementTagName)) {
           element.indicatorModel = {
             total: indicatorElementCount,
             active: indicatorActiveCount++,
