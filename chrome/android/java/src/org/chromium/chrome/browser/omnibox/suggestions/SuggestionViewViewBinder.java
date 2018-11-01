@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.content.Context;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
+import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -26,12 +27,17 @@ class SuggestionViewViewBinder {
      * Object, Object)
      */
     public static void bind(PropertyModel model, SuggestionView view, PropertyKey propertyKey) {
-        if (SuggestionViewProperties.USE_DARK_COLORS.equals(propertyKey)) {
+        if (SuggestionViewProperties.DELEGATE.equals(propertyKey)) {
+            view.setDelegate(model.get(SuggestionViewProperties.DELEGATE));
+        } else if (SuggestionViewProperties.USE_DARK_COLORS.equals(propertyKey)) {
             boolean useDarkColors = model.get(SuggestionViewProperties.USE_DARK_COLORS);
             view.updateRefineIconTint(useDarkColors);
             view.updateSuggestionIconTint(useDarkColors);
             view.getTextLine1().setTextColor(
                     getStandardFontColor(view.getContext(), useDarkColors));
+        } else if (SuggestionViewProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
+            ViewCompat.setLayoutDirection(
+                    view, model.get(SuggestionViewProperties.LAYOUT_DIRECTION));
         } else if (SuggestionViewProperties.IS_ANSWER.equals(propertyKey)) {
             updateSuggestionLayoutType(view, model);
         } else if (SuggestionViewProperties.HAS_ANSWER_IMAGE.equals(propertyKey)) {

@@ -521,7 +521,6 @@ public class AutocompleteCoordinator
     public void updateSuggestionListLayoutDirection() {
         if (mSuggestionList == null) return;
         int layoutDirection = ViewCompat.getLayoutDirection(mParent);
-        mSuggestionList.updateSuggestionsLayoutDirection(layoutDirection);
         mSuggestionListAdapter.setLayoutDirection(layoutDirection);
     }
 

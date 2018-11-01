@@ -172,19 +172,6 @@ public class OmniboxSuggestionsList extends ListView {
         return new ColorDrawable(color);
     }
 
-    /**
-     * Invalidates all of the suggestion views in the list.  Only applicable when this
-     * is visible.
-     */
-    void invalidateSuggestionViews() {
-        if (!isShown()) return;
-        for (int i = 0; i < getChildCount(); i++) {
-            if (getChildAt(i) instanceof SuggestionView) {
-                getChildAt(i).postInvalidateOnAnimation();
-            }
-        }
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         View contentView =
@@ -214,19 +201,6 @@ public class OmniboxSuggestionsList extends ListView {
         // so we bootstrap this after the children have been laid out.
         if (!isInTouchMode() && getSelectedView() != null) {
             getSelectedView().setSelected(true);
-        }
-    }
-
-    /**
-     * Update the layout direction of the suggestions.
-     */
-    void updateSuggestionsLayoutDirection(int layoutDirection) {
-        if (!isShown()) return;
-
-        for (int i = 0; i < getChildCount(); i++) {
-            View childView = getChildAt(i);
-            if (!(childView instanceof SuggestionView)) continue;
-            ViewCompat.setLayoutDirection(childView, layoutDirection);
         }
     }
 

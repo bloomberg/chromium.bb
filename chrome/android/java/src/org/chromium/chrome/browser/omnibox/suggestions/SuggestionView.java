@@ -23,8 +23,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -52,10 +50,8 @@ public class SuggestionView extends ViewGroup {
     private final int mSuggestionAnswerHeight;
     @SuggestionLayoutType
     private int mSuggestionLayoutType;
+    private SuggestionViewDelegate mSuggestionDelegate;
 
-    private OmniboxSuggestion mSuggestion;
-    private OmniboxSuggestionDelegate mSuggestionDelegate;
-    private int mPosition;
     private int mRefineViewOffsetPx;
 
     private final SuggestionContentsContainer mContentsView;
@@ -67,6 +63,39 @@ public class SuggestionView extends ViewGroup {
     // Pre-computed offsets in px.
     private final int mSuggestionStartOffsetPx;
     private final int mSuggestionIconWidthPx;
+
+    /**
+     * Handler for actions that happen on suggestion view.
+     */
+    @VisibleForTesting
+    public static interface SuggestionViewDelegate {
+        /** Triggered when the user selects one of the omnibox suggestions to navigate to. */
+        void onSelection();
+
+        /** Triggered when the user selects to refine one of the omnibox suggestions. */
+        void onRefineSuggestion();
+
+        /** Triggered when the user long presses the omnibox suggestion. */
+        void onLongPress();
+
+        /** Triggered when the user navigates to one of the suggestions without clicking on it. */
+        void onSetUrlToSuggestion();
+
+        /** Triggered when the user touches the suggestion view. */
+        void onGestureDown();
+
+        /**
+         * Triggered when the user touch on the suggestion view finishes.
+         * @param timestamp the timestamp for the ACTION_UP event.
+         */
+        void onGestureUp(long timestamp);
+
+        /** @return max required width for the suggestion. */
+        float getMaxRequiredWidth();
+
+        /** @return max match contents width for the suggestion. */
+        float getMaxMatchContentsWidth();
+    }
 
     /**
      * Constructs a new omnibox suggestion view.
@@ -217,22 +246,9 @@ public class SuggestionView extends ViewGroup {
         return super.dispatchTouchEvent(ev);
     }
 
-    /**
-     * Sets the contents and state of the view for the given suggestion.
-     *
-     * @param suggestionItem The omnibox suggestion item this view represents.
-     * @param suggestionDelegate The suggestion delegate.
-     * @param position Position of the suggestion in the dropdown list.
-     */
-    // TODO(tedchoc): Remove this.
-    public void init(OmniboxResultItem suggestionItem, OmniboxSuggestionDelegate suggestionDelegate,
-            int position) {
-        // Update the position unconditionally.
-        mPosition = position;
-        jumpDrawablesToCurrentState();
-
-        mSuggestion = suggestionItem.getSuggestion();
-        mSuggestionDelegate = suggestionDelegate;
+    /** Sets the delegate for the actions on the suggestion view. */
+    void setDelegate(SuggestionViewDelegate delegate) {
+        mSuggestionDelegate = delegate;
     }
 
     /** Set the type of layout this view is rendering. */
@@ -333,7 +349,7 @@ public class SuggestionView extends ViewGroup {
     public void setSelected(boolean selected) {
         super.setSelected(selected);
         if (selected && !isInTouchMode()) {
-            mSuggestionDelegate.onSetUrlToSuggestion(mSuggestion);
+            mSuggestionDelegate.onSetUrlToSuggestion();
         }
     }
 
@@ -343,7 +359,7 @@ public class SuggestionView extends ViewGroup {
     private class PerformSelectSuggestion implements Runnable {
         @Override
         public void run() {
-            mSuggestionDelegate.onSelection(mSuggestion, mPosition);
+            mSuggestionDelegate.onSelection();
         }
     }
 
@@ -353,7 +369,7 @@ public class SuggestionView extends ViewGroup {
     private class PerformRefineSuggestion implements Runnable {
         @Override
         public void run() {
-            mSuggestionDelegate.onRefineSuggestion(mSuggestion);
+            mSuggestionDelegate.onRefineSuggestion();
         }
     }
 
@@ -362,7 +378,6 @@ public class SuggestionView extends ViewGroup {
      * icon).
      */
     private class SuggestionContentsContainer extends ViewGroup {
-        private int mTextStart = Integer.MIN_VALUE;
         private TintedDrawable mSuggestionIcon;
 
         private final TextView mTextLine1;
@@ -396,7 +411,7 @@ public class SuggestionView extends ViewGroup {
             setOnLongClickListener(new OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    mSuggestionDelegate.onLongPress(mSuggestion, mPosition);
+                    mSuggestionDelegate.onLongPress();
                     return true;
                 }
             });
@@ -446,7 +461,8 @@ public class SuggestionView extends ViewGroup {
             // Align the text to be pixel perfectly aligned with the text in the url bar.
             boolean isRTL = ApiCompatibilityUtils.isLayoutRtl(this);
             if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
-                int textWidth = isRTL ? mTextStart : (r - l - mTextStart);
+                int textWidth =
+                        isRTL ? mSuggestionStartOffsetPx : (r - l - mSuggestionStartOffsetPx);
                 final float maxRequiredWidth = mSuggestionDelegate.getMaxRequiredWidth();
                 final float maxMatchContentsWidth = mSuggestionDelegate.getMaxMatchContentsWidth();
                 float paddingStart = (textWidth > maxRequiredWidth)
@@ -512,30 +528,28 @@ public class SuggestionView extends ViewGroup {
             final int answerImageBottom = answerImageTop + mAnswerImage.getMeasuredHeight();
 
             if (isRTL) {
-                int rightStartPos = r - l - mTextStart;
+                int rightStartPos = r - l - mSuggestionStartOffsetPx;
                 mTextLine1.layout(0, line1Top, rightStartPos, line1Bottom);
                 mAnswerImage.layout(rightStartPos - imageWidth, answerImageTop, rightStartPos,
                         answerImageBottom);
                 mTextLine2.layout(
                         0, line2Top, rightStartPos - (imageWidth + imageSpacing), line2Bottom);
             } else {
-                mTextLine1.layout(mTextStart, line1Top, r - l, line1Bottom);
-                mAnswerImage.layout(
-                        mTextStart, answerImageTop, mTextStart + imageWidth, answerImageBottom);
-                mTextLine2.layout(
-                        mTextStart + imageWidth + imageSpacing, line2Top, r - l, line2Bottom);
+                mTextLine1.layout(mSuggestionStartOffsetPx, line1Top, r - l, line1Bottom);
+                mAnswerImage.layout(mSuggestionStartOffsetPx, answerImageTop,
+                        mSuggestionStartOffsetPx + imageWidth, answerImageBottom);
+                mTextLine2.layout(mSuggestionStartOffsetPx + imageWidth + imageSpacing, line2Top,
+                        r - l, line2Bottom);
             }
         }
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            mTextStart = mSuggestionStartOffsetPx;
-
             // TODO(tedchoc): Instead of comparing width/height, compare the last text (including
             //                style spans) measured and if that remains the same along with the
             //                height/width of this view, then we should be able to skip measure
             //                properly.
-            int maxWidth = MeasureSpec.getSize(widthMeasureSpec) - mTextStart;
+            int maxWidth = MeasureSpec.getSize(widthMeasureSpec) - mSuggestionStartOffsetPx;
             mTextLine1.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
                     MeasureSpec.makeMeasureSpec(mSuggestionHeight, MeasureSpec.AT_MOST));
             mTextLine2.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
