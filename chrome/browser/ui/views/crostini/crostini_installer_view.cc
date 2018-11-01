@@ -335,7 +335,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   // Layout constants from the spec.
   constexpr gfx::Insets kDialogInsets(60, 64, 32, 64);
   constexpr int kDialogSpacingVertical = 32;
-  constexpr gfx::Size kLogoImageSize(48, 48);
+  constexpr gfx::Size kLogoImageSize(32, 32);
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -360,7 +360,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   logo_image_->SetImageSize(kLogoImageSize);
   logo_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_CROSTINI_DEFAULT));
+          IDR_LOGO_CROSTINI_DEFAULT_32));
   logo_image_->SetHorizontalAlignment(views::ImageView::LEADING);
   upper_container_view->AddChildView(logo_image_);
 

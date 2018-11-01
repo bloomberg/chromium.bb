@@ -33,7 +33,7 @@ CrostiniProcessTask::CrostiniProcessTask(base::ProcessId pid,
                                          const std::string& vm_name)
     : Task(MakeTitle(vm_name),
            vm_name,
-           FetchIcon(IDR_LOGO_CROSTINI_DEFAULT, &s_icon_),
+           FetchIcon(IDR_LOGO_CROSTINI_DEFAULT_32, &s_icon_),
            pid),
       owner_id_(owner_id),
       vm_name_(vm_name) {}
