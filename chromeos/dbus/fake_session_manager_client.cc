@@ -589,6 +589,13 @@ void FakeSessionManagerClient::GetArcStartTime(
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
 }
 
+void FakeSessionManagerClient::RemoveArcData(
+    const cryptohome::AccountIdentifier& cryptohome_id,
+    VoidDBusMethodCallback callback) {
+  if (!callback.is_null())
+    PostReply(FROM_HERE, std::move(callback), arc_available_);
+}
+
 void FakeSessionManagerClient::NotifyArcInstanceStopped(
     login_manager::ArcContainerStopReason reason,
     const std::string& container_instance_id) {
