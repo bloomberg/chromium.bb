@@ -62,12 +62,6 @@ class OptimizationGuideService {
   // Always called as part of a BEST_EFFORT priority task.
   void ProcessHintsInBackground(const ComponentInfo& component_info);
 
-  // Adds the observer on UI thread.
-  void AddObserverOnUIThread(OptimizationGuideServiceObserver* observer);
-
-  // Removes the observer on UI thread, if present.
-  void RemoveObserverOnUIThread(OptimizationGuideServiceObserver* observer);
-
   // Dispatches hints to listeners on UI thread.
   void DispatchHintsOnUIThread(const proto::Configuration& config,
                                const ComponentInfo& component_info);
