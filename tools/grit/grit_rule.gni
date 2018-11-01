@@ -329,6 +329,7 @@ template("grit") {
 
     inputs = [
       invoker.source,
+      asserted_list_file,
     ]
     if (resource_ids != "") {
       # The script depends on the ID file. Only add this dependency if the ID
