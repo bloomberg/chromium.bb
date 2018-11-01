@@ -77,6 +77,17 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
   return top_level;
 }
 
+void TestWindowService::RunWindowMoveLoop(aura::Window* window,
+                                          mojom::MoveLoopSource source,
+                                          const gfx::Point& cursor,
+                                          DoneCallback callback) {
+  window_move_done_callback_ = std::move(callback);
+}
+void TestWindowService::CancelWindowMoveLoop() {
+  CHECK(!window_move_done_callback_.is_null());
+  std::move(window_move_done_callback_).Run(false);
+}
+
 void TestWindowService::RunDragLoop(aura::Window* window,
                                     const ui::OSExchangeData& data,
                                     const gfx::Point& screen_location,

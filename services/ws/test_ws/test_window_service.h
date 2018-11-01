@@ -62,6 +62,11 @@ class TestWindowService : public service_manager::Service,
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
+  void RunWindowMoveLoop(aura::Window* window,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor,
+                         DoneCallback callback) override;
+  void CancelWindowMoveLoop() override;
   void RunDragLoop(aura::Window* window,
                    const ui::OSExchangeData& data,
                    const gfx::Point& screen_location,
@@ -115,6 +120,8 @@ class TestWindowService : public service_manager::Service,
 
   // For drag and drop code to convert to/from screen coordinates.
   wm::DefaultScreenPositionClient screen_position_client_;
+
+  DoneCallback window_move_done_callback_;
 
   TestDragDropClient drag_drop_client_;
 
