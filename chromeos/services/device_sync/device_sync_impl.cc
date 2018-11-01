@@ -43,6 +43,65 @@ void RegisterDeviceSyncPrefs(PrefRegistrySimple* registry) {
 constexpr base::TimeDelta kSetFeatureEnabledTimeout =
     base::TimeDelta::FromSeconds(5);
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
+enum class DeviceSyncRequestFailureReason {
+  kRequestSucceededButUnexpectedResult = 0,
+  kServiceNotYetInitialized = 1,
+  kOffline = 2,
+  kEndpointNotFound = 3,
+  kAuthenticationError = 4,
+  kBadRequest = 5,
+  kResponseMalformed = 6,
+  kInternalServerError = 7,
+  kUnknownNetworkError = 8,
+  kUnknown = 9,
+  kMaxValue = kUnknown
+};
+
+DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
+    mojom::NetworkRequestResult failure_reason) {
+  switch (failure_reason) {
+    case mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult:
+      return DeviceSyncRequestFailureReason::
+          kRequestSucceededButUnexpectedResult;
+    case mojom::NetworkRequestResult::kServiceNotYetInitialized:
+      return DeviceSyncRequestFailureReason::kServiceNotYetInitialized;
+    case mojom::NetworkRequestResult::kOffline:
+      return DeviceSyncRequestFailureReason::kOffline;
+    case mojom::NetworkRequestResult::kEndpointNotFound:
+      return DeviceSyncRequestFailureReason::kEndpointNotFound;
+    case mojom::NetworkRequestResult::kAuthenticationError:
+      return DeviceSyncRequestFailureReason::kAuthenticationError;
+    case mojom::NetworkRequestResult::kBadRequest:
+      return DeviceSyncRequestFailureReason::kBadRequest;
+    case mojom::NetworkRequestResult::kResponseMalformed:
+      return DeviceSyncRequestFailureReason::kResponseMalformed;
+    case mojom::NetworkRequestResult::kInternalServerError:
+      return DeviceSyncRequestFailureReason::kInternalServerError;
+    case mojom::NetworkRequestResult::kUnknown:
+      return DeviceSyncRequestFailureReason::kUnknownNetworkError;
+    default:
+      return DeviceSyncRequestFailureReason::kUnknown;
+  }
+  NOTREACHED();
+}
+
+void RecordSetSoftwareFeatureStateResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", success);
+}
+
+void RecordSetSoftwareFeatureStateResultFailureReason(
+    DeviceSyncRequestFailureReason failure_reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      failure_reason);
+}
+
 }  // namespace
 
 // static
@@ -240,6 +299,8 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
         mojom::NetworkRequestResult::kServiceNotYetInitialized);
 
     RecordSetSoftwareFeatureStateResult(false /* success */);
+    RecordSetSoftwareFeatureStateResultFailureReason(
+        DeviceSyncRequestFailureReason::kServiceNotYetInitialized);
     return;
   }
 
@@ -506,6 +567,9 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
   id_to_pending_set_software_feature_request_map_.erase(it);
 
   RecordSetSoftwareFeatureStateResult(false /* success */);
+  RecordSetSoftwareFeatureStateResultFailureReason(
+      GetDeviceSyncRequestFailureReason(
+          mojo::ConvertTo<mojom::NetworkRequestResult>(error)));
 }
 
 void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
@@ -577,17 +641,14 @@ void DeviceSyncImpl::OnSetSoftwareFeatureTimerFired() {
     it = id_to_pending_set_software_feature_request_map_.erase(it);
 
     RecordSetSoftwareFeatureStateResult(false /* success */);
+    RecordSetSoftwareFeatureStateResultFailureReason(
+        DeviceSyncRequestFailureReason::kRequestSucceededButUnexpectedResult);
   }
 }
 
 void DeviceSyncImpl::SetPrefConnectionDelegateForTesting(
     std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
   pref_connection_delegate_ = std::move(pref_connection_delegate);
-}
-
-void DeviceSyncImpl::RecordSetSoftwareFeatureStateResult(bool success) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", success);
 }
 
 }  // namespace device_sync

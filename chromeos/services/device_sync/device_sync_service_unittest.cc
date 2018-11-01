@@ -1171,6 +1171,10 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 0);
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      0);
 }
 
 TEST_F(DeviceSyncServiceTest,
@@ -1215,6 +1219,10 @@ TEST_F(DeviceSyncServiceTest,
 
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      1);
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 0);
 }
@@ -1257,6 +1265,10 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
 
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      1);
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 0);
 }
