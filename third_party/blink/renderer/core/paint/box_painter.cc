@@ -56,14 +56,12 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
   LayoutRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (BoxModelObjectPainter::
-          IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-              &layout_box_, paint_info)) {
+  if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_box_,
+                                                           paint_info)) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
-
     contents_paint_state.emplace(paint_info, paint_offset, layout_box_);
     paint_rect.MoveBy(contents_paint_state->PaintOffset());
 
@@ -96,12 +94,10 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
-  LayoutRect bounds =
-      BoxModelObjectPainter::
-              IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-                  &layout_box_, paint_info)
-          ? layout_box_.LayoutOverflowRect()
-          : layout_box_.SelfVisualOverflowRect();
+  LayoutRect bounds = BoxModelObjectPainter::IsPaintingScrollingBackground(
+                          &layout_box_, paint_info)
+                          ? layout_box_.LayoutOverflowRect()
+                          : layout_box_.SelfVisualOverflowRect();
   return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
 }
 
@@ -109,9 +105,9 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const LayoutRect& paint_rect,
     const DisplayItemClient& background_client) {
-  bool painting_overflow_contents = BoxModelObjectPainter::
-      IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          &layout_box_, paint_info);
+  bool painting_scrolling_background =
+      BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_box_,
+                                                           paint_info);
   const ComputedStyle& style = layout_box_.StyleRef();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -143,7 +139,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     recorder.SetKnownToBeOpaque();
 
   bool needs_end_layer = false;
-  if (!painting_overflow_contents) {
+  if (!painting_scrolling_background) {
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
     // own.
@@ -184,7 +180,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     }
   }
 
-  if (!painting_overflow_contents) {
+  if (!painting_scrolling_background) {
     BoxPainterBase::PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect,
                                                       style);
 

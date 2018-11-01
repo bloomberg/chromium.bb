@@ -1,20 +1,10 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1008, 585],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "HorizontalScrollbar",
-      "position": [0, 585],
-      "bounds": [800, 15]
-    },
-    {
-      "name": "LayoutBlockFlow HTML",
-      "bounds": [1008, 128],
-      "backgroundColor": "#008000",
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='target'",
@@ -22,6 +12,11 @@
           "reason": "style change"
         }
       ]
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 585],
+      "bounds": [800, 15]
     }
   ]
 }

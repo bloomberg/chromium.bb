@@ -39,7 +39,32 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     local_paint_info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
     local_paint_info.phase = PaintPhase::kSelfBlockBackgroundOnly;
-    layout_block_.PaintObject(local_paint_info, paint_offset);
+    // With SlimmingPaintV2 we need to call PaintObject twice: once for the
+    // background painting that does not scroll, and a second time for the
+    // background painting that scrolls.
+    // Without SlimmingPaintV2, this happens as the main graphics layer
+    // paints the background, and then the scrolling contents graphics layer
+    // paints the background.
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      auto paint_location = layout_block_.GetBackgroundPaintLocation();
+      if (!(paint_location & kBackgroundPaintInGraphicsLayer))
+        local_paint_info.SetSkipsBackground(true);
+      layout_block_.PaintObject(local_paint_info, paint_offset);
+      local_paint_info.SetSkipsBackground(false);
+
+      // Record the scroll hit test after the non-scrolling background so
+      // background squashing is not affected. Hit test order would be
+      // equivalent if this were immediately before the background.
+      PaintScrollHitTestDisplayItem(paint_info);
+
+      if (paint_location & kBackgroundPaintInScrollingContents) {
+        local_paint_info.SetIsPaintingScrollingBackground(true);
+        layout_block_.PaintObject(local_paint_info, paint_offset);
+        local_paint_info.SetIsPaintingScrollingBackground(false);
+      }
+    } else {
+      layout_block_.PaintObject(local_paint_info, paint_offset);
+    }
     if (ShouldPaintDescendantBlockBackgrounds(original_phase))
       local_paint_info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
@@ -227,14 +252,8 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   // of the current object and non-self-painting descendants, or 2.
   // kSelfBlockBackgroundOnly -  Paint background of the current object only),
   // paint those now. This is steps #1, 2, and 4 of the CSS spec (see above).
-  if (ShouldPaintSelfBlockBackground(paint_phase)) {
+  if (ShouldPaintSelfBlockBackground(paint_phase))
     layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
-    // Record the scroll hit test after the background so background squashing
-    // is not affected. Hit test order would be equivalent if this were
-    // immediately before the background.
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-      PaintScrollHitTestDisplayItem(paint_info);
-  }
 
   // If we're in any phase except *just* the self (outline or background) or a
   // mask, paint children now. This is step #5, 7, 8, and 9 of the CSS spec (see

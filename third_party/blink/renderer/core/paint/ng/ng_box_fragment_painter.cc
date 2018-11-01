@@ -455,8 +455,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
   LayoutRect paint_rect;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          box_fragment_, paint_info)) {
+  if (IsPaintingScrollingBackground(box_fragment_, paint_info)) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
@@ -489,11 +488,9 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 bool NGBoxFragmentPainter::BackgroundIsKnownToBeOpaque(
     const PaintInfo& paint_info) {
   const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
-  LayoutRect bounds =
-      IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          box_fragment_, paint_info)
-          ? layout_box.LayoutOverflowRect()
-          : layout_box.SelfVisualOverflowRect();
+  LayoutRect bounds = IsPaintingScrollingBackground(box_fragment_, paint_info)
+                          ? layout_box.LayoutOverflowRect()
+                          : layout_box.SelfVisualOverflowRect();
   return layout_box.BackgroundIsKnownToBeOpaqueInRect(bounds);
 }
 
@@ -506,8 +503,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   const LayoutBox& layout_box = ToLayoutBox(layout_object);
 
   bool painting_overflow_contents =
-      IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          box_fragment_, paint_info);
+      IsPaintingScrollingBackground(box_fragment_, paint_info);
   const ComputedStyle& style = box_fragment_.Style();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -857,10 +853,9 @@ void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {
   PaintAllPhasesAtomically(paint_info, is_self_painting);
 }
 
-bool NGBoxFragmentPainter::
-    IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-        const NGPaintFragment& fragment,
-        const PaintInfo& paint_info) {
+bool NGBoxFragmentPainter::IsPaintingScrollingBackground(
+    const NGPaintFragment& fragment,
+    const PaintInfo& paint_info) {
   // TODO(layout-dev): Change paint_info.PaintContainer to accept fragments
   // once LayoutNG supports scrolling containers.
   return paint_info.PaintFlags() & kPaintLayerPaintingOverflowContents &&
@@ -925,8 +920,7 @@ LayoutRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
 
   // Clip to the overflow area.
   if (info.is_clipped_with_local_scrolling &&
-      !IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          box_fragment_, paint_info)) {
+      !IsPaintingScrollingBackground(box_fragment_, paint_info)) {
     context.Clip(FloatRect(physical.OverflowClipRect(rect.Location())));
 
     // Adjust the paint rect to reflect a scrolled content box with borders at

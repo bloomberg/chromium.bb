@@ -2,8 +2,8 @@ Layer tree:
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1200, 900],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -19,8 +19,8 @@ Layer list
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1200, 900],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },

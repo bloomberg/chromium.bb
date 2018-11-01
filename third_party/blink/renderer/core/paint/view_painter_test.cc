@@ -137,11 +137,6 @@ class ViewPainterTestWithPaintTouchAction
 INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTestWithPaintTouchAction);
 
 TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
-  // TODO(crbug.com/732611): We do not yet draw the background into the
-  // scrolling contents layer with SPV2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -174,25 +169,46 @@ TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
   html_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
 
-  EXPECT_THAT(
-      RootPaintController().PaintChunks(),
-      ElementsAre(
-          IsPaintChunk(
-              0, 2, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
-              scrolling_properties, view_hit_test_data),
-          IsPaintChunk(
-              2, 5,
-              PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
-              scrolling_properties, html_hit_test_data)));
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    HitTestData non_scrolling_hit_test_data;
+    non_scrolling_hit_test_data.touch_action_rects.emplace_back(
+        LayoutRect(0, 0, 800, 600));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 1,
+                PaintChunk::Id(*GetLayoutView().Layer(),
+                               DisplayItem::kLayerChunkBackground),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
+                non_scrolling_hit_test_data),
+            IsPaintChunk(
+                1, 2,
+                PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+            IsPaintChunk(
+                2, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+                scrolling_properties, view_hit_test_data),
+            IsPaintChunk(4, 7,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, html_hit_test_data)));
+  } else {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 2, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+                scrolling_properties, view_hit_test_data),
+            IsPaintChunk(2, 5,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, html_hit_test_data)));
+  }
 }
 
 TEST_P(ViewPainterTestWithPaintTouchAction,
        TouchActionRectNonScrollingContents) {
-  // TODO(crbug.com/732611): We do not yet draw the background into the
-  // scrolling contents layer with SPV2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -212,21 +228,11 @@ TEST_P(ViewPainterTestWithPaintTouchAction,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   auto* view = &GetLayoutView();
-  auto& non_scrolling_paint_controller = view->GetScrollableArea()
-                                             ->Layer()
-                                             ->GraphicsLayerBacking(view)
-                                             ->GetPaintController();
-  auto properties = view->FirstFragment().LocalBorderBoxProperties();
+  auto non_scrolling_properties =
+      view->FirstFragment().LocalBorderBoxProperties();
   HitTestData view_hit_test_data;
   view_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 600));
-  EXPECT_THAT(
-      non_scrolling_paint_controller.PaintChunks(),
-      ElementsAre(IsPaintChunk(
-          0, 2,
-          PaintChunk::Id(*view->Layer(), kNonScrollingBackgroundChunkType),
-          properties, view_hit_test_data)));
-
   auto* html =
       ToLayoutBlock(GetDocument().documentElement()->GetLayoutObject());
   auto scrolling_properties = view->FirstFragment().ContentsProperties();
@@ -235,12 +241,38 @@ TEST_P(ViewPainterTestWithPaintTouchAction,
       LayoutRect(0, 0, 800, 3000));
   scrolling_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
-  EXPECT_THAT(
-      RootPaintController().PaintChunks(),
-      ElementsAre(IsPaintChunk(
-          0, 3,
-          PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
-          scrolling_properties, scrolling_hit_test_data)));
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 2,
+                         PaintChunk::Id(*view->Layer(),
+                                        DisplayItem::kLayerChunkBackground),
+                         non_scrolling_properties, view_hit_test_data),
+            IsPaintChunk(2, 3,
+                         PaintChunk::Id(*view, DisplayItem::kScrollHitTest),
+                         non_scrolling_properties),
+            IsPaintChunk(3, 6,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, scrolling_hit_test_data)));
+  } else {
+    auto& non_scrolling_paint_controller =
+        view->Layer()->GraphicsLayerBacking(view)->GetPaintController();
+    EXPECT_THAT(
+        non_scrolling_paint_controller.PaintChunks(),
+        ElementsAre(IsPaintChunk(
+            0, 2,
+            PaintChunk::Id(*view->Layer(), kNonScrollingBackgroundChunkType),
+            non_scrolling_properties, view_hit_test_data)));
+
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(IsPaintChunk(
+            0, 3,
+            PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
+            scrolling_properties, scrolling_hit_test_data)));
+  }
 }
 
 }  // namespace blink

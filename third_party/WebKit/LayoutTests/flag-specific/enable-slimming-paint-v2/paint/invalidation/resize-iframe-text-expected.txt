@@ -1,13 +1,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [500, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
         },

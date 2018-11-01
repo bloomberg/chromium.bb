@@ -66,13 +66,9 @@ class PaintControllerPaintTestBase : public RenderingTest {
   }
 
   const DisplayItemClient& ViewScrollingBackgroundClient() {
-    // TODO(wangxianzhu): SPv2 should use the same display item client.
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      return GetLayoutView()
-          .GetScrollableArea()
-          ->GetScrollingBackgroundDisplayItemClient();
-    }
-    return GetLayoutView();
+    return GetLayoutView()
+        .GetScrollableArea()
+        ->GetScrollingBackgroundDisplayItemClient();
   }
 
   void CommitAndFinishCycle() {

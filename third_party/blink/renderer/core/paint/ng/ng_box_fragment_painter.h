@@ -64,9 +64,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                           const LayoutRect&) override;
 
  private:
-  bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-      const NGPaintFragment&,
-      const PaintInfo&);
+  bool IsPaintingScrollingBackground(const NGPaintFragment&, const PaintInfo&);
   bool ShouldPaint(const ScopedPaintState&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,

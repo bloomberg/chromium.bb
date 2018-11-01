@@ -1,7 +1,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [600, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -28,7 +28,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -55,7 +55,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -66,12 +66,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 250, 400, 350],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
         },
@@ -81,24 +76,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 250, 6, 350],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 300, 6, 30],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 300, 6, 30],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 125, 6, 30],
-          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
@@ -112,7 +92,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -123,12 +103,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [400, 0, 400, 600],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
         },
