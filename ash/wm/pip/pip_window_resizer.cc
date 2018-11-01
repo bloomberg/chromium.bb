@@ -26,6 +26,12 @@ const float kPipDismissFraction = 0.5f;
 // TODO(edcourtney): Consider varying the animation duration based on how far
 // the pip window has to move.
 const int kPipSnapToEdgeAnimationDurationMs = 50;
+// Threshold for considering drag-moving a PIP window to fling in the
+// direction of movement in GestureEvent velocity units.
+const int kPipMovementFlingThresholdSquared = 3000 * 3000;
+// Threshold for considering a swipe off the side of the screen a dismissal
+// even if less than |kPipDismissFraction| of the PIP window is off-screen.
+const int kPipSwipeToDismissFlingThresholdSquared = 2000 * 2000;
 
 bool IsAtTopOrBottomEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
   return (bounds.y() < area.y() + kPipDismissSlop && bounds.y() >= area.y()) ||
@@ -156,7 +162,16 @@ void PipWindowResizer::CompleteDrag() {
   window_state()->ClearRestoreBounds();
   window_state()->set_bounds_changed_by_user(moved_or_resized_);
 
-  if (dismiss_fraction_ < kPipDismissFraction) {
+  int fling_amount = fling_velocity_x_ * fling_velocity_x_ +
+                     fling_velocity_y_ * fling_velocity_y_;
+  // Trigger a dismiss if less than |kPipDismissFraction| of the PIP window area
+  // is on-screen, or, if it was flung faster than
+  // |kPipSwipeToDimissFlingThresholdSquared| during a dismiss gesture.
+  bool should_dismiss =
+      dismiss_fraction_ < kPipDismissFraction ||
+      (dismiss_fraction_ != 1.f &&
+       fling_amount >= kPipSwipeToDismissFlingThresholdSquared);
+  if (should_dismiss) {
     // Close the widget. This will trigger an animation dismissing the PIP
     // window.
     auto* widget = GetInternalWidgetForWindow(window_state()->window());
@@ -164,8 +179,17 @@ void PipWindowResizer::CompleteDrag() {
       widget->Close();
   } else {
     // Animate the PIP window to its resting position.
-    gfx::Rect bounds = PipPositioner::GetRestingPosition(
-        window_state()->GetDisplay(), GetTarget()->GetBoundsInScreen());
+    gfx::Rect bounds;
+    if (fling_amount > kPipMovementFlingThresholdSquared) {
+      bounds = ComputeFlungPosition();
+    } else {
+      bounds = GetTarget()->GetBoundsInScreen();
+    }
+
+    // Compute resting position even if it was a fling to avoid obstacles.
+    bounds =
+        PipPositioner::GetRestingPosition(window_state()->GetDisplay(), bounds);
+
     base::TimeDelta duration =
         base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
     wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
@@ -197,7 +221,44 @@ void PipWindowResizer::RevertDrag() {
 }
 
 void PipWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
-  CompleteDrag();
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
+    fling_velocity_x_ = event->details().velocity_x();
+    fling_velocity_y_ = event->details().velocity_y();
+    CompleteDrag();
+  }
+}
+
+gfx::Rect PipWindowResizer::ComputeFlungPosition() {
+  gfx::Rect bounds = GetTarget()->GetBoundsInScreen();
+
+  // Undefined fling direction, don't move.
+  if (fling_velocity_x_ == 0 && fling_velocity_y_ == 0)
+    return bounds;
+
+  gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
+
+  // Compute signed distance to travel in x and y axes.
+  int x_dist = 0;
+  if (fling_velocity_x_ < 0)
+    x_dist = area.x() - bounds.x();
+  else if (fling_velocity_x_ > 0)
+    x_dist = area.right() - bounds.x() - bounds.width();
+
+  int y_dist = 0;
+  if (fling_velocity_y_ < 0)
+    y_dist = area.y() - bounds.y();
+  else if (fling_velocity_y_ > 0)
+    y_dist = area.bottom() - bounds.y() - bounds.height();
+
+  // Compute which axis is limiting the movement, then offset.
+  if (fling_velocity_x_ == 0 ||
+      x_dist * fling_velocity_y_ > y_dist * fling_velocity_x_) {
+    bounds.Offset((y_dist * fling_velocity_x_) / fling_velocity_y_, y_dist);
+  } else {
+    bounds.Offset(x_dist, (x_dist * fling_velocity_y_) / fling_velocity_x_);
+  }
+
+  return bounds;
 }
 
 }  // namespace ash

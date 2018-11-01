@@ -5,6 +5,7 @@
 #include "ash/wm/pip/pip_window_resizer.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -114,6 +115,20 @@ class PipWindowResizerTest : public AshTestBase {
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;
+  }
+
+  void Fling(std::unique_ptr<WindowResizer> resizer,
+             float velocity_x,
+             float velocity_y) {
+    aura::Window* target_window = resizer->GetTarget();
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    ui::GestureEventDetails details = ui::GestureEventDetails(
+        ui::ET_SCROLL_FLING_START, velocity_x, velocity_y);
+    ui::GestureEvent event = ui::GestureEvent(
+        target_window->bounds().origin().x(),
+        target_window->bounds().origin().y(), ui::EF_NONE, timestamp, details);
+    ui::Event::DispatcherApi(&event).set_target(target_window);
+    resizer->FlingOrSwipe(&event);
   }
 
   void UpdateWorkArea(const std::string& bounds) {
@@ -331,6 +346,112 @@ TEST_F(PipWindowResizerTest,
   // we don't know whether a swipe will start or not.
   resizer->Drag(CalculateDragPoint(*resizer, -4, 0), 0);
   EXPECT_TRUE(test_state->last_bounds().IsEmpty());
+}
+
+TEST_F(PipWindowResizerTest, PipWindowIsFlungToEdge) {
+  UpdateWorkArea("400x400");
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
+    Fling(std::move(resizer), 0.f, 4000.f);
+
+    // Flung downwards.
+    EXPECT_EQ(gfx::Rect(200, 292, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -10), 0);
+    Fling(std::move(resizer), 0.f, -4000.f);
+
+    // Flung upwards.
+    EXPECT_EQ(gfx::Rect(200, 8, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+    Fling(std::move(resizer), 4000.f, 0.f);
+
+    // Flung to the right.
+    EXPECT_EQ(gfx::Rect(292, 200, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, -10, 0), 0);
+    Fling(std::move(resizer), -4000.f, 0.f);
+
+    // Flung to the left.
+    EXPECT_EQ(gfx::Rect(8, 200, 100, 100), test_state()->last_bounds());
+  }
+}
+
+TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
+  UpdateWorkArea("400x400");
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
+    Fling(std::move(resizer), 3000.f, 3000.f);
+
+    // Flung downward and to the right, into the corner.
+    EXPECT_EQ(gfx::Rect(292, 292, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 3, 4), 0);
+    Fling(std::move(resizer), 3000.f, 4000.f);
+
+    // Flung downward and to the right, but reaching the bottom edge first.
+    EXPECT_EQ(gfx::Rect(269, 292, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 4, 3), 0);
+    Fling(std::move(resizer), 4000.f, 3000.f);
+
+    // Flung downward and to the right, but reaching the right edge first.
+    EXPECT_EQ(gfx::Rect(292, 269, 100, 100), test_state()->last_bounds());
+  }
+}
+
+TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
+                                        base::nullopt, base::DoNothing());
+  keyboard_controller->ShowKeyboard(/*lock=*/true);
+  keyboard_controller->NotifyKeyboardWindowLoaded();
+
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(8, 150, 100, 100));
+
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+  ASSERT_TRUE(resizer.get());
+
+  // Fling to the left - but don't intersect with the floating keyboard.
+  resizer->Drag(CalculateDragPoint(*resizer, -10, 0), 0);
+  Fling(std::move(resizer), -4000.f, 0.f);
+
+  // Appear below the keyboard.
+  EXPECT_EQ(gfx::Rect(8, 258, 100, 100), test_state()->last_bounds());
 }
 
 }  // namespace wm
