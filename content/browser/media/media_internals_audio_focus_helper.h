@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_AUDIO_FOCUS_HELPER_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_AUDIO_FOCUS_HELPER_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -49,12 +51,24 @@ class MediaInternalsAudioFocusHelper
   void SerializeAndSendUpdate(const std::string& function,
                               const base::Value* value);
 
+  // Build the name of the request to display and inject values from |state|.
+  std::string BuildNameString(
+      const media_session::mojom::AudioFocusRequestStatePtr& state,
+      const std::string& provided_name) const;
+
+  // Inject |state| values to display in the state information.
+  std::string BuildStateString(
+      const media_session::mojom::AudioFocusRequestStatePtr& state,
+      const std::string& provided_state) const;
+
   // Holds a pointer to the media session service and it's debug interface.
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
   media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
 
   // Must only be accessed on the UI thread.
   base::DictionaryValue audio_focus_data_;
+  std::map<std::string, media_session::mojom::AudioFocusRequestStatePtr>
+      request_state_;
 
   bool enabled_ = false;
 
