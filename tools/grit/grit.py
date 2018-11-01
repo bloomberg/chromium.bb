@@ -12,4 +12,4 @@ import grit.grit_runner
 
 
 if __name__ == '__main__':
-  grit.grit_runner.Main(sys.argv[1:])
+  sys.exit(grit.grit_runner.Main(sys.argv[1:]))
