@@ -6,9 +6,7 @@
 #define BASE_TASK_TASK_SCHEDULER_DELAYED_TASK_MANAGER_H_
 
 #include <memory>
-#include <queue>
 #include <utility>
-#include <vector>
 
 #include "base/base_export.h"
 #include "base/callback.h"
@@ -16,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/time/default_tick_clock.h"
@@ -52,15 +51,16 @@ class BASE_EXPORT DelayedTaskManager {
 
  private:
   struct DelayedTask {
+    DelayedTask();
     DelayedTask(Task task, PostTaskNowCallback callback);
     DelayedTask(DelayedTask&& other);
     ~DelayedTask();
 
-    // Required by std::priority_queue::pop().
+    // Required by IntrusiveHeap::insert().
     DelayedTask& operator=(DelayedTask&& other);
 
-    // Required by std::priority_queue.
-    bool operator>(const DelayedTask& other) const;
+    // Required by IntrusiveHeap.
+    bool operator<=(const DelayedTask& other) const;
 
     Task task;
     PostTaskNowCallback callback;
@@ -71,6 +71,12 @@ class BASE_EXPORT DelayedTaskManager {
     // Mark the delayed task as scheduled. Since the sort key is
     // |task.delayed_run_time|, it does not alter sort order when it is called.
     void SetScheduled();
+
+    // Required by IntrusiveHeap.
+    void SetHeapHandle(const HeapHandle& handle) {}
+
+    // Required by IntrusiveHeap.
+    void ClearHeapHandle() {}
 
    private:
     bool scheduled_ = false;
@@ -97,10 +103,7 @@ class BASE_EXPORT DelayedTaskManager {
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
 
-  std::priority_queue<DelayedTask,
-                      std::vector<DelayedTask>,
-                      std::greater<DelayedTask>>
-      delayed_task_queue_;
+  IntrusiveHeap<DelayedTask> delayed_task_queue_;
 
   // Synchronizes access to |delayed_task_queue_| and the setting of
   // |service_thread_task_runner|. Once |service_thread_task_runner_| is set,
