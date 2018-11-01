@@ -85,10 +85,6 @@
 -PlatformAppBrowserTest.PictureInPicture
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage
 
-# Excluded from Mash because pointer events from EventGenerator aren't seen.
-# https://crbug.com/814675
--ChromeOSInfoPrivateTest.StylusSeen
-
 # --------------------------------------------------
 # Tests failing only for SingleProcessMash.
 # --------------------------------------------------
