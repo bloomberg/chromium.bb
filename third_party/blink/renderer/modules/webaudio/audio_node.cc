@@ -618,11 +618,11 @@ void AudioNode::Dispose() {
 
   if (context()->HasRealtimeConstraint()) {
     // Add the handler to the orphan list if the context is not
-    // closed. (Nothing will clean up the orphan list if the context
-    // is closed.)  These will get cleaned up in the post render task
+    // uninitialized (Nothing will clean up the orphan list if the context
+    // is uninitialized.)  These will get cleaned up in the post render task
     // if audio thread is running or when the context is colleced (in
     // the worst case).
-    if (context()->ContextState() != BaseAudioContext::kClosed) {
+    if (!context()->IsContextClosed()) {
       context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
           std::move(handler_));
     }
