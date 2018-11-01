@@ -129,23 +129,26 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   //  - The opportunity also holds onto a list of these edges to support
   //    css-shapes.
   struct NGShelf {
-    explicit NGShelf(LayoutUnit block_offset)
+    NGShelf(LayoutUnit block_offset, bool track_shape_exclusions)
         : block_offset(block_offset),
           line_left(LayoutUnit::Min()),
           line_right(LayoutUnit::Max()),
-          shape_exclusions(base::AdoptRef(new NGShapeExclusions)),
+          shape_exclusions(track_shape_exclusions
+                               ? base::AdoptRef(new NGShapeExclusions)
+                               : nullptr),
           has_shape_exclusions(false) {}
 
-    // The copy constructor explicitly copies the shape_exclusions member,
-    // instead of just incrementing the ref.
+    // The copy constructor explicitly copies the shape_exclusions member.
     NGShelf(const NGShelf& other)
         : block_offset(other.block_offset),
           line_left(other.line_left),
           line_right(other.line_right),
           line_left_edges(other.line_left_edges),
           line_right_edges(other.line_right_edges),
-          shape_exclusions(
-              base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))),
+          shape_exclusions(other.shape_exclusions
+                               ? base::AdoptRef(new NGShapeExclusions(
+                                     *other.shape_exclusions))
+                               : nullptr),
           has_shape_exclusions(other.has_shape_exclusions) {}
 
     NGShelf(NGShelf&& other) noexcept = default;
@@ -180,6 +183,12 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   wtf_size_t num_exclusions_;
   LayoutUnit both_clear_offset_;
 
+  // In order to reduce the amount of copies related to bookkeeping shape data,
+  // we initially ignore exclusions with shape data. When we first see an
+  // exclusion with shape data, we set this flag, and rebuild the
+  // DerivedGeometry data-structure, to perform the additional bookkeeping.
+  bool track_shape_exclusions_;
+
   // The derived geometry struct, is the data-structure which handles all of the
   // queries on the exclusion space. It can always be rebuilt from exclusions_
   // and num_exclusions_. This is mutable as it is passed down a chain of
@@ -202,7 +211,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     USING_FAST_MALLOC(DerivedGeometry);
 
    public:
-    DerivedGeometry();
+    explicit DerivedGeometry(bool track_shape_exclusions);
     DerivedGeometry(DerivedGeometry&& o) noexcept = default;
 
     void Add(const NGExclusion& exclusion);
@@ -258,6 +267,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     // removing shelves to make insertion faster.
     Vector<NGShelf, 4> shelves_;
     Vector<NGLayoutOpportunity, 4> opportunities_;
+
+    bool track_shape_exclusions_;
 
     // This member is used for implementing the "top edge alignment rule" for
     // floats. Floats can be positioned at negative offsets, hence is
