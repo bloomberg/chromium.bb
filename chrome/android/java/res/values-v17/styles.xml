@@ -712,7 +712,7 @@
     <!-- Content and Site Suggestions -->
     <style name="SuggestionCardModern">
         <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
-        <item name="android:background">@drawable/content_card_modern_background</item>
+        <item name="android:background">@drawable/hairline_border_card_background</item>
         <item name="android:foreground">@drawable/button_borderless_compat</item>
     </style>
     <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
