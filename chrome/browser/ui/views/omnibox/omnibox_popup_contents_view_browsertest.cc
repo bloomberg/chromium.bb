@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -251,7 +252,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
 // Test that clicks over the omnibox do not hit the popup.
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
   CreatePopupForTestQuery();
-  ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+
+  gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();
+#if defined(OS_CHROMEOS)
+  if (features::IsUsingWindowService())
+    event_window = nullptr;
+#endif
+  ui::test::EventGenerator generator(event_window);
 
   OmniboxResultView* result = GetResultViewAt(0);
   ASSERT_TRUE(result);
