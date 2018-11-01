@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <stdio.h>
@@ -43,9 +44,15 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int fd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+  int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd == -1) {
     perror("socket()");
+    return 1;
+  }
+  // On non-Linux, the SOCK_NONBLOCK option is not available, so use the
+  // more-portable method of calling fcntl() to set this behavior.
+  if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1) {
+    perror("fcntl(F_SETFL, +O_NONBLOCK)");
     return 1;
   }
 

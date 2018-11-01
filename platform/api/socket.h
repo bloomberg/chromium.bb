@@ -6,6 +6,7 @@
 #define PLATFORM_API_SOCKET_H_
 
 #include "base/ip_address.h"
+#include "platform/api/network_interface.h"
 
 namespace openscreen {
 namespace platform {
@@ -14,6 +15,8 @@ namespace platform {
 struct UdpSocketPrivate;
 using UdpSocketPtr = UdpSocketPrivate*;
 
+// TODO(miu): These should return std::unique_ptr<>, so that code structure
+// auto-scopes the lifetime of the instance (i.e., auto-closing the socket too).
 UdpSocketPtr CreateUdpSocketIPv4();
 UdpSocketPtr CreateUdpSocketIPv6();
 
@@ -22,10 +25,10 @@ void DestroyUdpSocket(UdpSocketPtr socket);
 
 bool BindUdpSocket(UdpSocketPtr socket,
                    const IPEndpoint& endpoint,
-                   int32_t ifindex);
+                   InterfaceIndex ifindex);
 bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                            const IPAddress& address,
-                           int32_t ifindex);
+                           InterfaceIndex ifindex);
 
 int64_t ReceiveUdp(UdpSocketPtr socket,
                    void* data,

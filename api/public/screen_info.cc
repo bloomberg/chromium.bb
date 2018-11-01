@@ -4,6 +4,8 @@
 
 #include "api/public/screen_info.h"
 
+#include <utility>
+
 namespace openscreen {
 
 bool ScreenInfo::operator==(const ScreenInfo& other) const {
@@ -19,7 +21,7 @@ bool ScreenInfo::operator!=(const ScreenInfo& other) const {
 }
 
 bool ScreenInfo::Update(std::string&& new_friendly_name,
-                        int32_t new_network_interface_index,
+                        platform::InterfaceIndex new_network_interface_index,
                         IPEndpoint new_endpoint) {
   bool changed = (friendly_name != new_friendly_name) ||
                  (network_interface_index != new_network_interface_index) ||

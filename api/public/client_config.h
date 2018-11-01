@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "platform/api/network_interface.h"
+
 namespace openscreen {
 
 struct ClientConfig {
@@ -16,8 +18,8 @@ struct ClientConfig {
 
   // The indexes of network interfaces that should be used by the Open Screen
   // Library.  The indexes derive from the values of
-  // openscreen::InterfaceInfo::index.
-  std::vector<int32_t> interface_indexes;
+  // openscreen::platform::InterfaceInfo::index.
+  std::vector<platform::InterfaceIndex> interface_indexes;
 };
 
 }  // namespace openscreen

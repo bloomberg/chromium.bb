@@ -135,7 +135,7 @@ void PublisherDemo(const std::string& friendly_name) {
 
 int main(int argc, char** argv) {
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose,
-                                    0);
+                                    1);
   if (argc == 1) {
     openscreen::ListenerDemo();
   } else {

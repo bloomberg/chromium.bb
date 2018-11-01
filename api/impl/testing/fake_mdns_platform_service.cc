@@ -15,16 +15,14 @@ FakeMdnsPlatformService::~FakeMdnsPlatformService() = default;
 
 std::vector<MdnsPlatformService::BoundInterface>
 FakeMdnsPlatformService::RegisterInterfaces(
-    const std::vector<int32_t>& interface_index_whitelist) {
+    const std::vector<platform::InterfaceIndex>& whitelist) {
   CHECK(registered_interfaces_.empty());
-  if (interface_index_whitelist.empty()) {
+  if (whitelist.empty()) {
     registered_interfaces_ = interfaces_;
   } else {
     for (const auto& interface : interfaces_) {
-      if (std::find(interface_index_whitelist.begin(),
-                    interface_index_whitelist.end(),
-                    interface.interface_info.index) !=
-          interface_index_whitelist.end()) {
+      if (std::find(whitelist.begin(), whitelist.end(),
+                    interface.interface_info.index) != whitelist.end()) {
         registered_interfaces_.push_back(interface);
       }
     }

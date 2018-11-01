@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/ip_address.h"
+#include "platform/api/network_interface.h"
 
 namespace openscreen {
 
@@ -18,8 +19,8 @@ struct ServerConfig {
 
   // The indexes of network interfaces that should be used by the Open Screen
   // Library.  The indexes derive from the values of
-  // openscreen::InterfaceInfo::index.
-  std::vector<int32_t> interface_indexes;
+  // openscreen::platform::InterfaceInfo::index.
+  std::vector<platform::InterfaceIndex> interface_indexes;
 
   // The list of connection endpoints that are advertised for Open Screen
   // protocol connections.  These must be reachable via one interface in

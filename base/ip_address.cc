@@ -5,6 +5,7 @@
 #include "base/ip_address.h"
 
 #include <cstring>
+#include <iomanip>
 
 #include "platform/api/logging.h"
 
@@ -203,6 +204,45 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
   }
   address->version_ = Version::kV6;
   return true;
+}
+
+std::ostream& operator<<(std::ostream& out, const IPAddress& address) {
+  uint8_t values[16];
+  size_t len = 0;
+  char separator;
+  size_t values_per_separator;
+  if (address.IsV4()) {
+    out << std::dec;
+    address.CopyToV4(values);
+    len = 4;
+    separator = '.';
+    values_per_separator = 1;
+  } else if (address.IsV6()) {
+    out << std::hex;
+    address.CopyToV6(values);
+    len = 16;
+    separator = ':';
+    values_per_separator = 2;
+  }
+  out << std::setfill('0') << std::right;
+  for (size_t i = 0; i < len; ++i) {
+    if (i > 0 && (i % values_per_separator == 0)) {
+      out << separator;
+    }
+    out << std::setw(2) << static_cast<int>(values[i]);
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const IPEndpoint& endpoint) {
+  if (endpoint.address.IsV6()) {
+    out << '[';
+  }
+  out << endpoint.address;
+  if (endpoint.address.IsV6()) {
+    out << ']';
+  }
+  return out << ':' << std::dec << static_cast<int>(endpoint.port);
 }
 
 }  // namespace openscreen

@@ -9,6 +9,7 @@
 #include "api/impl/mdns_responder_service.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/error.h"
+#include "platform/api/logging.h"
 #include "platform/api/socket.h"
 
 namespace openscreen {
@@ -30,7 +31,8 @@ class MdnsResponderAdapterImplFactory final
   }
 };
 
-bool SetupMulticastSocket(platform::UdpSocketPtr socket, int32_t ifindex) {
+bool SetupMulticastSocket(platform::UdpSocketPtr socket,
+                          platform::InterfaceIndex ifindex) {
   if (!JoinUdpMulticastGroup(socket, kMulticastAddress, ifindex)) {
     LOG_ERROR << "join multicast group failed: "
               << platform::GetLastErrorString();
@@ -96,14 +98,16 @@ InternalServices::InternalPlatformLinkage::~InternalPlatformLinkage() = default;
 
 std::vector<MdnsPlatformService::BoundInterface>
 InternalServices::InternalPlatformLinkage::RegisterInterfaces(
-    const std::vector<int32_t>& interface_index_whitelist) {
+    const std::vector<platform::InterfaceIndex>& whitelist) {
   auto addrinfo = platform::GetInterfaceAddresses();
-  std::vector<int> index_list;
+  const bool do_filter_using_whitelist = !whitelist.empty();
+  std::vector<platform::InterfaceIndex> index_list;
   for (const auto& interface : addrinfo) {
-    if (!interface_index_whitelist.empty() &&
-        std::find(interface_index_whitelist.begin(),
-                  interface_index_whitelist.end(),
-                  interface.info.index) == interface_index_whitelist.end()) {
+    VLOG(1) << "Found interface: " << interface;
+    if (do_filter_using_whitelist &&
+        std::find(whitelist.begin(), whitelist.end(), interface.info.index) ==
+            whitelist.end()) {
+      VLOG(1) << "Ignoring interface not in whitelist: " << interface.info;
       continue;
     }
     if (!interface.addresses.empty())
@@ -112,7 +116,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
 
   // Listen on all interfaces
   std::vector<BoundInterface> result;
-  for (int index : index_list) {
+  for (platform::InterfaceIndex index : index_list) {
     const auto& addr =
         *std::find_if(addrinfo.begin(), addrinfo.end(),
                       [index](const platform::InterfaceAddresses& addr) {

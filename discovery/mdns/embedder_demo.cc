@@ -37,7 +37,7 @@ bool g_done = false;
 bool g_dump_services = false;
 
 struct Service {
-  Service(mdns::DomainName service_instance)
+  explicit Service(mdns::DomainName service_instance)
       : service_instance(std::move(service_instance)) {}
   ~Service() = default;
 
@@ -97,19 +97,20 @@ void SignalThings() {
 }
 
 std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
-    const std::vector<int>& index_list) {
+    const std::vector<platform::InterfaceIndex>& index_list) {
   std::vector<platform::UdpSocketPtr> fds;
   for (const auto ifindex : index_list) {
     auto* socket = platform::CreateUdpSocketIPv4();
     if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)) {
-      LOG_ERROR << "join multicast group failed: "
-                << platform::GetLastErrorString();
+      LOG_ERROR << "join multicast group failed for interface " << ifindex
+                << ": " << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
     if (!BindUdpSocket(socket, IPEndpoint{IPAddress{0, 0, 0, 0}, 5353},
                        ifindex)) {
-      LOG_ERROR << "bind failed: " << platform::GetLastErrorString();
+      LOG_ERROR << "bind failed for interface " << ifindex << ": "
+                << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
@@ -123,7 +124,7 @@ std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
 std::vector<platform::UdpSocketPtr> RegisterInterfaces(
     const std::vector<platform::InterfaceAddresses>& addrinfo,
     mdns::MdnsResponderAdapter* mdns_adapter) {
-  std::vector<int> index_list;
+  std::vector<platform::InterfaceIndex> index_list;
   for (const auto& interface : addrinfo) {
     if (!interface.addresses.empty())
       index_list.push_back(interface.info.index);
@@ -132,7 +133,7 @@ std::vector<platform::UdpSocketPtr> RegisterInterfaces(
   auto sockets = SetupMulticastSockets(index_list);
   // Listen on all interfaces
   auto fd_it = sockets.begin();
-  for (int index : index_list) {
+  for (platform::InterfaceIndex index : index_list) {
     const auto& addr = *std::find_if(
         addrinfo.begin(), addrinfo.end(),
         [index](const openscreen::platform::InterfaceAddresses& addr) {
@@ -153,11 +154,7 @@ void LogService(const Service& s) {
   for (const auto& l : s.txt) {
     LOG_INFO << " | " << l;
   }
-  // TODO(btolsch): Add IP address printing/ToString to base/.
-  uint8_t x[4] = {};
-  s.address.CopyToV4(x);
-  LOG_INFO << "A: " << static_cast<int>(x[0]) << "." << static_cast<int>(x[1])
-           << "." << static_cast<int>(x[2]) << "." << static_cast<int>(x[3]);
+  LOG_INFO << "A: " << s.address;
 }
 
 void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
@@ -170,7 +167,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         mdns_adapter->StartTxtQuery(ptr_event.service_instance);
         if (it == g_services->end()) {
           g_services->emplace(ptr_event.service_instance,
-                              ptr_event.service_instance);
+                              Service(ptr_event.service_instance));
         }
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
@@ -263,6 +260,9 @@ void BrowseDemo(const std::string& service_name,
   mdns_adapter->Init();
   mdns_adapter->SetHostLabel("gigliorononomicon");
   auto addrinfo = platform::GetInterfaceAddresses();
+  for (const auto& ifa : addrinfo) {
+    LOG_INFO << "Found interface: " << ifa;
+  }
   auto sockets = RegisterInterfaces(addrinfo, mdns_adapter.get());
   if (!service_instance.empty()) {
     mdns_adapter->RegisterService(service_instance, service_name,

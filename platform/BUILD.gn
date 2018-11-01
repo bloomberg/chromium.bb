@@ -7,7 +7,9 @@ source_set("platform") {
     "base",
   ]
 
-  if (target_os == "linux") {
+  if (is_linux) {
     deps += [ "linux" ]
+  } else if (is_mac) {
+    deps += [ "mac" ]
   }
 }

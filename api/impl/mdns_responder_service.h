@@ -16,6 +16,7 @@
 #include "api/impl/screen_publisher_impl.h"
 #include "base/ip_address.h"
 #include "discovery/mdns/mdns_responder_adapter.h"
+#include "platform/api/network_interface.h"
 #include "platform/base/event_loop.h"
 
 namespace openscreen {
@@ -40,7 +41,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   void SetServiceConfig(const std::string& hostname,
                         const std::string& instance,
                         uint16_t port,
-                        const std::vector<int32_t> interface_index_whitelist,
+                        const std::vector<platform::InterfaceIndex> whitelist,
                         const std::vector<std::string>& txt_lines);
 
   void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
@@ -64,7 +65,8 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
  private:
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
-    int32_t ptr_interface_index = 0;
+    platform::InterfaceIndex ptr_interface_index =
+        platform::kInvalidInterfaceIndex;
     mdns::DomainName domain_name;
     uint16_t port = 0;
     std::vector<std::string> txt_info;
@@ -108,7 +110,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   std::string service_hostname_;
   std::string service_instance_name_;
   uint16_t service_port_;
-  std::vector<int32_t> interface_index_whitelist_;
+  std::vector<platform::InterfaceIndex> interface_index_whitelist_;
   std::vector<std::string> service_txt_lines_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;

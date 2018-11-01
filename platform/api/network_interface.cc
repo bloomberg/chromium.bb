@@ -14,7 +14,7 @@ void InterfaceInfo::CopyHardwareAddressTo(uint8_t x[6]) const {
 }
 
 InterfaceInfo::InterfaceInfo() = default;
-InterfaceInfo::InterfaceInfo(int32_t index,
+InterfaceInfo::InterfaceInfo(InterfaceIndex index,
                              const uint8_t hardware_address[6],
                              const std::string& name,
                              Type type)
@@ -41,6 +41,47 @@ IPSubnet::IPSubnet() = default;
 IPSubnet::IPSubnet(const IPAddress& address, uint8_t prefix_length)
     : address(address), prefix_length(prefix_length) {}
 IPSubnet::~IPSubnet() = default;
+
+std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet) {
+  if (subnet.address.IsV6()) {
+    out << '[';
+  }
+  out << subnet.address;
+  if (subnet.address.IsV6()) {
+    out << ']';
+  }
+  return out << '/' << std::dec << static_cast<int>(subnet.prefix_length);
+}
+
+std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
+  std::string media_type;
+  switch (info.type) {
+    case InterfaceInfo::Type::kEthernet:
+      media_type = "Ethernet";
+      break;
+    case InterfaceInfo::Type::kWifi:
+      media_type = "Wifi";
+      break;
+    case InterfaceInfo::Type::kOther:
+      media_type = "Other";
+      break;
+  }
+  out << '{' << info.index << " (a.k.a. " << info.name
+      << "); media_type=" << media_type << "; MAC=" << std::hex
+      << static_cast<int>(info.hardware_address[0]);
+  for (size_t i = 1; i < sizeof(info.hardware_address); ++i) {
+    out << ':' << static_cast<int>(info.hardware_address[i]);
+  }
+  return out << '}';
+}
+
+std::ostream& operator<<(std::ostream& out, const InterfaceAddresses& ifas) {
+  out << "{info=" << ifas.info;
+  for (const IPSubnet& ip : ifas.addresses) {
+    out << "; " << ip;
+  }
+  return out << '}';
+}
 
 }  // namespace platform
 }  // namespace openscreen

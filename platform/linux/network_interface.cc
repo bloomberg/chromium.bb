@@ -102,7 +102,7 @@ void GetInterfaceAttributes(struct rtattr* rta,
 InterfaceAddresses* GetAddressesForIndex(
     std::vector<InterfaceAddresses>* address_list,
     const std::vector<InterfaceInfo>& info_list,
-    int32_t index) {
+    InterfaceIndex index) {
   const auto info_it = std::find_if(
       info_list.begin(), info_list.end(),
       [index](const InterfaceInfo& info) { return info.index == index; });

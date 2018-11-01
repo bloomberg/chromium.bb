@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/ip_address.h"
+#include "platform/api/network_interface.h"
 
 namespace openscreen {
 
@@ -17,7 +18,7 @@ struct ScreenInfo {
   bool operator!=(const ScreenInfo& other) const;
 
   bool Update(std::string&& friendly_name,
-              int32_t network_interface_index,
+              platform::InterfaceIndex network_interface_index,
               IPEndpoint endpoint);
 
   // Identifier uniquely identifying the screen.
@@ -27,7 +28,8 @@ struct ScreenInfo {
   std::string friendly_name;
 
   // The index of the network interface that the screen was discovered on.
-  int32_t network_interface_index;
+  platform::InterfaceIndex network_interface_index =
+      platform::kInvalidInterfaceIndex;
 
   // The network endpoint to create a new connection to the screen.
   IPEndpoint endpoint;

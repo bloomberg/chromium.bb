@@ -5,12 +5,20 @@
 #ifndef PLATFORM_API_NETWORK_INTERFACE_H_
 #define PLATFORM_API_NETWORK_INTERFACE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/ip_address.h"
 
 namespace openscreen {
 namespace platform {
+
+// On Linux, these are a signed 32-bit integer. However, on Mac, they are an
+// unsigned 32-bit integer. Thus, for cross-platform compatibility, and to
+// provide a special "invalid/not set" value, define the type as a 64-bit signed
+// integer.
+using InterfaceIndex = int64_t;
+enum : InterfaceIndex { kInvalidInterfaceIndex = -1 };
 
 struct InterfaceInfo {
   enum class Type {
@@ -21,7 +29,7 @@ struct InterfaceInfo {
 
   // TODO(btolsch): Only needed until c++14.
   InterfaceInfo();
-  InterfaceInfo(int32_t index,
+  InterfaceInfo(InterfaceIndex index,
                 const uint8_t hardware_address[6],
                 const std::string& name,
                 Type type);
@@ -34,7 +42,7 @@ struct InterfaceInfo {
 
   // Interface index, typically as specified by the operating system,
   // identifying this interface on the host machine.
-  int32_t index = 0;
+  InterfaceIndex index = kInvalidInterfaceIndex;
 
   // MAC address of the interface.  All 0s if unavailable.
   uint8_t hardware_address[6] = {};
@@ -71,6 +79,11 @@ struct InterfaceAddresses {
 // Returns at most one InterfaceAddresses per interface, so there will be no
 // duplicate InterfaceInfo entries.
 std::vector<InterfaceAddresses> GetInterfaceAddresses();
+
+// Output, for logging.
+std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info);
+std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet);
+std::ostream& operator<<(std::ostream& out, const InterfaceAddresses& ifas);
 
 }  // namespace platform
 }  // namespace openscreen

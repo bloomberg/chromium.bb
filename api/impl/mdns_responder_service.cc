@@ -5,6 +5,7 @@
 #include "api/impl/mdns_responder_service.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/make_unique.h"
 #include "platform/api/logging.h"
@@ -38,7 +39,7 @@ void MdnsResponderService::SetServiceConfig(
     const std::string& hostname,
     const std::string& instance,
     uint16_t port,
-    const std::vector<int32_t> interface_index_whitelist,
+    const std::vector<platform::InterfaceIndex> whitelist,
     const std::vector<std::string>& txt_lines) {
   DCHECK(!hostname.empty());
   DCHECK(!instance.empty());
@@ -46,7 +47,7 @@ void MdnsResponderService::SetServiceConfig(
   service_hostname_ = hostname;
   service_instance_name_ = instance;
   service_port_ = port;
-  interface_index_whitelist_ = interface_index_whitelist;
+  interface_index_whitelist_ = whitelist;
   service_txt_lines_ = txt_lines;
 }
 
@@ -168,7 +169,6 @@ void MdnsResponderService::HandleMdnsEvents() {
     }
     if (events_possible)
       mdns_responder_->RunTasks();
-
   } while (events_possible);
 }
 
@@ -353,7 +353,7 @@ bool MdnsResponderService::HandlePtrEvent(const mdns::PtrEvent& ptr_event) {
             return socket == interface.socket;
           });
       if (it != bound_interfaces_.end()) {
-        int32_t interface_index = it->interface_info.index;
+        const auto interface_index = it->interface_info.index;
         mdns_responder_->StartSrvQuery(ptr_event.service_instance);
         mdns_responder_->StartTxtQuery(ptr_event.service_instance);
         events_possible = true;
@@ -379,7 +379,7 @@ bool MdnsResponderService::HandlePtrEvent(const mdns::PtrEvent& ptr_event) {
           mdns_responder_->StopTxtQuery(ptr_event.service_instance);
           services_.erase(entry);
         } else {
-          entry->second->ptr_interface_index = 0;
+          entry->second->ptr_interface_index = platform::kInvalidInterfaceIndex;
           RemoveScreenInfo(ptr_event.service_instance);
         }
       }
@@ -423,9 +423,10 @@ bool MdnsResponderService::HandleSrvEvent(const mdns::SrvEvent& srv_event) {
         mdns_responder_->StopAaaaQuery(hostname_entry->first);
         hostname_watchers_.erase(hostname_entry);
       }
-      // |ptr_interface_index| == 0 signals that we also have no PTR record,
-      // and should consider this service to be gone.
-      if (entry->second->ptr_interface_index == 0) {
+      // |ptr_interface_index| == kInvalidInterfaceIndex signals that there is
+      // no PTR record, and so the service is gone.
+      if (entry->second->ptr_interface_index ==
+          platform::kInvalidInterfaceIndex) {
         mdns_responder_->StopSrvQuery(srv_event.service_instance);
         mdns_responder_->StopTxtQuery(srv_event.service_instance);
         services_.erase(entry);

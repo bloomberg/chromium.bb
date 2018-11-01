@@ -4,19 +4,10 @@
 
 #include "platform/api/socket.h"
 
-#include <sys/socket.h>
-
-#include <linux/in6.h>
-#include <linux/ipv6.h>
-// NOTE: Fixes libc/kernel header interaction on xenial where libc doesn't see
-// some kernel definitions.
-#ifndef _UAPI_LINUX_IN6_H
-#define _UAPI_LINUX_IN6_H
-#endif
-#ifndef _UAPI_IPV6_H
-#define _UAPI_IPV6_H
-#endif
+#include <fcntl.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -37,22 +28,35 @@ constexpr bool IsPowerOf2(uint32_t x) {
 static_assert(IsPowerOf2(alignof(struct cmsghdr)),
               "std::align requires power-of-2 alignment");
 
+using IPv4InterfaceIndex = decltype(ip_mreqn().imr_ifindex);
+using IPv6InterfaceIndex = decltype(ipv6_mreq().ipv6mr_interface);
+
+int CreateNonBlockingUdpSocket(int domain) {
+  const int fd = socket(domain, SOCK_DGRAM, 0);
+  if (fd == -1) {
+    return -1;
+  }
+  // On non-Linux, the SOCK_NONBLOCK option is not available, so use the
+  // more-portable method of calling fcntl() to set this behavior.
+  if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1) {
+    close(fd);
+    return -1;
+  }
+  return fd;
+}
+
 }  // namespace
 
 UdpSocketPtr CreateUdpSocketIPv4() {
-  const int fd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
-  if (fd == -1)
-    return nullptr;
-
-  return new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV4};
+  const int fd = CreateNonBlockingUdpSocket(AF_INET);
+  return fd == -1 ? nullptr
+                  : new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV4};
 }
 
 UdpSocketPtr CreateUdpSocketIPv6() {
-  const int fd = socket(AF_INET6, SOCK_DGRAM | SOCK_NONBLOCK, 0);
-  if (fd == -1)
-    return nullptr;
-
-  return new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV6};
+  const int fd = CreateNonBlockingUdpSocket(AF_INET6);
+  return fd == -1 ? nullptr
+                  : new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV6};
 }
 
 void DestroyUdpSocket(UdpSocketPtr socket) {
@@ -62,15 +66,16 @@ void DestroyUdpSocket(UdpSocketPtr socket) {
 
 bool BindUdpSocket(UdpSocketPtr socket,
                    const IPEndpoint& endpoint,
-                   int32_t ifindex) {
-  DCHECK(socket->fd >= 0);
+                   InterfaceIndex ifindex) {
+  DCHECK_GE(socket->fd, 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     if (ifindex > 0) {
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
       multicast_properties.imr_address.s_addr = INADDR_ANY;
       multicast_properties.imr_multiaddr.s_addr = INADDR_ANY;
-      multicast_properties.imr_ifindex = ifindex;
+      multicast_properties.imr_ifindex =
+          static_cast<IPv4InterfaceIndex>(ifindex);
       if (setsockopt(socket->fd, IPPROTO_IP, IP_MULTICAST_IF,
                      &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
@@ -93,8 +98,9 @@ bool BindUdpSocket(UdpSocketPtr socket,
                 sizeof(address)) != -1;
   } else {
     if (ifindex > 0) {
-      if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex,
-                     sizeof(ifindex)) == -1) {
+      const auto index = static_cast<IPv6InterfaceIndex>(ifindex);
+      if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
+                     sizeof(index)) == -1) {
         return false;
       }
       // This is effectively a boolean passed to setsockopt() to allow a future
@@ -119,8 +125,8 @@ bool BindUdpSocket(UdpSocketPtr socket,
 
 bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                            const IPAddress& address,
-                           int32_t ifindex) {
-  DCHECK(socket->fd >= 0);
+                           InterfaceIndex ifindex) {
+  DCHECK_GE(socket->fd, 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     // Passed as data to setsockopt().  1 means return IP_PKTINFO control data
     // in recvmsg() calls.
@@ -132,7 +138,7 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
     struct ip_mreqn multicast_properties;
     // Appropriate address is set based on |imr_ifindex| when set.
     multicast_properties.imr_address.s_addr = INADDR_ANY;
-    multicast_properties.imr_ifindex = ifindex;
+    multicast_properties.imr_ifindex = static_cast<IPv4InterfaceIndex>(ifindex);
     static_assert(sizeof(multicast_properties.imr_multiaddr) == 4u,
                   "IPv4 address requires exactly 4 bytes");
     address.CopyToV4(
@@ -150,13 +156,16 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                    sizeof(enable_pktinfo)) == -1) {
       return false;
     }
-    struct ipv6_mreq multicast_properties;
-    multicast_properties.ipv6mr_ifindex = ifindex;
+    struct ipv6_mreq multicast_properties = {
+        {/* filled-in below */}, static_cast<IPv6InterfaceIndex>(ifindex),
+    };
     static_assert(sizeof(multicast_properties.ipv6mr_multiaddr) == 16u,
                   "IPv6 address requires exactly 16 bytes");
     address.CopyToV6(
         reinterpret_cast<uint8_t*>(&multicast_properties.ipv6mr_multiaddr));
-    if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+    // Portability note: All platforms support IPV6_JOIN_GROUP, which is
+    // synonymous with IPV6_ADD_MEMBERSHIP.
+    if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_JOIN_GROUP,
                    &multicast_properties, sizeof(multicast_properties)) == -1) {
       return false;
     }
@@ -169,7 +178,7 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
                    int64_t length,
                    IPEndpoint* src,
                    IPEndpoint* original_destination) {
-  DCHECK(socket->fd >= 0);
+  DCHECK_GE(socket->fd, 0);
   struct iovec iov = {data, static_cast<size_t>(length)};
   char control_buf[1024];
   size_t cmsg_size = sizeof(control_buf) - sizeof(struct cmsghdr) + 1;
@@ -287,7 +296,7 @@ int64_t SendUdp(UdpSocketPtr socket,
                 const void* data,
                 int64_t length,
                 const IPEndpoint& dest) {
-  DCHECK(socket->fd >= 0);
+  DCHECK_GE(socket->fd, 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     struct sockaddr_in sa = {
         .sin_family = AF_INET, .sin_port = htons(dest.port),

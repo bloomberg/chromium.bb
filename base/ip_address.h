@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstdint>
+#include <ostream>
 #include <string>
 #include <type_traits>
 
@@ -84,6 +85,16 @@ struct IPEndpoint {
   IPAddress address;
   uint16_t port;
 };
+
+// Outputs a string of the form:
+//      123.234.34.56
+//   or fe80:0000:0000:0000:1234:5678:9abc:def0
+std::ostream& operator<<(std::ostream& out, const IPAddress& address);
+
+// Outputs a string of the form:
+//      123.234.34.56:443
+//   or [fe80:0000:0000:0000:1234:5678:9abc:def0]:8080
+std::ostream& operator<<(std::ostream& out, const IPEndpoint& endpoint);
 
 }  // namespace openscreen
 
