@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -278,6 +279,35 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
   // Verify info bar presented via histogram check.
   histogram_tester.ExpectUniqueSample("Previews.InfoBarAction.NoScript", 0, 1);
+}
+
+// Flaky in all platforms except Android. See https://crbug.com/803626 for
+// detail.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_NoScriptPreviewsRecordsOptOut NoScriptPreviewsRecordsOptOut
+#else
+#define MAYBE_NoScriptPreviewsRecordsOptOut \
+  DISABLED_NoScriptPreviewsRecordsOptOut
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+                       MAYBE_NoScriptPreviewsRecordsOptOut) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to a No Script Preview page.
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
+
+  // Terminate the previous page (non-opt out) and pull up a new No Script page.
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.NoScript",
+                                      0, 1);
+
+  // Opt out of the No Script Preview page.
+  PreviewsUITabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())
+      ->ReloadWithoutPreviews();
+
+  histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.NoScript", 1,
+                                     1);
 }
 
 // This test class enables NoScriptPreviews with OptimizationHints.

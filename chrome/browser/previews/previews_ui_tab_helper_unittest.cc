@@ -355,3 +355,54 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
+namespace {
+
+void OnDismiss(base::Optional<bool>* on_dismiss_value, bool param) {
+  *on_dismiss_value = param;
+}
+
+}  // namespace
+
+TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledOptOut) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
+
+  base::Optional<bool> on_dismiss_value;
+
+  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE, true,
+                               base::BindOnce(&OnDismiss, &on_dismiss_value));
+
+  EXPECT_FALSE(on_dismiss_value);
+
+  ui_tab_helper->ReloadWithoutPreviews(previews::PreviewsType::OFFLINE);
+
+  EXPECT_TRUE(on_dismiss_value);
+  EXPECT_TRUE(on_dismiss_value.value());
+}
+
+TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledNonOptOut) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
+
+  base::Optional<bool> on_dismiss_value;
+
+  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE, true,
+                               base::BindOnce(&OnDismiss, &on_dismiss_value));
+
+  EXPECT_FALSE(on_dismiss_value);
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  EXPECT_TRUE(on_dismiss_value);
+  EXPECT_FALSE(on_dismiss_value.value());
+}
