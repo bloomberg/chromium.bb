@@ -69,7 +69,7 @@ ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 // The alpha value for the shelf background.
 ASH_EXPORT constexpr int kShelfTranslucentOverAppList = 51;            // 20%
 ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;                 // 60%
-ASH_EXPORT constexpr int kShelfTranslucentMaximizedWindow = 230;       // 90%
+ASH_EXPORT constexpr int kShelfTranslucentMaximizedWindow = 255;       // 100%
 
 // The alpha value used to darken a colorized shelf when the shelf is
 // translucent.

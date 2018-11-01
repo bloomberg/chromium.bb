@@ -1173,9 +1173,10 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
 }
 
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
-  if (!IsBackgroundBlurEnabled())
-    return false;
-  return state_.session_state == session_manager::SessionState::ACTIVE;
+  return IsBackgroundBlurEnabled() &&
+         (shelf_background_type_ == SHELF_BACKGROUND_DEFAULT ||
+          shelf_background_type_ == SHELF_BACKGROUND_OVERLAP) &&
+         state_.session_state == session_manager::SessionState::ACTIVE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
