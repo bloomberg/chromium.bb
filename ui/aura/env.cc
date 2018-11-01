@@ -315,7 +315,6 @@ Env::Env(Mode mode)
     : mode_(mode),
       env_controller_(std::make_unique<EnvInputStateController>(this)),
       mouse_button_flags_(0),
-      is_touch_down_(false),
       get_last_mouse_location_from_mus_(mode_ == Mode::MUS),
       gesture_recognizer_(std::make_unique<ui::GestureRecognizerImpl>()),
       input_state_lookup_(InputStateLookup::Create()),
