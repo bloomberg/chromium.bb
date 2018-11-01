@@ -742,6 +742,7 @@ def RunTestsInPlatformMode(args):
 
   ### Set up sigterm handler.
 
+  contexts_to_notify_on_sigterm = []
   def unexpected_sigterm(_signum, _frame):
     msg = [
       'Received SIGTERM. Shutting down.',
@@ -754,6 +755,9 @@ def RunTestsInPlatformMode(args):
         'Thread "%s" (ident: %s) is currently running:' % (
             live_thread.name, live_thread.ident),
         thread_stack])
+
+    for context in contexts_to_notify_on_sigterm:
+      context.ReceivedSigterm()
 
     infra_error('\n'.join(msg))
 
@@ -833,6 +837,9 @@ def RunTestsInPlatformMode(args):
   test_instance = test_instance_factory.CreateTestInstance(args, infra_error)
   test_run = test_run_factory.CreateTestRun(
       args, env, test_instance, infra_error)
+
+  contexts_to_notify_on_sigterm.append(env)
+  contexts_to_notify_on_sigterm.append(test_run)
 
   ### Run.
   with out_manager, json_finalizer():

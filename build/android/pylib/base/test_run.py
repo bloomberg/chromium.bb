@@ -18,6 +18,9 @@ class TestRun(object):
     self._env = env
     self._test_instance = test_instance
 
+    # Some subclasses have different teardown behavior on receiving SIGTERM.
+    self._received_sigterm = False
+
   def TestPackage(self):
     raise NotImplementedError
 
@@ -42,3 +45,6 @@ class TestRun(object):
 
   def __exit__(self, exc_type, exc_val, exc_tb):
     self.TearDown()
+
+  def ReceivedSigterm(self):
+    self._received_sigterm = True
