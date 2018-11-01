@@ -87,7 +87,7 @@ gfx::ImageSkiaRep CrostiniAppIcon::Source::GetImageForScale(float scale) {
   } else {
     if (host_)
       host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
-    resource_id = IDR_LOGO_CROSTINI_DEFAULT;
+    resource_id = IDR_LOGO_CROSTINI_DEFAULT_192;
   }
 
   // A map from a pair of a resource ID and size in DIP to an image. This
