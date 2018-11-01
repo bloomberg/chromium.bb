@@ -170,9 +170,12 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     fixed_block = true;
   }
   if (box.IsFlexItem() && fixed_block) {
+    // The flexbox-specific behavior is in addition to regular definite-ness, so
+    // if the flex item would normally have a definite height it should keep it.
     fixed_block_is_definite =
         ToLayoutFlexibleBox(box.Parent())
-            ->UseOverrideLogicalHeightForPerentageResolution(box);
+            ->UseOverrideLogicalHeightForPerentageResolution(box) ||
+        (box.IsLayoutBlock() && ToLayoutBlock(box).HasDefiniteLogicalHeight());
   }
 
   bool is_new_fc = true;
