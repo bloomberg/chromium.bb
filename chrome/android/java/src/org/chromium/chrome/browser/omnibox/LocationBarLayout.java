@@ -398,6 +398,12 @@ public class LocationBarLayout extends FrameLayout
         if (!inProgress) {
             updateButtonVisibility();
         }
+
+        if (!inProgress) {
+            for (UrlFocusChangeListener listener : mUrlFocusChangeListeners) {
+                listener.onUrlAnimationFinished(mUrlHasFocus);
+            }
+        }
     }
 
     /**

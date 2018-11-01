@@ -144,6 +144,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     //                is finalized after native has been initialized.
     private void focusTextBox() {
         if (!mUrlBar.hasFocus()) mUrlBar.requestFocus();
+        setUrlFocusChangeInProgress(false);
         getAutocompleteCoordinator().setShowCachedZeroSuggestResults(true);
 
         new Handler().post(new Runnable() {

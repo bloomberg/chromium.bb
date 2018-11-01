@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.Omn
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -74,6 +73,7 @@ public class AutocompleteCoordinator
     private ViewGroup mOmniboxResultsContainer;
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
+    private boolean mCanShowSuggestions;
 
     // The timestamp (using SystemClock.elapsedRealtime()) at the point when the user started
     // modifying the omnibox with new input.
@@ -91,7 +91,6 @@ public class AutocompleteCoordinator
 
     private boolean mIgnoreOmniboxItemSelection = true;
 
-    private Runnable mShowSuggestions;
     private Runnable mRequestSuggestions;
     private DeferredOnSelectionRunnable mDeferredOnSelection;
 
@@ -182,6 +181,8 @@ public class AutocompleteCoordinator
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
+            // TODO(mdjones): Move init into visibility update method as it's only caller.
+            initOmniboxResultsContainer();
             if (mNativeInitialized) {
                 startZeroSuggest();
             } else {
@@ -191,19 +192,23 @@ public class AutocompleteCoordinator
                     }
                 });
             }
-            maybeShowOmniboxResultsContainer();
         } else {
             // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
             // a consequence the omnibox is unfocused).
             stopAutocomplete(true);
 
-            updateOmniboxResultsContainerVisibility(false);
-
+            mCanShowSuggestions = false;
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
             hideSuggestions();
             mAnswersImageFetcher.clearCache();
         }
+    }
+
+    @Override
+    public void onUrlAnimationFinished(boolean hasFocus) {
+        mCanShowSuggestions = hasFocus;
+        updateOmniboxSuggestionsVisibility();
     }
 
     /**
@@ -323,9 +328,6 @@ public class AutocompleteCoordinator
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             mSuggestionList = new OmniboxSuggestionsList(mContext, mSuggestionListEmbedder);
         }
-
-        // Ensure the results container is initialized and add the suggestion list to it.
-        initOmniboxResultsContainer();
 
         // Start with visibility GONE to ensure that show() is called. http://crbug.com/517438
         mSuggestionList.setVisibility(View.GONE);
@@ -455,33 +457,6 @@ public class AutocompleteCoordinator
         mMaxMatchContentsWidth = 0;
     }
 
-    /**
-     * Handles showing/hiding the suggestions list.
-     * @param visible Whether the suggestions list should be visible.
-     */
-    private void setSuggestionsListVisibility(final boolean visible) {
-        if (mSuggestionsShown == visible) return;
-        mSuggestionsShown = visible;
-        if (mSuggestionList != null) {
-            final boolean isShowing = mSuggestionList.getVisibility() == View.VISIBLE;
-            if (visible && !isShowing) {
-                mIgnoreOmniboxItemSelection = true; // Reset to default value.
-
-                if (mSuggestionList.getParent() == null) {
-                    mOmniboxResultsContainer.addView(mSuggestionList);
-                }
-
-                mSuggestionList.show();
-                updateSuggestionListLayoutDirection();
-            } else if (!visible && isShowing) {
-                mSuggestionList.setVisibility(View.GONE);
-
-                UiUtils.removeViewFromParent(mSuggestionList);
-            }
-        }
-        maybeShowOmniboxResultsContainer();
-    }
-
     private void initOmniboxResultsContainer() {
         if (mOmniboxResultsContainer != null) return;
         ViewStub overlayStub =
@@ -490,25 +465,34 @@ public class AutocompleteCoordinator
     }
 
     /**
-     * Conditionally show the omnibox suggestions container.
+     * Update whether the omnibox suggestions are visible.
      */
-    private void maybeShowOmniboxResultsContainer() {
-        if (isSuggestionsListShown() || mDelegate.isUrlBarFocused()) {
-            initOmniboxResultsContainer();
-            updateOmniboxResultsContainerVisibility(true);
+    private void updateOmniboxSuggestionsVisibility() {
+        if (mOmniboxResultsContainer == null || mSuggestionList == null) return;
+
+        boolean isContainerVisible = mOmniboxResultsContainer.getVisibility() == View.VISIBLE;
+        boolean shouldBeVisible = mCanShowSuggestions && getSuggestionCount() > 0;
+        if (isContainerVisible == shouldBeVisible) return;
+
+        mSuggestionsShown = shouldBeVisible;
+
+        final boolean isListVisible = mSuggestionList.getVisibility() == View.VISIBLE;
+        if (shouldBeVisible && !isListVisible) {
+            mIgnoreOmniboxItemSelection = true; // Reset to default value.
+
+            if (mSuggestionList.getParent() == null) {
+                mOmniboxResultsContainer.addView(mSuggestionList);
+            }
+
+            mSuggestionList.show();
+            updateSuggestionListLayoutDirection();
+        } else if (!shouldBeVisible && isListVisible) {
+            mSuggestionList.setVisibility(View.GONE);
+
+            UiUtils.removeViewFromParent(mSuggestionList);
         }
-    }
 
-    /**
-     * Update whether the omnibox suggestions container is visible.
-     */
-    private void updateOmniboxResultsContainerVisibility(boolean visible) {
-        if (mOmniboxResultsContainer == null) return;
-
-        boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == View.VISIBLE;
-        if (currentlyVisible == visible) return;
-
-        if (visible) {
+        if (shouldBeVisible) {
             mOmniboxResultsContainer.setVisibility(View.VISIBLE);
         } else {
             mOmniboxResultsContainer.setVisibility(View.INVISIBLE);
@@ -809,19 +793,7 @@ public class AutocompleteCoordinator
 
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
 
-        if (mDelegate.isUrlBarFocused()) {
-            if (mShowSuggestions != null) mParent.removeCallbacks(mShowSuggestions);
-            mShowSuggestions = () -> {
-                setSuggestionsListVisibility(true);
-                mShowSuggestions = null;
-            };
-            if (!mDelegate.isUrlFocusChangeInProgress()) {
-                mShowSuggestions.run();
-            } else {
-                mParent.postDelayed(
-                        mShowSuggestions, ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-            }
-        }
+        updateOmniboxSuggestionsVisibility();
     }
 
     private void loadUrlFromOmniboxMatch(
@@ -898,22 +870,12 @@ public class AutocompleteCoordinator
     /**
      * Sets to show cached zero suggest results. This will start both caching zero suggest results
      * in shared preferences and also attempt to show them when appropriate without needing native
-     * initialization. See {@link #showCachedZeroSuggestResultsIfAvailable()} for
-     * showing the loaded results before native initialization.
+     * initialization.
      * @param showCachedZeroSuggestResults Whether cached zero suggest should be shown.
      */
     public void setShowCachedZeroSuggestResults(boolean showCachedZeroSuggestResults) {
         mShowCachedZeroSuggestResults = showCachedZeroSuggestResults;
         if (mShowCachedZeroSuggestResults) mAutocomplete.startCachedZeroSuggest();
-    }
-
-    /**
-     * Signals the omnibox to shows the cached zero suggest results if they have been loaded from
-     * cache successfully.
-     */
-    public void showCachedZeroSuggestResultsIfAvailable() {
-        if (!mShowCachedZeroSuggestResults || mSuggestionList == null) return;
-        setSuggestionsListVisibility(true);
     }
 
     /**
@@ -946,12 +908,10 @@ public class AutocompleteCoordinator
     private void hideSuggestions() {
         if (mAutocomplete == null || !mNativeInitialized) return;
 
-        if (mShowSuggestions != null) mParent.removeCallbacks(mShowSuggestions);
-
         stopAutocomplete(true);
 
-        setSuggestionsListVisibility(false);
         clearSuggestions(true);
+        updateOmniboxSuggestionsVisibility();
     }
 
     /**
