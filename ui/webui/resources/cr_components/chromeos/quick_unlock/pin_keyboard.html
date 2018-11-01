@@ -286,7 +286,8 @@
                 title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
                 noink>
             </paper-icon-button>
-            <paper-ripple class="circle" center></paper-ripple>
+            <paper-ripple class="circle" center hidden="[[!hasInput_(value)]]">
+            </paper-ripple>
           </div>
         </div>
       </div>
