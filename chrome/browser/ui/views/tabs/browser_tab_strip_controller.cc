@@ -167,7 +167,7 @@ BrowserTabStripController::BrowserTabStripController(TabStripModel* model,
       tabstrip_(NULL),
       browser_view_(browser_view),
       hover_tab_selector_(model) {
-  model_->AddObserver(this);
+  model_->SetTabStripUI(this);
 
   local_pref_registrar_.Init(g_browser_process->local_state());
   local_pref_registrar_.Add(
@@ -436,67 +436,76 @@ Profile* BrowserTabStripController::GetProfile() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
-void BrowserTabStripController::TabInsertedAt(TabStripModel* tab_strip_model,
-                                              WebContents* contents,
-                                              int model_index,
-                                              bool is_active) {
-  DCHECK(contents);
-  DCHECK(model_->ContainsIndex(model_index));
-  AddTab(contents, model_index, is_active);
-}
-
-void BrowserTabStripController::TabDetachedAt(WebContents* contents,
-                                              int model_index,
-                                              bool was_active) {
-  // Cancel any pending tab transition.
-  hover_tab_selector_.CancelTabTransition();
-
-  tabstrip_->RemoveTabAt(contents, model_index, was_active);
-}
-
-void BrowserTabStripController::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  // It's possible for |new_contents| to be null when the final tab in a tab
-  // strip is closed.
-  if (new_contents && index != TabStripModel::kNoTab) {
-    TabUIHelper::FromWebContents(new_contents)->set_was_active_at_least_once();
-    SetTabDataAt(new_contents, index);
-  }
-}
-
-void BrowserTabStripController::TabSelectionChanged(
+void BrowserTabStripController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
-    const ui::ListSelectionModel& old_model) {
-  tabstrip_->SetSelection(model_->selection_model());
-}
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  switch (change.type()) {
+    case TabStripModelChange::kInserted: {
+      for (const auto& delta : change.deltas()) {
+        DCHECK(delta.insert.contents);
+        DCHECK(model_->ContainsIndex(delta.insert.index));
+        AddTab(delta.insert.contents, delta.insert.index,
+               selection.new_contents == delta.insert.contents);
+      }
+      break;
+    }
+    case TabStripModelChange::kRemoved: {
+      for (const auto& delta : change.deltas()) {
+        // Cancel any pending tab transition.
+        hover_tab_selector_.CancelTabTransition();
 
-void BrowserTabStripController::TabMoved(WebContents* contents,
-                                         int from_model_index,
-                                         int to_model_index) {
-  // Cancel any pending tab transition.
-  hover_tab_selector_.CancelTabTransition();
+        tabstrip_->RemoveTabAt(delta.remove.contents, delta.remove.index,
+                               delta.remove.contents == selection.old_contents);
+      }
+      break;
+    }
+    case TabStripModelChange::kMoved: {
+      for (const auto& delta : change.deltas()) {
+        // Cancel any pending tab transition.
+        hover_tab_selector_.CancelTabTransition();
 
-  // A move may have resulted in the pinned state changing, so pass in a
-  // TabRendererData.
-  tabstrip_->MoveTab(
-      from_model_index, to_model_index,
-      TabRendererDataFromModel(contents, to_model_index, EXISTING_TAB));
+        // A move may have resulted in the pinned state changing, so pass in a
+        // TabRendererData.
+        tabstrip_->MoveTab(
+            delta.move.from_index, delta.move.to_index,
+            TabRendererDataFromModel(delta.move.contents, delta.move.to_index,
+                                     EXISTING_TAB));
+      }
+      break;
+    }
+    case TabStripModelChange::kReplaced: {
+      for (const auto& delta : change.deltas())
+        SetTabDataAt(delta.replace.new_contents, delta.replace.index);
+      break;
+    }
+    case TabStripModelChange::kSelectionOnly:
+      break;
+  }
+
+  if (tab_strip_model->empty())
+    return;
+
+  if (selection.active_tab_changed()) {
+    // It's possible for |new_contents| to be null when the final tab in a tab
+    // strip is closed.
+    content::WebContents* new_contents = selection.new_contents;
+    int index = selection.new_model.active();
+    if (new_contents && index != TabStripModel::kNoTab) {
+      TabUIHelper::FromWebContents(new_contents)
+          ->set_was_active_at_least_once();
+      SetTabDataAt(new_contents, index);
+    }
+  }
+
+  if (selection.selection_changed())
+    tabstrip_->SetSelection(selection.new_model);
 }
 
 void BrowserTabStripController::TabChangedAt(WebContents* contents,
                                              int model_index,
                                              TabChangeType change_type) {
   SetTabDataAt(contents, model_index);
-}
-
-void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
-                                              WebContents* old_contents,
-                                              WebContents* new_contents,
-                                              int model_index) {
-  SetTabDataAt(new_contents, model_index);
 }
 
 void BrowserTabStripController::TabPinnedStateChanged(

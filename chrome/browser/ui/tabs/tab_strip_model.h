@@ -119,6 +119,10 @@ class TabStripModel {
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
   TabStripModelDelegate* delegate() const { return delegate_; }
 
+  // Sets the TabStripModelObserver used by the UI showing the tabs. As other
+  // observers may query the UI for state, the UI's observer must be first.
+  void SetTabStripUI(TabStripModelObserver* observer);
+
   // Add and remove observers to changes within this TabStripModel.
   void AddObserver(TabStripModelObserver* observer);
   void RemoveObserver(TabStripModelObserver* observer);
@@ -525,6 +529,9 @@ class TabStripModel {
   std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
   TabStripModelDelegate* delegate_;
+
+  bool tab_strip_ui_was_set_ = false;
+
   base::ObserverList<TabStripModelObserver>::Unchecked observers_;
 
   // A profile associated with this TabStripModel.
