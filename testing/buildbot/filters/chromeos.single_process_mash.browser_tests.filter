@@ -37,9 +37,6 @@
 # JS failure: hasAccessToCurrentWindow: FAIL (no message)
 -LockScreenNoteTakingTest.*
 
-# Needs EventGenerator to work across window tree hosts. crbug.com/814675
--OmniboxPopupContentsViewTest.ClickOmnibox
-
 # --------------------------------------------------
 # Tests failing only for SingleProcessMash.
 # --------------------------------------------------
