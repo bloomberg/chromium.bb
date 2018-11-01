@@ -88,29 +88,13 @@ class BrowserTabStripController : public TabStripController,
   Profile* GetProfile() const override;
 
   // TabStripModelObserver implementation:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int model_index,
-                     bool is_active) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int model_index,
-                     bool was_active) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabSelectionChanged(TabStripModel* tab_strip_model,
-                           const ui::ListSelectionModel& old_model) override;
-  void TabMoved(content::WebContents* contents,
-                int from_model_index,
-                int to_model_index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
                     TabChangeType change_type) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int model_index) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int model_index) override;

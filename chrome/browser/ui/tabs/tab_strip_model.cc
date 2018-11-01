@@ -260,6 +260,21 @@ TabStripModel::~TabStripModel() {
   order_controller_.reset();
 }
 
+void TabStripModel::SetTabStripUI(TabStripModelObserver* observer) {
+  DCHECK(!tab_strip_ui_was_set_);
+
+  std::vector<TabStripModelObserver*> new_observers{observer};
+  for (auto& old_observer : observers_)
+    new_observers.push_back(&old_observer);
+
+  observers_.Clear();
+
+  for (auto* new_observer : new_observers)
+    observers_.AddObserver(new_observer);
+
+  tab_strip_ui_was_set_ = true;
+}
+
 void TabStripModel::AddObserver(TabStripModelObserver* observer) {
   observers_.AddObserver(observer);
 }
