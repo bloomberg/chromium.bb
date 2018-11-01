@@ -14,10 +14,12 @@ def AddTBMv2RenderingMetrics(trace_value, results, import_experimental_metrics):
   for f in mre_result.failures:
     results.Fail(f.stack)
 
+  existing_values = {v.name for v in results.all_page_specific_values}
   histograms = []
   for histogram in mre_result.pairs.get('histograms', []):
-    if (import_experimental_metrics or
-        histogram.get('name', '').find('_tbmv2') < 0):
+    name = histogram.get('name', '')
+    if ((import_experimental_metrics or name.find('_tbmv2') < 0) and
+        not name in existing_values):
       histograms.append(histogram)
   results.ImportHistogramDicts(histograms, import_immediately=False)
 
