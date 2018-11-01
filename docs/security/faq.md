@@ -62,13 +62,19 @@ track the latest stable branches, and we support only the latest stable branch.
 ## How does the Chrome team determine severity of security bugs?
 
 See the [severity guidelines](severity-guidelines.md) for more information.
+Only security issues are considered under the security vulnerability rewards
+program. Other types of bugs, which we call "functional bugs", are not.
 
 <a name="TOC-Are-privacy-issues-considered-security-bugs-"></a>
 ## Are privacy issues considered security bugs?
 
-Privacy bugs, such as leaking information from Incognito, fingerprinting, and
-bugs related to deleting browsing data are not considered under the security
-VRP. The Chrome Privacy team tracks them as functional bugs.
+No. The Chrome Privacy team treats privacy issues, such as leaking information
+from Incognito, fingerprinting, and bugs related to deleting browsing data as
+functional bugs.
+
+Privacy issues are not considered under the security vulnerability rewards
+program; the [severity guidelines](severity-guidelines.md) outline the types of
+bugs that are considered security vulnerabilities in more detail.
 
 <a name="TOC-Timing-Attacks"></a>
 ## Are timing attacks considered security vulnerabilities?
@@ -126,8 +132,8 @@ some previously-stored state, such as browsing history.
 <a name="TOC-Are-denial-of-service-issues-considered-security-bugs-"></a>
 ## Are denial of service issues considered security bugs?
 
-Denial of Service (DoS) issues are treated as **abuse** or **stability** issues
-rather than security vulnerabilities.
+No. Denial of Service (DoS) issues are treated as **abuse** or **stability**
+issues rather than security vulnerabilities.
 
 *    If you find a reproducible crash, we encourage you to [report
      it](https://bugs.chromium.org/p/chromium/issues/entry?template=Crash%20Report).
@@ -167,6 +173,10 @@ case in an HTML context that it will never be able to cover. Among
 these are:
 *    Multiple unsanitized variables injected into the page.
 *    Unexpected server side transformation or decoding of the payload.
+
+XSSAuditor bypasses are not considered under the security vulnerability rewards
+program; the [severity guidelines](severity-guidelines.md) outline the types of
+bugs that are considered security vulnerabilities in more detail.
 
 <a name="TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-"></a>
 ## Why aren't physically-local attacks in Chrome's threat model?
