@@ -1126,6 +1126,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="18" label="All utility process crashes"/>
 </enum>
 
+<enum name="AndroidProcessedMinidumps">
+  <int value="0" label="Other"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Renderer"/>
+  <int value="3" label="Gpu"/>
+</enum>
+
 <enum name="AndroidResourceExtractionStatus">
   <int value="0" label="No extraction performed"/>
   <int value="1" label="Extraction success"/>
