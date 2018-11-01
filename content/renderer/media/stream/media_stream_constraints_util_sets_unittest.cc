@@ -15,6 +15,7 @@ namespace content {
 namespace media_constraints {
 
 using Point = ResolutionSet::Point;
+using BoolSet = DiscreteSet<bool>;
 
 namespace {
 
@@ -1121,6 +1122,34 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionVertices) {
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilSetsTest, ExactResolution) {
+  const int kExactWidth = 640;
+  const int kExactHeight = 480;
+  ResolutionSet set =
+      ResolutionSet::FromExactResolution(kExactWidth, kExactHeight);
+  EXPECT_TRUE(set.ContainsPoint(kExactHeight, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(1, 1));
+  EXPECT_FALSE(set.ContainsPoint(2000, 2000));
+  EXPECT_FALSE(set.IsHeightEmpty());
+  EXPECT_FALSE(set.IsWidthEmpty());
+  EXPECT_FALSE(set.IsAspectRatioEmpty());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, ZeroExactResolution) {
+  ResolutionSet set = ResolutionSet::FromExactResolution(0, 0);
+  EXPECT_TRUE(set.ContainsPoint(0, 0));
+  EXPECT_EQ(set.min_aspect_ratio(), 0.0);
+  EXPECT_EQ(set.max_aspect_ratio(), HUGE_VAL);
+}
+
 TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   using DoubleRangeSet = NumericRangeSet<double>;
   // Open set.
@@ -1128,6 +1157,10 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_FALSE(set.Min().has_value());
   EXPECT_FALSE(set.Max().has_value());
   EXPECT_FALSE(set.IsEmpty());
+  EXPECT_TRUE(set.Contains(0.0));
+  EXPECT_TRUE(set.Contains(1.0));
+  EXPECT_TRUE(set.Contains(HUGE_VAL));
+  EXPECT_TRUE(set.Contains(-1.0));
 
   // Constrained set.
   const double kMin = 1.0;
@@ -1136,10 +1169,27 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_EQ(kMin, *set.Min());
   EXPECT_EQ(kMax, *set.Max());
   EXPECT_FALSE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_TRUE(set.Contains(1.0));
+  EXPECT_TRUE(set.Contains(10.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
 
-  // Empty set.
+  // If the lower bound is greater than the upper bound, the set is empty.
   set = DoubleRangeSet(kMax, kMin);
   EXPECT_TRUE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_FALSE(set.Contains(1.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
+
+  // An explicit empty set is empty.
+  set = DoubleRangeSet::EmptySet();
+  EXPECT_TRUE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_FALSE(set.Contains(1.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
 
   // Intersection.
   set = DoubleRangeSet(kMin, kMax);
@@ -1151,15 +1201,18 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_FALSE(intersection.IsEmpty());
 
   // Intersection with partially open sets.
-  set = DoubleRangeSet(base::Optional<double>(), kMax);
-  intersection =
-      set.Intersection(DoubleRangeSet(kMin2, base::Optional<double>()));
+  set = DoubleRangeSet(base::nullopt, kMax);
+  intersection = set.Intersection(DoubleRangeSet(kMin2, base::nullopt));
   EXPECT_EQ(kMin2, *intersection.Min());
   EXPECT_EQ(kMax, *intersection.Max());
   EXPECT_FALSE(intersection.IsEmpty());
 
   // Empty intersection.
   intersection = set.Intersection(DoubleRangeSet(kMax + 1, HUGE_VAL));
+  EXPECT_TRUE(intersection.IsEmpty());
+
+  // Intersection with empty set.
+  intersection = set.Intersection(DoubleRangeSet::EmptySet());
   EXPECT_TRUE(intersection.IsEmpty());
 }
 
@@ -1218,7 +1271,6 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
 }
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
-  using BoolSet = DiscreteSet<bool>;
   // Universal set.
   BoolSet set = BoolSet::UniversalSet();
   EXPECT_TRUE(set.Contains(true));
