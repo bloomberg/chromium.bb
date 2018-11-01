@@ -1862,8 +1862,8 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase verifyContextMenuForSingleURL];
 }
 
-// Verify Edit functionality on single URL selection.
-- (void)testEditFunctionalityOnSingleURL {
+// Verify Edit Text functionality on single URL selection.
+- (void)testEditTextOnSingleURL {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -1934,8 +1934,15 @@ id<GREYMatcher> SearchIconButton() {
   // Verify edit mode is closed (context bar back to default state).
   [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
                                                     newFolderEnabled:YES];
+}
 
-  // 3. Move a single url at edit page.
+// Verify Move functionality on single URL selection.
+- (void)testMoveOnSingleURL {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // 1. Move a single url at edit page.
 
   // Change to edit mode
   [[EarlGrey
@@ -1954,7 +1961,7 @@ id<GREYMatcher> SearchIconButton() {
                           setParentFolderTo:@"Folder 1.1"
                                        from:@"Mobile Bookmarks"];
 
-  // Verify edit mode is stayed.
+  // Verify edit mode remains.
   [BookmarksTestCase verifyContextBarInEditMode];
 
   // Close edit mode.
@@ -1967,7 +1974,7 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // 4. Test the cancel button at edit page.
+  // 2. Test the cancel button at edit page.
 
   // Come back to the Mobile Bookmarks.
   [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
@@ -1993,7 +2000,7 @@ id<GREYMatcher> SearchIconButton() {
   // Verify that the bookmark was not updated.
   [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
-  // Verify edit mode is stayed.
+  // Verify edit mode remains.
   [BookmarksTestCase verifyContextBarInEditMode];
 }
 
