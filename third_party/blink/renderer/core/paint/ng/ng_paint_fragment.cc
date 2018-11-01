@@ -34,6 +34,18 @@ namespace blink {
 
 namespace {
 
+struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
+                                   public DisplayItemClient,
+                                   public ImageResourceObserver {
+  void* pointers[6];
+  NGPhysicalOffset offsets[2];
+  LayoutRect rects[2];
+  unsigned flags;
+};
+
+static_assert(sizeof(NGPaintFragment) == sizeof(SameSizeAsNGPaintFragment),
+              "NGPaintFragment should stay small.");
+
 NGLogicalRect ComputeLogicalRectFor(const NGPhysicalOffsetRect& physical_rect,
                                     const NGPaintFragment& paint_fragment) {
   const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
