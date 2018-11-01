@@ -39,6 +39,17 @@ bool IsControlChar(const base::string16& text) {
   return false;
 }
 
+ui::TextInputClient* GetTextInputClient() {
+  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  DCHECK(bridge);
+  ui::IMEInputContextHandlerInterface* handler =
+      bridge->GetInputContextHandler();
+  DCHECK(handler);
+  ui::TextInputClient* client = handler->GetInputMethod()->GetTextInputClient();
+  DCHECK(client);
+  return client;
+}
+
 }  // namespace
 
 InputConnectionImpl::InputConnectionImpl(
@@ -71,14 +82,7 @@ void InputConnectionImpl::UpdateTextInputState(
 
 mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
     bool is_input_state_update_requested) const {
-  ui::IMEBridge* bridge = ui::IMEBridge::Get();
-  DCHECK(bridge);
-  ui::IMEInputContextHandlerInterface* handler =
-      bridge->GetInputContextHandler();
-  DCHECK(handler);
-  ui::TextInputClient* client = handler->GetInputMethod()->GetTextInputClient();
-  DCHECK(client);
-
+  ui::TextInputClient* client = GetTextInputClient();
   gfx::Range text_range, selection_range;
   base::string16 text;
   client->GetTextRange(&text_range);
@@ -114,6 +118,13 @@ void InputConnectionImpl::CommitText(const base::string16& text,
 void InputConnectionImpl::DeleteSurroundingText(int before, int after) {
   StartStateUpdateTimer();
 
+  if (before == 0 && after == 0) {
+    // This should be no-op.
+    // Return the current state immediately.
+    UpdateTextInputState(true);
+    return;
+  }
+
   std::string error;
   // DeleteSurroundingText takes a start position relative to the current cursor
   // position and a length of the text is going to be deleted.
@@ -136,6 +147,11 @@ void InputConnectionImpl::FinishComposingText() {
     return;
   }
 
+  ui::TextInputClient* client = GetTextInputClient();
+  gfx::Range selection_range, composition_range;
+  client->GetSelectionRange(&selection_range);
+  client->GetCompositionTextRange(&composition_range);
+
   std::string error;
   if (!ime_engine_->CommitText(input_context_id_,
                                base::UTF16ToUTF8(composing_text_).c_str(),
@@ -144,6 +160,13 @@ void InputConnectionImpl::FinishComposingText() {
                << "\"";
   }
   composing_text_.clear();
+
+  if (selection_range.start() == selection_range.end() &&
+      selection_range.start() == composition_range.end()) {
+    // The call of CommitText won't update the state.
+    // Return the current state immediately.
+    UpdateTextInputState(true);
+  }
 }
 
 void InputConnectionImpl::SetComposingText(
@@ -161,6 +184,17 @@ void InputConnectionImpl::SetComposingText(
                                   : new_cursor_pos;
   const int selection_end =
       new_selection_range ? new_selection_range.value().end() : new_cursor_pos;
+
+  ui::TextInputClient* client = GetTextInputClient();
+  gfx::Range selection_range;
+  client->GetSelectionRange(&selection_range);
+  if (text.empty() &&
+      selection_range.start() == static_cast<uint32_t>(selection_start) &&
+      selection_range.end() == static_cast<uint32_t>(selection_end)) {
+    // This SetComposingText call is no-op.
+    // Return the current state immediately.
+    UpdateTextInputState(true);
+  }
 
   std::string error;
   if (!ime_engine_->SetComposition(

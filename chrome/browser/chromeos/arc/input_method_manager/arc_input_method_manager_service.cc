@@ -136,7 +136,6 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   }
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
-    owner_->UpdateTextInputState();
   }
   bool IsInterestedInKeyEvent() const override { return true; }
   void OnSurroundingTextChanged(const std::string& engine_id,
