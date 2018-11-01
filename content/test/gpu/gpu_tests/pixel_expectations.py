@@ -45,9 +45,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    # TODO(mcasas): Reenable after Android reference images are updated
-    self.Fail('Pixel_CanvasLowLatency2D', bug=865957)
-
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
