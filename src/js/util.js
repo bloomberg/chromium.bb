@@ -211,7 +211,7 @@ camera.util.setupElementsAria = function() {
  */
 camera.util.animateOnce = function(element, callback) {
   element.classList.remove('animate');
-  element.offsetWidth;  // Force calculation to re-apply animation.
+  element.offsetWidth; // Force calculation to re-apply animation.
   element.classList.add('animate');
   camera.util.waitAnimationCompleted(element, 0, () => {
     element.classList.remove('animate');
@@ -399,7 +399,7 @@ camera.util.SmoothScroller.prototype.flushScroll_ = function() {
   this.element_.scrollLeft = scrollLeft;
   this.element_.scrollTop = scrollTop;
 
-  this.animationId_++;  // Invalidate the animation by increasing the id.
+  this.animationId_++; // Invalidate the animation by increasing the id.
   this.animating_ = false;
 };
 

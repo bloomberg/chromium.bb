@@ -54,7 +54,7 @@ camera.views.Browser = function(router, model) {
    */
   this.scrollTracker_ = new camera.util.ScrollTracker(
       this.scroller_,
-      function() {},  // onScrollStarted
+      function() {}, // onScrollStarted
       this.onScrollEnded_.bind(this));
 
   /**
@@ -161,7 +161,7 @@ camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
         // their child image or video element after printing.
         var wrapper = this.pictures[index].element;
         wrapper.style.display = 'none';
-        wrapper.offsetWidth;  // Reference forces width recalculation.
+        wrapper.offsetWidth; // Reference forces width recalculation.
         wrapper.style.display = '';
       }
     }
@@ -437,7 +437,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     this.pictures.splice(index + 1, 0, domPicture);
 
     wrapper.addEventListener('mousedown', event => {
-      event.preventDefault();  // Prevent focusing.
+      event.preventDefault(); // Prevent focusing.
     });
     wrapper.addEventListener('click', event => {
       // If scrolled while clicking, then discard this selection, since another

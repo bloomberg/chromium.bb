@@ -125,7 +125,7 @@ camera.views.camera.Preview.prototype.setSource_ = function(stream) {
       resolve();
     };
     video.addEventListener('loadedmetadata', onLoadedMetadata);
-    video.muted = true;  // Mute to avoid echo from the captured audio.
+    video.muted = true; // Mute to avoid echo from the captured audio.
     video.srcObject = stream;
   });
 };

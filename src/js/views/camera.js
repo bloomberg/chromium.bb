@@ -435,7 +435,7 @@ camera.views.Camera.prototype.prepareMediaRecorder_ = function() {
     if (!MediaRecorder.isTypeSupported(camera.views.Camera.RECORD_MIMETYPE)) {
       throw 'The preferred mimeType is not supported.';
     }
-    this.mediaRecorder_ =  new MediaRecorder(
+    this.mediaRecorder_ = new MediaRecorder(
         this.preview_.stream, {mimeType: camera.views.Camera.RECORD_MIMETYPE});
   }
 };
@@ -492,7 +492,7 @@ camera.views.Camera.prototype.stop_ = function() {
   // Wait for ongoing 'start' and 'take' done before restarting camera.
   return Promise.all([
     this.started_,
-    Promise.resolve(!this.taking || this.endTake_())
+    Promise.resolve(!this.taking || this.endTake_()),
   ]).finally(() => {
     this.preview_.stop();
     this.mediaRecorder_ = null;

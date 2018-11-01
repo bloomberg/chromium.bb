@@ -141,8 +141,8 @@ camera.views.camera.Layout.prototype.update = function() {
   // or preview while the shutter/options keep minimum margin to either edges.
   var calc = (measure, least) => {
     return (measure >= least) ?
-        Math.round(measure / 2) :  // Centered in letterbox.
-        Math.round(measure + least / 2);  // Inset in preview.
+        Math.round(measure / 2) : // Centered in letterbox.
+        Math.round(measure + least / 2); // Inset in preview.
   };
   var shift = (stripe, name, measure, shutter) => {
     var [preset, least, gap, baseline] = dimens(shutter);
