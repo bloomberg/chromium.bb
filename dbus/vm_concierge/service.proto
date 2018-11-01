@@ -325,7 +325,11 @@ message ContainerStartedSignal {
 // Request to start a specified container image within a VM. If the container
 // does not exist in the VM it will be created. Used with the StartContainer
 // D-Bus message into vm_concierge.
+// This method is deprecated and no longer implemented in vm_concierge.
+// Requests to start a container should be handled through tremplin instead.
 message StartContainerRequest {
+  option deprecated = true;
+
   // Name of the VM to start the container in.
   string vm_name = 1;
 
