@@ -329,6 +329,9 @@ class BaseIsolatedScriptArgsAdapter(object):
 
     return isolated_script_cmd
 
+  def clean_up_after_test_run(self):
+    pass
+
   def run_test(self):
     self.parse_args()
     cmd = self.generate_isolated_script_cmd()
@@ -352,6 +355,8 @@ class BaseIsolatedScriptArgsAdapter(object):
       rc = 1
       traceback.print_exc()
       valid = False
+    finally:
+      self.clean_up_after_test_run()
 
     if not valid:
       failures = ['(entire test suite)']
