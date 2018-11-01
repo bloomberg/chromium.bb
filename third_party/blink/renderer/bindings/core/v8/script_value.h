@@ -169,6 +169,10 @@ class CORE_EXPORT ScriptValue final {
 
   static ScriptValue CreateNull(ScriptState*);
 
+  static ScriptValue ToWorldSafeScriptValue(
+      ScriptState* target_script_state,
+      const TraceWrapperV8Reference<v8::Value>& value);
+
  private:
   // TODO(peria): Move ScriptValue to Oilpan heap.
   GC_PLUGIN_IGNORE("813731")
