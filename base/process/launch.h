@@ -56,7 +56,7 @@ typedef std::vector<std::pair<int, int>> FileHandleMappingVector;
 // Options for launching a subprocess that are passed to LaunchProcess().
 // The default constructor constructs the object with default options.
 struct BASE_EXPORT LaunchOptions {
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) || defined(OS_FUCHSIA)) && !defined(OS_MACOSX)
   // Delegate to be run in between fork and exec in the subprocess (see
   // pre_exec_delegate below)
   class BASE_EXPORT PreExecDelegate {
@@ -223,6 +223,7 @@ struct BASE_EXPORT LaunchOptions {
   // argv[0].
   base::FilePath real_path;
 
+#if !defined(OS_MACOSX)
   // If non-null, a delegate to be run immediately prior to executing the new
   // program in the child process.
   //
@@ -230,6 +231,7 @@ struct BASE_EXPORT LaunchOptions {
   // code running in this delegate essentially needs to be async-signal safe
   // (see man 7 signal for a list of allowed functions).
   PreExecDelegate* pre_exec_delegate = nullptr;
+#endif  // !defined(OS_MACOSX)
 
   // Each element is an RLIMIT_* constant that should be raised to its
   // rlim_max.  This pointer is owned by the caller and must live through

@@ -304,9 +304,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   TRACE_EVENT0("base", "LaunchProcess");
 #if defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kMacLaunchProcessPosixSpawn)) {
-    // TODO(rsesek): Do this unconditionally. There is one user for each of
-    // these two options. https://crbug.com/179923.
-    if (!options.pre_exec_delegate && options.current_directory.empty())
+    // TODO(rsesek): Do this unconditionally. https://crbug.com/179923.
+    if (options.current_directory.empty())
       return LaunchProcessPosixSpawn(argv, options);
   }
 #endif
@@ -499,9 +498,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
       RAW_CHECK(chdir(current_directory) == 0);
     }
 
+#if !defined(OS_MACOSX)
     if (options.pre_exec_delegate != nullptr) {
       options.pre_exec_delegate->RunAsyncSafe();
     }
+#endif
 
     const char* executable_path = !options.real_path.empty() ?
         options.real_path.value().c_str() : argv_cstr[0];

@@ -92,8 +92,6 @@ void RestoreDefaultExceptionHandler() {
 
 Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
                                 const LaunchOptions& options) {
-  DCHECK(!options.pre_exec_delegate)
-      << "LaunchProcessPosixSpawn does not support PreExecDelegate";
   DCHECK(options.current_directory.empty())
       << "LaunchProcessPosixSpawn does not support current_directory";
 
