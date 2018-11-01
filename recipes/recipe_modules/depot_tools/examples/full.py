@@ -34,6 +34,9 @@ def RunSteps(api):
       'ninja_path', ['ls', api.depot_tools.ninja_path])
 
   api.step(
+      'autoninja_path', ['ls', api.depot_tools.autoninja_path])
+
+  api.step(
       'presubmit_support_py_path',
       ['ls', api.depot_tools.presubmit_support_py_path])
 

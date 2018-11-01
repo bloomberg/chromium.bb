@@ -51,6 +51,13 @@
   {
     "cmd": [
       "ls",
+      "RECIPE_PACKAGE_REPO[depot_tools]\\autoninja.bat"
+    ],
+    "name": "autoninja_path"
+  },
+  {
+    "cmd": [
+      "ls",
       "RECIPE_PACKAGE_REPO[depot_tools]\\presubmit_support.py"
     ],
     "name": "presubmit_support_py_path"

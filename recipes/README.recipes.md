@@ -207,6 +207,8 @@ the depot_tools repo.
 
 #### **class [DepotToolsApi](/recipes/recipe_modules/depot_tools/api.py#12)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
+&emsp; **@property**<br>&mdash; **def [autoninja\_path](/recipes/recipe_modules/depot_tools/api.py#45)(self):**
+
 &emsp; **@property**<br>&mdash; **def [cros\_path](/recipes/recipe_modules/depot_tools/api.py#26)(self):**
 
 &emsp; **@property**<br>&mdash; **def [download\_from\_google\_storage\_path](/recipes/recipe_modules/depot_tools/api.py#13)(self):**
@@ -217,7 +219,7 @@ the depot_tools repo.
 
 &emsp; **@property**<br>&mdash; **def [ninja\_path](/recipes/recipe_modules/depot_tools/api.py#40)(self):**
 
-&emsp; **@contextlib.contextmanager**<br>&mdash; **def [on\_path](/recipes/recipe_modules/depot_tools/api.py#49)(self):**
+&emsp; **@contextlib.contextmanager**<br>&mdash; **def [on\_path](/recipes/recipe_modules/depot_tools/api.py#54)(self):**
 
 Use this context manager to put depot_tools on $PATH.
 
@@ -226,7 +228,7 @@ Example:
   with api.depot_tools.on_path():
     # run some steps
 
-&emsp; **@property**<br>&mdash; **def [presubmit\_support\_py\_path](/recipes/recipe_modules/depot_tools/api.py#45)(self):**
+&emsp; **@property**<br>&mdash; **def [presubmit\_support\_py\_path](/recipes/recipe_modules/depot_tools/api.py#50)(self):**
 
 &emsp; **@property**<br>&mdash; **def [root](/recipes/recipe_modules/depot_tools/api.py#21)(self):**
 

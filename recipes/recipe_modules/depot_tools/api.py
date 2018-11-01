@@ -43,6 +43,11 @@ class DepotToolsApi(recipe_api.RecipeApi):
     return self.package_repo_resource(ninja_exe)
 
   @property
+  def autoninja_path(self):
+    autoninja = 'autoninja.bat' if self.m.platform.is_win else 'autoninja'
+    return self.package_repo_resource(autoninja)
+
+  @property
   def presubmit_support_py_path(self):
     return self.package_repo_resource('presubmit_support.py')
 
