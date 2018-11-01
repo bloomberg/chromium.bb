@@ -94,6 +94,9 @@ namespace {
 // Time delta representing midnight 00:00.
 constexpr TimeDelta kMidnight;
 
+// Time delta representing 06:00AM.
+constexpr TimeDelta kSixAm = TimeDelta::FromHours(6);
+
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
 
@@ -496,13 +499,13 @@ class DeviceStatusCollectorTest : public testing::Test {
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
-      const policy::DeviceStatusCollector::TpmStatusFetcher&
-          tpm_status_fetcher) {
+      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
+      const TimeDelta activity_day_start = kMidnight) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
-        cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher, kMidnight,
-        true /* is_enterprise_device */));
+        cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
+        activity_day_start, true /* is_enterprise_device */));
   }
 
   void GetStatus() {
@@ -2371,29 +2374,40 @@ class ConsumerDeviceStatusCollectorTimeLimitDisabledTest
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
-      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher)
-      override {
+      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
+      const TimeDelta activity_day_start = kMidnight) override {
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &profile_pref_service_, &fake_statistics_provider_, volume_info,
         cpu_stats, cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
-        kMidnight, false /* is_enterprise_reporting */);
+        activity_day_start, false /* is_enterprise_reporting */);
+  }
+
+  void ExpectChildScreenTimeMilliseconds(int64_t duration) {
+    profile_pref_service_.CommitPendingWrite(
+        base::OnceClosure(),
+        base::BindOnce(
+            [](int64_t duration,
+               TestingPrefServiceSimple* profile_pref_service_) {
+              EXPECT_EQ(duration, profile_pref_service_->GetInteger(
+                                      prefs::kChildScreenTimeMilliseconds));
+            },
+            duration, &profile_pref_service_));
+  }
+
+  void ExpectLastChildScreenTimeReset(Time time) {
+    profile_pref_service_.CommitPendingWrite(
+        base::OnceClosure(),
+        base::BindOnce(
+            [](Time time, TestingPrefServiceSimple* profile_pref_service_) {
+              EXPECT_EQ(time, profile_pref_service_->GetTime(
+                                  prefs::kLastChildScreenTimeReset));
+            },
+            time, &profile_pref_service_));
   }
 
   AccountId user_account_id_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
-
-void expectChildScreenTimeMilliseconds(int64_t duration,
-                                       TestingPrefServiceSimple* pref_service) {
-  pref_service->CommitPendingWrite(
-      base::OnceClosure(),
-      base::BindOnce(
-          [](int64_t duration, TestingPrefServiceSimple* pref_service) {
-            EXPECT_EQ(duration, pref_service->GetInteger(
-                                    prefs::kChildScreenTimeMilliseconds));
-          },
-          duration, pref_service));
-}
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
   fake_statistics_provider_.SetMachineStatistic(
@@ -2594,8 +2608,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  expectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2619,8 +2632,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(4 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  expectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds());
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2646,8 +2658,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  expectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2688,8 +2699,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   GetStatus();
   EXPECT_EQ(12 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  expectChildScreenTimeMilliseconds(12 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(12 * ActivePeriodMilliseconds());
 }
 
 // Fails on all chromeos builders https://crbug.com/891573
@@ -2715,11 +2725,40 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  expectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
   // Nothing should be written to local state, because it is only used for
   // enterprise reporting.
   EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, BeforeDayStart) {
+  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                         base::BindRepeating(&GetEmptyCPUStatistics),
+                         base::BindRepeating(&GetEmptyCPUTempInfo),
+                         base::BindRepeating(&GetEmptyAndroidStatus),
+                         base::BindRepeating(&GetEmptyTpmStatus), kSixAm);
+  // 04:00 AM
+  Time initial_time = Time::Now().LocalMidnight() + TimeDelta::FromHours(4);
+  status_collector_->SetBaselineTime(initial_time);
+  EXPECT_TRUE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  DeviceStateTransitions test_states[] = {
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSessionActive,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kPeriodicCheckTriggered,
+      DeviceStateTransitions::kLeaveSessionActive};
+  SimulateStateChanges(test_states,
+                       sizeof(test_states) / sizeof(DeviceStateTransitions));
+  GetStatus();
+  // 4 is the number of states yielding an active period with duration of
+  // ActivePeriodMilliseconds
+  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+  ExpectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds());
+  ExpectLastChildScreenTimeReset(initial_time);
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
@@ -2732,7 +2771,6 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   // split between two days.
   status_collector_->SetBaselineTime(Time::Now().LocalMidnight() -
                                      TimeDelta::FromSeconds(15));
-
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
   GetStatus();
@@ -2753,8 +2791,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
             kMillisecondsPerDay);
   EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
             kMillisecondsPerDay);
-  expectChildScreenTimeMilliseconds(0.5 * ActivePeriodMilliseconds(),
-                                    &profile_pref_service_);
+  ExpectChildScreenTimeMilliseconds(0.5 * ActivePeriodMilliseconds());
 }
 
 }  // namespace policy

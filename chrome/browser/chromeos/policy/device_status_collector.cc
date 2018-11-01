@@ -550,6 +550,7 @@ class DeviceStatusCollector::ActivityStorage {
   // be stored.
   void AddActivityPeriod(Time start,
                          Time end,
+                         Time now,
                          const std::string& active_user_email);
 
   // Clears stored activity periods outside of storage range defined by
@@ -585,7 +586,9 @@ class DeviceStatusCollector::ActivityStorage {
   void ProcessActivityPeriods(const base::DictionaryValue& activity_times,
                               const std::vector<std::string>& reporting_users,
                               base::DictionaryValue* const filtered_times);
-  void StoreChildScreenTime(Time activity_day_start, TimeDelta activity);
+  void StoreChildScreenTime(Time activity_day_start,
+                            TimeDelta activity,
+                            Time now);
 
   // Determine the day key (milliseconds since epoch for corresponding
   // |day_start_| in UTC) for a given |timestamp|.
@@ -651,6 +654,7 @@ DeviceStatusCollector::ActivityStorage::~ActivityStorage() = default;
 void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
     Time start,
     Time end,
+    Time now,
     const std::string& active_user_email) {
   DCHECK(start <= end);
 
@@ -676,7 +680,7 @@ void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
     if (user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
         !is_enterprise_reporting_) {
       StoreChildScreenTime(day_start - TimeDelta::FromDays(1),
-                           TimeDelta::FromMilliseconds(activity));
+                           TimeDelta::FromMilliseconds(activity), now);
     }
 
     start = day_start;
@@ -832,22 +836,30 @@ int64_t DeviceStatusCollector::ActivityStorage::TimestampToDayKey(
 
 void DeviceStatusCollector::ActivityStorage::StoreChildScreenTime(
     Time activity_day_start,
-    TimeDelta activity) {
+    TimeDelta activity,
+    Time now) {
   DCHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
          !is_enterprise_reporting_);
 
   // Today's start time.
-  Time today_start = Time::Now().LocalMidnight() + day_start_;
+  Time today_start = now.LocalMidnight() + day_start_;
+  if (today_start > now)
+    today_start -= TimeDelta::FromDays(1);
+
+  // The activity windows always start and end on the reset time of two
+  // consecutive days, so it is not possible to have a window starting after
+  // the current day's reset time.
+  DCHECK(activity_day_start <= today_start);
 
   TimeDelta previous_activity = TimeDelta::FromMilliseconds(
       pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
 
   // If this activity window belongs to the current day, the screen time pref
   // should be updated.
-  if (activity_day_start >= today_start) {
+  if (activity_day_start == today_start) {
     pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds,
                               (previous_activity + activity).InMilliseconds());
-    pref_service_->SetTime(prefs::kLastChildScreenTimeSaved, Time::Now());
+    pref_service_->SetTime(prefs::kLastChildScreenTimeSaved, now);
   }
   pref_service_->CommitPendingWrite();
 }
@@ -1112,10 +1124,11 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
     if (active_seconds < 0 ||
         active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds))) {
       activity_storage_->AddActivityPeriod(
-          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now,
+          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now, now,
           user_email);
     } else {
-      activity_storage_->AddActivityPeriod(last_idle_check_, now, user_email);
+      activity_storage_->AddActivityPeriod(last_idle_check_, now, now,
+                                           user_email);
     }
 
     activity_storage_->PruneActivityPeriods(
@@ -1162,16 +1175,13 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
     return;
   }
 
-  if (last_active_check_.is_null()) {
-    last_active_check_ = GetCurrentTime();
-    return;
-  }
-
   // Only child accounts should be using this method.
   CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
 
   Time now = GetCurrentTime();
   Time reset_time = now.LocalMidnight() + activity_day_start_;
+  if (reset_time > now)
+    reset_time -= TimeDelta::FromDays(1);
   // Reset screen time if it has not been reset today.
   if (reset_time > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
     pref_service_->SetTime(prefs::kLastChildScreenTimeReset, now);
@@ -1179,8 +1189,8 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
     pref_service_->CommitPendingWrite();
   }
 
-  if (last_state_active_) {
-    activity_storage_->AddActivityPeriod(last_active_check_, now,
+  if (!last_active_check_.is_null() && last_state_active_) {
+    activity_storage_->AddActivityPeriod(last_active_check_, now, now,
                                          GetUserForActivityReporting());
 
     activity_storage_->PruneActivityPeriods(
