@@ -338,44 +338,6 @@ TEST_F(EasyUnlockAppManagerTest, LoadAppPreviouslyDisabled) {
       extension_misc::kEasyUnlockAppId, false));
 }
 
-TEST_F(EasyUnlockAppManagerTest, ReloadApp) {
-  SetExtensionSystemReady();
-
-  extension_service_->component_loader()->Add(IDR_EASY_UNLOCK_MANIFEST,
-                                              GetAppPath());
-
-  ExtensionReloadTracker reload_tracker(&profile_,
-                                        extension_misc::kEasyUnlockAppId);
-  ASSERT_FALSE(reload_tracker.HasReloaded());
-
-  app_manager_->ReloadApp();
-
-  EXPECT_TRUE(reload_tracker.HasReloaded());
-  EXPECT_TRUE(extension_service_->GetExtensionById(
-      extension_misc::kEasyUnlockAppId, false));
-}
-
-TEST_F(EasyUnlockAppManagerTest, ReloadAppDisabled) {
-  SetExtensionSystemReady();
-
-  extension_service_->component_loader()->Add(IDR_EASY_UNLOCK_MANIFEST,
-                                              GetAppPath());
-  extension_service_->DisableExtension(
-      extension_misc::kEasyUnlockAppId,
-      extensions::disable_reason::DISABLE_RELOAD);
-  ExtensionReloadTracker reload_tracker(&profile_,
-                                        extension_misc::kEasyUnlockAppId);
-  ASSERT_FALSE(reload_tracker.HasReloaded());
-
-  app_manager_->ReloadApp();
-
-  EXPECT_FALSE(reload_tracker.HasReloaded());
-  EXPECT_TRUE(extension_service_->GetExtensionById(
-      extension_misc::kEasyUnlockAppId, true));
-  EXPECT_FALSE(
-      extension_service_->IsExtensionEnabled(extension_misc::kEasyUnlockAppId));
-}
-
 TEST_F(EasyUnlockAppManagerTest, DisableApp) {
   SetExtensionSystemReady();
 
@@ -428,40 +390,6 @@ TEST_F(EasyUnlockAppManagerTest, EnsureReadyAfterExtesionSystemReady) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(ready);
-}
-
-TEST_F(EasyUnlockAppManagerTest, LaunchSetup) {
-  SetExtensionSystemReady();
-
-  ASSERT_EQ(0, AppLaunchedCount());
-
-  app_manager_->LoadApp();
-  app_manager_->LaunchSetup();
-
-  EXPECT_EQ(1, AppLaunchedCount());
-}
-
-TEST_F(EasyUnlockAppManagerTest, LaunchSetupWhenDisabled) {
-  SetExtensionSystemReady();
-
-  ASSERT_EQ(0, AppLaunchedCount());
-
-  app_manager_->LoadApp();
-  app_manager_->DisableAppIfLoaded();
-
-  app_manager_->LaunchSetup();
-
-  EXPECT_EQ(0, AppLaunchedCount());
-}
-
-TEST_F(EasyUnlockAppManagerTest, LaunchSetupWhenNotLoaded) {
-  SetExtensionSystemReady();
-
-  ASSERT_EQ(0, AppLaunchedCount());
-
-  app_manager_->LaunchSetup();
-
-  EXPECT_EQ(0, AppLaunchedCount());
 }
 
 TEST_F(EasyUnlockAppManagerTest, SendAuthAttempted) {

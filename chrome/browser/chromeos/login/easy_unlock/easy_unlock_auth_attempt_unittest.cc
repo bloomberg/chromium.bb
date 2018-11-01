@@ -62,13 +62,9 @@ class FakeAppManager : public EasyUnlockAppManager {
     ADD_FAILURE() << "Not reached";
   }
 
-  void LaunchSetup() override { ADD_FAILURE() << "Not reached"; }
-
   void LoadApp() override { ADD_FAILURE() << "Not reached"; }
 
   void DisableAppIfLoaded() override { ADD_FAILURE() << "Not reached"; }
-
-  void ReloadApp() override { ADD_FAILURE() << "Not reached"; }
 
   bool SendAuthAttemptEvent() override {
     ++auth_attempt_count_;

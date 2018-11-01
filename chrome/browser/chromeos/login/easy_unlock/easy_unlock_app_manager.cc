@@ -37,10 +37,8 @@ class EasyUnlockAppManagerImpl : public EasyUnlockAppManager {
 
   // EasyUnlockAppManager overrides.
   void EnsureReady(const base::Closure& ready_callback) override;
-  void LaunchSetup() override;
   void LoadApp() override;
   void DisableAppIfLoaded() override;
-  void ReloadApp() override;
   bool SendAuthAttemptEvent() override;
 
  private:
@@ -70,25 +68,6 @@ EasyUnlockAppManagerImpl::~EasyUnlockAppManagerImpl() {}
 void EasyUnlockAppManagerImpl::EnsureReady(
     const base::Closure& ready_callback) {
   extension_system_->ready().Post(FROM_HERE, ready_callback);
-}
-
-void EasyUnlockAppManagerImpl::LaunchSetup() {
-  extensions::ExtensionService* extension_service =
-      extension_system_->extension_service();
-  if (!extension_service)
-    return;
-
-  const extensions::Extension* extension =
-      extension_service->GetExtensionById(app_id_, false);
-  if (!extension) {
-    PA_LOG(WARNING) << "No extension";
-    return;
-  }
-
-  OpenApplication(AppLaunchParams(extension_service->profile(), extension,
-                                  extensions::LAUNCH_CONTAINER_WINDOW,
-                                  WindowOpenDisposition::NEW_WINDOW,
-                                  extensions::SOURCE_CHROME_INTERNAL));
 }
 
 void EasyUnlockAppManagerImpl::LoadApp() {
@@ -125,18 +104,6 @@ void EasyUnlockAppManagerImpl::DisableAppIfLoaded() {
 
   extension_service->DisableExtension(
       app_id_, extensions::disable_reason::DISABLE_RELOAD);
-}
-
-void EasyUnlockAppManagerImpl::ReloadApp() {
-  extensions::ExtensionService* extension_service =
-      extension_system_->extension_service();
-  if (!extension_service)
-    return;
-
-  if (!extension_service->component_loader()->Exists(app_id_))
-    return;
-
-  extension_service->ReloadExtension(app_id_);
 }
 
 bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {

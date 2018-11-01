@@ -36,17 +36,11 @@ class EasyUnlockAppManager {
   // Note that the callback may be triggered after |this| is deleted.
   virtual void EnsureReady(const base::Closure& ready_callback) = 0;
 
-  // Launches Easy Unlock setup app, if the setup app is loaded.
-  virtual void LaunchSetup() = 0;
-
   // Loads Easy Unlock app.
   virtual void LoadApp() = 0;
 
   // Disables Easy Unlock app.
   virtual void DisableAppIfLoaded() = 0;
-
-  // Reloads Easy Unlock app.
-  virtual void ReloadApp() = 0;
 
   // Sends screenlockPrivate.onAuthAttempted event to Easy Unlock app.
   virtual bool SendAuthAttemptEvent() = 0;

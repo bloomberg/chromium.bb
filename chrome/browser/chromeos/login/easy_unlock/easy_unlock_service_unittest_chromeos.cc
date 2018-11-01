@@ -77,8 +77,6 @@ class TestAppManager : public EasyUnlockAppManager {
  public:
   TestAppManager()
       : state_(STATE_NOT_LOADED),
-        app_launch_count_(0u),
-        reload_count_(0u),
         ready_(false) {}
   ~TestAppManager() override {}
 
@@ -86,8 +84,6 @@ class TestAppManager : public EasyUnlockAppManager {
   enum State { STATE_NOT_LOADED, STATE_LOADED, STATE_DISABLED };
 
   State state() const { return state_; }
-  size_t app_launch_count() const { return app_launch_count_; }
-  size_t reload_count() const { return reload_count_; }
 
   // Marks the manager as ready and runs |ready_callback_| if there is one set.
   void SetReady() {
@@ -107,21 +103,11 @@ class TestAppManager : public EasyUnlockAppManager {
     ready_callback_ = ready_callback;
   }
 
-  void LaunchSetup() override {
-    ASSERT_EQ(STATE_LOADED, state_);
-    ++app_launch_count_;
-  }
-
   void LoadApp() override { state_ = STATE_LOADED; }
 
   void DisableAppIfLoaded() override {
     if (state_ == STATE_LOADED)
       state_ = STATE_DISABLED;
-  }
-
-  void ReloadApp() override {
-    if (state_ == STATE_LOADED)
-      ++reload_count_;
   }
 
   bool SendAuthAttemptEvent() override {
@@ -132,12 +118,6 @@ class TestAppManager : public EasyUnlockAppManager {
  private:
   // The current app state.
   State state_;
-
-  // Number of times LaunchSetup was called.
-  size_t app_launch_count_;
-
-  // Number of times ReloadApp was called.
-  size_t reload_count_;
 
   // Whether the manager is ready. Set using |SetReady|.
   bool ready_;
