@@ -36,7 +36,6 @@ CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
-CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kCSSFragmentIdentifiers;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;

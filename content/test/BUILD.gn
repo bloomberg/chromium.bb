@@ -1011,6 +1011,7 @@ test("content_browsertests") {
     "//ui/compositor",
     "//ui/display",
     "//ui/events:test_support",
+    "//ui/events/blink:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

@@ -191,16 +191,13 @@ class MockInputRouterImplClient : public InputRouterImplClient {
   MockWidgetInputHandler widget_input_handler_;
 };
 
-class InputRouterImplTest : public testing::Test {
+class InputRouterImplTestBase : public testing::Test {
  public:
-  InputRouterImplTest()
+  InputRouterImplTestBase()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    vsync_feature_list_.InitAndEnableFeature(
-        features::kVsyncAlignedInputEvents);
-  }
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
-  ~InputRouterImplTest() override {}
+  ~InputRouterImplTestBase() override {}
 
  protected:
   using DispatchedMessages = MockWidgetInputHandler::MessageVector;
@@ -454,11 +451,28 @@ class InputRouterImplTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   SyntheticWebTouchEvent touch_event_;
-
-  base::test::ScopedFeatureList vsync_feature_list_;
 };
 
-TEST_F(InputRouterImplTest, HandledInputEvent) {
+class InputRouterImplTest : public InputRouterImplTestBase,
+                            public testing::WithParamInterface<bool> {
+ public:
+  InputRouterImplTest() {
+    if (GetParam()) {
+      touch_action_feature_list_.InitAndEnableFeature(
+          features::kCompositorTouchAction);
+    } else {
+      touch_action_feature_list_.InitAndDisableFeature(
+          features::kCompositorTouchAction);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList touch_action_feature_list_;
+};
+
+INSTANTIATE_TEST_CASE_P(, InputRouterImplTest, ::testing::Bool());
+
+TEST_P(InputRouterImplTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulate a keyboard event.
@@ -472,7 +486,7 @@ TEST_F(InputRouterImplTest, HandledInputEvent) {
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 }
 
-TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
+TEST_P(InputRouterImplTest, ClientCanceledKeyboardEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
   // Simulate a keyboard event that has no consumer.
@@ -495,7 +509,7 @@ TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
 
 // Tests ported from RenderWidgetHostTest --------------------------------------
 
-TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
+TEST_P(InputRouterImplTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
@@ -510,7 +524,7 @@ TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
             disposition_handler_->acked_keyboard_event().GetType());
 }
 
-TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
+TEST_P(InputRouterImplTest, CoalescesWheelEvents) {
   // Simulate wheel events.
   SimulateWheelEvent(0, 0, 0, -5, 0, false,
                      WebMouseWheelEvent::kPhaseBegan);  // sent directly
@@ -616,14 +630,14 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
 // Test that the active touch sequence count increment when the touch start is
 // not ACKed from the main thread.
-TEST_F(InputRouterImplTest, TouchSequenceInProgressWithoutTouchAction) {
+TEST_P(InputRouterImplTest, ActiveTouchSequenceCountWithoutTouchAction) {
   base::Optional<cc::TouchAction> touch_action;
   TouchSequenceInProgressTest(touch_action,
                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 }
 
-TEST_F(InputRouterImplTest,
-       TouchSequenceInProgressWithoutTouchActionNoConsumer) {
+TEST_P(InputRouterImplTest,
+       ActiveTouchSequenceCountWithoutTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action;
   TouchSequenceInProgressTest(touch_action,
                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -631,49 +645,49 @@ TEST_F(InputRouterImplTest,
 
 // Test that the active touch sequence count increment when the touch start is
 // ACKed from the main thread.
-TEST_F(InputRouterImplTest, TouchSequenceInProgressWithTouchAction) {
+TEST_P(InputRouterImplTest, ActiveTouchSequenceCountWithTouchAction) {
   base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
   TouchSequenceInProgressTest(touch_action,
                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 }
 
-TEST_F(InputRouterImplTest, TouchSequenceInProgressWithTouchActionNoConsumer) {
+TEST_P(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
   TouchSequenceInProgressTest(touch_action,
                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
   OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
+TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
   OnTouchEventAckWithAckState(
       INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
 }
 
 // Tests that touch-events are sent properly.
-TEST_F(InputRouterImplTest, TouchEventQueue) {
+TEST_P(InputRouterImplTest, TouchEventQueue) {
   OnHasTouchEventHandlers(true);
 
   PressTouchPoint(1, 1);
@@ -711,7 +725,7 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 
 // Tests that the touch-queue is emptied after a page stops listening for touch
 // events and the outstanding ack is received.
-TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
+TEST_P(InputRouterImplTest, TouchEventQueueFlush) {
   OnHasTouchEventHandlers(true);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_TRUE(TouchEventQueueEmpty());
@@ -740,7 +754,7 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   EXPECT_TRUE(TouchEventQueueEmpty());
 }
 
-TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
+TEST_P(InputRouterImplTest, UnhandledWheelEvent) {
   // Simulate wheel events.
   SimulateWheelEvent(0, 0, 0, -5, 0, false, WebMouseWheelEvent::kPhaseBegan);
   SimulateWheelEvent(0, 0, 0, -10, 0, false, WebMouseWheelEvent::kPhaseChanged);
@@ -806,7 +820,7 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 }
 
-TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
+TEST_P(InputRouterImplTest, TouchTypesIgnoringAck) {
   OnHasTouchEventHandlers(true);
   // Only acks for TouchCancel should always be ignored.
   ASSERT_TRUE(
@@ -849,7 +863,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
 #else
 #define MAYBE_GestureTypesIgnoringAck GestureTypesIgnoringAck
 #endif
-TEST_F(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
+TEST_P(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
   const WebInputEvent::Type eventTypes[] = {
       WebInputEvent::kGestureTapDown,     WebInputEvent::kGestureShowPress,
@@ -914,7 +928,7 @@ TEST_F(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
   }
 }
 
-TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
+TEST_P(InputRouterImplTest, MouseTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::kMouseDown);
   int end_type = static_cast<int>(WebInputEvent::kContextMenu);
   ASSERT_LT(start_type, end_type);
@@ -946,7 +960,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
 
 // Guard against breaking changes to the list of ignored event ack types in
 // |WebInputEventTraits::ShouldBlockEventStream|.
-TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
+TEST_P(InputRouterImplTest, RequiredEventAckTypes) {
   const WebInputEvent::Type kRequiredEventAckTypes[] = {
       WebInputEvent::kMouseMove,
       WebInputEvent::kMouseWheel,
@@ -966,7 +980,7 @@ TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
   }
 }
 
-TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
+TEST_P(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   // Interleave a few events that do and do not ignore acks. All gesture events
   // should be dispatched immediately, but the acks will be blocked on blocking
   // events.
@@ -1063,7 +1077,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
 
 // Test that GestureShowPress events don't get out of order due to
 // ignoring their acks.
-TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
+TEST_P(InputRouterImplTest, GestureShowPressIsInOrder) {
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -1123,7 +1137,7 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
 
 // Test that touch ack timeout behavior is properly configured for
 // mobile-optimized sites and allowed touch actions.
-TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
+TEST_P(InputRouterImplTest, TouchAckTimeoutConfigured) {
   const int kDesktopTimeoutMs = 1;
   const int kMobileTimeoutMs = 0;
   SetUpForTouchAckTimeoutTest(kDesktopTimeoutMs, kMobileTimeoutMs);
@@ -1211,7 +1225,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
 // Test that a touch sequenced preceded by kTouchActionNone is not affected by
 // the touch timeout.
-TEST_F(InputRouterImplTest,
+TEST_P(InputRouterImplTest,
        TouchAckTimeoutDisabledForTouchSequenceAfterTouchActionNone) {
   const int kDesktopTimeoutMs = 1;
   const int kMobileTimeoutMs = 2;
@@ -1276,7 +1290,7 @@ TEST_F(InputRouterImplTest,
 
 // Test that TouchActionFilter::ResetTouchAction is called before the
 // first touch event for a touch sequence reaches the renderer.
-TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
+TEST_P(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
   OnHasTouchEventHandlers(true);
 
   // Sequence 1.
@@ -1358,7 +1372,7 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 
 // Test that TouchActionFilter::ResetTouchAction is called when a new touch
 // sequence has no consumer.
-TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
+TEST_P(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
   OnHasTouchEventHandlers(true);
 
   // Sequence 1.
@@ -1430,7 +1444,7 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
 
 // Test that TouchActionFilter::ResetTouchAction is called when the touch
 // handler is removed.
-TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
+TEST_P(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   // Touch sequence with touch handler.
   OnHasTouchEventHandlers(true);
   PressTouchPoint(1, 1);
@@ -1486,7 +1500,7 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 }
 
 // Tests that async touch-moves are ack'd from the browser side.
-TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
+TEST_P(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   OnHasTouchEventHandlers(true);
 
   PressTouchPoint(1, 1);
@@ -1524,7 +1538,7 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 
 // Test that the double tap gesture depends on the touch action of the first
 // tap.
-TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
+TEST_P(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   OnHasTouchEventHandlers(true);
 
   // Sequence 1.
@@ -1602,7 +1616,7 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
 }
 
 class TouchpadPinchInputRouterImplTest
-    : public InputRouterImplTest,
+    : public InputRouterImplTestBase,
       public testing::WithParamInterface<bool> {
  public:
   TouchpadPinchInputRouterImplTest() : async_events_enabled_(GetParam()) {
@@ -1792,7 +1806,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
 }
 
 // Test proper handling of touchpad Gesture{Pinch,Scroll}Update sequences.
-TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
+TEST_P(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   // All gesture events should be sent immediately.
   SimulateGestureScrollUpdateEvent(1.5f, 0.f, 0,
                                    blink::kWebGestureDeviceTouchpad);
@@ -1876,7 +1890,7 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
 
 // Test proper routing of overscroll notifications received either from
 // event acks or from |DidOverscroll| IPC messages.
-TEST_F(InputRouterImplTest, OverscrollDispatch) {
+TEST_P(InputRouterImplTest, OverscrollDispatch) {
   DidOverscrollParams overscroll;
   overscroll.accumulated_overscroll = gfx::Vector2dF(-14, 14);
   overscroll.latest_overscroll_delta = gfx::Vector2dF(-7, 0);
@@ -1923,7 +1937,7 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
 
 // Test proper routing of whitelisted touch action notifications received from
 // |SetWhiteListedTouchAction| IPC messages.
-TEST_F(InputRouterImplTest, OnSetWhiteListedTouchAction) {
+TEST_P(InputRouterImplTest, OnSetWhiteListedTouchAction) {
   cc::TouchAction touch_action = cc::kTouchActionPanY;
   OnSetWhiteListedTouchAction(touch_action, 0,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1934,7 +1948,7 @@ TEST_F(InputRouterImplTest, OnSetWhiteListedTouchAction) {
 
 // Tests that touch event stream validation passes when events are filtered
 // out. See crbug.com/581231 for details.
-TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
+TEST_P(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   // Touch sequence with touch handler.
   OnHasTouchEventHandlers(true);
   PressTouchPoint(1, 1);
@@ -1970,7 +1984,7 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
       INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
-TEST_F(InputRouterImplTest, TouchActionInCallback) {
+TEST_P(InputRouterImplTest, TouchActionInCallback) {
   OnHasTouchEventHandlers(true);
 
   // Send a touchstart
@@ -1991,12 +2005,12 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
 
 namespace {
 
-class InputRouterImplScaleEventTest : public InputRouterImplTest {
+class InputRouterImplScaleEventTest : public InputRouterImplTestBase {
  public:
   InputRouterImplScaleEventTest() {}
 
   void SetUp() override {
-    InputRouterImplTest::SetUp();
+    InputRouterImplTestBase::SetUp();
     input_router_->SetDeviceScaleFactor(2.f);
   }
 

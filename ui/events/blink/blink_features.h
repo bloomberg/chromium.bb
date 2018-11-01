@@ -35,6 +35,10 @@ extern const base::Feature kNoHoverAfterLayoutChange;
 // dispatching mouse enter/exit events for elements under the mouse as the page
 // is scrolled.
 extern const base::Feature kNoHoverDuringScroll;
+
+// Enables handling touch events in compositor using impl side touch action
+// knowledge.
+extern const base::Feature kCompositorTouchAction;
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

@@ -63,10 +63,21 @@ enum InputHandlerProxyTestType {
   ROOT_SCROLL_SYNCHRONOUS_HANDLER,
   CHILD_SCROLL_NORMAL_HANDLER,
   CHILD_SCROLL_SYNCHRONOUS_HANDLER,
+  COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_NORMAL,
+  COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS,
+  COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_NORMAL,
+  COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS,
 };
 static const InputHandlerProxyTestType test_types[] = {
-    ROOT_SCROLL_NORMAL_HANDLER, ROOT_SCROLL_SYNCHRONOUS_HANDLER,
-    CHILD_SCROLL_NORMAL_HANDLER, CHILD_SCROLL_SYNCHRONOUS_HANDLER};
+    ROOT_SCROLL_NORMAL_HANDLER,
+    ROOT_SCROLL_SYNCHRONOUS_HANDLER,
+    CHILD_SCROLL_NORMAL_HANDLER,
+    CHILD_SCROLL_SYNCHRONOUS_HANDLER,
+    COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_NORMAL,
+    COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS,
+    COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_NORMAL,
+    COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS,
+};
 
 MATCHER_P(WheelEventsMatch, expected, "") {
   return WheelEventsMatch(arg, expected);
@@ -287,11 +298,22 @@ class InputHandlerProxyTest
       public testing::WithParamInterface<InputHandlerProxyTestType> {
  public:
   InputHandlerProxyTest()
-      : synchronous_root_scroll_(GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER),
+      : synchronous_root_scroll_(
+            GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS),
         install_synchronous_handler_(
             GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER ||
-            GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
+            GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS),
         expected_disposition_(InputHandlerProxy::DID_HANDLE) {
+    if (GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_NORMAL ||
+        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS ||
+        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_NORMAL ||
+        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS)
+      feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
+    else
+      feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
     input_handler_.reset(
         new TestInputHandlerProxy(&mock_input_handler_, &mock_client_));
     scroll_result_did_scroll_.did_scroll = true;
@@ -374,6 +396,9 @@ class InputHandlerProxyTest
   base::HistogramTester histogram_tester_;
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class InputHandlerProxyEventQueueTest : public testing::Test {

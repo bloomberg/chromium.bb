@@ -25,4 +25,7 @@ const base::Feature kNoHoverAfterLayoutChange{
 
 const base::Feature kNoHoverDuringScroll{"NoHoverDuringScroll",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCompositorTouchAction{"CompositorTouchAction",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 }

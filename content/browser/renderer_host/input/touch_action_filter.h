@@ -68,7 +68,7 @@ class CONTENT_EXPORT TouchActionFilter {
   void AppendToGestureSequenceForDebugging(const char* str);
 
  private:
-  friend class InputRouterImplTest;
+  friend class InputRouterImplTestBase;
   friend class MockRenderWidgetHost;
   friend class TouchActionFilterTest;
   friend class TouchActionFilterPinchTest;
