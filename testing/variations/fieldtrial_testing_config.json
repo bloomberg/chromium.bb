@@ -4474,21 +4474,6 @@
             ]
         }
     ],
-    "SuperfishInterstitial": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SuperfishInterstitial"
-                    ]
-                }
-            ]
-        }
-    ],
     "SurfaceSynchronization": [
         {
             "platforms": [

@@ -94,11 +94,6 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, SSLInterstitial) {
                    IDS_SSL_V2_HEADING);
 }
 
-IN_PROC_BROWSER_TEST_F(InterstitialUITest, SuperfishInterstitial) {
-  TestInterstitial(GURL("chrome://interstitials/superfish-ssl"),
-                   "Privacy error", IDS_SSL_SUPERFISH_HEADING);
-}
-
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, MITMSoftwareInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/mitm-software-ssl"),
                    "Privacy error", IDS_MITM_SOFTWARE_HEADING);

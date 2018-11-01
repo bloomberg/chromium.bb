@@ -65,8 +65,7 @@ TEST_F(SSLBlockingPageTest, VerifySecurityInterstitialExtensionEvents) {
       web_contents(), net::ERR_CERT_DATE_INVALID, ssl_info, request_url,
       /*options_mask=*/0, base::Time::NowFromSystemTime(),
       /*support_url=*/GURL(),
-      /*ssl_cert_reporter=*/nullptr,
-      /*is superfish=*/false, callback);
+      /*ssl_cert_reporter=*/nullptr, callback);
   blocking_page->DontCreateViewForTesting();
   blocking_page->Show();
 
