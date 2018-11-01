@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "components/viz/service/viz_service_export.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -28,6 +28,10 @@ class GpuChannelManager;
 class ImageFactory;
 }  // namespace gpu
 
+namespace ui_devtools {
+class UiDevToolsServer;
+}  // namespace ui_devtools
+
 namespace viz {
 class DisplayProvider;
 class FrameSinkManagerImpl;
@@ -44,7 +48,7 @@ using VizCompositorThreadType = base::Thread;
 // object is constructed. Objects on the thread will be initialized after
 // calling CreateFrameSinkManager(). Destructor will teardown objects on thread
 // and then stop the thread.
-class VIZ_SERVICE_EXPORT VizCompositorThreadRunner {
+class VizCompositorThreadRunner {
  public:
   VizCompositorThreadRunner();
   // Performs teardown on thread and then stops thread.
@@ -81,6 +85,11 @@ class VIZ_SERVICE_EXPORT VizCompositorThreadRunner {
       GpuServiceImpl* gpu_service,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManager* gpu_channel_manager);
+#if defined(USE_VIZ_DEVTOOLS)
+  void InitVizDevToolsOnCompositorThread(
+      network::mojom::TCPServerSocketPtr server_socket,
+      int port);
+#endif
   void CleanupForShutdownOnCompositorThread();
   void TearDownOnCompositorThread();
 
@@ -88,6 +97,9 @@ class VIZ_SERVICE_EXPORT VizCompositorThreadRunner {
   std::unique_ptr<ServerSharedBitmapManager> server_shared_bitmap_manager_;
   std::unique_ptr<DisplayProvider> display_provider_;
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
+#if defined(USE_VIZ_DEVTOOLS)
+  std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
+#endif
   // End variables to be accessed only on |task_runner_|.
 
   std::unique_ptr<VizCompositorThreadType> thread_;

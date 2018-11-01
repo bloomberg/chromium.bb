@@ -66,6 +66,7 @@ jumbo_source_set("browser") {
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",
+    "//components/viz/service/main",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//components/ui_devtools/devtools.gni")
 import("//media/gpu/args.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -11,7 +12,11 @@ import("//testing/test.gni")
 source_set("main") {
   output_name = "viz_main_impl"
 
+  defines = []
+
   sources = [
+    "viz_compositor_thread_runner.cc",
+    "viz_compositor_thread_runner.h",
     "viz_main_impl.cc",
     "viz_main_impl.h",
   ]
@@ -20,6 +25,8 @@ source_set("main") {
     "//cc",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
+    "//components/ui_devtools",
+    "//components/ui_devtools/viz_views",
     "//components/viz/service",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common",
@@ -35,6 +42,10 @@ source_set("main") {
     "//ui/gl/init",
   ]
 
+  public_deps = [
+    "//services/network/public/mojom",
+  ]
+
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
   }
@@ -45,5 +56,9 @@ source_set("main") {
 
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi" ]
+  }
+
+  if (use_viz_devtools) {
+    defines += [ "USE_VIZ_DEVTOOLS" ]
   }
 }
