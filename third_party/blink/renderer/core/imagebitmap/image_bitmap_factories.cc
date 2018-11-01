@@ -60,6 +60,7 @@
 
 namespace blink {
 
+namespace {
 // This enum is used in a UMA histogram.
 enum CreateImageBitmapSource {
   kCreateImageBitmapSourceBlob = 0,
@@ -70,51 +71,53 @@ enum CreateImageBitmapSource {
   kCreateImageBitmapSourceHTMLVideoElement = 5,
   kCreateImageBitmapSourceOffscreenCanvas = 6,
   kCreateImageBitmapSourceSVGImageElement = 7,
-  kCreateImageBitmapSourceCount,
+  kMaxValue = kCreateImageBitmapSourceSVGImageElement,
 };
+
+}  // namespace
 
 static inline ImageBitmapSource* ToImageBitmapSourceInternal(
     const ImageBitmapSourceUnion& value,
     const ImageBitmapOptions* options,
     bool has_crop_rect) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, image_bitmap_source_histogram,
-      ("Canvas.CreateImageBitmapSource", kCreateImageBitmapSourceCount));
   if (value.IsHTMLVideoElement()) {
-    image_bitmap_source_histogram.Count(
-        kCreateImageBitmapSourceHTMLVideoElement);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceHTMLVideoElement);
     return value.GetAsHTMLVideoElement();
   }
   if (value.IsHTMLImageElement()) {
-    image_bitmap_source_histogram.Count(
-        kCreateImageBitmapSourceHTMLImageElement);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceHTMLImageElement);
     return value.GetAsHTMLImageElement();
   }
   if (value.IsSVGImageElement()) {
-    image_bitmap_source_histogram.Count(
-        kCreateImageBitmapSourceSVGImageElement);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceSVGImageElement);
     return value.GetAsSVGImageElement();
   }
   if (value.IsHTMLCanvasElement()) {
-    image_bitmap_source_histogram.Count(
-        kCreateImageBitmapSourceHTMLCanvasElement);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceHTMLCanvasElement);
     return value.GetAsHTMLCanvasElement();
   }
   if (value.IsBlob()) {
-    image_bitmap_source_histogram.Count(kCreateImageBitmapSourceBlob);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceBlob);
     return value.GetAsBlob();
   }
   if (value.IsImageData()) {
-    image_bitmap_source_histogram.Count(kCreateImageBitmapSourceImageData);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceImageData);
     return value.GetAsImageData();
   }
   if (value.IsImageBitmap()) {
-    image_bitmap_source_histogram.Count(kCreateImageBitmapSourceImageBitmap);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceImageBitmap);
     return value.GetAsImageBitmap();
   }
   if (value.IsOffscreenCanvas()) {
-    image_bitmap_source_histogram.Count(
-        kCreateImageBitmapSourceOffscreenCanvas);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
+                              kCreateImageBitmapSourceOffscreenCanvas);
     return value.GetAsOffscreenCanvas();
   }
   NOTREACHED();

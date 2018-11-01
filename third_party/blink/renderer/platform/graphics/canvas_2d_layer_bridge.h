@@ -149,8 +149,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
     kHibernationEndedWithFallbackToSW = 9,
     kHibernationEndedWithTeardown = 10,
     kHibernationAbortedBecauseNoSurface = 11,
-
-    kHibernationEventCount = 12,
+    kMaxValue = kHibernationAbortedBecauseNoSurface,
   };
 
   class PLATFORM_EXPORT Logger {
