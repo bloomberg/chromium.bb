@@ -38,8 +38,6 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -177,13 +175,6 @@ void ProfileImplIOData::Handle::Init(
   io_data_->InitializeMetricsEnabledStateOnUIThread();
   if (io_data_->lazy_params_->domain_reliability_monitor)
     io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
-
-  // TODO(ryansturm): Move this call to a location unrelated to IO
-  // initialization. https://crbug.com/896001
-  PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
-      g_browser_process->optimization_guide_service(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      profile_path);
 
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
