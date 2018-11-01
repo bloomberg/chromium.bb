@@ -35,9 +35,7 @@ struct MatchGURLHash {
   // The |bool| is whether the match is a calculator suggestion. We want them
   // compare differently against other matches with the same URL.
   size_t operator()(const std::pair<GURL, bool>& p) const {
-    // Certain omnibox inputs such as `http:www.` produce matches with invalid
-    // urls, so we use GURL::possibly_invalid_spec.
-    return std::hash<std::string>()(p.first.possibly_invalid_spec()) + p.second;
+    return std::hash<std::string>()(p.first.spec()) + p.second;
   }
 };
 
