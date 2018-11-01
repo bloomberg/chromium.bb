@@ -81,10 +81,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   TraceEventDataSource();
   ~TraceEventDataSource() override;
 
-  ThreadLocalEventSink* CreateThreadLocalEventSink();
+  ThreadLocalEventSink* CreateThreadLocalEventSink(bool thread_will_flush);
 
   // Callback from TraceLog, can be called from any thread.
-  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event);
+  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
+                              bool thread_will_flush);
 
   base::Lock lock_;
   uint32_t target_buffer_ = 0;

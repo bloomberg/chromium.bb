@@ -139,6 +139,7 @@ class BASE_EXPORT TraceEvent {
   ThreadTicks thread_timestamp() const { return thread_timestamp_; }
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
+  int process_id() const { return process_id_; }
   TimeDelta duration() const { return duration_; }
   TimeDelta thread_duration() const { return thread_duration_; }
   const char* scope() const { return scope_; }
