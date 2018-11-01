@@ -4,6 +4,8 @@
 
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 
+#include <utility>
+
 namespace chromeos {
 namespace assistant {
 
@@ -12,6 +14,7 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
 void FakeAssistantManagerServiceImpl::Start(const std::string& access_token,
+                                            bool enable_hotword,
                                             base::OnceClosure callback) {
   state_ = State::RUNNING;
 

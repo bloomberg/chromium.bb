@@ -279,8 +279,12 @@ void AssistantUiController::OnUiVisibilityChanged(
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {
-  if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
+  if (!Shell::Get()
+           ->voice_interaction_controller()
+           ->settings_enabled()
+           .value_or(false)) {
     return;
+  }
 
   // TODO(dmblack): Show a more helpful message to the user.
   if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() ==

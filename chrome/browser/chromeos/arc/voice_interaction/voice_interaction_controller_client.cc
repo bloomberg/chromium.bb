@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
@@ -104,8 +105,6 @@ void VoiceInteractionControllerClient::NotifyContextEnabled() {
 void VoiceInteractionControllerClient::NotifyHotwordEnabled() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
-  // Make sure voice interaction is enabled.
-  DCHECK(prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
   bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled);
   voice_interaction_controller_->NotifyHotwordEnabled(enabled);
 }
@@ -232,8 +231,7 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   NotifyLocaleChanged();
   NotifyNotificationEnabled();
   NotifyLaunchWithMicOpen();
-  if (prefs->GetBoolean(prefs::kVoiceInteractionEnabled))
-    NotifyHotwordEnabled();
+  NotifyHotwordEnabled();
 }
 
 void VoiceInteractionControllerClient::Observe(

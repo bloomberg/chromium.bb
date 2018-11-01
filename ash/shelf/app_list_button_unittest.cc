@@ -156,6 +156,8 @@ TEST_F(VoiceInteractionAppListButtonTest,
 
   // Enable voice interaction in system settings.
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
+  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -198,6 +200,8 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // interaction in settings.
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);
   Shell::Get()->voice_interaction_controller()->NotifySetupCompleted(true);
+  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -218,6 +222,8 @@ TEST_F(VoiceInteractionAppListButtonTest,
 
   // Disable voice interaction in system settings.
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);
+  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));

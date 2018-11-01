@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_cache_controller.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/assistant_controller.h"
@@ -116,7 +117,8 @@ void AssistantCacheController::UpdateConversationStarters() {
   if (!base::FeatureList::IsEnabled(kConversationStartersFeature))
     return;
 
-  using namespace chromeos::assistant::mojom;
+  using chromeos::assistant::mojom::AssistantSuggestion;
+  using chromeos::assistant::mojom::AssistantSuggestionPtr;
 
   std::vector<AssistantSuggestionPtr> conversation_starters;
 
@@ -134,7 +136,8 @@ void AssistantCacheController::UpdateConversationStarters() {
 
   // If enabled, always show the "What's on my screen?" conversation starter.
   if (kWhatsOnMyScreenChipEnabled.Get() &&
-      Shell::Get()->voice_interaction_controller()->context_enabled()) {
+      Shell::Get()->voice_interaction_controller()->context_enabled().value_or(
+          false)) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }

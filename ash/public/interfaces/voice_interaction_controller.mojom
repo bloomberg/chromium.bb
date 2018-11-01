@@ -109,19 +109,6 @@ interface VoiceInteractionController {
   // Called when the launch with mic open state is changed.
   NotifyLaunchWithMicOpen(bool launch_with_mic_open);
 
-  // Return if the voice interaction setting is enabled/disabled.
-  IsSettingEnabled() => (bool enabled);
-
-  // Return the voice interaction setup complete status.
-  IsSetupCompleted() => (bool completed);
-
-  // Return if the user has granted permission to access screen "context", the
-  // text and graphics content that is currently on screen.
-  IsContextEnabled() => (bool enabled);
-
-  // Return the voice interaction hotword listening status.
-  IsHotwordEnabled() => (bool enabled);
-
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);
 };

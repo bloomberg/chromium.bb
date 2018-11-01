@@ -50,8 +50,8 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
 class AudioInputImpl : public assistant_client::AudioInput,
                        public media::AudioCapturerSource::CaptureCallback {
  public:
-  AudioInputImpl(std::unique_ptr<service_manager::Connector> connector,
-                 bool default_on);
+  explicit AudioInputImpl(
+      std::unique_ptr<service_manager::Connector> connector);
   ~AudioInputImpl() override;
 
   // media::AudioCapturerSource::CaptureCallback overrides:
@@ -83,7 +83,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
   scoped_refptr<media::AudioCapturerSource> source_;
 
   // Should audio input always recording actively.
-  bool default_on_;
+  bool default_on_ = false;
 
   // Guards observers_;
   base::Lock lock_;
@@ -108,8 +108,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  explicit AudioInputProviderImpl(service_manager::Connector* connector,
-                                  bool default_on);
+  explicit AudioInputProviderImpl(service_manager::Connector* connector);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:

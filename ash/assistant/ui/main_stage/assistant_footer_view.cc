@@ -76,7 +76,8 @@ void AssistantFooterView::InitLayout() {
 
   // Initial view state is based on user consent state.
   const bool setup_completed =
-      Shell::Get()->voice_interaction_controller()->setup_completed();
+      Shell::Get()->voice_interaction_controller()->setup_completed().value_or(
+          false);
 
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(assistant_controller_);
@@ -155,7 +156,8 @@ void AssistantFooterView::OnAnimationStarted(
 bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   const bool setup_completed =
-      Shell::Get()->voice_interaction_controller()->setup_completed();
+      Shell::Get()->voice_interaction_controller()->setup_completed().value_or(
+          false);
 
   // Only the view relevant to our consent state should process events.
   suggestion_container_->set_can_process_events_within_subtree(setup_completed);

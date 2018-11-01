@@ -875,7 +875,7 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
 
   auto* controller = Shell::Get()->voice_interaction_controller();
   GetSearchModel()->search_box()->SetShowAssistantButton(
-      controller->settings_enabled() &&
+      controller->settings_enabled().value_or(false) &&
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED);
 }
 

@@ -21,7 +21,6 @@ namespace assistant {
 
 namespace {
 
-// This format should match //c/b/c/assistant/platform_audio_input_host.cc.
 constexpr assistant_client::BufferFormat kFormat{
     16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 1 /* channels */
 };
@@ -52,12 +51,10 @@ int AudioInputBufferImpl::GetFrameCount() const {
 }
 
 AudioInputImpl::AudioInputImpl(
-    std::unique_ptr<service_manager::Connector> connector,
-    bool default_on)
+    std::unique_ptr<service_manager::Connector> connector)
     : source_(audio::CreateInputDevice(
           std::move(connector),
           media::AudioDeviceDescription::kDefaultDeviceId)),
-      default_on_(default_on),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
@@ -199,9 +196,8 @@ void AudioInputImpl::StopRecording() {
 }
 
 AudioInputProviderImpl::AudioInputProviderImpl(
-    service_manager::Connector* connector,
-    bool default_on)
-    : audio_input_(connector->Clone(), default_on) {}
+    service_manager::Connector* connector)
+    : audio_input_(connector->Clone()) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
 

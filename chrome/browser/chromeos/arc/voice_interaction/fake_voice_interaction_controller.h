@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_FAKE_VOICE_INTERACTION_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_FAKE_VOICE_INTERACTION_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -28,10 +30,6 @@ class FakeVoiceInteractionController
   void NotifyNotificationEnabled(bool enabled) override;
   void NotifyLocaleChanged(const std::string& locale) override;
   void NotifyLaunchWithMicOpen(bool launch_with_mic_open) override;
-  void IsSettingEnabled(IsSettingEnabledCallback callback) override;
-  void IsSetupCompleted(IsSetupCompletedCallback callback) override;
-  void IsContextEnabled(IsContextEnabledCallback callback) override;
-  void IsHotwordEnabled(IsHotwordEnabledCallback callback) override;
   void AddObserver(ash::mojom::VoiceInteractionObserverPtr observer) override {}
 
   ash::mojom::VoiceInteractionState voice_interaction_state() const {
