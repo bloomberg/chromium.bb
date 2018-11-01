@@ -40,7 +40,9 @@ class MockWeb(object):
         self.urls_fetched.append(url)
         if url in self.urls:
             return self.urls[url]
-        return 'MOCK Web result, convert 404 to None=%s' % return_none_on_404
+        if return_none_on_404:
+            return None
+        return 'MOCK Web result, 404 Not found'
 
     def request(self, method, url, data, headers=None):  # pylint: disable=unused-argument
         return MockResponse(self.responses.pop(0))
