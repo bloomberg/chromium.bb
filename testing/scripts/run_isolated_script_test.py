@@ -78,14 +78,13 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     return ['--%s=' % arg_name + self._temp_filter_file.name]
 
+  def clean_up_after_test_run(self):
+    if self._temp_filter_file:
+      os.unlink(self._temp_filter_file.name)
+
   def run_test(self):
-    try:
-      return super(TypUnittestAdapter, self).run_test()
-    finally:
-      # Clean up the temp filter file at the end after the test has
-      # finished the run if needed.
-      if self._temp_filter_file:
-        os.unlink(self._temp_filter_file.name)
+    return super(TypUnittestAdapter, self).run_test()
+
 
 def main():
   adapter = TypUnittestAdapter()
