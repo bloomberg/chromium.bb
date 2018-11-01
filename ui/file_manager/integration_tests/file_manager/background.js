@@ -372,13 +372,16 @@ function setupAndWaitUntilReady(
   if (opt_callback)
     opt_callback = chrome.test.callbackPass(opt_callback);
 
+  let result;
   return Promise.all([
     windowPromise,
     localEntriesPromise,
     driveEntriesPromise,
     detailedTablePromise
   ]).then(function(results) {
-    var result = {windowId: results[0], fileList: results[3]};
+    result = {windowId: results[0], fileList: results[3]};
+    return remoteCall.waitFor('isFileManagerLoaded', result.windowId, true);
+  }).then(() => {
     if (opt_callback)
       opt_callback(result);
     return result;
