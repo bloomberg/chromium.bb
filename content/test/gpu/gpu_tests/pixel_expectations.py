@@ -46,7 +46,7 @@ class PixelExpectations(GpuTestExpectations):
         ['android'], bug=521588)
 
     # TODO(mcasas): Reenable after Android reference images are updated
-    self.Skip('Pixel_CanvasLowLatency2D', bug=865957)
+    self.Fail('Pixel_CanvasLowLatency2D', bug=865957)
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
