@@ -362,10 +362,7 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
   content_window()->SetTransparent(translucent);
   window()->SetTransparent(translucent);
 
-  // The window manager may provide the initial show state, for example for
-  // Chrome OS lock screen windows. https://crbug.com/899055
-  if (params.show_state != ui::SHOW_STATE_DEFAULT)
-    window()->SetProperty(aura::client::kShowStateKey, params.show_state);
+  window()->SetProperty(aura::client::kShowStateKey, params.show_state);
 
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
