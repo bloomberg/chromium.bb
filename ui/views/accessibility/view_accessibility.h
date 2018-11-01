@@ -73,6 +73,7 @@ class VIEWS_EXPORT ViewAccessibility {
   virtual const ui::AXUniqueId& GetUniqueId() const;
 
   View* view() const { return view_; }
+  AXVirtualView* FocusedVirtualChild() const { return focused_virtual_child_; }
   bool IsLeaf() const { return is_leaf_; }
   bool IsIgnored() const { return is_ignored_; }
 

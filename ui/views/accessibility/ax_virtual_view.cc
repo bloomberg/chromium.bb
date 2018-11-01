@@ -12,16 +12,29 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
-#include "ui/accessibility/platform/ax_platform_node_base.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
+
+// GetClassName will be mapped to GetClassNameW if windows.h has been included
+// and the UNICODE macro has been defined. We need to undef it to use it in this
+// file.
+#ifdef GetClassName
+#undef GetClassName
+#endif
+
+// static
+const char AXVirtualView::kViewClassName[] = "AXVirtualView";
 
 AXVirtualView::AXVirtualView()
     : parent_view_(nullptr), virtual_parent_view_(nullptr) {
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_platform_node_);
+  custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                  GetClassName());
 }
 
 AXVirtualView::~AXVirtualView() {
@@ -47,10 +60,11 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
   DCHECK(view);
   CHECK_NE(view.get(), this)
       << "You cannot add an AXVirtualView as its own child.";
-  DCHECK(!view->parent_view_) << "This |view| already has an AXVirtualView "
+  DCHECK(!view->parent_view_) << "This |view| already has a View "
                                  "parent. Call RemoveVirtualChildView first.";
-  DCHECK(!view->virtual_parent_view_)
-      << "This |view| already has a View parent. Call RemoveChildView first.";
+  DCHECK(!view->virtual_parent_view_) << "This |view| already has an "
+                                         "AXVirtualView parent. Call "
+                                         "RemoveChildView first.";
   DCHECK_GE(index, 0);
   DCHECK_LE(index, GetChildCount());
 
@@ -84,6 +98,15 @@ std::unique_ptr<AXVirtualView> AXVirtualView::RemoveChildView(
   int cur_index = GetIndexOf(view);
   if (cur_index < 0)
     return {};
+
+  if (GetOwnerView()) {
+    ViewAccessibility& view_accessibility =
+        GetOwnerView()->GetViewAccessibility();
+    if (view_accessibility.FocusedVirtualChild() &&
+        Contains(view_accessibility.FocusedVirtualChild())) {
+      view_accessibility.OverrideFocus(nullptr);
+    }
+  }
 
   std::unique_ptr<AXVirtualView> child = std::move(children_[cur_index]);
   children_.erase(children_.begin() + cur_index);
@@ -125,6 +148,10 @@ int AXVirtualView::GetIndexOf(const AXVirtualView* view) const {
                                  : -1;
 }
 
+const char* AXVirtualView::GetClassName() const {
+  return kViewClassName;
+}
+
 gfx::NativeViewAccessible AXVirtualView::GetNativeObject() const {
   DCHECK(ax_platform_node_);
   return ax_platform_node_->GetNativeViewAccessible();
@@ -135,48 +162,27 @@ void AXVirtualView::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   ax_platform_node_->NotifyAccessibilityEvent(event_type);
 }
 
-void AXVirtualView::OverrideRole(const ax::mojom::Role role) {
-  custom_data_.role = role;
-}
-
-void AXVirtualView::OverrideState(ax::mojom::State state) {
-  custom_data_.state = static_cast<int32_t>(state);
-}
-
-void AXVirtualView::OverrideName(const std::string& name) {
-  custom_data_.SetName(name);
-}
-
-void AXVirtualView::OverrideName(const base::string16& name) {
-  custom_data_.SetName(name);
-}
-
-void AXVirtualView::OverrideDescription(const std::string& description) {
-  custom_data_.SetDescription(description);
-}
-
-void AXVirtualView::OverrideDescription(const base::string16& description) {
-  custom_data_.SetDescription(description);
-}
-
-void AXVirtualView::OverrideBoundsRect(const gfx::RectF& location) {
-  custom_data_.location = location;
-}
-
-ui::AXNodeData& AXVirtualView::GetData() {
-  return const_cast<ui::AXNodeData&>(
-      const_cast<const AXVirtualView*>(this)->GetData());
+ui::AXNodeData& AXVirtualView::GetCustomData() {
+  return custom_data_;
 }
 
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& AXVirtualView::GetData() const {
-  if (!IsParentVisible()) {
-    custom_data_.AddState(ax::mojom::State::kInvisible);
-  } else {
-    custom_data_.RemoveState(ax::mojom::State::kInvisible);
-  }
-  return custom_data_;
+  // Make a copy of our |custom_data_| so that any modifications will not be
+  // made to the data that users of this class will be manipulating.
+  static ui::AXNodeData node_data;
+  node_data = custom_data_;
+  if (!GetOwnerView() || !GetOwnerView()->enabled())
+    node_data.SetRestriction(ax::mojom::Restriction::kDisabled);
+
+  if (!GetOwnerView() || !GetOwnerView()->IsDrawn())
+    node_data.AddState(ax::mojom::State::kInvisible);
+
+  if (GetOwnerView() && GetOwnerView()->context_menu_controller())
+    node_data.AddAction(ax::mojom::Action::kShowContextMenu);
+
+  return node_data;
 }
 
 int AXVirtualView::GetChildCount() {
@@ -193,7 +199,8 @@ gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
 }
 
 gfx::NativeWindow AXVirtualView::GetTopLevelWidget() {
-  // TODO(nektar): Implement.
+  if (GetOwnerView() && GetOwnerView()->GetWidget())
+    return GetOwnerView()->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   return nullptr;
 }
 
@@ -204,18 +211,19 @@ gfx::NativeViewAccessible AXVirtualView::GetParent() {
   if (virtual_parent_view_)
     return virtual_parent_view_->GetNativeObject();
 
+  // This virtual view hasn't been added to a parent view yet.
   return nullptr;
 }
 
 gfx::Rect AXVirtualView::GetClippedScreenBoundsRect() const {
   // We could optionally add clipping here if ever needed.
-  // TODO(nektar): Implement.
-  return {};
+  // TODO(nektar): Implement bounds that are relative to the parent.
+  return gfx::ToEnclosingRect(custom_data_.location);
 }
 
 gfx::Rect AXVirtualView::GetUnclippedScreenBoundsRect() const {
-  // TODO(nektar): Implement.
-  return {};
+  // TODO(nektar): Implement bounds that are relative to the parent.
+  return gfx::ToEnclosingRect(custom_data_.location);
 }
 
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {
@@ -224,7 +232,13 @@ gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {
 }
 
 gfx::NativeViewAccessible AXVirtualView::GetFocus() {
-  // TODO(nektar): Implement.
+  if (parent_view_)
+    return parent_view_->GetFocusedDescendant();
+
+  if (virtual_parent_view_)
+    return virtual_parent_view_->GetFocus();
+
+  // This virtual view hasn't been added to a parent view yet.
   return nullptr;
 }
 
@@ -234,8 +248,12 @@ ui::AXPlatformNode* AXVirtualView::GetFromNodeID(int32_t id) {
 }
 
 bool AXVirtualView::AccessibilityPerformAction(const ui::AXActionData& data) {
-  // TODO(nektar): Implement.
-  return false;
+  bool result = false;
+  if (custom_data_.HasAction(data.action))
+    result = HandleAccessibleAction(data);
+  if (!result && GetOwnerView())
+    return GetOwnerView()->HandleAccessibleAction(data);
+  return result;
 }
 
 bool AXVirtualView::ShouldIgnoreHoveredStateForTesting() {
@@ -252,28 +270,20 @@ const ui::AXUniqueId& AXVirtualView::GetUniqueId() const {
   return unique_id_;
 }
 
-bool AXVirtualView::IsParentVisible() const {
-  if (parent_view_) {
-    const auto* parent_node = static_cast<ui::AXPlatformNodeBase*>(
-        ui::AXPlatformNode::FromNativeViewAccessible(
-            parent_view_->GetNativeObject()));
-    if (!parent_node) {
-      NOTREACHED() << "AXVirtualView should be created on a platform with "
-                      "native accessibility support.";
-      return false;
-    }
-
-    const ui::AXNodeData& parent_data = parent_node->GetData();
-    return !parent_data.HasState(ax::mojom::State::kInvisible);
-  }
-
-  if (virtual_parent_view_) {
-    return !virtual_parent_view_->GetData().HasState(
-        ax::mojom::State::kInvisible);
-  }
-
-  // Not attached to a parent yet.
+bool AXVirtualView::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
   return false;
+}
+
+View* AXVirtualView::GetOwnerView() const {
+  if (parent_view_)
+    return parent_view_->view();
+
+  if (virtual_parent_view_)
+    return virtual_parent_view_->GetOwnerView();
+
+  // This virtual view hasn't been added to a parent view yet.
+  return nullptr;
 }
 
 }  // namespace views
