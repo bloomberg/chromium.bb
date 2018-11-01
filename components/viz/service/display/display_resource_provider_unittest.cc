@@ -1372,12 +1372,14 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   // up in the request set before we wait, then the attempt to notify them wil;
   // DCHECK when we try to lock them for reading in SendPromotionHints.
   EXPECT_EQ(0u, resource_provider_->CountPromotionHintRequestsForTesting());
+  EXPECT_FALSE(resource_provider_->DoAnyResourcesWantPromotionHints());
   {
     resource_provider_->WaitSyncToken(mapped_id1);
     DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                                    mapped_id1);
   }
   EXPECT_EQ(1u, resource_provider_->CountPromotionHintRequestsForTesting());
+  EXPECT_TRUE(resource_provider_->DoAnyResourcesWantPromotionHints());
 
   EXPECT_EQ(list[0].mailbox_holder.sync_token, gl_->last_waited_sync_token());
   ResourceIdSet resource_ids_to_receive;
@@ -1394,11 +1396,11 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   // Make sure that the request for a promotion hint was noticed.
   EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id1));
   EXPECT_TRUE(resource_provider_->IsBackedBySurfaceTexture(mapped_id1));
-  EXPECT_TRUE(resource_provider_->WantsPromotionHintForTesting(mapped_id1));
+  EXPECT_TRUE(resource_provider_->DoesResourceWantPromotionHint(mapped_id1));
 
   EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id2));
   EXPECT_FALSE(resource_provider_->IsBackedBySurfaceTexture(mapped_id2));
-  EXPECT_FALSE(resource_provider_->WantsPromotionHintForTesting(mapped_id2));
+  EXPECT_FALSE(resource_provider_->DoesResourceWantPromotionHint(mapped_id2));
 
   // ResourceProvider maintains a set of promotion hint requests that should be
   // cleared when resources are deleted.
@@ -1407,6 +1409,7 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
 
   EXPECT_EQ(0u, resource_provider_->CountPromotionHintRequestsForTesting());
+  EXPECT_FALSE(resource_provider_->DoAnyResourcesWantPromotionHints());
 
   resource_provider_->DestroyChild(child_id);
 

@@ -145,8 +145,17 @@ class VIZ_SERVICE_EXPORT OverlayCandidateList
   // overlay, if one backs them with a SurfaceView.
   PromotionHintInfoMap promotion_hint_info_map_;
 
+  // Set of resources that have requested a promotion hint that also have quads
+  // that use them.
+  ResourceIdSet promotion_hint_requestor_set_;
+
   // Helper to insert |candidate| into |promotion_hint_info_|.
   void AddPromotionHint(const OverlayCandidate& candidate);
+
+  // Add |quad| to |promotion_hint_requestors_| if it is requesting a hint.
+  void AddToPromotionHintRequestorSetIfNeeded(
+      const DisplayResourceProvider* resource_provider,
+      const DrawQuad* quad);
 };
 
 }  // namespace viz

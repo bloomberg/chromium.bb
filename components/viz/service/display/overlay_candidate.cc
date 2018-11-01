@@ -420,4 +420,15 @@ void OverlayCandidateList::AddPromotionHint(const OverlayCandidate& candidate) {
   promotion_hint_info_map_[candidate.resource_id] = candidate.display_rect;
 }
 
+void OverlayCandidateList::AddToPromotionHintRequestorSetIfNeeded(
+    const DisplayResourceProvider* resource_provider,
+    const DrawQuad* quad) {
+  if (quad->material != DrawQuad::STREAM_VIDEO_CONTENT)
+    return;
+  ResourceId id = StreamVideoDrawQuad::MaterialCast(quad)->resource_id();
+  if (!resource_provider->DoesResourceWantPromotionHint(id))
+    return;
+  promotion_hint_requestor_set_.insert(id);
+}
+
 }  // namespace viz
