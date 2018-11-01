@@ -273,11 +273,12 @@ interface NotificationsInstance {
   [MinVersion=18]
   SetDoNotDisturbStatusOnAndroid@7(ArcDoNotDisturbStatus status);
 
-  // Cancels the long-press operation even during touching the view. This should
-  // be called when the on-going gesture is recognized not as a normal touch
-  // event but as a scroll event, and the on-going touch should be cancelled.
+  // Cancels the current press operation even during touching the view. This
+  // should be called when the on-going gesture is recognized not as a normal
+  // touch event but as a scroll event, and the on-going touch events should be
+  // cancelled.
   [MinVersion=19]
-  CancelLongPress@8(string key);
+  CancelPress@8(string key);
 
   // Performs the user action being deferred in Android.
   [MinVersion=21]
