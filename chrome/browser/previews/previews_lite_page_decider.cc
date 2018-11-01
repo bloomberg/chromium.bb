@@ -140,15 +140,21 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
 
   DCHECK(!browser_context->IsOffTheRecord());
 
-  drp_settings_ = drp_settings;
-  drp_settings_->AddDataReductionProxySettingsObserver(this);
-
   Profile* profile = Profile::FromBrowserContext(browser_context);
   pref_service_ = profile->GetPrefs();
   DCHECK(pref_service_);
 
   host_blacklist_ =
       pref_service_->GetDictionary(kHostBlacklist)->CreateDeepCopy();
+
+  // Add |this| as an observer to DRP, but if DRP is already initialized, check
+  // the prefs now.
+  drp_settings_ = drp_settings;
+  drp_settings_->AddDataReductionProxySettingsObserver(this);
+  if (drp_settings_->Config()) {
+    OnSettingsInitialized();
+    OnProxyRequestHeadersChanged(drp_settings->GetProxyRequestHeaders());
+  }
 }
 
 PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
