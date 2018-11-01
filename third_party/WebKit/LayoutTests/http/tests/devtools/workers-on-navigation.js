@@ -15,7 +15,7 @@
   var workerAddedPromise = new Promise(f => workerAddedCallback = f);
   var observer = {
     targetAdded(target) {
-      if (!TestRunner.isDedicatedWorker(target))
+      if (target.type() !== SDK.Target.Type.Worker)
         return;
       TestRunner.addResult('Worker added');
       workerTargetId = target.id();
@@ -25,7 +25,7 @@
         workerAddedCallback();
     },
     targetRemoved(target) {
-      if (!TestRunner.isDedicatedWorker(target))
+      if (target.type() !== SDK.Target.Type.Worker)
         return;
       if (target.id() === workerTargetId) {
         TestRunner.addResult('Worker removed');

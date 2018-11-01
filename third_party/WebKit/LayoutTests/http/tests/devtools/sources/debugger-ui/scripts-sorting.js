@@ -21,7 +21,7 @@
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
   var pageMock = new SDKTestRunner.PageMock('http://example.com');
-  pageMock.disableDOMCapability();
+  pageMock.turnIntoWorker();
   SDKTestRunner.connectToPage('mock-target-1', pageMock);
 
   var uiSourceCodes = [];
