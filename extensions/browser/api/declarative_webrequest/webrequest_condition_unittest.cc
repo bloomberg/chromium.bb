@@ -7,7 +7,7 @@
 #include <memory>
 #include <set>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"

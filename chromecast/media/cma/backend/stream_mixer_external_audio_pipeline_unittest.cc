@@ -8,7 +8,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/audio/fake_external_audio_pipeline_support.h"

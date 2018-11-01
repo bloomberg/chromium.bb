@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"

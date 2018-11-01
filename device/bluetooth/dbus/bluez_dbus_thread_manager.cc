@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/threading/thread.h"
 #include "dbus/bus.h"
 

@@ -5,7 +5,7 @@
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"

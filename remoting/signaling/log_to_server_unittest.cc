@@ -4,7 +4,7 @@
 
 #include "remoting/signaling/log_to_server.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/server_log_entry_unittest.h"

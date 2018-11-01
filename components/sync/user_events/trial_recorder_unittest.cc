@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/sync/driver/sync_driver_switches.h"

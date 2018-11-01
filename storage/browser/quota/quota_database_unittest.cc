@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/stl_util.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"

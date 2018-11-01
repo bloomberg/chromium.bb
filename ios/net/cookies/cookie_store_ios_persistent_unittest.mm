@@ -10,7 +10,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"

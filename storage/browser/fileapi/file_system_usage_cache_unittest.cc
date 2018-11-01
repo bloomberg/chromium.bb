@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileSystemUsageCache;

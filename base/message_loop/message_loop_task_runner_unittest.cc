@@ -9,7 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"

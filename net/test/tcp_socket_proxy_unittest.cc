@@ -4,7 +4,7 @@
 
 #include "net/test/tcp_socket_proxy.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"

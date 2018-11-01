@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
 #include "gpu/ipc/common/gpu_messages.h"

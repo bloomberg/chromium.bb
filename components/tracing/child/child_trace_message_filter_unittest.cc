@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "components/tracing/common/tracing_messages.h"

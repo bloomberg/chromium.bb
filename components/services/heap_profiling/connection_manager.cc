@@ -5,7 +5,7 @@
 #include "components/services/heap_profiling/connection_manager.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"

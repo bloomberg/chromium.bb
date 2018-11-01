@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "components/history/core/test/fake_web_history_service.h"

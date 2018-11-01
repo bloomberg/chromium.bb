@@ -4,7 +4,7 @@
 
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

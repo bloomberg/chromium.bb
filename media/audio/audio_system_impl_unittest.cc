@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_system_impl.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/mock_audio_manager.h"

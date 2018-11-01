@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_test_util.h"

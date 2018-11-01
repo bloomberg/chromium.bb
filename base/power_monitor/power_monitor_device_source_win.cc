@@ -4,7 +4,7 @@
 
 #include "base/power_monitor/power_monitor_device_source.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/win/wrapped_window_proc.h"

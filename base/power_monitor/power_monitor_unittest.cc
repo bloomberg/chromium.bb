@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/test/power_monitor_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -26,7 +26,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"

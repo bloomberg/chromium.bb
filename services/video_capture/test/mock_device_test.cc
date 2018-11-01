@@ -5,7 +5,7 @@
 #include "services/video_capture/test/mock_device_test.h"
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_system_impl.h"

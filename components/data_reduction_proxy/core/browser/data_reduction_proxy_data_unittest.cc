@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

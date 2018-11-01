@@ -18,7 +18,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_scheduler/task_scheduler.h"

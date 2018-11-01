@@ -5,7 +5,7 @@
 #include "components/sync/engine_impl/syncer_proto_util.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"

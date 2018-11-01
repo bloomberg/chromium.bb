@@ -20,7 +20,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "mojo/core/embedder/embedder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"

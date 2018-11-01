@@ -10,7 +10,7 @@
 
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/optional.h"

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/rand_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/test_entry_factory.h"

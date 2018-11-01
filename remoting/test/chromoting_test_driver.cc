@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/launcher/unit_test_launcher.h"

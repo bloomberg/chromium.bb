@@ -5,7 +5,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"

@@ -14,7 +14,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/base/mock_device_client.h"

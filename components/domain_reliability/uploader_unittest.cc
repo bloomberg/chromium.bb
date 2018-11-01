@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/test_util.h"

@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/test/values_test_util.h"

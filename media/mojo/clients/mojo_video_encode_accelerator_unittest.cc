@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "gpu/config/gpu_info.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"

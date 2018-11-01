@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"

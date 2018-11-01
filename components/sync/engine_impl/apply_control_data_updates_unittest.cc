@@ -13,7 +13,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer.h"

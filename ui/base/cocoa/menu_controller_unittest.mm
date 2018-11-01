@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

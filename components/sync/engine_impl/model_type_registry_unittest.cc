@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/gtest_util.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/data_type_activation_response.h"

@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/omnibox_pedal.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"

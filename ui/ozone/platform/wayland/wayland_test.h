@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_TEST_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_TEST_H_
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_features.h"
 #include "ui/ozone/platform/wayland/fake_server.h"

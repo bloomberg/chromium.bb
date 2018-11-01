@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"

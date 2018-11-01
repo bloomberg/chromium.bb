@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "components/variations/active_field_trials.h"

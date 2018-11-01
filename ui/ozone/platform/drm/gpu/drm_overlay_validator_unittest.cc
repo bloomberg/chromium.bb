@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/files/platform_file.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"

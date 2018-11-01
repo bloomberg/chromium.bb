@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "services/shape_detection/face_detection_impl_mac_vision.h"

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/threading/thread.h"
 #include "remoting/host/host_status_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"

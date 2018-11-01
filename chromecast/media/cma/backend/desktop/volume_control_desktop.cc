@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/synchronization/lock.h"
