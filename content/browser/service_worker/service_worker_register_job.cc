@@ -511,10 +511,10 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus event_status,
     bool has_fetch_handler,
-    base::TimeTicks dispatch_event_time) {
+    base::TimeTicks /* dispatch_event_time */) {
   bool succeeded =
       event_status == blink::mojom::ServiceWorkerEventStatus::COMPLETED;
-  new_version()->FinishRequest(request_id, succeeded, dispatch_event_time);
+  new_version()->FinishRequest(request_id, succeeded);
 
   if (!succeeded) {
     OnInstallFailed(

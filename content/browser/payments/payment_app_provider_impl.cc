@@ -128,8 +128,7 @@ class RespondWithCallbacks
       payments::mojom::PaymentHandlerResponsePtr response,
       base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(invoke_payment_app_callback_),
@@ -143,8 +142,7 @@ class RespondWithCallbacks
       bool can_make_payment,
       base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(payment_event_result_callback_),
@@ -155,8 +153,7 @@ class RespondWithCallbacks
   void OnResponseForAbortPayment(bool payment_aborted,
                                  base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(payment_event_result_callback_),
@@ -195,8 +192,7 @@ class RespondWithCallbacks
   void AbortPaymentSinceOpennedWindowClosing() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           base::TimeTicks::Now());
+    service_worker_version_->FinishRequest(request_id_, false);
     OnErrorStatus(blink::ServiceWorkerStatusCode::kErrorAbort);
   }
 
