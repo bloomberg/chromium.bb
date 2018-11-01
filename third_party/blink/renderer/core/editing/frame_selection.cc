@@ -165,8 +165,8 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
   if (!editable)
     return;
 
-  const VisiblePosition position =
-      VisiblePositionForContentsPoint(point, GetFrame());
+  const VisiblePosition position = CreateVisiblePosition(
+      PositionForContentsPointRespectingEditingBoundary(point, GetFrame()));
   SelectionInDOMTree::Builder builder;
   if (position.IsNotNull())
     builder.Collapse(position.ToPositionWithAffinity());
@@ -1145,9 +1145,11 @@ void FrameSelection::MoveRangeSelection(const IntPoint& base_point,
                                         const IntPoint& extent_point,
                                         TextGranularity granularity) {
   const VisiblePosition& base_position =
-      VisiblePositionForContentsPoint(base_point, GetFrame());
+      CreateVisiblePosition(PositionForContentsPointRespectingEditingBoundary(
+          base_point, GetFrame()));
   const VisiblePosition& extent_position =
-      VisiblePositionForContentsPoint(extent_point, GetFrame());
+      CreateVisiblePosition(PositionForContentsPointRespectingEditingBoundary(
+          extent_point, GetFrame()));
   MoveRangeSelectionInternal(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtentDeprecated(base_position.DeepEquivalent(),

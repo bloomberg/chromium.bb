@@ -720,11 +720,13 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
                                .SetIsDirectional(true)
                                .Build());
 
-  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
-  // null position, we verify here.
-  ASSERT_EQ(Position(),
-            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
-                .DeepEquivalent())
+  // Since, it is not obvious that
+  // |PositionForContentsPointRespectingEditingBoundary()| returns null
+  // position, we verify here.
+  ASSERT_EQ(Position(), CreateVisiblePosition(
+                            PositionForContentsPointRespectingEditingBoundary(
+                                IntPoint(0, 0), &GetFrame()))
+                            .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from
@@ -756,11 +758,13 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
                                .SetIsDirectional(true)
                                .Build());
 
-  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
-  // null position, we verify here.
-  ASSERT_EQ(Position(),
-            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
-                .DeepEquivalent())
+  // Since, it is not obvious that
+  // |PositionForContentsPointRespectingEditingBoundary()| returns null
+  // position, we verify here.
+  ASSERT_EQ(Position(), CreateVisiblePosition(
+                            PositionForContentsPointRespectingEditingBoundary(
+                                IntPoint(0, 0), &GetFrame()))
+                            .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from
