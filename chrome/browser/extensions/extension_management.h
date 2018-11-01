@@ -108,9 +108,10 @@ class ExtensionManagement : public KeyedService {
   bool IsOffstoreInstallAllowed(const GURL& url,
                                 const GURL& referrer_url) const;
 
-  // Returns true if an extension with manifest type |manifest_type| is
-  // allowed to be installed.
-  bool IsAllowedManifestType(Manifest::Type manifest_type) const;
+  // Returns true if an extension with manifest type |manifest_type| and
+  // id |extension_id| is allowed to be installed.
+  bool IsAllowedManifestType(Manifest::Type manifest_type,
+                             const std::string& extension_id) const;
 
   // Returns the list of blocked API permissions for |extension|.
   APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
@@ -182,7 +183,7 @@ class ExtensionManagement : public KeyedService {
   // be loaded from or has the wrong type.
   const base::Value* LoadPreference(const char* pref_name,
                                     bool force_managed,
-                                    base::Value::Type expected_type);
+                                    base::Value::Type expected_type) const;
 
   void OnExtensionPrefChanged();
   void NotifyExtensionManagementPrefChanged();
@@ -194,6 +195,12 @@ class ExtensionManagement : public KeyedService {
 
   // Helper to update |extension_dict| for forced installs.
   void UpdateForcedExtensions(const base::DictionaryValue* extension_dict);
+
+  // Helper to update |settings_by_id_| for forced cloud reporting extension.
+  void UpdateForcedCloudReportingExtension();
+
+  // Returns true if cloud reporting policy is enabled.
+  bool IsCloudReportingPolicyEnabled() const;
 
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for

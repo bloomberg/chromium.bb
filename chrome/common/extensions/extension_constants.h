@@ -105,6 +105,9 @@ extern const char kInAppPaymentsSupportAppId[];
 // The extension id of the stable media router extension.
 extern const char kMediaRouterStableExtensionId[];
 
+// The extension id of the Chrome Reporting extension.
+extern const char kCloudReportingExtensionId[];
+
 // The buckets used for app launches.
 enum AppLaunchBucket {
   // Launch from NTP apps section while maximized.
