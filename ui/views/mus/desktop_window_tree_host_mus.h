@@ -190,7 +190,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   bool auto_update_client_area_ = true;
 
-  ScopedObserver<views::View, views::ViewObserver> observed_frame_{this};
+  // Observes changes to the ClientView. Used to update the client area in the
+  // server.
+  ScopedObserver<views::View, views::ViewObserver> observed_client_view_{this};
 
   // See description in RestoreToPreminimizedState() for details.
   std::unique_ptr<RestoreWindowObserver> restore_window_observer_;

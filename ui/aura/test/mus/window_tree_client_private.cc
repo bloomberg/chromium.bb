@@ -69,6 +69,13 @@ void WindowTreeClientPrivate::SetTree(ws::mojom::WindowTree* window_tree) {
   tree_client_impl_->WindowTreeConnectionEstablished(window_tree);
 }
 
+ws::mojom::WindowTree* WindowTreeClientPrivate::SwapTree(
+    ws::mojom::WindowTree* window_tree) {
+  ws::mojom::WindowTree* old = tree_client_impl_->tree_;
+  tree_client_impl_->tree_ = window_tree;
+  return old;
+}
+
 bool WindowTreeClientPrivate::HasEventObserver() {
   return !tree_client_impl_->event_type_to_observer_count_.empty();
 }

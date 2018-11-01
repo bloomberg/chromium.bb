@@ -16,6 +16,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
+#include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
@@ -474,6 +475,31 @@ TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
   EXPECT_TRUE(
       non_client_view->frame_view()->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(widget->client_view()->GetViewAccessibility().IsIgnored());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest,
+       ClientViewBoundsChangeUpdatesServerClientArea) {
+  std::unique_ptr<Widget> widget = CreateWidget();
+  views::NonClientView* non_client_view = widget->non_client_view();
+  ASSERT_TRUE(non_client_view);
+  ASSERT_TRUE(non_client_view->client_view());
+
+  // Calculate a new bounds. It doesn't matter what the bounds are, just as long
+  // as they differ.
+  gfx::Rect bounds = non_client_view->client_view()->bounds();
+  bounds.set_width(bounds.width() - 1);
+  bounds.set_height(bounds.height() - 1);
+
+  // Swap the WindowTree implementation to verify SetClientArea() is called when
+  // the bounds change.
+  aura::TestWindowTree test_window_tree;
+  aura::WindowTreeClientPrivate window_tree_client_private(
+      MusClient::Get()->window_tree_client());
+  ws::mojom::WindowTree* old_tree =
+      window_tree_client_private.SwapTree(&test_window_tree);
+  non_client_view->client_view()->SetBoundsRect(bounds);
+  EXPECT_FALSE(test_window_tree.last_client_area().IsEmpty());
+  window_tree_client_private.SwapTree(old_tree);
 }
 
 // Used to ensure the visibility of the root window is changed before that of
