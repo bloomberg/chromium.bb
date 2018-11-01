@@ -37,7 +37,7 @@ class SelfDeleteFullCardRequester
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard>,
                               const base::string16& cvc)>;
   void GetFullCard(content::WebContents* web_contents,
-                   autofill::CreditCard* card,
+                   const autofill::CreditCard* card,
                    GetFullCardCallback callback) {
     DCHECK(card);
     callback_ = std::move(callback);
@@ -122,16 +122,16 @@ void AutofillAction::InternalProcessAction(
     ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
   // Check data already selected in a previous action.
-  base::Optional<std::string> selected_data;
-  if (is_autofill_card_) {
-    selected_data = delegate->GetClientMemory()->selected_card();
-  } else {
-    selected_data = delegate->GetClientMemory()->selected_address(name_);
-  }
-
-  if (selected_data) {
-    const std::string& guid = selected_data.value();
-    if (guid.empty()) {
+  bool has_selected_data =
+      (is_autofill_card_ && delegate->GetClientMemory()->has_selected_card()) ||
+      (!is_autofill_card_ &&
+       delegate->GetClientMemory()->has_selected_address(name_));
+  if (has_selected_data) {
+    bool has_valid_data =
+        (is_autofill_card_ && delegate->GetClientMemory()->selected_card()) ||
+        (!is_autofill_card_ &&
+         delegate->GetClientMemory()->selected_address(name_));
+    if (!has_valid_data) {
       // User selected 'Fill manually'.
       delegate->StopCurrentScript(fill_form_message_);
       EndAction(/* successful= */ true);
@@ -144,7 +144,7 @@ void AutofillAction::InternalProcessAction(
       return;
     }
 
-    FillFormWithData(guid, delegate);
+    FillFormWithData(delegate);
     return;
   }
 
@@ -174,9 +174,20 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
                                     const std::string& guid) {
   // Remember the selection.
   if (is_autofill_card_) {
-    delegate->GetClientMemory()->set_selected_card(guid);
+    std::unique_ptr<autofill::CreditCard> card;
+    if (!guid.empty()) {
+      card = std::make_unique<autofill::CreditCard>(
+          *delegate->GetPersonalDataManager()->GetCreditCardByGUID(guid));
+    }
+    delegate->GetClientMemory()->set_selected_card(std::move(card));
   } else {
-    delegate->GetClientMemory()->set_selected_address(name_, guid);
+    std::unique_ptr<autofill::AutofillProfile> address;
+    if (!guid.empty()) {
+      address = std::make_unique<autofill::AutofillProfile>(
+          *delegate->GetPersonalDataManager()->GetProfileByGUID(guid));
+    }
+    delegate->GetClientMemory()->set_selected_address(name_,
+                                                      std::move(address));
   }
 
   if (selectors_.empty()) {
@@ -193,19 +204,17 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     return;
   }
 
-  FillFormWithData(guid, delegate);
+  FillFormWithData(delegate);
 }
 
-void AutofillAction::FillFormWithData(const std::string& guid,
-                                      ActionDelegate* delegate) {
+void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
   delegate->WaitForElement(selectors_,
                            base::BindOnce(&AutofillAction::OnWaitForElement,
-                                          weak_ptr_factory_.GetWeakPtr(), guid,
+                                          weak_ptr_factory_.GetWeakPtr(),
                                           base::Unretained(delegate)));
 }
 
-void AutofillAction::OnWaitForElement(const std::string& guid,
-                                      ActionDelegate* delegate,
+void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
                                       bool element_found) {
   if (!element_found) {
     EndAction(/* successful= */ false);
@@ -214,25 +223,21 @@ void AutofillAction::OnWaitForElement(const std::string& guid,
 
   DCHECK(!selectors_.empty());
   if (is_autofill_card_) {
-    autofill::CreditCard* card =
-        delegate->GetPersonalDataManager()->GetCreditCardByGUID(guid);
-    DCHECK(card);
     // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
     // so as to unit test it.
+    DCHECK(delegate->GetClientMemory()->selected_card());
     (new SelfDeleteFullCardRequester())
-        ->GetFullCard(delegate->GetWebContents(), card,
+        ->GetFullCard(delegate->GetWebContents(),
+                      delegate->GetClientMemory()->selected_card(),
                       base::BindOnce(&AutofillAction::OnGetFullCard,
                                      weak_ptr_factory_.GetWeakPtr(), delegate));
     return;
   }
 
-  const autofill::AutofillProfile* profile =
-      delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
-  DCHECK(profile);
   delegate->FillAddressForm(
-      profile, selectors_,
+      delegate->GetClientMemory()->selected_address(name_), selectors_,
       base::BindOnce(&AutofillAction::OnFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), guid, delegate));
+                     weak_ptr_factory_.GetWeakPtr(), delegate));
 }
 
 void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
@@ -245,27 +250,23 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
     return;
   }
 
-  std::string guid = card->guid();
   delegate->FillCardForm(
       std::move(card), cvc, selectors_,
       base::BindOnce(&AutofillAction::OnFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), guid, delegate));
+                     weak_ptr_factory_.GetWeakPtr(), delegate));
 }
 
-void AutofillAction::OnFormFilled(const std::string& guid,
-                                  ActionDelegate* delegate,
-                                  bool successful) {
+void AutofillAction::OnFormFilled(ActionDelegate* delegate, bool successful) {
   // In case Autofill failed, we fail the action.
   if (!successful) {
     EndAction(/* successful= */ false);
     return;
   }
 
-  CheckRequiredFields(guid, delegate, /* allow_fallback */ true);
+  CheckRequiredFields(delegate, /* allow_fallback */ true);
 }
 
-void AutofillAction::CheckRequiredFields(const std::string& guid,
-                                         ActionDelegate* delegate,
+void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
                                          bool allow_fallback) {
   if (is_autofill_card_) {
     // TODO(crbug.com/806868): Implement required fields checking for cards.
@@ -297,7 +298,7 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
       base::BindOnce(
           &AutofillAction::OnCheckRequiredFieldsDone,
           base::Unretained(this),  // this instance owns batch_element_checker_
-          guid, base::Unretained(delegate), allow_fallback));
+          base::Unretained(delegate), allow_fallback));
 }
 
 void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,
@@ -307,8 +308,7 @@ void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,
       value.empty() ? EMPTY : NOT_EMPTY;
 }
 
-void AutofillAction::OnCheckRequiredFieldsDone(const std::string& guid,
-                                               ActionDelegate* delegate,
+void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
                                                bool allow_fallback) {
   batch_element_checker_.reset();
 
@@ -338,7 +338,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(const std::string& guid,
   // If there are any fallbacks for the empty fields, set them, otherwise fail
   // immediately.
   bool has_fallbacks = false;
-  auto* profile = delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
+  auto* profile = delegate->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
   for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
     if (required_fields_value_status_[i] == EMPTY &&
@@ -356,11 +356,10 @@ void AutofillAction::OnCheckRequiredFieldsDone(const std::string& guid,
   }
 
   // Set the fallback values and check again.
-  SetFallbackFieldValuesSequentially(guid, delegate, 0);
+  SetFallbackFieldValuesSequentially(delegate, 0);
 }
 
 void AutofillAction::SetFallbackFieldValuesSequentially(
-    const std::string& guid,
     ActionDelegate* delegate,
     int required_fields_index) {
   DCHECK_GE(required_fields_index, 0);
@@ -377,17 +376,17 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   if (required_fields_index >= required_fields.size()) {
     DCHECK_EQ(required_fields_index, required_fields.size());
 
-    CheckRequiredFields(guid, delegate, /* allow_fallback */ false);
+    CheckRequiredFields(delegate, /* allow_fallback */ false);
     return;
   }
 
   // Set the next field to its fallback value.
   std::string fallback_value = base::UTF16ToUTF8(GetAddressFieldValue(
-      delegate->GetPersonalDataManager()->GetProfileByGUID(guid),
+      delegate->GetClientMemory()->selected_address(name_),
       required_fields.Get(required_fields_index).address_field()));
   if (fallback_value.empty()) {
     // If there is no fallback value, we skip this failed field.
-    SetFallbackFieldValuesSequentially(guid, delegate, ++required_fields_index);
+    SetFallbackFieldValuesSequentially(delegate, ++required_fields_index);
     return;
   }
 
@@ -399,12 +398,11 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
       fallback_value,
       required_fields.Get(required_fields_index).simulate_key_presses(),
       base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,
-                     weak_ptr_factory_.GetWeakPtr(), guid, delegate,
+                     weak_ptr_factory_.GetWeakPtr(), delegate,
                      required_fields_index));
 }
 
-void AutofillAction::OnSetFallbackFieldValue(const std::string& guid,
-                                             ActionDelegate* delegate,
+void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
                                              int required_fields_index,
                                              bool successful) {
   if (!successful) {
@@ -413,7 +411,7 @@ void AutofillAction::OnSetFallbackFieldValue(const std::string& guid,
     EndAction(/* successful= */ true);
     return;
   }
-  SetFallbackFieldValuesSequentially(guid, delegate, ++required_fields_index);
+  SetFallbackFieldValuesSequentially(delegate, ++required_fields_index);
 }
 
 base::string16 AutofillAction::GetAddressFieldValue(

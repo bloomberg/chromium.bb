@@ -252,9 +252,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mUiDelegateHolder.performUiOperation(
                 uiDelegate -> mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {
                     nativeOnGetPaymentInformation(mUiControllerAndroid,
-                            selectedPaymentInformation.succeed, selectedPaymentInformation.cardGuid,
-                            selectedPaymentInformation.cardIssuerNetwork,
-                            selectedPaymentInformation.addressGuid,
+                            selectedPaymentInformation.succeed, selectedPaymentInformation.card,
+                            selectedPaymentInformation.address,
                             selectedPaymentInformation.payerName,
                             selectedPaymentInformation.payerPhone,
                             selectedPaymentInformation.payerEmail);
@@ -488,9 +487,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
-            boolean succeed, @Nullable String cardGuid, @Nullable String cardIssuerNetwork,
-            @Nullable String addressGuid, @Nullable String payerName, @Nullable String payerPhone,
-            @Nullable String payerEmail);
+            boolean succeed, @Nullable PersonalDataManager.CreditCard card,
+            @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
+            @Nullable String payerPhone, @Nullable String payerEmail);
     private native void nativeOnAccessToken(
             long nativeUiControllerAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);

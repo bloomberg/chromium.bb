@@ -13,11 +13,14 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/signin/core/browser/account_info.h"
@@ -167,9 +170,8 @@ void UiControllerAndroid::OnGetPaymentInformation(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean jsucceed,
-    const base::android::JavaParamRef<jstring>& jcard_guid,
-    const base::android::JavaParamRef<jstring>& jcard_issuer_network,
-    const base::android::JavaParamRef<jstring>& jaddress_guid,
+    const base::android::JavaParamRef<jobject>& jcard,
+    const base::android::JavaParamRef<jobject>& jaddress,
     const base::android::JavaParamRef<jstring>& jpayer_name,
     const base::android::JavaParamRef<jstring>& jpayer_phone,
     const base::android::JavaParamRef<jstring>& jpayer_email) {
@@ -179,17 +181,15 @@ void UiControllerAndroid::OnGetPaymentInformation(
       std::make_unique<PaymentInformation>();
   payment_info->succeed = jsucceed;
   if (payment_info->succeed) {
-    if (jcard_guid != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jcard_guid,
-                                             &payment_info->card_guid);
+    if (jcard != nullptr) {
+      payment_info->card = std::make_unique<autofill::CreditCard>();
+      autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
+          jcard, env, payment_info->card.get());
     }
-    if (jcard_issuer_network != nullptr) {
-      base::android::ConvertJavaStringToUTF8(
-          env, jcard_issuer_network, &payment_info->card_issuer_network);
-    }
-    if (jaddress_guid != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jaddress_guid,
-                                             &payment_info->address_guid);
+    if (jaddress != nullptr) {
+      payment_info->address = std::make_unique<autofill::AutofillProfile>();
+      autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
+          jaddress, env, payment_info->address.get());
     }
     if (jpayer_name != nullptr) {
       base::android::ConvertJavaStringToUTF8(env, jpayer_name,

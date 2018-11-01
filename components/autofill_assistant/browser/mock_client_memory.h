@@ -15,12 +15,16 @@ class MockClientMemory : public ClientMemory {
   MockClientMemory();
   ~MockClientMemory();
 
-  MOCK_METHOD0(selected_card, base::Optional<std::string>());
+  MOCK_METHOD0(selected_card, const autofill::CreditCard*());
+  MOCK_METHOD0(has_selected_card, bool());
   MOCK_METHOD1(selected_address,
-               base::Optional<std::string>(const std::string& name));
-  MOCK_METHOD1(set_selected_card, void(const std::string& guid));
+               const autofill::AutofillProfile*(const std::string& name));
+  MOCK_METHOD1(has_selected_address, bool(const std::string& name));
+  MOCK_METHOD1(set_selected_card,
+               void(std::unique_ptr<autofill::CreditCard> card));
   MOCK_METHOD2(set_selected_address,
-               void(const std::string& name, const std::string& guid));
+               void(const std::string& name,
+                    std::unique_ptr<autofill::AutofillProfile> address));
 };
 
 }  // namespace autofill_assistant
