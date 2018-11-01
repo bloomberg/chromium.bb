@@ -412,6 +412,8 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   switch (item->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       Java_DownloadController_onDownloadUpdated(env, j_item);
+      if (item->IsPaused())
+        item->RemoveObserver(this);
       break;
     }
     case DownloadItem::COMPLETE:

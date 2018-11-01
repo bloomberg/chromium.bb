@@ -467,10 +467,8 @@ void DownloadManagerService::CancelDownloadInternal(
 void DownloadManagerService::PauseDownloadInternal(
     const std::string& download_guid, bool is_off_the_record) {
   download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
-  if (item) {
+  if (item)
     item->Pause();
-    item->RemoveObserver(DownloadControllerBase::Get());
-  }
 }
 
 void DownloadManagerService::RemoveDownloadInternal(
