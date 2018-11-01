@@ -226,24 +226,24 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     bool is_mouse_enter_or_leave =
         mouse_event_type == EventTypeNames::mouseenter ||
         mouse_event_type == EventTypeNames::mouseleave;
-    MouseEventInit initializer;
-    initializer.setBubbles(!is_mouse_enter_or_leave);
-    initializer.setCancelable(!is_mouse_enter_or_leave);
+    MouseEventInit* initializer = MouseEventInit::Create();
+    initializer->setBubbles(!is_mouse_enter_or_leave);
+    initializer->setCancelable(!is_mouse_enter_or_leave);
     MouseEvent::SetCoordinatesFromWebPointerProperties(
         mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
         initializer);
-    initializer.setButton(static_cast<short>(mouse_event.button));
-    initializer.setButtons(MouseEvent::WebInputEventModifiersToButtons(
+    initializer->setButton(static_cast<short>(mouse_event.button));
+    initializer->setButtons(MouseEvent::WebInputEventModifiersToButtons(
         mouse_event.GetModifiers()));
-    initializer.setView(target_node->GetDocument().domWindow());
-    initializer.setComposed(true);
-    initializer.setDetail(click_count);
-    initializer.setRegion(canvas_region_id);
-    initializer.setRelatedTarget(related_target);
+    initializer->setView(target_node->GetDocument().domWindow());
+    initializer->setComposed(true);
+    initializer->setDetail(click_count);
+    initializer->setRegion(canvas_region_id);
+    initializer->setRelatedTarget(related_target);
     UIEventWithKeyState::SetFromWebInputEventModifiers(
         initializer,
         static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
-    initializer.setSourceCapabilities(
+    initializer->setSourceCapabilities(
         target_node->GetDocument().domWindow()
             ? target_node->GetDocument()
                   .domWindow()
@@ -1033,21 +1033,21 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
       related_target->GetDocument() != drag_target->GetDocument())
     related_target = nullptr;
 
-  DragEventInit initializer;
-  initializer.setBubbles(true);
-  initializer.setCancelable(event_type != EventTypeNames::dragleave &&
-                            event_type != EventTypeNames::dragend);
+  DragEventInit* initializer = DragEventInit::Create();
+  initializer->setBubbles(true);
+  initializer->setCancelable(event_type != EventTypeNames::dragleave &&
+                             event_type != EventTypeNames::dragend);
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       event.FlattenTransform(), frame_->GetDocument()->domWindow(),
       initializer);
-  initializer.setButton(0);
-  initializer.setButtons(
+  initializer->setButton(0);
+  initializer->setButtons(
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
-  initializer.setRelatedTarget(related_target);
-  initializer.setView(frame_->GetDocument()->domWindow());
-  initializer.setComposed(true);
-  initializer.setGetDataTransfer(data_transfer);
-  initializer.setSourceCapabilities(
+  initializer->setRelatedTarget(related_target);
+  initializer->setView(frame_->GetDocument()->domWindow());
+  initializer->setComposed(true);
+  initializer->setGetDataTransfer(data_transfer);
+  initializer->setSourceCapabilities(
       frame_->GetDocument()->domWindow()
           ? frame_->GetDocument()
                 ->domWindow()

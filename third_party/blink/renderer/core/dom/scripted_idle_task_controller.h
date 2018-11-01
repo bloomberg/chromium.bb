@@ -69,7 +69,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     TraceWrapperMember<V8IdleRequestCallback> callback_;
   };
 
-  int RegisterCallback(IdleTask*, const IdleRequestOptions&);
+  int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);
 
   // PausableObject interface.

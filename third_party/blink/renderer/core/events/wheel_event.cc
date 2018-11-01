@@ -44,20 +44,20 @@ long NegateIfPossible(long value) {
   return -value;
 }
 
-MouseEventInit GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
-                                         AbstractView* view) {
-  MouseEventInit initializer;
-  initializer.setBubbles(true);
-  initializer.setCancelable(event.IsCancelable());
+MouseEventInit* GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
+                                          AbstractView* view) {
+  MouseEventInit* initializer = MouseEventInit::Create();
+  initializer->setBubbles(true);
+  initializer->setCancelable(event.IsCancelable());
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       event.FlattenTransform(),
       view->IsLocalDOMWindow() ? ToLocalDOMWindow(view) : nullptr, initializer);
-  initializer.setButton(static_cast<short>(event.button));
-  initializer.setButtons(
+  initializer->setButton(static_cast<short>(event.button));
+  initializer->setButtons(
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
-  initializer.setView(view);
-  initializer.setComposed(true);
-  initializer.setDetail(event.click_count);
+  initializer->setView(view);
+  initializer->setComposed(true);
+  initializer->setDetail(event.click_count);
   UIEventWithKeyState::SetFromWebInputEventModifiers(
       initializer, static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
 
@@ -79,20 +79,20 @@ WheelEvent::WheelEvent()
     : delta_x_(0), delta_y_(0), delta_z_(0), delta_mode_(kDomDeltaPixel) {}
 
 WheelEvent::WheelEvent(const AtomicString& type,
-                       const WheelEventInit& initializer)
+                       const WheelEventInit* initializer)
     : MouseEvent(type, initializer),
-      wheel_delta_(initializer.wheelDeltaX() ? initializer.wheelDeltaX()
-                                             : -initializer.deltaX(),
-                   initializer.wheelDeltaY() ? initializer.wheelDeltaY()
-                                             : -initializer.deltaY()),
-      delta_x_(initializer.deltaX()
-                   ? initializer.deltaX()
-                   : NegateIfPossible(initializer.wheelDeltaX())),
-      delta_y_(initializer.deltaY()
-                   ? initializer.deltaY()
-                   : NegateIfPossible(initializer.wheelDeltaY())),
-      delta_z_(initializer.deltaZ()),
-      delta_mode_(initializer.deltaMode()) {}
+      wheel_delta_(initializer->wheelDeltaX() ? initializer->wheelDeltaX()
+                                              : -initializer->deltaX(),
+                   initializer->wheelDeltaY() ? initializer->wheelDeltaY()
+                                              : -initializer->deltaY()),
+      delta_x_(initializer->deltaX()
+                   ? initializer->deltaX()
+                   : NegateIfPossible(initializer->wheelDeltaX())),
+      delta_y_(initializer->deltaY()
+                   ? initializer->deltaY()
+                   : NegateIfPossible(initializer->wheelDeltaY())),
+      delta_z_(initializer->deltaZ()),
+      delta_mode_(initializer->deltaMode()) {}
 
 WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
     : MouseEvent(EventTypeNames::wheel,

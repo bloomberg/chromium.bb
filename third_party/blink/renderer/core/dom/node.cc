@@ -458,9 +458,10 @@ Node& Node::TreeRoot() const {
   return const_cast<Node&>(*node);
 }
 
-Node* Node::getRootNode(const GetRootNodeOptions& options) const {
-  return (options.hasComposed() && options.composed()) ? &ShadowIncludingRoot()
-                                                       : &TreeRoot();
+Node* Node::getRootNode(const GetRootNodeOptions* options) const {
+  return (options->hasComposed() && options->composed())
+             ? &ShadowIncludingRoot()
+             : &TreeRoot();
 }
 
 void Node::setDistributeScroll(V8ScrollStateCallback* scroll_state_callback,

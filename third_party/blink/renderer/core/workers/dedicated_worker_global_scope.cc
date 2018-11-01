@@ -93,15 +93,15 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
                                              const ScriptValue& message,
                                              Vector<ScriptValue>& transfer,
                                              ExceptionState& exception_state) {
-  PostMessageOptions options;
+  PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
 
 void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
                                              const ScriptValue& message,
-                                             const PostMessageOptions& options,
+                                             const PostMessageOptions* options,
                                              ExceptionState& exception_state) {
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =

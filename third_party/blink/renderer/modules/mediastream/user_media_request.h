@@ -74,12 +74,12 @@ class MODULES_EXPORT UserMediaRequest final
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
                                   WebUserMediaRequest::MediaType media_type,
-                                  const MediaStreamConstraints& options,
+                                  const MediaStreamConstraints* options,
                                   Callbacks*,
                                   MediaErrorState&);
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
-                                  const MediaStreamConstraints& options,
+                                  const MediaStreamConstraints* options,
                                   V8NavigatorUserMediaSuccessCallback*,
                                   V8NavigatorUserMediaErrorCallback*,
                                   MediaErrorState&);

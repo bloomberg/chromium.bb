@@ -24,15 +24,15 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
 
 CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
     ScriptState* script_state,
-    const CustomLayoutConstraintsOptions& options,
+    const CustomLayoutConstraintsOptions* options,
     ExceptionState& exception_state) {
   // Serialize the provided data if needed.
   scoped_refptr<SerializedScriptValue> constraint_data;
-  if (options.hasData()) {
+  if (options->hasData()) {
     // We serialize "kForStorage" so that SharedArrayBuffers can't be shared
     // between LayoutWorkletGlobalScopes.
     constraint_data = SerializedScriptValue::Serialize(
-        script_state->GetIsolate(), options.data().V8Value(),
+        script_state->GetIsolate(), options->data().V8Value(),
         SerializedScriptValue::SerializeOptions(
             SerializedScriptValue::kForStorage),
         exception_state);

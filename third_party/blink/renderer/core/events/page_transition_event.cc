@@ -37,10 +37,10 @@ PageTransitionEvent::PageTransitionEvent(const AtomicString& type,
 
 PageTransitionEvent::PageTransitionEvent(
     const AtomicString& type,
-    const PageTransitionEventInit& initializer)
+    const PageTransitionEventInit* initializer)
     : Event(type, initializer), persisted_(false) {
-  if (initializer.hasPersisted())
-    persisted_ = initializer.persisted();
+  if (initializer->hasPersisted())
+    persisted_ = initializer->persisted();
 }
 
 PageTransitionEvent::~PageTransitionEvent() = default;

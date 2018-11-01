@@ -24,7 +24,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   static PromiseRejectionEvent* Create(
       ScriptState* state,
       const AtomicString& type,
-      const PromiseRejectionEventInit& initializer) {
+      const PromiseRejectionEventInit* initializer) {
     return new PromiseRejectionEvent(state, type, initializer);
   }
 
@@ -42,7 +42,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
  private:
   PromiseRejectionEvent(ScriptState*,
                         const AtomicString&,
-                        const PromiseRejectionEventInit&);
+                        const PromiseRejectionEventInit*);
   ~PromiseRejectionEvent() override;
   void Dispose();
 

@@ -296,7 +296,8 @@ void DeferredTaskHandler::ContextWillBeDestroyed() {
   // Some handlers might live because of their cross thread tasks.
 }
 
-DeferredTaskHandler::GraphAutoLocker::GraphAutoLocker(BaseAudioContext* context)
+DeferredTaskHandler::GraphAutoLocker::GraphAutoLocker(
+    const BaseAudioContext* context)
     : handler_(context->GetDeferredTaskHandler()) {
   handler_.lock();
 }

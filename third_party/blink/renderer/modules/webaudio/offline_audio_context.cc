@@ -122,11 +122,11 @@ OfflineAudioContext* OfflineAudioContext::Create(
 
 OfflineAudioContext* OfflineAudioContext::Create(
     ExecutionContext* context,
-    const OfflineAudioContextOptions& options,
+    const OfflineAudioContextOptions* options,
     ExceptionState& exception_state) {
   OfflineAudioContext* offline_context =
-      Create(context, options.numberOfChannels(), options.length(),
-             options.sampleRate(), exception_state);
+      Create(context, options->numberOfChannels(), options->length(),
+             options->sampleRate(), exception_state);
 
   return offline_context;
 }

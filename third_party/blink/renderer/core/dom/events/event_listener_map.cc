@@ -97,7 +97,7 @@ Vector<AtomicString> EventListenerMap::EventTypes() const {
 
 static bool AddListenerToVector(EventListenerVector* vector,
                                 EventListener* listener,
-                                const AddEventListenerOptionsResolved& options,
+                                const AddEventListenerOptionsResolved* options,
                                 RegisteredEventListener* registered_listener) {
   *registered_listener = RegisteredEventListener(listener, options);
 
@@ -110,7 +110,7 @@ static bool AddListenerToVector(EventListenerVector* vector,
 
 bool EventListenerMap::Add(const AtomicString& event_type,
                            EventListener* listener,
-                           const AddEventListenerOptionsResolved& options,
+                           const AddEventListenerOptionsResolved* options,
                            RegisteredEventListener* registered_listener) {
   CheckNoActiveIterators();
 
@@ -129,7 +129,7 @@ bool EventListenerMap::Add(const AtomicString& event_type,
 static bool RemoveListenerFromVector(
     EventListenerVector* listener_vector,
     const EventListener* listener,
-    const EventListenerOptions& options,
+    const EventListenerOptions* options,
     wtf_size_t* index_of_removed_listener,
     RegisteredEventListener* registered_listener) {
   auto* const begin = listener_vector->data();
@@ -155,7 +155,7 @@ static bool RemoveListenerFromVector(
 
 bool EventListenerMap::Remove(const AtomicString& event_type,
                               const EventListener* listener,
-                              const EventListenerOptions& options,
+                              const EventListenerOptions* options,
                               wtf_size_t* index_of_removed_listener,
                               RegisteredEventListener* registered_listener) {
   CheckNoActiveIterators();
@@ -192,7 +192,7 @@ static void CopyListenersNotCreatedFromMarkupToTarget(
   for (auto& event_listener : *listener_vector) {
     if (event_listener.Callback()->IsEventHandlerForContentAttribute())
       continue;
-    AddEventListenerOptionsResolved options = event_listener.Options();
+    AddEventListenerOptionsResolved* options = event_listener.Options();
     target->addEventListener(event_type, event_listener.Callback(), options);
   }
 }

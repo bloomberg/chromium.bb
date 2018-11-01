@@ -57,7 +57,7 @@ static void ConstructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
 V0CustomElementConstructorBuilder::V0CustomElementConstructorBuilder(
     ScriptState* script_state,
-    const ElementRegistrationOptions& options)
+    const ElementRegistrationOptions* options)
     : script_state_(script_state), options_(options) {
   DCHECK(script_state_->GetContext() ==
          script_state_->GetIsolate()->GetCurrentContext());
@@ -84,9 +84,9 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     return false;
   }
 
-  if (options_.hasPrototype()) {
-    DCHECK(options_.prototype().IsObject());
-    prototype_ = options_.prototype().V8Value().As<v8::Object>();
+  if (options_->hasPrototype()) {
+    DCHECK(options_->prototype().IsObject());
+    prototype_ = options_->prototype().V8Value().As<v8::Object>();
   } else {
     prototype_ = v8::Object::New(script_state_->GetIsolate());
     v8::Local<v8::Object> base_prototype =
@@ -110,8 +110,8 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
 
   AtomicString local_name;
 
-  if (options_.hasExtends()) {
-    local_name = AtomicString(options_.extends().DeprecatedLower());
+  if (options_->hasExtends()) {
+    local_name = AtomicString(options_->extends().DeprecatedLower());
 
     if (!Document::IsValidName(local_name)) {
       V0CustomElementException::ThrowException(

@@ -39,7 +39,7 @@ class SecurityPolicyViolationEvent final : public Event {
  public:
   static SecurityPolicyViolationEvent* Create(
       const AtomicString& type,
-      const SecurityPolicyViolationEventInit& initializer) {
+      const SecurityPolicyViolationEventInit* initializer) {
     return new SecurityPolicyViolationEvent(type, initializer);
   }
 
@@ -65,7 +65,7 @@ class SecurityPolicyViolationEvent final : public Event {
  private:
   SecurityPolicyViolationEvent(
       const AtomicString& type,
-      const SecurityPolicyViolationEventInit& initializer);
+      const SecurityPolicyViolationEventInit* initializer);
 
   String document_uri_;
   String referrer_;

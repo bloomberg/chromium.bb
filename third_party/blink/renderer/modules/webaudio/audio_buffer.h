@@ -53,7 +53,7 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
                              size_t number_of_frames,
                              float sample_rate,
                              ExceptionState&);
-  static AudioBuffer* Create(const AudioBufferOptions&, ExceptionState&);
+  static AudioBuffer* Create(const AudioBufferOptions*, ExceptionState&);
 
   // Creates an AudioBuffer with uninitialized contents.  This should
   // only be used where we are guaranteed to initialize the contents

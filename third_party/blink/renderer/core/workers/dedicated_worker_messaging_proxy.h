@@ -37,7 +37,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   // These methods should only be used on the parent context thread.
   void StartWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WorkerOptions&,
+      const WorkerOptions*,
       const KURL& script_url,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       const v8_inspector::V8StackTraceId&,

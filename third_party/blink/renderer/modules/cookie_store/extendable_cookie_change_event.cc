@@ -28,21 +28,21 @@ void ExtendableCookieChangeEvent::Trace(blink::Visitor* visitor) {
 
 ExtendableCookieChangeEvent::ExtendableCookieChangeEvent(
     const AtomicString& type,
-    HeapVector<CookieListItem> changed,
-    HeapVector<CookieListItem> deleted,
+    HeapVector<Member<CookieListItem>> changed,
+    HeapVector<Member<CookieListItem>> deleted,
     WaitUntilObserver* wait_until_observer)
-    : ExtendableEvent(type, ExtendableEventInit(), wait_until_observer),
+    : ExtendableEvent(type, ExtendableEventInit::Create(), wait_until_observer),
       changed_(std::move(changed)),
       deleted_(std::move(deleted)) {}
 
 ExtendableCookieChangeEvent::ExtendableCookieChangeEvent(
     const AtomicString& type,
-    const ExtendableCookieChangeEventInit& initializer)
+    const ExtendableCookieChangeEventInit* initializer)
     : ExtendableEvent(type, initializer) {
-  if (initializer.hasChanged())
-    changed_ = initializer.changed();
-  if (initializer.hasDeleted())
-    deleted_ = initializer.deleted();
+  if (initializer->hasChanged())
+    changed_ = initializer->changed();
+  if (initializer->hasDeleted())
+    deleted_ = initializer->deleted();
 }
 
 }  // namespace blink

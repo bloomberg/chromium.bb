@@ -165,7 +165,7 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     AudioContext* context,
-    const AudioNodeOptions& options,
+    const AudioNodeOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -177,8 +177,8 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
   // limit is different from the normal AudioNode::setChannelCount
   // limit of 32.  Error messages will sometimes show the wrong
   // limits.
-  if (options.hasChannelCount())
-    node->setChannelCount(options.channelCount(), exception_state);
+  if (options->hasChannelCount())
+    node->setChannelCount(options->channelCount(), exception_state);
 
   node->HandleChannelOptions(options, exception_state);
 

@@ -1856,9 +1856,9 @@ void LocalFrameView::ScrollAndFocusFragmentAnchor() {
                                   ? ToElement(anchor_node)
                                   : frame_->GetDocument()->documentElement();
     if (anchor_element) {
-      ScrollIntoViewOptions options;
-      options.setBlock("start");
-      options.setInlinePosition("nearest");
+      ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
+      options->setBlock("start");
+      options->setInlinePosition("nearest");
       anchor_element->ScrollIntoViewNoVisualUpdate(options);
     }
 

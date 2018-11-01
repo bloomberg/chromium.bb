@@ -25,7 +25,7 @@ class RTCPeerConnection;
 class RTCRtpCapabilities;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
-    const RTCRtpEncodingParameters&);
+    const RTCRtpEncodingParameters*);
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {
@@ -43,10 +43,9 @@ class RTCRtpSender final : public ScriptWrappable {
   MediaStreamTrack* track();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
-  static void getCapabilities(const String& kind,
-                              base::Optional<RTCRtpCapabilities>& result);
-  void getParameters(RTCRtpSendParameters&);
-  ScriptPromise setParameters(ScriptState*, const RTCRtpSendParameters&);
+  static RTCRtpCapabilities* getCapabilities(const String& kind);
+  RTCRtpSendParameters* getParameters();
+  ScriptPromise setParameters(ScriptState*, const RTCRtpSendParameters*);
   ScriptPromise getStats(ScriptState*);
 
   WebRTCRtpSender* web_sender();
@@ -68,7 +67,7 @@ class RTCRtpSender final : public ScriptWrappable {
   Member<MediaStreamTrack> track_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
-  base::Optional<RTCRtpSendParameters> last_returned_parameters_;
+  Member<RTCRtpSendParameters> last_returned_parameters_;
 };
 
 }  // namespace blink

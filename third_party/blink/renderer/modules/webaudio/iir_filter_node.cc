@@ -179,10 +179,10 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
 }
 
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,
-                                     const IIRFilterOptions& options,
+                                     const IIRFilterOptions* options,
                                      ExceptionState& exception_state) {
-  IIRFilterNode* node = Create(*context, options.feedforward(),
-                               options.feedback(), exception_state);
+  IIRFilterNode* node = Create(*context, options->feedforward(),
+                               options->feedback(), exception_state);
 
   if (!node)
     return nullptr;

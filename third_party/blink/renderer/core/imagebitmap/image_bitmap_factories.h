@@ -72,7 +72,7 @@ class ImageBitmapFactories final
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
-                                         const ImageBitmapOptions&);
+                                         const ImageBitmapOptions*);
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
@@ -80,18 +80,18 @@ class ImageBitmapFactories final
                                          int sy,
                                          int sw,
                                          int sh,
-                                         const ImageBitmapOptions&);
+                                         const ImageBitmapOptions*);
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          ImageBitmapSource*,
                                          base::Optional<IntRect> crop_rect,
-                                         const ImageBitmapOptions&);
+                                         const ImageBitmapOptions*);
   static ScriptPromise CreateImageBitmapFromBlob(
       ScriptState*,
       EventTarget&,
       ImageBitmapSource*,
       base::Optional<IntRect> crop_rect,
-      const ImageBitmapOptions&);
+      const ImageBitmapOptions*);
 
   virtual ~ImageBitmapFactories() = default;
 
@@ -107,7 +107,7 @@ class ImageBitmapFactories final
    public:
     static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
                                      base::Optional<IntRect> crop_rect,
-                                     const ImageBitmapOptions& options,
+                                     const ImageBitmapOptions* options,
                                      ScriptState* script_state) {
       return new ImageBitmapLoader(factory, crop_rect, script_state, options);
     }
@@ -123,7 +123,7 @@ class ImageBitmapFactories final
     ImageBitmapLoader(ImageBitmapFactories&,
                       base::Optional<IntRect> crop_rect,
                       ScriptState*,
-                      const ImageBitmapOptions&);
+                      const ImageBitmapOptions*);
 
     enum ImageBitmapRejectionReason {
       kUndecodableImageBitmapRejectionReason,
@@ -150,7 +150,7 @@ class ImageBitmapFactories final
     Member<ImageBitmapFactories> factory_;
     Member<ScriptPromiseResolver> resolver_;
     base::Optional<IntRect> crop_rect_;
-    ImageBitmapOptions options_;
+    Member<const ImageBitmapOptions> options_;
   };
 
   static ImageBitmapFactories& From(EventTarget&);

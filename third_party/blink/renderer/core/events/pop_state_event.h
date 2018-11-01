@@ -47,7 +47,7 @@ class PopStateEvent final : public Event {
   static PopStateEvent* Create(scoped_refptr<SerializedScriptValue>, History*);
   static PopStateEvent* Create(ScriptState*,
                                const AtomicString&,
-                               const PopStateEventInit&);
+                               const PopStateEventInit*);
 
   ScriptValue state(ScriptState*) const;
   SerializedScriptValue* SerializedState() const {
@@ -62,7 +62,7 @@ class PopStateEvent final : public Event {
 
  private:
   PopStateEvent();
-  PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit&);
+  PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit*);
   PopStateEvent(scoped_refptr<SerializedScriptValue>, History*);
 
   scoped_refptr<SerializedScriptValue> serialized_state_;

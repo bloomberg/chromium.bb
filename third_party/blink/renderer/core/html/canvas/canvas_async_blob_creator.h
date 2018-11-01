@@ -61,7 +61,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                                         TimeTicks start_time,
                                         ExecutionContext*);
   static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const ImageEncodeOptions& options,
+                                        const ImageEncodeOptions* options,
                                         ToBlobFunctionType function_type,
                                         TimeTicks start_time,
                                         ExecutionContext*,
@@ -86,13 +86,13 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
  protected:
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
-                         const ImageEncodeOptions&,
+                         const ImageEncodeOptions*,
                          ToBlobFunctionType,
                          V8BlobCallback*,
                          TimeTicks start_time,
                          ExecutionContext*,
                          ScriptPromiseResolver*);
-  static ImageEncodeOptions GetImageEncodeOptionsForMimeType(
+  static ImageEncodeOptions* GetImageEncodeOptionsForMimeType(
       ImageEncodingMimeType);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
@@ -124,7 +124,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   SkPixmap src_data_;
   ImageEncodingMimeType mime_type_;
-  const ImageEncodeOptions encode_options_;
+  Member<const ImageEncodeOptions> encode_options_;
   ToBlobFunctionType function_type_;
   sk_sp<SkData> png_data_helper_;
 

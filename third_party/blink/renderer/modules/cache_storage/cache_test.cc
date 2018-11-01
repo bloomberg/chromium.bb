@@ -54,11 +54,11 @@ class ScopedFetcherForTests final
   USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 
  public:
-  static ScopedFetcherForTests* Create() { return new ScopedFetcherForTests; }
+  static ScopedFetcherForTests* Create() { return new ScopedFetcherForTests(); }
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& request_info,
-                      const RequestInit&,
+                      const RequestInit*,
                       ExceptionState&) override {
     ++fetch_count_;
     if (expected_url_) {
@@ -392,7 +392,7 @@ TEST_F(CacheStorageTest, Basics) {
 
   const String url = "http://www.cachetest.org/";
 
-  CacheQueryOptions options;
+  CacheQueryOptions* options = CacheQueryOptions::Create();
   ScriptPromise match_promise = cache->match(
       GetScriptState(), StringToRequestInfo(url), options, exception_state);
   EXPECT_EQ(kNotImplementedString, GetRejectString(match_promise));
@@ -438,9 +438,9 @@ TEST_F(CacheStorageTest, BasicArguments) {
   expected_query_params->cache_name = "this is a cache name";
   test_cache()->SetExpectedQueryParams(&expected_query_params);
 
-  CacheQueryOptions options;
-  options.setIgnoreVary(1);
-  options.setCacheName(expected_query_params->cache_name);
+  CacheQueryOptions* options = CacheQueryOptions::Create();
+  options->setIgnoreVary(1);
+  options->setCacheName(expected_query_params->cache_name);
 
   Request* request = NewRequestFromUrl(url);
   DCHECK(request);
@@ -508,8 +508,8 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   expected_query_params->cache_name = "this is another cache name";
   test_cache()->SetExpectedQueryParams(&expected_query_params);
 
-  CacheQueryOptions options;
-  options.setCacheName(expected_query_params->cache_name);
+  CacheQueryOptions* options = CacheQueryOptions::Create();
+  options->setCacheName(expected_query_params->cache_name);
 
   const String url = "http://batch.operations.test/";
   Request* request = NewRequestFromUrl(url);
@@ -606,7 +606,7 @@ TEST_F(CacheStorageTest, MatchResponseTest) {
 
   Cache* cache = CreateCache(
       fetcher, std::make_unique<MatchTestCache>(std::move(fetch_api_response)));
-  CacheQueryOptions options;
+  CacheQueryOptions* options = CacheQueryOptions::Create();
 
   ScriptPromise result =
       cache->match(GetScriptState(), StringToRequestInfo(request_url), options,
@@ -723,7 +723,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
       CreateCache(fetcher, std::make_unique<MatchAllAndBatchTestCache>(
                                std::move(fetch_api_responses)));
 
-  CacheQueryOptions options;
+  CacheQueryOptions* options = CacheQueryOptions::Create();
   ScriptPromise result =
       cache->matchAll(GetScriptState(), StringToRequestInfo("http://some.url/"),
                       options, exception_state);
@@ -767,7 +767,7 @@ TEST_F(CacheStorageTest, Add) {
       GetScriptState(),
       new BodyStreamBuffer(GetScriptState(), new FormDataBytesConsumer(content),
                            nullptr),
-      content_type, ResponseInit(), exception_state);
+      content_type, ResponseInit::Create(), exception_state);
   fetcher->SetResponse(response);
 
   Vector<mojom::blink::BatchOperationPtr> expected_put_operations(size_t(1));

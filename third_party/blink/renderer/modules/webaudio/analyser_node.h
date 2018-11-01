@@ -103,7 +103,7 @@ class AnalyserNode final : public AudioBasicInspectorNode {
  public:
   static AnalyserNode* Create(BaseAudioContext&, ExceptionState&);
   static AnalyserNode* Create(BaseAudioContext*,
-                              const AnalyserOptions&,
+                              const AnalyserOptions*,
                               ExceptionState&);
 
   unsigned fftSize() const;

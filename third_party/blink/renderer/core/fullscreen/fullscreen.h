@@ -79,7 +79,7 @@ class CORE_EXPORT Fullscreen final
 
   static void RequestFullscreen(Element&);
   static ScriptPromise RequestFullscreen(Element&,
-                                         const FullscreenOptions&,
+                                         const FullscreenOptions*,
                                          RequestType,
                                          ScriptState* state = nullptr);
 

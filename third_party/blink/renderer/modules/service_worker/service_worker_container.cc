@@ -205,7 +205,7 @@ void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     ScriptState* script_state,
     const String& url,
-    const RegistrationOptions& options) {
+    const RegistrationOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -219,7 +219,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   // TODO(asamidoi): Remove this check after module loading for
   // ServiceWorker is enabled by default (https://crbug.com/824647).
-  if (options.type() == "module" &&
+  if (options->type() == "module" &&
       !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
@@ -276,10 +276,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   KURL pattern_url;
-  if (options.scope().IsNull())
+  if (options->scope().IsNull())
     pattern_url = KURL(script_url, "./");
   else
-    pattern_url = execution_context->CompleteURL(options.scope());
+    pattern_url = execution_context->CompleteURL(options->scope());
   pattern_url.RemoveFragmentIdentifier();
 
   if (!document_origin->CanRequest(pattern_url)) {
@@ -332,8 +332,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
-      ParseUpdateViaCache(options.updateViaCache());
-  mojom::ScriptType type = ParseScriptType(options.type());
+      ParseUpdateViaCache(options->updateViaCache());
+  mojom::ScriptType type = ParseScriptType(options->type());
 
   provider_->RegisterServiceWorker(pattern_url, script_url, type,
                                    update_via_cache, std::move(callbacks));

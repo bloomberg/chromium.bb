@@ -41,7 +41,7 @@ class WebGLContextEvent final : public Event {
     return new WebGLContextEvent(type, status_message);
   }
   static WebGLContextEvent* Create(const AtomicString& type,
-                                   const WebGLContextEventInit& initializer) {
+                                   const WebGLContextEventInit* initializer) {
     return new WebGLContextEvent(type, initializer);
   }
   ~WebGLContextEvent() override;
@@ -56,7 +56,7 @@ class WebGLContextEvent final : public Event {
   WebGLContextEvent();
   WebGLContextEvent(const AtomicString& type,
                     const String& status_message);
-  WebGLContextEvent(const AtomicString&, const WebGLContextEventInit&);
+  WebGLContextEvent(const AtomicString&, const WebGLContextEventInit*);
 
   String status_message_;
 };

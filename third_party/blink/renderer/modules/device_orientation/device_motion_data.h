@@ -47,7 +47,7 @@ class MODULES_EXPORT DeviceMotionData final
                                 double y,
                                 bool can_provide_z,
                                 double z);
-    static Acceleration* Create(const DeviceAccelerationInit&);
+    static Acceleration* Create(const DeviceAccelerationInit*);
     void Trace(blink::Visitor* visitor) {}
 
     bool CanProvideX() const { return can_provide_x_; }
@@ -84,7 +84,7 @@ class MODULES_EXPORT DeviceMotionData final
                                 double beta,
                                 bool can_provide_gamma,
                                 double gamma);
-    static RotationRate* Create(const DeviceRotationRateInit&);
+    static RotationRate* Create(const DeviceRotationRateInit*);
     void Trace(blink::Visitor* visitor) {}
 
     bool CanProvideAlpha() const { return can_provide_alpha_; }
@@ -117,7 +117,7 @@ class MODULES_EXPORT DeviceMotionData final
                                   Acceleration* acceleration_including_gravity,
                                   RotationRate*,
                                   double interval);
-  static DeviceMotionData* Create(const DeviceMotionEventInit&);
+  static DeviceMotionData* Create(const DeviceMotionEventInit*);
   void Trace(blink::Visitor*);
 
   Acceleration* GetAcceleration() const { return acceleration_.Get(); }

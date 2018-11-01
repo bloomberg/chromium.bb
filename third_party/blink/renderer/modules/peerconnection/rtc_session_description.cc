@@ -40,16 +40,16 @@ namespace blink {
 
 RTCSessionDescription* RTCSessionDescription::Create(
     ExecutionContext* context,
-    const RTCSessionDescriptionInit& description_init_dict) {
+    const RTCSessionDescriptionInit* description_init_dict) {
   String type;
-  if (description_init_dict.hasType())
-    type = description_init_dict.type();
+  if (description_init_dict->hasType())
+    type = description_init_dict->type();
   else
     UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoType);
 
   String sdp;
-  if (description_init_dict.hasSdp())
-    sdp = description_init_dict.sdp();
+  if (description_init_dict->hasSdp())
+    sdp = description_init_dict->sdp();
   else
     UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoSdp);
 

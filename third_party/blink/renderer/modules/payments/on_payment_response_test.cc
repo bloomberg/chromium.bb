@@ -22,8 +22,8 @@ TEST(OnPaymentResponseTest, RejectMissingShippingOption) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -48,8 +48,8 @@ TEST(OnPaymentResponseTest, RejectMissingAddress) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -71,8 +71,8 @@ TEST(OnPaymentResponseTest, RejectMissingName) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerName(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -93,8 +93,8 @@ TEST(OnPaymentResponseTest, RejectMissingEmail) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerEmail(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -115,8 +115,8 @@ TEST(OnPaymentResponseTest, RejectMissingPhone) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerPhone(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -137,8 +137,8 @@ TEST(OnPaymentResponseTest, RejectEmptyShippingOption) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -164,8 +164,8 @@ TEST(OnPaymentResponseTest, RejectEmptyAddress) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -188,8 +188,8 @@ TEST(OnPaymentResponseTest, RejectEmptyName) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerName(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -211,8 +211,8 @@ TEST(OnPaymentResponseTest, RejectEmptyEmail) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerEmail(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -234,8 +234,8 @@ TEST(OnPaymentResponseTest, RejectEmptyPhone) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerPhone(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -257,8 +257,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -283,8 +283,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedShippingOption) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -306,8 +306,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedName) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerName(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerName(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -329,8 +329,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedEmail) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerEmail(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerEmail(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -352,8 +352,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedPhone) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerPhone(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -375,8 +375,8 @@ TEST(OnPaymentResponseTest, RejectInvalidAddress) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -424,8 +424,8 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -459,8 +459,8 @@ TEST(OnPaymentResponseTest, CanRequestName) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerName(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -489,8 +489,8 @@ TEST(OnPaymentResponseTest, CanRequestEmail) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerEmail(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -518,8 +518,8 @@ TEST(OnPaymentResponseTest, CanRequestPhone) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerPhone(true);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -548,8 +548,8 @@ TEST(OnPaymentResponseTest, ShippingInformationNotRequired) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestShipping(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -575,8 +575,8 @@ TEST(OnPaymentResponseTest, PhoneNotRequred) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerPhone(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -604,8 +604,8 @@ TEST(OnPaymentResponseTest, NameNotRequired) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerName(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerName(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
@@ -633,8 +633,8 @@ TEST(OnPaymentResponseTest, EmailNotRequired) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
-  PaymentOptions options;
-  options.setRequestPayerEmail(false);
+  PaymentOptions* options = PaymentOptions::Create();
+  options->setRequestPayerEmail(false);
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());

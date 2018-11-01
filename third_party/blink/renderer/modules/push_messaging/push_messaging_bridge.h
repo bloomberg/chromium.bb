@@ -37,7 +37,7 @@ class PushMessagingBridge final
 
   // Asynchronously determines the permission state for the current origin.
   ScriptPromise GetPermissionState(ScriptState* script_state,
-                                   const PushSubscriptionOptionsInit& options);
+                                   const PushSubscriptionOptionsInit* options);
 
  private:
   explicit PushMessagingBridge(ServiceWorkerRegistration& registration);

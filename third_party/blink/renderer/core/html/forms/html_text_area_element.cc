@@ -247,7 +247,7 @@ bool HTMLTextAreaElement::MayTriggerVirtualKeyboard() const {
 
 void HTMLTextAreaElement::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {
+    const FocusOptions* options) {
   switch (selection_behavior) {
     case SelectionBehaviorOnFocus::kReset:  // Fallthrough.
     case SelectionBehaviorOnFocus::kRestore:
@@ -256,7 +256,7 @@ void HTMLTextAreaElement::UpdateFocusAppearanceWithOptions(
     case SelectionBehaviorOnFocus::kNone:
       return;
   }
-  if (!options.preventScroll()) {
+  if (!options->preventScroll()) {
     if (GetDocument().GetFrame())
       GetDocument().GetFrame()->Selection().RevealSelection();
   }

@@ -24,7 +24,7 @@ class RTCTrackEvent final : public Event {
 
  public:
   static RTCTrackEvent* Create(const AtomicString& type,
-                               const RTCTrackEventInit& eventInitDict);
+                               const RTCTrackEventInit* eventInitDict);
   RTCTrackEvent(RTCRtpReceiver*,
                 MediaStreamTrack*,
                 const HeapVector<Member<MediaStream>>&,
@@ -39,7 +39,7 @@ class RTCTrackEvent final : public Event {
 
  private:
   RTCTrackEvent(const AtomicString& type,
-                const RTCTrackEventInit& eventInitDict);
+                const RTCTrackEventInit* eventInitDict);
 
   Member<RTCRtpReceiver> receiver_;
   Member<MediaStreamTrack> track_;

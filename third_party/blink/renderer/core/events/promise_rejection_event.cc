@@ -12,14 +12,14 @@ namespace blink {
 PromiseRejectionEvent::PromiseRejectionEvent(
     ScriptState* state,
     const AtomicString& type,
-    const PromiseRejectionEventInit& initializer)
+    const PromiseRejectionEventInit* initializer)
     : Event(type, initializer), world_(&state->World()) {
-  DCHECK(initializer.hasPromise());
-  promise_.Set(initializer.promise().GetIsolate(),
-               initializer.promise().V8Value());
-  if (initializer.hasReason()) {
-    reason_.Set(initializer.reason().GetIsolate(),
-                initializer.reason().V8Value());
+  DCHECK(initializer->hasPromise());
+  promise_.Set(initializer->promise().GetIsolate(),
+               initializer->promise().V8Value());
+  if (initializer->hasReason()) {
+    reason_.Set(initializer->reason().GetIsolate(),
+                initializer->reason().V8Value());
   }
 }
 

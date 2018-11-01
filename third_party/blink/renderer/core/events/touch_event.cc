@@ -242,11 +242,11 @@ TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
 }
 
 TouchEvent::TouchEvent(const AtomicString& type,
-                       const TouchEventInit& initializer)
+                       const TouchEventInit* initializer)
     : UIEventWithKeyState(type, initializer),
-      touches_(TouchList::Create(initializer.touches())),
-      target_touches_(TouchList::Create(initializer.targetTouches())),
-      changed_touches_(TouchList::Create(initializer.changedTouches())),
+      touches_(TouchList::Create(initializer->touches())),
+      target_touches_(TouchList::Create(initializer->targetTouches())),
+      changed_touches_(TouchList::Create(initializer->changedTouches())),
       current_touch_action_(TouchAction::kTouchActionAuto) {}
 
 TouchEvent::~TouchEvent() = default;

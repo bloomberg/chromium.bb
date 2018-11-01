@@ -16,13 +16,11 @@ class {{decl}};
 {% endfor %}
 
 {# FIXME: Add "final" if this class doesn\'t have subclasses #}
-class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
-  DISALLOW_NEW();
+class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
  public:
-  {{cpp_class}}();
+  static {{cpp_class}}* Create() { return new {{cpp_class}}(); }
+
   virtual ~{{cpp_class}}();
-  {{cpp_class}}(const {{cpp_class}}&);
-  {{cpp_class}}& operator=(const {{cpp_class}}&);
 
   {% for member in members %}
   bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
@@ -40,6 +38,9 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   {% endfor %}
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   void Trace(blink::Visitor*) override;
+
+ protected:
+  {{cpp_class}}();
 
  private:
   {% for member in members if member.nullable_indicator_name %}

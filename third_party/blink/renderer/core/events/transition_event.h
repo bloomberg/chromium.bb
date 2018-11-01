@@ -45,7 +45,7 @@ class TransitionEvent final : public Event {
                                pseudo_element);
   }
   static TransitionEvent* Create(const AtomicString& type,
-                                 const TransitionEventInit& initializer) {
+                                 const TransitionEventInit* initializer) {
     return new TransitionEvent(type, initializer);
   }
 
@@ -66,7 +66,7 @@ class TransitionEvent final : public Event {
                   double elapsed_time,
                   const String& pseudo_element);
   TransitionEvent(const AtomicString& type,
-                  const TransitionEventInit& initializer);
+                  const TransitionEventInit* initializer);
 
   String property_name_;
   double elapsed_time_;

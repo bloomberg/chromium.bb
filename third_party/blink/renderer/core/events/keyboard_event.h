@@ -53,9 +53,9 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
 
   static KeyboardEvent* Create(ScriptState*,
                                const AtomicString& type,
-                               const KeyboardEventInit&);
+                               const KeyboardEventInit*);
 
-  KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
+  KeyboardEvent(const AtomicString&, const KeyboardEventInit*);
   ~KeyboardEvent() override;
 
   void initKeyboardEvent(ScriptState*,

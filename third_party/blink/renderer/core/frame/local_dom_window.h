@@ -198,11 +198,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // FIXME: ScrollBehaviorSmooth is currently unsupported in VisualViewport.
   // crbug.com/434497
   void scrollBy(double x, double y) const;
-  void scrollBy(const ScrollToOptions&) const;
+  void scrollBy(const ScrollToOptions*) const;
   void scrollTo(double x, double y) const;
-  void scrollTo(const ScrollToOptions&) const;
+  void scrollTo(const ScrollToOptions*) const;
   void scroll(double x, double y) const { scrollTo(x, y); }
-  void scroll(const ScrollToOptions& scroll_to_options) const {
+  void scroll(const ScrollToOptions* scroll_to_options) const {
     scrollTo(scroll_to_options);
   }
   void moveBy(int x, int y) const;
@@ -232,7 +232,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void queueMicrotask(V8VoidFunction*);
 
   // Idle callback extensions
-  int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions&);
+  int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
   void cancelIdleCallback(int id);
 
   // Custom elements

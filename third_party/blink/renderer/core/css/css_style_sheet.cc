@@ -93,7 +93,7 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     const CSSStyleSheetInit& options,
+                                     const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
     exception_state.ThrowTypeError("Illegal constructor");
@@ -104,20 +104,20 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   CSSParserContext* parser_context = CSSParserContext::Create(document);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
   CSSStyleSheet* sheet = new CSSStyleSheet(contents, nullptr);
-  sheet->SetTitle(options.title());
+  sheet->SetTitle(options->title());
   sheet->ClearOwnerNode();
   sheet->ClearOwnerRule();
   scoped_refptr<MediaQuerySet> media_query_set;
-  if (options.media().IsString())
-    media_query_set = MediaQuerySet::Create(options.media().GetAsString());
+  if (options->media().IsString())
+    media_query_set = MediaQuerySet::Create(options->media().GetAsString());
   else
-    media_query_set = options.media().GetAsMediaList()->Queries()->Copy();
+    media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
   MediaList* media_list =
       MediaList::Create(media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);
-  if (options.alternate())
+  if (options->alternate())
     sheet->SetAlternateFromConstructor(true);
-  if (options.disabled())
+  if (options->disabled())
     sheet->setDisabled(true);
   return sheet;
 }

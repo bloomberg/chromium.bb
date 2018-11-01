@@ -42,7 +42,7 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
       mojom::blink::SpeechRecognitionErrorCode,
       const String&);
   static SpeechRecognitionError* Create(const AtomicString&,
-                                        const SpeechRecognitionErrorInit&);
+                                        const SpeechRecognitionErrorInit*);
 
   const String& error() { return error_; }
   const String& message() { return message_; }
@@ -54,7 +54,7 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
  private:
   SpeechRecognitionError(const String&, const String&);
   SpeechRecognitionError(const AtomicString&,
-                         const SpeechRecognitionErrorInit&);
+                         const SpeechRecognitionErrorInit*);
 
   String error_;
   String message_;

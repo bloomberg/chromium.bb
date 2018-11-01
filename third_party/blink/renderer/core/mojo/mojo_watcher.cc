@@ -16,7 +16,7 @@ namespace blink {
 
 // static
 MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
-                                 const MojoHandleSignals& signals_dict,
+                                 const MojoHandleSignals* signals_dict,
                                  V8MojoWatchCallback* callback,
                                  ExecutionContext* context) {
   MojoWatcher* watcher = new MojoWatcher(context, callback);
@@ -71,13 +71,13 @@ MojoWatcher::MojoWatcher(ExecutionContext* context,
       callback_(callback) {}
 
 MojoResult MojoWatcher::Watch(mojo::Handle handle,
-                              const MojoHandleSignals& signals_dict) {
+                              const MojoHandleSignals* signals_dict) {
   ::MojoHandleSignals signals = MOJO_HANDLE_SIGNAL_NONE;
-  if (signals_dict.readable())
+  if (signals_dict->readable())
     signals |= MOJO_HANDLE_SIGNAL_READABLE;
-  if (signals_dict.writable())
+  if (signals_dict->writable())
     signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
-  if (signals_dict.peerClosed())
+  if (signals_dict->peerClosed())
     signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
   MojoResult result =

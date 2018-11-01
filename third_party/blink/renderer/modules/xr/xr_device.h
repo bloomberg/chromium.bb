@@ -29,8 +29,8 @@ class XRDevice final : public ScriptWrappable {
   XRDevice(XR*, device::mojom::blink::XRDevicePtr);
   XR* xr() const { return xr_; }
 
-  ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions&);
-  ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions&);
+  ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions*);
+  ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions*);
 
   XRFrameProvider* frameProvider();
 
@@ -56,7 +56,7 @@ class XRDevice final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  const char* checkSessionSupport(const XRSessionCreationOptions&) const;
+  const char* checkSessionSupport(const XRSessionCreationOptions*) const;
 
   void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
                                 XRPresentationContext* output_context,

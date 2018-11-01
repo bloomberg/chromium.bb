@@ -84,17 +84,17 @@ Blob::~Blob() = default;
 Blob* Blob::Create(
     ExecutionContext* context,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blob_parts,
-    const BlobPropertyBag& options,
+    const BlobPropertyBag* options,
     ExceptionState& exception_state) {
-  DCHECK(options.hasType());
+  DCHECK(options->hasType());
 
-  DCHECK(options.hasEndings());
-  bool normalize_line_endings_to_native = options.endings() == "native";
+  DCHECK(options->hasEndings());
+  bool normalize_line_endings_to_native = (options->endings() == "native");
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
-  blob_data->SetContentType(NormalizeType(options.type()));
+  blob_data->SetContentType(NormalizeType(options->type()));
 
   PopulateBlobData(blob_data.get(), blob_parts,
                    normalize_line_endings_to_native);

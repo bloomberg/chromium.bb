@@ -106,29 +106,29 @@ class MODULES_EXPORT RTCPeerConnection final
 
  public:
   static RTCPeerConnection* Create(ExecutionContext*,
-                                   const RTCConfiguration&,
+                                   const RTCConfiguration*,
                                    const Dictionary&,
                                    ExceptionState&);
   ~RTCPeerConnection() override;
 
-  ScriptPromise createOffer(ScriptState*, const RTCOfferOptions&);
+  ScriptPromise createOffer(ScriptState*, const RTCOfferOptions*);
   ScriptPromise createOffer(ScriptState*,
                             V8RTCSessionDescriptionCallback*,
                             V8RTCPeerConnectionErrorCallback*,
                             const Dictionary&,
                             ExceptionState&);
 
-  ScriptPromise createAnswer(ScriptState*, const RTCAnswerOptions&);
+  ScriptPromise createAnswer(ScriptState*, const RTCAnswerOptions*);
   ScriptPromise createAnswer(ScriptState*,
                              V8RTCSessionDescriptionCallback*,
                              V8RTCPeerConnectionErrorCallback*,
                              const Dictionary&);
 
   ScriptPromise setLocalDescription(ScriptState*,
-                                    const RTCSessionDescriptionInit&);
+                                    const RTCSessionDescriptionInit*);
   ScriptPromise setLocalDescription(
       ScriptState*,
-      const RTCSessionDescriptionInit&,
+      const RTCSessionDescriptionInit*,
       V8VoidFunction*,
       V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* localDescription();
@@ -136,10 +136,10 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCSessionDescription* pendingLocalDescription();
 
   ScriptPromise setRemoteDescription(ScriptState*,
-                                     const RTCSessionDescriptionInit&);
+                                     const RTCSessionDescriptionInit*);
   ScriptPromise setRemoteDescription(
       ScriptState*,
-      const RTCSessionDescriptionInit&,
+      const RTCSessionDescriptionInit*,
       V8VoidFunction*,
       V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* remoteDescription();
@@ -148,8 +148,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String signalingState() const;
 
-  void getConfiguration(RTCConfiguration&);
-  void setConfiguration(ScriptState*, const RTCConfiguration&, ExceptionState&);
+  RTCConfiguration* getConfiguration() const;
+  void setConfiguration(ScriptState*, const RTCConfiguration*, ExceptionState&);
 
   // Certificate management
   // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
@@ -206,7 +206,7 @@ class MODULES_EXPORT RTCPeerConnection final
   const HeapVector<Member<RTCRtpSender>>& getSenders() const;
   const HeapVector<Member<RTCRtpReceiver>>& getReceivers() const;
   RTCRtpTransceiver* addTransceiver(const MediaStreamTrackOrString&,
-                                    const RTCRtpTransceiverInit&,
+                                    const RTCRtpTransceiverInit*,
                                     ExceptionState&);
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
   void removeTrack(RTCRtpSender*, ExceptionState&);
@@ -214,7 +214,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
-                                    const RTCDataChannelInit&,
+                                    const RTCDataChannelInit*,
                                     ExceptionState&);
 
   RTCDTMFSender* createDTMFSender(MediaStreamTrack*, ExceptionState&);
@@ -249,7 +249,7 @@ class MODULES_EXPORT RTCPeerConnection final
   };
   void ReportSetSdpUsage(
       SetSdpOperationType operation_type,
-      const RTCSessionDescriptionInit& session_description_init) const;
+      const RTCSessionDescriptionInit* session_description_init) const;
 
   // MediaStreamObserver
   void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) override;
@@ -300,7 +300,7 @@ class MODULES_EXPORT RTCPeerConnection final
   // Such calls would normally succeed, but as soon as the default switches to
   // Unified Plan they would fail. This decides whether to show deprecation for
   // WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics.
-  bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit&) const;
+  bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit*) const;
 
   void Trace(blink::Visitor*) override;
 
@@ -438,7 +438,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void RecordRapporMetrics();
 
   DOMException* checkSdpForStateErrors(ExecutionContext*,
-                                       const RTCSessionDescriptionInit&,
+                                       const RTCSessionDescriptionInit*,
                                        String* sdp);
 
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;

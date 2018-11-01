@@ -23,7 +23,7 @@ class MediaKeySystemAccess final : public ScriptWrappable {
   ~MediaKeySystemAccess() override;
 
   const String& keySystem() const { return key_system_; }
-  void getConfiguration(MediaKeySystemConfiguration& result);
+  MediaKeySystemConfiguration* getConfiguration() const;
   ScriptPromise createMediaKeys(ScriptState*);
 
  private:

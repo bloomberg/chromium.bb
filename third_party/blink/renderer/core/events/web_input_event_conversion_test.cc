@@ -57,10 +57,10 @@ namespace {
 
 KeyboardEvent* CreateKeyboardEventWithLocation(
     KeyboardEvent::KeyLocationCode location) {
-  KeyboardEventInit key_event_init;
-  key_event_init.setBubbles(true);
-  key_event_init.setCancelable(true);
-  key_event_init.setLocation(location);
+  KeyboardEventInit* key_event_init = KeyboardEventInit::Create();
+  key_event_init->setBubbles(true);
+  key_event_init->setCancelable(true);
+  key_event_init->setLocation(location);
   return new KeyboardEvent("keydown", key_event_init);
 }
 

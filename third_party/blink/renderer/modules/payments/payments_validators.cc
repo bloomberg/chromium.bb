@@ -129,58 +129,60 @@ bool PaymentsValidators::IsValidErrorMsgFormat(const String& error,
 
 // static
 bool PaymentsValidators::IsValidAddressErrorsFormat(
-    const AddressErrors& errors,
+    const AddressErrors* errors,
     String* optional_error_message) {
-  return (!errors.hasAddressLine() ||
-          IsValidErrorMsgFormat(errors.addressLine(),
+  return (!errors->hasAddressLine() ||
+          IsValidErrorMsgFormat(errors->addressLine(),
                                 optional_error_message)) &&
-         (!errors.hasCity() ||
-          IsValidErrorMsgFormat(errors.city(), optional_error_message)) &&
-         (!errors.hasCountry() ||
-          IsValidErrorMsgFormat(errors.country(), optional_error_message)) &&
-         (!errors.hasDependentLocality() ||
-          IsValidErrorMsgFormat(errors.dependentLocality(),
+         (!errors->hasCity() ||
+          IsValidErrorMsgFormat(errors->city(), optional_error_message)) &&
+         (!errors->hasCountry() ||
+          IsValidErrorMsgFormat(errors->country(), optional_error_message)) &&
+         (!errors->hasDependentLocality() ||
+          IsValidErrorMsgFormat(errors->dependentLocality(),
                                 optional_error_message)) &&
-         (!errors.hasLanguageCode() ||
-          IsValidErrorMsgFormat(errors.languageCode(),
+         (!errors->hasLanguageCode() ||
+          IsValidErrorMsgFormat(errors->languageCode(),
                                 optional_error_message)) &&
-         (!errors.hasOrganization() ||
-          IsValidErrorMsgFormat(errors.organization(),
+         (!errors->hasOrganization() ||
+          IsValidErrorMsgFormat(errors->organization(),
                                 optional_error_message)) &&
-         (!errors.hasPhone() ||
-          IsValidErrorMsgFormat(errors.phone(), optional_error_message)) &&
-         (!errors.hasPostalCode() ||
-          IsValidErrorMsgFormat(errors.postalCode(), optional_error_message)) &&
-         (!errors.hasRecipient() ||
-          IsValidErrorMsgFormat(errors.recipient(), optional_error_message)) &&
-         (!errors.hasRegion() ||
-          IsValidErrorMsgFormat(errors.region(), optional_error_message)) &&
-         (!errors.hasRegionCode() ||
-          IsValidErrorMsgFormat(errors.regionCode(), optional_error_message)) &&
-         (!errors.hasSortingCode() ||
-          IsValidErrorMsgFormat(errors.sortingCode(), optional_error_message));
+         (!errors->hasPhone() ||
+          IsValidErrorMsgFormat(errors->phone(), optional_error_message)) &&
+         (!errors->hasPostalCode() ||
+          IsValidErrorMsgFormat(errors->postalCode(),
+                                optional_error_message)) &&
+         (!errors->hasRecipient() ||
+          IsValidErrorMsgFormat(errors->recipient(), optional_error_message)) &&
+         (!errors->hasRegion() ||
+          IsValidErrorMsgFormat(errors->region(), optional_error_message)) &&
+         (!errors->hasRegionCode() ||
+          IsValidErrorMsgFormat(errors->regionCode(),
+                                optional_error_message)) &&
+         (!errors->hasSortingCode() ||
+          IsValidErrorMsgFormat(errors->sortingCode(), optional_error_message));
 }
 
 // static
 bool PaymentsValidators::IsValidPayerErrorsFormat(
-    const PayerErrors& errors,
+    const PayerErrors* errors,
     String* optional_error_message) {
-  return (!errors.hasEmail() ||
-          IsValidErrorMsgFormat(errors.email(), optional_error_message)) &&
-         (!errors.hasName() ||
-          IsValidErrorMsgFormat(errors.name(), optional_error_message)) &&
-         (!errors.hasPhone() ||
-          IsValidErrorMsgFormat(errors.phone(), optional_error_message));
+  return (!errors->hasEmail() ||
+          IsValidErrorMsgFormat(errors->email(), optional_error_message)) &&
+         (!errors->hasName() ||
+          IsValidErrorMsgFormat(errors->name(), optional_error_message)) &&
+         (!errors->hasPhone() ||
+          IsValidErrorMsgFormat(errors->phone(), optional_error_message));
 }
 
 // static
 bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
-    const PaymentValidationErrors& errors,
+    const PaymentValidationErrors* errors,
     String* optional_error_message) {
-  return (!errors.hasPayer() ||
-          IsValidPayerErrorsFormat(errors.payer(), optional_error_message)) &&
-         (!errors.hasShippingAddress() ||
-          IsValidAddressErrorsFormat(errors.shippingAddress(),
+  return (!errors->hasPayer() ||
+          IsValidPayerErrorsFormat(errors->payer(), optional_error_message)) &&
+         (!errors->hasShippingAddress() ||
+          IsValidAddressErrorsFormat(errors->shippingAddress(),
                                      optional_error_message));
 }
 

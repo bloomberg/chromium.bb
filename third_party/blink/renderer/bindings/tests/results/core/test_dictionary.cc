@@ -33,11 +33,7 @@ TestDictionary::TestDictionary() {
   setUnrestrictedDoubleMember(3.14);
 }
 
-TestDictionary::~TestDictionary() {}
-
-TestDictionary::TestDictionary(const TestDictionary&) = default;
-
-TestDictionary& TestDictionary::operator=(const TestDictionary&) = default;
+TestDictionary::~TestDictionary() = default;
 
 void TestDictionary::setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>& value) {
   any_in_record_member_ = value;
@@ -99,7 +95,7 @@ void TestDictionary::setGarbageCollectedRecordMember(const HeapVector<std::pair<
   has_garbage_collected_record_member_ = true;
 }
 
-void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>& value) {
+void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<Member<InternalDictionary>>& value) {
   internal_dictionary_sequence_member_ = value;
   has_internal_dictionary_sequence_member_ = true;
 }

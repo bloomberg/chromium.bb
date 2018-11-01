@@ -1635,7 +1635,7 @@ void WebViewImpl::ThemeChanged() {
 }
 
 void WebViewImpl::EnterFullscreen(LocalFrame& frame,
-                                  const FullscreenOptions& options) {
+                                  const FullscreenOptions* options) {
   fullscreen_controller_->EnterFullscreen(frame, options);
 }
 

@@ -370,7 +370,7 @@ class CORE_EXPORT Document : public ContainerNode,
                             const CreateElementFlags = CreateElementFlags());
 
   CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*,
-                                          const CSSStyleSheetInit&,
+                                          const CSSStyleSheetInit*,
                                           ExceptionState&);
 
   CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*, ExceptionState&);
@@ -381,12 +381,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ScriptPromise createCSSStyleSheet(ScriptState*,
                                     const String&,
-                                    const CSSStyleSheetInit&,
+                                    const CSSStyleSheetInit*,
                                     ExceptionState&);
 
   CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
                                          const String&,
-                                         const CSSStyleSheetInit&,
+                                         const CSSStyleSheetInit*,
                                          ExceptionState&);
 
   CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
@@ -1221,7 +1221,7 @@ class CORE_EXPORT Document : public ContainerNode,
       base::TimeTicks monotonic_animation_start_time);
 
   int RequestIdleCallback(ScriptedIdleTaskController::IdleTask*,
-                          const IdleRequestOptions&);
+                          const IdleRequestOptions*);
   void CancelIdleCallback(int id);
 
   EventTarget* ErrorEventTarget() final;
@@ -1235,7 +1235,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ScriptValue registerElement(ScriptState*,
                               const AtomicString& name,
-                              const ElementRegistrationOptions&,
+                              const ElementRegistrationOptions*,
                               ExceptionState&);
   V0CustomElementRegistrationContext* RegistrationContext() const {
     return registration_context_.Get();

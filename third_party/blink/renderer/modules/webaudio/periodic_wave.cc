@@ -79,22 +79,22 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
 }
 
 PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,
-                                   const PeriodicWaveOptions& options,
+                                   const PeriodicWaveOptions* options,
                                    ExceptionState& exception_state) {
-  bool normalize = options.disableNormalization();
+  bool normalize = options->disableNormalization();
 
   Vector<float> real_coef;
   Vector<float> imag_coef;
 
-  if (options.hasReal()) {
-    real_coef = options.real();
-    if (options.hasImag())
-      imag_coef = options.imag();
+  if (options->hasReal()) {
+    real_coef = options->real();
+    if (options->hasImag())
+      imag_coef = options->imag();
     else
       imag_coef.resize(real_coef.size());
-  } else if (options.hasImag()) {
+  } else if (options->hasImag()) {
     // |real| not given, but we have |imag|.
-    imag_coef = options.imag();
+    imag_coef = options->imag();
     real_coef.resize(imag_coef.size());
   } else {
     // Neither |real| nor |imag| given.  Return an object that would

@@ -57,7 +57,7 @@ class MODULES_EXPORT RTCCertificate final : public ScriptWrappable {
 
   // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
   DOMTimeStamp expires() const;
-  HeapVector<RTCDtlsFingerprint> getFingerprints();
+  HeapVector<Member<RTCDtlsFingerprint>> getFingerprints();
 
  private:
   rtc::scoped_refptr<rtc::RTCCertificate> certificate_;

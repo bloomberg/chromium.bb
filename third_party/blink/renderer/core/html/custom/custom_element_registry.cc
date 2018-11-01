@@ -107,7 +107,7 @@ CustomElementDefinition* CustomElementRegistry::define(
     ScriptState* script_state,
     const AtomicString& name,
     V8CustomElementConstructor* constructor,
-    const ElementDefinitionOptions& options,
+    const ElementDefinitionOptions* options,
     ExceptionState& exception_state) {
   ScriptCustomElementDefinitionBuilder builder(script_state, this, constructor,
                                                exception_state);
@@ -119,7 +119,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
     ScriptState* script_state,
     const AtomicString& name,
     CustomElementDefinitionBuilder& builder,
-    const ElementDefinitionOptions& options,
+    const ElementDefinitionOptions* options,
     ExceptionState& exception_state) {
   TRACE_EVENT1("blink", "CustomElementRegistry::define", "name", name.Utf8());
   if (!builder.CheckConstructorIntrinsics())
@@ -150,10 +150,10 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
 
   // Step 7. customized built-in elements definition
   // element interface extends option checks
-  if (options.hasExtends()) {
+  if (options->hasExtends()) {
     // 7.1. If element interface is valid custom element name, throw exception
-    const AtomicString& extends = AtomicString(options.extends());
-    if (ThrowIfValidName(AtomicString(options.extends()), exception_state))
+    const AtomicString& extends = AtomicString(options->extends());
+    if (ThrowIfValidName(AtomicString(options->extends()), exception_state))
       return nullptr;
     // 7.2. If element interface is undefined element, throw exception
     if (htmlElementTypeForTag(extends) ==
@@ -212,9 +212,8 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
   if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
-      options.hasStyles())
-    definition->SetDefaultStyleSheets(options.styles());
-
+      options->hasStyles())
+    definition->SetDefaultStyleSheets(options->styles());
   definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);

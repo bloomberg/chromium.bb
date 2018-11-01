@@ -42,7 +42,7 @@ class DeviceOrientationEvent final : public Event {
   static DeviceOrientationEvent* Create() { return new DeviceOrientationEvent; }
   static DeviceOrientationEvent* Create(
       const AtomicString& event_type,
-      const DeviceOrientationEventInit& initializer) {
+      const DeviceOrientationEventInit* initializer) {
     return new DeviceOrientationEvent(event_type, initializer);
   }
   static DeviceOrientationEvent* Create(const AtomicString& event_type,
@@ -64,7 +64,7 @@ class DeviceOrientationEvent final : public Event {
  private:
   DeviceOrientationEvent();
   DeviceOrientationEvent(const AtomicString&,
-                         const DeviceOrientationEventInit&);
+                         const DeviceOrientationEventInit*);
   DeviceOrientationEvent(const AtomicString& event_type,
                          DeviceOrientationData*);
 

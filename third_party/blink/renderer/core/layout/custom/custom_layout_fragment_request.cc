@@ -16,7 +16,7 @@ namespace blink {
 
 CustomLayoutFragmentRequest::CustomLayoutFragmentRequest(
     CustomLayoutChild* child,
-    const CustomLayoutConstraintsOptions& options,
+    const CustomLayoutConstraintsOptions* options,
     scoped_refptr<SerializedScriptValue> constraint_data)
     : child_(child),
       options_(options),
@@ -40,34 +40,35 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   bool is_parallel_writing_mode = IsParallelWritingMode(
       parent->StyleRef().GetWritingMode(), style.GetWritingMode());
 
-  if (options_.hasFixedInlineSize()) {
+  if (options_->hasFixedInlineSize()) {
     if (is_parallel_writing_mode) {
       box->SetOverrideLogicalWidth(
-          LayoutUnit::FromDoubleRound(options_.fixedInlineSize()));
+          LayoutUnit::FromDoubleRound(options_->fixedInlineSize()));
     } else {
       box->SetOverrideLogicalHeight(
-          LayoutUnit::FromDoubleRound(options_.fixedInlineSize()));
+          LayoutUnit::FromDoubleRound(options_->fixedInlineSize()));
     }
   } else {
     box->SetOverrideContainingBlockContentLogicalWidth(
-        options_.hasAvailableInlineSize() &&
-                options_.availableInlineSize() >= 0.0
-            ? LayoutUnit::FromDoubleRound(options_.availableInlineSize())
+        options_->hasAvailableInlineSize() &&
+                options_->availableInlineSize() >= 0.0
+            ? LayoutUnit::FromDoubleRound(options_->availableInlineSize())
             : LayoutUnit());
   }
 
-  if (options_.hasFixedBlockSize()) {
+  if (options_->hasFixedBlockSize()) {
     if (is_parallel_writing_mode) {
       box->SetOverrideLogicalHeight(
-          LayoutUnit::FromDoubleRound(options_.fixedBlockSize()));
+          LayoutUnit::FromDoubleRound(options_->fixedBlockSize()));
     } else {
       box->SetOverrideLogicalWidth(
-          LayoutUnit::FromDoubleRound(options_.fixedBlockSize()));
+          LayoutUnit::FromDoubleRound(options_->fixedBlockSize()));
     }
   } else {
     box->SetOverrideContainingBlockContentLogicalHeight(
-        options_.hasAvailableBlockSize() && options_.availableBlockSize() >= 0.0
-            ? LayoutUnit::FromDoubleRound(options_.availableBlockSize())
+        options_->hasAvailableBlockSize() &&
+                options_->availableBlockSize() >= 0.0
+            ? LayoutUnit::FromDoubleRound(options_->availableBlockSize())
             : LayoutUnit());
   }
 
@@ -76,24 +77,24 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   LayoutUnit percentage_resolution_logical_height(-1);
 
   if (is_parallel_writing_mode) {
-    if (options_.hasPercentageBlockSize() &&
-        options_.percentageBlockSize() >= 0.0) {
+    if (options_->hasPercentageBlockSize() &&
+        options_->percentageBlockSize() >= 0.0) {
       percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_.percentageBlockSize());
-    } else if (options_.hasAvailableBlockSize() &&
-               options_.availableBlockSize() >= 0.0) {
+          LayoutUnit::FromDoubleRound(options_->percentageBlockSize());
+    } else if (options_->hasAvailableBlockSize() &&
+               options_->availableBlockSize() >= 0.0) {
       percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_.availableBlockSize());
+          LayoutUnit::FromDoubleRound(options_->availableBlockSize());
     }
   } else {
-    if (options_.hasPercentageInlineSize() &&
-        options_.percentageInlineSize() >= 0.0) {
+    if (options_->hasPercentageInlineSize() &&
+        options_->percentageInlineSize() >= 0.0) {
       percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_.percentageInlineSize());
-    } else if (options_.hasAvailableInlineSize() &&
-               options_.availableInlineSize() >= 0.0) {
+          LayoutUnit::FromDoubleRound(options_->percentageInlineSize());
+    } else if (options_->hasAvailableInlineSize() &&
+               options_->availableInlineSize() >= 0.0) {
       percentage_resolution_logical_height =
-          LayoutUnit::FromDoubleRound(options_.availableInlineSize());
+          LayoutUnit::FromDoubleRound(options_->availableInlineSize());
     }
   }
 
@@ -131,6 +132,7 @@ bool CustomLayoutFragmentRequest::IsValid() const {
 
 void CustomLayoutFragmentRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(child_);
+  visitor->Trace(options_);
   ScriptWrappable::Trace(visitor);
 }
 

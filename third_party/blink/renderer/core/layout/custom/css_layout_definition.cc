@@ -241,7 +241,7 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   // Attempt to convert the result.
   V8FragmentResultOptions::ToImpl(isolate, result_value,
-                                  *fragment_result_options, exception_state);
+                                  fragment_result_options, exception_state);
 
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());

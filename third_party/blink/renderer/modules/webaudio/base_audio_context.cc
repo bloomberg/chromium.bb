@@ -79,7 +79,7 @@ namespace blink {
 
 BaseAudioContext* BaseAudioContext::Create(
     Document& document,
-    const AudioContextOptions& context_options,
+    const AudioContextOptions* context_options,
     ExceptionState& exception_state) {
   return AudioContext::Create(document, context_options, exception_state);
 }
@@ -514,11 +514,11 @@ PeriodicWave* BaseAudioContext::createPeriodicWave(
 PeriodicWave* BaseAudioContext::createPeriodicWave(
     const Vector<float>& real,
     const Vector<float>& imag,
-    const PeriodicWaveConstraints& options,
+    const PeriodicWaveConstraints* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  bool disable = options.disableNormalization();
+  bool disable = options->disableNormalization();
 
   return PeriodicWave::Create(*this, real, imag, disable, exception_state);
 }
@@ -852,7 +852,7 @@ void BaseAudioContext::RejectPendingDecodeAudioDataResolvers() {
   decode_audio_resolvers_.clear();
 }
 
-AudioIOPosition BaseAudioContext::OutputPosition() {
+AudioIOPosition BaseAudioContext::OutputPosition() const {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
   return output_position_;

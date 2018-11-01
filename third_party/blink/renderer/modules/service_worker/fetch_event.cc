@@ -26,14 +26,14 @@ namespace blink {
 
 FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
-                               const FetchEventInit& initializer) {
+                               const FetchEventInit* initializer) {
   return new FetchEvent(script_state, type, initializer, nullptr, nullptr,
                         false);
 }
 
 FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
-                               const FetchEventInit& initializer,
+                               const FetchEventInit* initializer,
                                FetchRespondWithObserver* respond_with_observer,
                                WaitUntilObserver* wait_until_observer,
                                bool navigation_preload_sent) {
@@ -83,7 +83,7 @@ bool FetchEvent::HasPendingActivity() const {
 
 FetchEvent::FetchEvent(ScriptState* script_state,
                        const AtomicString& type,
-                       const FetchEventInit& initializer,
+                       const FetchEventInit* initializer,
                        FetchRespondWithObserver* respond_with_observer,
                        WaitUntilObserver* wait_until_observer,
                        bool navigation_preload_sent)
@@ -97,9 +97,9 @@ FetchEvent::FetchEvent(ScriptState* script_state,
   if (!navigation_preload_sent)
     preload_response_property_->ResolveWithUndefined();
 
-  client_id_ = initializer.clientId();
-  is_reload_ = initializer.isReload();
-  request_ = initializer.request();
+  client_id_ = initializer->clientId();
+  is_reload_ = initializer->isReload();
+  request_ = initializer->request();
 }
 
 FetchEvent::~FetchEvent() = default;

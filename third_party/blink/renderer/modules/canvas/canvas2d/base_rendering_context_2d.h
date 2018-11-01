@@ -105,7 +105,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                     double m22,
                     double dx,
                     double dy);
-  void setTransform(DOMMatrix2DInit&, ExceptionState&);
+  void setTransform(DOMMatrix2DInit*, ExceptionState&);
   DOMMatrix* getTransform();
   void resetTransform();
 
@@ -191,7 +191,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   ImageData* createImageData(int width, int height, ExceptionState&) const;
   ImageData* createImageData(unsigned,
                              unsigned,
-                             ImageDataColorSettings&,
+                             ImageDataColorSettings*,
                              ExceptionState&) const;
   ImageData* createImageData(ImageDataArray&,
                              unsigned,
@@ -200,7 +200,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   ImageData* createImageData(ImageDataArray&,
                              unsigned,
                              unsigned,
-                             ImageDataColorSettings&,
+                             ImageDataColorSettings*,
                              ExceptionState&) const;
 
   ImageData* getImageData(int sx, int sy, int sw, int sh, ExceptionState&);
@@ -426,7 +426,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   // such as tainting from a filter applied to the canvas.
   void SetOriginTaintedByContent();
 
-  ImageDataColorSettings GetColorSettingsAsImageDataColorSettings() const;
+  ImageDataColorSettings* GetColorSettingsAsImageDataColorSettings() const;
 
   void PutByteArray(const unsigned char* source,
                     const IntSize& source_size,

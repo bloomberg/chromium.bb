@@ -37,7 +37,7 @@ class MODULES_EXPORT CSSPaintDefinition final
       const Vector<CSSPropertyID>&,
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSSyntaxDescriptor>& input_argument_types,
-      const PaintRenderingContext2DSettings&);
+      const PaintRenderingContext2DSettings*);
   virtual ~CSSPaintDefinition();
 
   // Invokes the javascript 'paint' callback on an instance of the javascript
@@ -60,7 +60,7 @@ class MODULES_EXPORT CSSPaintDefinition final
   const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
     return input_argument_types_;
   }
-  const PaintRenderingContext2DSettings& GetPaintRenderingContext2DSettings()
+  const PaintRenderingContext2DSettings* GetPaintRenderingContext2DSettings()
       const {
     return context_settings_;
   }
@@ -84,7 +84,7 @@ class MODULES_EXPORT CSSPaintDefinition final
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSSyntaxDescriptor>& input_argument_types,
-      const PaintRenderingContext2DSettings&);
+      const PaintRenderingContext2DSettings*);
 
   void MaybeCreatePaintInstance();
 
@@ -105,7 +105,7 @@ class MODULES_EXPORT CSSPaintDefinition final
   Vector<AtomicString> custom_invalidation_properties_;
   // Input argument types, if applicable.
   Vector<CSSSyntaxDescriptor> input_argument_types_;
-  PaintRenderingContext2DSettings context_settings_;
+  Member<const PaintRenderingContext2DSettings> context_settings_;
 };
 
 }  // namespace blink

@@ -23,7 +23,7 @@ class CORE_EXPORT DOMPointReadOnly : public ScriptWrappable {
 
  public:
   static DOMPointReadOnly* Create(double x, double y, double z, double w);
-  static DOMPointReadOnly* fromPoint(const DOMPointInit&);
+  static DOMPointReadOnly* fromPoint(const DOMPointInit*);
 
   double x() const { return x_; }
   double y() const { return y_; }
@@ -31,7 +31,7 @@ class CORE_EXPORT DOMPointReadOnly : public ScriptWrappable {
   double w() const { return w_; }
 
   ScriptValue toJSONForBinding(ScriptState*) const;
-  DOMPoint* matrixTransform(DOMMatrixInit&, ExceptionState&);
+  DOMPoint* matrixTransform(DOMMatrixInit*, ExceptionState&);
 
  protected:
   DOMPointReadOnly(double x, double y, double z, double w);

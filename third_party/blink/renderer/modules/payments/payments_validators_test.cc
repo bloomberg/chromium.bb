@@ -292,32 +292,32 @@ struct ValidationErrorsTestCase {
     return test_case;                                             \
   })()
 
-PaymentValidationErrors toPaymentValidationErrors(
+PaymentValidationErrors* toPaymentValidationErrors(
     ValidationErrorsTestCase test_case) {
-  PaymentValidationErrors errors;
+  PaymentValidationErrors* errors = PaymentValidationErrors::Create();
 
-  PayerErrors payer;
-  payer.setEmail(test_case.m_payer_email);
-  payer.setName(test_case.m_payer_name);
-  payer.setPhone(test_case.m_payer_phone);
+  PayerErrors* payer = PayerErrors::Create();
+  payer->setEmail(test_case.m_payer_email);
+  payer->setName(test_case.m_payer_name);
+  payer->setPhone(test_case.m_payer_phone);
 
-  AddressErrors shipping_address;
-  shipping_address.setAddressLine(test_case.m_shipping_address_address_line);
-  shipping_address.setCity(test_case.m_shipping_address_city);
-  shipping_address.setCountry(test_case.m_shipping_address_country);
-  shipping_address.setDependentLocality(
+  AddressErrors* shipping_address = AddressErrors::Create();
+  shipping_address->setAddressLine(test_case.m_shipping_address_address_line);
+  shipping_address->setCity(test_case.m_shipping_address_city);
+  shipping_address->setCountry(test_case.m_shipping_address_country);
+  shipping_address->setDependentLocality(
       test_case.m_shipping_address_dependent_locality);
-  shipping_address.setLanguageCode(test_case.m_shipping_address_language_code);
-  shipping_address.setOrganization(test_case.m_shipping_address_organization);
-  shipping_address.setPhone(test_case.m_shipping_address_phone);
-  shipping_address.setPostalCode(test_case.m_shipping_address_postal_code);
-  shipping_address.setRecipient(test_case.m_shipping_address_recipient);
-  shipping_address.setRegion(test_case.m_shipping_address_region);
-  shipping_address.setRegionCode(test_case.m_shipping_address_region_code);
-  shipping_address.setSortingCode(test_case.m_shipping_address_sorting_code);
+  shipping_address->setLanguageCode(test_case.m_shipping_address_language_code);
+  shipping_address->setOrganization(test_case.m_shipping_address_organization);
+  shipping_address->setPhone(test_case.m_shipping_address_phone);
+  shipping_address->setPostalCode(test_case.m_shipping_address_postal_code);
+  shipping_address->setRecipient(test_case.m_shipping_address_recipient);
+  shipping_address->setRegion(test_case.m_shipping_address_region);
+  shipping_address->setRegionCode(test_case.m_shipping_address_region_code);
+  shipping_address->setSortingCode(test_case.m_shipping_address_sorting_code);
 
-  errors.setPayer(payer);
-  errors.setShippingAddress(shipping_address);
+  errors->setPayer(payer);
+  errors->setShippingAddress(shipping_address);
 
   return errors;
 }
@@ -327,7 +327,7 @@ class PaymentsErrorMessageValidatorTest
 
 TEST_P(PaymentsErrorMessageValidatorTest,
        IsValidPaymentValidationErrorsFormat) {
-  PaymentValidationErrors errors = toPaymentValidationErrors(GetParam());
+  PaymentValidationErrors* errors = toPaymentValidationErrors(GetParam());
 
   String error_message;
   EXPECT_EQ(GetParam().expected_valid,

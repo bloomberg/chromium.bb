@@ -38,7 +38,7 @@ CSSPaintDefinition* CSSPaintDefinition::Create(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
-    const PaintRenderingContext2DSettings& context_settings) {
+    const PaintRenderingContext2DSettings* context_settings) {
   return new CSSPaintDefinition(
       script_state, constructor, paint, native_invalidation_properties,
       custom_invalidation_properties, input_argument_types, context_settings);
@@ -51,7 +51,7 @@ CSSPaintDefinition::CSSPaintDefinition(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
-    const PaintRenderingContext2DSettings& context_settings)
+    const PaintRenderingContext2DSettings* context_settings)
     : script_state_(script_state),
       constructor_(script_state->GetIsolate(), constructor),
       paint_(script_state->GetIsolate(), paint),
@@ -88,7 +88,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
 
   DCHECK(layout_object.GetNode());
   CanvasColorParams color_params;
-  if (!context_settings_.alpha()) {
+  if (!context_settings_->alpha()) {
     color_params.SetOpacityMode(kOpaque);
   }
 
@@ -157,6 +157,7 @@ void CSSPaintDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_.Cast<v8::Value>());
   visitor->Trace(paint_.Cast<v8::Value>());
   visitor->Trace(instance_);
+  visitor->Trace(context_settings_);
   visitor->Trace(script_state_);
 }
 

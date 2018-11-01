@@ -69,8 +69,8 @@ TEST_F(BackgroundFetchManagerTest, SingleRequest) {
 
   KURL image_url("https://www.example.com/my_image.png");
 
-  RequestInit request_init;
-  request_init.setMethod("POST");
+  RequestInit* request_init = RequestInit::Create();
+  request_init->setMethod("POST");
   Request* request =
       Request::Create(scope.GetScriptState(), image_url.GetString(),
                       request_init, scope.GetExceptionState());
@@ -103,8 +103,8 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
   RequestOrUSVString icon_request =
       RequestOrUSVString::FromUSVString(icon_url.GetString());
 
-  RequestInit request_init;
-  request_init.setMethod("DELETE");
+  RequestInit* request_init = RequestInit::Create();
+  request_init->setMethod("DELETE");
   Request* request =
       Request::Create(scope.GetScriptState(), cat_video_url.GetString(),
                       request_init, scope.GetExceptionState());

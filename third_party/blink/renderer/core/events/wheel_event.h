@@ -48,7 +48,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
                             AbstractView*);
 
   static WheelEvent* Create(const AtomicString& type,
-                            const WheelEventInit& initializer) {
+                            const WheelEventInit* initializer) {
     return new WheelEvent(type, initializer);
   }
 
@@ -82,7 +82,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
 
  private:
   WheelEvent();
-  WheelEvent(const AtomicString&, const WheelEventInit&);
+  WheelEvent(const AtomicString&, const WheelEventInit*);
   WheelEvent(const WebMouseWheelEvent&, AbstractView*);
 
   IntPoint wheel_delta_;

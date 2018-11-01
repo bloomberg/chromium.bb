@@ -27,21 +27,21 @@ class CookieChangeEvent final : public Event {
   // The caller is expected to create HeapVectors and std::move() them into this
   // method.
   static CookieChangeEvent* Create(const AtomicString& type,
-                                   HeapVector<CookieListItem> changed,
-                                   HeapVector<CookieListItem> deleted) {
+                                   HeapVector<Member<CookieListItem>> changed,
+                                   HeapVector<Member<CookieListItem>> deleted) {
     return new CookieChangeEvent(type, std::move(changed), std::move(deleted));
   }
 
   // Used by JavaScript, via the V8 bindings.
   static CookieChangeEvent* Create(const AtomicString& type,
-                                   const CookieChangeEventInit& initializer) {
+                                   const CookieChangeEventInit* initializer) {
     return new CookieChangeEvent(type, initializer);
   }
 
   ~CookieChangeEvent() override;
 
-  const HeapVector<CookieListItem>& changed() const { return changed_; }
-  const HeapVector<CookieListItem>& deleted() const { return deleted_; }
+  const HeapVector<Member<CookieListItem>>& changed() const { return changed_; }
+  const HeapVector<Member<CookieListItem>>& deleted() const { return deleted_; }
 
   // Event
   const AtomicString& InterfaceName() const override;
@@ -49,27 +49,26 @@ class CookieChangeEvent final : public Event {
   // GarbageCollected
   void Trace(blink::Visitor*) override;
 
-  static void ToCookieListItem(
+  static CookieListItem* ToCookieListItem(
       const WebCanonicalCookie& canonical_cookie,
-      bool is_deleted,  // True for information from a cookie deletion event.
-      CookieListItem& cookie);
+      bool is_deleted);  // True for information from a cookie deletion event.
 
   // Helper for converting backend event information into a CookieChangeEvent.
   static void ToEventInfo(const WebCanonicalCookie& cookie,
                           ::network::mojom::CookieChangeCause cause,
-                          HeapVector<CookieListItem>& changed,
-                          HeapVector<CookieListItem>& deleted);
+                          HeapVector<Member<CookieListItem>>& changed,
+                          HeapVector<Member<CookieListItem>>& deleted);
 
  private:
   CookieChangeEvent();
   CookieChangeEvent(const AtomicString& type,
-                    HeapVector<CookieListItem> changed,
-                    HeapVector<CookieListItem> deleted);
+                    HeapVector<Member<CookieListItem>> changed,
+                    HeapVector<Member<CookieListItem>> deleted);
   CookieChangeEvent(const AtomicString& type,
-                    const CookieChangeEventInit& initializer);
+                    const CookieChangeEventInit* initializer);
 
-  HeapVector<CookieListItem> changed_;
-  HeapVector<CookieListItem> deleted_;
+  HeapVector<Member<CookieListItem>> changed_;
+  HeapVector<Member<CookieListItem>> deleted_;
 };
 
 }  // namespace blink

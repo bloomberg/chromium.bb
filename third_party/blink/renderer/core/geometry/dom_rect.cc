@@ -16,8 +16,8 @@ DOMRect* DOMRect::FromFloatRect(const FloatRect& rect) {
   return new DOMRect(rect.X(), rect.Y(), rect.Width(), rect.Height());
 }
 
-DOMRect* DOMRect::fromRect(const DOMRectInit& other) {
-  return new DOMRect(other.x(), other.y(), other.width(), other.height());
+DOMRect* DOMRect::fromRect(const DOMRectInit* other) {
+  return new DOMRect(other->x(), other->y(), other->width(), other->height());
 }
 
 DOMRect::DOMRect(double x, double y, double width, double height)

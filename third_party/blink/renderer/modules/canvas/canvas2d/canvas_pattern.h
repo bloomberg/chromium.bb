@@ -55,7 +55,7 @@ class CanvasPattern final : public ScriptWrappable {
 
   bool OriginClean() const { return origin_clean_; }
 
-  void setTransform(DOMMatrix2DInit&, ExceptionState&);
+  void setTransform(DOMMatrix2DInit*, ExceptionState&);
 
  private:
   CanvasPattern(scoped_refptr<Image>, Pattern::RepeatMode, bool origin_clean);

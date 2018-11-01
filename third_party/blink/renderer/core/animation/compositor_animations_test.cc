@@ -269,11 +269,11 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
                         const String& initial_value,
                         bool is_inherited) {
     DummyExceptionStateForTesting exception_state;
-    PropertyDescriptor property_descriptor;
-    property_descriptor.setName(name);
-    property_descriptor.setSyntax(syntax);
-    property_descriptor.setInitialValue(initial_value);
-    property_descriptor.setInherits(is_inherited);
+    PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
+    property_descriptor->setName(name);
+    property_descriptor->setSyntax(syntax);
+    property_descriptor->setInitialValue(initial_value);
+    property_descriptor->setInherits(is_inherited);
     PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
                                            exception_state);
     EXPECT_FALSE(exception_state.HadException());

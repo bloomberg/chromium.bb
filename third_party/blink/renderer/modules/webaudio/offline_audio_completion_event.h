@@ -44,7 +44,7 @@ class OfflineAudioCompletionEvent final : public Event {
   static OfflineAudioCompletionEvent* Create(AudioBuffer* rendered_buffer);
   static OfflineAudioCompletionEvent* Create(
       const AtomicString& type,
-      const OfflineAudioCompletionEventInit&);
+      const OfflineAudioCompletionEventInit*);
 
   ~OfflineAudioCompletionEvent() override;
 
@@ -58,7 +58,7 @@ class OfflineAudioCompletionEvent final : public Event {
   OfflineAudioCompletionEvent();
   explicit OfflineAudioCompletionEvent(AudioBuffer* rendered_buffer);
   explicit OfflineAudioCompletionEvent(const AtomicString& type,
-                                       const OfflineAudioCompletionEventInit&);
+                                       const OfflineAudioCompletionEventInit*);
 
   Member<AudioBuffer> rendered_buffer_;
 };

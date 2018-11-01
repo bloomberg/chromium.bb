@@ -96,7 +96,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   void postMessage(LocalDOMWindow* incumbent_window,
                    const ScriptValue& message,
-                   const WindowPostMessageOptions& options,
+                   const WindowPostMessageOptions* options,
                    ExceptionState&);
 
   // Indexed properties
@@ -137,7 +137,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
  private:
   void DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                      const MessagePortArray&,
-                     const WindowPostMessageOptions& options,
+                     const WindowPostMessageOptions* options,
                      LocalDOMWindow* source,
                      ExceptionState&);
 

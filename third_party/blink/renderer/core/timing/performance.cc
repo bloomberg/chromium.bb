@@ -572,16 +572,16 @@ PerformanceMark* Performance::mark(
     start = start_time_or_mark_options.GetAsDouble();
   } else if (start_time_or_mark_options.IsPerformanceMarkOptions() &&
              start_time_or_mark_options.GetAsPerformanceMarkOptions()
-                 .hasStartTime()) {
+                 ->hasStartTime()) {
     start =
-        start_time_or_mark_options.GetAsPerformanceMarkOptions().startTime();
+        start_time_or_mark_options.GetAsPerformanceMarkOptions()->startTime();
   } else {
     start = now();
   }
 
   ScriptValue detail = ScriptValue::CreateNull(script_state);
   if (start_time_or_mark_options.IsPerformanceMarkOptions()) {
-    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions().detail();
+    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions()->detail();
   }
 
   // Pass in a null ScriptValue if the mark's detail doesn't exist.
@@ -660,10 +660,10 @@ PerformanceMeasure* Performance::measureInternal(
             "null.");
         return nullptr;
       }
-      const PerformanceMeasureOptions& options =
+      const PerformanceMeasureOptions* options =
           start_or_options.GetAsPerformanceMeasureOptions();
-      return measureInternal(script_state, measure_name, options.startTime(),
-                             options.endTime(), options.detail(),
+      return measureInternal(script_state, measure_name, options->startTime(),
+                             options->endTime(), options->detail(),
                              exception_state);
     } else {
       StringOrDouble converted_start;

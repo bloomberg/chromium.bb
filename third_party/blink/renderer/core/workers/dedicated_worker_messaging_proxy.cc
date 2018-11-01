@@ -38,7 +38,7 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
 
 void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    const WorkerOptions& options,
+    const WorkerOptions* options,
     const KURL& script_url,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
@@ -54,13 +54,13 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
       std::move(creation_params),
       CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
-  if (options.type() == "classic") {
+  if (options->type() == "classic") {
     GetWorkerThread()->EvaluateClassicScript(
         script_url, source_code, nullptr /* cached_meta_data */, stack_id);
-  } else if (options.type() == "module") {
+  } else if (options->type() == "module") {
     network::mojom::FetchCredentialsMode credentials_mode;
-    bool result =
-        Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
+    bool result = Request::ParseCredentialsMode(options->credentials(),
+                                                &credentials_mode);
     DCHECK(result);
     GetWorkerThread()->ImportModuleScript(script_url, outside_settings_object,
                                           credentials_mode);

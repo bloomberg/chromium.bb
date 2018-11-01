@@ -10,14 +10,14 @@
 namespace blink {
 
 DetectedText* DetectedText::Create() {
-  HeapVector<Point2D> empty_list;
+  HeapVector<Member<Point2D>> empty_list;
   return new DetectedText(g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0),
                           empty_list);
 }
 
 DetectedText* DetectedText::Create(String raw_value,
                                    DOMRectReadOnly* bounding_box,
-                                   HeapVector<Point2D> corner_points) {
+                                   HeapVector<Member<Point2D>> corner_points) {
   return new DetectedText(raw_value, bounding_box, corner_points);
 }
 
@@ -29,13 +29,13 @@ DOMRectReadOnly* DetectedText::boundingBox() const {
   return bounding_box_.Get();
 }
 
-const HeapVector<Point2D>& DetectedText::cornerPoints() const {
+const HeapVector<Member<Point2D>>& DetectedText::cornerPoints() const {
   return corner_points_;
 }
 
 DetectedText::DetectedText(String raw_value,
                            DOMRectReadOnly* bounding_box,
-                           HeapVector<Point2D> corner_points)
+                           HeapVector<Member<Point2D>> corner_points)
     : raw_value_(raw_value),
       bounding_box_(bounding_box),
       corner_points_(corner_points) {}
@@ -47,8 +47,8 @@ ScriptValue DetectedText::toJSONForBinding(ScriptState* script_state) const {
   Vector<ScriptValue> corner_points;
   for (const auto& corner_point : corner_points_) {
     V8ObjectBuilder builder(script_state);
-    builder.AddNumber("x", corner_point.x());
-    builder.AddNumber("y", corner_point.y());
+    builder.AddNumber("x", corner_point->x());
+    builder.AddNumber("y", corner_point->y());
     corner_points.push_back(builder.GetScriptValue());
   }
   result.Add("cornerPoints", corner_points);

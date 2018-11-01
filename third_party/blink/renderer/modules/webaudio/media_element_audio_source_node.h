@@ -119,7 +119,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
                                              HTMLMediaElement&,
                                              ExceptionState&);
   static MediaElementAudioSourceNode*
-  Create(AudioContext*, const MediaElementAudioSourceOptions&, ExceptionState&);
+  Create(AudioContext*, const MediaElementAudioSourceOptions*, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;

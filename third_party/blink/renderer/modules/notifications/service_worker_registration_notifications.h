@@ -41,11 +41,11 @@ class ServiceWorkerRegistrationNotifications final
   static ScriptPromise showNotification(ScriptState* script_state,
                                         ServiceWorkerRegistration& registration,
                                         const String& title,
-                                        const NotificationOptions& options,
+                                        const NotificationOptions* options,
                                         ExceptionState& exception_state);
   static ScriptPromise getNotifications(ScriptState* script_state,
                                         ServiceWorkerRegistration& registration,
-                                        const GetNotificationOptions& options);
+                                        const GetNotificationOptions* options);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext* context) override;

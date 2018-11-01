@@ -9,10 +9,10 @@
 namespace blink {
 
 MIDIMessageEvent::MIDIMessageEvent(const AtomicString& type,
-                                   const MIDIMessageEventInit& initializer)
+                                   const MIDIMessageEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasData())
-    data_ = initializer.data().View();
+  if (initializer->hasData())
+    data_ = initializer->data().View();
 }
 
 }  // namespace blink

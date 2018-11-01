@@ -48,7 +48,7 @@ class MIDIConnectionEvent final : public Event {
 
   static MIDIConnectionEvent* Create(
       const AtomicString& type,
-      const MIDIConnectionEventInit& initializer) {
+      const MIDIConnectionEventInit* initializer) {
     return new MIDIConnectionEvent(type, initializer);
   }
 
@@ -65,7 +65,7 @@ class MIDIConnectionEvent final : public Event {
       : Event(EventTypeNames::statechange, Bubbles::kNo, Cancelable::kNo),
         port_(port) {}
 
-  MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit&);
+  MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit*);
 
   Member<MIDIPort> port_;
 };

@@ -42,7 +42,7 @@ class MODULES_EXPORT RTCPeerConnectionIceEvent final : public Event {
 
   static RTCPeerConnectionIceEvent* Create(
       const AtomicString& type,
-      const RTCPeerConnectionIceEventInit&);
+      const RTCPeerConnectionIceEventInit*);
 
   RTCIceCandidate* candidate() const;
 
@@ -54,7 +54,7 @@ class MODULES_EXPORT RTCPeerConnectionIceEvent final : public Event {
   RTCPeerConnectionIceEvent(RTCIceCandidate*);
 
   RTCPeerConnectionIceEvent(const AtomicString& type,
-                            const RTCPeerConnectionIceEventInit&);
+                            const RTCPeerConnectionIceEventInit*);
 
   Member<RTCIceCandidate> candidate_;
 };

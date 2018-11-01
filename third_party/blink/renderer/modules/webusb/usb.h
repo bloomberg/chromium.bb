@@ -38,7 +38,7 @@ class USB final : public EventTargetWithInlineData,
 
   // USB.idl
   ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions&);
+  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions*);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 

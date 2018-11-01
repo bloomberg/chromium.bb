@@ -9,20 +9,20 @@
 
 namespace blink {
 
-WebGLContextAttributes ToWebGLContextAttributes(
+WebGLContextAttributes* ToWebGLContextAttributes(
     const CanvasContextCreationAttributesCore& attrs) {
-  WebGLContextAttributes result;
-  result.setAlpha(attrs.alpha);
-  result.setDepth(attrs.depth);
-  result.setStencil(attrs.stencil);
-  result.setAntialias(attrs.antialias);
-  result.setPremultipliedAlpha(attrs.premultiplied_alpha);
-  result.setPreserveDrawingBuffer(attrs.preserve_drawing_buffer);
-  result.setFailIfMajorPerformanceCaveat(
+  WebGLContextAttributes* result = WebGLContextAttributes::Create();
+  result->setAlpha(attrs.alpha);
+  result->setDepth(attrs.depth);
+  result->setStencil(attrs.stencil);
+  result->setAntialias(attrs.antialias);
+  result->setPremultipliedAlpha(attrs.premultiplied_alpha);
+  result->setPreserveDrawingBuffer(attrs.preserve_drawing_buffer);
+  result->setFailIfMajorPerformanceCaveat(
       attrs.fail_if_major_performance_caveat);
-  result.setCompatibleXRDevice(
+  result->setCompatibleXRDevice(
       static_cast<XRDevice*>(attrs.compatible_xr_device.Get()));
-  result.setLowLatency(attrs.low_latency);
+  result->setLowLatency(attrs.low_latency);
   return result;
 }
 

@@ -33,11 +33,11 @@ ProgressEvent::ProgressEvent()
     : length_computable_(false), loaded_(0), total_(0) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
-                             const ProgressEventInit& initializer)
+                             const ProgressEventInit* initializer)
     : Event(type, initializer),
-      length_computable_(initializer.lengthComputable()),
-      loaded_(initializer.loaded()),
-      total_(initializer.total()) {}
+      length_computable_(initializer->lengthComputable()),
+      loaded_(initializer->loaded()),
+      total_(initializer->total()) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
                              bool length_computable,

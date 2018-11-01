@@ -79,11 +79,12 @@ bool HasCurrentComposition(LocalDOMWindow* dom_window) {
 
 KeyboardEvent* KeyboardEvent::Create(ScriptState* script_state,
                                      const AtomicString& type,
-                                     const KeyboardEventInit& initializer) {
-  if (script_state->World().IsIsolatedWorld())
+                                     const KeyboardEventInit* initializer) {
+  if (script_state->World().IsIsolatedWorld()) {
     UIEventWithKeyState::DidCreateEventInIsolatedWorld(
-        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(),
-        initializer.metaKey());
+        initializer->ctrlKey(), initializer->altKey(), initializer->shiftKey(),
+        initializer->metaKey());
+  }
   return new KeyboardEvent(type, initializer);
 }
 
@@ -130,17 +131,17 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
-                             const KeyboardEventInit& initializer)
+                             const KeyboardEventInit* initializer)
     : UIEventWithKeyState(event_type, initializer),
-      code_(initializer.code()),
-      key_(initializer.key()),
-      location_(initializer.location()),
-      is_composing_(initializer.isComposing()),
-      char_code_(initializer.charCode()),
-      key_code_(initializer.keyCode()) {
-  if (initializer.repeat())
+      code_(initializer->code()),
+      key_(initializer->key()),
+      location_(initializer->location()),
+      is_composing_(initializer->isComposing()),
+      char_code_(initializer->charCode()),
+      key_code_(initializer->keyCode()) {
+  if (initializer->repeat())
     modifiers_ |= WebInputEvent::kIsAutoRepeat;
-  InitLocationModifiers(initializer.location());
+  InitLocationModifiers(initializer->location());
 }
 
 KeyboardEvent::~KeyboardEvent() = default;

@@ -106,6 +106,7 @@ def use_local_result(method):
             'NewObject' in extended_attributes or
             'RaisesException' in extended_attributes or
             idl_type.is_union_type or
+            idl_type.is_dictionary or
             idl_type.is_explicit_nullable)
 
 

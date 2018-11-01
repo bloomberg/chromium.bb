@@ -8,13 +8,13 @@ namespace blink {
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer) {
+    const ExtendableMessageEventInit* initializer) {
   return new ExtendableMessageEvent(type, initializer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer,
+    const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer) {
   return new ExtendableMessageEvent(type, initializer, observer);
 }
@@ -90,28 +90,28 @@ void ExtendableMessageEvent::Trace(blink::Visitor* visitor) {
 
 ExtendableMessageEvent::ExtendableMessageEvent(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer)
+    const ExtendableMessageEventInit* initializer)
     : ExtendableMessageEvent(type, initializer, nullptr) {}
 
 ExtendableMessageEvent::ExtendableMessageEvent(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer,
+    const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer) {
-  if (initializer.hasOrigin())
-    origin_ = initializer.origin();
-  if (initializer.hasLastEventId())
-    last_event_id_ = initializer.lastEventId();
-  if (initializer.hasSource()) {
-    if (initializer.source().IsClient())
-      source_as_client_ = initializer.source().GetAsClient();
-    else if (initializer.source().IsServiceWorker())
-      source_as_service_worker_ = initializer.source().GetAsServiceWorker();
-    else if (initializer.source().IsMessagePort())
-      source_as_message_port_ = initializer.source().GetAsMessagePort();
+  if (initializer->hasOrigin())
+    origin_ = initializer->origin();
+  if (initializer->hasLastEventId())
+    last_event_id_ = initializer->lastEventId();
+  if (initializer->hasSource()) {
+    if (initializer->source().IsClient())
+      source_as_client_ = initializer->source().GetAsClient();
+    else if (initializer->source().IsServiceWorker())
+      source_as_service_worker_ = initializer->source().GetAsServiceWorker();
+    else if (initializer->source().IsMessagePort())
+      source_as_message_port_ = initializer->source().GetAsMessagePort();
   }
-  if (initializer.hasPorts())
-    ports_ = MakeGarbageCollected<MessagePortArray>(initializer.ports());
+  if (initializer->hasPorts())
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer->ports());
 }
 
 ExtendableMessageEvent::ExtendableMessageEvent(
@@ -120,7 +120,7 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     MessagePortArray* ports,
     WaitUntilObserver* observer)
     : ExtendableEvent(EventTypeNames::message,
-                      ExtendableMessageEventInit(),
+                      ExtendableMessageEventInit::Create(),
                       observer),
       serialized_data_(std::move(data)),
       origin_(origin),

@@ -89,7 +89,7 @@ PaymentRequestUpdateEvent::~PaymentRequestUpdateEvent() = default;
 PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::Create(
     ExecutionContext* execution_context,
     const AtomicString& type,
-    const PaymentRequestUpdateEventInit& init) {
+    const PaymentRequestUpdateEventInit* init) {
   return new PaymentRequestUpdateEvent(execution_context, type, init);
 }
 
@@ -159,7 +159,7 @@ void PaymentRequestUpdateEvent::OnUpdateEventTimeoutForTesting() {
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
     ExecutionContext* execution_context,
     const AtomicString& type,
-    const PaymentRequestUpdateEventInit& init)
+    const PaymentRequestUpdateEventInit* init)
     : Event(type, init),
       wait_for_update_(false),
       abort_timer_(execution_context->GetTaskRunner(TaskType::kUserInteraction),

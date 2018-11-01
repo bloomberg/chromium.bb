@@ -68,7 +68,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   static FontFace* Create(ExecutionContext*,
                           const AtomicString& family,
                           StringOrArrayBufferOrArrayBufferView&,
-                          const FontFaceDescriptors&);
+                          const FontFaceDescriptors*);
   static FontFace* Create(Document*, const StyleRuleFontFace*);
 
   ~FontFace() override;
@@ -130,20 +130,20 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   static FontFace* Create(ExecutionContext*,
                           const AtomicString& family,
                           DOMArrayBuffer* source,
-                          const FontFaceDescriptors&);
+                          const FontFaceDescriptors*);
   static FontFace* Create(ExecutionContext*,
                           const AtomicString& family,
                           DOMArrayBufferView*,
-                          const FontFaceDescriptors&);
+                          const FontFaceDescriptors*);
   static FontFace* Create(ExecutionContext*,
                           const AtomicString& family,
                           const String& source,
-                          const FontFaceDescriptors&);
+                          const FontFaceDescriptors*);
 
   explicit FontFace(ExecutionContext*);
   FontFace(ExecutionContext*,
            const AtomicString& family,
-           const FontFaceDescriptors&);
+           const FontFaceDescriptors*);
 
   void InitCSSFontFace(ExecutionContext*, const CSSValue& src);
   void InitCSSFontFace(const unsigned char* data, size_t);

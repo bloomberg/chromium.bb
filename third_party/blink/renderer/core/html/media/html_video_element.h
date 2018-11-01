@@ -159,7 +159,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions&) override;
+                                  const ImageBitmapOptions*) override;
 
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;

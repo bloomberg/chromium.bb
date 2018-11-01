@@ -22,7 +22,7 @@ namespace {
 
 class FullscreenMockChromeClient : public EmptyChromeClient {
  public:
-  MOCK_METHOD2(EnterFullscreen, void(LocalFrame&, const FullscreenOptions&));
+  MOCK_METHOD2(EnterFullscreen, void(LocalFrame&, const FullscreenOptions*));
   MOCK_METHOD1(ExitFullscreen, void(LocalFrame&));
 };
 

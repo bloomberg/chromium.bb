@@ -23,7 +23,7 @@ class InternalsMediaStream {
   static ScriptPromise addFakeDevice(ScriptState*,
                                      Internals&,
                                      const MediaDeviceInfo*,
-                                     const MediaTrackConstraints& capabilities,
+                                     const MediaTrackConstraints* capabilities,
                                      const MediaStreamTrack* data_source);
 };
 

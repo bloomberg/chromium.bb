@@ -251,17 +251,15 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
                 return cpp_template_type('MaybeShared', idl_type.implemented_as)
             else:
                 return cpp_template_type('NotShared', idl_type.implemented_as)
-    if idl_type.is_interface_type:
+    if idl_type.is_interface_type or idl_type.is_dictionary:
         implemented_as_class = idl_type.implemented_as
-        if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected) or not used_in_cpp_sequence:
+        if raw_type or not used_in_cpp_sequence:
             return implemented_as_class + '*'
         if not used_in_cpp_sequence:
             return implemented_as_class + '*'
+        if used_as_rvalue_type and idl_type.is_garbage_collected:
+            return 'const %s*' % implemented_as_class
         return cpp_template_type('Member', implemented_as_class)
-    if idl_type.is_dictionary:
-        if used_as_rvalue_type:
-            return 'const %s&' % idl_type.implemented_as
-        return idl_type.implemented_as
     if idl_type.is_union_type:
         # Avoid "AOrNullOrB" for cpp type of (A? or B) because we generate
         # V8AOrBOrNull to handle nulle for (A? or B), (A or B?) and (A or B)?
@@ -376,14 +374,14 @@ IdlType.set_garbage_collected_types = classmethod(
 
 
 def is_gc_type(idl_type):
-    return idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_union_type
+    return idl_type.is_garbage_collected or idl_type.is_union_type
 
 
 IdlTypeBase.is_gc_type = property(is_gc_type)
 
 
 def is_traceable(idl_type):
-    return idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_callback_function
+    return idl_type.is_garbage_collected or idl_type.is_callback_function
 
 IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(lambda self: True)
@@ -742,7 +740,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
         check_expression = 'exceptionState.HadException()'
 
-        if idl_type.is_dictionary or idl_type.is_union_type:
+        if idl_type.is_union_type:
             set_expression = cpp_value
         else:
             assign_expression = cpp_value
@@ -783,7 +781,7 @@ def use_output_parameter_for_result(idl_type):
     """True when methods/getters which return the given idl_type should
     take the output argument.
     """
-    return idl_type.is_dictionary or idl_type.is_union_type
+    return idl_type.is_union_type
 
 IdlTypeBase.use_output_parameter_for_result = property(use_output_parameter_for_result)
 
@@ -943,8 +941,8 @@ V8_SET_RETURN_VALUE = {
     'Dictionary': 'V8SetReturnValue(info, {cpp_value})',
     'DictionaryStatic': '#error not implemented yet',
     # Nullable dictionaries
-    'NullableDictionary': 'V8SetReturnValue(info, result.value())',
-    'NullableDictionaryStatic': 'V8SetReturnValue(info, result.value(), info.GetIsolate()->GetCurrentContext()->Global())',
+    'NullableDictionary': 'V8SetReturnValue(info, result)',
+    'NullableDictionaryStatic': 'V8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global())',
     # Union types or dictionaries
     'DictionaryOrUnion': 'V8SetReturnValue(info, result)',
     'DictionaryOrUnionStatic': 'V8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global())',
@@ -1117,7 +1115,7 @@ def cpp_type_has_null_value(idl_type):
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::IsNull() returns true.
     # - Enum types, as they are implemented as Strings.
-    # - Interface types (raw pointer) represent null as a null pointer.
+    # - Interface types and Dictionary types represent null as a null pointer.
     # - Union types, as thier container classes can represent null value.
     # - 'Object' and 'any' type. We use ScriptValue for object type.
     return (idl_type.is_string_type
@@ -1126,6 +1124,7 @@ def cpp_type_has_null_value(idl_type):
             or idl_type.is_callback_interface
             or idl_type.is_callback_function
             or idl_type.is_custom_callback_function
+            or idl_type.is_dictionary
             or idl_type.is_union_type
             or idl_type.base_type == 'object' or idl_type.base_type == 'any')
 

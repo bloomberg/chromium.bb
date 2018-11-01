@@ -21,12 +21,12 @@ class CORE_EXPORT DOMQuad : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMQuad* Create(const DOMPointInit& p1,
-                         const DOMPointInit& p2,
-                         const DOMPointInit& p3,
-                         const DOMPointInit& p4);
-  static DOMQuad* fromRect(const DOMRectInit&);
-  static DOMQuad* fromQuad(const DOMQuadInit&);
+  static DOMQuad* Create(const DOMPointInit* p1,
+                         const DOMPointInit* p2,
+                         const DOMPointInit* p3,
+                         const DOMPointInit* p4);
+  static DOMQuad* fromRect(const DOMRectInit*);
+  static DOMQuad* fromQuad(const DOMQuadInit*);
 
   DOMPoint* p1() const { return p1_; }
   DOMPoint* p2() const { return p2_; }
@@ -46,10 +46,10 @@ class CORE_EXPORT DOMQuad : public ScriptWrappable {
   }
 
  private:
-  DOMQuad(const DOMPointInit& p1,
-          const DOMPointInit& p2,
-          const DOMPointInit& p3,
-          const DOMPointInit& p4);
+  DOMQuad(const DOMPointInit* p1,
+          const DOMPointInit* p2,
+          const DOMPointInit* p3,
+          const DOMPointInit* p4);
   DOMQuad(double x, double y, double width, double height);
 
   void CalculateBounds();

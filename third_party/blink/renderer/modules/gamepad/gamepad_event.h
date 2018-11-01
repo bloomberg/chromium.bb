@@ -22,7 +22,7 @@ class GamepadEvent final : public Event {
     return new GamepadEvent(type, bubbles, cancelable, gamepad);
   }
   static GamepadEvent* Create(const AtomicString& type,
-                              const GamepadEventInit& initializer) {
+                              const GamepadEventInit* initializer) {
     return new GamepadEvent(type, initializer);
   }
   ~GamepadEvent() override;
@@ -35,7 +35,7 @@ class GamepadEvent final : public Event {
 
  private:
   GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
-  GamepadEvent(const AtomicString&, const GamepadEventInit&);
+  GamepadEvent(const AtomicString&, const GamepadEventInit*);
 
   Member<Gamepad> gamepad_;
 };

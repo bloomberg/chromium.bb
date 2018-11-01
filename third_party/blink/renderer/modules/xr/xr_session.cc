@@ -183,7 +183,7 @@ const AtomicString& XRSession::InterfaceName() const {
 ScriptPromise XRSession::requestFrameOfReference(
     ScriptState* script_state,
     const String& type,
-    const XRFrameOfReferenceOptions& options) {
+    const XRFrameOfReferenceOptions* options) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -198,9 +198,9 @@ ScriptPromise XRSession::requestFrameOfReference(
     frameOfRef =
         new XRFrameOfReference(this, XRFrameOfReference::kTypeEyeLevel);
   } else if (type == "stage") {
-    if (!options.disableStageEmulation()) {
+    if (!options->disableStageEmulation()) {
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
-      frameOfRef->UseEmulatedHeight(options.stageEmulationHeight());
+      frameOfRef->UseEmulatedHeight(options->stageEmulationHeight());
     } else if (display_info_ && display_info_->stageParameters) {
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
     } else {

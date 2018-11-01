@@ -125,7 +125,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
 
 ScriptPromise ServiceWorkerClients::matchAll(
     ScriptState* script_state,
-    const ClientQueryOptions& options) {
+    const ClientQueryOptions* options) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
@@ -135,7 +135,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClients(
           mojom::blink::ServiceWorkerClientQueryOptions::New(
-              options.includeUncontrolled(), GetClientType(options.type())),
+              options->includeUncontrolled(), GetClientType(options->type())),
           WTF::Bind(&DidGetClients, WrapPersistent(resolver)));
   return resolver->Promise();
 }

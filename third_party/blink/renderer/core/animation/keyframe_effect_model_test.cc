@@ -678,11 +678,11 @@ TEST_F(AnimationKeyframeEffectModel,
 TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor property_descriptor;
-  property_descriptor.setName("--foo");
-  property_descriptor.setSyntax("<number>");
-  property_descriptor.setInitialValue("0");
-  property_descriptor.setInherits(false);
+  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
+  property_descriptor->setName("--foo");
+  property_descriptor->setSyntax("<number>");
+  property_descriptor->setInitialValue("0");
+  property_descriptor->setInherits(false);
   PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
                                          exception_state);
   EXPECT_FALSE(exception_state.HadException());

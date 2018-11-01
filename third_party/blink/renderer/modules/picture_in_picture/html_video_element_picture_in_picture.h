@@ -25,7 +25,7 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
 
   static void setPictureInPictureControls(
       HTMLVideoElement&,
-      const HeapVector<PictureInPictureControl>&);
+      const HeapVector<Member<PictureInPictureControl>>&);
 
   static bool FastHasAttribute(const QualifiedName&, const HTMLVideoElement&);
 
@@ -39,7 +39,7 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
 
   static std::vector<PictureInPictureControlInfo>
   ToPictureInPictureControlInfoVector(
-      const HeapVector<PictureInPictureControl>&);
+      const HeapVector<Member<PictureInPictureControl>>&);
 };
 
 }  // namespace blink

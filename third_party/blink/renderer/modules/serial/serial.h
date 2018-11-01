@@ -33,7 +33,7 @@ class Serial final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
   ScriptPromise getPorts(ScriptState*);
-  ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions&);
+  ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
 
   void Trace(Visitor*) override;
 

@@ -22,7 +22,7 @@ class MODULES_EXPORT EnterPictureInPictureEvent final : public Event {
                                             PictureInPictureWindow*);
   static EnterPictureInPictureEvent* Create(
       const AtomicString&,
-      const EnterPictureInPictureEventInit&);
+      const EnterPictureInPictureEventInit*);
 
   PictureInPictureWindow* pictureInPictureWindow() const;
 
@@ -31,7 +31,7 @@ class MODULES_EXPORT EnterPictureInPictureEvent final : public Event {
  private:
   EnterPictureInPictureEvent(AtomicString const&, PictureInPictureWindow*);
   EnterPictureInPictureEvent(AtomicString const&,
-                             const EnterPictureInPictureEventInit&);
+                             const EnterPictureInPictureEventInit*);
 
   Member<PictureInPictureWindow> picture_in_picture_window_;
 };

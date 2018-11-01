@@ -91,14 +91,14 @@ static bool ComputationallyIndependent(const CSSValue& value) {
 
 void PropertyRegistration::registerProperty(
     ExecutionContext* execution_context,
-    const PropertyDescriptor& descriptor,
+    const PropertyDescriptor* descriptor,
     ExceptionState& exception_state) {
   // Bindings code ensures these are set.
-  DCHECK(descriptor.hasName());
-  DCHECK(descriptor.hasInherits());
-  DCHECK(descriptor.hasSyntax());
+  DCHECK(descriptor->hasName());
+  DCHECK(descriptor->hasInherits());
+  DCHECK(descriptor->hasSyntax());
 
-  String name = descriptor.name();
+  String name = descriptor->name();
   if (!CSSVariableParser::IsValidVariableName(name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -115,7 +115,7 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
-  CSSSyntaxDescriptor syntax_descriptor(descriptor.syntax());
+  CSSSyntaxDescriptor syntax_descriptor(descriptor->syntax());
   if (!syntax_descriptor.IsValid()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -128,8 +128,8 @@ void PropertyRegistration::registerProperty(
 
   const CSSValue* initial = nullptr;
   scoped_refptr<CSSVariableData> initial_variable_data;
-  if (descriptor.hasInitialValue()) {
-    CSSTokenizer tokenizer(descriptor.initialValue());
+  if (descriptor->hasInitialValue()) {
+    CSSTokenizer tokenizer(descriptor->initialValue());
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
     initial = syntax_descriptor.Parse(CSSParserTokenRange(tokens),
@@ -161,7 +161,7 @@ void PropertyRegistration::registerProperty(
   }
   registry.RegisterProperty(
       atomic_name, *new PropertyRegistration(atomic_name, syntax_descriptor,
-                                             descriptor.inherits(), initial,
+                                             descriptor->inherits(), initial,
                                              std::move(initial_variable_data)));
 
   document->GetStyleEngine().CustomPropertyRegistered();

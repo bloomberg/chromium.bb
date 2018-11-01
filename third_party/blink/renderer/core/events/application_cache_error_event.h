@@ -29,7 +29,7 @@ class ApplicationCacheErrorEvent final : public Event {
 
   static ApplicationCacheErrorEvent* Create(
       const AtomicString& event_type,
-      const ApplicationCacheErrorEventInit& initializer) {
+      const ApplicationCacheErrorEventInit* initializer) {
     return new ApplicationCacheErrorEvent(event_type, initializer);
   }
 
@@ -50,7 +50,7 @@ class ApplicationCacheErrorEvent final : public Event {
                              int status,
                              const String& message);
   ApplicationCacheErrorEvent(const AtomicString& event_type,
-                             const ApplicationCacheErrorEventInit& initializer);
+                             const ApplicationCacheErrorEventInit* initializer);
 
   String reason_;
   String url_;

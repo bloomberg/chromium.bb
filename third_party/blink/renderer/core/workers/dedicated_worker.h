@@ -50,7 +50,7 @@ class CORE_EXPORT DedicatedWorker final
  public:
   static DedicatedWorker* Create(ExecutionContext*,
                                  const String& url,
-                                 const WorkerOptions&,
+                                 const WorkerOptions*,
                                  ExceptionState&);
 
   ~DedicatedWorker() override;
@@ -61,7 +61,7 @@ class CORE_EXPORT DedicatedWorker final
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   const PostMessageOptions&,
+                   const PostMessageOptions*,
                    ExceptionState&);
   void terminate();
   BeginFrameProviderParams CreateBeginFrameProviderParams();
@@ -83,7 +83,7 @@ class CORE_EXPORT DedicatedWorker final
  private:
   DedicatedWorker(ExecutionContext*,
                   const KURL& script_request_url,
-                  const WorkerOptions&);
+                  const WorkerOptions*);
 
   // Starts the worker.
   void Start();
@@ -101,7 +101,7 @@ class CORE_EXPORT DedicatedWorker final
   const AtomicString& InterfaceName() const final;
 
   const KURL script_request_url_;
-  const WorkerOptions options_;
+  Member<const WorkerOptions> options_;
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
   scoped_refptr<WorkerClassicScriptLoader> classic_script_loader_;

@@ -46,7 +46,7 @@ static unsigned g_hardware_context_count = 0;
 static unsigned g_context_id = 0;
 
 AudioContext* AudioContext::Create(Document& document,
-                                   const AudioContextOptions& context_options,
+                                   const AudioContextOptions* context_options,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -54,14 +54,14 @@ AudioContext* AudioContext::Create(Document& document,
       document, WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
-  if (context_options.latencyHint().IsAudioContextLatencyCategory()) {
+  if (context_options->latencyHint().IsAudioContextLatencyCategory()) {
     latency_hint = WebAudioLatencyHint(
-        context_options.latencyHint().GetAsAudioContextLatencyCategory());
-  } else if (context_options.latencyHint().IsDouble()) {
+        context_options->latencyHint().GetAsAudioContextLatencyCategory());
+  } else if (context_options->latencyHint().IsDouble()) {
     // This should be the requested output latency in seconds, without taking
     // into account double buffering (same as baseLatency).
     latency_hint =
-        WebAudioLatencyHint(context_options.latencyHint().GetAsDouble());
+        WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
   }
 
   AudioContext* audio_context = new AudioContext(document, latency_hint);
@@ -237,17 +237,19 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   return promise;
 }
 
-void AudioContext::getOutputTimestamp(ScriptState* script_state,
-                                      AudioTimestamp& result) {
+AudioTimestamp* AudioContext::getOutputTimestamp(
+    ScriptState* script_state) const {
+  AudioTimestamp* result = AudioTimestamp::Create();
+
   DCHECK(IsMainThread());
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window)
-    return;
+    return result;
 
   if (!destination()) {
-    result.setContextTime(0.0);
-    result.setPerformanceTime(0.0);
-    return;
+    result->setContextTime(0.0);
+    result->setPerformanceTime(0.0);
+    return result;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);
@@ -266,8 +268,9 @@ void AudioContext::getOutputTimestamp(ScriptState* script_state,
   if (performance_time < 0.0)
     performance_time = 0.0;
 
-  result.setContextTime(position.position);
-  result.setPerformanceTime(performance_time);
+  result->setContextTime(position.position);
+  result->setPerformanceTime(performance_time);
+  return result;
 }
 
 ScriptPromise AudioContext::closeContext(ScriptState* script_state) {

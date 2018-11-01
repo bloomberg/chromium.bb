@@ -54,14 +54,14 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   static MouseEvent* Create() { return new MouseEvent; }
 
   static MouseEvent* Create(const AtomicString& event_type,
-                            const MouseEventInit&,
+                            const MouseEventInit*,
                             TimeTicks platform_time_stamp,
                             SyntheticEventType,
                             WebMenuSourceType);
 
   static MouseEvent* Create(ScriptState*,
                             const AtomicString& event_type,
-                            const MouseEventInit&);
+                            const MouseEventInit*);
 
   static MouseEvent* Create(const AtomicString& event_type,
                             AbstractView*,
@@ -74,7 +74,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   static void SetCoordinatesFromWebPointerProperties(
       const WebPointerProperties&,
       const LocalDOMWindow*,
-      MouseEventInit&);
+      MouseEventInit*);
 
   void initMouseEvent(ScriptState*,
                       const AtomicString& type,
@@ -195,12 +195,12 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
  protected:
   MouseEvent(const AtomicString& type,
-             const MouseEventInit&,
+             const MouseEventInit*,
              TimeTicks platform_time_stamp,
              SyntheticEventType = kRealOrIndistinguishable,
              WebMenuSourceType = kMenuSourceNone);
 
-  MouseEvent(const AtomicString& type, const MouseEventInit& init)
+  MouseEvent(const AtomicString& type, const MouseEventInit* init)
       : MouseEvent(type, init, CurrentTimeTicks()) {}
 
   MouseEvent();

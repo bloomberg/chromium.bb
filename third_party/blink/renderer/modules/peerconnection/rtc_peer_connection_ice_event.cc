@@ -37,7 +37,7 @@ RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
 
 RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
     const AtomicString& type,
-    const RTCPeerConnectionIceEventInit& initializer) {
+    const RTCPeerConnectionIceEventInit* initializer) {
   return new RTCPeerConnectionIceEvent(type, initializer);
 }
 
@@ -47,8 +47,8 @@ RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(RTCIceCandidate* candidate)
 
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(
     const AtomicString& type,
-    const RTCPeerConnectionIceEventInit& initializer)
-    : Event(type, initializer), candidate_(initializer.candidate()) {}
+    const RTCPeerConnectionIceEventInit* initializer)
+    : Event(type, initializer), candidate_(initializer->candidate()) {}
 
 RTCPeerConnectionIceEvent::~RTCPeerConnectionIceEvent() = default;
 

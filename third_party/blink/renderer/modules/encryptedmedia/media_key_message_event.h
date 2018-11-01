@@ -44,7 +44,7 @@ class MediaKeyMessageEvent final : public Event {
 
   static MediaKeyMessageEvent* Create(
       const AtomicString& type,
-      const MediaKeyMessageEventInit& initializer) {
+      const MediaKeyMessageEventInit* initializer) {
     return new MediaKeyMessageEvent(type, initializer);
   }
 
@@ -58,7 +58,7 @@ class MediaKeyMessageEvent final : public Event {
  private:
   MediaKeyMessageEvent();
   MediaKeyMessageEvent(const AtomicString& type,
-                       const MediaKeyMessageEventInit& initializer);
+                       const MediaKeyMessageEventInit* initializer);
 
   String message_type_;
   Member<DOMArrayBuffer> message_;

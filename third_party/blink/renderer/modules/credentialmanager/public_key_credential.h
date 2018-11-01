@@ -26,13 +26,13 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
       const String& id,
       DOMArrayBuffer* raw_id,
       AuthenticatorResponse*,
-      const AuthenticationExtensionsClientOutputs&);
+      const AuthenticationExtensionsClientOutputs*);
 
   DOMArrayBuffer* rawId() const { return raw_id_.Get(); }
   AuthenticatorResponse* response() const { return response_.Get(); }
   static ScriptPromise isUserVerifyingPlatformAuthenticatorAvailable(
       ScriptState*);
-  void getClientExtensionResults(AuthenticationExtensionsClientOutputs&) const;
+  AuthenticationExtensionsClientOutputs* getClientExtensionResults() const;
 
   // Credential:
   void Trace(blink::Visitor*) override;
@@ -43,11 +43,11 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
       const String& id,
       DOMArrayBuffer* raw_id,
       AuthenticatorResponse*,
-      const AuthenticationExtensionsClientOutputs& extension_outputs);
+      const AuthenticationExtensionsClientOutputs* extension_outputs);
 
   const Member<DOMArrayBuffer> raw_id_;
   const Member<AuthenticatorResponse> response_;
-  AuthenticationExtensionsClientOutputs extension_outputs_;
+  Member<const AuthenticationExtensionsClientOutputs> extension_outputs_;
 };
 
 }  // namespace blink

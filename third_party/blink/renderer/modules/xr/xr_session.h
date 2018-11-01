@@ -85,7 +85,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   ScriptPromise requestFrameOfReference(ScriptState*,
                                         const String& type,
-                                        const XRFrameOfReferenceOptions&);
+                                        const XRFrameOfReferenceOptions*);
 
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);

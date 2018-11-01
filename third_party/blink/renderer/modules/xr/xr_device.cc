@@ -38,11 +38,11 @@ XRDevice::XRDevice(XR* xr, device::mojom::blink::XRDevicePtr device)
     : xr_(xr), device_ptr_(std::move(device)) {}
 
 const char* XRDevice::checkSessionSupport(
-    const XRSessionCreationOptions& options) const {
-  if (!options.immersive()) {
+    const XRSessionCreationOptions* options) const {
+  if (!options->immersive()) {
     // Validation for non-immersive sessions. Validation for immersive sessions
     // happens browser side.
-    if (!options.hasOutputContext()) {
+    if (!options->hasOutputContext()) {
       return kNoOutputContext;
     }
   }
@@ -52,7 +52,7 @@ const char* XRDevice::checkSessionSupport(
 
 ScriptPromise XRDevice::supportsSession(
     ScriptState* script_state,
-    const XRSessionCreationOptions& options) {
+    const XRSessionCreationOptions* options) {
   // Check to see if the device is capable of supporting the requested session
   // options. Note that reporting support here does not guarantee that creating
   // a session with those options will succeed, as other external and
@@ -72,7 +72,7 @@ ScriptPromise XRDevice::supportsSession(
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options.immersive();
+  session_options->immersive = options->immersive();
 
   device_ptr_->SupportsSession(
       std::move(session_options),
@@ -96,10 +96,10 @@ int64_t XRDevice::GetSourceId() const {
 
 ScriptPromise XRDevice::requestSession(
     ScriptState* script_state,
-    const XRSessionCreationOptions& options) {
+    const XRSessionCreationOptions* options) {
   Document* doc = To<Document>(ExecutionContext::From(script_state));
 
-  if (options.immersive() && !did_log_request_immersive_session_ && doc) {
+  if (options->immersive() && !did_log_request_immersive_session_ && doc) {
     ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestPresentation(1)
         .Record(doc->UkmRecorder());
@@ -121,7 +121,7 @@ ScriptPromise XRDevice::requestSession(
 
   // Check if the current page state prevents the requested session from being
   // created.
-  if (options.immersive()) {
+  if (options->immersive()) {
     if (frameProvider()->immersive_session()) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -137,7 +137,7 @@ ScriptPromise XRDevice::requestSession(
   }
 
   // All AR sessions require a user gesture.
-  if (options.environmentIntegration()) {
+  if (options->environmentIntegration()) {
     if (!has_user_activation) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -150,13 +150,13 @@ ScriptPromise XRDevice::requestSession(
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options.immersive();
+  session_options->immersive = options->immersive();
   session_options->provide_passthrough_camera =
-      options.environmentIntegration();
+      options->environmentIntegration();
   session_options->has_user_activation = has_user_activation;
 
   XRPresentationContext* output_context =
-      options.hasOutputContext() ? options.outputContext() : nullptr;
+      options->hasOutputContext() ? options->outputContext() : nullptr;
 
   // TODO(http://crbug.com/826899) Once device activation is sorted out for
   // WebXR, either pass in the correct value for metrics to know whether
@@ -166,7 +166,7 @@ ScriptPromise XRDevice::requestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(output_context),
-                options.environmentIntegration(), options.immersive()));
+                options->environmentIntegration(), options->immersive()));
   return promise;
 }
 

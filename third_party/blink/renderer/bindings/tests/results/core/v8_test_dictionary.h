@@ -24,24 +24,24 @@ class ExceptionState;
 
 class V8TestDictionary {
  public:
-  CORE_EXPORT static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionary&, ExceptionState&);
+  CORE_EXPORT static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionary* impl, ExceptionState&);
 };
 
-CORE_EXPORT bool toV8TestDictionary(const TestDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
+CORE_EXPORT bool toV8TestDictionary(const TestDictionary*, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& impl) {
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary* impl) {
   V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& impl, v8::Local<v8::Object> creationContext) {
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary* impl, v8::Local<v8::Object> creationContext) {
   V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<TestDictionary> : public NativeValueTraitsBase<TestDictionary> {
-  CORE_EXPORT static TestDictionary NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestDictionary* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>

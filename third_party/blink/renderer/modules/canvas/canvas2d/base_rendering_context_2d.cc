@@ -588,7 +588,7 @@ void BaseRenderingContext2D::setTransform(double m11,
   transform(fm11, fm12, fm21, fm22, fdx, fdy);
 }
 
-void BaseRenderingContext2D::setTransform(DOMMatrix2DInit& transform,
+void BaseRenderingContext2D::setTransform(DOMMatrix2DInit* transform,
                                           ExceptionState& exception_state) {
   DOMMatrixReadOnly* m =
       DOMMatrixReadOnly::fromMatrix2D(transform, exception_state);
@@ -1491,12 +1491,12 @@ bool BaseRenderingContext2D::ComputeDirtyRect(
   return true;
 }
 
-ImageDataColorSettings
+ImageDataColorSettings*
 BaseRenderingContext2D::GetColorSettingsAsImageDataColorSettings() const {
-  ImageDataColorSettings color_settings;
-  color_settings.setColorSpace(ColorSpaceAsString());
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
+  color_settings->setColorSpace(ColorSpaceAsString());
   if (PixelFormat() == kF16CanvasPixelFormat)
-    color_settings.setStorageFormat(kFloat32ArrayStorageFormatName);
+    color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
   return color_settings;
 }
 
@@ -1504,9 +1504,9 @@ ImageData* BaseRenderingContext2D::createImageData(
     ImageData* image_data,
     ExceptionState& exception_state) const {
   ImageData* result = nullptr;
-  ImageDataColorSettings color_settings =
+  ImageDataColorSettings* color_settings =
       GetColorSettingsAsImageDataColorSettings();
-  result = ImageData::Create(image_data->Size(), &color_settings);
+  result = ImageData::Create(image_data->Size(), color_settings);
   if (!result)
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
   return result;
@@ -1525,9 +1525,9 @@ ImageData* BaseRenderingContext2D::createImageData(
 
   IntSize size(abs(sw), abs(sh));
   ImageData* result = nullptr;
-  ImageDataColorSettings color_settings =
+  ImageDataColorSettings* color_settings =
       GetColorSettingsAsImageDataColorSettings();
-  result = ImageData::Create(size, &color_settings);
+  result = ImageData::Create(size, color_settings);
 
   if (!result)
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
@@ -1537,7 +1537,7 @@ ImageData* BaseRenderingContext2D::createImageData(
 ImageData* BaseRenderingContext2D::createImageData(
     unsigned width,
     unsigned height,
-    ImageDataColorSettings& color_settings,
+    ImageDataColorSettings* color_settings,
     ExceptionState& exception_state) const {
   return ImageData::CreateImageData(width, height, color_settings,
                                     exception_state);
@@ -1548,8 +1548,8 @@ ImageData* BaseRenderingContext2D::createImageData(
     unsigned width,
     unsigned height,
     ExceptionState& exception_state) const {
-  ImageDataColorSettings color_settings;
-  return ImageData::CreateImageData(data_array, width, height, color_settings,
+  return ImageData::CreateImageData(data_array, width, height,
+                                    ImageDataColorSettings::Create(),
                                     exception_state);
 }
 
@@ -1557,7 +1557,7 @@ ImageData* BaseRenderingContext2D::createImageData(
     ImageDataArray& data_array,
     unsigned width,
     unsigned height,
-    ImageDataColorSettings& color_settings,
+    ImageDataColorSettings* color_settings,
     ExceptionState& exception_state) const {
   return ImageData::CreateImageData(data_array, width, height, color_settings,
                                     exception_state);
@@ -1615,11 +1615,11 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   IntRect image_data_rect(sx, sy, sw, sh);
   bool hasResourceProvider = CanCreateCanvas2dResourceProvider();
-  ImageDataColorSettings color_settings =
+  ImageDataColorSettings* color_settings =
       GetColorSettingsAsImageDataColorSettings();
   if (!hasResourceProvider || isContextLost()) {
     ImageData* result =
-        ImageData::Create(image_data_rect.Size(), &color_settings);
+        ImageData::Create(image_data_rect.Size(), color_settings);
     if (!result)
       exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return result;
@@ -1647,13 +1647,13 @@ ImageData* BaseRenderingContext2D::getImageData(
   // Convert pixels to proper storage format if needed
   if (PixelFormat() != kRGBA8CanvasPixelFormat) {
     ImageDataStorageFormat storage_format =
-        ImageData::GetImageDataStorageFormat(color_settings.storageFormat());
+        ImageData::GetImageDataStorageFormat(color_settings->storageFormat());
     DOMArrayBufferView* array_buffer_view =
         ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
             contents, PixelFormat(), storage_format);
     return ImageData::Create(image_data_rect.Size(),
                              NotShared<DOMArrayBufferView>(array_buffer_view),
-                             &color_settings);
+                             color_settings);
   }
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
 
@@ -1661,7 +1661,7 @@ ImageData* BaseRenderingContext2D::getImageData(
       image_data_rect.Size(),
       NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
           array_buffer, 0, array_buffer->ByteLength())),
-      &color_settings);
+      color_settings);
 
   if (!IsPaint2D()) {
     int scaled_time = getScaledElapsedTime(

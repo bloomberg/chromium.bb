@@ -533,25 +533,25 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
 }
 
 OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
-                                       const OscillatorOptions& options,
+                                       const OscillatorOptions* options,
                                        ExceptionState& exception_state) {
-  if (options.type() == "custom" && !options.hasPeriodicWave()) {
+  if (options->type() == "custom" && !options->hasPeriodicWave()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "A PeriodicWave must be specified if the type is set to \"custom\"");
     return nullptr;
   }
 
-  OscillatorNode* node =
-      Create(*context, options.type(), options.periodicWave(), exception_state);
+  OscillatorNode* node = Create(*context, options->type(),
+                                options->periodicWave(), exception_state);
 
   if (!node)
     return nullptr;
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->detune()->setValue(options.detune());
-  node->frequency()->setValue(options.frequency());
+  node->detune()->setValue(options->detune());
+  node->frequency()->setValue(options->frequency());
 
   return node;
 }

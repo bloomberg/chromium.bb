@@ -23,7 +23,7 @@ class MODULES_EXPORT HTMLCanvasElementModule {
  public:
   static void getContext(HTMLCanvasElement&,
                          const String&,
-                         const CanvasContextCreationAttributesModule&,
+                         const CanvasContextCreationAttributesModule*,
                          ExceptionState&,
                          RenderingContext&);
   static OffscreenCanvas* transferControlToOffscreen(HTMLCanvasElement&,

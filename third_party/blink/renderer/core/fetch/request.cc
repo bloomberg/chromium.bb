@@ -80,12 +80,12 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   return request;
 }
 
-static bool AreAnyMembersPresent(const RequestInit& init) {
-  return init.hasMethod() || init.hasHeaders() || init.hasBody() ||
-         init.hasReferrer() || init.hasReferrerPolicy() || init.hasMode() ||
-         init.hasCredentials() || init.hasCache() || init.hasRedirect() ||
-         init.hasIntegrity() || init.hasKeepalive() || init.hasImportance() ||
-         init.hasSignal();
+static bool AreAnyMembersPresent(const RequestInit* init) {
+  return init->hasMethod() || init->hasHeaders() || init->hasBody() ||
+         init->hasReferrer() || init->hasReferrerPolicy() || init->hasMode() ||
+         init->hasCredentials() || init->hasCache() || init->hasRedirect() ||
+         init->hasIntegrity() || init->hasKeepalive() ||
+         init->hasImportance() || init->hasSignal();
 }
 
 static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
@@ -158,7 +158,7 @@ Request* Request::CreateRequestWithRequestOrString(
     ScriptState* script_state,
     Request* input_request,
     const String& input_string,
-    const RequestInit& init,
+    const RequestInit* init,
     ExceptionState& exception_state) {
   // Setup RequestInit's body first
   // - "If |input| is a Request object and it is disturbed, throw a
@@ -281,21 +281,21 @@ Request* Request::CreateRequestWithRequestOrString(
   }
 
   // "If init’s referrer member is present, then:"
-  if (init.hasReferrer()) {
+  if (init->hasReferrer()) {
     // Nothing to do for the step "Let |referrer| be |init|'s referrer
     // member."
 
-    if (init.referrer().IsEmpty()) {
+    if (init->referrer().IsEmpty()) {
       // "If |referrer| is the empty string, set |request|'s referrer to
       // "no-referrer" and terminate these substeps."
       request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
     } else {
       // "Let |parsedReferrer| be the result of parsing |referrer| with
       // |baseURL|."
-      KURL parsed_referrer(base_url, init.referrer());
+      KURL parsed_referrer(base_url, init->referrer());
       if (!parsed_referrer.IsValid()) {
         // "If |parsedReferrer| is failure, throw a TypeError."
-        exception_state.ThrowTypeError("Referrer '" + init.referrer() +
+        exception_state.ThrowTypeError("Referrer '" + init->referrer() +
                                        "' is not a valid URL.");
         return nullptr;
       }
@@ -326,15 +326,15 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If init's referrerPolicy member is present, set request's referrer
   // policy to it."
-  if (init.hasReferrerPolicy()) {
+  if (init->hasReferrerPolicy()) {
     // In case referrerPolicy = "", the SecurityPolicy method below will not
     // actually set referrer_policy, so we'll default to
     // kReferrerPolicyDefault.
     ReferrerPolicy referrer_policy;
     if (!SecurityPolicy::ReferrerPolicyFromString(
-            init.referrerPolicy(), kDoNotSupportReferrerPolicyLegacyKeywords,
+            init->referrerPolicy(), kDoNotSupportReferrerPolicyLegacyKeywords,
             &referrer_policy)) {
-      DCHECK(init.referrerPolicy().IsEmpty());
+      DCHECK(init->referrerPolicy().IsEmpty());
       referrer_policy = kReferrerPolicyDefault;
     }
 
@@ -346,17 +346,17 @@ Request* Request::CreateRequestWithRequestOrString(
   //   |fallbackMode| otherwise."
   // - "If |mode| is "navigate", throw a TypeError."
   // - "If |mode| is non-null, set |request|'s mode to |mode|."
-  if (init.mode() == "navigate") {
+  if (init->mode() == "navigate") {
     exception_state.ThrowTypeError(
         "Cannot construct a Request with a RequestInit whose mode member is "
         "set as 'navigate'.");
     return nullptr;
   }
-  if (init.mode() == "same-origin") {
+  if (init->mode() == "same-origin") {
     request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
-  } else if (init.mode() == "no-cors") {
+  } else if (init->mode() == "no-cors") {
     request->SetMode(network::mojom::FetchRequestMode::kNoCORS);
-  } else if (init.mode() == "cors") {
+  } else if (init->mode() == "cors") {
     request->SetMode(network::mojom::FetchRequestMode::kCORS);
   } else {
     // |inputRequest| is directly checked here instead of setting and
@@ -369,11 +369,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |init|'s importance member is present, set |request|'s importance
   // mode to it." For more information see Priority Hints at
   // https://crbug.com/821464
-  DCHECK(init.importance().IsNull() ||
+  DCHECK(init->importance().IsNull() ||
          RuntimeEnabledFeatures::PriorityHintsEnabled());
-  if (init.importance() == "low") {
+  if (init->importance() == "low") {
     request->SetImportance(mojom::FetchImportanceMode::kImportanceLow);
-  } else if (init.importance() == "high") {
+  } else if (init->importance() == "high") {
     request->SetImportance(mojom::FetchImportanceMode::kImportanceHigh);
   }
 
@@ -383,24 +383,24 @@ Request* Request::CreateRequestWithRequestOrString(
   // |credentials|."
 
   network::mojom::FetchCredentialsMode credentials_mode;
-  if (ParseCredentialsMode(init.credentials(), &credentials_mode)) {
+  if (ParseCredentialsMode(init->credentials(), &credentials_mode)) {
     request->SetCredentials(credentials_mode);
   } else if (!input_request) {
     request->SetCredentials(network::mojom::FetchCredentialsMode::kSameOrigin);
   }
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
-  if (init.cache() == "default") {
+  if (init->cache() == "default") {
     request->SetCacheMode(mojom::FetchCacheMode::kDefault);
-  } else if (init.cache() == "no-store") {
+  } else if (init->cache() == "no-store") {
     request->SetCacheMode(mojom::FetchCacheMode::kNoStore);
-  } else if (init.cache() == "reload") {
+  } else if (init->cache() == "reload") {
     request->SetCacheMode(mojom::FetchCacheMode::kBypassCache);
-  } else if (init.cache() == "no-cache") {
+  } else if (init->cache() == "no-cache") {
     request->SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  } else if (init.cache() == "force-cache") {
+  } else if (init->cache() == "force-cache") {
     request->SetCacheMode(mojom::FetchCacheMode::kForceCache);
-  } else if (init.cache() == "only-if-cached") {
+  } else if (init->cache() == "only-if-cached") {
     request->SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
   }
 
@@ -415,46 +415,46 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
-  if (init.redirect() == "follow") {
+  if (init->redirect() == "follow") {
     request->SetRedirect(network::mojom::FetchRedirectMode::kFollow);
-  } else if (init.redirect() == "error") {
+  } else if (init->redirect() == "error") {
     request->SetRedirect(network::mojom::FetchRedirectMode::kError);
-  } else if (init.redirect() == "manual") {
+  } else if (init->redirect() == "manual") {
     request->SetRedirect(network::mojom::FetchRedirectMode::kManual);
   }
 
   // "If |init|'s integrity member is present, set |request|'s
   // integrity metadata to it."
-  if (init.hasIntegrity())
-    request->SetIntegrity(init.integrity());
+  if (init->hasIntegrity())
+    request->SetIntegrity(init->integrity());
 
-  if (init.hasKeepalive())
-    request->SetKeepalive(init.keepalive());
+  if (init->hasKeepalive())
+    request->SetKeepalive(init->keepalive());
 
   // "If |init|'s method member is present, let |method| be it and run these
   // substeps:"
-  if (init.hasMethod()) {
+  if (init->hasMethod()) {
     // "If |method| is not a method or method is a forbidden method, throw
     // a TypeError."
-    if (!IsValidHTTPToken(init.method())) {
-      exception_state.ThrowTypeError("'" + init.method() +
+    if (!IsValidHTTPToken(init->method())) {
+      exception_state.ThrowTypeError("'" + init->method() +
                                      "' is not a valid HTTP method.");
       return nullptr;
     }
-    if (FetchUtils::IsForbiddenMethod(init.method())) {
-      exception_state.ThrowTypeError("'" + init.method() +
+    if (FetchUtils::IsForbiddenMethod(init->method())) {
+      exception_state.ThrowTypeError("'" + init->method() +
                                      "' HTTP method is unsupported.");
       return nullptr;
     }
     // "Normalize |method|."
     // "Set |request|'s method to |method|."
     request->SetMethod(
-        FetchUtils::NormalizeMethod(AtomicString(init.method())));
+        FetchUtils::NormalizeMethod(AtomicString(init->method())));
   }
 
   // "If |init|'s signal member is present, then set |signal| to it."
-  if (init.hasSignal()) {
-    signal = init.signal();
+  if (init->hasSignal()) {
+    signal = init->signal();
   }
 
   // "Let |r| be a new Request object associated with |request| and a new
@@ -468,7 +468,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // We don't create a copy of r's Headers object when init's headers member
   // is present.
   Headers* headers = nullptr;
-  if (!init.hasHeaders()) {
+  if (!init->hasHeaders()) {
     headers = r->getHeaders()->Clone();
   }
   // "Empty |r|'s request's header list."
@@ -490,8 +490,8 @@ Request* Request::CreateRequestWithRequestOrString(
     r->signal_->Follow(signal);
 
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
-  if (init.hasHeaders()) {
-    r->getHeaders()->FillWith(init.headers(), exception_state);
+  if (init->hasHeaders()) {
+    r->getHeaders()->FillWith(init->headers(), exception_state);
   } else {
     DCHECK(headers);
     r->getHeaders()->FillWith(headers, exception_state);
@@ -502,7 +502,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If either |init|'s body member is present or |temporaryBody| is
   // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
   v8::Local<v8::Value> init_body =
-      init.hasBody() ? init.body().V8Value() : v8::Local<v8::Value>();
+      init->hasBody() ? init->body().V8Value() : v8::Local<v8::Value>();
   if ((!init_body.IsEmpty() && !init_body->IsNull()) || temporary_body) {
     if (request->Method() == http_names::kGET ||
         request->Method() == http_names::kHEAD) {
@@ -567,7 +567,7 @@ Request* Request::CreateRequestWithRequestOrString(
 
 Request* Request::Create(ScriptState* script_state,
                          const RequestInfo& input,
-                         const RequestInit& init,
+                         const RequestInit* init,
                          ExceptionState& exception_state) {
   DCHECK(!input.IsNull());
   if (input.IsUSVString())
@@ -578,12 +578,12 @@ Request* Request::Create(ScriptState* script_state,
 Request* Request::Create(ScriptState* script_state,
                          const String& input,
                          ExceptionState& exception_state) {
-  return Create(script_state, input, RequestInit(), exception_state);
+  return Create(script_state, input, RequestInit::Create(), exception_state);
 }
 
 Request* Request::Create(ScriptState* script_state,
                          const String& input,
-                         const RequestInit& init,
+                         const RequestInit* init,
                          ExceptionState& exception_state) {
   return CreateRequestWithRequestOrString(script_state, nullptr, input, init,
                                           exception_state);
@@ -592,12 +592,12 @@ Request* Request::Create(ScriptState* script_state,
 Request* Request::Create(ScriptState* script_state,
                          Request* input,
                          ExceptionState& exception_state) {
-  return Create(script_state, input, RequestInit(), exception_state);
+  return Create(script_state, input, RequestInit::Create(), exception_state);
 }
 
 Request* Request::Create(ScriptState* script_state,
                          Request* input,
-                         const RequestInit& init,
+                         const RequestInit* init,
                          ExceptionState& exception_state) {
   return CreateRequestWithRequestOrString(script_state, input, String(), init,
                                           exception_state);

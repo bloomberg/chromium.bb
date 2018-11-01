@@ -121,7 +121,7 @@ CSSFontFace* CreateCSSFontFace(FontFace* font_face,
 FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            StringOrArrayBufferOrArrayBufferView& source,
-                           const FontFaceDescriptors& descriptors) {
+                           const FontFaceDescriptors* descriptors) {
   if (source.IsString())
     return Create(context, family, source.GetAsString(), descriptors);
   if (source.IsArrayBuffer())
@@ -137,7 +137,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
 FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            const String& source,
-                           const FontFaceDescriptors& descriptors) {
+                           const FontFaceDescriptors* descriptors) {
   FontFace* font_face = new FontFace(context, family, descriptors);
 
   const CSSValue* src = ParseCSSValue(context, source, AtRuleDescriptorID::Src);
@@ -155,7 +155,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
 FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            DOMArrayBuffer* source,
-                           const FontFaceDescriptors& descriptors) {
+                           const FontFaceDescriptors* descriptors) {
   FontFace* font_face = new FontFace(context, family, descriptors);
   font_face->InitCSSFontFace(static_cast<const unsigned char*>(source->Data()),
                              source->ByteLength());
@@ -165,7 +165,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
 FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            DOMArrayBufferView* source,
-                           const FontFaceDescriptors& descriptors) {
+                           const FontFaceDescriptors* descriptors) {
   FontFace* font_face = new FontFace(context, family, descriptors);
   font_face->InitCSSFontFace(
       static_cast<const unsigned char*>(source->BaseAddress()),
@@ -216,21 +216,21 @@ FontFace::FontFace(ExecutionContext* context)
 
 FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
-                   const FontFaceDescriptors& descriptors)
+                   const FontFaceDescriptors* descriptors)
     : ContextClient(context), family_(family), status_(kUnloaded) {
-  SetPropertyFromString(context, descriptors.style(),
+  SetPropertyFromString(context, descriptors->style(),
                         AtRuleDescriptorID::FontStyle);
-  SetPropertyFromString(context, descriptors.weight(),
+  SetPropertyFromString(context, descriptors->weight(),
                         AtRuleDescriptorID::FontWeight);
-  SetPropertyFromString(context, descriptors.stretch(),
+  SetPropertyFromString(context, descriptors->stretch(),
                         AtRuleDescriptorID::FontStretch);
-  SetPropertyFromString(context, descriptors.unicodeRange(),
+  SetPropertyFromString(context, descriptors->unicodeRange(),
                         AtRuleDescriptorID::UnicodeRange);
-  SetPropertyFromString(context, descriptors.variant(),
+  SetPropertyFromString(context, descriptors->variant(),
                         AtRuleDescriptorID::FontVariant);
-  SetPropertyFromString(context, descriptors.featureSettings(),
+  SetPropertyFromString(context, descriptors->featureSettings(),
                         AtRuleDescriptorID::FontFeatureSettings);
-  SetPropertyFromString(context, descriptors.display(),
+  SetPropertyFromString(context, descriptors->display(),
                         AtRuleDescriptorID::FontDisplay);
 }
 

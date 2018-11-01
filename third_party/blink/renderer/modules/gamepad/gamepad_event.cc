@@ -13,10 +13,10 @@ GamepadEvent::GamepadEvent(const AtomicString& type,
     : Event(type, bubbles, cancelable), gamepad_(gamepad) {}
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
-                           const GamepadEventInit& initializer)
+                           const GamepadEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasGamepad())
-    gamepad_ = initializer.gamepad();
+  if (initializer->hasGamepad())
+    gamepad_ = initializer->gamepad();
 }
 
 GamepadEvent::~GamepadEvent() = default;

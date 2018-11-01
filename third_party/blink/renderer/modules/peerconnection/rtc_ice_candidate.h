@@ -49,7 +49,7 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
 
  public:
   static RTCIceCandidate* Create(ExecutionContext*,
-                                 const RTCIceCandidateInit&,
+                                 const RTCIceCandidateInit*,
                                  ExceptionState&);
   static RTCIceCandidate* Create(scoped_refptr<WebRTCICECandidate>);
 

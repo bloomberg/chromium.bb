@@ -63,10 +63,9 @@ bool ParseInputArguments(v8::Local<v8::Context> context,
   return true;
 }
 
-bool ParsePaintRenderingContext2DSettings(
+PaintRenderingContext2DSettings* ParsePaintRenderingContext2DSettings(
     v8::Local<v8::Context> context,
     v8::Local<v8::Function> constructor,
-    PaintRenderingContext2DSettings* context_settings,
     ExceptionState* exception_state) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::TryCatch block(isolate);
@@ -75,13 +74,14 @@ bool ParsePaintRenderingContext2DSettings(
   if (!constructor->Get(context, V8AtomicString(isolate, "contextOptions"))
            .ToLocal(&context_settings_value)) {
     exception_state->RethrowV8Exception(block.Exception());
-    return false;
+    return nullptr;
   }
-  V8PaintRenderingContext2DSettings::ToImpl(
-      isolate, context_settings_value, *context_settings, *exception_state);
+  auto* context_settings =
+      NativeValueTraits<PaintRenderingContext2DSettings>::NativeValue(
+          isolate, context_settings_value, *exception_state);
   if (exception_state->HadException())
-    return false;
-  return true;
+    return nullptr;
+  return context_settings;
 }
 
 }  // namespace
@@ -161,9 +161,10 @@ void PaintWorkletGlobalScope::registerPaint(
                            &exception_state))
     return;
 
-  PaintRenderingContext2DSettings context_settings;
-  if (!ParsePaintRenderingContext2DSettings(
-          context, constructor, &context_settings, &exception_state))
+  PaintRenderingContext2DSettings* context_settings =
+      ParsePaintRenderingContext2DSettings(context, constructor,
+                                           &exception_state);
+  if (!context_settings)
     return;
 
   v8::Local<v8::Object> prototype;

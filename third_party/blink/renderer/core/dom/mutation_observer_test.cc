@@ -42,8 +42,8 @@ TEST(MutationObserverTest, DisconnectCrash) {
   DCHECK(head);
   Persistent<MutationObserver> observer =
       MutationObserver::Create(new EmptyMutationCallback(*document));
-  MutationObserverInit init;
-  init.setCharacterDataOldValue(false);
+  MutationObserverInit* init = MutationObserverInit::Create();
+  init->setCharacterDataOldValue(false);
   observer->observe(head, init, ASSERT_NO_EXCEPTION);
 
   head->remove();

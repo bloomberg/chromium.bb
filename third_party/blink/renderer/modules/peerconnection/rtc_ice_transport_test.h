@@ -26,7 +26,7 @@ class MockEventListener final : public EventListener {
 
 class RTCIceTransportTest : public testing::Test {
  public:
-  static RTCIceParameters CreateRemoteRTCIceParameters1();
+  static RTCIceParameters* CreateRemoteRTCIceParameters1();
 
   RTCIceTransportTest();
   ~RTCIceTransportTest() override;

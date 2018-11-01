@@ -11,7 +11,7 @@ namespace blink {
 
 USBConnectionEvent* USBConnectionEvent::Create(
     const AtomicString& type,
-    const USBConnectionEventInit& initializer) {
+    const USBConnectionEventInit* initializer) {
   return new USBConnectionEvent(type, initializer);
 }
 
@@ -22,8 +22,8 @@ USBConnectionEvent* USBConnectionEvent::Create(const AtomicString& type,
 
 USBConnectionEvent::USBConnectionEvent(
     const AtomicString& type,
-    const USBConnectionEventInit& initializer)
-    : Event(type, initializer), device_(initializer.device()) {}
+    const USBConnectionEventInit* initializer)
+    : Event(type, initializer), device_(initializer->device()) {}
 
 USBConnectionEvent::USBConnectionEvent(const AtomicString& type,
                                        USBDevice* device)

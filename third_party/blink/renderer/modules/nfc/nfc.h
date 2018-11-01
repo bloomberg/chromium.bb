@@ -43,13 +43,13 @@ class NFC final : public ScriptWrappable,
   // Pushes NFCPushMessage asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,
                      const NFCPushMessage&,
-                     const NFCPushOptions&);
+                     const NFCPushOptions*);
 
   // Cancels ongoing push operation.
   ScriptPromise cancelPush(ScriptState*, const String&);
 
   // Starts watching for NFC messages that match NFCWatchOptions criteria.
-  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions&);
+  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions*);
 
   // Cancels watch operation with id.
   ScriptPromise cancelWatch(ScriptState*, int32_t id);

@@ -44,7 +44,7 @@ class CORE_EXPORT ProgressEvent : public Event {
     return new ProgressEvent(type, length_computable, loaded, total);
   }
   static ProgressEvent* Create(const AtomicString& type,
-                               const ProgressEventInit& initializer) {
+                               const ProgressEventInit* initializer) {
     return new ProgressEvent(type, initializer);
   }
 
@@ -62,7 +62,7 @@ class CORE_EXPORT ProgressEvent : public Event {
                 bool length_computable,
                 unsigned long long loaded,
                 unsigned long long total);
-  ProgressEvent(const AtomicString&, const ProgressEventInit&);
+  ProgressEvent(const AtomicString&, const ProgressEventInit*);
 
  private:
   bool length_computable_;

@@ -31,18 +31,18 @@ class DictionaryTest : public ScriptWrappable {
   ~DictionaryTest() override;
 
   // Stores all members into corresponding fields
-  void set(const InternalDictionary&);
+  void set(const InternalDictionary*);
   // Sets each member of the given TestDictionary from fields
-  void get(InternalDictionary&);
+  InternalDictionary* get();
   // Returns properties of the latest |dictionaryMember| which was set via
   // set().
   ScriptValue getDictionaryMemberProperties(ScriptState*);
 
-  void setDerived(const InternalDictionaryDerived&);
-  void getDerived(InternalDictionaryDerived&);
+  void setDerived(const InternalDictionaryDerived*);
+  InternalDictionaryDerived* getDerived();
 
-  void setDerivedDerived(const InternalDictionaryDerivedDerived&);
-  void getDerivedDerived(InternalDictionaryDerivedDerived&);
+  void setDerivedDerived(const InternalDictionaryDerivedDerived*);
+  InternalDictionaryDerivedDerived* getDerivedDerived();
 
   String stringFromIterable(ScriptState*,
                             Dictionary iterable,
@@ -54,6 +54,10 @@ class DictionaryTest : public ScriptWrappable {
   DictionaryTest();
 
   void Reset();
+
+  void GetInternals(InternalDictionary*);
+  void GetDerivedInternals(InternalDictionaryDerived*);
+  void GetDerivedDerivedInternals(InternalDictionaryDerivedDerived*);
 
   // The reason to use base::Optional<T> is convenience; we use
   // base::Optional<T> here to record whether the member field is set or not.

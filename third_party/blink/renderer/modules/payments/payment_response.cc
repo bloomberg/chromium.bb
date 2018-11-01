@@ -118,7 +118,7 @@ ScriptPromise PaymentResponse::complete(ScriptState* script_state,
 
 ScriptPromise PaymentResponse::retry(
     ScriptState* script_state,
-    const PaymentValidationErrors& error_fields) {
+    const PaymentValidationErrors* error_fields) {
   return payment_state_resolver_->Retry(script_state, error_fields);
 }
 

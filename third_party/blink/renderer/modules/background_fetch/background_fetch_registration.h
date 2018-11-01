@@ -67,13 +67,13 @@ class BackgroundFetchRegistration final
   String id() const;
   ScriptPromise match(ScriptState* script_state,
                       const RequestOrUSVString& request,
-                      const CacheQueryOptions& options,
+                      const CacheQueryOptions* options,
                       ExceptionState& exception_state);
   ScriptPromise matchAll(ScriptState* scrip_state,
                          ExceptionState& exception_state);
   ScriptPromise matchAll(ScriptState* script_state,
                          const RequestOrUSVString& request,
-                         const CacheQueryOptions& options,
+                         const CacheQueryOptions* options,
                          ExceptionState& exception_state);
 
   unsigned long long uploadTotal() const;

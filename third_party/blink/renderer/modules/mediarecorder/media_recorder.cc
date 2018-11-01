@@ -55,7 +55,7 @@ String StateToString(MediaRecorder::State state) {
 // This method throws NotSupportedError.
 void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
                                    ExecutionContext* context,
-                                   const MediaRecorderOptions& options,
+                                   const MediaRecorderOptions* options,
                                    MediaStream* stream,
                                    int* audio_bits_per_second,
                                    int* video_bits_per_second) {
@@ -68,25 +68,25 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
   const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
 
   int overall_bps = 0;
-  if (options.hasBitsPerSecond())
-    overall_bps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
+  if (options->hasBitsPerSecond())
+    overall_bps = std::min(options->bitsPerSecond(), kMaxIntAsUnsigned);
   int video_bps = 0;
-  if (options.hasVideoBitsPerSecond() && use_video)
-    video_bps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
+  if (options->hasVideoBitsPerSecond() && use_video)
+    video_bps = std::min(options->videoBitsPerSecond(), kMaxIntAsUnsigned);
   int audio_bps = 0;
-  if (options.hasAudioBitsPerSecond() && use_audio)
-    audio_bps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
+  if (options->hasAudioBitsPerSecond() && use_audio)
+    audio_bps = std::min(options->audioBitsPerSecond(), kMaxIntAsUnsigned);
 
   if (use_audio) {
     // |overallBps| overrides the specific audio and video bit rates.
-    if (options.hasBitsPerSecond()) {
+    if (options->hasBitsPerSecond()) {
       if (use_video)
         audio_bps = overall_bps / 10;
       else
         audio_bps = overall_bps;
     }
     // Limit audio bitrate values if set explicitly or calculated.
-    if (options.hasAudioBitsPerSecond() || options.hasBitsPerSecond()) {
+    if (options->hasAudioBitsPerSecond() || options->hasBitsPerSecond()) {
       if (audio_bps > kLargestAutoAllocatedOpusBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
             kJSMessageSource, kWarningMessageLevel,
@@ -111,11 +111,11 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
 
   if (use_video) {
     // Allocate the remaining |overallBps|, if any, to video.
-    if (options.hasBitsPerSecond())
+    if (options->hasBitsPerSecond())
       video_bps = overall_bps - audio_bps;
     // Clamp the video bit rate. Avoid clamping if the user has not set it
     // explicitly.
-    if (options.hasVideoBitsPerSecond() || options.hasBitsPerSecond()) {
+    if (options->hasVideoBitsPerSecond() || options->hasBitsPerSecond()) {
       if (video_bps < kSmallestPossibleVpxBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
             kJSMessageSource, kWarningMessageLevel,
@@ -140,7 +140,7 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      ExceptionState& exception_state) {
   MediaRecorder* recorder = new MediaRecorder(
-      context, stream, MediaRecorderOptions(), exception_state);
+      context, stream, MediaRecorderOptions::Create(), exception_state);
   recorder->PauseIfNeeded();
 
   return recorder;
@@ -148,7 +148,7 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
 
 MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
-                                     const MediaRecorderOptions& options,
+                                     const MediaRecorderOptions* options,
                                      ExceptionState& exception_state) {
   MediaRecorder* recorder =
       new MediaRecorder(context, stream, options, exception_state);
@@ -159,11 +159,12 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
 
 MediaRecorder::MediaRecorder(ExecutionContext* context,
                              MediaStream* stream,
-                             const MediaRecorderOptions& options,
+                             const MediaRecorderOptions* options,
                              ExceptionState& exception_state)
     : PausableObject(context),
       stream_(stream),
-      mime_type_(options.hasMimeType() ? options.mimeType() : kDefaultMimeType),
+      mime_type_(options->hasMimeType() ? options->mimeType()
+                                        : kDefaultMimeType),
       stopped_(true),
       audio_bits_per_second_(0),
       video_bits_per_second_(0),
@@ -203,7 +204,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
     return;
   }
   // If the user requested no mimeType, query |recorder_handler_|.
-  if (options.mimeType().IsEmpty()) {
+  if (options->mimeType().IsEmpty()) {
     const String actual_mime_type = recorder_handler_->ActualMimeType();
     if (!actual_mime_type.IsEmpty())
       mime_type_ = actual_mime_type;

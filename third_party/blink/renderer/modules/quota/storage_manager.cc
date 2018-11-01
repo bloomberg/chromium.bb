@@ -43,9 +43,9 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
     return;
   }
 
-  StorageEstimate estimate;
-  estimate.setUsage(usage_in_bytes);
-  estimate.setQuota(quota_in_bytes);
+  StorageEstimate* estimate = StorageEstimate::Create();
+  estimate->setUsage(usage_in_bytes);
+  estimate->setQuota(quota_in_bytes);
   resolver->Resolve(estimate);
 }
 

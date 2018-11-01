@@ -53,10 +53,10 @@ TEST_F(PerformanceObserverTest, Observe) {
   Initialize(scope.GetScriptState());
 
   NonThrowableExceptionState exception_state;
-  PerformanceObserverInit options;
+  PerformanceObserverInit* options = PerformanceObserverInit::Create();
   Vector<String> entry_type_vec;
   entry_type_vec.push_back("mark");
-  options.setEntryTypes(entry_type_vec);
+  options->setEntryTypes(entry_type_vec);
 
   observer_->observe(options, exception_state);
   EXPECT_TRUE(IsRegistered());

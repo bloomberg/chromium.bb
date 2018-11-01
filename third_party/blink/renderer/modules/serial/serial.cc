@@ -27,7 +27,7 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
 }
 
 ScriptPromise Serial::requestPort(ScriptState* script_state,
-                                  const SerialPortRequestOptions& options) {
+                                  const SerialPortRequestOptions* options) {
   return ScriptPromise::RejectWithDOMException(
       script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError));
 }

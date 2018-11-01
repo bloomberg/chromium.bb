@@ -14,7 +14,7 @@ RTCQuicStreamEvent* RTCQuicStreamEvent::Create(RTCQuicStream* stream) {
 
 RTCQuicStreamEvent* RTCQuicStreamEvent::Create(
     const AtomicString& type,
-    const RTCQuicStreamEventInit& initializer) {
+    const RTCQuicStreamEventInit* initializer) {
   return new RTCQuicStreamEvent(type, initializer);
 }
 
@@ -24,8 +24,8 @@ RTCQuicStreamEvent::RTCQuicStreamEvent(RTCQuicStream* stream)
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(
     const AtomicString& type,
-    const RTCQuicStreamEventInit& initializer)
-    : Event(type, initializer), stream_(initializer.stream()) {}
+    const RTCQuicStreamEventInit* initializer)
+    : Event(type, initializer), stream_(initializer->stream()) {}
 
 RTCQuicStreamEvent::~RTCQuicStreamEvent() = default;
 

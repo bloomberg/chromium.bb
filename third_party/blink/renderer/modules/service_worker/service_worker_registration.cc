@@ -92,9 +92,9 @@ void DidGetNavigationPreloadState(
         ServiceWorkerError::GetException(resolver, error, error_msg));
     return;
   }
-  NavigationPreloadState dict;
-  dict.setEnabled(state->enabled);
-  dict.setHeaderValue(state->header);
+  NavigationPreloadState* dict = NavigationPreloadState::Create();
+  dict->setEnabled(state->enabled);
+  dict->setHeaderValue(state->header);
   resolver->Resolve(dict);
 }
 

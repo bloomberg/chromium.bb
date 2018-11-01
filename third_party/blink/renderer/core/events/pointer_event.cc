@@ -11,7 +11,7 @@
 namespace blink {
 
 PointerEvent::PointerEvent(const AtomicString& type,
-                           const PointerEventInit& initializer,
+                           const PointerEventInit* initializer,
                            TimeTicks platform_time_stamp)
     : MouseEvent(type, initializer, platform_time_stamp),
       pointer_id_(0),
@@ -25,32 +25,32 @@ PointerEvent::PointerEvent(const AtomicString& type,
       is_primary_(false),
       coalesced_events_targets_dirty_(false),
       predicted_events_targets_dirty_(false) {
-  if (initializer.hasPointerId())
-    pointer_id_ = initializer.pointerId();
-  if (initializer.hasWidth())
-    width_ = initializer.width();
-  if (initializer.hasHeight())
-    height_ = initializer.height();
-  if (initializer.hasPressure())
-    pressure_ = initializer.pressure();
-  if (initializer.hasTiltX())
-    tilt_x_ = initializer.tiltX();
-  if (initializer.hasTiltY())
-    tilt_y_ = initializer.tiltY();
-  if (initializer.hasTangentialPressure())
-    tangential_pressure_ = initializer.tangentialPressure();
-  if (initializer.hasTwist())
-    twist_ = initializer.twist();
-  if (initializer.hasPointerType())
-    pointer_type_ = initializer.pointerType();
-  if (initializer.hasIsPrimary())
-    is_primary_ = initializer.isPrimary();
-  if (initializer.hasCoalescedEvents()) {
-    for (auto coalesced_event : initializer.coalescedEvents())
+  if (initializer->hasPointerId())
+    pointer_id_ = initializer->pointerId();
+  if (initializer->hasWidth())
+    width_ = initializer->width();
+  if (initializer->hasHeight())
+    height_ = initializer->height();
+  if (initializer->hasPressure())
+    pressure_ = initializer->pressure();
+  if (initializer->hasTiltX())
+    tilt_x_ = initializer->tiltX();
+  if (initializer->hasTiltY())
+    tilt_y_ = initializer->tiltY();
+  if (initializer->hasTangentialPressure())
+    tangential_pressure_ = initializer->tangentialPressure();
+  if (initializer->hasTwist())
+    twist_ = initializer->twist();
+  if (initializer->hasPointerType())
+    pointer_type_ = initializer->pointerType();
+  if (initializer->hasIsPrimary())
+    is_primary_ = initializer->isPrimary();
+  if (initializer->hasCoalescedEvents()) {
+    for (auto coalesced_event : initializer->coalescedEvents())
       coalesced_events_.push_back(coalesced_event);
   }
-  if (initializer.hasPredictedEvents()) {
-    for (auto predicted_event : initializer.predictedEvents())
+  if (initializer->hasPredictedEvents()) {
+    for (auto predicted_event : initializer->predictedEvents())
       predicted_events_.push_back(predicted_event);
   }
 }

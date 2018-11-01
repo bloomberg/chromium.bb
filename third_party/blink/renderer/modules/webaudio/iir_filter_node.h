@@ -44,7 +44,7 @@ class IIRFilterNode : public AudioNode {
                                ExceptionState&);
 
   static IIRFilterNode* Create(BaseAudioContext*,
-                               const IIRFilterOptions&,
+                               const IIRFilterOptions*,
                                ExceptionState&);
 
   void Trace(blink::Visitor*) override;

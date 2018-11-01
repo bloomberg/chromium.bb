@@ -80,39 +80,39 @@ bool IsValidMimeType(const String& content_type, const String& prefix) {
   return parameters.begin()->name.LowerASCII() == kCodecsMimeTypeParam;
 }
 
-bool IsValidMediaConfiguration(const MediaConfiguration& configuration) {
-  return configuration.hasAudio() || configuration.hasVideo();
+bool IsValidMediaConfiguration(const MediaConfiguration* configuration) {
+  return configuration->hasAudio() || configuration->hasVideo();
 }
 
-bool IsValidVideoConfiguration(const VideoConfiguration& configuration) {
-  DCHECK(configuration.hasContentType());
+bool IsValidVideoConfiguration(const VideoConfiguration* configuration) {
+  DCHECK(configuration->hasContentType());
 
-  if (!IsValidMimeType(configuration.contentType(), kVideoMimeTypePrefix))
+  if (!IsValidMimeType(configuration->contentType(), kVideoMimeTypePrefix))
     return false;
 
-  DCHECK(configuration.hasFramerate());
-  if (std::isnan(ComputeFrameRate(configuration.framerate())))
+  DCHECK(configuration->hasFramerate());
+  if (std::isnan(ComputeFrameRate(configuration->framerate())))
     return false;
 
   return true;
 }
 
-bool IsValidAudioConfiguration(const AudioConfiguration& configuration) {
-  DCHECK(configuration.hasContentType());
+bool IsValidAudioConfiguration(const AudioConfiguration* configuration) {
+  DCHECK(configuration->hasContentType());
 
-  if (!IsValidMimeType(configuration.contentType(), kAudioMimeTypePrefix))
+  if (!IsValidMimeType(configuration->contentType(), kAudioMimeTypePrefix))
     return false;
 
   return true;
 }
 
 WebAudioConfiguration ToWebAudioConfiguration(
-    const AudioConfiguration& configuration) {
+    const AudioConfiguration* configuration) {
   WebAudioConfiguration web_configuration;
 
   // |contentType| is mandatory.
-  DCHECK(configuration.hasContentType());
-  ParsedContentType parsed_content_type(configuration.contentType());
+  DCHECK(configuration->hasContentType());
+  ParsedContentType parsed_content_type(configuration->contentType());
   DCHECK(parsed_content_type.IsValid());
   DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
@@ -121,26 +121,26 @@ WebAudioConfiguration ToWebAudioConfiguration(
   web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
   // |channels| is optional and will be set to a null WebString if not present.
-  web_configuration.channels = configuration.hasChannels()
-                                   ? WebString(configuration.channels())
+  web_configuration.channels = configuration->hasChannels()
+                                   ? WebString(configuration->channels())
                                    : WebString();
 
-  if (configuration.hasBitrate())
-    web_configuration.bitrate = configuration.bitrate();
+  if (configuration->hasBitrate())
+    web_configuration.bitrate = configuration->bitrate();
 
-  if (configuration.hasSamplerate())
-    web_configuration.samplerate = configuration.samplerate();
+  if (configuration->hasSamplerate())
+    web_configuration.samplerate = configuration->samplerate();
 
   return web_configuration;
 }
 
 WebVideoConfiguration ToWebVideoConfiguration(
-    const VideoConfiguration& configuration) {
+    const VideoConfiguration* configuration) {
   WebVideoConfiguration web_configuration;
 
   // All the properties are mandatory.
-  DCHECK(configuration.hasContentType());
-  ParsedContentType parsed_content_type(configuration.contentType());
+  DCHECK(configuration->hasContentType());
+  ParsedContentType parsed_content_type(configuration->contentType());
   DCHECK(parsed_content_type.IsValid());
   DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
@@ -148,17 +148,17 @@ WebVideoConfiguration ToWebVideoConfiguration(
   web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
   web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
-  DCHECK(configuration.hasWidth());
-  web_configuration.width = configuration.width();
+  DCHECK(configuration->hasWidth());
+  web_configuration.width = configuration->width();
 
-  DCHECK(configuration.hasHeight());
-  web_configuration.height = configuration.height();
+  DCHECK(configuration->hasHeight());
+  web_configuration.height = configuration->height();
 
-  DCHECK(configuration.hasBitrate());
-  web_configuration.bitrate = configuration.bitrate();
+  DCHECK(configuration->hasBitrate());
+  web_configuration.bitrate = configuration->bitrate();
 
-  DCHECK(configuration.hasFramerate());
-  double computed_framerate = ComputeFrameRate(configuration.framerate());
+  DCHECK(configuration->hasFramerate());
+  double computed_framerate = ComputeFrameRate(configuration->framerate());
   DCHECK(!std::isnan(computed_framerate));
   web_configuration.framerate = computed_framerate;
 
@@ -166,45 +166,45 @@ WebVideoConfiguration ToWebVideoConfiguration(
 }
 
 WebMediaConfiguration ToWebMediaConfiguration(
-    const MediaDecodingConfiguration& configuration) {
+    const MediaDecodingConfiguration* configuration) {
   WebMediaConfiguration web_configuration;
 
   // |type| is mandatory.
-  DCHECK(configuration.hasType());
-  if (configuration.type() == "file")
+  DCHECK(configuration->hasType());
+  if (configuration->type() == "file")
     web_configuration.type = MediaConfigurationType::kFile;
-  else if (configuration.type() == "media-source")
+  else if (configuration->type() == "media-source")
     web_configuration.type = MediaConfigurationType::kMediaSource;
   else
     NOTREACHED();
 
-  if (configuration.hasAudio()) {
+  if (configuration->hasAudio()) {
     web_configuration.audio_configuration =
-        ToWebAudioConfiguration(configuration.audio());
+        ToWebAudioConfiguration(configuration->audio());
   }
 
-  if (configuration.hasVideo()) {
+  if (configuration->hasVideo()) {
     web_configuration.video_configuration =
-        ToWebVideoConfiguration(configuration.video());
+        ToWebVideoConfiguration(configuration->video());
   }
 
   return web_configuration;
 }
 
 WebMediaConfiguration ToWebMediaConfiguration(
-    const MediaEncodingConfiguration& configuration) {
+    const MediaEncodingConfiguration* configuration) {
   WebMediaConfiguration web_configuration;
 
   // TODO(mcasas): parse and set the type for encoding.
 
-  if (configuration.hasAudio()) {
+  if (configuration->hasAudio()) {
     web_configuration.audio_configuration =
-        ToWebAudioConfiguration(configuration.audio());
+        ToWebAudioConfiguration(configuration->audio());
   }
 
-  if (configuration.hasVideo()) {
+  if (configuration->hasVideo()) {
     web_configuration.video_configuration =
-        ToWebVideoConfiguration(configuration.video());
+        ToWebVideoConfiguration(configuration->video());
   }
 
   return web_configuration;
@@ -216,7 +216,7 @@ MediaCapabilities::MediaCapabilities() = default;
 
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
-    const MediaDecodingConfiguration& configuration) {
+    const MediaDecodingConfiguration* configuration) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -228,16 +228,16 @@ ScriptPromise MediaCapabilities::decodingInfo(
     return promise;
   }
 
-  if (configuration.hasVideo() &&
-      !IsValidVideoConfiguration(configuration.video())) {
+  if (configuration->hasVideo() &&
+      !IsValidVideoConfiguration(configuration->video())) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "The video configuration dictionary is not valid."));
     return promise;
   }
 
-  if (configuration.hasAudio() &&
-      !IsValidAudioConfiguration(configuration.audio())) {
+  if (configuration->hasAudio() &&
+      !IsValidAudioConfiguration(configuration->audio())) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "The audio configuration dictionary is not valid."));
@@ -254,7 +254,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 
 ScriptPromise MediaCapabilities::encodingInfo(
     ScriptState* script_state,
-    const MediaEncodingConfiguration& configuration) {
+    const MediaEncodingConfiguration* configuration) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -266,16 +266,16 @@ ScriptPromise MediaCapabilities::encodingInfo(
     return promise;
   }
 
-  if (configuration.hasVideo() &&
-      !IsValidVideoConfiguration(configuration.video())) {
+  if (configuration->hasVideo() &&
+      !IsValidVideoConfiguration(configuration->video())) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "The video configuration dictionary is not valid."));
     return promise;
   }
 
-  if (configuration.hasAudio() &&
-      !IsValidAudioConfiguration(configuration.audio())) {
+  if (configuration->hasAudio() &&
+      !IsValidAudioConfiguration(configuration->audio())) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "The audio configuration dictionary is not valid."));

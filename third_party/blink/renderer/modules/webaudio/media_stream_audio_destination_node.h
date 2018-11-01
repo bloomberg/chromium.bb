@@ -82,7 +82,7 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
                                                  size_t number_of_channels,
                                                  ExceptionState&);
   static MediaStreamAudioDestinationNode* Create(AudioContext*,
-                                                 const AudioNodeOptions&,
+                                                 const AudioNodeOptions*,
                                                  ExceptionState&);
 
   MediaStream* stream() const;

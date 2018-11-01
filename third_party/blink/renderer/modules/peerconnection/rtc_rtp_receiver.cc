@@ -95,28 +95,28 @@ void RTCRtpReceiver::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void RTCRtpReceiver::getCapabilities(
-    const String& kind,
-    base::Optional<RTCRtpCapabilities>& capabilities) {
+RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(const String& kind) {
   if (kind != "audio" && kind != "video")
-    return;
+    return nullptr;
 
-  capabilities = RTCRtpCapabilities{};
+  RTCRtpCapabilities* capabilities = RTCRtpCapabilities::Create();
+  capabilities->setCodecs(HeapVector<Member<RTCRtpCodecCapability>>());
+  capabilities->setHeaderExtensions(
+      HeapVector<Member<RTCRtpHeaderExtensionCapability>>());
 
   std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
       blink::Platform::Current()->GetRtpSenderCapabilities(kind);
 
-  HeapVector<RTCRtpCodecCapability> codecs;
+  HeapVector<Member<RTCRtpCodecCapability>> codecs;
   codecs.ReserveInitialCapacity(
       SafeCast<wtf_size_t>(rtc_capabilities->codecs.size()));
   for (const auto& rtc_codec : rtc_capabilities->codecs) {
-    codecs.emplace_back();
-    auto& codec = codecs.back();
-    codec.setMimeType(WTF::String::FromUTF8(rtc_codec.mime_type().c_str()));
+    auto* codec = RTCRtpCodecCapability::Create();
+    codec->setMimeType(WTF::String::FromUTF8(rtc_codec.mime_type().c_str()));
     if (rtc_codec.clock_rate)
-      codec.setClockRate(rtc_codec.clock_rate.value());
+      codec->setClockRate(rtc_codec.clock_rate.value());
     if (rtc_codec.num_channels)
-      codec.setChannels(rtc_codec.num_channels.value());
+      codec->setChannels(rtc_codec.num_channels.value());
     if (rtc_codec.parameters.size()) {
       std::string sdp_fmtp_line;
       for (const auto& parameter : rtc_codec.parameters) {
@@ -124,21 +124,24 @@ void RTCRtpReceiver::getCapabilities(
           sdp_fmtp_line += ";";
         sdp_fmtp_line += parameter.first + "=" + parameter.second;
       }
-      codec.setSdpFmtpLine(sdp_fmtp_line.c_str());
+      codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
     }
+    codecs.push_back(codec);
   }
   capabilities->setCodecs(codecs);
 
-  HeapVector<RTCRtpHeaderExtensionCapability> header_extensions;
+  HeapVector<Member<RTCRtpHeaderExtensionCapability>> header_extensions;
   header_extensions.ReserveInitialCapacity(
       SafeCast<wtf_size_t>(rtc_capabilities->header_extensions.size()));
   for (const auto& rtc_header_extension : rtc_capabilities->header_extensions) {
-    header_extensions.emplace_back();
-    auto& header_extension = header_extensions.back();
-    header_extension.setUri(
+    auto* header_extension = RTCRtpHeaderExtensionCapability::Create();
+    header_extension->setUri(
         WTF::String::FromUTF8(rtc_header_extension.uri.c_str()));
+    header_extensions.push_back(header_extension);
   }
   capabilities->setHeaderExtensions(header_extensions);
+
+  return capabilities;
 }
 
 }  // namespace blink

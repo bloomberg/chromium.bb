@@ -99,16 +99,16 @@ Touch::Touch(EventTarget* target,
       region_(region),
       absolute_location_(absolute_location) {}
 
-Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
-    : target_(initializer.target()),
-      identifier_(initializer.identifier()),
-      client_pos_(FloatPoint(initializer.clientX(), initializer.clientY())),
-      screen_pos_(FloatPoint(initializer.screenX(), initializer.screenY())),
-      page_pos_(FloatPoint(initializer.pageX(), initializer.pageY())),
-      radius_(FloatSize(initializer.radiusX(), initializer.radiusY())),
-      rotation_angle_(initializer.rotationAngle()),
-      force_(initializer.force()),
-      region_(initializer.region()),
+Touch::Touch(LocalFrame* frame, const TouchInit* initializer)
+    : target_(initializer->target()),
+      identifier_(initializer->identifier()),
+      client_pos_(FloatPoint(initializer->clientX(), initializer->clientY())),
+      screen_pos_(FloatPoint(initializer->screenX(), initializer->screenY())),
+      page_pos_(FloatPoint(initializer->pageX(), initializer->pageY())),
+      radius_(FloatSize(initializer->radiusX(), initializer->radiusY())),
+      rotation_angle_(initializer->rotationAngle()),
+      force_(initializer->force()),
+      region_(initializer->region()),
       absolute_location_(PageToAbsolute(frame, page_pos_)) {}
 
 Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {

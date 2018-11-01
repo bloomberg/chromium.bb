@@ -277,7 +277,7 @@ class CORE_EXPORT ChromeClient
   virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
 
-  virtual void EnterFullscreen(LocalFrame&, const FullscreenOptions&) {}
+  virtual void EnterFullscreen(LocalFrame&, const FullscreenOptions*) {}
   virtual void ExitFullscreen(LocalFrame&) {}
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}

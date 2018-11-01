@@ -454,8 +454,8 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
 
 void HTMLVideoElement::webkitEnterFullscreen() {
   if (!IsFullscreen()) {
-    FullscreenOptions options;
-    options.setNavigationUI("hide");
+    FullscreenOptions* options = FullscreenOptions::Create();
+    options->setNavigationUI("hide");
     Fullscreen::RequestFullscreen(*this, options,
                                   Fullscreen::RequestType::kPrefixed);
   }
@@ -598,7 +598,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     return ScriptPromise::RejectWithDOMException(

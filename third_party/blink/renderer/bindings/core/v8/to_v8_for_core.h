@@ -50,10 +50,12 @@ inline v8::Local<v8::Value> ToV8(NotShared<T> value,
 
 // Dictionary
 
-inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
+inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase* value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return value.ToV8Impl(creation_context, isolate);
+  if (!value)
+    return v8::Null(isolate);
+  return value->ToV8Impl(creation_context, isolate);
 }
 
 // ScriptValue

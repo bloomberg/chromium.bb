@@ -280,10 +280,10 @@ class MediaControlsImpl::MediaElementMutationCallback
  public:
   explicit MediaElementMutationCallback(MediaControlsImpl* controls)
       : controls_(controls), observer_(MutationObserver::Create(this)) {
-    MutationObserverInit init;
-    init.setAttributeOldValue(true);
-    init.setAttributes(true);
-    init.setAttributeFilter(
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setAttributeOldValue(true);
+    init->setAttributes(true);
+    init->setAttributeFilter(
         {html_names::kDisableremoteplaybackAttr.ToString(),
          html_names::kDisablepictureinpictureAttr.ToString(),
          html_names::kPosterAttr.ToString()});

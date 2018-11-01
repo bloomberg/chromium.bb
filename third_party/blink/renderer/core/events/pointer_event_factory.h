@@ -110,8 +110,8 @@ class CORE_EXPORT PointerEventFactory {
                             bool is_active_buttons,
                             bool hovering);
   bool IsPrimary(const int) const;
-  void SetIdTypeButtons(PointerEventInit&, const WebPointerEvent&);
-  void SetEventSpecificFields(PointerEventInit&, const AtomicString& type);
+  PointerEventInit* ConvertIdTypeButtonsEvent(const WebPointerEvent&);
+  void SetEventSpecificFields(PointerEventInit*, const AtomicString& type);
 
   // Creates pointerevents like boundary and capture events from another
   // pointerevent (i.e. up/down/move events).

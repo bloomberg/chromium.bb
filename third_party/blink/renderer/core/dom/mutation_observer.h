@@ -102,7 +102,7 @@ class CORE_EXPORT MutationObserver final
 
   ~MutationObserver() override;
 
-  void observe(Node*, const MutationObserverInit&, ExceptionState&);
+  void observe(Node*, const MutationObserverInit*, ExceptionState&);
   MutationRecordVector takeRecords();
   void disconnect();
   void ObservationStarted(MutationObserverRegistration*);

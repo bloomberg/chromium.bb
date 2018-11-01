@@ -7415,10 +7415,10 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   KURL destination = ToKURL(base_url_ + "hello_world.html");
 
   // ctrl+click event
-  MouseEventInit mouse_initializer;
-  mouse_initializer.setView(document->domWindow());
-  mouse_initializer.setButton(1);
-  mouse_initializer.setCtrlKey(true);
+  MouseEventInit* mouse_initializer = MouseEventInit::Create();
+  mouse_initializer->setView(document->domWindow());
+  mouse_initializer->setButton(1);
+  mouse_initializer->setCtrlKey(true);
 
   Event* event =
       MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);

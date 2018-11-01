@@ -37,7 +37,7 @@ DeviceOrientationEvent::DeviceOrientationEvent()
 
 DeviceOrientationEvent::DeviceOrientationEvent(
     const AtomicString& event_type,
-    const DeviceOrientationEventInit& initializer)
+    const DeviceOrientationEventInit* initializer)
     : Event(event_type, initializer),
       orientation_(DeviceOrientationData::Create(initializer)) {}
 

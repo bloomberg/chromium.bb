@@ -12,20 +12,20 @@ namespace blink {
 ScriptPromise ElementFullscreen::requestFullscreen(
     ScriptState* script_state,
     Element& element,
-    const FullscreenOptions& options) {
+    const FullscreenOptions* options) {
   return Fullscreen::RequestFullscreen(
       element, options, Fullscreen::RequestType::kUnprefixed, script_state);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element) {
-  FullscreenOptions options;
-  options.setNavigationUI("hide");
+  FullscreenOptions* options = FullscreenOptions::Create();
+  options->setNavigationUI("hide");
   webkitRequestFullscreen(element, options);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(
     Element& element,
-    const FullscreenOptions& options) {
+    const FullscreenOptions* options) {
   if (element.IsInShadowTree()) {
     UseCounter::Count(element.GetDocument(),
                       WebFeature::kPrefixedElementRequestFullscreenInShadow);

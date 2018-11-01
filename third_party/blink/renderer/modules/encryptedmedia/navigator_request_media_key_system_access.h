@@ -22,7 +22,8 @@ class NavigatorRequestMediaKeySystemAccess {
       ScriptState*,
       Navigator&,
       const String& key_system,
-      const HeapVector<MediaKeySystemConfiguration>& supported_configurations);
+      const HeapVector<Member<MediaKeySystemConfiguration>>&
+          supported_configurations);
 };
 
 }  // namespace blink

@@ -124,12 +124,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void strokeText(const String& text, double x, double y, double max_width);
   TextMetrics* measureText(const String& text);
 
-  void getContextAttributes(CanvasRenderingContext2DSettings&) const;
+  CanvasRenderingContext2DSettings* getContextAttributes() const;
 
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);
 
-  void addHitRegion(const HitRegionOptions&, ExceptionState&);
+  void addHitRegion(const HitRegionOptions*, ExceptionState&);
   void removeHitRegion(const String& id);
   void clearHitRegions();
   HitRegion* HitRegionAtPoint(const FloatPoint&);

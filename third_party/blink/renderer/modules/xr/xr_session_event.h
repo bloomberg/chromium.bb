@@ -21,7 +21,7 @@ class XRSessionEvent final : public Event {
   }
 
   static XRSessionEvent* Create(const AtomicString& type,
-                                const XRSessionEventInit& initializer) {
+                                const XRSessionEventInit* initializer) {
     return new XRSessionEvent(type, initializer);
   }
 
@@ -36,7 +36,7 @@ class XRSessionEvent final : public Event {
  private:
   XRSessionEvent();
   XRSessionEvent(const AtomicString& type, XRSession*);
-  XRSessionEvent(const AtomicString& type, const XRSessionEventInit&);
+  XRSessionEvent(const AtomicString& type, const XRSessionEventInit*);
 
   Member<XRSession> session_;
 };

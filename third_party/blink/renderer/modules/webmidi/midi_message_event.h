@@ -50,7 +50,7 @@ class MIDIMessageEvent final : public Event {
   }
 
   static MIDIMessageEvent* Create(const AtomicString& type,
-                                  const MIDIMessageEventInit& initializer) {
+                                  const MIDIMessageEventInit* initializer) {
     return new MIDIMessageEvent(type, initializer);
   }
 
@@ -74,7 +74,7 @@ class MIDIMessageEvent final : public Event {
         data_(data) {}
 
   MIDIMessageEvent(const AtomicString& type,
-                   const MIDIMessageEventInit& initializer);
+                   const MIDIMessageEventInit* initializer);
 
   Member<DOMUint8Array> data_;
 };

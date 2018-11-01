@@ -18,10 +18,10 @@ class USBConnectionEvent final : public Event {
 
  public:
   static USBConnectionEvent* Create(const AtomicString& type,
-                                    const USBConnectionEventInit&);
+                                    const USBConnectionEventInit*);
   static USBConnectionEvent* Create(const AtomicString& type, USBDevice*);
 
-  USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit&);
+  USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit*);
   USBConnectionEvent(const AtomicString& type, USBDevice*);
 
   USBDevice* device() const { return device_; }

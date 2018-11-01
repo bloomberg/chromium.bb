@@ -19,7 +19,7 @@ class WebGPU final : public ScriptWrappable {
  public:
   static WebGPU* Create();
 
-  WebGPUAdapter* getAdapter(const WebGPUAdapterDescriptor&);
+  WebGPUAdapter* getAdapter(const WebGPUAdapterDescriptor*);
 
  private:
   WebGPU();

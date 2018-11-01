@@ -210,7 +210,7 @@ class PannerNode final : public AudioNode {
  public:
   static PannerNode* Create(BaseAudioContext&, ExceptionState&);
   static PannerNode* Create(BaseAudioContext*,
-                            const PannerOptions&,
+                            const PannerOptions*,
                             ExceptionState&);
   PannerHandler& GetPannerHandler() const;
 

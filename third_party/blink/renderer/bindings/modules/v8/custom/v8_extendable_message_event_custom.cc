@@ -25,7 +25,8 @@ void V8ExtendableMessageEvent::constructorCustom(
   if (!type.Prepare())
     return;
 
-  ExtendableMessageEventInit event_init_dict;
+  ExtendableMessageEventInit* event_init_dict =
+      ExtendableMessageEventInit::Create();
   if (!IsUndefinedOrNull(info[1])) {
     if (!info[1]->IsObject()) {
       exception_state.ThrowTypeError(
@@ -46,8 +47,8 @@ void V8ExtendableMessageEvent::constructorCustom(
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |data| as a private value to avoid cyclic references.
-  if (event_init_dict.hasData()) {
-    v8::Local<v8::Value> v8_data = event_init_dict.data().V8Value();
+  if (event_init_dict->hasData()) {
+    v8::Local<v8::Value> v8_data = event_init_dict->data().V8Value();
     V8PrivateProperty::GetMessageEventCachedData(isolate).Set(wrapper, v8_data);
     if (DOMWrapperWorld::Current(isolate).IsIsolatedWorld()) {
       impl->SetSerializedData(

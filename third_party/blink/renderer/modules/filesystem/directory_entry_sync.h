@@ -53,10 +53,10 @@ class DirectoryEntrySync final : public EntrySync {
 
   DirectoryReaderSync* createReader();
   FileEntrySync* getFile(const String& path,
-                         const FileSystemFlags&,
+                         const FileSystemFlags*,
                          ExceptionState&);
   DirectoryEntrySync* getDirectory(const String& path,
-                                   const FileSystemFlags&,
+                                   const FileSystemFlags*,
                                    ExceptionState&);
   void removeRecursively(ExceptionState&);
 

@@ -44,18 +44,19 @@ ErrorEvent::ErrorEvent()
 
 ErrorEvent::ErrorEvent(ScriptState* script_state,
                        const AtomicString& type,
-                       const ErrorEventInit& initializer)
+                       const ErrorEventInit* initializer)
     : Event(type, initializer),
       sanitized_message_(),
       world_(&script_state->World()) {
-  if (initializer.hasMessage())
-    sanitized_message_ = initializer.message();
+  if (initializer->hasMessage())
+    sanitized_message_ = initializer->message();
   location_ = SourceLocation::Create(
-      initializer.hasFilename() ? initializer.filename() : String(),
-      initializer.hasLineno() ? initializer.lineno() : 0,
-      initializer.hasColno() ? initializer.colno() : 0, nullptr);
-  if (initializer.hasError()) {
-    error_.Set(initializer.error().GetIsolate(), initializer.error().V8Value());
+      initializer->hasFilename() ? initializer->filename() : String(),
+      initializer->hasLineno() ? initializer->lineno() : 0,
+      initializer->hasColno() ? initializer->colno() : 0, nullptr);
+  if (initializer->hasError()) {
+    error_.Set(initializer->error().GetIsolate(),
+               initializer->error().V8Value());
   }
 }
 

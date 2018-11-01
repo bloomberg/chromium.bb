@@ -250,7 +250,7 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
 
 DynamicsCompressorNode* DynamicsCompressorNode::Create(
     BaseAudioContext* context,
-    const DynamicsCompressorOptions& options,
+    const DynamicsCompressorOptions* options,
     ExceptionState& exception_state) {
   DynamicsCompressorNode* node = Create(*context, exception_state);
 
@@ -259,11 +259,11 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->attack()->setValue(options.attack());
-  node->knee()->setValue(options.knee());
-  node->ratio()->setValue(options.ratio());
-  node->release()->setValue(options.release());
-  node->threshold()->setValue(options.threshold());
+  node->attack()->setValue(options->attack());
+  node->knee()->setValue(options->knee());
+  node->ratio()->setValue(options->ratio());
+  node->release()->setValue(options->release());
+  node->threshold()->setValue(options->threshold());
 
   return node;
 }

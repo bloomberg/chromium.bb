@@ -422,19 +422,21 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return ReadDOMRectReadOnly();
     }
     case kDOMQuadTag: {
-      DOMPointInit pointInits[4];
-      for (DOMPointInit& init : pointInits) {
+      DOMPointInit* point_inits[4];
+      for (int i = 0; i < 4; ++i) {
+        auto* init = DOMPointInit::Create();
         double x = 0, y = 0, z = 0, w = 0;
         if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&z) ||
             !ReadDouble(&w))
           return nullptr;
-        init.setX(x);
-        init.setY(y);
-        init.setZ(z);
-        init.setW(w);
+        init->setX(x);
+        init->setY(y);
+        init->setZ(z);
+        init->setW(w);
+        point_inits[i] = init;
       }
-      return DOMQuad::Create(pointInits[0], pointInits[1], pointInits[2],
-                             pointInits[3]);
+      return DOMQuad::Create(point_inits[0], point_inits[1], point_inits[2],
+                             point_inits[3]);
     }
     case kDOMMatrix2DTag: {
       double values[6];

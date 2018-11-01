@@ -549,7 +549,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
   canvas->SetSize(IntSize(40, 40));
   ImageBitmap* image_bitmap_derived = nullptr;
   {
-    const ImageBitmapOptions default_options;
+    const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
     base::Optional<IntRect> crop_rect =
         IntRect(0, 0, canvas->width(), canvas->height());
     ImageBitmap* image_bitmap_from_canvas =
@@ -929,8 +929,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
     // Color convert using ImageBitmap
-    ImageBitmapOptions options;
-    options.setColorSpaceConversion(
+    ImageBitmapOptions* options = ImageBitmapOptions::Create();
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
@@ -1053,7 +1053,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
-  ImageDataColorSettings color_settings;
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
   int num_pixels = data_length / 4;
 
   // At most four bytes are needed for Float32 output per color component.
@@ -1063,29 +1063,29 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   // Loop through different possible combinations of image data color space and
   // storage formats and create the respective test image data objects.
   for (unsigned i = 0; i < num_image_data_color_spaces; i++) {
-    color_settings.setColorSpace(
+    color_settings->setColorSpace(
         ImageData::CanvasColorSpaceName(image_data_color_spaces[i]));
 
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
       switch (image_data_storage_formats[j]) {
         case kUint8ClampedArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u8);
-          color_settings.setStorageFormat(kUint8ClampedArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint8ClampedArrayStorageFormatName);
           break;
         case kUint16ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u16);
-          color_settings.setStorageFormat(kUint16ArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint16ArrayStorageFormatName);
           break;
         case kFloat32ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_f32);
-          color_settings.setStorageFormat(kFloat32ArrayStorageFormatName);
+          color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
           break;
         default:
           NOTREACHED();
       }
 
       image_data =
-          ImageData::CreateForTest(IntSize(2, 2), data_array, &color_settings);
+          ImageData::CreateForTest(IntSize(2, 2), data_array, color_settings);
 
       unsigned k = (unsigned)(canvas_colorspace_setting);
       // Convert the original data used to create ImageData to the

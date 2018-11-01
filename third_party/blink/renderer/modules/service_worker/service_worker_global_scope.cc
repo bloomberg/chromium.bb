@@ -331,7 +331,7 @@ ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
 bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
-    const AddEventListenerOptionsResolved& options) {
+    const AddEventListenerOptionsResolved* options) {
   if (did_evaluate_script_) {
     String message = String::Format(
         "Event handler of '%s' event must be added on the initial evaluation "
@@ -414,7 +414,7 @@ ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
                                               const RequestInfo& input,
-                                              const RequestInit& init,
+                                              const RequestInit* init,
                                               ExceptionState& exception_state) {
   return GlobalFetch::fetch(script_state, *this, input, init, exception_state);
 }

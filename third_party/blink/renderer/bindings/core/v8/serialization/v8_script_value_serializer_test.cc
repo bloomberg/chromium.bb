@@ -373,26 +373,26 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMRectReadOnly) {
 TEST(V8ScriptValueSerializerTest, RoundTripDOMQuad) {
   // DOMQuad objects should serialize and deserialize correctly.
   V8TestingScope scope;
-  DOMPointInit pi1;
-  pi1.setX(1);
-  pi1.setY(5);
-  pi1.setZ(9);
-  pi1.setW(13);
-  DOMPointInit pi2;
-  pi2.setX(2);
-  pi2.setY(6);
-  pi2.setZ(10);
-  pi2.setW(14);
-  DOMPointInit pi3;
-  pi3.setX(3);
-  pi3.setY(7);
-  pi3.setZ(11);
-  pi3.setW(15);
-  DOMPointInit pi4;
-  pi4.setX(4);
-  pi4.setY(8);
-  pi4.setZ(12);
-  pi4.setW(16);
+  DOMPointInit* pi1 = DOMPointInit::Create();
+  pi1->setX(1);
+  pi1->setY(5);
+  pi1->setZ(9);
+  pi1->setW(13);
+  DOMPointInit* pi2 = DOMPointInit::Create();
+  pi2->setX(2);
+  pi2->setY(6);
+  pi2->setZ(10);
+  pi2->setW(14);
+  DOMPointInit* pi3 = DOMPointInit::Create();
+  pi3->setX(3);
+  pi3->setY(7);
+  pi3->setZ(11);
+  pi3->setW(15);
+  DOMPointInit* pi4 = DOMPointInit::Create();
+  pi4->setX(4);
+  pi4->setY(8);
+  pi4->setZ(12);
+  pi4->setW(16);
   DOMQuad* quad = DOMQuad::Create(pi1, pi2, pi3, pi4);
   v8::Local<v8::Value> wrapper =
       ToV8(quad, scope.GetContext()->Global(), scope.GetIsolate());
@@ -463,14 +463,14 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMQuad) {
 TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrix2D) {
   // DOMMatrix objects should serialize and deserialize correctly.
   V8TestingScope scope;
-  DOMMatrixInit init;
-  init.setIs2D(true);
-  init.setA(1.0);
-  init.setB(2.0);
-  init.setC(3.0);
-  init.setD(4.0);
-  init.setE(5.0);
-  init.setF(6.0);
+  DOMMatrixInit* init = DOMMatrixInit::Create();
+  init->setIs2D(true);
+  init->setA(1.0);
+  init->setB(2.0);
+  init->setC(3.0);
+  init->setD(4.0);
+  init->setE(5.0);
+  init->setF(6.0);
   DOMMatrix* matrix = DOMMatrix::fromMatrix(init, scope.GetExceptionState());
   EXPECT_TRUE(matrix->is2D());
   v8::Local<v8::Value> wrapper =
@@ -518,14 +518,14 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMMatrix2D) {
 TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrixReadOnly2D) {
   // DOMMatrix objects should serialize and deserialize correctly.
   V8TestingScope scope;
-  DOMMatrixInit init;
-  init.setIs2D(true);
-  init.setA(1.0);
-  init.setB(2.0);
-  init.setC(3.0);
-  init.setD(4.0);
-  init.setE(5.0);
-  init.setF(6.0);
+  DOMMatrixInit* init = DOMMatrixInit::Create();
+  init->setIs2D(true);
+  init->setA(1.0);
+  init->setB(2.0);
+  init->setC(3.0);
+  init->setD(4.0);
+  init->setE(5.0);
+  init->setF(6.0);
   DOMMatrixReadOnly* matrix =
       DOMMatrixReadOnly::fromMatrix(init, scope.GetExceptionState());
   EXPECT_TRUE(matrix->is2D());
@@ -577,24 +577,24 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMMatrixReadOnly2D) {
 TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrix) {
   // DOMMatrix objects should serialize and deserialize correctly.
   V8TestingScope scope;
-  DOMMatrixInit init;
-  init.setIs2D(false);
-  init.setM11(1.1);
-  init.setM12(1.2);
-  init.setM13(1.3);
-  init.setM14(1.4);
-  init.setM21(2.1);
-  init.setM22(2.2);
-  init.setM23(2.3);
-  init.setM24(2.4);
-  init.setM31(3.1);
-  init.setM32(3.2);
-  init.setM33(3.3);
-  init.setM34(3.4);
-  init.setM41(4.1);
-  init.setM42(4.2);
-  init.setM43(4.3);
-  init.setM44(4.4);
+  DOMMatrixInit* init = DOMMatrixInit::Create();
+  init->setIs2D(false);
+  init->setM11(1.1);
+  init->setM12(1.2);
+  init->setM13(1.3);
+  init->setM14(1.4);
+  init->setM21(2.1);
+  init->setM22(2.2);
+  init->setM23(2.3);
+  init->setM24(2.4);
+  init->setM31(3.1);
+  init->setM32(3.2);
+  init->setM33(3.3);
+  init->setM34(3.4);
+  init->setM41(4.1);
+  init->setM42(4.2);
+  init->setM43(4.3);
+  init->setM44(4.4);
   DOMMatrix* matrix = DOMMatrix::fromMatrix(init, scope.GetExceptionState());
   EXPECT_FALSE(matrix->is2D());
   v8::Local<v8::Value> wrapper =
@@ -665,24 +665,24 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMMatrix) {
 TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrixReadOnly) {
   // DOMMatrixReadOnly objects should serialize and deserialize correctly.
   V8TestingScope scope;
-  DOMMatrixInit init;
-  init.setIs2D(false);
-  init.setM11(1.1);
-  init.setM12(1.2);
-  init.setM13(1.3);
-  init.setM14(1.4);
-  init.setM21(2.1);
-  init.setM22(2.2);
-  init.setM23(2.3);
-  init.setM24(2.4);
-  init.setM31(3.1);
-  init.setM32(3.2);
-  init.setM33(3.3);
-  init.setM34(3.4);
-  init.setM41(4.1);
-  init.setM42(4.2);
-  init.setM43(4.3);
-  init.setM44(4.4);
+  DOMMatrixInit* init = DOMMatrixInit::Create();
+  init->setIs2D(false);
+  init->setM11(1.1);
+  init->setM12(1.2);
+  init->setM13(1.3);
+  init->setM14(1.4);
+  init->setM21(2.1);
+  init->setM22(2.2);
+  init->setM23(2.3);
+  init->setM24(2.4);
+  init->setM31(3.1);
+  init->setM32(3.2);
+  init->setM33(3.3);
+  init->setM34(3.4);
+  init->setM41(4.1);
+  init->setM42(4.2);
+  init->setM43(4.3);
+  init->setM44(4.4);
   DOMMatrixReadOnly* matrix =
       DOMMatrixReadOnly::fromMatrix(init, scope.GetExceptionState());
   EXPECT_FALSE(matrix->is2D());
@@ -775,9 +775,9 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageDataWithColorSpaceInfo) {
   // ImageData objects with color space information should serialize and
   // deserialize correctly.
   V8TestingScope scope;
-  ImageDataColorSettings color_settings;
-  color_settings.setColorSpace("p3");
-  color_settings.setStorageFormat("float32");
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
+  color_settings->setColorSpace("p3");
+  color_settings->setStorageFormat("float32");
   ImageData* image_data =
       ImageData::CreateImageData(2, 1, color_settings, ASSERT_NO_EXCEPTION);
   static_cast<unsigned char*>(image_data->BufferBase()->Data())[0] = 200;
@@ -788,10 +788,10 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageDataWithColorSpaceInfo) {
   ImageData* new_image_data = V8ImageData::ToImpl(result.As<v8::Object>());
   EXPECT_NE(image_data, new_image_data);
   EXPECT_EQ(image_data->Size(), new_image_data->Size());
-  ImageDataColorSettings new_color_settings;
-  new_image_data->getColorSettings(new_color_settings);
-  EXPECT_EQ("p3", new_color_settings.colorSpace());
-  EXPECT_EQ("float32", new_color_settings.storageFormat());
+  ImageDataColorSettings* new_color_settings =
+      new_image_data->getColorSettings();
+  EXPECT_EQ("p3", new_color_settings->colorSpace());
+  EXPECT_EQ("float32", new_color_settings->storageFormat());
   EXPECT_EQ(image_data->BufferBase()->ByteLength(),
             new_image_data->BufferBase()->ByteLength());
   EXPECT_EQ(200, static_cast<unsigned char*>(
@@ -844,10 +844,10 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
   ASSERT_TRUE(V8ImageData::hasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(2, 1), new_image_data->Size());
-  ImageDataColorSettings new_color_settings;
-  new_image_data->getColorSettings(new_color_settings);
-  EXPECT_EQ("p3", new_color_settings.colorSpace());
-  EXPECT_EQ("float32", new_color_settings.storageFormat());
+  ImageDataColorSettings* new_color_settings =
+      new_image_data->getColorSettings();
+  EXPECT_EQ("p3", new_color_settings->colorSpace());
+  EXPECT_EQ("float32", new_color_settings->storageFormat());
   EXPECT_EQ(32u, new_image_data->BufferBase()->ByteLength());
   EXPECT_EQ(200, static_cast<unsigned char*>(
                      new_image_data->BufferBase()->Data())[0]);

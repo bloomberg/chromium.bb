@@ -126,22 +126,22 @@ File* File::Create(
     ExecutionContext* context,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& file_bits,
     const String& file_name,
-    const FilePropertyBag& options,
+    const FilePropertyBag* options,
     ExceptionState& exception_state) {
-  DCHECK(options.hasType());
+  DCHECK(options->hasType());
 
   double last_modified;
-  if (options.hasLastModified())
-    last_modified = static_cast<double>(options.lastModified());
+  if (options->hasLastModified())
+    last_modified = static_cast<double>(options->lastModified());
   else
     last_modified = CurrentTimeMS();
-  DCHECK(options.hasEndings());
-  bool normalize_line_endings_to_native = options.endings() == "native";
+  DCHECK(options->hasEndings());
+  bool normalize_line_endings_to_native = options->endings() == "native";
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
-  blob_data->SetContentType(NormalizeType(options.type()));
+  blob_data->SetContentType(NormalizeType(options->type()));
   PopulateBlobData(blob_data.get(), file_bits,
                    normalize_line_endings_to_native);
 

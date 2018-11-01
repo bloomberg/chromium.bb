@@ -27,7 +27,7 @@ class CORE_EXPORT GlobalFetch {
 
     virtual ScriptPromise Fetch(ScriptState*,
                                 const RequestInfo&,
-                                const RequestInit&,
+                                const RequestInit*,
                                 ExceptionState&) = 0;
 
     static ScopedFetcher* From(LocalDOMWindow&);
@@ -39,12 +39,12 @@ class CORE_EXPORT GlobalFetch {
   static ScriptPromise fetch(ScriptState*,
                              LocalDOMWindow&,
                              const RequestInfo&,
-                             const RequestInit&,
+                             const RequestInit*,
                              ExceptionState&);
   static ScriptPromise fetch(ScriptState*,
                              WorkerGlobalScope&,
                              const RequestInfo&,
-                             const RequestInit&,
+                             const RequestInit*,
                              ExceptionState&);
 };
 

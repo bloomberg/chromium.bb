@@ -75,7 +75,7 @@ enum CreateImageBitmapSource {
 
 static inline ImageBitmapSource* ToImageBitmapSourceInternal(
     const ImageBitmapSourceUnion& value,
-    const ImageBitmapOptions& options,
+    const ImageBitmapOptions* options,
     bool has_crop_rect) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, image_bitmap_source_histogram,
@@ -126,7 +126,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   Blob* blob = static_cast<Blob*>(bitmap_source);
   ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::Create(
       From(event_target), crop_rect, options, script_state);
@@ -140,7 +140,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal =
@@ -159,7 +159,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     int sy,
     int sw,
     int sh,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal =
@@ -176,7 +176,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   if (crop_rect && (crop_rect->Width() == 0 || crop_rect->Height() == 0)) {
     return ScriptPromise::Reject(
         script_state,
@@ -241,7 +241,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ImageBitmapFactories& factory,
     base::Optional<IntRect> crop_rect,
     ScriptState* script_state,
-    const ImageBitmapOptions& options)
+    const ImageBitmapOptions* options)
     : loader_(
           FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, this)),
       factory_(&factory),
@@ -301,8 +301,8 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
       CrossThreadBind(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
           WrapCrossThreadPersistent(this), std::move(task_runner),
-          WrapCrossThreadPersistent(array_buffer), options_.premultiplyAlpha(),
-          options_.colorSpaceConversion()));
+          WrapCrossThreadPersistent(array_buffer), options_->premultiplyAlpha(),
+          options_->colorSpaceConversion()));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
@@ -360,6 +360,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
 void ImageBitmapFactories::ImageBitmapLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(factory_);
   visitor->Trace(resolver_);
+  visitor->Trace(options_);
 }
 
 }  // namespace blink

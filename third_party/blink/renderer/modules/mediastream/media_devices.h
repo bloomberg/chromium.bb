@@ -41,13 +41,13 @@ class MODULES_EXPORT MediaDevices final
   ~MediaDevices() override;
 
   ScriptPromise enumerateDevices(ScriptState*);
-  void getSupportedConstraints(MediaTrackSupportedConstraints& result) {}
+  MediaTrackSupportedConstraints* getSupportedConstraints() const;
   ScriptPromise getUserMedia(ScriptState*,
-                             const MediaStreamConstraints&,
+                             const MediaStreamConstraints*,
                              ExceptionState&);
   ScriptPromise SendUserMediaRequest(ScriptState*,
                                      WebUserMediaRequest::MediaType,
-                                     const MediaStreamConstraints&,
+                                     const MediaStreamConstraints*,
                                      ExceptionState&);
 
   // EventTarget overrides.

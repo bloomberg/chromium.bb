@@ -12,7 +12,7 @@ namespace blink {
 PaintRenderingContext2D::PaintRenderingContext2D(
     const IntSize& container_size,
     const CanvasColorParams& color_params,
-    const PaintRenderingContext2DSettings& context_settings,
+    const PaintRenderingContext2DSettings* context_settings,
     float zoom)
     : container_size_(container_size),
       color_params_(color_params),
@@ -23,8 +23,8 @@ PaintRenderingContext2D::PaintRenderingContext2D(
   clip_antialiasing_ = kAntiAliased;
   ModifiableState().SetShouldAntialias(true);
 
-  Canvas()->clear(context_settings.alpha() ? SK_ColorTRANSPARENT
-                                           : SK_ColorBLACK);
+  Canvas()->clear(context_settings->alpha() ? SK_ColorTRANSPARENT
+                                            : SK_ColorBLACK);
   did_record_draw_commands_in_paint_recorder_ = true;
   Canvas()->scale(zoom, zoom);
 }

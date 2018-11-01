@@ -23,7 +23,7 @@ class PushSubscriptionOptions final : public ScriptWrappable {
   // Converts developer-provided dictionary to WebPushSubscriptionOptions.
   // Throws if applicationServerKey is invalid.
   MODULES_EXPORT static WebPushSubscriptionOptions ToWeb(
-      const PushSubscriptionOptionsInit& options,
+      const PushSubscriptionOptionsInit* options,
       ExceptionState& exception_state);
 
   static PushSubscriptionOptions* Create(

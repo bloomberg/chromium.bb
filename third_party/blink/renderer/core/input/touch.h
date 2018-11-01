@@ -57,7 +57,7 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
                      rotation_angle, force, region);
   }
 
-  static Touch* Create(const Document& document, const TouchInit& initializer) {
+  static Touch* Create(const Document& document, const TouchInit* initializer) {
     return new Touch(document.GetFrame(), initializer);
   }
 
@@ -105,7 +105,7 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
         String region,
         LayoutPoint absolute_location);
 
-  Touch(LocalFrame*, const TouchInit&);
+  Touch(LocalFrame*, const TouchInit*);
 
   Member<EventTarget> target_;
   int identifier_;

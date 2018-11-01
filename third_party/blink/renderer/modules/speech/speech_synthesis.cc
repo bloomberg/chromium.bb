@@ -158,11 +158,11 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
   if (!GetElapsedTimeMillis(&millis))
     return;
 
-  SpeechSynthesisEventInit init;
-  init.setUtterance(utterance);
-  init.setCharIndex(char_index);
-  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
-  init.setName(name);
+  SpeechSynthesisEventInit* init = SpeechSynthesisEventInit::Create();
+  init->setUtterance(utterance);
+  init->setCharIndex(char_index);
+  init->setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init->setName(name);
   utterance->DispatchEvent(*SpeechSynthesisEvent::Create(type, init));
 }
 
@@ -173,11 +173,11 @@ void SpeechSynthesis::FireErrorEvent(SpeechSynthesisUtterance* utterance,
   if (!GetElapsedTimeMillis(&millis))
     return;
 
-  SpeechSynthesisErrorEventInit init;
-  init.setUtterance(utterance);
-  init.setCharIndex(char_index);
-  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
-  init.setError(error);
+  SpeechSynthesisErrorEventInit* init = SpeechSynthesisErrorEventInit::Create();
+  init->setUtterance(utterance);
+  init->setCharIndex(char_index);
+  init->setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init->setError(error);
   utterance->DispatchEvent(
       *SpeechSynthesisErrorEvent::Create(EventTypeNames::error, init));
 }

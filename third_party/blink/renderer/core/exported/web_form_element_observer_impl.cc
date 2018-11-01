@@ -45,17 +45,17 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
       mutation_observer_(MutationObserver::Create(this)),
       callback_(std::move(callback)) {
   {
-    MutationObserverInit init;
-    init.setAttributes(true);
-    init.setAttributeFilter({"class", "style"});
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setAttributes(true);
+    init->setAttributeFilter({"class", "style"});
     mutation_observer_->observe(element_, init, ASSERT_NO_EXCEPTION);
   }
   for (Node* node = element_; node->parentElement();
        node = node->parentElement()) {
-    MutationObserverInit init;
-    init.setChildList(true);
-    init.setAttributes(true);
-    init.setAttributeFilter({"class", "style"});
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setChildList(true);
+    init->setAttributes(true);
+    init->setAttributeFilter({"class", "style"});
     mutation_observer_->observe(node->parentElement(), init,
                                 ASSERT_NO_EXCEPTION);
     parents_.insert(node->parentElement());

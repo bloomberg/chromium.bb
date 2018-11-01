@@ -23,7 +23,7 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
  public:
   // Constructors defined in the IDL.
   static CSSMatrixComponent* Create(DOMMatrixReadOnly*,
-                                    const CSSMatrixComponentOptions&);
+                                    const CSSMatrixComponentOptions*);
 
   // Blink-internal ways of creating CSSMatrixComponents.
   static CSSMatrixComponent* FromCSSValue(const CSSFunctionValue&);

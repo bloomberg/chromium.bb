@@ -31,7 +31,8 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   static PaymentRequestUpdateEvent* Create(
       ExecutionContext*,
       const AtomicString& type,
-      const PaymentRequestUpdateEventInit& = PaymentRequestUpdateEventInit());
+      const PaymentRequestUpdateEventInit* =
+          PaymentRequestUpdateEventInit::Create());
 
   void SetPaymentDetailsUpdater(PaymentUpdater*);
 
@@ -50,7 +51,7 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
  protected:
   PaymentRequestUpdateEvent(ExecutionContext*,
                             const AtomicString& type,
-                            const PaymentRequestUpdateEventInit&);
+                            const PaymentRequestUpdateEventInit*);
 
  private:
   void OnUpdateEventTimeout(TimerBase*);

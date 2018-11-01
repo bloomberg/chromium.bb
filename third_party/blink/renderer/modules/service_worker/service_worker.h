@@ -74,7 +74,7 @@ class MODULES_EXPORT ServiceWorker final
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   const PostMessageOptions&,
+                   const PostMessageOptions*,
                    ExceptionState&);
 
   String scriptURL() const;

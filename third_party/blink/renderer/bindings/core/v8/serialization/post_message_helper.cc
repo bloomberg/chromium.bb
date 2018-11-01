@@ -15,12 +15,12 @@ namespace blink {
 scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByMove(
     v8::Isolate* isolate,
     const ScriptValue& message,
-    const PostMessageOptions& options,
+    const PostMessageOptions* options,
     Transferables& transferables,
     ExceptionState& exception_state) {
-  if (options.hasTransfer() && !options.transfer().IsEmpty()) {
+  if (options->hasTransfer() && !options->transfer().IsEmpty()) {
     if (!SerializedScriptValue::ExtractTransferables(
-            isolate, options.transfer(), transferables, exception_state)) {
+            isolate, options->transfer(), transferables, exception_state)) {
       return nullptr;
     }
   }
@@ -40,12 +40,12 @@ scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByMove(
 scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByCopy(
     v8::Isolate* isolate,
     const ScriptValue& message,
-    const PostMessageOptions& options,
+    const PostMessageOptions* options,
     Transferables& transferables,
     ExceptionState& exception_state) {
-  if (options.hasTransfer() && !options.transfer().IsEmpty()) {
+  if (options->hasTransfer() && !options->transfer().IsEmpty()) {
     if (!SerializedScriptValue::ExtractTransferables(
-            isolate, options.transfer(), transferables, exception_state)) {
+            isolate, options->transfer(), transferables, exception_state)) {
       return nullptr;
     }
   }
@@ -87,8 +87,8 @@ scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByCopy(
 mojom::blink::UserActivationSnapshotPtr
 PostMessageHelper::CreateUserActivationSnapshot(
     ExecutionContext* execution_context,
-    const PostMessageOptions& options) {
-  if (!options.includeUserActivation())
+    const PostMessageOptions* options) {
+  if (!options->includeUserActivation())
     return nullptr;
   if (LocalDOMWindow* dom_window = execution_context->ExecutingWindow()) {
     if (LocalFrame* frame = dom_window->GetFrame()) {

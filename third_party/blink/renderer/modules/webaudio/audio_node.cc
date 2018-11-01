@@ -659,16 +659,16 @@ void AudioNode::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void AudioNode::HandleChannelOptions(const AudioNodeOptions& options,
+void AudioNode::HandleChannelOptions(const AudioNodeOptions* options,
                                      ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (options.hasChannelCount())
-    setChannelCount(options.channelCount(), exception_state);
-  if (options.hasChannelCountMode())
-    setChannelCountMode(options.channelCountMode(), exception_state);
-  if (options.hasChannelInterpretation())
-    setChannelInterpretation(options.channelInterpretation(), exception_state);
+  if (options->hasChannelCount())
+    setChannelCount(options->channelCount(), exception_state);
+  if (options->hasChannelCountMode())
+    setChannelCountMode(options->channelCountMode(), exception_state);
+  if (options->hasChannelInterpretation())
+    setChannelInterpretation(options->channelInterpretation(), exception_state);
 }
 
 BaseAudioContext* AudioNode::context() const {

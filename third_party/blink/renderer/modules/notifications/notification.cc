@@ -63,7 +63,7 @@ namespace blink {
 
 Notification* Notification::Create(ExecutionContext* context,
                                    const String& title,
-                                   const NotificationOptions& options,
+                                   const NotificationOptions* options,
                                    ExceptionState& exception_state) {
   // The Notification constructor may be disabled through a runtime feature when
   // the platform does not support non-persistent notifications.
@@ -80,7 +80,7 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  if (!options.actions().IsEmpty()) {
+  if (!options->actions().IsEmpty()) {
     exception_state.ThrowTypeError(
         "Actions are only supported for persistent notifications shown using "
         "ServiceWorkerRegistration.showNotification().");
@@ -347,23 +347,23 @@ Vector<v8::Local<v8::Value>> Notification::actions(
       data_->actions.value();
   result.Grow(actions.size());
   for (wtf_size_t i = 0; i < actions.size(); ++i) {
-    NotificationAction action;
+    NotificationAction* action = NotificationAction::Create();
 
     switch (actions[i]->type) {
       case mojom::blink::NotificationActionType::BUTTON:
-        action.setType("button");
+        action->setType("button");
         break;
       case mojom::blink::NotificationActionType::TEXT:
-        action.setType("text");
+        action->setType("text");
         break;
       default:
         NOTREACHED() << "Unknown action type: " << actions[i]->type;
     }
 
-    action.setAction(actions[i]->action);
-    action.setTitle(actions[i]->title);
-    action.setIcon(actions[i]->icon.GetString());
-    action.setPlaceholder(actions[i]->placeholder);
+    action->setAction(actions[i]->action);
+    action->setTitle(actions[i]->title);
+    action->setIcon(actions[i]->icon.GetString());
+    action->setPlaceholder(actions[i]->placeholder);
 
     // Both the Action dictionaries themselves and the sequence they'll be
     // returned in are expected to the frozen. This cannot be done with

@@ -34,7 +34,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
  public:
   static AudioContext* Create(Document&,
-                              const AudioContextOptions&,
+                              const AudioContextOptions*,
                               ExceptionState&);
 
   ~AudioContext() override;
@@ -51,7 +51,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   bool HasRealtimeConstraint() final { return true; }
 
-  void getOutputTimestamp(ScriptState*, AudioTimestamp&);
+  AudioTimestamp* getOutputTimestamp(ScriptState*) const;
   double baseLatency() const;
 
   MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*,

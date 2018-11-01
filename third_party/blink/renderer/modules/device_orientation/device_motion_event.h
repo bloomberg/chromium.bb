@@ -43,7 +43,7 @@ class DeviceMotionEvent final : public Event {
   ~DeviceMotionEvent() override;
   static DeviceMotionEvent* Create() { return new DeviceMotionEvent; }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
-                                   const DeviceMotionEventInit& initializer) {
+                                   const DeviceMotionEventInit* initializer) {
     return new DeviceMotionEvent(event_type, initializer);
   }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
@@ -66,7 +66,7 @@ class DeviceMotionEvent final : public Event {
 
  private:
   DeviceMotionEvent();
-  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit&);
+  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit*);
   DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
 
   Member<const DeviceMotionData> device_motion_data_;

@@ -37,7 +37,8 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   const String& GetName() const { return name_; }
   v8::Local<v8::Object> ConstructorLocal(v8::Isolate*);
   v8::Local<v8::Function> ProcessLocal(v8::Isolate*);
-  void SetAudioParamDescriptors(const HeapVector<AudioParamDescriptor>&);
+  void SetAudioParamDescriptors(
+      const HeapVector<Member<AudioParamDescriptor>>&);
   const Vector<String> GetAudioParamDescriptorNames() const;
   const AudioParamDescriptor* GetAudioParamDescriptor(const String& key) const;
 
@@ -70,7 +71,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   TraceWrapperV8Reference<v8::Object> constructor_;
   TraceWrapperV8Reference<v8::Function> process_;
 
-  HeapVector<AudioParamDescriptor> audio_param_descriptors_;
+  HeapVector<Member<AudioParamDescriptor>> audio_param_descriptors_;
 };
 
 }  // namespace blink

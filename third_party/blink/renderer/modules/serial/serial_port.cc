@@ -16,7 +16,7 @@ ScriptValue SerialPort::out(ScriptState* script_state) {
 }
 
 ScriptPromise SerialPort::open(ScriptState* script_state,
-                               const SerialOptions& options) {
+                               const SerialOptions* options) {
   return ScriptPromise::RejectWithDOMException(
       script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError));
 }

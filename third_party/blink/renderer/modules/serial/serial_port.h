@@ -21,7 +21,7 @@ class SerialPort final : public ScriptWrappable {
   ScriptValue in(ScriptState*);
   ScriptValue out(ScriptState*);
 
-  ScriptPromise open(ScriptState*, const SerialOptions& options);
+  ScriptPromise open(ScriptState*, const SerialOptions* options);
   ScriptPromise close(ScriptState*);
 };
 

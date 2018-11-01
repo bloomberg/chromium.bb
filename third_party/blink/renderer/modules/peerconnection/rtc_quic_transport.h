@@ -57,11 +57,11 @@ class MODULES_EXPORT RTCQuicTransport final
   // https://w3c.github.io/webrtc-quic/#quic-transport*
   RTCIceTransport* transport() const;
   String state() const;
-  void getLocalParameters(RTCQuicParameters& result) const;
-  void getRemoteParameters(base::Optional<RTCQuicParameters>& result) const;
+  RTCQuicParameters* getLocalParameters() const;
+  RTCQuicParameters* getRemoteParameters() const;
   const HeapVector<Member<RTCCertificate>>& getCertificates() const;
   const HeapVector<Member<DOMArrayBuffer>>& getRemoteCertificates() const;
-  void start(const RTCQuicParameters& remote_parameters,
+  void start(const RTCQuicParameters* remote_parameters,
              ExceptionState& exception_state);
   void stop();
   RTCQuicStream* createStream(ExceptionState& exception_state);
@@ -114,7 +114,7 @@ class MODULES_EXPORT RTCQuicTransport final
   RTCQuicTransportState state_ = RTCQuicTransportState::kNew;
   HeapVector<Member<RTCCertificate>> certificates_;
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
-  base::Optional<RTCQuicParameters> remote_parameters_;
+  Member<RTCQuicParameters> remote_parameters_;
   std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory_;
   std::unique_ptr<QuicTransportProxy> proxy_;
   HeapHashSet<Member<RTCQuicStream>> streams_;

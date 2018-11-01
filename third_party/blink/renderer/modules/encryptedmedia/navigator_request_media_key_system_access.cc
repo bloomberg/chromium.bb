@@ -64,10 +64,10 @@ ConvertEncryptionScheme(const String& encryption_scheme) {
 }
 
 static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
-    const HeapVector<MediaKeySystemMediaCapability>& capabilities) {
+    const HeapVector<Member<MediaKeySystemMediaCapability>>& capabilities) {
   WebVector<WebMediaKeySystemMediaCapability> result(capabilities.size());
   for (wtf_size_t i = 0; i < capabilities.size(); ++i) {
-    const WebString& content_type = capabilities[i].contentType();
+    const WebString& content_type = capabilities[i]->contentType();
     result[i].content_type = content_type;
     ParsedContentType type(content_type);
     if (type.IsValid() && !type.GetParameters().HasDuplicatedNames()) {
@@ -82,7 +82,7 @@ static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
       if (type.GetParameters().ParameterCount() == 1u)
         result[i].codecs = type.ParameterValueForName("codecs");
     }
-    result[i].robustness = capabilities[i].robustness();
+    result[i].robustness = capabilities[i]->robustness();
 
     // From
     // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md
@@ -91,8 +91,8 @@ static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
     // Applications which ignore this feature by leaving encryptionScheme null
     // get the same user agent behavior they did before this feature existed."
     result[i].encryption_scheme =
-        capabilities[i].hasEncryptionScheme()
-            ? ConvertEncryptionScheme(capabilities[i].encryptionScheme())
+        capabilities[i]->hasEncryptionScheme()
+            ? ConvertEncryptionScheme(capabilities[i]->encryptionScheme())
             : WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified;
   }
   return result;
@@ -129,7 +129,8 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   MediaKeySystemAccessInitializer(
       ScriptState*,
       const String& key_system,
-      const HeapVector<MediaKeySystemConfiguration>& supported_configurations);
+      const HeapVector<Member<MediaKeySystemConfiguration>>&
+          supported_configurations);
   ~MediaKeySystemAccessInitializer() override = default;
 
   // EncryptedMediaRequest implementation.
@@ -166,35 +167,36 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
 MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     ScriptState* script_state,
     const String& key_system,
-    const HeapVector<MediaKeySystemConfiguration>& supported_configurations)
+    const HeapVector<Member<MediaKeySystemConfiguration>>&
+        supported_configurations)
     : resolver_(ScriptPromiseResolver::Create(script_state)),
       key_system_(key_system),
       supported_configurations_(supported_configurations.size()) {
   for (wtf_size_t i = 0; i < supported_configurations.size(); ++i) {
-    const MediaKeySystemConfiguration& config = supported_configurations[i];
+    const MediaKeySystemConfiguration* config = supported_configurations[i];
     WebMediaKeySystemConfiguration web_config;
 
-    DCHECK(config.hasInitDataTypes());
-    web_config.init_data_types = ConvertInitDataTypes(config.initDataTypes());
+    DCHECK(config->hasInitDataTypes());
+    web_config.init_data_types = ConvertInitDataTypes(config->initDataTypes());
 
-    DCHECK(config.hasAudioCapabilities());
+    DCHECK(config->hasAudioCapabilities());
     web_config.audio_capabilities =
-        ConvertCapabilities(config.audioCapabilities());
+        ConvertCapabilities(config->audioCapabilities());
 
-    DCHECK(config.hasVideoCapabilities());
+    DCHECK(config->hasVideoCapabilities());
     web_config.video_capabilities =
-        ConvertCapabilities(config.videoCapabilities());
+        ConvertCapabilities(config->videoCapabilities());
 
-    DCHECK(config.hasDistinctiveIdentifier());
+    DCHECK(config->hasDistinctiveIdentifier());
     web_config.distinctive_identifier =
-        ConvertMediaKeysRequirement(config.distinctiveIdentifier());
+        ConvertMediaKeysRequirement(config->distinctiveIdentifier());
 
-    DCHECK(config.hasPersistentState());
+    DCHECK(config->hasPersistentState());
     web_config.persistent_state =
-        ConvertMediaKeysRequirement(config.persistentState());
+        ConvertMediaKeysRequirement(config->persistentState());
 
-    if (config.hasSessionTypes()) {
-      web_config.session_types = ConvertSessionTypes(config.sessionTypes());
+    if (config->hasSessionTypes()) {
+      web_config.session_types = ConvertSessionTypes(config->sessionTypes());
     } else {
       // From the spec
       // (http://w3c.github.io/encrypted-media/#idl-def-mediakeysystemconfiguration):
@@ -208,7 +210,7 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     }
 
     // If |label| is not present, it will be a null string.
-    web_config.label = config.label();
+    web_config.label = config->label();
     supported_configurations_[i] = web_config;
   }
 
@@ -296,7 +298,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     ScriptState* script_state,
     Navigator& navigator,
     const String& key_system,
-    const HeapVector<MediaKeySystemConfiguration>& supported_configurations) {
+    const HeapVector<Member<MediaKeySystemConfiguration>>&
+        supported_configurations) {
   DVLOG(3) << __func__;
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);

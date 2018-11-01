@@ -338,10 +338,10 @@ void MediaKeys::SetServerCertificateTask(
 
 ScriptPromise MediaKeys::getStatusForPolicy(
     ScriptState* script_state,
-    const MediaKeysPolicy& media_keys_policy) {
+    const MediaKeysPolicy* media_keys_policy) {
   // TODO(xhwang): Pass MediaKeysPolicy classes all the way to Chromium when
   // we have more than one policy to check.
-  String min_hdcp_version = media_keys_policy.minHdcpVersion();
+  String min_hdcp_version = media_keys_policy->minHdcpVersion();
 
   // Let promise be a new promise.
   GetStatusForPolicyResultPromise* result = new GetStatusForPolicyResultPromise(

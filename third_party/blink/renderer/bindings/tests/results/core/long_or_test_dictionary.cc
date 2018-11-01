@@ -36,18 +36,18 @@ LongOrTestDictionary LongOrTestDictionary::FromLong(int32_t value) {
   return container;
 }
 
-const TestDictionary& LongOrTestDictionary::GetAsTestDictionary() const {
+TestDictionary* LongOrTestDictionary::GetAsTestDictionary() const {
   DCHECK(IsTestDictionary());
   return test_dictionary_;
 }
 
-void LongOrTestDictionary::SetTestDictionary(const TestDictionary& value) {
+void LongOrTestDictionary::SetTestDictionary(TestDictionary* value) {
   DCHECK(IsNull());
   test_dictionary_ = value;
   type_ = SpecificType::kTestDictionary;
 }
 
-LongOrTestDictionary LongOrTestDictionary::FromTestDictionary(const TestDictionary& value) {
+LongOrTestDictionary LongOrTestDictionary::FromTestDictionary(TestDictionary* value) {
   LongOrTestDictionary container;
   container.SetTestDictionary(value);
   return container;
@@ -69,8 +69,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     return;
 
   if (IsUndefinedOrNull(v8Value)) {
-    TestDictionary cppValue;
-    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
+    TestDictionary* cppValue = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetTestDictionary(cppValue);
@@ -78,8 +77,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   if (v8Value->IsObject()) {
-    TestDictionary cppValue;
-    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
+    TestDictionary* cppValue = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetTestDictionary(cppValue);

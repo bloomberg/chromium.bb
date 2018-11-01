@@ -38,9 +38,9 @@ DOMRectReadOnly* DOMRectReadOnly::FromFloatRect(const FloatRect& rect) {
   return new DOMRectReadOnly(rect.X(), rect.Y(), rect.Width(), rect.Height());
 }
 
-DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
-  return new DOMRectReadOnly(other.x(), other.y(), other.width(),
-                             other.height());
+DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit* other) {
+  return new DOMRectReadOnly(other->x(), other->y(), other->width(),
+                             other->height());
 }
 
 DOMRectReadOnly::DOMRectReadOnly(double x,

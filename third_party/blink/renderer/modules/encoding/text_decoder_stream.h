@@ -30,7 +30,7 @@ class TextDecoderStream final : public ScriptWrappable {
  public:
   static TextDecoderStream* Create(ScriptState*,
                                    const String& label,
-                                   const TextDecoderOptions&,
+                                   const TextDecoderOptions*,
                                    ExceptionState&);
   ~TextDecoderStream() override;
 
@@ -48,7 +48,7 @@ class TextDecoderStream final : public ScriptWrappable {
 
   TextDecoderStream(ScriptState*,
                     const WTF::TextEncoding&,
-                    const TextDecoderOptions&,
+                    const TextDecoderOptions*,
                     ExceptionState&);
 
   const TraceWrapperMember<TransformStream> transform_;

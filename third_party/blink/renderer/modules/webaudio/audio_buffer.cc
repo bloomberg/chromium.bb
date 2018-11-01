@@ -105,10 +105,10 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
   return audio_buffer;
 }
 
-AudioBuffer* AudioBuffer::Create(const AudioBufferOptions& options,
+AudioBuffer* AudioBuffer::Create(const AudioBufferOptions* options,
                                  ExceptionState& exception_state) {
-  return Create(options.numberOfChannels(), options.length(),
-                options.sampleRate(), exception_state);
+  return Create(options->numberOfChannels(), options->length(),
+                options->sampleRate(), exception_state);
 }
 
 AudioBuffer* AudioBuffer::CreateUninitialized(unsigned number_of_channels,

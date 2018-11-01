@@ -140,13 +140,13 @@ bool IsValidReasonPhrase(const String& status_text) {
 
 Response* Response::Create(ScriptState* script_state,
                            ExceptionState& exception_state) {
-  return Create(script_state, nullptr, String(), ResponseInit(),
+  return Create(script_state, nullptr, String(), ResponseInit::Create(),
                 exception_state);
 }
 
 Response* Response::Create(ScriptState* script_state,
                            ScriptValue body_value,
-                           const ResponseInit& init,
+                           const ResponseInit* init,
                            ExceptionState& exception_state) {
   v8::Local<v8::Value> body = body_value.V8Value();
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -225,9 +225,9 @@ Response* Response::Create(ScriptState* script_state,
 Response* Response::Create(ScriptState* script_state,
                            BodyStreamBuffer* body,
                            const String& content_type,
-                           const ResponseInit& init,
+                           const ResponseInit* init,
                            ExceptionState& exception_state) {
-  unsigned short status = init.status();
+  unsigned short status = init->status();
 
   // "1. If |init|'s status member is not in the range 200 to 599, inclusive,
   // throw a RangeError."
@@ -241,7 +241,7 @@ Response* Response::Create(ScriptState* script_state,
 
   // "2. If |init|'s statusText member does not match the Reason-Phrase
   // token production, throw a TypeError."
-  if (!IsValidReasonPhrase(init.statusText())) {
+  if (!IsValidReasonPhrase(init->statusText())) {
     exception_state.ThrowTypeError("Invalid statusText");
     return nullptr;
   }
@@ -251,19 +251,19 @@ Response* Response::Create(ScriptState* script_state,
   // |r|'s response's header list, and guard is "response" "
   Response* r = new Response(ExecutionContext::From(script_state));
   // "5. Set |r|'s response's status to |init|'s status member."
-  r->response_->SetStatus(init.status());
+  r->response_->SetStatus(init->status());
 
   // "6. Set |r|'s response's status message to |init|'s statusText member."
-  r->response_->SetStatusMessage(AtomicString(init.statusText()));
+  r->response_->SetStatusMessage(AtomicString(init->statusText()));
 
   // "7. If |init|'s headers exists, then fill |r|’s headers with
   // |init|'s headers"
-  if (init.hasHeaders()) {
+  if (init->hasHeaders()) {
     // "1. Empty |r|'s response's header list."
     r->response_->HeaderList()->ClearList();
     // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
     // any exceptions."
-    r->headers_->FillWith(init.headers(), exception_state);
+    r->headers_->FillWith(init->headers(), exception_state);
     if (exception_state.HadException())
       return nullptr;
   }

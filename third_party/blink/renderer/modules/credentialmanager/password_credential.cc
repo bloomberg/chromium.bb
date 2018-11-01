@@ -20,19 +20,19 @@ constexpr char kPasswordCredentialType[] = "password";
 
 // https://w3c.github.io/webappsec-credential-management/#construct-passwordcredential-data
 PasswordCredential* PasswordCredential::Create(
-    const PasswordCredentialData& data,
+    const PasswordCredentialData* data,
     ExceptionState& exception_state) {
-  if (data.id().IsEmpty())
+  if (data->id().IsEmpty())
     exception_state.ThrowTypeError("'id' must not be empty.");
-  if (data.password().IsEmpty())
+  if (data->password().IsEmpty())
     exception_state.ThrowTypeError("'password' must not be empty.");
 
-  KURL icon_url = ParseStringAsURLOrThrow(data.iconURL(), exception_state);
+  KURL icon_url = ParseStringAsURLOrThrow(data->iconURL(), exception_state);
 
   if (exception_state.HadException())
     return nullptr;
 
-  return new PasswordCredential(data.id(), data.password(), data.name(),
+  return new PasswordCredential(data->id(), data->password(), data->name(),
                                 icon_url);
 }
 
@@ -43,7 +43,7 @@ PasswordCredential* PasswordCredential::Create(
   // Extract data from the form, then use the extracted |form_data| object's
   // value to populate |data|.
   FormData* form_data = FormData::Create(form);
-  PasswordCredentialData data;
+  PasswordCredentialData* data = PasswordCredentialData::Create();
   for (ListedElement* submittable_element : form->ListedElements()) {
     // The "form data set" contains an entry for a |submittable_element| only if
     // it has a non-empty `name` attribute.
@@ -63,13 +63,13 @@ PasswordCredential* PasswordCredential::Create(
         .Split(' ', autofill_tokens);
     for (const auto& token : autofill_tokens) {
       if (token == "current-password" || token == "new-password") {
-        data.setPassword(value.GetAsUSVString());
+        data->setPassword(value.GetAsUSVString());
       } else if (token == "photo") {
-        data.setIconURL(value.GetAsUSVString());
+        data->setIconURL(value.GetAsUSVString());
       } else if (token == "name" || token == "nickname") {
-        data.setName(value.GetAsUSVString());
+        data->setName(value.GetAsUSVString());
       } else if (token == "username") {
-        data.setId(value.GetAsUSVString());
+        data->setId(value.GetAsUSVString());
       }
     }
   }

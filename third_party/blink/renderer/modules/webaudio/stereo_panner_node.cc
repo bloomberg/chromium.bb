@@ -166,7 +166,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext& context,
 }
 
 StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,
-                                           const StereoPannerOptions& options,
+                                           const StereoPannerOptions* options,
                                            ExceptionState& exception_state) {
   StereoPannerNode* node = Create(*context, exception_state);
 
@@ -175,7 +175,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->pan()->setValue(options.pan());
+  node->pan()->setValue(options->pan());
 
   return node;
 }

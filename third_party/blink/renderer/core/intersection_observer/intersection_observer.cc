@@ -142,16 +142,16 @@ void IntersectionObserver::SetThrottleDelayEnabledForTesting(bool enabled) {
 }
 
 IntersectionObserver* IntersectionObserver::Create(
-    const IntersectionObserverInit& observer_init,
+    const IntersectionObserverInit* observer_init,
     IntersectionObserverDelegate& delegate,
     ExceptionState& exception_state) {
-  Element* root = observer_init.root();
+  Element* root = observer_init->root();
 
   DOMHighResTimeStamp delay = 0;
   bool track_visibility = false;
   if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
-    delay = observer_init.delay();
-    track_visibility = observer_init.trackVisibility();
+    delay = observer_init->delay();
+    track_visibility = observer_init->trackVisibility();
     if (track_visibility && delay < 100) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotSupportedError,
@@ -166,12 +166,12 @@ IntersectionObserver* IntersectionObserver::Create(
   }
 
   Vector<Length> root_margin;
-  ParseRootMargin(observer_init.rootMargin(), root_margin, exception_state);
+  ParseRootMargin(observer_init->rootMargin(), root_margin, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   Vector<float> thresholds;
-  ParseThresholds(observer_init.threshold(), thresholds, exception_state);
+  ParseThresholds(observer_init->threshold(), thresholds, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -182,7 +182,7 @@ IntersectionObserver* IntersectionObserver::Create(
 IntersectionObserver* IntersectionObserver::Create(
     ScriptState* script_state,
     V8IntersectionObserverCallback* callback,
-    const IntersectionObserverInit& observer_init,
+    const IntersectionObserverInit* observer_init,
     ExceptionState& exception_state) {
   V8IntersectionObserverDelegate* delegate =
       new V8IntersectionObserverDelegate(callback, script_state);

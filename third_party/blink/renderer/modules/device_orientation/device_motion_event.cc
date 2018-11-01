@@ -38,7 +38,7 @@ DeviceMotionEvent::DeviceMotionEvent()
     : device_motion_data_(DeviceMotionData::Create()) {}
 
 DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
-                                     const DeviceMotionEventInit& initializer)
+                                     const DeviceMotionEventInit* initializer)
     : Event(event_type, initializer),
       device_motion_data_(DeviceMotionData::Create(initializer)) {}
 

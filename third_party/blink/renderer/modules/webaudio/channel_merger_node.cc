@@ -165,10 +165,10 @@ ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
 
 ChannelMergerNode* ChannelMergerNode::Create(
     BaseAudioContext* context,
-    const ChannelMergerOptions& options,
+    const ChannelMergerOptions* options,
     ExceptionState& exception_state) {
   ChannelMergerNode* node =
-      Create(*context, options.numberOfInputs(), exception_state);
+      Create(*context, options->numberOfInputs(), exception_state);
 
   if (!node)
     return nullptr;

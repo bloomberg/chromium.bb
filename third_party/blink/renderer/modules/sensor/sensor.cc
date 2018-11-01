@@ -34,7 +34,7 @@ bool AreFeaturesEnabled(Document* document,
 }  // namespace
 
 Sensor::Sensor(ExecutionContext* execution_context,
-               const SensorOptions& sensor_options,
+               const SensorOptions* sensor_options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType type,
                const Vector<mojom::FeaturePolicyFeature>& features)
@@ -55,8 +55,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
   }
 
   // Check the given frequency value.
-  if (sensor_options.hasFrequency()) {
-    frequency_ = sensor_options.frequency();
+  if (sensor_options->hasFrequency()) {
+    frequency_ = sensor_options->frequency();
     const double max_allowed_frequency =
         device::GetSensorMaxAllowedFrequency(type_);
     if (frequency_ > max_allowed_frequency) {
@@ -72,16 +72,16 @@ Sensor::Sensor(ExecutionContext* execution_context,
 }
 
 Sensor::Sensor(ExecutionContext* execution_context,
-               const SpatialSensorOptions& options,
+               const SpatialSensorOptions* options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType sensor_type,
                const Vector<mojom::FeaturePolicyFeature>& features)
     : Sensor(execution_context,
-             static_cast<const SensorOptions&>(options),
+             static_cast<const SensorOptions*>(options),
              exception_state,
              sensor_type,
              features) {
-  use_screen_coords_ = (options.referenceFrame() == "screen");
+  use_screen_coords_ = (options->referenceFrame() == "screen");
 }
 
 Sensor::~Sensor() = default;

@@ -47,7 +47,7 @@ class ConstantSourceNode final : public AudioScheduledSourceNode {
  public:
   static ConstantSourceNode* Create(BaseAudioContext&, ExceptionState&);
   static ConstantSourceNode* Create(BaseAudioContext*,
-                                    const ConstantSourceOptions&,
+                                    const ConstantSourceOptions*,
                                     ExceptionState&);
   void Trace(blink::Visitor*) override;
 

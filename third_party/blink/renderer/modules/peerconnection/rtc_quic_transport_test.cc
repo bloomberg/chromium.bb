@@ -35,18 +35,18 @@ constexpr char kRemoteFingerprintValue1[] =
     "8E:57:5F:8E:65:D2:83:7B:05:97:BB:72:DE:09:DE:03:BD:95:9B:A0:03:10:50:82:"
     "5E:73:38:16:4C:E0:C5:84";
 
-RTCDtlsFingerprint CreateRemoteFingerprint1() {
-  RTCDtlsFingerprint dtls_fingerprint;
-  dtls_fingerprint.setAlgorithm(kRemoteFingerprintAlgorithm1);
-  dtls_fingerprint.setValue(kRemoteFingerprintValue1);
+RTCDtlsFingerprint* CreateRemoteFingerprint1() {
+  RTCDtlsFingerprint* dtls_fingerprint = RTCDtlsFingerprint::Create();
+  dtls_fingerprint->setAlgorithm(kRemoteFingerprintAlgorithm1);
+  dtls_fingerprint->setValue(kRemoteFingerprintValue1);
   return dtls_fingerprint;
 }
 
-RTCQuicParameters CreateRemoteRTCQuicParameters1() {
-  HeapVector<RTCDtlsFingerprint> fingerprints;
+RTCQuicParameters* CreateRemoteRTCQuicParameters1() {
+  HeapVector<Member<RTCDtlsFingerprint>> fingerprints;
   fingerprints.push_back(CreateRemoteFingerprint1());
-  RTCQuicParameters quic_parameters;
-  quic_parameters.setFingerprints(fingerprints);
+  RTCQuicParameters* quic_parameters = RTCQuicParameters::Create();
+  quic_parameters->setFingerprints(fingerprints);
   return quic_parameters;
 }
 

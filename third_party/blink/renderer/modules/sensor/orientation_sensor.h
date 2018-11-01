@@ -25,7 +25,7 @@ class OrientationSensor : public Sensor {
 
  protected:
   OrientationSensor(ExecutionContext*,
-                    const SpatialSensorOptions&,
+                    const SpatialSensorOptions*,
                     ExceptionState&,
                     device::mojom::blink::SensorType,
                     const Vector<mojom::FeaturePolicyFeature>& features);

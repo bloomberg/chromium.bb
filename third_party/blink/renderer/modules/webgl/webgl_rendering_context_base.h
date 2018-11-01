@@ -282,7 +282,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       WebGLProgram*);
   GLint getAttribLocation(WebGLProgram*, const String& name);
   ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
-  void getContextAttributes(base::Optional<WebGLContextAttributes>&);
+  WebGLContextAttributes* getContextAttributes() const;
   GLenum getError();
   ScriptValue getExtension(ScriptState*, const String& name);
   virtual ScriptValue getFramebufferAttachmentParameter(ScriptState*,

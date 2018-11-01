@@ -41,7 +41,7 @@ class SpeechRecognitionEvent final : public Event {
 
  public:
   static SpeechRecognitionEvent* Create(const AtomicString&,
-                                        const SpeechRecognitionEventInit&);
+                                        const SpeechRecognitionEventInit*);
   ~SpeechRecognitionEvent() override;
 
   static SpeechRecognitionEvent* CreateResult(
@@ -64,7 +64,7 @@ class SpeechRecognitionEvent final : public Event {
 
  private:
   SpeechRecognitionEvent(const AtomicString&,
-                         const SpeechRecognitionEventInit&);
+                         const SpeechRecognitionEventInit*);
   SpeechRecognitionEvent(const AtomicString& event_name,
                          uint32_t result_index,
                          SpeechRecognitionResultList* results);

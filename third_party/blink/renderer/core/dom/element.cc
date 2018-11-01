@@ -452,18 +452,18 @@ void Element::setNonce(const AtomicString& nonce) {
 }
 
 void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
-  ScrollIntoViewOptions options;
+  ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
   if (arg.IsBoolean()) {
     if (arg.GetAsBoolean())
-      options.setBlock("start");
+      options->setBlock("start");
     else
-      options.setBlock("end");
-    options.setInlinePosition("nearest");
+      options->setBlock("end");
+    options->setInlinePosition("nearest");
   } else if (arg.IsScrollIntoViewOptions()) {
     options = arg.GetAsScrollIntoViewOptions();
     if (!RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled() &&
-        options.behavior() == "smooth") {
-      options.setBehavior("instant");
+        options->behavior() == "smooth") {
+      options->setBehavior("instant");
     }
   }
   scrollIntoViewWithOptions(options);
@@ -475,15 +475,15 @@ void Element::scrollIntoView(bool align_to_top) {
   scrollIntoView(arg);
 }
 
-static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
+static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
                                            ScrollOrientation axis,
                                            bool is_horizontal_writing_mode,
                                            bool is_flipped_blocks_mode) {
   String alignment =
       ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
        (axis == kVerticalScroll && !is_horizontal_writing_mode))
-          ? options.inlinePosition()
-          : options.block();
+          ? options->inlinePosition()
+          : options->block();
 
   if (alignment == "center")
     return ScrollAlignment::kAlignCenterAlways;
@@ -511,17 +511,17 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
                                      : ScrollAlignment::kAlignToEdgeIfNeeded;
 }
 
-void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
+void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   ScrollIntoViewNoVisualUpdate(options);
 }
 
 void Element::ScrollIntoViewNoVisualUpdate(
-    const ScrollIntoViewOptions& options) {
+    const ScrollIntoViewOptions* options) {
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
-  ScrollBehavior behavior = (options.behavior() == "smooth")
+  ScrollBehavior behavior = (options->behavior() == "smooth")
                                 ? kScrollBehaviorSmooth
                                 : kScrollBehaviorAuto;
 
@@ -752,8 +752,8 @@ void Element::setScrollLeft(double new_left) {
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (LocalDOMWindow* window = GetDocument().domWindow()) {
-      ScrollToOptions options;
-      options.setLeft(new_left);
+      ScrollToOptions* options = ScrollToOptions::Create();
+      options->setLeft(new_left);
       window->scrollTo(options);
     }
   } else {
@@ -784,8 +784,8 @@ void Element::setScrollTop(double new_top) {
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (LocalDOMWindow* window = GetDocument().domWindow()) {
-      ScrollToOptions options;
-      options.setTop(new_top);
+      ScrollToOptions* options = ScrollToOptions::Create();
+      options->setTop(new_top);
       window->scrollTo(options);
     }
   } else {
@@ -851,13 +851,13 @@ int Element::scrollHeight() {
 }
 
 void Element::scrollBy(double x, double y) {
-  ScrollToOptions scroll_to_options;
-  scroll_to_options.setLeft(x);
-  scroll_to_options.setTop(y);
+  ScrollToOptions* scroll_to_options = ScrollToOptions::Create();
+  scroll_to_options->setLeft(x);
+  scroll_to_options->setTop(y);
   scrollBy(scroll_to_options);
 }
 
-void Element::scrollBy(const ScrollToOptions& scroll_to_options) {
+void Element::scrollBy(const ScrollToOptions* scroll_to_options) {
   if (!InActiveDocument())
     return;
 
@@ -873,13 +873,13 @@ void Element::scrollBy(const ScrollToOptions& scroll_to_options) {
 }
 
 void Element::scrollTo(double x, double y) {
-  ScrollToOptions scroll_to_options;
-  scroll_to_options.setLeft(x);
-  scroll_to_options.setTop(y);
+  ScrollToOptions* scroll_to_options = ScrollToOptions::Create();
+  scroll_to_options->setLeft(x);
+  scroll_to_options->setTop(y);
   scrollTo(scroll_to_options);
 }
 
-void Element::scrollTo(const ScrollToOptions& scroll_to_options) {
+void Element::scrollTo(const ScrollToOptions* scroll_to_options) {
   if (!InActiveDocument())
     return;
 
@@ -894,19 +894,19 @@ void Element::scrollTo(const ScrollToOptions& scroll_to_options) {
   }
 }
 
-void Element::ScrollLayoutBoxBy(const ScrollToOptions& scroll_to_options) {
+void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
   gfx::ScrollOffset displacement;
-  if (scroll_to_options.hasLeft()) {
+  if (scroll_to_options->hasLeft()) {
     displacement.set_x(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()));
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()));
   }
-  if (scroll_to_options.hasTop()) {
+  if (scroll_to_options->hasTop()) {
     displacement.set_y(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()));
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()));
   }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   LayoutBox* box = GetLayoutBox();
   if (box) {
@@ -927,30 +927,30 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions& scroll_to_options) {
   }
 }
 
-void Element::ScrollLayoutBoxTo(const ScrollToOptions& scroll_to_options) {
+void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
 
   LayoutBox* box = GetLayoutBox();
   if (box) {
     FloatPoint new_position(box->ScrollLeft().ToFloat(),
                             box->ScrollTop().ToFloat());
-    if (scroll_to_options.hasLeft()) {
+    if (scroll_to_options->hasLeft()) {
       new_position.SetX(
-          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
+          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
           box->Style()->EffectiveZoom());
     }
-    if (scroll_to_options.hasTop()) {
+    if (scroll_to_options->hasTop()) {
       new_position.SetY(
-          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
+          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
           box->Style()->EffectiveZoom());
     }
 
     std::unique_ptr<SnapSelectionStrategy> strategy =
         SnapSelectionStrategy::CreateForEndPosition(
-            gfx::ScrollOffset(new_position), scroll_to_options.hasLeft(),
-            scroll_to_options.hasTop());
+            gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
+            scroll_to_options->hasTop());
     new_position = GetDocument()
                        .GetSnapCoordinator()
                        ->GetSnapPosition(*box, *strategy)
@@ -959,19 +959,19 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions& scroll_to_options) {
   }
 }
 
-void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
+void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
   gfx::ScrollOffset displacement;
-  if (scroll_to_options.hasLeft()) {
+  if (scroll_to_options->hasLeft()) {
     displacement.set_x(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()));
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()));
   }
-  if (scroll_to_options.hasTop()) {
+  if (scroll_to_options->hasTop()) {
     displacement.set_y(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()));
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()));
   }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || !frame->View() || !GetDocument().GetPage())
@@ -998,9 +998,9 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
                             kProgrammaticScroll, scroll_behavior);
 }
 
-void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
+void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || !frame->View() || !GetDocument().GetPage())
@@ -1011,22 +1011,22 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
     return;
 
   ScrollOffset new_offset = viewport->GetScrollOffset();
-  if (scroll_to_options.hasLeft()) {
+  if (scroll_to_options->hasLeft()) {
     new_offset.SetWidth(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
         frame->PageZoomFactor());
   }
-  if (scroll_to_options.hasTop()) {
+  if (scroll_to_options->hasTop()) {
     new_offset.SetHeight(
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
         frame->PageZoomFactor());
   }
 
   FloatPoint new_position = viewport->ScrollOffsetToPosition(new_offset);
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(new_position), scroll_to_options.hasLeft(),
-          scroll_to_options.hasTop());
+          gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
+          scroll_to_options->hasTop());
   new_position =
       GetDocument()
           .GetSnapCoordinator()
@@ -2679,9 +2679,9 @@ bool Element::CanAttachShadowRoot() const {
          tag_name == html_names::kSpanTag;
 }
 
-ShadowRoot* Element::attachShadow(const ShadowRootInit& shadow_root_init_dict,
+ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
                                   ExceptionState& exception_state) {
-  DCHECK(shadow_root_init_dict.hasMode());
+  DCHECK(shadow_root_init_dict->hasMode());
   if (!CanAttachShadowRoot()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
@@ -2696,7 +2696,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit& shadow_root_init_dict,
     return nullptr;
   }
 
-  ShadowRootType type = shadow_root_init_dict.mode() == "open"
+  ShadowRootType type = shadow_root_init_dict->mode() == "open"
                             ? ShadowRootType::kOpen
                             : ShadowRootType::kClosed;
 
@@ -2705,10 +2705,10 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit& shadow_root_init_dict,
   else
     UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowClosed);
 
-  DCHECK(!shadow_root_init_dict.hasMode() || !GetShadowRoot());
-  bool delegates_focus = shadow_root_init_dict.hasDelegatesFocus() &&
-                         shadow_root_init_dict.delegatesFocus();
-  bool manual_slotting = shadow_root_init_dict.slotting() == "manual";
+  DCHECK(!shadow_root_init_dict->hasMode() || !GetShadowRoot());
+  bool delegates_focus = shadow_root_init_dict->hasDelegatesFocus() &&
+                         shadow_root_init_dict->delegatesFocus();
+  bool manual_slotting = shadow_root_init_dict->slotting() == "manual";
   return &AttachShadowRootInternal(type, delegates_focus, manual_slotting);
 }
 
@@ -3109,7 +3109,7 @@ bool Element::hasAttributeNS(const AtomicString& namespace_uri,
   return GetElementData()->Attributes().Find(q_name);
 }
 
-void Element::focus(FocusOptions options) {
+void Element::focus(const FocusOptions* options) {
   focus(FocusParams(SelectionBehaviorOnFocus::kRestore, kWebFocusTypeNone,
                     nullptr, options));
 }
@@ -3168,12 +3168,12 @@ void Element::focus(const FocusParams& params) {
 
 void Element::UpdateFocusAppearance(
     SelectionBehaviorOnFocus selection_behavior) {
-  UpdateFocusAppearanceWithOptions(selection_behavior, FocusOptions());
+  UpdateFocusAppearanceWithOptions(selection_behavior, FocusOptions::Create());
 }
 
 void Element::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {
+    const FocusOptions* options) {
   if (selection_behavior == SelectionBehaviorOnFocus::kNone)
     return;
   if (IsRootEditableElement(*this)) {
@@ -3201,11 +3201,11 @@ void Element::UpdateFocusAppearanceWithOptions(
             .SetShouldClearTypingStyle(true)
             .SetDoNotSetFocus(true)
             .Build());
-    if (!options.preventScroll())
+    if (!options->preventScroll())
       frame->Selection().RevealSelection();
   } else if (GetLayoutObject() &&
              !GetLayoutObject()->IsLayoutEmbeddedContent()) {
-    if (!options.preventScroll()) {
+    if (!options->preventScroll()) {
       GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
                                              WebScrollIntoViewParams());
     }

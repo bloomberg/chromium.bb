@@ -15,7 +15,7 @@ namespace blink {
 ScriptPromise NavigatorDisplayMedia::getDisplayMedia(
     ScriptState* script_state,
     Navigator& navigator,
-    const MediaStreamConstraints& options,
+    const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   MediaDevices* const media_devices =
       NavigatorUserMedia::mediaDevices(navigator);

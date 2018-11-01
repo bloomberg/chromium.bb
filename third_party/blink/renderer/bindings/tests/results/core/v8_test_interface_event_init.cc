@@ -26,7 +26,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestInterfaceEventInitKeys(v8::Isol
       kKeys, kKeys, base::size(kKeys));
 }
 
-void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {
+void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit* impl, ExceptionState& exceptionState) {
   if (IsUndefinedOrNull(v8Value)) {
     return;
   }
@@ -55,18 +55,18 @@ void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     V8StringResource<> string_member_cpp_value = string_member_value;
     if (!string_member_cpp_value.Prepare(exceptionState))
       return;
-    impl.setStringMember(string_member_cpp_value);
+    impl->setStringMember(string_member_cpp_value);
   }
 }
 
 v8::Local<v8::Value> TestInterfaceEventInit::ToV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const {
   v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-  if (!toV8TestInterfaceEventInit(*this, v8Object, creationContext, isolate))
+  if (!toV8TestInterfaceEventInit(this, v8Object, creationContext, isolate))
     return v8::Undefined(isolate);
   return v8Object;
 }
 
-bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+bool toV8TestInterfaceEventInit(const TestInterfaceEventInit* impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   if (!toV8EventInit(impl, dictionary, creationContext, isolate))
     return false;
 
@@ -86,8 +86,8 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
 
   v8::Local<v8::Value> string_member_value;
   bool string_member_has_value_or_default = false;
-  if (impl.hasStringMember()) {
-    string_member_value = V8String(isolate, impl.stringMember());
+  if (impl->hasStringMember()) {
+    string_member_value = V8String(isolate, impl->stringMember());
     string_member_has_value_or_default = true;
   }
   if (string_member_has_value_or_default &&
@@ -98,8 +98,8 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
   return true;
 }
 
-TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceEventInit impl;
+TestInterfaceEventInit* NativeValueTraits<TestInterfaceEventInit>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  TestInterfaceEventInit* impl = TestInterfaceEventInit::Create();
   V8TestInterfaceEventInit::ToImpl(isolate, value, impl, exceptionState);
   return impl;
 }

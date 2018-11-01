@@ -20,51 +20,51 @@
 namespace blink {
 namespace {
 
-void SetDictionaryMembers(DOMMatrix2DInit& other) {
-  if (!other.hasM11())
-    other.setM11(other.hasA() ? other.a() : 1);
+void SetDictionaryMembers(DOMMatrix2DInit* other) {
+  if (!other->hasM11())
+    other->setM11(other->hasA() ? other->a() : 1);
 
-  if (!other.hasM12())
-    other.setM12(other.hasB() ? other.b() : 0);
+  if (!other->hasM12())
+    other->setM12(other->hasB() ? other->b() : 0);
 
-  if (!other.hasM21())
-    other.setM21(other.hasC() ? other.c() : 0);
+  if (!other->hasM21())
+    other->setM21(other->hasC() ? other->c() : 0);
 
-  if (!other.hasM22())
-    other.setM22(other.hasD() ? other.d() : 1);
+  if (!other->hasM22())
+    other->setM22(other->hasD() ? other->d() : 1);
 
-  if (!other.hasM41())
-    other.setM41(other.hasE() ? other.e() : 0);
+  if (!other->hasM41())
+    other->setM41(other->hasE() ? other->e() : 0);
 
-  if (!other.hasM42())
-    other.setM42(other.hasF() ? other.f() : 0);
+  if (!other->hasM42())
+    other->setM42(other->hasF() ? other->f() : 0);
 }
 
 }  // namespace
 
-bool DOMMatrixReadOnly::ValidateAndFixup2D(DOMMatrix2DInit& other) {
-  if (other.hasA() && other.hasM11() && other.a() != other.m11() &&
-      !(std::isnan(other.a()) && std::isnan(other.m11()))) {
+bool DOMMatrixReadOnly::ValidateAndFixup2D(DOMMatrix2DInit* other) {
+  if (other->hasA() && other->hasM11() && other->a() != other->m11() &&
+      !(std::isnan(other->a()) && std::isnan(other->m11()))) {
     return false;
   }
-  if (other.hasB() && other.hasM12() && other.b() != other.m12() &&
-      !(std::isnan(other.b()) && std::isnan(other.m12()))) {
+  if (other->hasB() && other->hasM12() && other->b() != other->m12() &&
+      !(std::isnan(other->b()) && std::isnan(other->m12()))) {
     return false;
   }
-  if (other.hasC() && other.hasM21() && other.c() != other.m21() &&
-      !(std::isnan(other.c()) && std::isnan(other.m21()))) {
+  if (other->hasC() && other->hasM21() && other->c() != other->m21() &&
+      !(std::isnan(other->c()) && std::isnan(other->m21()))) {
     return false;
   }
-  if (other.hasD() && other.hasM22() && other.d() != other.m22() &&
-      !(std::isnan(other.d()) && std::isnan(other.m22()))) {
+  if (other->hasD() && other->hasM22() && other->d() != other->m22() &&
+      !(std::isnan(other->d()) && std::isnan(other->m22()))) {
     return false;
   }
-  if (other.hasE() && other.hasM41() && other.e() != other.m41() &&
-      !(std::isnan(other.e()) && std::isnan(other.m41()))) {
+  if (other->hasE() && other->hasM41() && other->e() != other->m41() &&
+      !(std::isnan(other->e()) && std::isnan(other->m41()))) {
     return false;
   }
-  if (other.hasF() && other.hasM42() && other.f() != other.m42() &&
-      !(std::isnan(other.f()) && std::isnan(other.m42()))) {
+  if (other->hasF() && other->hasM42() && other->f() != other->m42() &&
+      !(std::isnan(other->f()) && std::isnan(other->m42()))) {
     return false;
   }
 
@@ -72,7 +72,7 @@ bool DOMMatrixReadOnly::ValidateAndFixup2D(DOMMatrix2DInit& other) {
   return true;
 }
 
-bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
+bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit* other,
                                          ExceptionState& exception_state) {
   if (!ValidateAndFixup2D(other)) {
     exception_state.ThrowTypeError(
@@ -80,20 +80,21 @@ bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
     return false;
   }
 
-  if (other.hasIs2D() && other.is2D() &&
-      (other.m31() || other.m32() || other.m13() || other.m23() ||
-       other.m43() || other.m14() || other.m24() || other.m34() ||
-       other.m33() != 1 || other.m44() != 1)) {
+  if (other->hasIs2D() && other->is2D() &&
+      (other->m31() || other->m32() || other->m13() || other->m23() ||
+       other->m43() || other->m14() || other->m24() || other->m34() ||
+       other->m33() != 1 || other->m44() != 1)) {
     exception_state.ThrowTypeError(
         "The is2D member is set to true but the input matrix is a 3d matrix.");
     return false;
   }
 
-  if (!other.hasIs2D()) {
-    bool is2d = !(other.m31() || other.m32() || other.m13() || other.m23() ||
-                  other.m43() || other.m14() || other.m24() || other.m34() ||
-                  other.m33() != 1 || other.m44() != 1);
-    other.setIs2D(is2d);
+  if (!other->hasIs2D()) {
+    bool is2d =
+        !(other->m31() || other->m32() || other->m13() || other->m23() ||
+          other->m43() || other->m14() || other->m24() || other->m34() ||
+          other->m33() != 1 || other->m44() != 1);
+    other->setIs2D(is2d);
   }
   return true;
 }
@@ -170,35 +171,35 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix2D(
-    DOMMatrix2DInit& other,
+    DOMMatrix2DInit* other,
     ExceptionState& exception_state) {
   if (!ValidateAndFixup2D(other)) {
     exception_state.ThrowTypeError(
         "Property mismatch on matrix initialization.");
     return nullptr;
   }
-  double args[] = {other.m11(), other.m12(), other.m21(),
-                   other.m22(), other.m41(), other.m42()};
+  double args[] = {other->m11(), other->m12(), other->m21(),
+                   other->m22(), other->m41(), other->m42()};
   return new DOMMatrixReadOnly(args, 6);
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
-    DOMMatrixInit& other,
+    DOMMatrixInit* other,
     ExceptionState& exception_state) {
   if (!ValidateAndFixup(other, exception_state)) {
     DCHECK(exception_state.HadException());
     return nullptr;
   }
-  if (other.is2D()) {
-    double args[] = {other.m11(), other.m12(), other.m21(),
-                     other.m22(), other.m41(), other.m42()};
+  if (other->is2D()) {
+    double args[] = {other->m11(), other->m12(), other->m21(),
+                     other->m22(), other->m41(), other->m42()};
     return new DOMMatrixReadOnly(args, 6);
   }
 
-  double args[] = {other.m11(), other.m12(), other.m13(), other.m14(),
-                   other.m21(), other.m22(), other.m23(), other.m24(),
-                   other.m31(), other.m32(), other.m33(), other.m34(),
-                   other.m41(), other.m42(), other.m43(), other.m44()};
+  double args[] = {other->m11(), other->m12(), other->m13(), other->m14(),
+                   other->m21(), other->m22(), other->m23(), other->m24(),
+                   other->m31(), other->m32(), other->m33(), other->m34(),
+                   other->m41(), other->m42(), other->m43(), other->m44()};
   return new DOMMatrixReadOnly(args, 16);
 }
 
@@ -212,7 +213,7 @@ bool DOMMatrixReadOnly::isIdentity() const {
   return matrix_->IsIdentity();
 }
 
-DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrixInit& other,
+DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrixInit* other,
                                        ExceptionState& exception_state) {
   return DOMMatrix::Create(this)->multiplySelf(other, exception_state);
 }
@@ -294,21 +295,21 @@ DOMMatrix* DOMMatrixReadOnly::inverse() {
   return DOMMatrix::Create(this)->invertSelf();
 }
 
-DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
-  if (is2D() && point.z() == 0 && point.w() == 1) {
-    double x = point.x() * m11() + point.y() * m21() + m41();
-    double y = point.x() * m12() + point.y() * m22() + m42();
+DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit* point) {
+  if (is2D() && point->z() == 0 && point->w() == 1) {
+    double x = point->x() * m11() + point->y() * m21() + m41();
+    double y = point->x() * m12() + point->y() * m22() + m42();
     return DOMPoint::Create(x, y, 0, 1);
   }
 
-  double x = point.x() * m11() + point.y() * m21() + point.z() * m31() +
-             point.w() * m41();
-  double y = point.x() * m12() + point.y() * m22() + point.z() * m32() +
-             point.w() * m42();
-  double z = point.x() * m13() + point.y() * m23() + point.z() * m33() +
-             point.w() * m43();
-  double w = point.x() * m14() + point.y() * m24() + point.z() * m34() +
-             point.w() * m44();
+  double x = point->x() * m11() + point->y() * m21() + point->z() * m31() +
+             point->w() * m41();
+  double y = point->x() * m12() + point->y() * m22() + point->z() * m32() +
+             point->w() * m42();
+  double z = point->x() * m13() + point->y() * m23() + point->z() * m33() +
+             point->w() * m43();
+  double w = point->x() * m14() + point->y() * m24() + point->z() * m34() +
+             point->w() * m44();
   return DOMPoint::Create(x, y, z, w);
 }
 

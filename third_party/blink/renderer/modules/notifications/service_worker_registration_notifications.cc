@@ -32,7 +32,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     ScriptState* script_state,
     ServiceWorkerRegistration& registration,
     const String& title,
-    const NotificationOptions& options,
+    const NotificationOptions* options,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
@@ -67,7 +67,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, notification_count_histogram,
       ("Notifications.PersistentNotificationActionCount", 17));
-  notification_count_histogram.Count(options.actions().size());
+  notification_count_histogram.Count(options->actions().size());
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -81,13 +81,13 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
 ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
     ScriptState* script_state,
     ServiceWorkerRegistration& registration,
-    const GetNotificationOptions& options) {
+    const GetNotificationOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   NotificationManager::From(execution_context)
-      ->GetNotifications(registration.RegistrationId(), options.tag(),
+      ->GetNotifications(registration.RegistrationId(), options->tag(),
                          WrapPersistent(resolver));
   return promise;
 }

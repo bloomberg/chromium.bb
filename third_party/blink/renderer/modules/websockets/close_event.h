@@ -55,7 +55,7 @@ class CloseEvent final : public Event {
   }
 
   static CloseEvent* Create(const AtomicString& type,
-                            const CloseEventInit& initializer) {
+                            const CloseEventInit* initializer) {
     return new CloseEvent(type, initializer);
   }
 
@@ -79,7 +79,7 @@ class CloseEvent final : public Event {
         code_(code),
         reason_(reason) {}
 
-  CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
+  CloseEvent(const AtomicString& type, const CloseEventInit* initializer);
 
   bool was_clean_;
   unsigned short code_;

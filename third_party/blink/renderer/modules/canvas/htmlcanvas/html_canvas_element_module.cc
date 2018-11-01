@@ -16,7 +16,7 @@ namespace blink {
 void HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& type,
-    const CanvasContextCreationAttributesModule& attributes,
+    const CanvasContextCreationAttributesModule* attributes,
     ExceptionState& exception_state,
     RenderingContext& result) {
   if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {

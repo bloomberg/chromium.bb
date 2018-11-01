@@ -41,13 +41,13 @@ void RejectWithTypeError(const String& error_details,
   resolver->Reject(V8ThrowException::CreateTypeError(isolate, error_details));
 }
 
-UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter,
+UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter* filter,
                                        ScriptPromiseResolver* resolver) {
   auto mojo_filter = device::mojom::blink::UsbDeviceFilter::New();
-  mojo_filter->has_vendor_id = filter.hasVendorId();
+  mojo_filter->has_vendor_id = filter->hasVendorId();
   if (mojo_filter->has_vendor_id)
-    mojo_filter->vendor_id = filter.vendorId();
-  mojo_filter->has_product_id = filter.hasProductId();
+    mojo_filter->vendor_id = filter->vendorId();
+  mojo_filter->has_product_id = filter->hasProductId();
   if (mojo_filter->has_product_id) {
     if (!mojo_filter->has_vendor_id) {
       RejectWithTypeError(
@@ -55,12 +55,12 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter,
           resolver);
       return nullptr;
     }
-    mojo_filter->product_id = filter.productId();
+    mojo_filter->product_id = filter->productId();
   }
-  mojo_filter->has_class_code = filter.hasClassCode();
+  mojo_filter->has_class_code = filter->hasClassCode();
   if (mojo_filter->has_class_code)
-    mojo_filter->class_code = filter.classCode();
-  mojo_filter->has_subclass_code = filter.hasSubclassCode();
+    mojo_filter->class_code = filter->classCode();
+  mojo_filter->has_subclass_code = filter->hasSubclassCode();
   if (mojo_filter->has_subclass_code) {
     if (!mojo_filter->has_class_code) {
       RejectWithTypeError(
@@ -68,9 +68,9 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter,
           resolver);
       return nullptr;
     }
-    mojo_filter->subclass_code = filter.subclassCode();
+    mojo_filter->subclass_code = filter->subclassCode();
   }
-  mojo_filter->has_protocol_code = filter.hasProtocolCode();
+  mojo_filter->has_protocol_code = filter->hasProtocolCode();
   if (mojo_filter->has_protocol_code) {
     if (!mojo_filter->has_subclass_code) {
       RejectWithTypeError(
@@ -79,10 +79,10 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter,
           resolver);
       return nullptr;
     }
-    mojo_filter->protocol_code = filter.protocolCode();
+    mojo_filter->protocol_code = filter->protocolCode();
   }
-  if (filter.hasSerialNumber())
-    mojo_filter->serial_number = filter.serialNumber();
+  if (filter->hasSerialNumber())
+    mojo_filter->serial_number = filter->serialNumber();
   return mojo_filter;
 }
 
@@ -129,7 +129,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
 }
 
 ScriptPromise USB::requestDevice(ScriptState* script_state,
-                                 const USBDeviceRequestOptions& options) {
+                                 const USBDeviceRequestOptions* options) {
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
@@ -157,9 +157,9 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   Vector<UsbDeviceFilterPtr> filters;
-  if (options.hasFilters()) {
-    filters.ReserveCapacity(options.filters().size());
-    for (const auto& filter : options.filters()) {
+  if (options->hasFilters()) {
+    filters.ReserveCapacity(options->filters().size());
+    for (const auto& filter : options->filters()) {
       UsbDeviceFilterPtr converted_filter =
           ConvertDeviceFilter(filter, resolver);
       if (!converted_filter)
@@ -168,7 +168,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
     }
   }
 
-  DCHECK(options.filters().size() == filters.size());
+  DCHECK(options->filters().size() == filters.size());
   get_permission_requests_.insert(resolver);
   service_->GetPermission(std::move(filters),
                           WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),

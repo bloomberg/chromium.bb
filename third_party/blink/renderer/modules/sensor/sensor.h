@@ -66,13 +66,13 @@ class Sensor : public EventTargetWithInlineData,
 
  protected:
   Sensor(ExecutionContext*,
-         const SensorOptions&,
+         const SensorOptions*,
          ExceptionState&,
          device::mojom::blink::SensorType,
          const Vector<mojom::FeaturePolicyFeature>&);
 
   Sensor(ExecutionContext*,
-         const SpatialSensorOptions&,
+         const SpatialSensorOptions*,
          ExceptionState&,
          device::mojom::blink::SensorType,
          const Vector<mojom::FeaturePolicyFeature>&);

@@ -80,7 +80,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   LoadURL("https://example.com/");
   main_resource.Complete("<div id='target'></div>");
 
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -116,8 +116,8 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
 
   Element* root = GetDocument().getElementById("root");
   ASSERT_TRUE(root);
-  IntersectionObserverInit observer_init;
-  observer_init.setRoot(root);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setRoot(root);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -154,7 +154,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
     <div id='trailing-space' style='height: 700px;'></div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -214,7 +214,7 @@ TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
     <div id='trailing-space' style='height: 700px;'></div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -261,7 +261,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
     <div id='trailing-space' style='height: 700px;'></div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -311,7 +311,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
     <div id='target'></div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -346,7 +346,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
 }
 
 TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
-  IntersectionObserverInit observer_init;
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -356,20 +356,20 @@ TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
   EXPECT_FALSE(observer->trackVisibility());
 
   // This should fail because no delay is set.
-  observer_init.setTrackVisibility(true);
+  observer_init->setTrackVisibility(true);
   observer = IntersectionObserver::Create(observer_init, *observer_delegate,
                                           exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   // This should fail because the delay is < 100.
   exception_state.ClearException();
-  observer_init.setDelay(99.9);
+  observer_init->setDelay(99.9);
   observer = IntersectionObserver::Create(observer_init, *observer_delegate,
                                           exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   exception_state.ClearException();
-  observer_init.setDelay(101.);
+  observer_init->setDelay(101.);
   observer = IntersectionObserver::Create(observer_init, *observer_delegate,
                                           exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -394,9 +394,9 @@ TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
     <div id='occluder'></div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
-  observer_init.setTrackVisibility(true);
-  observer_init.setDelay(100);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setTrackVisibility(true);
+  observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -452,9 +452,9 @@ TEST_F(IntersectionObserverV2Test, BasicOpacity) {
     </div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
-  observer_init.setTrackVisibility(true);
-  observer_init.setDelay(100);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setTrackVisibility(true);
+  observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());
@@ -501,9 +501,9 @@ TEST_F(IntersectionObserverV2Test, BasicTransform) {
     </div>
   )HTML");
 
-  IntersectionObserverInit observer_init;
-  observer_init.setTrackVisibility(true);
-  observer_init.setDelay(100);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setTrackVisibility(true);
+  observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       new TestIntersectionObserverDelegate(GetDocument());

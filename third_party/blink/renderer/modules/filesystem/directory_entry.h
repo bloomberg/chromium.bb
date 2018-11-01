@@ -57,11 +57,11 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
 
   DirectoryReader* createReader();
   void getFile(const String& path,
-               const FileSystemFlags&,
+               const FileSystemFlags*,
                V8EntryCallback* = nullptr,
                V8ErrorCallback* = nullptr);
   void getDirectory(const String& path,
-                    const FileSystemFlags&,
+                    const FileSystemFlags*,
                     V8EntryCallback* = nullptr,
                     V8ErrorCallback* = nullptr);
   void removeRecursively(V8VoidCallback* success_callback = nullptr,

@@ -68,10 +68,10 @@ class RejectedPromises::Message final {
     EventTarget* target = execution_context->ErrorEventTarget();
     if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
                                                                 cors_status_)) {
-      PromiseRejectionEventInit init;
-      init.setPromise(ScriptPromise(script_state_, value));
-      init.setReason(ScriptValue(script_state_, reason));
-      init.setCancelable(true);
+      PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
+      init->setPromise(ScriptPromise(script_state_, value));
+      init->setReason(ScriptValue(script_state_, reason));
+      init->setCancelable(true);
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
           script_state_, EventTypeNames::unhandledrejection, init);
       // Log to console if event was not canceled.
@@ -108,9 +108,9 @@ class RejectedPromises::Message final {
     EventTarget* target = execution_context->ErrorEventTarget();
     if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
                                                                 cors_status_)) {
-      PromiseRejectionEventInit init;
-      init.setPromise(ScriptPromise(script_state_, value));
-      init.setReason(ScriptValue(script_state_, reason));
+      PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
+      init->setPromise(ScriptPromise(script_state_, value));
+      init->setReason(ScriptValue(script_state_, reason));
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
           script_state_, EventTypeNames::rejectionhandled, init);
       target->DispatchEvent(*event);

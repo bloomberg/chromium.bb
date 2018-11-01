@@ -43,7 +43,7 @@ class ClipboardEvent final : public Event {
   }
 
   static ClipboardEvent* Create(const AtomicString& type,
-                                const ClipboardEventInit& initializer) {
+                                const ClipboardEventInit* initializer) {
     return new ClipboardEvent(type, initializer);
   }
 
@@ -54,7 +54,7 @@ class ClipboardEvent final : public Event {
  private:
   ClipboardEvent(const AtomicString& type,
                  DataTransfer* clipboard_data);
-  ClipboardEvent(const AtomicString& type, const ClipboardEventInit&);
+  ClipboardEvent(const AtomicString& type, const ClipboardEventInit*);
 
   const AtomicString& InterfaceName() const override;
   bool IsClipboardEvent() const override;

@@ -12,19 +12,19 @@ namespace blink {
 
 TEST(HTMLVideoElementPictureInPictureTest,
      ToPictureInPictureControlInfoVector_Basic) {
-  MediaImage image;
-  image.setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
-  image.setSizes("144x144");
-  image.setType("image/gif");
-  HeapVector<MediaImage> images;
+  MediaImage* image = MediaImage::Create();
+  image->setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
+  image->setSizes("144x144");
+  image->setType("image/gif");
+  HeapVector<Member<MediaImage>> images;
   images.push_back(image);
 
-  PictureInPictureControl control;
-  control.setId(WTF::String("Test id"));
-  control.setLabel(WTF::String("Test label"));
-  control.setIcons(images);
+  PictureInPictureControl* control = PictureInPictureControl::Create();
+  control->setId(WTF::String("Test id"));
+  control->setLabel(WTF::String("Test label"));
+  control->setIcons(images);
 
-  HeapVector<PictureInPictureControl> controls;
+  HeapVector<Member<PictureInPictureControl>> controls;
   controls.push_back(control);
 
   std::vector<PictureInPictureControlInfo> converted_controls =
@@ -38,26 +38,26 @@ TEST(HTMLVideoElementPictureInPictureTest,
 
 TEST(HTMLVideoElementPictureInPictureTest,
      ToPictureInPictureControlInfoVector_MultipleImages) {
-  MediaImage image;
-  image.setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
-  image.setSizes("144x144");
-  image.setType("image/gif");
+  MediaImage* image = MediaImage::Create();
+  image->setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
+  image->setSizes("144x144");
+  image->setType("image/gif");
 
-  MediaImage image2;
-  image2.setSrc("https://dummyimage.com/96x96/7d727d/fafafa.gif");
-  image2.setSizes("96x96");
-  image2.setType("image/gif");
+  MediaImage* image2 = MediaImage::Create();
+  image2->setSrc("https://dummyimage.com/96x96/7d727d/fafafa.gif");
+  image2->setSizes("96x96");
+  image2->setType("image/gif");
 
-  HeapVector<MediaImage> images;
+  HeapVector<Member<MediaImage>> images;
   images.push_back(image);
   images.push_back(image2);
 
-  PictureInPictureControl control;
-  control.setId(WTF::String("Test id"));
-  control.setLabel(WTF::String("Test label"));
-  control.setIcons(images);
+  PictureInPictureControl* control = PictureInPictureControl::Create();
+  control->setId(WTF::String("Test id"));
+  control->setLabel(WTF::String("Test label"));
+  control->setIcons(images);
 
-  HeapVector<PictureInPictureControl> controls;
+  HeapVector<Member<PictureInPictureControl>> controls;
   controls.push_back(control);
 
   std::vector<PictureInPictureControlInfo> converted_controls =
@@ -73,19 +73,19 @@ TEST(HTMLVideoElementPictureInPictureTest,
 
 TEST(HTMLVideoElementPictureInPictureTest,
      ToPictureInPictureControlInfoVector_InvalidSize) {
-  MediaImage image;
-  image.setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
-  image.setSizes("144");
-  image.setType("image/gif");
-  HeapVector<MediaImage> images;
+  MediaImage* image = MediaImage::Create();
+  image->setSrc("https://dummyimage.com/144x144/7d727d/fafafa.gif");
+  image->setSizes("144");
+  image->setType("image/gif");
+  HeapVector<Member<MediaImage>> images;
   images.push_back(image);
 
-  PictureInPictureControl control;
-  control.setId(WTF::String("Test id"));
-  control.setLabel(WTF::String("Test label"));
-  control.setIcons(images);
+  PictureInPictureControl* control = PictureInPictureControl::Create();
+  control->setId(WTF::String("Test id"));
+  control->setLabel(WTF::String("Test label"));
+  control->setIcons(images);
 
-  HeapVector<PictureInPictureControl> controls;
+  HeapVector<Member<PictureInPictureControl>> controls;
   controls.push_back(control);
 
   std::vector<PictureInPictureControlInfo> converted_controls =
@@ -101,7 +101,7 @@ TEST(HTMLVideoElementPictureInPictureTest,
 
 TEST(HTMLVideoElementPictureInPictureTest,
      ToPictureInPictureControlInfoVector_Empty) {
-  HeapVector<PictureInPictureControl> controls;
+  HeapVector<Member<PictureInPictureControl>> controls;
 
   std::vector<PictureInPictureControlInfo> converted_controls =
       HTMLVideoElementPictureInPicture::ToPictureInPictureControlInfoVector(

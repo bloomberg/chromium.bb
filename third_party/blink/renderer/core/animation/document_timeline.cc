@@ -67,10 +67,10 @@ DocumentTimeline* DocumentTimeline::Create(Document* document,
 
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
-    const DocumentTimelineOptions& options) {
+    const DocumentTimelineOptions* options) {
   Document* document = To<Document>(execution_context);
   return new DocumentTimeline(
-      document, TimeDelta::FromMillisecondsD(options.originTime()), nullptr);
+      document, TimeDelta::FromMillisecondsD(options->originTime()), nullptr);
 }
 
 DocumentTimeline::DocumentTimeline(Document* document,

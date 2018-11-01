@@ -22,7 +22,7 @@ class RTCPeerConnection;
 class RTCRtpReceiver;
 class RTCRtpSender;
 
-webrtc::RtpTransceiverInit ToRtpTransceiverInit(const RTCRtpTransceiverInit&);
+webrtc::RtpTransceiverInit ToRtpTransceiverInit(const RTCRtpTransceiverInit*);
 
 class RTCRtpTransceiver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

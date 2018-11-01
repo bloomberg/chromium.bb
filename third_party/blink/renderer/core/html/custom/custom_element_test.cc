@@ -225,7 +225,8 @@ TEST(CustomElementTest,
     CEReactionsScope reactions;
     TestCustomElementDefinitionBuilder builder;
     registry->DefineInternal(script_state, "a-a", builder,
-                             ElementDefinitionOptions(), should_not_throw);
+                             ElementDefinitionOptions::Create(),
+                             should_not_throw);
   }
   CustomElementDefinition* definition =
       registry->DefinitionFor(CustomElementDescriptor("a-a", "a-a"));

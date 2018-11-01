@@ -52,7 +52,7 @@ class TextDecoder final : public ScriptWrappable {
 
  public:
   static TextDecoder* Create(const String& label,
-                             const TextDecoderOptions&,
+                             const TextDecoderOptions*,
                              ExceptionState&);
   ~TextDecoder() override;
 
@@ -60,7 +60,7 @@ class TextDecoder final : public ScriptWrappable {
   String encoding() const;
   bool fatal() const { return fatal_; }
   bool ignoreBOM() const { return ignore_bom_; }
-  String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
+  String decode(const BufferSource&, const TextDecodeOptions*, ExceptionState&);
   String decode(ExceptionState&);
 
  private:
@@ -68,7 +68,7 @@ class TextDecoder final : public ScriptWrappable {
 
   String decode(const char* start,
                 uint32_t length,
-                const TextDecodeOptions&,
+                const TextDecodeOptions*,
                 ExceptionState&);
 
   WTF::TextEncoding encoding_;

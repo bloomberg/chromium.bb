@@ -74,12 +74,12 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
                                          uint8_t interface_number,
                                          uint8_t alternate_setting);
   ScriptPromise controlTransferIn(ScriptState*,
-                                  const USBControlTransferParameters& setup,
+                                  const USBControlTransferParameters* setup,
                                   unsigned length);
   ScriptPromise controlTransferOut(ScriptState*,
-                                   const USBControlTransferParameters& setup);
+                                   const USBControlTransferParameters* setup);
   ScriptPromise controlTransferOut(ScriptState*,
-                                   const USBControlTransferParameters& setup,
+                                   const USBControlTransferParameters* setup,
                                    const ArrayBufferOrArrayBufferView& data);
   ScriptPromise clearHalt(ScriptState*,
                           String direction,
@@ -119,7 +119,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
                                ScriptPromiseResolver*) const;
   bool AnyInterfaceChangeInProgress() const;
   device::mojom::blink::UsbControlTransferParamsPtr
-  ConvertControlTransferParameters(const USBControlTransferParameters&,
+  ConvertControlTransferParameters(const USBControlTransferParameters*,
                                    ScriptPromiseResolver*) const;
   void SetEndpointsForInterface(wtf_size_t interface_index, bool set);
 

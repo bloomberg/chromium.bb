@@ -39,12 +39,12 @@ class CORE_EXPORT IntersectionObserver final
   using EventCallback = base::RepeatingCallback<void(
       const HeapVector<Member<IntersectionObserverEntry>>&)>;
 
-  static IntersectionObserver* Create(const IntersectionObserverInit&,
+  static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
                                       ExceptionState&);
   static IntersectionObserver* Create(ScriptState*,
                                       V8IntersectionObserverCallback*,
-                                      const IntersectionObserverInit&,
+                                      const IntersectionObserverInit*,
                                       ExceptionState&);
   static IntersectionObserver* Create(const Vector<Length>& root_margin,
                                       const Vector<float>& thresholds,

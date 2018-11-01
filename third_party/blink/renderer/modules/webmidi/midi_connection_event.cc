@@ -36,10 +36,10 @@ namespace blink {
 
 MIDIConnectionEvent::MIDIConnectionEvent(
     const AtomicString& type,
-    const MIDIConnectionEventInit& initializer)
+    const MIDIConnectionEventInit* initializer)
     : Event(type, initializer), port_(nullptr) {
-  if (initializer.hasPort())
-    port_ = initializer.port();
+  if (initializer->hasPort())
+    port_ = initializer->port();
 }
 
 void MIDIConnectionEvent::Trace(blink::Visitor* visitor) {

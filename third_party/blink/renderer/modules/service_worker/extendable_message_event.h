@@ -18,10 +18,10 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
  public:
   static ExtendableMessageEvent* Create(
       const AtomicString& type,
-      const ExtendableMessageEventInit& initializer);
+      const ExtendableMessageEventInit* initializer);
   static ExtendableMessageEvent* Create(
       const AtomicString& type,
-      const ExtendableMessageEventInit& initializer,
+      const ExtendableMessageEventInit* initializer,
       WaitUntilObserver*);
   static ExtendableMessageEvent* Create(
       scoped_refptr<SerializedScriptValue> data,
@@ -58,9 +58,9 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
 
  private:
   ExtendableMessageEvent(const AtomicString& type,
-                         const ExtendableMessageEventInit& initializer);
+                         const ExtendableMessageEventInit* initializer);
   ExtendableMessageEvent(const AtomicString& type,
-                         const ExtendableMessageEventInit& initializer,
+                         const ExtendableMessageEventInit* initializer,
                          WaitUntilObserver*);
   ExtendableMessageEvent(scoped_refptr<SerializedScriptValue> data,
                          const String& origin,

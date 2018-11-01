@@ -95,7 +95,7 @@ class MODULES_EXPORT ConvolverNode final : public AudioNode {
  public:
   static ConvolverNode* Create(BaseAudioContext&, ExceptionState&);
   static ConvolverNode* Create(BaseAudioContext*,
-                               const ConvolverOptions&,
+                               const ConvolverOptions*,
                                ExceptionState&);
 
   AudioBuffer* buffer() const;

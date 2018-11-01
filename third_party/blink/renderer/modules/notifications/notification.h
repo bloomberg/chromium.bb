@@ -70,7 +70,7 @@ class MODULES_EXPORT Notification final
   // when the developer-provided data is valid.
   static Notification* Create(ExecutionContext* context,
                               const String& title,
-                              const NotificationOptions& options,
+                              const NotificationOptions* options,
                               ExceptionState& state);
 
   // Used for embedder-created persistent notifications. Initializes the state

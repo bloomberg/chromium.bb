@@ -2020,15 +2020,15 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
  public:
   explicit PopupUpdater(HTMLSelectElement& select)
       : select_(select), observer_(MutationObserver::Create(this)) {
-    MutationObserverInit init;
-    init.setAttributeOldValue(true);
-    init.setAttributes(true);
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setAttributeOldValue(true);
+    init->setAttributes(true);
     // Observe only attributes which affect popup content.
-    init.setAttributeFilter({"disabled", "label", "selected", "value"});
-    init.setCharacterData(true);
-    init.setCharacterDataOldValue(true);
-    init.setChildList(true);
-    init.setSubtree(true);
+    init->setAttributeFilter({"disabled", "label", "selected", "value"});
+    init->setCharacterData(true);
+    init->setCharacterDataOldValue(true);
+    init->setChildList(true);
+    init->setSubtree(true);
     observer_->observe(select_, init, ASSERT_NO_EXCEPTION);
   }
 

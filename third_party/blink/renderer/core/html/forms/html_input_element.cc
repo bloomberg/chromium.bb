@@ -303,7 +303,7 @@ bool HTMLInputElement::MayTriggerVirtualKeyboard() const {
 
 void HTMLInputElement::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {
+    const FocusOptions* options) {
   if (IsTextField()) {
     switch (selection_behavior) {
       case SelectionBehaviorOnFocus::kReset:
@@ -319,7 +319,7 @@ void HTMLInputElement::UpdateFocusAppearanceWithOptions(
     // FrameSelection::revealSelection().  It doesn't scroll correctly in a
     // case of RangeSelection. crbug.com/443061.
     GetDocument().EnsurePaintLocationDataValidForNode(this);
-    if (!options.preventScroll()) {
+    if (!options->preventScroll()) {
       if (GetLayoutObject()) {
         GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
                                                WebScrollIntoViewParams());

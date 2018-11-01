@@ -127,10 +127,10 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
 
   // Make an observer for longtask
   NonThrowableExceptionState exception_state;
-  PerformanceObserverInit options;
+  PerformanceObserverInit* options = PerformanceObserverInit::Create();
   Vector<String> entry_type_vec;
   entry_type_vec.push_back("longtask");
-  options.setEntryTypes(entry_type_vec);
+  options->setEntryTypes(entry_type_vec);
   observer_->observe(options, exception_state);
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));

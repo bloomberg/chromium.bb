@@ -128,7 +128,7 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
     CredentialManagerTestingContext context(&mock_credential_manager);
     document_observer.Observe(context.GetDocument());
     CredentialsContainer::Create()->get(context.GetScriptState(),
-                                        CredentialRequestOptions());
+                                        CredentialRequestOptions::Create());
     mock_credential_manager.WaitForCallToGet();
   }
 
@@ -150,7 +150,7 @@ TEST(CredentialsContainerTest,
 
   auto* proxy = CredentialManagerProxy::From(*context.GetDocument());
   auto promise = CredentialsContainer::Create()->get(
-      context.GetScriptState(), CredentialRequestOptions());
+      context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();
 
   context.GetDocument()->Shutdown();

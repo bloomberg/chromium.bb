@@ -11,8 +11,8 @@ InputDeviceCapabilities::InputDeviceCapabilities(bool fires_touch_events) {
 }
 
 InputDeviceCapabilities::InputDeviceCapabilities(
-    const InputDeviceCapabilitiesInit& initializer) {
-  fires_touch_events_ = initializer.firesTouchEvents();
+    const InputDeviceCapabilitiesInit* initializer) {
+  fires_touch_events_ = initializer->firesTouchEvents();
 }
 
 InputDeviceCapabilities* InputDeviceCapabilitiesConstants::FiresTouchEvents(
