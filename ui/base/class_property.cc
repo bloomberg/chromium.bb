@@ -67,4 +67,4 @@ std::set<const void*> PropertyHandler::GetAllPropertyKeys() const {
   return keys;
 }
 
-} // namespace ui
+}  // namespace ui

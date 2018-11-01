@@ -169,6 +169,7 @@ test("views_mus_unittests") {
     "//cc",
     "//net",
     "//services/ws/public/mojom",
+    "//services/ws/test_ws:mojom",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",
