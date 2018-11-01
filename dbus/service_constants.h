@@ -441,6 +441,7 @@ const char kServiceDataProperty[] = "ServiceData";
 const char kServicesResolvedProperty[] = "ServicesResolved";
 const char kAdvertisingDataFlagsProperty[] = "AdvertisingFlags";
 const char kMTUProperty[] = "MTU";
+const char kEIRProperty[] = "EIR";
 
 // Bluetooth Device errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
