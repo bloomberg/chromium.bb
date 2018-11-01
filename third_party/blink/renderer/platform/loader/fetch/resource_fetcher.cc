@@ -917,9 +917,7 @@ Resource* ResourceFetcher::RequestResource(
   // the resource was already initialized for the revalidation here, but won't
   // start loading.
   if (ResourceNeedsLoad(resource, params, policy)) {
-    if (StartLoad(resource)) {
-      scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
-    } else {
+    if (!StartLoad(resource)) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               Context().GetLoadingTaskRunner().get());
     }
@@ -927,6 +925,11 @@ Resource* ResourceFetcher::RequestResource(
 
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
+
+  if (resource->Identifier() == identifier &&
+      (resource->StillNeedsLoad() || resource->IsLoading())) {
+    scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
+  }
 
   return resource;
 }
