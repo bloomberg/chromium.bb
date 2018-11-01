@@ -20,8 +20,8 @@ public final class WebApkConstants {
     public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
     public static final String EXTRA_WEBAPK_PACKAGE_NAME =
             "org.chromium.chrome.browser.webapk_package_name";
-    public static final String EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME =
-            "org.chromium.webapk.launching_activity_class_name";
+    public static final String EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME =
+            "org.chromium.webapk.selected_share_target_activity_class_name";
     public static final String EXTRA_FORCE_NAVIGATION =
             "org.chromium.chrome.browser.webapk_force_navigation";
     // Activity launch time for uma tracking of Chrome web apk startup

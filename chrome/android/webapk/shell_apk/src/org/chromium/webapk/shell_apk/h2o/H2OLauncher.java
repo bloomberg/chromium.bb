@@ -73,11 +73,9 @@ public class H2OLauncher {
     }
 
     /** Launches the given component, passing extras from the given intent. */
-    public static void copyIntentExtrasAndLaunch(
-            Context context, Intent intentToCopy, ComponentName launchComponent) {
-        Intent intent = new Intent();
-        intent.setAction(intentToCopy.getAction());
-        intent.setData(intentToCopy.getData());
+    public static void copyIntentExtrasAndLaunch(Context context, Intent intentToCopy,
+            String selectedShareTargetActivity, ComponentName launchComponent) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, intentToCopy.getData());
         intent.setComponent(launchComponent);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -85,8 +83,12 @@ public class H2OLauncher {
         if (copiedExtras != null) {
             intent.putExtras(copiedExtras);
         }
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME,
-                intentToCopy.getComponent().getClassName());
+
+        // If the intent is a share, propagate which share target activity the user selected.
+        if (selectedShareTargetActivity != null) {
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
+                    selectedShareTargetActivity);
+        }
 
         context.startActivity(intent);
     }

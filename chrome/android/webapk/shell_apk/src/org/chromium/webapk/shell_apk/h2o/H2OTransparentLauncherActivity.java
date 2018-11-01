@@ -36,8 +36,9 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
             // brings the WebAPK activity stack to the foreground and does not create a
             // new activity stack.
             Context appContext = getApplicationContext();
-            H2OLauncher.copyIntentExtrasAndLaunch(
-                    appContext, getIntent(), new ComponentName(appContext, SplashActivity.class));
+            H2OLauncher.copyIntentExtrasAndLaunch(appContext, getIntent(),
+                    params.getSelectedShareTargetActivityClassName(),
+                    new ComponentName(appContext, SplashActivity.class));
             finish();
             return;
         }
@@ -70,8 +71,8 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
             return false;
         }
 
-        H2OLauncher.copyIntentExtrasAndLaunch(
-                getApplicationContext(), getIntent(), relaunchComponent);
+        H2OLauncher.copyIntentExtrasAndLaunch(getApplicationContext(), getIntent(),
+                params.getSelectedShareTargetActivityClassName(), relaunchComponent);
         return true;
     }
 }

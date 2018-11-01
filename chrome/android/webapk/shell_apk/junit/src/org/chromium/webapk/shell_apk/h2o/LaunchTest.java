@@ -147,7 +147,7 @@ public final class LaunchTest {
         Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
         Assert.assertEquals(SHARE_ACTIVITY1_CLASS_NAME,
                 browserLaunchIntent.getStringExtra(
-                        WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME));
+                        WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME));
     }
 
     /**
