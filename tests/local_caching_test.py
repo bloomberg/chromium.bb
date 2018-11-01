@@ -236,6 +236,20 @@ class ContentAddressedCacheTestMixin(CacheTestMixin):
     with cache.getfileobj(h) as f:
       self.assertEqual('0', f.read())
 
+  def test_getfileobj_complete_miss(self):
+    cache = self.get_cache(_get_policies())
+    with self.assertRaises(local_caching.CacheMiss):
+      cache.getfileobj('0'*40)
+
+  def test_getfileobj_cache_state_missing(self):
+    # Put the file in the cache, but do NOT save cache state.
+    cache = self.get_cache(_get_policies())
+    h = self._add_one_item(cache, 1)
+    # Since we didn't save the state, this should result in CacheMiss.
+    cache = self.get_cache(_get_policies())
+    with self.assertRaises(local_caching.CacheMiss):
+      cache.getfileobj(h)
+
 
 class MemoryContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
   def get_cache(self, policies):

@@ -560,11 +560,18 @@ class DiskContentAddressedCache(ContentAddressedCache):
   def getfileobj(self, digest):
     try:
       f = fs.open(self._path(digest), 'rb')
-      with self._lock:
-        self._used.append(self._lru[digest])
-      return f
     except IOError:
       raise CacheMiss(digest)
+    with self._lock:
+      try:
+        self._used.append(self._lru[digest])
+      except KeyError:
+        # If the digest is not actually in _lru, assume it is a cache miss.
+        # Existing file will be overwritten by whoever uses the cache and added
+        # to _lru.
+        f.close()
+        raise CacheMiss(digest)
+    return f
 
   def write(self, digest, content):
     assert content is not None
