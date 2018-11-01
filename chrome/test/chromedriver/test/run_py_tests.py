@@ -130,8 +130,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'MobileEmulationCapabilityTest.testTapElement',
     # crbug.com/827171
     'ChromeDriverTest.testWindowMinimize',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2522
-    'ChromeDriverTest.testWindowMaximize',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
     'ChromeDriverTest.testWindowFullScreen',
 ]
