@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -27,6 +26,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -94,11 +94,9 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         // Also, notifyDataSetChanged takes no effect if called within an update, so moving this
         // after pushing the state results in cached icons not showing up.
         maybeFetchAnswerIcon(item);
-        updateView(suggestionView, item);
-
-        // TODO(tedchoc): Remove the init function and push params to the model.
-        suggestionView.init(item, mSuggestionDelegate, position);
-        ViewCompat.setLayoutDirection(suggestionView, mLayoutDirection);
+        updateView(suggestionView, item, position);
+        // TODO(tedchoc): Investigate whether this is still needed.
+        suggestionView.jumpDrawablesToCurrentState();
 
         return suggestionView;
     }
@@ -114,11 +112,14 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         return model;
     }
 
-    private void updateView(SuggestionView view, OmniboxResultItem item) {
+    private void updateView(SuggestionView view, OmniboxResultItem item, int position) {
         PropertyModel model = getModel(view);
         Paint textLine1Paint = view.getTextLine1().getPaint();
         Paint textLine2Paint = view.getTextLine2().getPaint();
+        model.set(SuggestionViewProperties.DELEGATE,
+                createSuggestionViewDelegate(item.getSuggestion(), position));
         model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
+        model.set(SuggestionViewProperties.LAYOUT_DIRECTION, mLayoutDirection);
         model.set(SuggestionViewProperties.TEXT_LINE_1_ALIGNMENT_CONSTRAINTS, Pair.create(0f, 0f));
 
         OmniboxSuggestion suggestion = item.getSuggestion();
@@ -423,6 +424,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
      */
     public void setLayoutDirection(int layoutDirection) {
         mLayoutDirection = layoutDirection;
+        notifySuggestionsChanged();
     }
 
     /**
@@ -439,6 +441,51 @@ public class OmniboxResultsAdapter extends BaseAdapter {
      */
     public void setUseDarkColors(boolean useDarkColors) {
         mUseDarkColors = useDarkColors;
+    }
+
+    private SuggestionViewDelegate createSuggestionViewDelegate(
+            OmniboxSuggestion suggestion, int position) {
+        return new SuggestionViewDelegate() {
+            @Override
+            public void onSetUrlToSuggestion() {
+                mSuggestionDelegate.onSetUrlToSuggestion(suggestion);
+            }
+
+            @Override
+            public void onSelection() {
+                mSuggestionDelegate.onSelection(suggestion, position);
+            }
+
+            @Override
+            public void onRefineSuggestion() {
+                mSuggestionDelegate.onRefineSuggestion(suggestion);
+            }
+
+            @Override
+            public void onLongPress() {
+                mSuggestionDelegate.onLongPress(suggestion, position);
+            }
+
+            @Override
+            public void onGestureUp(long timetamp) {
+                mSuggestionDelegate.onGestureUp(timetamp);
+            }
+
+            @Override
+            public void onGestureDown() {
+                mSuggestionDelegate.onGestureDown();
+            }
+
+            @Override
+            public float getMaxRequiredWidth() {
+                return mSuggestionDelegate.getMaxRequiredWidth();
+            }
+
+            @Override
+            public float getMaxMatchContentsWidth() {
+                return mSuggestionDelegate.getMaxMatchContentsWidth();
+            }
+        };
     }
 
     /**
