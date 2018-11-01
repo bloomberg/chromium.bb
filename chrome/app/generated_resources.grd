@@ -1576,6 +1576,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="In the download view, 'Remove from list' link text">
         Remove from list
       </message>
+      <message name="IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL"
+               desc="In the download view, 'Remove from list' link aria-label">
+        Remove <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> from list
+      </message>
       <message name="IDS_DOWNLOAD_LINK_CANCEL"
                desc="In the download view, 'Cancel' link text">
         Cancel

@@ -82,6 +82,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
+  source->AddLocalizedString("controlRemoveFromListAriaLabel",
+                             IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
   source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
   source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
 
