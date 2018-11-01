@@ -39,6 +39,18 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "mojo-message-error__3",
     "mojo-message-error__4",
     "total-discardable-memory-allocated",
+
+    // crash keys needed for recording finch trials
+    "variations",
+    "variations__1",
+    "variations__2",
+    "variations__3",
+    "variations__4",
+    "variations__5",
+    "variations__6",
+    "variations__7",
+    "variations__8",
+    "num-experiments",
     nullptr};
 // clang-format on
 
