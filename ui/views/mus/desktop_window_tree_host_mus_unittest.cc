@@ -15,11 +15,14 @@
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_client_test_observer.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
@@ -572,6 +575,131 @@ TEST_F(DesktopWindowTreeHostMusTest, MaximizeMinimizeRestore) {
   // DesktopWindowTreeHostMus::RestoreToPreminimizedState() for details.
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_FALSE(widget->IsMaximized());
+}
+
+class TransferTouchEventsCounter : public ui::GestureRecognizerObserver {
+ public:
+  TransferTouchEventsCounter() {
+    aura::Env::GetInstance()->gesture_recognizer()->AddObserver(this);
+  }
+  ~TransferTouchEventsCounter() override {
+    aura::Env::GetInstance()->gesture_recognizer()->RemoveObserver(this);
+  }
+
+  int GetTransferCount(ui::GestureConsumer* source,
+                       ui::GestureConsumer* dest) const {
+    return std::count(transfers_.begin(), transfers_.end(),
+                      std::make_pair(source, dest));
+  }
+
+  int GetTotalCount() const { return transfers_.size(); }
+
+ private:
+  // ui::GestureRecotnizerObserver:
+  void OnActiveTouchesCanceledExcept(
+      ui::GestureConsumer* not_cancelled) override {}
+  void OnEventsTransferred(
+      ui::GestureConsumer* current_consumer,
+      ui::GestureConsumer* new_consumer,
+      ui::TransferTouchesBehavior transfer_touches_behavior) override {
+    transfers_.push_back(std::make_pair(current_consumer, new_consumer));
+  }
+  void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
+
+  std::vector<std::pair<ui::GestureConsumer*, ui::GestureConsumer*>> transfers_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransferTouchEventsCounter);
+};
+
+class WindowMoveCanceller : public aura::WindowTreeClientTestObserver {
+ public:
+  WindowMoveCanceller(aura::WindowTreeClient* client) : client_(client) {
+    client_->AddTestObserver(this);
+  }
+  ~WindowMoveCanceller() override { client_->RemoveTestObserver(this); }
+
+  void FinishWindowMove() {
+    DCHECK(window_move_change_id_);
+    static_cast<ws::mojom::WindowTreeClient*>(client_)->OnChangeCompleted(
+        window_move_change_id_, true);
+  }
+
+ private:
+  // aura::WindowTreeClientTestObserver:
+  void OnChangeStarted(uint32_t change_id, aura::ChangeType type) override {
+    if (type == aura::ChangeType::MOVE_LOOP)
+      window_move_change_id_ = change_id;
+  }
+  void OnChangeCompleted(uint32_t change_id,
+                         aura::ChangeType type,
+                         bool success) override {}
+
+  uint32_t window_move_change_id_ = 0;
+  aura::WindowTreeClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowMoveCanceller);
+};
+
+TEST_F(DesktopWindowTreeHostMusTest, WindowMoveTransfersTouchEvent) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+
+  TransferTouchEventsCounter counter;
+  WindowMoveCanceller canceller(MusClient::Get()->window_tree_client());
+  aura::Window* window = widget->GetNativeWindow();
+
+  auto runner = base::ThreadTaskRunnerHandle::Get();
+  runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](TransferTouchEventsCounter* counter, aura::Window* window) {
+            EXPECT_EQ(
+                1, counter->GetTransferCount(window, window->GetRootWindow()));
+            EXPECT_EQ(1, counter->GetTotalCount());
+          },
+          base::Unretained(&counter), window));
+  runner->PostTask(FROM_HERE,
+                   base::BindOnce(&WindowMoveCanceller::FinishWindowMove,
+                                  base::Unretained(&canceller)));
+
+  widget->RunMoveLoop(gfx::Vector2d(), Widget::MOVE_LOOP_SOURCE_TOUCH,
+                      Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
+
+  EXPECT_EQ(1, counter.GetTransferCount(window->GetRootWindow(), window));
+  EXPECT_EQ(2, counter.GetTotalCount());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, WindowMoveShouldNotTransfersBack) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+  std::unique_ptr<Widget> widget2(CreateWidget());
+  widget2->Show();
+
+  TransferTouchEventsCounter counter;
+  WindowMoveCanceller canceller(MusClient::Get()->window_tree_client());
+  aura::Window* window = widget->GetNativeWindow();
+  aura::Window* root = window->GetRootWindow();
+  aura::Window* window2 = widget2->GetNativeWindow();
+
+  auto runner = base::ThreadTaskRunnerHandle::Get();
+  runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](aura::Window* w1, aura::Window* w2) {
+            aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
+                w1, w2, ui::TransferTouchesBehavior::kDontCancel);
+          },
+          root, window2));
+  runner->PostTask(FROM_HERE,
+                   base::BindOnce(&WindowMoveCanceller::FinishWindowMove,
+                                  base::Unretained(&canceller)));
+
+  widget->RunMoveLoop(gfx::Vector2d(), Widget::MOVE_LOOP_SOURCE_TOUCH,
+                      Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
+
+  EXPECT_EQ(0, counter.GetTransferCount(root, window));
+  EXPECT_EQ(1, counter.GetTransferCount(root, window2));
+  EXPECT_EQ(2, counter.GetTotalCount());
 }
 
 }  // namespace views
