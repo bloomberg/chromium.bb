@@ -115,6 +115,9 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Returns true if there's no gesture dragging and animation.
   bool IsIdle();
 
+  // Returns true if animation is running.
+  bool IsAnimating();
+
   // Returns true if home launcher should run animation to show. Otherwise,
   // returns false.
   bool IsFinalStateShow();
