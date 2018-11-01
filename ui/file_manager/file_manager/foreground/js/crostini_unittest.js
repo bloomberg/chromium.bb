@@ -9,16 +9,16 @@ window.metrics = {
 window.loadTimeData = {
   data: {'DRIVE_FS_ENABLED': false},
   getBoolean: function(key) {
-    return this.data[key];
+    return window.loadTimeData.data[key];
   }
 };
 
 let volumeManagerRootType = 'testroot';
-const volumeManager = {
+const volumeManager = /** @type {!VolumeManager} */ ({
   getLocationInfo: (entry) => {
     return {rootType: volumeManagerRootType};
   },
-};
+});
 
 function testIsPathShared() {
   const mockFileSystem = new MockFileSystem('volumeId');
@@ -91,8 +91,8 @@ function testCanSharePath() {
 
   window.loadTimeData.data['DRIVE_FS_ENABLED'] = false;
   const disallowed = new Map(Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE);
-  disallowed['test'] = 'test';
-  for (let type in disallowed) {
+  disallowed.set('test', 'test');
+  for (let type of disallowed.keys()) {
     volumeManagerRootType = type;
     assertFalse(Crostini.canSharePath(root, true, volumeManager));
     assertFalse(Crostini.canSharePath(root, false, volumeManager));
@@ -111,7 +111,7 @@ function testCanSharePath() {
     ...Crostini.VALID_ROOT_TYPES_FOR_SHARE,
     ...Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE
   ]);
-  for (let type in allowed) {
+  for (let type of allowed.keys()) {
     volumeManagerRootType = type;
     assertTrue(Crostini.canSharePath(root, true, volumeManager));
     assertTrue(Crostini.canSharePath(root, false, volumeManager));
@@ -126,9 +126,13 @@ function testCanSharePath() {
   }
 }
 
+function task(id) {
+  return /** @type{!chrome.fileManagerPrivate.FileTask} */ ({taskId: id});
+}
+
 function testTaskRequiresSharing() {
-  assertTrue(Crostini.taskRequiresSharing({taskId: 'app|crostini|open-with'}));
+  assertTrue(Crostini.taskRequiresSharing(task('app|crostini|open-with')));
   assertTrue(
-      Crostini.taskRequiresSharing({taskId: 'appId|x|install-linux-package'}));
-  assertFalse(Crostini.taskRequiresSharing({taskId: 'appId|x|open-with'}));
+      Crostini.taskRequiresSharing(task('appId|x|install-linux-package')));
+  assertFalse(Crostini.taskRequiresSharing(task('appId|x|open-with')));
 }

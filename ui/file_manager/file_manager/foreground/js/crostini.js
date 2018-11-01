@@ -13,7 +13,7 @@ Crostini.IS_CROSTINI_FILES_ENABLED = false;
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
  * histogram_suffix.
- * @private {!Map<VolumeManagerCommon.RootType, string>}
+ * @type {!Map<VolumeManagerCommon.RootType, string>}
  */
 Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
@@ -25,7 +25,7 @@ Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
  * DriveFS flag is removed.
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
  * histogram_suffix.
- * @private {!Map<VolumeManagerCommon.RootType, string>}
+ * @type {!Map<VolumeManagerCommon.RootType, string>}
  */
 Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
