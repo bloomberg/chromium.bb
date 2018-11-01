@@ -333,6 +333,13 @@ std::set<int32_t> AXTree::GetNodeIdsForChildTreeId(
   return std::set<int32_t>();
 }
 
+const std::set<AXTreeID> AXTree::GetAllChildTreeIds() const {
+  std::set<AXTreeID> result;
+  for (auto entry : child_tree_id_reverse_map_)
+    result.insert(entry.first);
+  return result;
+}
+
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
   AXTreeUpdateState update_state;
   int32_t old_root_id = root_ ? root_->id() : 0;
