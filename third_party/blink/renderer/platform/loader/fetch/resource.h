@@ -532,12 +532,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   size_t encoded_size_memory_usage_;
   size_t decoded_size_;
 
-  // Resource::CalculateOverheadSize() is affected by changes in
-  // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
-  // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
-  // and thus potential bugs. crbug.com/594644
-  const size_t overhead_size_;
-
   String cache_identifier_;
 
   bool link_preload_;
@@ -566,6 +560,13 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   TaskHandle async_finish_pending_clients_task_;
 
   ResourceRequest resource_request_;
+
+  // Resource::CalculateOverheadSize() is affected by changes in
+  // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
+  // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
+  // and thus potential bugs. crbug.com/594644
+  const size_t overhead_size_;
+
   Member<ResourceLoader> loader_;
   ResourceResponse response_;
 
