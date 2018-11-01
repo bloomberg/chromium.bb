@@ -1303,7 +1303,9 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                                bind_id, num_args, arg_names, arg_types,
                                arg_values, convertable_values, flags);
 
-    trace_event_override(&new_trace_event);
+    trace_event_override(
+        &new_trace_event,
+        /*thread_will_flush=*/thread_local_event_buffer != nullptr);
     return handle;
   }
 
@@ -1509,7 +1511,9 @@ void TraceLog::UpdateTraceEventDurationExplicit(
           trace_event_internal::kNoId /* id */,
           trace_event_internal::kNoId /* bind_id */, 0, nullptr, nullptr,
           nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
-      trace_event_override(&new_trace_event);
+      trace_event_override(
+          &new_trace_event,
+          /*thread_will_flush=*/thread_local_event_buffer_.Get() != nullptr);
 
 #if defined(OS_ANDROID)
       new_trace_event.SendToATrace();
@@ -1561,7 +1565,7 @@ void TraceLog::AddMetadataEventWhileLocked(int thread_id,
     TraceEvent trace_event;
     InitializeMetadataEvent(&trace_event, thread_id, metadata_name, arg_name,
                             value);
-    trace_event_override(&trace_event);
+    trace_event_override(&trace_event, /*thread_will_flush=*/true);
   } else {
     InitializeMetadataEvent(
         AddEventToThreadSharedChunkWhileLocked(nullptr, false), thread_id,
@@ -1578,7 +1582,8 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   // Move metadata added by |AddMetadataEvent| into the trace log.
   if (trace_event_override) {
     while (!metadata_events_.empty()) {
-      trace_event_override(metadata_events_.back().get());
+      trace_event_override(metadata_events_.back().get(),
+                           /*thread_will_flush=*/true);
       metadata_events_.pop_back();
     }
   } else {

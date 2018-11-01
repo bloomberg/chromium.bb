@@ -101,9 +101,10 @@ void TraceEventMetadataSource::Flush(
 
 class TraceEventDataSource::ThreadLocalEventSink {
  public:
-  explicit ThreadLocalEventSink(
-      std::unique_ptr<perfetto::TraceWriter> trace_writer)
-      : trace_writer_(std::move(trace_writer)) {}
+  ThreadLocalEventSink(std::unique_ptr<perfetto::TraceWriter> trace_writer,
+                       bool thread_will_flush)
+      : trace_writer_(std::move(trace_writer)),
+        thread_will_flush_(thread_will_flush) {}
 
   ~ThreadLocalEventSink() {
     // Finalize the current message before posting the |trace_writer_| for
@@ -192,7 +193,8 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // If the TRACE_EVENT_FLAG_COPY flag is set, the char* pointers aren't
     // necessarily valid after the TRACE_EVENT* call, and so we need to store
     // the string every time.
-    bool string_table_enabled = !(trace_event->flags() & TRACE_EVENT_FLAG_COPY);
+    bool string_table_enabled =
+        !(trace_event->flags() & TRACE_EVENT_FLAG_COPY) && thread_will_flush_;
     if (string_table_enabled) {
       name_index = GetStringTableIndexForString(trace_event->name());
       category_name_index =
@@ -231,8 +233,8 @@ class TraceEventDataSource::ThreadLocalEventSink {
     int process_id;
     int thread_id;
     if ((flags & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
-        trace_event->thread_id() != base::kNullProcessId) {
-      process_id = trace_event->thread_id();
+        trace_event->process_id() != base::kNullProcessId) {
+      process_id = trace_event->process_id();
       thread_id = -1;
     } else {
       process_id = TraceLog::GetInstance()->process_id();
@@ -330,22 +332,29 @@ class TraceEventDataSource::ThreadLocalEventSink {
         (flags & TRACE_EVENT_FLAG_FLOW_IN)) {
       new_trace_event->set_bind_id(trace_event->bind_id());
     }
+
+    // If we know that the current thread will never send a Flush message
+    // (meaning it's a thread without a messageloop that TraceLog knows about),
+    // we need to finalize the packet right away so Perfetto can recover it.
+    if (!thread_will_flush_) {
+      event_bundle_ = ChromeEventBundleHandle();
+      trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
+    }
   }
 
   void Flush() {
     event_bundle_ = ChromeEventBundleHandle();
     trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
     trace_writer_->Flush();
-    token_ = "";
   }
 
  private:
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
+  const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
   std::map<intptr_t, int> string_table_;
   int next_string_table_index_ = 0;
-  std::string token_;
 };
 
 namespace {
@@ -453,24 +462,26 @@ void TraceEventDataSource::Flush(
 }
 
 TraceEventDataSource::ThreadLocalEventSink*
-TraceEventDataSource::CreateThreadLocalEventSink() {
+TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
   base::AutoLock lock(lock_);
 
   if (producer_client_) {
     return new ThreadLocalEventSink(
-        producer_client_->CreateTraceWriter(target_buffer_));
+        producer_client_->CreateTraceWriter(target_buffer_), thread_will_flush);
   } else {
     return nullptr;
   }
 }
 
 // static
-void TraceEventDataSource::OnAddTraceEvent(TraceEvent* trace_event) {
+void TraceEventDataSource::OnAddTraceEvent(TraceEvent* trace_event,
+                                           bool thread_will_flush) {
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
 
   if (!thread_local_event_sink) {
-    thread_local_event_sink = GetInstance()->CreateThreadLocalEventSink();
+    thread_local_event_sink =
+        GetInstance()->CreateThreadLocalEventSink(thread_will_flush);
     ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);
   }
 
