@@ -747,8 +747,8 @@ void PaintArtifactCompositor::Update(
     } else if (const auto* scroll = transform->ScrollNode()) {
       // Limit layer bounds to the scroll range to hide the areas that will
       // never be scrolled into the visible area.
-      pending_layer.bounds.Intersect(
-          FloatRect(FloatPoint(), FloatSize(scroll->ContentsSize())));
+      pending_layer.bounds.Intersect(FloatRect(
+          IntRect(scroll->ContainerRect().Location(), scroll->ContentsSize())));
     }
 
     gfx::Vector2dF layer_offset;

@@ -98,24 +98,6 @@ TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
                           IsSameId(&sub_div, kBackgroundType),
                           IsSameId(&sub_div2, kBackgroundType)));
 
-  // Verify that the background does not scroll.
-  const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
-  auto* transform = background_chunk.properties.Transform();
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    EXPECT_FALSE(transform->ScrollNode());
-  else
-    EXPECT_TRUE(transform->ScrollNode());
-
-  const EffectPaintPropertyNode* effect_node =
-      div.FirstFragment().PaintProperties()->Effect();
-  EXPECT_EQ(0.5f, effect_node->Opacity());
-
-  const PaintChunk& chunk = RootPaintController().PaintChunks()[1];
-  EXPECT_EQ(*div.Layer(), chunk.id.client);
-  EXPECT_EQ(effect_node, chunk.properties.Effect());
-
   EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not
   // by any cacheable display items won't be marked as validly cached.
@@ -159,8 +141,9 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
   // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
   // small?
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&GetLayoutView(), kScrollHitTestType),
+              ElementsAre(IsSameId(&GetLayoutView(), kScrollHitTestType),
+                          IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
                           IsSameId(&div1, kBackgroundType)));
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
@@ -170,8 +153,9 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
   // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
   // small?
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&GetLayoutView(), kScrollHitTestType)));
+              ElementsAre(IsSameId(&GetLayoutView(), kScrollHitTestType),
+                          IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
@@ -198,23 +182,25 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
   // Initial cull rect: (0,0 4200x4200)
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&container, kScrollHitTestType),
-                          IsSameId(&div1, kBackgroundType),
-                          IsSameId(&div2, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   container.GetScrollableArea()->SetScrollOffset(ScrollOffset(5000, 5000),
                                                  kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Cull rect after scroll: (1000,1000 8100x8100)
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&container, kScrollHitTestType),
-                          IsSameId(&div2, kBackgroundType),
-                          IsSameId(&div3, kBackgroundType),
-                          IsSameId(&div4, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&div2, kBackgroundType), IsSameId(&div3, kBackgroundType),
+          IsSameId(&div4, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
@@ -239,12 +225,17 @@ TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
   // The container's items should all be after the document's scroll hit test
   // to ensure the container is hit before the document. Similarly, the child's
   // items should all be after the container's scroll hit test.
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&GetLayoutView(), kScrollHitTestType),
-                          IsSameId(&container, kBackgroundType),
-                          IsSameId(&container, kScrollHitTestType),
-                          IsSameId(&child, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
@@ -279,13 +270,18 @@ TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
   // testing should hit positive descendants, the container, and then negative
   // descendants so the ScrollHitTest item should be immediately after the
   // background.
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&neg_z_child, kBackgroundType),
-                          IsSameId(&container, kBackgroundType),
-                          IsSameId(&container, kScrollHitTestType),
-                          IsSameId(&child, kBackgroundType),
-                          IsSameId(&pos_z_child, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&neg_z_child, kBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&child, kBackgroundType),
+          IsSameId(&pos_z_child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
@@ -318,13 +314,18 @@ TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
   // Both positive and negative z-index descendants are painted after the
   // background. The scroll hit test should be after the background but before
   // the z-index descendants to ensure hit test order is correct.
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
-                          IsSameId(&container, kBackgroundType),
-                          IsSameId(&container, kScrollHitTestType),
-                          IsSameId(&neg_z_child, kBackgroundType),
-                          IsSameId(&child, kBackgroundType),
-                          IsSameId(&pos_z_child, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&neg_z_child, kBackgroundType),
+          IsSameId(&child, kBackgroundType),
+          IsSameId(&pos_z_child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2,
@@ -357,7 +358,8 @@ TEST_P(PaintControllerPaintTestForSPv2,
   // Even though container does not paint a background, the scroll hit test item
   // should still be between the negative z-index child and the regular child.
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
                           IsSameId(&neg_z_child, kBackgroundType),
                           IsSameId(&container, kScrollHitTestType),
                           IsSameId(&child, kBackgroundType),

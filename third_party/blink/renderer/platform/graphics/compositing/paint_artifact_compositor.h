@@ -106,6 +106,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   void ShowDebugData();
 #endif
 
+  const Vector<std::unique_ptr<ContentLayerClientImpl>>&
+  ContentLayerClientsForTesting() const {
+    return content_layer_clients_;
+  }
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.

@@ -71,7 +71,8 @@ struct CORE_EXPORT PaintInfo {
             fragment_logical_top_in_flow_thread),
         paint_flags_(paint_flags),
         global_paint_flags_(global_paint_flags),
-        suppress_painting_descendants_(suppress_painting_descendants) {}
+        suppress_painting_descendants_(suppress_painting_descendants),
+        is_painting_scrolling_background_(false) {}
 
   PaintInfo(GraphicsContext& new_context,
             const PaintInfo& copy_other_fields_from)
@@ -84,12 +85,20 @@ struct CORE_EXPORT PaintInfo {
         paint_flags_(copy_other_fields_from.paint_flags_),
         global_paint_flags_(copy_other_fields_from.global_paint_flags_),
         suppress_painting_descendants_(
-            copy_other_fields_from.suppress_painting_descendants_) {}
+            copy_other_fields_from.suppress_painting_descendants_),
+        is_painting_scrolling_background_(false) {
+    // We should never pass is_painting_scrolling_background_ other PaintInfo.
+    DCHECK(!copy_other_fields_from.is_painting_scrolling_background_);
+  }
 
   // Creates a PaintInfo for painting descendants. See comments about the paint
   // phases in PaintPhase.h for details.
   PaintInfo ForDescendants() const {
     PaintInfo result(*this);
+
+    // We should never start to paint descendant when the flag is set.
+    DCHECK(!result.is_painting_scrolling_background_);
+
     if (phase == PaintPhase::kDescendantOutlinesOnly)
       result.phase = PaintPhase::kOutline;
     else if (phase == PaintPhase::kDescendantBlockBackgroundsOnly)
@@ -104,8 +113,16 @@ struct CORE_EXPORT PaintInfo {
     return paint_flags_ & kPaintLayerPaintingRenderingResourceSubtree;
   }
 
+  // TODO(wangxianzhu): Rename this function to SkipBackground() for SPv2.
   bool SkipRootBackground() const {
     return paint_flags_ & kPaintLayerPaintingSkipRootBackground;
+  }
+  void SetSkipsBackground(bool b) {
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    if (b)
+      paint_flags_ |= kPaintLayerPaintingSkipRootBackground;
+    else
+      paint_flags_ &= ~kPaintLayerPaintingSkipRootBackground;
   }
 
   bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
@@ -161,8 +178,17 @@ struct CORE_EXPORT PaintInfo {
     fragment_logical_top_in_flow_thread_ = fragment_logical_top;
   }
 
+  bool IsPaintingScrollingBackground() const {
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    return is_painting_scrolling_background_;
+  }
+  void SetIsPaintingScrollingBackground(bool b) {
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    is_painting_scrolling_background_ = b;
+  }
+
   // FIXME: Introduce setters/getters at some point. Requires a lot of changes
-  // throughout layout/.
+  // throughout paint/.
   GraphicsContext& context;
   PaintPhase phase;
 
@@ -176,9 +202,12 @@ struct CORE_EXPORT PaintInfo {
   // which initiated the current painting, in the containing flow thread.
   LayoutUnit fragment_logical_top_in_flow_thread_;
 
-  const PaintLayerFlags paint_flags_;
+  PaintLayerFlags paint_flags_;
   const GlobalPaintFlags global_paint_flags_;
   const bool suppress_painting_descendants_;
+
+  // For SPv2 only.
+  bool is_painting_scrolling_background_;
 
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
   friend class ScopedSVGPaintState;

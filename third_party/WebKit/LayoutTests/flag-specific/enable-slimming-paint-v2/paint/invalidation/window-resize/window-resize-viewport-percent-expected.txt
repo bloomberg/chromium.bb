@@ -1,7 +1,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [600, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -23,7 +23,7 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
@@ -33,13 +33,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
         },
@@ -49,18 +49,8 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 25, 60, 35],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [25, 0, 35, 60],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [25, 0, 35, 25],
           "reason": "incremental"
         }
       ]
@@ -70,13 +60,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
         }

@@ -1,13 +1,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [600, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 600, 250],
           "reason": "background"
         }
@@ -18,13 +18,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 400, 250],
           "reason": "background"
         }
@@ -35,13 +35,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [400, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 400, 600],
           "reason": "background"
         }
@@ -52,13 +52,13 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 800, 600],
           "reason": "background"
         }

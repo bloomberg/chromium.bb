@@ -44,6 +44,13 @@ bool FixedBackgroundPaintsInLocalCoordinates(
 
   const LayoutView& view = ToLayoutView(obj);
 
+  // TODO(wangxianzhu): For SPv2, inline this function into
+  // FixedBackgroundPaintsInLocalCoordinates().
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    return view.GetBackgroundPaintLocation() !=
+           kBackgroundPaintInScrollingContents;
+  }
+
   if (global_paint_flags & kGlobalPaintFlattenCompositingLayers)
     return false;
 
@@ -368,9 +375,14 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   // The LayoutView is the only object that can paint a fixed background into
   // its scrolling contents layer, so it gets a special adjustment here.
   if (obj.IsLayoutView()) {
-    auto* mapping = obj.Layer()->GetCompositedLayerMapping();
-    if (mapping && mapping->BackgroundPaintsOntoScrollingContentsLayer())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      DCHECK_EQ(obj.GetBackgroundPaintLocation(),
+                kBackgroundPaintInScrollingContents);
       rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
+      if (mapping->BackgroundPaintsOntoScrollingContentsLayer())
+        rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    }
   }
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));

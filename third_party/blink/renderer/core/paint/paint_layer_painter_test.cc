@@ -80,36 +80,23 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto& content2 = *GetLayoutObjectByElementId("content2");
   auto& filler2 = *GetLayoutObjectByElementId("filler2");
 
-  const auto& view_display_item_client = ViewScrollingBackgroundClient();
-  const auto& view_chunk_client =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
-          ? *GetLayoutView().Layer()
-          : view_display_item_client;
-
-  EXPECT_THAT(
-      RootPaintController().GetDisplayItemList(),
-      ElementsAre(IsSameId(&view_display_item_client, kDocumentBackgroundType),
-                  IsSameId(&container1, kBackgroundType),
-                  IsSameId(&content1, kBackgroundType),
-                  IsSameId(&filler1, kBackgroundType),
-                  IsSameId(&container2, kBackgroundType),
-                  IsSameId(&content2, kBackgroundType),
-                  IsSameId(&filler2, kBackgroundType)));
+  const auto& view_client = ViewScrollingBackgroundClient();
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&filler1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2, kBackgroundType),
+                          IsSameId(&filler2, kBackgroundType)));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
-  auto other_chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
-  auto view_chunk_state = other_chunk_state;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    view_chunk_state =
-        GetLayoutView().FirstFragment().LocalBorderBoxProperties();
-  }
+  auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
 
-  auto view_chunk_type = RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
-                             ? DisplayItem::kLayerChunkBackground
-                             : kDocumentBackgroundType;
+  auto view_chunk_type = kDocumentBackgroundType;
   auto chunk_background_type = DisplayItem::kLayerChunkBackground;
   auto chunk_foreground_type =
       DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren;
@@ -122,27 +109,26 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 1,
-                         PaintChunk::Id(view_chunk_client, view_chunk_type),
-                         view_chunk_state),
+            IsPaintChunk(0, 1, PaintChunk::Id(view_client, view_chunk_type),
+                         chunk_state),
             IsPaintChunk(
                 1, 2, PaintChunk::Id(*container1_layer, chunk_background_type),
-                other_chunk_state),
+                chunk_state),
             IsPaintChunk(
                 2, 3, PaintChunk::Id(*container1_layer, chunk_foreground_type),
-                other_chunk_state),
+                chunk_state),
             IsPaintChunk(3, 4,
                          PaintChunk::Id(*filler1_layer, filler_chunk_type),
-                         other_chunk_state),
+                         chunk_state),
             IsPaintChunk(
                 4, 5, PaintChunk::Id(*container2_layer, chunk_background_type),
-                other_chunk_state),
+                chunk_state),
             IsPaintChunk(
                 5, 6, PaintChunk::Id(*container2_layer, chunk_foreground_type),
-                other_chunk_state),
+                chunk_state),
             IsPaintChunk(6, 7,
                          PaintChunk::Id(*filler2_layer, filler_chunk_type),
-                         other_chunk_state)));
+                         chunk_state)));
   };
 
   check_chunks();
@@ -157,15 +143,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   CommitAndFinishCycle();
 
-  EXPECT_THAT(
-      RootPaintController().GetDisplayItemList(),
-      ElementsAre(IsSameId(&view_display_item_client, kDocumentBackgroundType),
-                  IsSameId(&container1, kBackgroundType),
-                  IsSameId(&content1, kBackgroundType),
-                  IsSameId(&filler1, kBackgroundType),
-                  IsSameId(&container2, kBackgroundType),
-                  IsSameId(&content2, kBackgroundType),
-                  IsSameId(&filler2, kBackgroundType)));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&filler1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2, kBackgroundType),
+                          IsSameId(&filler2, kBackgroundType)));
 
   // We should still have the paint chunks forced by the cached subsequences.
   check_chunks();

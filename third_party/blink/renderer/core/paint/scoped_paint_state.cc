@@ -45,11 +45,7 @@ void ScopedPaintState::FinishPaintOffsetTranslationAsDrawing() {
 }
 
 void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
-  DCHECK((input_paint_info_.phase != PaintPhase::kSelfBlockBackgroundOnly ||
-          BoxModelObjectPainter::
-              IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-                  &box, input_paint_info_)) &&
-         input_paint_info_.phase != PaintPhase::kSelfOutlineOnly &&
+  DCHECK(input_paint_info_.phase != PaintPhase::kSelfOutlineOnly &&
          input_paint_info_.phase != PaintPhase::kMask);
 
   if (!fragment_to_paint_ || !fragment_to_paint_->HasLocalBorderBoxProperties())

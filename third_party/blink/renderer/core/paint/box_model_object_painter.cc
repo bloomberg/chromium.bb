@@ -56,10 +56,14 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
       box_model_(box),
       flow_box_(flow_box) {}
 
-bool BoxModelObjectPainter::
-    IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-        const LayoutBoxModelObject* box_model_,
-        const PaintInfo& paint_info) {
+bool BoxModelObjectPainter::IsPaintingScrollingBackground(
+    const LayoutBoxModelObject* box_model_,
+    const PaintInfo& paint_info) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // TODO(wangxianzhu): For SPv2, remove this method and let callers use
+    // PaintInfo::IsPaintScrollingBackground() directly.
+    return paint_info.IsPaintingScrollingBackground();
+  }
   return paint_info.PaintFlags() & kPaintLayerPaintingOverflowContents &&
          !(paint_info.PaintFlags() &
            kPaintLayerPaintingCompositingBackgroundPhase) &&
@@ -99,8 +103,7 @@ LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
   LayoutRect scrolled_paint_rect = rect;
   GraphicsContext& context = paint_info.context;
   if (info.is_clipped_with_local_scrolling &&
-      !IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-          &box_model_, paint_info)) {
+      !IsPaintingScrollingBackground(&box_model_, paint_info)) {
     // Clip to the overflow area.
     const LayoutBox& this_box = ToLayoutBox(box_model_);
     // TODO(chrishtr): this should be pixel-snapped.

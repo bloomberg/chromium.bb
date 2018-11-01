@@ -52,9 +52,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   const DisplayItemClient* background_client = &layout_view_;
 
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-  if (BoxModelObjectPainter::
-          IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-              &layout_view_, paint_info)) {
+  if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_view_,
+                                                           paint_info)) {
     // Layout overflow, combined with the visible content size.
     auto document_rect = layout_view_.DocumentRect();
     // DocumentRect is relative to ScrollOrigin. Add ScrollOrigin to let it be
@@ -129,7 +128,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     // If for any reason the view background is not transparent, paint white
     // instead, otherwise keep transparent as is.
     if (paints_base_background || root_background_color.Alpha() ||
-        layout_view_.StyleRef().BackgroundLayers().GetImage())
+        layout_view_.StyleRef().BackgroundLayers().AnyLayerHasImage())
       context.FillRect(background_rect, Color::kWhite, SkBlendMode::kSrc);
     return;
   }
@@ -150,9 +149,8 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else if (root_object->HasLayer()) {
-    if (BoxModelObjectPainter::
-            IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-                &layout_view_, paint_info)) {
+    if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_view_,
+                                                             paint_info)) {
       transform.Translate(layout_view_.ScrolledContentOffset().Width(),
                           layout_view_.ScrolledContentOffset().Height());
     }

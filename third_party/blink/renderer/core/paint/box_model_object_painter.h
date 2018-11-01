@@ -27,9 +27,8 @@ class BoxModelObjectPainter : public BoxPainterBase {
   BoxModelObjectPainter(const LayoutBoxModelObject&,
                         const InlineFlowBox* = nullptr);
 
-  static bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-      const LayoutBoxModelObject*,
-      const PaintInfo&);
+  static bool IsPaintingScrollingBackground(const LayoutBoxModelObject*,
+                                            const PaintInfo&);
 
  protected:
   LayoutRectOutsets ComputeBorders() const override;
