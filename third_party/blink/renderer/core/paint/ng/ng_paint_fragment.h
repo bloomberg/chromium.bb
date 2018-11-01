@@ -66,26 +66,26 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
                                               const NGBreakToken*);
 
   template <typename Traverse>
-  class List final {
+  class List {
    public:
     explicit List(NGPaintFragment* first) : first_(first) {}
 
-    class Iterator final
+    class iterator final
         : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
      public:
-      explicit Iterator(NGPaintFragment* first) : current_(first) {}
+      explicit iterator(NGPaintFragment* first) : current_(first) {}
 
       NGPaintFragment* operator*() const { return current_; }
       NGPaintFragment* operator->() const { return current_; }
-      Iterator& operator++() {
+      iterator& operator++() {
         DCHECK(current_);
         current_ = Traverse::Next(current_);
         return *this;
       }
-      bool operator==(const Iterator& other) const {
+      bool operator==(const iterator& other) const {
         return current_ == other.current_;
       }
-      bool operator!=(const Iterator& other) const {
+      bool operator!=(const iterator& other) const {
         return current_ != other.current_;
       }
 
@@ -93,8 +93,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPaintFragment* current_;
     };
 
-    Iterator begin() const { return Iterator(first_); }
-    Iterator end() const { return Iterator(nullptr); }
+    iterator begin() const { return iterator(first_); }
+    iterator end() const { return iterator(nullptr); }
 
     // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
     // It is error to call |front()| for empty range.
@@ -236,12 +236,19 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);
 
   // A range of fragments for |FragmentsFor()|.
-  class CORE_EXPORT FragmentRange {
+  class TraverseNextForSameLayoutObject {
+   public:
+    static NGPaintFragment* Next(NGPaintFragment* current) {
+      return current->next_for_same_layout_object_;
+    }
+  };
+  class CORE_EXPORT FragmentRange
+      : public List<TraverseNextForSameLayoutObject> {
    public:
     explicit FragmentRange(
         NGPaintFragment* first,
         bool is_in_layout_ng_inline_formatting_context = true)
-        : first_(first),
+        : List(first),
           is_in_layout_ng_inline_formatting_context_(
               is_in_layout_ng_inline_formatting_context) {}
 
@@ -249,50 +256,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       return is_in_layout_ng_inline_formatting_context_;
     }
 
-    bool IsEmpty() const { return !first_; }
-
-    class iterator final
-        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
-     public:
-      explicit iterator(NGPaintFragment* first) : current_(first) {}
-
-      NGPaintFragment* operator*() const { return current_; }
-      NGPaintFragment* operator->() const { return current_; }
-      iterator& operator++() {
-        CHECK(current_);
-        current_ = current_->next_for_same_layout_object_;
-        return *this;
-      }
-      bool operator==(const iterator& other) const {
-        return current_ == other.current_;
-      }
-      bool operator!=(const iterator& other) const {
-        return current_ != other.current_;
-      }
-
-     private:
-      NGPaintFragment* current_;
-    };
-
-    iterator begin() const { return iterator(first_); }
-    iterator end() const { return iterator(nullptr); }
-
-    // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
-    // It is error to call |front()| for empty range.
-    NGPaintFragment& front() const;
-
-    // Returns the last |NGPaintFragment| in |FragmentRange| as STL container.
-    // It is error to call |back()| for empty range.
-    // Note: The complexity of |back()| is O(n) where n is number of elements
-    // in this |FragmentRange|.
-    NGPaintFragment& back() const;
-
-    // Returns number of fragments in this range. The complexity is O(n) where n
-    // is number of elements.
-    wtf_size_t size() const;
-
    private:
-    NGPaintFragment* first_;
     bool is_in_layout_ng_inline_formatting_context_;
   };
 
@@ -381,6 +345,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   LayoutRect selection_visual_rect_;
 };
 
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
 

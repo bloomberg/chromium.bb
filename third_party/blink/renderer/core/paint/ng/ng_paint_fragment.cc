@@ -930,30 +930,6 @@ bool NGPaintFragment::ShouldPaintDragCaret() const {
   return ToLayoutBlock(GetLayoutObject())->ShouldPaintDragCaret();
 }
 
-// ----
-
-NGPaintFragment& NGPaintFragment::FragmentRange::front() const {
-  DCHECK(first_);
-  return *first_;
-}
-
-NGPaintFragment& NGPaintFragment::FragmentRange::back() const {
-  DCHECK(first_);
-  NGPaintFragment* last = first_;
-  for (NGPaintFragment* fragment : *this)
-    last = fragment;
-  return *last;
-}
-
-wtf_size_t NGPaintFragment::FragmentRange::size() const {
-  wtf_size_t size = 0;
-  for (NGPaintFragment* fragment : *this) {
-    ANALYZER_ALLOW_UNUSED(fragment);
-    ++size;
-  }
-  return size;
-}
-
 String NGPaintFragment::DebugName() const {
   StringBuilder name;
 
@@ -979,6 +955,8 @@ String NGPaintFragment::DebugName() const {
   return name.ToString();
 }
 
+template class CORE_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
 template class CORE_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
 
