@@ -353,6 +353,10 @@ class AutofillAssistantUiDelegate {
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
+    public void dismissSnackbar(SnackbarManager.SnackbarController controller) {
+        mActivity.getSnackbarManager().dismissSnackbars(controller);
+    }
+
     /** Called to show overlay. */
     public void showOverlay() {
         mOverlay.setVisibility(View.VISIBLE);
