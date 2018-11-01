@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -136,7 +137,21 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (!editing) {
     self.editingWithToolbarButtons = NO;
     if (self.needsSectionCleanupAfterEditing) {
-      [self removeEmptySections];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+      // |removedSectionCount| is only used in iOS10, so unused variable
+      // warnings should be ignored in order to allow compilation until the
+      // iOS10 fix is removed.
+      NSUInteger removedSectionCount = [self removeEmptySections];
+#pragma clang diagnostic pop
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+      // The swipe-to-delete gesture on iOS 10 erroneously attempts to reload
+      // deleted row's section upon completion of its animation, regardless of
+      // whether the row was the last in the section.  If the section was
+      // removed force a full table reload so that the updated model is used.
+      if (removedSectionCount && !base::ios::IsRunningOnIOS11OrLater())
+        [self.tableView reloadData];
+#endif
       self.needsSectionCleanupAfterEditing = NO;
     }
   }
@@ -850,10 +865,12 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   [self removeEmptySections];
 }
 
-// Removes the empty sections from the table and the model.
-- (void)removeEmptySections {
+// Removes the empty sections from the table and the model.  Returns the number
+// of removed sections.
+- (NSUInteger)removeEmptySections {
   UITableView* tableView = self.tableView;
   TableViewModel* model = self.tableViewModel;
+  __block NSUInteger removedSectionCount = 0;
   void (^updates)(void) = ^{
     SectionIdentifier sections[] = {SectionIdentifierRead,
                                     SectionIdentifierUnread};
@@ -868,6 +885,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
         [tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
                  withRowAnimation:UITableViewRowAnimationFade];
         [model removeSectionWithIdentifier:section];
+        ++removedSectionCount;
       }
     }
   };
@@ -877,6 +895,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self tableIsEmpty];
   else
     [self updateToolbarItems];
+
+  return removedSectionCount;
 }
 
 // Resets self.editing to NO, optionally with animation.
