@@ -243,6 +243,11 @@ void OmniboxViewViews::InstallPlaceholderText() {
   }
 }
 
+bool OmniboxViewViews::SelectionAtBeginning() {
+  const gfx::Range sel = GetSelectedRange();
+  return sel.GetMin() == 0;
+}
+
 bool OmniboxViewViews::SelectionAtEnd() {
   const gfx::Range sel = GetSelectedRange();
   return sel.GetMax() == text().size();
@@ -546,6 +551,43 @@ void OmniboxViewViews::UpdateSecurityLevel() {
       controller()->GetLocationBarModel()->GetSecurityLevel(false);
 }
 
+bool OmniboxViewViews::AtEndWithTabMatch() {
+  if (model()->popup_model() &&  // Can be null in tests.
+      model()->popup_model()->SelectedLineHasTabMatch()) {
+    const bool text_and_ui_direction_match =
+        (GetRenderText()->GetDisplayTextDirection() ==
+         base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
+    return text_and_ui_direction_match ? SelectionAtEnd()
+                                       : SelectionAtBeginning();
+  }
+  return false;
+}
+
+bool OmniboxViewViews::MaybeFocusTabButton() {
+  if (AtEndWithTabMatch()) {
+    if (model()->popup_model()->selected_line_state() ==
+        OmniboxPopupModel::NORMAL) {
+      model()->popup_model()->SetSelectedLineState(
+          OmniboxPopupModel::TAB_SWITCH);
+      popup_view_->ProvideButtonFocusHint(
+          model()->popup_model()->selected_line());
+    }
+    return true;
+  }
+  return false;
+}
+
+bool OmniboxViewViews::MaybeUnfocusTabButton() {
+  // 'at end' isn't strictly necessary for unfocusing, because unfocusing
+  // on other events e.g. mouse clicks, takes care of it.
+  if (AtEndWithTabMatch() && model()->popup_model()->selected_line_state() ==
+                                 OmniboxPopupModel::TAB_SWITCH) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+    return true;
+  }
+  return false;
+}
+
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
@@ -841,6 +883,11 @@ const char* OmniboxViewViews::GetClassName() const {
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
+  if (model()->popup_model() &&  // Can be null in tests.
+      model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::TAB_SWITCH) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+  }
   is_mouse_pressed_ = true;
 
   select_all_on_mouse_release_ =
@@ -1268,9 +1315,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool command = event.IsCommandDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      if (model()->popup_model()->SelectedLineHasTabMatch() &&
-          model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::TAB_SWITCH) {
+      if (model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::TAB_SWITCH) {
         popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
                                event.time_stamp());
       } else {
@@ -1338,33 +1384,24 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
     case ui::VKEY_RIGHT:
       if (!(control || alt || shift)) {
-        if (SelectionAtEnd() &&
-            // Can be null in tests.
-            model()->popup_model() &&
-            model()->popup_model()->SelectedLineHasTabMatch()) {
-          if (model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::NORMAL) {
-            model()->popup_model()->SetSelectedLineState(
-                OmniboxPopupModel::TAB_SWITCH);
-            popup_view_->ProvideButtonFocusHint(
-                model()->popup_model()->selected_line());
-          }
-          return true;
+        if (!base::i18n::IsRTL()) {
+          if (MaybeFocusTabButton())
+            return true;
+        } else {
+          if (MaybeUnfocusTabButton())
+            return true;
         }
       }
       break;
 
     case ui::VKEY_LEFT:
       if (!(control || alt || shift)) {
-        if (SelectionAtEnd() &&
-            // Can be null in tests.
-            model()->popup_model() &&
-            model()->popup_model()->SelectedLineHasTabMatch() &&
-            model()->popup_model()->selected_line_state() ==
-                OmniboxPopupModel::TAB_SWITCH) {
-          model()->popup_model()->SetSelectedLineState(
-              OmniboxPopupModel::NORMAL);
-          return true;
+        if (!base::i18n::IsRTL()) {
+          if (MaybeUnfocusTabButton())
+            return true;
+        } else {
+          if (MaybeFocusTabButton())
+            return true;
         }
       }
       break;
@@ -1418,7 +1455,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_SPACE:
       if (!(control || alt || shift)) {
         if (SelectionAtEnd() &&
-            model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
                 OmniboxPopupModel::TAB_SWITCH) {
           popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,

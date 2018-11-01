@@ -90,6 +90,9 @@ class OmniboxViewViews : public OmniboxView,
   // provider. For example, if Google is the default search provider, this shows
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
+
+  // Indicates if the cursor is at one end. Accounts for text direction.
+  bool SelectionAtBeginning();
   bool SelectionAtEnd();
 
   // OmniboxView:
@@ -187,6 +190,15 @@ class OmniboxViewViews : public OmniboxView,
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
+
+  // Helper function for MaybeFocusTabButton() and MaybeUnfocusTabButton().
+  bool AtEndWithTabMatch();
+
+  // Attempts to either focus or unfocus the tab switch button (tests if all
+  // conditions are met and makes necessary subroutine call) and returns
+  // whether it succeeded.
+  bool MaybeFocusTabButton();
+  bool MaybeUnfocusTabButton();
 
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,
