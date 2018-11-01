@@ -185,27 +185,11 @@ NSString* const kTabUrlKey = @"url";
 
 - (NSString*)description {
   return
-      [NSString stringWithFormat:@"%p ... %@ - %s", self, self.title,
+      [NSString stringWithFormat:@"%p ... - %s", self,
                                  self.webState->GetVisibleURL().spec().c_str()];
 }
 
 #pragma mark - Properties
-
-- (NSString*)title {
-  base::string16 title;
-
-  web::WebState* webState = self.webState;
-  if (!webState->GetNavigationManager()->GetVisibleItem() &&
-      DownloadManagerTabHelper::FromWebState(webState)->has_download_task()) {
-    title = l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_TITLE);
-  } else {
-    title = webState->GetTitle();
-    if (title.empty())
-      title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
-  }
-
-  return base::SysUTF16ToNSString(title);
-}
 
 - (NSString*)tabId {
   if (!self.webState) {

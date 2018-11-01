@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -535,7 +536,7 @@ UIColor* BackgroundColor() {
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
   [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
-  [[view titleLabel] setText:[tab title]];
+  [[view titleLabel] setText:tab_util::GetTabTitle(tab.webState)];
   [view setFavicon:nil];
 
   favicon::FaviconDriver* faviconDriver =
@@ -1036,7 +1037,7 @@ UIColor* BackgroundColor() {
   }
   NSUInteger index = [self indexForModelIndex:modelIndex];
   TabView* view = [_tabArray objectAtIndex:index];
-  [view setTitle:tab.title];
+  [view setTitle:tab_util::GetTabTitle(tab.webState)];
   [view setFavicon:nil];
 
   favicon::FaviconDriver* faviconDriver =

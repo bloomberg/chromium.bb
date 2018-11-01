@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
@@ -206,7 +207,7 @@ enum class PresentedState {
         return;
       [strongSelf presentBookmarkEditorForBookmarkedTab:weakTab];
     };
-    [self.mediator addBookmarkWithTitle:tab.title
+    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(tab.webState)
                                     URL:tab.webState->GetLastCommittedURL()
                              editAction:editAction];
   }

@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -18,6 +19,13 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Matcher for the tab title for a given |web_state|.
+id<GREYMatcher> TabTitleMatcher(web::WebState* web_state) {
+  return grey_text(tab_util::GetTabTitle(web_state));
+}
+}  // namespace
 
 // Tests for the tab strip shown on iPad.
 @interface TabStripTestCase : ChromeTestCase
@@ -48,7 +56,7 @@
                                                        : @"No more tabs.");
     Tab* nextTab = chrome_test_util::GetNextTab();
 
-    [[EarlGrey selectElementWithMatcher:grey_text(nextTab.title)]
+    [[EarlGrey selectElementWithMatcher:TabTitleMatcher(nextTab.webState)]
         performAction:grey_tap()];
 
     Tab* newCurrentTab = chrome_test_util::GetCurrentTab();

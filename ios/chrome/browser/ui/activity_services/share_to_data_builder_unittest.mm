@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/snapshots/fake_snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -88,6 +89,11 @@ class ShareToDataBuilderTest : public PlatformTest {
     delegate_ = [[FakeSnapshotGeneratorDelegate alloc] init];
     SnapshotTabHelper::FromWebState(web_state.get())->SetDelegate(delegate_);
 
+    // Needed by the ShareToDataForTab to get the tab title.
+    DownloadManagerTabHelper::CreateForWebState(web_state.get(),
+                                                /*delegate=*/nullptr);
+    web_state->SetTitle(base::UTF8ToUTF16(kExpectedTitle));
+
     // Add a fake view to the TestWebState. This will be used to capture the
     // snapshot. By default the WebState is not ready for taking snapshot.
     CGRect frame = {CGPointZero, CGSizeMake(300, 400)};
@@ -99,9 +105,7 @@ class ShareToDataBuilderTest : public PlatformTest {
     OCMockObject* tab_mock = static_cast<OCMockObject*>(tab_);
 
     ios::ChromeBrowserState* ptr = chrome_browser_state_.get();
-    NSString* expected_title = base::SysUTF8ToNSString(kExpectedTitle);
     [[[tab_mock stub] andReturnValue:OCMOCK_VALUE(ptr)] browserState];
-    [[[tab_mock stub] andReturn:expected_title] title];
   }
 
   void TearDown() override {
