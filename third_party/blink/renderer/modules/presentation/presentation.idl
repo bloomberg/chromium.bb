@@ -6,6 +6,7 @@
 
 [
     RuntimeEnabled=Presentation,
+    SecureContext,
     Exposed=Window
 ] interface Presentation {
     [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;

@@ -23,7 +23,7 @@ async_test(t => {
   };
   // This is receiving the user gesture and runs the callback.
   waitForClick(() => {
-    var request = new PresentationRequest("http://example.com");
+    var request = new PresentationRequest("https://example.com");
     request.start().catch(t.step_func_done(ex => {
       assert_equals(ex.name, 'OperationError');
     }));
