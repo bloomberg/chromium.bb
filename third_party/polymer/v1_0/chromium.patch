@@ -144,3 +144,41 @@ index 2e63d3731be1..217c7ff1414c 100644
      });
  
      /**
+diff --git a/components-chromium/paper-input/paper-input-container.html b/components-chromium/paper-input/paper-input-container.html
+index 55714942c93c..46fb9adf6a04 100644
+--- a/components-chromium/paper-input/paper-input-container.html
++++ b/components-chromium/paper-input/paper-input-container.html
+@@ -254,8 +254,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
+         @apply --paper-input-container-label-floating;
+       }
+ 
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(label),
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(label),
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(.paper-input-label) {
+         right: 0;
+         left: auto;
+         transform-origin: right top;
+diff --git a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+index 7306c651407e..9c88699a3924 100644
+--- a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
++++ b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+@@ -11,7 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ <link rel="import" href="../../../shadycss/apply-shim.html">
+ <link rel="import" href="../mixins/element-mixin.html">
+ <link rel="import" href="../mixins/gesture-event-listeners.html">
+-<link rel="import" href="../mixins/dir-mixin.html">
+ <link rel="import" href="../utils/mixin.html">
+ <link rel="import" href="../utils/import-href.html">
+ <link rel="import" href="../utils/render-status.html">
+@@ -47,9 +46,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+      * @extends {base}
+      * @implements {Polymer_ElementMixin}
+      * @implements {Polymer_GestureEventListeners}
+-     * @implements {Polymer_DirMixin}
+      */
+-    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
++    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));
+ 
+     /**
+      * Map of simple names to touch action names

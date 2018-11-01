@@ -68,9 +68,6 @@ sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
     --prune-empty-dirs "components/" "components-chromium/"
 
-echo 'Minifying Polymer 2, since it comes non-minified from bower.'
-python minify_polymer.py
-
 find "components-chromium/" -name "*.html" \
   ! -path "components-chromium/polymer2*" | \
   xargs grep -l "<script>" | \
@@ -84,6 +81,9 @@ done
 # and apply additional chrome specific patches. NOTE: Where possible create
 # a Polymer issue and/or pull request to minimize these patches.
 patch -p1 --forward -r - < chromium.patch
+
+echo 'Minifying Polymer 2, since it comes non-minified from bower.'
+python minify_polymer.py
 
 # Undo any changes in paper-ripple, since Chromium's implementation is a fork of
 # the original paper-ripple.
