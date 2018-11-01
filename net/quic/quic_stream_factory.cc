@@ -774,7 +774,12 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
       // with network idle time out or handshake time out.
       DCHECK(network_ != NetworkChangeNotifier::kInvalidNetworkHandle);
       network_ = factory_->FindAlternateNetwork(network_);
-      if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+      bool should_attempt_migration =
+          network_ != NetworkChangeNotifier::kInvalidNetworkHandle;
+      UMA_HISTOGRAM_BOOLEAN(
+          "Net.QuicStreamFactory.AttemptMigrationBeforeHandshake",
+          should_attempt_migration);
+      if (should_attempt_migration) {
         net_log_.AddEvent(
             NetLogEventType::
                 QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK);
@@ -782,7 +787,7 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
         for (auto* request : stream_requests_) {
           request->OnConnectionFailedOnDefaultNetwork();
         }
-        DVLOG(1) << "Retry connection on alternate network";
+        DVLOG(1) << "Retry connection on alternate network: " << network_;
         session_ = nullptr;
         io_state_ = STATE_CONNECT;
         return OK;
