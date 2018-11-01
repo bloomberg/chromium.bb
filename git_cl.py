@@ -29,6 +29,7 @@ import stat
 import sys
 import tempfile
 import textwrap
+import time
 import urllib
 import urllib2
 import urlparse
@@ -184,7 +185,6 @@ def BranchExists(branch):
 def time_sleep(seconds):
   # Use this so that it can be mocked in tests without interfering with python
   # system machinery.
-  import time  # Local import to discourage others from importing time globally.
   return time.sleep(seconds)
 
 
@@ -3008,18 +3008,28 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             GERRIT_ERR_LOGGER.info(line)
 
       filter_fn = FilterHeaders()
+      before_push = time.time()
+      push_returncode = 0
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
           print_stdout=False,
           filter_fn=filter_fn,
           env=env)
-    except subprocess2.CalledProcessError:
+    except subprocess2.CalledProcessError as e:
+      push_returncode = e.returncode
       DieWithError('Failed to create a change. Please examine output above '
                    'for the reason of the failure.\n'
                    'Hint: run command below to diagnose common Git/Gerrit '
                    'credential problems:\n'
                    '  git cl creds-check\n',
                    change_desc)
+    finally:
+      metrics.collector.add_repeated('sub_commands', {
+        'command': 'git push',
+        'execution_time': time.time() - before_push,
+        'exit_code': push_returncode,
+        'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
+      })
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')

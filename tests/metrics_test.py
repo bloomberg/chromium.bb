@@ -718,6 +718,20 @@ class MetricsUtilsTest(unittest.TestCase):
 
     self.assertIsNone(metrics_utils.get_git_version())
 
+  def test_extract_known_subcommand_args(self):
+    """Tests that we can extract known subcommand args."""
+    result = metrics_utils.extract_known_subcommand_args([
+      'm=Fix issue with ccs', 'cc=foo@example.com', 'cc=bar@example.com'])
+    self.assertEqual(['cc', 'cc', 'm'], sorted(result))
+
+    result = metrics_utils.extract_known_subcommand_args([
+      'm=Some title mentioning cc and hashtag', 'notify=NONE', 'private'])
+    self.assertEqual(['m', 'notify=NONE', 'private'], sorted(result))
+
+    result = metrics_utils.extract_known_subcommand_args([
+      'foo=bar', 'another_unkwnon_arg'])
+    self.assertEqual([], result)
+
 
 if __name__ == '__main__':
   unittest.main()

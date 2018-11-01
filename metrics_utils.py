@@ -142,6 +142,23 @@ GIT_VERSION_RE = re.compile(
   r'git version (\d)\.(\d{0,2})\.(\d{0,2})'
 )
 
+KNOWN_SUBCOMMAND_ARGS = {
+  'cc',
+  'hashtag',
+  'l=Auto-Submit+1',
+  'l=Commit-Queue+1',
+  'l=Commit-Queue+2',
+  'label',
+  'm',
+  'notify=ALL',
+  'notify=NONE',
+  'private',
+  'r',
+  'ready',
+  'topic',
+  'wip'
+}
+
 
 def get_python_version():
   """Return the python version in the major.minor.micro format."""
@@ -176,6 +193,19 @@ def seconds_to_weeks(duration):
   about 6 days.
   """
   return int(duration) >> 19
+
+
+def extract_known_subcommand_args(args):
+  """Extract the known arguments from the passed list of args."""
+  known_args = []
+  for arg in args:
+    if arg in KNOWN_SUBCOMMAND_ARGS:
+      known_args.append(arg)
+    else:
+      arg = arg.split('=')[0]
+      if arg in KNOWN_SUBCOMMAND_ARGS:
+        known_args.append(arg)
+  return known_args
 
 
 def extract_http_metrics(request_uri, method, status, response_time):
