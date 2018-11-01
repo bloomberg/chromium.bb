@@ -364,4 +364,54 @@ TEST_F(CrostiniSharePathTest, SharePersistedPaths) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
+  RegisterPersistedPath(profile(), base::FilePath("/a/a/a"));
+  const base::ListValue* prefs =
+      profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  EXPECT_EQ(prefs->GetSize(), 1U);
+  std::string path;
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/a/a/a");
+
+  RegisterPersistedPath(profile(), base::FilePath("/a/a/b"));
+  RegisterPersistedPath(profile(), base::FilePath("/a/a/c"));
+  RegisterPersistedPath(profile(), base::FilePath("/a/b/a"));
+  RegisterPersistedPath(profile(), base::FilePath("/b/a/a"));
+  prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  EXPECT_EQ(prefs->GetSize(), 5U);
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/a/a/a");
+  prefs->GetString(1, &path);
+  EXPECT_EQ(path, "/a/a/b");
+  prefs->GetString(2, &path);
+  EXPECT_EQ(path, "/a/a/c");
+  prefs->GetString(3, &path);
+  EXPECT_EQ(path, "/a/b/a");
+  prefs->GetString(4, &path);
+  EXPECT_EQ(path, "/b/a/a");
+
+  RegisterPersistedPath(profile(), base::FilePath("/a/a"));
+  prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  EXPECT_EQ(prefs->GetSize(), 3U);
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/a/b/a");
+  prefs->GetString(1, &path);
+  EXPECT_EQ(path, "/b/a/a");
+  prefs->GetString(2, &path);
+  EXPECT_EQ(path, "/a/a");
+
+  RegisterPersistedPath(profile(), base::FilePath("/a"));
+  prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  EXPECT_EQ(prefs->GetSize(), 2U);
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/b/a/a");
+  prefs->GetString(1, &path);
+  EXPECT_EQ(path, "/a");
+
+  RegisterPersistedPath(profile(), base::FilePath("/"));
+  prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  EXPECT_EQ(prefs->GetSize(), 1U);
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/");
+}
 }  // namespace crostini

@@ -23,24 +23,59 @@ const volumeManager = {
 function testIsPathShared() {
   const mockFileSystem = new MockFileSystem('volumeId');
   const root = new MockDirectoryEntry(mockFileSystem, '/');
-  const foo1 = new MockDirectoryEntry(mockFileSystem, '/foo1');
-  const foobar1 = new MockDirectoryEntry(mockFileSystem, '/foo1/bar1');
-  const foo2 = new MockDirectoryEntry(mockFileSystem, '/foo2');
-  const foobar2 = new MockDirectoryEntry(mockFileSystem, '/foo2/bar2');
+  const a = new MockDirectoryEntry(mockFileSystem, '/a');
+  const aa = new MockDirectoryEntry(mockFileSystem, '/a/a');
+  const ab = new MockDirectoryEntry(mockFileSystem, '/a/b');
+  const b = new MockDirectoryEntry(mockFileSystem, '/b');
+  const bb = new MockDirectoryEntry(mockFileSystem, '/b/b');
 
-  assertFalse(Crostini.isPathShared(foo1, volumeManager));
+  assertFalse(Crostini.isPathShared(a, volumeManager));
 
-  Crostini.registerSharedPath(foo1, volumeManager);
+  Crostini.registerSharedPath(a, volumeManager);
   assertFalse(Crostini.isPathShared(root, volumeManager));
-  assertTrue(Crostini.isPathShared(foo1, volumeManager));
-  assertTrue(Crostini.isPathShared(foobar1, volumeManager));
+  assertTrue(Crostini.isPathShared(a, volumeManager));
+  assertTrue(Crostini.isPathShared(aa, volumeManager));
 
-  Crostini.registerSharedPath(foobar2, volumeManager);
-  assertFalse(Crostini.isPathShared(foo2, volumeManager));
-  assertTrue(Crostini.isPathShared(foobar2, volumeManager));
+  Crostini.registerSharedPath(bb, volumeManager);
+  assertFalse(Crostini.isPathShared(b, volumeManager));
+  assertTrue(Crostini.isPathShared(bb, volumeManager));
 
-  Crostini.unregisterSharedPath(foobar2, volumeManager);
-  assertFalse(Crostini.isPathShared(foobar2, volumeManager));
+  Crostini.unregisterSharedPath(bb, volumeManager);
+  assertFalse(Crostini.isPathShared(bb, volumeManager));
+
+  // Test collapsing.  Setup with /a/a, /a/b, /b
+  Crostini.unregisterSharedPath(a, volumeManager);
+  Crostini.registerSharedPath(aa, volumeManager);
+  Crostini.registerSharedPath(ab, volumeManager);
+  Crostini.registerSharedPath(b, volumeManager);
+  assertFalse(Crostini.isPathShared(a, volumeManager));
+  assertTrue(Crostini.isPathShared(aa, volumeManager));
+  assertTrue(Crostini.isPathShared(ab, volumeManager));
+  assertTrue(Crostini.isPathShared(b, volumeManager));
+  // Add /a, collapses /a/a, /a/b
+  Crostini.registerSharedPath(a, volumeManager);
+  assertTrue(Crostini.isPathShared(a, volumeManager));
+  assertTrue(Crostini.isPathShared(aa, volumeManager));
+  assertTrue(Crostini.isPathShared(ab, volumeManager));
+  assertTrue(Crostini.isPathShared(b, volumeManager));
+  // Unregister /a, /a/a and /a/b should be lost.
+  Crostini.unregisterSharedPath(a, volumeManager);
+  assertFalse(Crostini.isPathShared(a, volumeManager));
+  assertFalse(Crostini.isPathShared(aa, volumeManager));
+  assertFalse(Crostini.isPathShared(ab, volumeManager));
+  assertTrue(Crostini.isPathShared(b, volumeManager));
+  // Register root, collapses all.
+  Crostini.registerSharedPath(root, volumeManager);
+  assertTrue(Crostini.isPathShared(a, volumeManager));
+  assertTrue(Crostini.isPathShared(aa, volumeManager));
+  assertTrue(Crostini.isPathShared(ab, volumeManager));
+  assertTrue(Crostini.isPathShared(b, volumeManager));
+  // Unregister root, all should be lost.
+  Crostini.unregisterSharedPath(root, volumeManager);
+  assertFalse(Crostini.isPathShared(a, volumeManager));
+  assertFalse(Crostini.isPathShared(aa, volumeManager));
+  assertFalse(Crostini.isPathShared(ab, volumeManager));
+  assertFalse(Crostini.isPathShared(b, volumeManager));
 }
 
 

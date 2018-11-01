@@ -143,10 +143,7 @@ void CallSeneschalSharePath(
 
   // Even if VM is not running, save to prefs now.
   if (persist) {
-    PrefService* pref_service = profile->GetPrefs();
-    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
-    base::ListValue* shared_paths = update.Get();
-    shared_paths->Append(std::make_unique<base::Value>(path.value()));
+    crostini::RegisterPersistedPath(profile, path);
   }
 
   request.mutable_shared_path()->set_path(relative_path.value());
@@ -271,6 +268,23 @@ void SharePersistedPaths(Profile* profile,
                          base::OnceCallback<void(bool, std::string)> callback) {
   SharePaths(profile, kCrostiniDefaultVmName, GetPersistedSharedPaths(profile),
              false /* persist */, std::move(callback));
+}
+
+void RegisterPersistedPath(Profile* profile, const base::FilePath& path) {
+  PrefService* pref_service = profile->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
+  base::ListValue* shared_paths = update.Get();
+  shared_paths->Append(std::make_unique<base::Value>(path.value()));
+  // Remove any existing paths that are children of new path.
+  auto it = shared_paths->begin();
+  while (it != shared_paths->end()) {
+    base::FilePath existing(it->GetString());
+    if (path.IsParent(existing)) {
+      it = shared_paths->Erase(it, nullptr);
+      continue;
+    }
+    ++it;
+  }
 }
 
 }  // namespace crostini
