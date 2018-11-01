@@ -215,6 +215,5 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/crostini_unittest.html")));
+  RunGeneratedTest("/foreground/js/crostini_unittest.html");
 }
