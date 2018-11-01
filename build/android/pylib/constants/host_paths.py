@@ -24,6 +24,8 @@ DEVIL_PATH = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'catapult', 'devil')
 PYMOCK_PATH = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'pymock')
+TRACING_PATH = os.path.join(
+    DIR_SOURCE_ROOT, 'third_party', 'catapult', 'tracing')
 
 @contextlib.contextmanager
 def SysPath(path, position=None):
