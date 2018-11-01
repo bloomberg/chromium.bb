@@ -1249,7 +1249,7 @@ TEST_F(ProcessUtilTest, GetParentProcessId) {
 }
 #endif  // !defined(OS_FUCHSIA)
 
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !defined(OS_MACOSX)
 class WriteToPipeDelegate : public LaunchOptions::PreExecDelegate {
  public:
   explicit WriteToPipeDelegate(int fd) : fd_(fd) {}
