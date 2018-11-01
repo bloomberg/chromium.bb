@@ -15,7 +15,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
@@ -89,7 +89,7 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 
 // Mock event blocker that enables the internal keyboard when it's destructor
 // is called.
-class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
+class MockEventBlocker : public InternalInputDevicesEventBlocker {
  public:
   MockEventBlocker() = default;
   ~MockEventBlocker() override {
@@ -108,7 +108,7 @@ class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
 TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   // Toggle tablet mode on.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
+  std::unique_ptr<InternalInputDevicesEventBlocker> blocker(
       new MockEventBlocker);
   TabletModeControllerTestApi().set_event_blocker(std::move(blocker));
 }

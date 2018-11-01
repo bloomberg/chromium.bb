@@ -46,7 +46,7 @@ class Widget;
 
 namespace ash {
 
-class ScopedDisableInternalMouseAndKeyboard;
+class InternalInputDevicesEventBlocker;
 class TabletModeObserver;
 class TabletModeWindowManager;
 
@@ -214,7 +214,7 @@ class ASH_EXPORT TabletModeController
   // blocked if 1) we are currently in tablet mode or 2) we are currently in
   // laptop mode but the lid is flipped over (i.e., we are in laptop mode
   // because of an external attached mouse).
-  void UpdateInternalMouseAndKeyboardEventBlocker();
+  void UpdateInternalInputDevicesEventBlocker();
 
   // Returns true if the current lid angle can be detected and is in tablet mode
   // angle range.
@@ -225,7 +225,7 @@ class ASH_EXPORT TabletModeController
 
   // A helper class which when instantiated will block native events from the
   // internal keyboard and touchpad.
-  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
+  std::unique_ptr<InternalInputDevicesEventBlocker> event_blocker_;
 
   // Whether we have ever seen accelerometer data.
   bool have_seen_accelerometer_data_ = false;
