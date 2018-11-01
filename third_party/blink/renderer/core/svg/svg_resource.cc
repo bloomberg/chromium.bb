@@ -126,7 +126,7 @@ void ExternalSVGResource::Load(const Document& document) {
   if (resource_document_)
     return;
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::css;
+  options.initiator_info.name = fetch_initiator_type_names::kCSS;
   FetchParameters params(ResourceRequest(url_), options);
   params.MutableResourceRequest().SetFetchRequestMode(
       network::mojom::FetchRequestMode::kSameOrigin);

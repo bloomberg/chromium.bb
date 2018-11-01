@@ -966,7 +966,7 @@ void DocumentLoader::StartLoading() {
 
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
-  options.initiator_info.name = FetchInitiatorTypeNames::document;
+  options.initiator_info.name = fetch_initiator_type_names::kDocument;
   FetchParameters fetch_params(request_, options);
   RawResource::FetchMainResource(fetch_params, Fetcher(), this,
                                  substitute_data_);

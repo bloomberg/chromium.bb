@@ -181,7 +181,8 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
 
   // If the fetch originated from user agent CSS we should mark it as a user
   // agent resource.
-  if (params.Options().initiator_info.name == FetchInitiatorTypeNames::uacss)
+  if (params.Options().initiator_info.name ==
+      fetch_initiator_type_names::kUacss)
     resource->FlagAsUserAgentResource();
   return resource;
 }

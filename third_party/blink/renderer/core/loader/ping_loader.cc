@@ -196,7 +196,8 @@ bool SendBeaconCommon(LocalFrame* frame,
   //     Content-Type header, set corsMode to "no-cors".
   // As we don't support requests with non CORS-safelisted Content-Type, the
   // mode should always be "no-cors".
-  params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::beacon;
+  params.MutableOptions().initiator_info.name =
+      fetch_initiator_type_names::kBeacon;
 
   frame->Client()->DidDispatchPingLoader(request.Url());
   Resource* resource =
@@ -236,7 +237,8 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetReferrerPolicy(kReferrerPolicyNever);
   request.SetRequestContext(mojom::RequestContextType::PING);
   FetchParameters params(request);
-  params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::ping;
+  params.MutableOptions().initiator_info.name =
+      fetch_initiator_type_names::kPing;
 
   frame->Client()->DidDispatchPingLoader(request.Url());
   RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
@@ -265,7 +267,7 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kError);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name =
-      FetchInitiatorTypeNames::violationreport;
+      fetch_initiator_type_names::kViolationreport;
 
   frame->Client()->DidDispatchPingLoader(request.Url());
   RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);

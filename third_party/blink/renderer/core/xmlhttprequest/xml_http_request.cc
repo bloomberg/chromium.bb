@@ -1073,7 +1073,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.initiator_info.name =
-      FetchInitiatorTypeNames::xmlhttprequest;
+      fetch_initiator_type_names::kXmlhttprequest;
   if (blob_url_loader_factory_) {
     resource_loader_options.url_loader_factory = base::MakeRefCounted<
         base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>(

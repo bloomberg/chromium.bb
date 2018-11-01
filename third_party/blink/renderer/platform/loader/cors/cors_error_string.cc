@@ -98,7 +98,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
           "The value of the 'Access-Control-Allow-Origin' header in the "
           "response must not be the wildcard '*' when the request's "
           "credentials mode is 'include'.");
-      if (initiator_name == FetchInitiatorTypeNames::xmlhttprequest) {
+      if (initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
         builder.Append(
             " The credentials mode of requests initiated by the "
             "XMLHttpRequest is controlled by the withCredentials attribute.");
@@ -109,7 +109,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
       builder.Append(
           "No 'Access-Control-Allow-Origin' header is present on the "
           "requested resource.");
-      if (initiator_name == FetchInitiatorTypeNames::fetch) {
+      if (initiator_name == fetch_initiator_type_names::kFetch) {
         builder.Append(
             " If an opaque response serves your needs, set the request's "
             "mode to 'no-cors' to fetch the resource with CORS disabled.");
@@ -121,7 +121,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
              {"The 'Access-Control-Allow-Origin' header contains multiple "
               "values '",
               hint, "', but only one is allowed."});
-      if (initiator_name == FetchInitiatorTypeNames::fetch)
+      if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
     case CORSError::kInvalidAllowOriginValue:
@@ -129,14 +129,14 @@ String GetErrorString(const network::CORSErrorStatus& status,
       Append(builder, {"The 'Access-Control-Allow-Origin' header contains the "
                        "invalid value '",
                        hint, "'."});
-      if (initiator_name == FetchInitiatorTypeNames::fetch)
+      if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
     case CORSError::kAllowOriginMismatch:
     case CORSError::kPreflightAllowOriginMismatch:
       Append(builder, {"The 'Access-Control-Allow-Origin' header has a value '",
                        hint, "' that is not equal to the supplied origin."});
-      if (initiator_name == FetchInitiatorTypeNames::fetch)
+      if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
     case CORSError::kInvalidAllowCredentials:
@@ -147,7 +147,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
               hint,
               "' which must be 'true' when the request's credentials mode is "
               "'include'."});
-      if (initiator_name == FetchInitiatorTypeNames::xmlhttprequest) {
+      if (initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
         builder.Append(
             " The credentials mode of requests initiated by the "
             "XMLHttpRequest is controlled by the withCredentials "

@@ -1993,7 +1993,7 @@ class ImageResourceCounterTest : public testing::Test {
     // Mark it as coming from a UA stylesheet (if needed).
     if (ua_resource) {
       fetch_params.MutableOptions().initiator_info.name =
-          FetchInitiatorTypeNames::uacss;
+          fetch_initiator_type_names::kUacss;
     }
 
     // Fetch the ImageResource.

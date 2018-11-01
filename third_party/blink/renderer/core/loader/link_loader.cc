@@ -417,7 +417,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
       GetFetchImportanceAttributeValue(params.importance));
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::link;
+  options.initiator_info.name = fetch_initiator_type_names::kLink;
   options.parser_disposition = parser_disposition;
   FetchParameters link_fetch_params(resource_request, options);
   link_fetch_params.SetCharset(document.Encoding());
@@ -577,7 +577,7 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
         GetFetchImportanceAttributeValue(params.importance));
 
     ResourceLoaderOptions options;
-    options.initiator_info.name = FetchInitiatorTypeNames::link;
+    options.initiator_info.name = fetch_initiator_type_names::kLink;
 
     FetchParameters link_fetch_params(resource_request, options);
     if (params.cross_origin != kCrossOriginAttributeNotSet) {

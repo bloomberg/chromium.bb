@@ -1165,37 +1165,37 @@ void Resource::DidChangePriority(ResourceLoadPriority load_priority,
 // TODO(toyoshim): Consider to generate automatically. https://crbug.com/675515.
 static const char* InitiatorTypeNameToString(
     const AtomicString& initiator_type_name) {
-  if (initiator_type_name == FetchInitiatorTypeNames::audio)
+  if (initiator_type_name == fetch_initiator_type_names::kAudio)
     return "Audio";
-  if (initiator_type_name == FetchInitiatorTypeNames::css)
+  if (initiator_type_name == fetch_initiator_type_names::kCSS)
     return "CSS resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::document)
+  if (initiator_type_name == fetch_initiator_type_names::kDocument)
     return "Document";
-  if (initiator_type_name == FetchInitiatorTypeNames::icon)
+  if (initiator_type_name == fetch_initiator_type_names::kIcon)
     return "Icon";
-  if (initiator_type_name == FetchInitiatorTypeNames::internal)
+  if (initiator_type_name == fetch_initiator_type_names::kInternal)
     return "Internal resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::fetch)
+  if (initiator_type_name == fetch_initiator_type_names::kFetch)
     return "Fetch";
-  if (initiator_type_name == FetchInitiatorTypeNames::link)
+  if (initiator_type_name == fetch_initiator_type_names::kLink)
     return "Link element resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::other)
+  if (initiator_type_name == fetch_initiator_type_names::kOther)
     return "Other resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::processinginstruction)
+  if (initiator_type_name == fetch_initiator_type_names::kProcessinginstruction)
     return "Processing instruction";
-  if (initiator_type_name == FetchInitiatorTypeNames::track)
+  if (initiator_type_name == fetch_initiator_type_names::kTrack)
     return "Track";
-  if (initiator_type_name == FetchInitiatorTypeNames::uacss)
+  if (initiator_type_name == fetch_initiator_type_names::kUacss)
     return "User Agent CSS resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::video)
+  if (initiator_type_name == fetch_initiator_type_names::kVideo)
     return "Video";
-  if (initiator_type_name == FetchInitiatorTypeNames::xml)
+  if (initiator_type_name == fetch_initiator_type_names::kXml)
     return "XML resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::xmlhttprequest)
+  if (initiator_type_name == fetch_initiator_type_names::kXmlhttprequest)
     return "XMLHttpRequest";
 
   static_assert(
-      FetchInitiatorTypeNames::kNamesCount == 17,
+      fetch_initiator_type_names::kNamesCount == 17,
       "New FetchInitiatorTypeNames should be handled correctly here.");
 
   return "Resource";

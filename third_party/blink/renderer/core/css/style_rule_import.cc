@@ -134,7 +134,7 @@ void StyleRuleImport::RequestStyleSheet() {
   }
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::css;
+  options.initiator_info.name = fetch_initiator_type_names::kCSS;
   FetchParameters params(ResourceRequest(abs_url), options);
   params.SetCharset(parent_style_sheet_->Charset());
   loading_ = true;
