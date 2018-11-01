@@ -234,7 +234,7 @@ void MediaControlsRotateToFullscreenDelegateTest::RotateTo(
   EXPECT_CALL(GetChromeClient(), GetScreenInfo())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(screen_info));
-  DispatchEvent(GetWindow(), EventTypeNames::orientationchange);
+  DispatchEvent(GetWindow(), event_type_names::kOrientationchange);
   test::RunPendingTasks();
 }
 

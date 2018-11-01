@@ -112,7 +112,7 @@ void PresentationRequest::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connectionavailable) {
+  if (event_type == event_type_names::kConnectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
         WebFeature::kPresentationRequestConnectionAvailableEventListener);

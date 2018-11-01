@@ -71,7 +71,7 @@ class NavigationPolicyTest : public testing::Test {
       mouse_initializer->setAltKey(true);
     if (modifiers & WebInputEvent::kMetaKey)
       mouse_initializer->setMetaKey(true);
-    return MouseEvent::Create(nullptr, EventTypeNames::click,
+    return MouseEvent::Create(nullptr, event_type_names::kClick,
                               mouse_initializer);
   }
 

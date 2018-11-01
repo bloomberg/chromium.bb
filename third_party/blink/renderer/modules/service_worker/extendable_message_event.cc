@@ -119,7 +119,7 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     const String& origin,
     MessagePortArray* ports,
     WaitUntilObserver* observer)
-    : ExtendableEvent(EventTypeNames::message,
+    : ExtendableEvent(event_type_names::kMessage,
                       ExtendableMessageEventInit::Create(),
                       observer),
       serialized_data_(std::move(data)),

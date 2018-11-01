@@ -125,7 +125,7 @@ class GetDatabaseNamesCallback final : public EventListener {
   }
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    if (event->type() != EventTypeNames::success) {
+    if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
@@ -174,7 +174,7 @@ class DeleteCallback final : public EventListener {
   }
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    if (event->type() != EventTypeNames::success) {
+    if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(
           Response::Error("Failed to delete database."));
       return;
@@ -244,9 +244,9 @@ class ExecutableWithDatabase
       SendFailure(Response::Error("Could not open database."));
       return;
     }
-    idb_open_db_request->addEventListener(EventTypeNames::upgradeneeded,
+    idb_open_db_request->addEventListener(event_type_names::kUpgradeneeded,
                                           upgrade_callback, false);
-    idb_open_db_request->addEventListener(EventTypeNames::success,
+    idb_open_db_request->addEventListener(event_type_names::kSuccess,
                                           open_callback, false);
   }
 
@@ -271,7 +271,7 @@ class OpenDatabaseCallback final : public EventListener {
   }
 
   void handleEvent(ExecutionContext* context, Event* event) override {
-    if (event->type() != EventTypeNames::success) {
+    if (event->type() != event_type_names::kSuccess) {
       executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
       return;
@@ -324,7 +324,7 @@ class UpgradeDatabaseCallback final : public EventListener {
   }
 
   void handleEvent(ExecutionContext* context, Event* event) override {
-    if (event->type() != EventTypeNames::upgradeneeded) {
+    if (event->type() != event_type_names::kUpgradeneeded) {
       executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
       return;
@@ -562,7 +562,7 @@ class OpenCursorCallback final : public EventListener {
   }
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    if (event->type() != EventTypeNames::success) {
+    if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
@@ -712,8 +712,8 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
     OpenCursorCallback* open_cursor_callback = OpenCursorCallback::Create(
         v8_session_, script_state, std::move(request_callback_), skip_count_,
         page_size_);
-    idb_request->addEventListener(EventTypeNames::success, open_cursor_callback,
-                                  false);
+    idb_request->addEventListener(event_type_names::kSuccess,
+                                  open_cursor_callback, false);
   }
 
   RequestDataCallback* GetRequestCallback() override {
@@ -811,7 +811,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
     return;
   }
   idb_request->addEventListener(
-      EventTypeNames::success,
+      event_type_names::kSuccess,
       GetDatabaseNamesCallback::Create(
           std::move(request_callback),
           document->GetSecurityOrigin()->ToRawString()),
@@ -871,7 +871,7 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
   }
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    if (event->type() != EventTypeNames::success) {
+    if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(
           Response::Error("Failed to delete specified entries"));
       return;
@@ -928,7 +928,7 @@ class DeleteObjectStoreEntries final
     IDBRequest* idb_request =
         idb_object_store->deleteFunction(script_state, idb_key_range_.Get());
     idb_request->addEventListener(
-        EventTypeNames::success,
+        event_type_names::kSuccess,
         DeleteObjectStoreEntriesListener::Create(std::move(request_callback_)),
         false);
   }
@@ -978,7 +978,7 @@ class ClearObjectStoreListener final : public EventListener {
   }
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    if (event->type() != EventTypeNames::complete) {
+    if (event->type() != event_type_names::kComplete) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
@@ -1038,7 +1038,7 @@ class ClearObjectStore final
       return;
     }
     idb_transaction->addEventListener(
-        EventTypeNames::complete,
+        event_type_names::kComplete,
         ClearObjectStoreListener::Create(std::move(request_callback_)), false);
   }
 
@@ -1096,7 +1096,7 @@ void InspectorIndexedDBAgent::deleteDatabase(
     return;
   }
   idb_request->addEventListener(
-      EventTypeNames::success,
+      event_type_names::kSuccess,
       DeleteCallback::Create(std::move(request_callback),
                              document->GetSecurityOrigin()->ToRawString()),
       false);

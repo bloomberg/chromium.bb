@@ -39,7 +39,7 @@ class MediaControlAnimatedArrowContainerElementTest : public PageTestBase {
   void SimulateShow() { arrow_element_->Show(); }
 
   void SimulateAnimationIteration() {
-    Event* event = Event::Create(EventTypeNames::animationiteration);
+    Event* event = Event::Create(event_type_names::kAnimationiteration);
     GetElementById("arrow-3")->DispatchEvent(*event);
   }
 

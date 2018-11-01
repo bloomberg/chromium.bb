@@ -103,7 +103,7 @@ bool HTMLSummaryElement::SupportsFocus() const {
 
 void HTMLSummaryElement::DefaultEventHandler(Event& event) {
   if (IsMainSummary()) {
-    if (event.type() == EventTypeNames::DOMActivate &&
+    if (event.type() == event_type_names::kDOMActivate &&
         !IsClickableControl(event.target()->ToNode())) {
       if (HTMLDetailsElement* details = DetailsElement())
         details->ToggleOpen();
@@ -112,13 +112,13 @@ void HTMLSummaryElement::DefaultEventHandler(Event& event) {
     }
 
     if (event.IsKeyboardEvent()) {
-      if (event.type() == EventTypeNames::keydown &&
+      if (event.type() == event_type_names::kKeydown &&
           ToKeyboardEvent(event).key() == " ") {
         SetActive(true);
         // No setDefaultHandled() - IE dispatches a keypress in this case.
         return;
       }
-      if (event.type() == EventTypeNames::keypress) {
+      if (event.type() == event_type_names::kKeypress) {
         switch (ToKeyboardEvent(event).charCode()) {
           case '\r':
             DispatchSimulatedClick(&event);
@@ -130,7 +130,7 @@ void HTMLSummaryElement::DefaultEventHandler(Event& event) {
             return;
         }
       }
-      if (event.type() == EventTypeNames::keyup &&
+      if (event.type() == event_type_names::kKeyup &&
           ToKeyboardEvent(event).key() == " ") {
         if (IsActive())
           DispatchSimulatedClick(&event);

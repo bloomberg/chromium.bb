@@ -92,7 +92,7 @@ void BackgroundFetchRegistration::OnProgress(
     return;
 
   DCHECK(context->IsContextThread());
-  DispatchEvent(*Event::Create(EventTypeNames::progress));
+  DispatchEvent(*Event::Create(event_type_names::kProgress));
 }
 
 void BackgroundFetchRegistration::OnRecordsUnavailable() {

@@ -92,12 +92,12 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void DidFinishLoading() override;
   void DidFail(FileError::ErrorCode) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend);
 
   void Trace(blink::Visitor*) override;
 

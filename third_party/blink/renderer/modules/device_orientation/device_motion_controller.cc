@@ -102,7 +102,7 @@ void DeviceMotionController::UnregisterWithDispatcher() {
 
 Event* DeviceMotionController::LastEvent() const {
   return DeviceMotionEvent::Create(
-      EventTypeNames::devicemotion,
+      event_type_names::kDevicemotion,
       motion_event_pump_ ? motion_event_pump_->LatestDeviceMotionData()
                          : nullptr);
 }
@@ -113,7 +113,7 @@ bool DeviceMotionController::IsNullEvent(Event* event) const {
 }
 
 const AtomicString& DeviceMotionController::EventTypeName() const {
-  return EventTypeNames::devicemotion;
+  return event_type_names::kDevicemotion;
 }
 
 void DeviceMotionController::Trace(blink::Visitor* visitor) {

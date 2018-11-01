@@ -74,12 +74,12 @@ Element* MediaControlTextTrackListElement::PopupAnchor() const {
 }
 
 void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     // This handles the back button click. Clicking on a menu item triggers the
     // change event instead.
     GetMediaControls().ToggleOverflowMenu();
     event.SetDefaultHandled();
-  } else if (event.type() == EventTypeNames::change) {
+  } else if (event.type() == event_type_names::kChange) {
     // Identify which input element was selected and set track to showing
     Node* target = event.target()->ToNode();
     if (!target || !target->IsElementNode())

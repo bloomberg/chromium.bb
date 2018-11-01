@@ -638,9 +638,9 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
 void HTMLPlugInElement::DispatchErrorEvent() {
   if (GetDocument().IsPluginDocument() && GetDocument().LocalOwner()) {
     GetDocument().LocalOwner()->DispatchEvent(
-        *Event::Create(EventTypeNames::error));
+        *Event::Create(event_type_names::kError));
   } else {
-    DispatchEvent(*Event::Create(EventTypeNames::error));
+    DispatchEvent(*Event::Create(event_type_names::kError));
   }
 }
 

@@ -384,7 +384,7 @@ void XRSession::ForceEnd() {
     device_->frameProvider()->OnImmersiveSessionEnded();
   }
 
-  DispatchEvent(*XRSessionEvent::Create(EventTypeNames::end, this));
+  DispatchEvent(*XRSessionEvent::Create(event_type_names::kEnd, this));
 }
 
 double XRSession::NativeFramebufferScale() const {
@@ -426,7 +426,7 @@ void XRSession::OnFocus() {
     return;
 
   blurred_ = false;
-  DispatchEvent(*XRSessionEvent::Create(EventTypeNames::focus, this));
+  DispatchEvent(*XRSessionEvent::Create(event_type_names::kFocus, this));
 }
 
 void XRSession::OnBlur() {
@@ -434,7 +434,7 @@ void XRSession::OnBlur() {
     return;
 
   blurred_ = true;
-  DispatchEvent(*XRSessionEvent::Create(EventTypeNames::blur, this));
+  DispatchEvent(*XRSessionEvent::Create(event_type_names::kBlur, this));
 }
 
 // Immersive sessions may still not be blurred in headset even if the page isn't
@@ -599,7 +599,7 @@ void XRSession::OnInputStateChange(
 
   if (devices_changed) {
     DispatchEvent(
-        *XRSessionEvent::Create(EventTypeNames::inputsourceschange, this));
+        *XRSessionEvent::Create(event_type_names::kInputsourceschange, this));
   }
 }
 
@@ -612,7 +612,7 @@ void XRSession::OnSelectStart(XRInputSource* input_source) {
   input_source->selection_cancelled = false;
 
   XRInputSourceEvent* event =
-      CreateInputSourceEvent(EventTypeNames::selectstart, input_source);
+      CreateInputSourceEvent(event_type_names::kSelectstart, input_source);
   DispatchEvent(*event);
 
   if (event->defaultPrevented())
@@ -634,7 +634,7 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
       LocalFrame::NotifyUserActivation(frame);
 
   XRInputSourceEvent* event =
-      CreateInputSourceEvent(EventTypeNames::selectend, input_source);
+      CreateInputSourceEvent(event_type_names::kSelectend, input_source);
   DispatchEvent(*event);
 
   if (event->defaultPrevented())
@@ -654,13 +654,13 @@ void XRSession::OnSelect(XRInputSource* input_source) {
 
   if (!input_source->selection_cancelled) {
     XRInputSourceEvent* event =
-        CreateInputSourceEvent(EventTypeNames::select, input_source);
+        CreateInputSourceEvent(event_type_names::kSelect, input_source);
     DispatchEvent(*event);
   }
 }
 
 void XRSession::OnPoseReset() {
-  DispatchEvent(*XRSessionEvent::Create(EventTypeNames::resetpose, this));
+  DispatchEvent(*XRSessionEvent::Create(event_type_names::kResetpose, this));
 }
 
 void XRSession::UpdateInputSourceState(

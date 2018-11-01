@@ -234,7 +234,7 @@ void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
     return;
 
   DispatchEvent(*USBConnectionEvent::Create(
-      EventTypeNames::connect, GetOrCreateDevice(std::move(device_info))));
+      event_type_names::kConnect, GetOrCreateDevice(std::move(device_info))));
 }
 
 void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
@@ -245,7 +245,7 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
                                GetExecutionContext());
   }
   DispatchEvent(
-      *USBConnectionEvent::Create(EventTypeNames::disconnect, device));
+      *USBConnectionEvent::Create(event_type_names::kDisconnect, device));
   device_cache_.erase(guid);
 }
 
@@ -266,8 +266,8 @@ void USB::OnServiceConnectionError() {
 void USB::AddedEventListener(const AtomicString& event_type,
                              RegisteredEventListener& listener) {
   EventTargetWithInlineData::AddedEventListener(event_type, listener);
-  if (event_type != EventTypeNames::connect &&
-      event_type != EventTypeNames::disconnect) {
+  if (event_type != event_type_names::kConnect &&
+      event_type != event_type_names::kDisconnect) {
     return;
   }
 

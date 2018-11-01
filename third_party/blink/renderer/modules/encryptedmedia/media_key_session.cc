@@ -899,7 +899,7 @@ void MediaKeySession::Message(MessageType message_type,
                                           SafeCast<uint32_t>(message_length)));
 
   MediaKeyMessageEvent* event =
-      MediaKeyMessageEvent::Create(EventTypeNames::message, init);
+      MediaKeyMessageEvent::Create(event_type_names::kMessage, init);
   event->SetTarget(this);
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
@@ -984,7 +984,7 @@ void MediaKeySession::KeysStatusesChange(
 
   // 5. Queue a task to fire a simple event named keystatuseschange
   //    at the session.
-  Event* event = Event::Create(EventTypeNames::keystatuseschange);
+  Event* event = Event::Create(event_type_names::kKeystatuseschange);
   event->SetTarget(this);
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 

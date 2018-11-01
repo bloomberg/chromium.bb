@@ -1013,7 +1013,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
     CaptureMouseEventsToWidget(false);
     return mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
         EffectiveMouseEventTargetNode(frame_set_being_resized_.Get()), String(),
-        EventTypeNames::mouseup, mouse_event);
+        event_type_names::kMouseup, mouse_event);
   }
 
   if (last_scrollbar_under_mouse_) {
@@ -1139,10 +1139,11 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
       if (mouse_event_manager_->GetDragState().drag_src_) {
         // For now we don't care if event handler cancels default behavior,
         // since there is none.
-        mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
+        mouse_event_manager_->DispatchDragSrcEvent(event_type_names::kDrag,
+                                                   event);
       }
       event_result = mouse_event_manager_->DispatchDragEvent(
-          EventTypeNames::dragenter, new_target, drag_target_, event,
+          event_type_names::kDragenter, new_target, drag_target_, event,
           data_transfer);
     }
 
@@ -1151,7 +1152,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
         event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
             event, data_transfer);
     } else if (drag_target_) {
-      mouse_event_manager_->DispatchDragEvent(EventTypeNames::dragleave,
+      mouse_event_manager_->DispatchDragEvent(event_type_names::kDragleave,
                                               drag_target_.Get(), new_target,
                                               event, data_transfer);
     }
@@ -1176,10 +1177,12 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
           mouse_event_manager_->GetDragState().drag_src_) {
         // For now we don't care if event handler cancels default behavior,
         // since there is none.
-        mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
+        mouse_event_manager_->DispatchDragSrcEvent(event_type_names::kDrag,
+                                                   event);
       }
       event_result = mouse_event_manager_->DispatchDragEvent(
-          EventTypeNames::dragover, new_target, nullptr, event, data_transfer);
+          event_type_names::kDragover, new_target, nullptr, event,
+          data_transfer);
       should_only_fire_drag_over_event_ = false;
     }
   }
@@ -1195,9 +1198,11 @@ void EventHandler::CancelDragAndDrop(const WebMouseEvent& event,
     if (target_frame)
       target_frame->GetEventHandler().CancelDragAndDrop(event, data_transfer);
   } else if (drag_target_.Get()) {
-    if (mouse_event_manager_->GetDragState().drag_src_)
-      mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
-    mouse_event_manager_->DispatchDragEvent(EventTypeNames::dragleave,
+    if (mouse_event_manager_->GetDragState().drag_src_) {
+      mouse_event_manager_->DispatchDragSrcEvent(event_type_names::kDrag,
+                                                 event);
+    }
+    mouse_event_manager_->DispatchDragEvent(event_type_names::kDragleave,
                                             drag_target_.Get(), nullptr, event,
                                             data_transfer);
   }
@@ -1215,7 +1220,7 @@ WebInputEventResult EventHandler::PerformDragAndDrop(
           event, data_transfer);
   } else if (drag_target_.Get()) {
     result = mouse_event_manager_->DispatchDragEvent(
-        EventTypeNames::drop, drag_target_.Get(), nullptr, event,
+        event_type_names::kDrop, drag_target_.Get(), nullptr, event,
         data_transfer);
   }
   ClearDragState();
@@ -1888,8 +1893,9 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   Node* target_node =
       override_target_node ? override_target_node : mev.InnerNode();
   return mouse_event_manager_->DispatchMouseEvent(
-      EffectiveMouseEventTargetNode(target_node), EventTypeNames::contextmenu,
-      event, mev.GetHitTestResult().CanvasRegionId(), nullptr);
+      EffectiveMouseEventTargetNode(target_node),
+      event_type_names::kContextmenu, event,
+      mev.GetHitTestResult().CanvasRegionId(), nullptr);
 }
 
 static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
@@ -2129,7 +2135,8 @@ bool EventHandler::HandleTextInputEvent(const String& text,
   // in disguise (like insertNewline), and avoid dispatching text input events
   // from keydown default handlers.
   DCHECK(!underlying_event || !underlying_event->IsKeyboardEvent() ||
-         ToKeyboardEvent(underlying_event)->type() == EventTypeNames::keypress);
+         ToKeyboardEvent(underlying_event)->type() ==
+             event_type_names::kKeypress);
 
   if (!frame_)
     return false;

@@ -221,7 +221,7 @@ void ScreenOrientationControllerImpl::DispatchEventTimerFired(TimerBase*) {
 
   ScopedAllowFullscreen allow_fullscreen(
       ScopedAllowFullscreen::kOrientationChange);
-  orientation_->DispatchEvent(*Event::Create(EventTypeNames::change));
+  orientation_->DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void ScreenOrientationControllerImpl::DidUpdateData() {

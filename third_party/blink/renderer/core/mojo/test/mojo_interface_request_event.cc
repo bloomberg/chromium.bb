@@ -18,7 +18,7 @@ void MojoInterfaceRequestEvent::Trace(blink::Visitor* visitor) {
 }
 
 MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(MojoHandle* handle)
-    : Event(EventTypeNames::interfacerequest, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kInterfacerequest, Bubbles::kNo, Cancelable::kNo),
       handle_(handle) {}
 
 MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(

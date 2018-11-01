@@ -32,7 +32,7 @@ class XR final : public EventTargetWithInlineData,
     return new XR(frame, source_id);
   }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange);
 
   ScriptPromise requestDevice(ScriptState*);
 

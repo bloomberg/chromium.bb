@@ -73,7 +73,7 @@ class PluginDocument::BeforeUnloadEventListener : public EventListener {
       : EventListener(kCPPEventListenerType), doc_(document) {}
 
   void handleEvent(ExecutionContext*, Event* event) override {
-    DCHECK_EQ(event->type(), EventTypeNames::beforeunload);
+    DCHECK_EQ(event->type(), event_type_names::kBeforeunload);
     if (show_dialog_)
       ToBeforeUnloadEvent(event)->setReturnValue(g_empty_string);
   }
@@ -229,7 +229,7 @@ void PluginDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
       return;
 
     before_unload_event_listener_ = BeforeUnloadEventListener::Create(this);
-    domWindow()->addEventListener(EventTypeNames::beforeunload,
+    domWindow()->addEventListener(event_type_names::kBeforeunload,
                                   before_unload_event_listener_, false);
   }
   before_unload_event_listener_->SetShowBeforeUnloadDialog(show_dialog);

@@ -265,7 +265,7 @@ void HTMLTextAreaElement::UpdateFocusAppearanceWithOptions(
 void HTMLTextAreaElement::DefaultEventHandler(Event& event) {
   if (GetLayoutObject() && (event.IsMouseEvent() || event.IsDragEvent() ||
                             event.HasInterface(EventNames::WheelEvent) ||
-                            event.type() == EventTypeNames::blur)) {
+                            event.type() == event_type_names::kBlur)) {
     ForwardEvent(event);
   } else if (GetLayoutObject() && event.IsBeforeTextInsertedEvent()) {
     HandleBeforeTextInsertedEvent(

@@ -60,7 +60,7 @@ void PresentationReceiverTest::AddConnectionavailableEventListener(
     EventListener* event_handler,
     const PresentationReceiver* receiver) {
   receiver->connection_list_->addEventListener(
-      EventTypeNames::connectionavailable, event_handler);
+      event_type_names::kConnectionavailable, event_handler);
 }
 
 void PresentationReceiverTest::VerifyConnectionListPropertyState(

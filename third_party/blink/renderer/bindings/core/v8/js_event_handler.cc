@@ -60,7 +60,7 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   // WindowOrWorkerGlobalScope mixin. Otherwise, let special error event
   // handling be false.
   const bool special_error_event_handling =
-      event.IsErrorEvent() && event.type() == EventTypeNames::error &&
+      event.IsErrorEvent() && event.type() == event_type_names::kError &&
       event.currentTarget()->IsWindowOrWorkerGlobalScope();
 
   // Step 4. Process the Event object event as follows:
@@ -149,7 +149,7 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   //             return value will have been coerced into either null or a
   //             DOMString.
   if (event.IsBeforeUnloadEvent() &&
-      event.type() == EventTypeNames::beforeunload) {
+      event.type() == event_type_names::kBeforeunload) {
     DCHECK(result_for_beforeunload);
     event.preventDefault();
     BeforeUnloadEvent* before_unload_event = ToBeforeUnloadEvent(&event);

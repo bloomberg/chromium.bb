@@ -2229,7 +2229,7 @@ void RTCPeerConnection::MaybeFireNegotiationNeeded() {
   if (!negotiation_needed_ || closed_)
     return;
   negotiation_needed_ = false;
-  DispatchEvent(*Event::Create(EventTypeNames::negotiationneeded));
+  DispatchEvent(*Event::Create(event_type_names::kNegotiationneeded));
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
@@ -2303,7 +2303,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
                               std::move(audio_tracks), std::move(video_tracks));
       // Schedule to fire "pc.onaddstream".
       ScheduleDispatchEvent(
-          MediaStreamEvent::Create(EventTypeNames::addstream, stream));
+          MediaStreamEvent::Create(event_type_names::kAddstream, stream));
     } else {
       // The stream already exists, add the track to it.
       // This will cause to schedule to fire "stream.onaddtrack".
@@ -2346,7 +2346,7 @@ void RTCPeerConnection::DidRemoveReceiverPlanB(
       stream->StreamEnded();
       stream->UnregisterObserver(this);
       ScheduleDispatchEvent(
-          MediaStreamEvent::Create(EventTypeNames::removestream, stream));
+          MediaStreamEvent::Create(event_type_names::kRemovestream, stream));
     }
   }
 
@@ -2418,14 +2418,14 @@ void RTCPeerConnection::DidModifyTransceivers(
   // Legacy APIs: "pc.onaddstream" and "pc.onremovestream".
   for (const auto& current_stream : current_streams) {
     if (!previous_streams.Contains(current_stream)) {
-      ScheduleDispatchEvent(
-          MediaStreamEvent::Create(EventTypeNames::addstream, current_stream));
+      ScheduleDispatchEvent(MediaStreamEvent::Create(
+          event_type_names::kAddstream, current_stream));
     }
   }
   for (const auto& previous_stream : previous_streams) {
     if (!current_streams.Contains(previous_stream)) {
       ScheduleDispatchEvent(MediaStreamEvent::Create(
-          EventTypeNames::removestream, previous_stream));
+          event_type_names::kRemovestream, previous_stream));
     }
   }
 
@@ -2523,7 +2523,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
   RTCDataChannel* channel =
       RTCDataChannel::Create(GetExecutionContext(), base::WrapUnique(handler));
   ScheduleDispatchEvent(
-      RTCDataChannelEvent::Create(EventTypeNames::datachannel, channel));
+      RTCDataChannelEvent::Create(event_type_names::kDatachannel, channel));
   has_data_channels_ = true;
 }
 
@@ -2584,7 +2584,7 @@ void RTCPeerConnection::ChangeSignalingState(
   if (signaling_state_ !=
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     signaling_state_ = signaling_state;
-    Event* event = Event::Create(EventTypeNames::signalingstatechange);
+    Event* event = Event::Create(event_type_names::kSignalingstatechange);
     if (dispatch_event_immediately)
       DispatchEvent(*event);
     else
@@ -2597,7 +2597,7 @@ void RTCPeerConnection::ChangeIceGatheringState(
   if (ice_connection_state_ !=
       webrtc::PeerConnectionInterface::kIceConnectionClosed) {
     ScheduleDispatchEvent(
-        Event::Create(EventTypeNames::icegatheringstatechange),
+        Event::Create(event_type_names::kIcegatheringstatechange),
         WTF::Bind(&RTCPeerConnection::SetIceGatheringState,
                   WrapPersistent(this), ice_gathering_state));
     if (ice_gathering_state ==
@@ -2625,7 +2625,7 @@ void RTCPeerConnection::ChangeIceConnectionState(
   if (ice_connection_state_ !=
       webrtc::PeerConnectionInterface::kIceConnectionClosed) {
     ScheduleDispatchEvent(
-        Event::Create(EventTypeNames::iceconnectionstatechange),
+        Event::Create(event_type_names::kIceconnectionstatechange),
         WTF::Bind(&RTCPeerConnection::SetIceConnectionState,
                   WrapPersistent(this), ice_connection_state));
   }

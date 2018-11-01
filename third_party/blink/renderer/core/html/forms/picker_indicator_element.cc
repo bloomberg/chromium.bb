@@ -75,10 +75,10 @@ void PickerIndicatorElement::DefaultEventHandler(Event& event) {
       picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return;
 
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     OpenPopup();
     event.SetDefaultHandled();
-  } else if (event.type() == EventTypeNames::keypress &&
+  } else if (event.type() == event_type_names::kKeypress &&
              event.IsKeyboardEvent()) {
     int char_code = ToKeyboardEvent(event).charCode();
     if (char_code == ' ' || char_code == '\r') {

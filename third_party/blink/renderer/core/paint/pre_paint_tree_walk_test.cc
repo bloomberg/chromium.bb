@@ -346,7 +346,7 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
   PrePaintTreeWalkMockEventListener* callback =
       new PrePaintTreeWalkMockEventListener();
   auto* handler_element = GetDocument().getElementById("handler");
-  handler_element->addEventListener(EventTypeNames::touchstart, callback);
+  handler_element->addEventListener(event_type_names::kTouchstart, callback);
 
   EXPECT_FALSE(ancestor.EffectiveWhitelistedTouchActionChanged());
   EXPECT_TRUE(handler.EffectiveWhitelistedTouchActionChanged());

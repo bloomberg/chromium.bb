@@ -125,7 +125,7 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
 // the XRDevice might now be able to support immersive sessions, where it
 // couldn't before.
 void XR::OnDeviceChanged() {
-  DispatchEvent(*blink::Event::Create(EventTypeNames::devicechange));
+  DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
 }
 
 void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
@@ -191,7 +191,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
   // If we don't have device and there is no sync pending, then request the
   // device to ensure devices have been enumerated and register as a listener
   // for changes.
-  if (event_type == EventTypeNames::devicechange && !device_ &&
+  if (event_type == event_type_names::kDevicechange && !device_ &&
       !pending_sync_) {
     device::mojom::blink::VRServiceClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));

@@ -67,7 +67,7 @@ class MIDIMessageEvent final : public Event {
 
  private:
   MIDIMessageEvent(base::TimeTicks time_stamp, DOMUint8Array* data)
-      : Event(EventTypeNames::midimessage,
+      : Event(event_type_names::kMidimessage,
               Bubbles::kYes,
               Cancelable::kNo,
               time_stamp),

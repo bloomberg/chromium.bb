@@ -89,7 +89,7 @@ void RTCQuicStream::Close() {
 void RTCQuicStream::OnRemoteReset() {
   DCHECK_NE(state_, RTCQuicStreamState::kClosed);
   Close();
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCQuicStream::OnRemoteFinish() {
@@ -103,7 +103,7 @@ void RTCQuicStream::OnRemoteFinish() {
     DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
     Close();
   }
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 const AtomicString& RTCQuicStream::InterfaceName() const {

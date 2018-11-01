@@ -94,10 +94,10 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
 
   bool active() const { return descriptor_->Active(); }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(active);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(active, kActive);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive, kInactive);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
 
   void TrackEnded();
 

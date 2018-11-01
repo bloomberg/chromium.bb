@@ -594,7 +594,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
   if (!execution_context)
     return;
 
-  if (event.type() == EventTypeNames::textInput) {
+  if (event.type() == event_type_names::kTextInput) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kTextInputEventOnInput,
                       WebFeature::kTextInputEventOnTextArea,
@@ -603,7 +603,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event.type() == EventTypeNames::webkitBeforeTextInserted) {
+  if (event.type() == event_type_names::kWebkitBeforeTextInserted) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kWebkitBeforeTextInsertedOnInput,
                       WebFeature::kWebkitBeforeTextInsertedOnTextArea,
@@ -612,7 +612,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event.type() == EventTypeNames::webkitEditableContentChanged) {
+  if (event.type() == event_type_names::kWebkitEditableContentChanged) {
     CountEditingEvent(
         execution_context, event,
         WebFeature::kWebkitEditableContentChangedOnInput,

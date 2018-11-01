@@ -47,12 +47,12 @@ class MediaQueryListEvent final : public Event {
 
  private:
   MediaQueryListEvent(const String& media, bool matches)
-      : Event(EventTypeNames::change, Bubbles::kNo, Cancelable::kNo),
+      : Event(event_type_names::kChange, Bubbles::kNo, Cancelable::kNo),
         media_(media),
         matches_(matches) {}
 
   explicit MediaQueryListEvent(MediaQueryList* list)
-      : Event(EventTypeNames::change, Bubbles::kNo, Cancelable::kNo),
+      : Event(event_type_names::kChange, Bubbles::kNo, Cancelable::kNo),
         media_query_list_(list),
         matches_(false) {}
 

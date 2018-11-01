@@ -84,7 +84,7 @@ void SharedWorkerGlobalScope::ConnectPausable(MessagePortChannel channel) {
   MessageEvent* event =
       MessageEvent::Create(MakeGarbageCollected<MessagePortArray>(1, port),
                            String(), String(), port);
-  event->initEvent(EventTypeNames::connect, false, false);
+  event->initEvent(event_type_names::kConnect, false, false);
   DispatchEvent(*event);
 }
 

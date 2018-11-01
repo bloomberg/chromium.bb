@@ -7421,7 +7421,7 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   mouse_initializer->setCtrlKey(true);
 
   Event* event =
-      MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
+      MouseEvent::Create(nullptr, event_type_names::kClick, mouse_initializer);
   FrameLoadRequest frame_request(document, ResourceRequest(destination));
   frame_request.SetTriggeringEventInfo(
       WebTriggeringEventInfo::kFromTrustedEvent);

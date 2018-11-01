@@ -49,7 +49,7 @@ const char* MediaControlPlayButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     if (MediaElement().paused()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Play"));

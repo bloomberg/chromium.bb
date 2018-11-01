@@ -82,7 +82,7 @@ const AtomicString& BroadcastChannel::InterfaceName() const {
 }
 
 bool BroadcastChannel::HasPendingActivity() const {
-  return binding_.is_bound() && HasEventListeners(EventTypeNames::message);
+  return binding_.is_bound() && HasEventListeners(event_type_names::kMessage);
 }
 
 void BroadcastChannel::ContextDestroyed(ExecutionContext*) {

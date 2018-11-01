@@ -88,7 +88,7 @@ class MODULES_EXPORT MediaDevices final
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange);
 
  protected:
   // EventTarget overrides.

@@ -45,11 +45,13 @@ class DocumentFullscreen {
   static ScriptPromise exitFullscreen(ScriptState*, Document&);
   static void webkitExitFullscreen(Document&);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange, kFullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror, kFullscreenerror);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange,
+                                         kWebkitfullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror,
+                                         kWebkitfullscreenerror);
 };
 
 }  // namespace blink

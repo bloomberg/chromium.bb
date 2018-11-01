@@ -353,7 +353,7 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
   state_ = state;
   switch (state_) {
     case WebRemotePlaybackState::kConnecting:
-      DispatchEvent(*Event::Create(EventTypeNames::connecting));
+      DispatchEvent(*Event::Create(event_type_names::kConnecting));
       if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
         if (media_element_->IsHTMLVideoElement()) {
           // TODO(xjz): Pass the remote device name.
@@ -363,10 +363,10 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
       }
       break;
     case WebRemotePlaybackState::kConnected:
-      DispatchEvent(*Event::Create(EventTypeNames::connect));
+      DispatchEvent(*Event::Create(event_type_names::kConnect));
       break;
     case WebRemotePlaybackState::kDisconnected:
-      DispatchEvent(*Event::Create(EventTypeNames::disconnect));
+      DispatchEvent(*Event::Create(event_type_names::kDisconnect));
       if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
         if (media_element_->IsHTMLVideoElement()) {
           ToHTMLVideoElement(media_element_)

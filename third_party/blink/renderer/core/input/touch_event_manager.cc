@@ -66,13 +66,13 @@ const AtomicString& TouchEventNameForPointerEventType(
     WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::kPointerUp:
-      return EventTypeNames::touchend;
+      return event_type_names::kTouchend;
     case WebInputEvent::kPointerCancel:
-      return EventTypeNames::touchcancel;
+      return event_type_names::kTouchcancel;
     case WebInputEvent::kPointerDown:
-      return EventTypeNames::touchstart;
+      return event_type_names::kTouchstart;
     case WebInputEvent::kPointerMove:
-      return EventTypeNames::touchmove;
+      return event_type_names::kTouchmove;
     default:
       NOTREACHED();
       return g_empty_atom;

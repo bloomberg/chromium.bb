@@ -554,7 +554,7 @@ class Document::NetworkStateObserver final
 
   void OnLineStateChange(bool on_line) override {
     AtomicString event_name =
-        on_line ? EventTypeNames::online : EventTypeNames::offline;
+        on_line ? event_type_names::kOnline : event_type_names::kOffline;
     Document* document = To<Document>(GetExecutionContext());
     if (!document->domWindow())
       return;
@@ -1473,7 +1473,7 @@ void Document::SetReadyState(DocumentReadyState ready_state) {
   }
 
   ready_state_ = ready_state;
-  DispatchEvent(*Event::Create(EventTypeNames::readystatechange));
+  DispatchEvent(*Event::Create(event_type_names::kReadystatechange));
 }
 
 bool Document::IsLoadCompleted() const {
@@ -1809,9 +1809,10 @@ void Document::SetWasDiscarded(bool was_discarded) {
 }
 
 void Document::DidChangeVisibilityState() {
-  DispatchEvent(*Event::CreateBubble(EventTypeNames::visibilitychange));
+  DispatchEvent(*Event::CreateBubble(event_type_names::kVisibilitychange));
   // Also send out the deprecated version until it can be removed.
-  DispatchEvent(*Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
+  DispatchEvent(
+      *Event::CreateBubble(event_type_names::kWebkitvisibilitychange));
 
   if (GetPageVisibilityState() == mojom::PageVisibilityState::kVisible)
     Timeline().SetAllCompositorPending();
@@ -3601,7 +3602,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     return false;
 
   BeforeUnloadEvent& before_unload_event = *BeforeUnloadEvent::Create();
-  before_unload_event.initEvent(EventTypeNames::beforeunload, false, true);
+  before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
   const TimeTicks beforeunload_event_start = CurrentTimeTicks();
   dom_window_->DispatchEvent(before_unload_event, this);
@@ -3695,7 +3696,7 @@ void Document::DispatchUnloadEvents() {
       if (LocalDOMWindow* window = domWindow()) {
         const TimeTicks pagehide_event_start = CurrentTimeTicks();
         window->DispatchEvent(
-            *PageTransitionEvent::Create(EventTypeNames::pagehide, false),
+            *PageTransitionEvent::Create(event_type_names::kPagehide, false),
             this);
         const TimeTicks pagehide_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
@@ -3713,7 +3714,8 @@ void Document::DispatchUnloadEvents() {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         const TimeTicks pagevisibility_hidden_event_start = CurrentTimeTicks();
-        DispatchEvent(*Event::CreateBubble(EventTypeNames::visibilitychange));
+        DispatchEvent(
+            *Event::CreateBubble(event_type_names::kVisibilitychange));
         const TimeTicks pagevisibility_hidden_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
@@ -3722,7 +3724,7 @@ void Document::DispatchUnloadEvents() {
             pagevisibility_hidden_event_end -
             pagevisibility_hidden_event_start);
         DispatchEvent(
-            *Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
+            *Event::CreateBubble(event_type_names::kWebkitvisibilitychange));
       }
       if (!frame_)
         return;
@@ -3732,7 +3734,7 @@ void Document::DispatchUnloadEvents() {
       DocumentLoader* document_loader =
           frame_->Loader().GetProvisionalDocumentLoader();
       load_event_progress_ = kUnloadEventInProgress;
-      Event& unload_event = *Event::Create(EventTypeNames::unload);
+      Event& unload_event = *Event::Create(event_type_names::kUnload);
       if (document_loader &&
           document_loader->GetTiming().UnloadEventStart().is_null() &&
           document_loader->GetTiming().UnloadEventEnd().is_null()) {
@@ -3775,7 +3777,7 @@ void Document::DispatchFreezeEvent() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   const TimeTicks freeze_event_start = CurrentTimeTicks();
   SetFreezingInProgress(true);
-  DispatchEvent(*Event::Create(EventTypeNames::freeze));
+  DispatchEvent(*Event::Create(event_type_names::kFreeze));
   SetFreezingInProgress(false);
   const TimeTicks freeze_event_end = CurrentTimeTicks();
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
@@ -4726,14 +4728,14 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       }
 
       // 'focusout' is a DOM level 3 name for the bubbling blur event.
-      old_focused_element->DispatchFocusOutEvent(EventTypeNames::focusout,
+      old_focused_element->DispatchFocusOutEvent(event_type_names::kFocusout,
                                                  new_focused_element,
                                                  params.source_capabilities);
       // 'DOMFocusOut' is a DOM level 2 name for compatibility.
       // FIXME: We should remove firing DOMFocusOutEvent event when we are sure
       // no content depends on it, probably when <rdar://problem/8503958> is
       // resolved.
-      old_focused_element->DispatchFocusOutEvent(EventTypeNames::DOMFocusOut,
+      old_focused_element->DispatchFocusOutEvent(event_type_names::kDOMFocusOut,
                                                  new_focused_element,
                                                  params.source_capabilities);
 
@@ -4796,7 +4798,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
         goto SetFocusedElementDone;
       }
       // DOM level 3 bubbling focus event.
-      focused_element_->DispatchFocusInEvent(EventTypeNames::focusin,
+      focused_element_->DispatchFocusInEvent(event_type_names::kFocusin,
                                              old_focused_element, params.type,
                                              params.source_capabilities);
 
@@ -4809,7 +4811,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       // For DOM level 2 compatibility.
       // FIXME: We should remove firing DOMFocusInEvent event when we are sure
       // no content depends on it, probably when <rdar://problem/8503958> is m.
-      focused_element_->DispatchFocusInEvent(EventTypeNames::DOMFocusIn,
+      focused_element_->DispatchFocusInEvent(event_type_names::kDOMFocusIn,
                                              old_focused_element, params.type,
                                              params.source_capabilities);
 
@@ -5102,14 +5104,14 @@ void Document::EnqueueScrollEventForNode(Node* target) {
   // Per the W3C CSSOM View Module only scroll events fired at the document
   // should bubble.
   Event* scroll_event = target->IsDocumentNode()
-                            ? Event::CreateBubble(EventTypeNames::scroll)
-                            : Event::Create(EventTypeNames::scroll);
+                            ? Event::CreateBubble(event_type_names::kScroll)
+                            : Event::Create(event_type_names::kScroll);
   scroll_event->SetTarget(target);
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_event);
 }
 
 void Document::EnqueueResizeEvent() {
-  Event* event = Event::Create(EventTypeNames::resize);
+  Event* event = Event::Create(event_type_names::kResize);
   event->SetTarget(domWindow());
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
 }
@@ -5223,43 +5225,43 @@ void Document::AddMutationEventListenerTypeIfEnabled(
 
 void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
                                        EventTarget& event_target) {
-  if (event_type == EventTypeNames::DOMSubtreeModified) {
+  if (event_type == event_type_names::kDOMSubtreeModified) {
     UseCounter::Count(*this, WebFeature::kDOMSubtreeModifiedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMSubtreeModifiedListener);
-  } else if (event_type == EventTypeNames::DOMNodeInserted) {
+  } else if (event_type == event_type_names::kDOMNodeInserted) {
     UseCounter::Count(*this, WebFeature::kDOMNodeInsertedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedListener);
-  } else if (event_type == EventTypeNames::DOMNodeRemoved) {
+  } else if (event_type == event_type_names::kDOMNodeRemoved) {
     UseCounter::Count(*this, WebFeature::kDOMNodeRemovedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedListener);
-  } else if (event_type == EventTypeNames::DOMNodeRemovedFromDocument) {
+  } else if (event_type == event_type_names::kDOMNodeRemovedFromDocument) {
     UseCounter::Count(*this, WebFeature::kDOMNodeRemovedFromDocumentEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedFromDocumentListener);
-  } else if (event_type == EventTypeNames::DOMNodeInsertedIntoDocument) {
+  } else if (event_type == event_type_names::kDOMNodeInsertedIntoDocument) {
     UseCounter::Count(*this, WebFeature::kDOMNodeInsertedIntoDocumentEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedIntoDocumentListener);
-  } else if (event_type == EventTypeNames::DOMCharacterDataModified) {
+  } else if (event_type == event_type_names::kDOMCharacterDataModified) {
     UseCounter::Count(*this, WebFeature::kDOMCharacterDataModifiedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMCharacterDataModifiedListener);
-  } else if (event_type == EventTypeNames::webkitAnimationStart ||
-             event_type == EventTypeNames::animationstart) {
+  } else if (event_type == event_type_names::kWebkitAnimationStart ||
+             event_type == event_type_names::kAnimationstart) {
     AddListenerType(kAnimationStartListener);
-  } else if (event_type == EventTypeNames::webkitAnimationEnd ||
-             event_type == EventTypeNames::animationend) {
+  } else if (event_type == event_type_names::kWebkitAnimationEnd ||
+             event_type == event_type_names::kAnimationend) {
     AddListenerType(kAnimationEndListener);
-  } else if (event_type == EventTypeNames::webkitAnimationIteration ||
-             event_type == EventTypeNames::animationiteration) {
+  } else if (event_type == event_type_names::kWebkitAnimationIteration ||
+             event_type == event_type_names::kAnimationiteration) {
     AddListenerType(kAnimationIterationListener);
     if (View()) {
       // Need to re-evaluate time-to-effect-change for any running animations.
       View()->ScheduleAnimation();
     }
-  } else if (event_type == EventTypeNames::webkitTransitionEnd ||
-             event_type == EventTypeNames::transitionend) {
+  } else if (event_type == event_type_names::kWebkitTransitionEnd ||
+             event_type == event_type_names::kTransitionend) {
     AddListenerType(kTransitionEndListener);
-  } else if (event_type == EventTypeNames::scroll) {
+  } else if (event_type == event_type_names::kScroll) {
     AddListenerType(kScrollListener);
-  } else if (event_type == EventTypeNames::load) {
+  } else if (event_type == event_type_names::kLoad) {
     if (Node* node = event_target.ToNode()) {
       if (IsHTMLStyleElement(*node)) {
         AddListenerType(kLoadListenerAtCapturePhaseOrAtStyleElement);
@@ -6038,7 +6040,7 @@ void Document::FinishedParsing() {
   // dispatched in a queued task, see https://crbug.com/425790
   if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
-  DispatchEvent(*Event::CreateBubble(EventTypeNames::DOMContentLoaded));
+  DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);

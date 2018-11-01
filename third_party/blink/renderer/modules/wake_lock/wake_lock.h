@@ -31,7 +31,7 @@ class WakeLock final : public EventTargetWithInlineData,
   // wake_lock.idl implementation
   AtomicString type() const;
   bool active() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activechange, kActivechange);
   WakeLockRequest* createRequest();
 
   // Called by NavigatorWakeLock to create Screen Wake Lock

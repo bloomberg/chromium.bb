@@ -51,9 +51,9 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
             context.GetTaskRunner(TaskType::kInternalDefault))) {}
   ~FontFaceSet() override = default;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone, kLoadingdone);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror, kLoadingerror);
 
   bool check(const String& font, const String& text, ExceptionState&);
   ScriptPromise load(ScriptState*, const String& font, const String& text);

@@ -44,12 +44,12 @@ SourceBufferList::~SourceBufferList() = default;
 
 void SourceBufferList::Add(SourceBuffer* buffer) {
   list_.push_back(buffer);
-  ScheduleEvent(EventTypeNames::addsourcebuffer);
+  ScheduleEvent(event_type_names::kAddsourcebuffer);
 }
 
 void SourceBufferList::insert(wtf_size_t position, SourceBuffer* buffer) {
   list_.insert(position, buffer);
-  ScheduleEvent(EventTypeNames::addsourcebuffer);
+  ScheduleEvent(event_type_names::kAddsourcebuffer);
 }
 
 void SourceBufferList::Remove(SourceBuffer* buffer) {
@@ -57,12 +57,12 @@ void SourceBufferList::Remove(SourceBuffer* buffer) {
   if (index == kNotFound)
     return;
   list_.EraseAt(index);
-  ScheduleEvent(EventTypeNames::removesourcebuffer);
+  ScheduleEvent(event_type_names::kRemovesourcebuffer);
 }
 
 void SourceBufferList::Clear() {
   list_.clear();
-  ScheduleEvent(EventTypeNames::removesourcebuffer);
+  ScheduleEvent(event_type_names::kRemovesourcebuffer);
 }
 
 void SourceBufferList::ScheduleEvent(const AtomicString& event_name) {

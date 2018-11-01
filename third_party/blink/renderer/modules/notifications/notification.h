@@ -84,10 +84,10 @@ class MODULES_EXPORT Notification final
 
   void close();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(show);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(click, kClick);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(show, kShow);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
 
   // NonPersistentNotificationListener interface.
   void OnShow() override;

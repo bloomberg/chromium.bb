@@ -474,22 +474,22 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     AtomicString event_type;
     switch (input_event.GetType()) {
       case WebInputEvent::kMouseEnter:
-        event_type = EventTypeNames::mouseover;
+        event_type = event_type_names::kMouseover;
         break;
       case WebInputEvent::kMouseMove:
-        event_type = EventTypeNames::mousemove;
+        event_type = event_type_names::kMousemove;
         break;
       case WebInputEvent::kMouseLeave:
-        event_type = EventTypeNames::mouseout;
+        event_type = event_type_names::kMouseout;
         break;
       case WebInputEvent::kMouseDown:
-        event_type = EventTypeNames::mousedown;
+        event_type = event_type_names::kMousedown;
         gesture_indicator = LocalFrame::NotifyUserActivation(
             node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
         mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
         break;
       case WebInputEvent::kMouseUp:
-        event_type = EventTypeNames::mouseup;
+        event_type = event_type_names::kMouseup;
         gesture_indicator = std::make_unique<UserGestureIndicator>(
             std::move(mouse_capture_gesture_token_));
         break;

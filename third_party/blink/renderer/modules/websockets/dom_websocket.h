@@ -111,10 +111,10 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   String binaryType() const;
   void setBinaryType(const String&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
 
   // EventTarget functions.
   const AtomicString& InterfaceName() const override;

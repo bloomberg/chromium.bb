@@ -67,8 +67,8 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
   double height() const;
   double scale() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resize);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resize, kResize);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll);
 
  private:
   explicit DOMVisualViewport(LocalDOMWindow*);

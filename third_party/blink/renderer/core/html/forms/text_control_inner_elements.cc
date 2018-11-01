@@ -111,7 +111,7 @@ void TextControlInnerEditorElement::DefaultEventHandler(Event& event) {
   // this subclass.
   // Or possibly we could just use a normal event listener.
   if (event.IsBeforeTextInsertedEvent() ||
-      event.type() == EventTypeNames::webkitEditableContentChanged) {
+      event.type() == event_type_names::kWebkitEditableContentChanged) {
     Element* shadow_ancestor = OwnerShadowHost();
     // A TextControlInnerTextElement can have no host if its been detached,
     // but kept alive by an EditCommand. In this case, an undo/redo can
@@ -246,7 +246,7 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  if (event.type() == EventTypeNames::click && event.IsMouseEvent() &&
+  if (event.type() == event_type_names::kClick && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");

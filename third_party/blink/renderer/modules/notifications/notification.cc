@@ -224,7 +224,7 @@ void Notification::close() {
 }
 
 void Notification::OnShow() {
-  DispatchEvent(*Event::Create(EventTypeNames::show));
+  DispatchEvent(*Event::Create(event_type_names::kShow));
 }
 
 void Notification::OnClick(OnClickCallback completed_closure) {
@@ -235,7 +235,7 @@ void Notification::OnClick(OnClickCallback completed_closure) {
           document ? document->GetFrame() : nullptr,
           UserGestureToken::kNewGesture);
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
-  DispatchEvent(*Event::Create(EventTypeNames::click));
+  DispatchEvent(*Event::Create(event_type_names::kClick));
 
   std::move(completed_closure).Run();
 }
@@ -245,13 +245,13 @@ void Notification::OnClose(OnCloseCallback completed_closure) {
   // should be Closing if the developer initiated the close.
   if (state_ == State::kShowing || state_ == State::kClosing) {
     state_ = State::kClosed;
-    DispatchEvent(*Event::Create(EventTypeNames::close));
+    DispatchEvent(*Event::Create(event_type_names::kClose));
   }
   std::move(completed_closure).Run();
 }
 
 void Notification::DispatchErrorEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 String Notification::title() const {

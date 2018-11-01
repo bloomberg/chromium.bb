@@ -1075,7 +1075,7 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   AddEventListenerOptionsResolved* resolved_options =
       AddEventListenerOptionsResolved::Create();
   resolved_options->setPassive(false);
-  GetFrame()->DomWindow()->addEventListener(EventTypeNames::touchstart,
+  GetFrame()->DomWindow()->addEventListener(event_type_names::kTouchstart,
                                             listener, resolved_options);
   ForceFullCompositingUpdate();
   region = cc_layer->touch_action_region().GetRegionForTouchAction(

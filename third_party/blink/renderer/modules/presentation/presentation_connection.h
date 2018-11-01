@@ -64,10 +64,10 @@ class PresentationConnection : public EventTargetWithInlineData,
   String binaryType() const;
   void setBinaryType(const String&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate, kTerminate);
 
   // Returns true if this connection's id equals to |id| and its url equals to
   // |url|.

@@ -621,7 +621,7 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
 }
 
 void BaseAudioContext::NotifyStateChange() {
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void BaseAudioContext::NotifySourceNodeFinishedProcessing(

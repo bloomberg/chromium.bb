@@ -145,7 +145,7 @@ MouseEventManager::MouseEventBoundaryEventDispatcher::
 void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOut(
     EventTarget* target,
     EventTarget* related_target) {
-  Dispatch(target, related_target, EventTypeNames::mouseout,
+  Dispatch(target, related_target, event_type_names::kMouseout,
            CanvasRegionId(exited_target_->ToNode(), *web_mouse_event_),
            *web_mouse_event_, false);
 }
@@ -153,15 +153,15 @@ void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOut(
 void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOver(
     EventTarget* target,
     EventTarget* related_target) {
-  Dispatch(target, related_target, EventTypeNames::mouseover, canvas_region_id_,
-           *web_mouse_event_, false);
+  Dispatch(target, related_target, event_type_names::kMouseover,
+           canvas_region_id_, *web_mouse_event_, false);
 }
 
 void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchLeave(
     EventTarget* target,
     EventTarget* related_target,
     bool check_for_listener) {
-  Dispatch(target, related_target, EventTypeNames::mouseleave,
+  Dispatch(target, related_target, event_type_names::kMouseleave,
            CanvasRegionId(exited_target_->ToNode(), *web_mouse_event_),
            *web_mouse_event_, check_for_listener);
 }
@@ -170,18 +170,18 @@ void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchEnter(
     EventTarget* target,
     EventTarget* related_target,
     bool check_for_listener) {
-  Dispatch(target, related_target, EventTypeNames::mouseenter,
+  Dispatch(target, related_target, event_type_names::kMouseenter,
            canvas_region_id_, *web_mouse_event_, check_for_listener);
 }
 
 AtomicString
 MouseEventManager::MouseEventBoundaryEventDispatcher::GetLeaveEvent() {
-  return EventTypeNames::mouseleave;
+  return event_type_names::kMouseleave;
 }
 
 AtomicString
 MouseEventManager::MouseEventBoundaryEventDispatcher::GetEnterEvent() {
-  return EventTypeNames::mouseenter;
+  return event_type_names::kMouseenter;
 }
 
 void MouseEventManager::MouseEventBoundaryEventDispatcher::Dispatch(
@@ -216,16 +216,16 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
       (!check_for_listener || target->HasEventListeners(mouse_event_type))) {
     Node* target_node = target->ToNode();
     int click_count = 0;
-    if (mouse_event_type == EventTypeNames::mouseup ||
-        mouse_event_type == EventTypeNames::mousedown ||
-        mouse_event_type == EventTypeNames::click ||
-        mouse_event_type == EventTypeNames::auxclick ||
-        mouse_event_type == EventTypeNames::dblclick) {
+    if (mouse_event_type == event_type_names::kMouseup ||
+        mouse_event_type == event_type_names::kMousedown ||
+        mouse_event_type == event_type_names::kClick ||
+        mouse_event_type == event_type_names::kAuxclick ||
+        mouse_event_type == event_type_names::kDblclick) {
       click_count = click_count_;
     }
     bool is_mouse_enter_or_leave =
-        mouse_event_type == EventTypeNames::mouseenter ||
-        mouse_event_type == EventTypeNames::mouseleave;
+        mouse_event_type == event_type_names::kMouseenter ||
+        mouse_event_type == event_type_names::kMouseleave;
     MouseEventInit* initializer = MouseEventInit::Create();
     initializer->setBubbles(!is_mouse_enter_or_leave);
     initializer->setCancelable(!is_mouse_enter_or_leave);
@@ -338,8 +338,8 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     return DispatchMouseEvent(
         click_target_node,
         (mev.Event().button == WebPointerProperties::Button::kLeft)
-            ? EventTypeNames::click
-            : EventTypeNames::auxclick,
+            ? event_type_names::kClick
+            : event_type_names::kAuxclick,
         mev.Event(), mev.CanvasRegionId(), nullptr);
   }
 
@@ -964,7 +964,7 @@ bool MouseEventManager::TryStartDrag(
                                                 mouse_down_pos_))
     return false;
 
-  if (DispatchDragSrcEvent(EventTypeNames::dragstart, mouse_down_) !=
+  if (DispatchDragSrcEvent(event_type_names::kDragstart, mouse_down_) !=
       WebInputEventResult::kNotHandled)
     return false;
 
@@ -1001,7 +1001,7 @@ bool MouseEventManager::TryStartDrag(
     return true;
 
   // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
-  DispatchDragSrcEvent(EventTypeNames::dragend, event.Event());
+  DispatchDragSrcEvent(event_type_names::kDragend, event.Event());
 
   return false;
 }
@@ -1035,8 +1035,8 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
 
   DragEventInit* initializer = DragEventInit::Create();
   initializer->setBubbles(true);
-  initializer->setCancelable(event_type != EventTypeNames::dragleave &&
-                             event_type != EventTypeNames::dragend);
+  initializer->setCancelable(event_type != event_type_names::kDragleave &&
+                             event_type != event_type_names::kDragend);
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       event.FlattenTransform(), frame_->GetDocument()->domWindow(),
       initializer);
@@ -1081,7 +1081,7 @@ void MouseEventManager::DragSourceEndedAt(const WebMouseEvent& event,
   if (GetDragState().drag_src_) {
     GetDragState().drag_data_transfer_->SetDestinationOperation(operation);
     // The return value is ignored because dragend is not cancelable.
-    DispatchDragSrcEvent(EventTypeNames::dragend, event);
+    DispatchDragSrcEvent(event_type_names::kDragend, event);
   }
   ClearDragDataTransfer();
   ResetDragSource();

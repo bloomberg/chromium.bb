@@ -276,14 +276,15 @@ void ImageDocument::CreateDocumentStructure() {
     // Add event listeners
     EventListener* listener = ImageEventListener::Create(this);
     if (LocalDOMWindow* dom_window = domWindow())
-      dom_window->addEventListener(EventTypeNames::resize, listener, false);
+      dom_window->addEventListener(event_type_names::kResize, listener, false);
 
     if (shrink_to_fit_mode_ == kDesktop) {
-      image_element_->addEventListener(EventTypeNames::click, listener, false);
-    } else if (shrink_to_fit_mode_ == kViewport) {
-      image_element_->addEventListener(EventTypeNames::touchend, listener,
+      image_element_->addEventListener(event_type_names::kClick, listener,
                                        false);
-      image_element_->addEventListener(EventTypeNames::touchcancel, listener,
+    } else if (shrink_to_fit_mode_ == kViewport) {
+      image_element_->addEventListener(event_type_names::kTouchend, listener,
+                                       false);
+      image_element_->addEventListener(event_type_names::kTouchcancel, listener,
                                        false);
     }
   }
@@ -562,13 +563,14 @@ void ImageDocument::Trace(blink::Visitor* visitor) {
 // --------
 
 void ImageEventListener::handleEvent(ExecutionContext*, Event* event) {
-  if (event->type() == EventTypeNames::resize) {
+  if (event->type() == event_type_names::kResize) {
     doc_->WindowSizeChanged();
-  } else if (event->type() == EventTypeNames::click && event->IsMouseEvent()) {
+  } else if (event->type() == event_type_names::kClick &&
+             event->IsMouseEvent()) {
     MouseEvent* mouse_event = ToMouseEvent(event);
     doc_->ImageClicked(mouse_event->x(), mouse_event->y());
-  } else if ((event->type() == EventTypeNames::touchend ||
-              event->type() == EventTypeNames::touchcancel) &&
+  } else if ((event->type() == event_type_names::kTouchend ||
+              event->type() == event_type_names::kTouchcancel) &&
              event->IsTouchEvent()) {
     doc_->UpdateImageStyle();
   }

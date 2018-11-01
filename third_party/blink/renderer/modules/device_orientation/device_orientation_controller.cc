@@ -122,7 +122,7 @@ bool DeviceOrientationController::IsNullEvent(Event* event) const {
 }
 
 const AtomicString& DeviceOrientationController::EventTypeName() const {
-  return EventTypeNames::deviceorientation;
+  return event_type_names::kDeviceorientation;
 }
 
 void DeviceOrientationController::SetOverride(

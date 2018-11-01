@@ -38,7 +38,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   uint32_t writeBufferedAmount() const;
   void finish();
   void reset();
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;

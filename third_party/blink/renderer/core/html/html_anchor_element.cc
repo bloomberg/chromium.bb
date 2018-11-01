@@ -441,14 +441,14 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {
-  return event.type() == EventTypeNames::keydown && event.IsKeyboardEvent() &&
-         ToKeyboardEvent(event).key() == "Enter" &&
+  return event.type() == event_type_names::kKeydown &&
+         event.IsKeyboardEvent() && ToKeyboardEvent(event).key() == "Enter" &&
          !ToKeyboardEvent(event).repeat();
 }
 
 bool IsLinkClick(Event& event) {
-  if ((event.type() != EventTypeNames::click &&
-       event.type() != EventTypeNames::auxclick) ||
+  if ((event.type() != event_type_names::kClick &&
+       event.type() != event_type_names::kAuxclick) ||
       !event.IsMouseEvent()) {
     return false;
   }

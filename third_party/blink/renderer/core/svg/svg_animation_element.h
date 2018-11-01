@@ -65,9 +65,9 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   void endElement() { endElementAt(0); }
   void endElementAt(float offset);
 
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(begin, beginEvent);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(end, endEvent);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(repeat, repeatEvent);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(begin, kBeginEvent);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEndEvent);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(repeat, kRepeatEvent);
 
   virtual bool IsAdditive();
   bool IsAccumulated() const;

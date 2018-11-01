@@ -297,7 +297,7 @@ void ServiceWorkerRegistration::SetUpdateViaCache(
 }
 
 void ServiceWorkerRegistration::UpdateFound() {
-  DispatchEvent(*Event::Create(EventTypeNames::updatefound));
+  DispatchEvent(*Event::Create(event_type_names::kUpdatefound));
 }
 
 }  // namespace blink

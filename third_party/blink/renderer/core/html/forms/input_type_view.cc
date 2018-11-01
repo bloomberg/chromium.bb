@@ -78,7 +78,8 @@ void InputTypeView::AccessKeyAction(bool) {
 }
 
 bool InputTypeView::ShouldSubmitImplicitly(const Event& event) {
-  return event.IsKeyboardEvent() && event.type() == EventTypeNames::keypress &&
+  return event.IsKeyboardEvent() &&
+         event.type() == event_type_names::kKeypress &&
          ToKeyboardEvent(event).charCode() == '\r';
 }
 

@@ -102,9 +102,9 @@ class CORE_EXPORT WorkerGlobalScope
 
   String origin() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled, kRejectionhandled);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection);
 
   // WorkerUtils
   virtual void importScripts(const Vector<String>& urls, ExceptionState&);

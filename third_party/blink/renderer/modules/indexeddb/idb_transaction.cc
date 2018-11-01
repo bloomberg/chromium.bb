@@ -424,7 +424,7 @@ void IDBTransaction::OnAbort(DOMException* error) {
 
   // Enqueue events before notifying database, as database may close which
   // enqueues more events and order matters.
-  EnqueueEvent(Event::CreateBubble(EventTypeNames::abort));
+  EnqueueEvent(Event::CreateBubble(event_type_names::kAbort));
   Finished();
 }
 
@@ -440,7 +440,7 @@ void IDBTransaction::OnComplete() {
 
   // Enqueue events before notifying database, as database may close which
   // enqueues more events and order matters.
-  EnqueueEvent(Event::Create(EventTypeNames::complete));
+  EnqueueEvent(Event::Create(event_type_names::kComplete));
   Finished();
 }
 
@@ -536,8 +536,8 @@ DispatchEventResult IDBTransaction::DispatchEventInternal(Event& event) {
 
   // FIXME: When we allow custom event dispatching, this will probably need to
   // change.
-  DCHECK(event.type() == EventTypeNames::complete ||
-         event.type() == EventTypeNames::abort);
+  DCHECK(event.type() == event_type_names::kComplete ||
+         event.type() == event_type_names::kAbort);
   DispatchEventResult dispatch_result =
       IDBEventDispatcher::Dispatch(event, targets);
   // FIXME: Try to construct a test where |this| outlives openDBRequest and we

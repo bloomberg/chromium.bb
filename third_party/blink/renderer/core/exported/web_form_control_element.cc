@@ -135,10 +135,10 @@ void WebFormControlElement::SetAutofillValue(const WebString& value) {
                                             nullptr);
     }
     Unwrap<Element>()->DispatchScopedEvent(
-        *Event::CreateBubble(EventTypeNames::keydown));
+        *Event::CreateBubble(event_type_names::kKeydown));
     Unwrap<TextControlElement>()->SetAutofillValue(value);
     Unwrap<Element>()->DispatchScopedEvent(
-        *Event::CreateBubble(EventTypeNames::keyup));
+        *Event::CreateBubble(event_type_names::kKeyup));
     if (!Focused()) {
       Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
                                            nullptr);

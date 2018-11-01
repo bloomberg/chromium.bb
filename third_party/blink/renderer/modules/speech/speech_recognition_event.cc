@@ -39,7 +39,7 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::CreateResult(
     uint32_t result_index,
     const HeapVector<Member<SpeechRecognitionResult>>& results) {
   return new SpeechRecognitionEvent(
-      EventTypeNames::result, result_index,
+      event_type_names::kResult, result_index,
       SpeechRecognitionResultList::Create(results));
 }
 
@@ -49,11 +49,11 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::CreateNoMatch(
     HeapVector<Member<SpeechRecognitionResult>> results;
     results.push_back(result);
     return new SpeechRecognitionEvent(
-        EventTypeNames::nomatch, 0,
+        event_type_names::kNomatch, 0,
         SpeechRecognitionResultList::Create(results));
   }
 
-  return new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr);
+  return new SpeechRecognitionEvent(event_type_names::kNomatch, 0, nullptr);
 }
 
 const AtomicString& SpeechRecognitionEvent::InterfaceName() const {

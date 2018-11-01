@@ -283,7 +283,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
   ASSERT_NE(WebMediaPlayer(), nullptr);
 
   MockEventListener* timeupdate_handler = MockEventListener::Create();
-  Video()->addEventListener(EventTypeNames::timeupdate, timeupdate_handler);
+  Video()->addEventListener(event_type_names::kTimeupdate, timeupdate_handler);
 
   // Simulate conditions where playback is possible.
   SimulateNetworkState(HTMLMediaElement::kNetworkIdle);
@@ -329,7 +329,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   EXPECT_NE(WebMediaPlayer(), nullptr);
 
   MockEventListener* timeupdate_handler = MockEventListener::Create();
-  Video()->addEventListener(EventTypeNames::timeupdate, timeupdate_handler);
+  Video()->addEventListener(event_type_names::kTimeupdate, timeupdate_handler);
 
   // Simulate conditions where playback is possible.
   SimulateNetworkState(HTMLMediaElement::kNetworkIdle);

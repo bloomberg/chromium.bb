@@ -60,7 +60,7 @@ MIDIInput::MIDIInput(MIDIAccess* access,
     : MIDIPort(access, id, manufacturer, name, kTypeInput, version, state) {}
 
 EventListener* MIDIInput::onmidimessage() {
-  return GetAttributeEventListener(EventTypeNames::midimessage);
+  return GetAttributeEventListener(event_type_names::kMidimessage);
 }
 
 void MIDIInput::setOnmidimessage(EventListener* listener) {
@@ -68,14 +68,14 @@ void MIDIInput::setOnmidimessage(EventListener* listener) {
   // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
   open();
 
-  SetAttributeEventListener(EventTypeNames::midimessage, listener);
+  SetAttributeEventListener(event_type_names::kMidimessage, listener);
 }
 
 void MIDIInput::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
   MIDIPort::AddedEventListener(event_type, registered_listener);
-  if (event_type == EventTypeNames::midimessage) {
+  if (event_type == event_type_names::kMidimessage) {
     // Implicit open. See setOnmidimessage().
     open();
   }

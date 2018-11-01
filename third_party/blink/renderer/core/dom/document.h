@@ -288,17 +288,18 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // DOM methods & attributes for Document
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(freeze);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockerror);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(freeze, kFreeze);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockchange, kPointerlockchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockerror, kPointerlockerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange, kReadystatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation,
+                                  kSecuritypolicyviolation);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange, kVisibilitychange);
 
   ViewportData& GetViewportData() const { return *viewport_data_; }
 

@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorker final
 
   String scriptURL() const;
   String state() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   ServiceWorker* ToServiceWorker() override { return this; }
 

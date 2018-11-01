@@ -122,7 +122,7 @@ InputEvent* InputEvent::CreateBeforeInput(InputType input_type,
   if (ranges)
     input_event_init->setTargetRanges(*ranges);
   input_event_init->setComposed(true);
-  return InputEvent::Create(EventTypeNames::beforeinput, input_event_init);
+  return InputEvent::Create(event_type_names::kBeforeinput, input_event_init);
 }
 
 /* static */
@@ -141,7 +141,7 @@ InputEvent* InputEvent::CreateBeforeInput(InputType input_type,
   if (ranges)
     input_event_init->setTargetRanges(*ranges);
   input_event_init->setComposed(true);
-  return InputEvent::Create(EventTypeNames::beforeinput, input_event_init);
+  return InputEvent::Create(event_type_names::kBeforeinput, input_event_init);
 }
 
 /* static */
@@ -162,7 +162,7 @@ InputEvent* InputEvent::CreateInput(InputType input_type,
   if (ranges)
     input_event_init->setTargetRanges(*ranges);
   input_event_init->setComposed(true);
-  return InputEvent::Create(EventTypeNames::input, input_event_init);
+  return InputEvent::Create(event_type_names::kInput, input_event_init);
 }
 
 String InputEvent::inputType() const {

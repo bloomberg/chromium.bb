@@ -44,7 +44,7 @@ void MediaControlOverflowMenuButtonElement::UpdateShownState() {
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
   // Only respond to a click event if we are not disabled.
   if (!hasAttribute(html_names::kDisabledAttr) &&
-      event.type() == EventTypeNames::click) {
+      event.type() == event_type_names::kClick) {
     if (GetMediaControls().OverflowMenuVisible()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.OverflowClose"));

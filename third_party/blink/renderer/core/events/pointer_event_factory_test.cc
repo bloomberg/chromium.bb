@@ -177,7 +177,7 @@ TEST_F(PointerEventFactoryTest, MousePointer) {
       WebInputEvent::kLeftButtonDown);
 
   CreateAndCheckPointerTransitionEvent(pointer_event1,
-                                       EventTypeNames::pointerout);
+                                       event_type_names::kPointerout);
 
   EXPECT_TRUE(pointer_event_factory_.IsActive(expected_mouse_id_));
   EXPECT_TRUE(pointer_event_factory_.IsActiveButtonsState(expected_mouse_id_));
@@ -252,9 +252,9 @@ TEST_F(PointerEventFactoryTest, TouchPointerReleasedAndPressedAgain) {
       false /* isprimary */, false /* hovering */);
 
   CreateAndCheckPointerTransitionEvent(pointer_event1,
-                                       EventTypeNames::pointerleave);
+                                       event_type_names::kPointerleave);
   CreateAndCheckPointerTransitionEvent(pointer_event2,
-                                       EventTypeNames::pointerenter);
+                                       event_type_names::kPointerenter);
 
   EXPECT_TRUE(pointer_event_factory_.IsActive(mapped_id_start_));
   EXPECT_TRUE(pointer_event_factory_.IsActive(mapped_id_start_ + 1));
@@ -592,7 +592,7 @@ TEST_F(PointerEventFactoryTest, PenEraserButton) {
       true /* isprimary */, false /* hovering */,
       WebInputEvent::kLeftButtonDown, WebInputEvent::kPointerDown,
       WebPointerProperties::Button::kLeft);
-  EXPECT_EQ(EventTypeNames::pointerdown, first_pointerdown_event->type());
+  EXPECT_EQ(event_type_names::kPointerdown, first_pointerdown_event->type());
 
   // Send the pointermove event when pressing any other button while the eraser
   // button is still pressed on the tablet.
@@ -602,7 +602,7 @@ TEST_F(PointerEventFactoryTest, PenEraserButton) {
       WebPointerProperties::PointerType::kEraser, 1, mapped_id_start_ + 1,
       false /* isprimary */, false /* hovering */, modifiers,
       WebInputEvent::kPointerDown, WebPointerProperties::Button::kRight);
-  EXPECT_EQ(EventTypeNames::pointermove, second_pointerdown_event->type());
+  EXPECT_EQ(event_type_names::kPointermove, second_pointerdown_event->type());
 
   // Send the pointermove event when releasing any other button while the
   // eraser button is still pressed on the tablet.
@@ -611,14 +611,14 @@ TEST_F(PointerEventFactoryTest, PenEraserButton) {
       false /* isprimary */, true /* hovering */,
       WebInputEvent::kLeftButtonDown, WebInputEvent::kPointerUp,
       WebPointerProperties::Button::kRight);
-  EXPECT_EQ(EventTypeNames::pointermove, first_pointerup_event->type());
+  EXPECT_EQ(event_type_names::kPointermove, first_pointerup_event->type());
 
   // Send the pointerup event when releasing the eraser button from the tablet.
   PointerEvent* last_pointerup_event = CreateAndCheckWebPointerEvent(
       WebPointerProperties::PointerType::kEraser, 0, mapped_id_start_,
       true /* isprimary */, true /* hovering */, WebInputEvent::kNoModifiers,
       WebInputEvent::kPointerUp, WebPointerProperties::Button::kLeft);
-  EXPECT_EQ(EventTypeNames::pointerup, last_pointerup_event->type());
+  EXPECT_EQ(event_type_names::kPointerup, last_pointerup_event->type());
 }
 
 }  // namespace blink

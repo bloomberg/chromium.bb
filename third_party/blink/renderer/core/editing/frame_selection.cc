@@ -293,7 +293,7 @@ void FrameSelection::DidSetSelectionDeprecated(
   // The task source should be kDOMManipulation, but the spec doesn't say
   // anything about this.
   frame_->DomWindow()->EnqueueDocumentEvent(
-      *Event::Create(EventTypeNames::selectionchange),
+      *Event::Create(event_type_names::kSelectionchange),
       TaskType::kMiscPlatformAPI);
 }
 
@@ -332,7 +332,7 @@ static DispatchEventResult DispatchSelectStart(
     return DispatchEventResult::kNotCanceled;
 
   return select_start_target->DispatchEvent(
-      *Event::CreateCancelableBubble(EventTypeNames::selectstart));
+      *Event::CreateCancelableBubble(event_type_names::kSelectstart));
 }
 
 // The return value of |FrameSelection::modify()| is different based on
@@ -711,8 +711,9 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
 
   if (select_start_target) {
     const Document& expected_document = GetDocument();
-    if (select_start_target->DispatchEvent(*Event::CreateCancelableBubble(
-            EventTypeNames::selectstart)) != DispatchEventResult::kNotCanceled)
+    if (select_start_target->DispatchEvent(
+            *Event::CreateCancelableBubble(event_type_names::kSelectstart)) !=
+        DispatchEventResult::kNotCanceled)
       return;
     // The frame may be detached due to selectstart event.
     if (!IsAvailable()) {

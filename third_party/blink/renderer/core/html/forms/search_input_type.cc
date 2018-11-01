@@ -123,7 +123,7 @@ void SearchInputType::StartSearchEventTimer() {
 
 void SearchInputType::DispatchSearchEvent() {
   search_event_timer_.Stop();
-  GetElement().DispatchEvent(*Event::CreateBubble(EventTypeNames::search));
+  GetElement().DispatchEvent(*Event::CreateBubble(event_type_names::kSearch));
 }
 
 void SearchInputType::SearchEventTimerFired(TimerBase*) {

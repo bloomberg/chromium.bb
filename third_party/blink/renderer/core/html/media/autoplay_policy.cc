@@ -424,7 +424,7 @@ void AutoplayPolicy::OnVisibilityChangedForAutoplay(bool is_visible) {
 
   if (ShouldAutoplay()) {
     element_->paused_ = false;
-    element_->ScheduleEvent(EventTypeNames::play);
+    element_->ScheduleEvent(event_type_names::kPlay);
     element_->ScheduleNotifyPlaying();
 
     element_->UpdatePlayState();

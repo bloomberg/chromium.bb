@@ -138,7 +138,7 @@ bool HTMLLabelElement::IsInInteractiveContent(Node* node) const {
 }
 
 void HTMLLabelElement::DefaultEventHandler(Event& evt) {
-  if (evt.type() == EventTypeNames::click && !processing_click_) {
+  if (evt.type() == event_type_names::kClick && !processing_click_) {
     HTMLElement* element = control();
 
     // If we can't find a control or if the control received the click

@@ -98,7 +98,7 @@ void ContextMenuController::DocumentDetached(Document* document) {
 }
 
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
-  DCHECK(mouse_event->type() == EventTypeNames::contextmenu);
+  DCHECK(mouse_event->type() == event_type_names::kContextmenu);
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
   LayoutPoint location(mouse_event->AbsoluteLocation());
   if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))

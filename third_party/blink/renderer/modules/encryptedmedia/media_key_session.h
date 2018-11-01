@@ -81,8 +81,8 @@ class MediaKeySession final
   double expiration() const { return expiration_; }
   ScriptPromise closed(ScriptState*);
   MediaKeyStatusMap* keyStatuses();
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange, kKeystatuseschange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   ScriptPromise generateRequest(ScriptState*,
                                 const String& init_data_type,

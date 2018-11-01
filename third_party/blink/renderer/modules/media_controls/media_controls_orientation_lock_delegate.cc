@@ -104,20 +104,22 @@ MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
 void MediaControlsOrientationLockDelegate::Attach() {
   DCHECK(VideoElement().isConnected());
 
-  GetDocument().addEventListener(EventTypeNames::fullscreenchange, this, true);
-  VideoElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
+  GetDocument().addEventListener(event_type_names::kFullscreenchange, this,
+                                 true);
+  VideoElement().addEventListener(event_type_names::kWebkitfullscreenchange,
+                                  this, true);
+  VideoElement().addEventListener(event_type_names::kLoadedmetadata, this,
                                   true);
-  VideoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
 }
 
 void MediaControlsOrientationLockDelegate::Detach() {
   DCHECK(!VideoElement().isConnected());
 
-  GetDocument().removeEventListener(EventTypeNames::fullscreenchange, this,
+  GetDocument().removeEventListener(event_type_names::kFullscreenchange, this,
                                     true);
-  VideoElement().removeEventListener(EventTypeNames::webkitfullscreenchange,
+  VideoElement().removeEventListener(event_type_names::kWebkitfullscreenchange,
                                      this, true);
-  VideoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+  VideoElement().removeEventListener(event_type_names::kLoadedmetadata, this,
                                      true);
 }
 
@@ -186,7 +188,7 @@ void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
 
   monitor_.reset();  // Cancel any GotIsAutoRotateEnabledByUser Mojo callback.
   if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
-    dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
+    dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
                                     false);
   }
 
@@ -250,7 +252,7 @@ void MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser(
   }
 
   if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
-    dom_window->addEventListener(EventTypeNames::deviceorientation, this,
+    dom_window->addEventListener(event_type_names::kDeviceorientation, this,
                                  false);
   }
 }
@@ -266,8 +268,8 @@ Document& MediaControlsOrientationLockDelegate::GetDocument() const {
 void MediaControlsOrientationLockDelegate::handleEvent(
     ExecutionContext* execution_context,
     Event* event) {
-  if (event->type() == EventTypeNames::fullscreenchange ||
-      event->type() == EventTypeNames::webkitfullscreenchange) {
+  if (event->type() == event_type_names::kFullscreenchange ||
+      event->type() == event_type_names::kWebkitfullscreenchange) {
     if (VideoElement().IsFullscreen()) {
       if (state_ == State::kPendingFullscreen)
         MaybeLockOrientation();
@@ -279,14 +281,14 @@ void MediaControlsOrientationLockDelegate::handleEvent(
     return;
   }
 
-  if (event->type() == EventTypeNames::loadedmetadata) {
+  if (event->type() == event_type_names::kLoadedmetadata) {
     if (state_ == State::kPendingMetadata)
       MaybeLockOrientation();
 
     return;
   }
 
-  if (event->type() == EventTypeNames::deviceorientation) {
+  if (event->type() == event_type_names::kDeviceorientation) {
     if (event->isTrusted() &&
         event->InterfaceName() == EventNames::DeviceOrientationEvent) {
       MaybeLockToAnyIfDeviceOrientationMatchesVideo(
@@ -438,7 +440,7 @@ void MediaControlsOrientationLockDelegate::
   // Job done: the user rotated their device to match the orientation of the
   // video that we locked to, so now we can stop listening.
   if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
-    dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
+    dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
                                     false);
   }
   // Delay before changing lock, as a workaround for the case where the device

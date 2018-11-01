@@ -57,7 +57,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
   DVLOG(2) << __func__ << " " << event->type();
   DCHECK(media_stream_);
 
-  if (event->type() == EventTypeNames::ended) {
+  if (event->type() == event_type_names::kEnded) {
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
       track->stopTrack(context);
@@ -67,7 +67,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
     media_stream_->StreamEnded();
     return;
   }
-  if (event->type() != EventTypeNames::loadedmetadata)
+  if (event->type() != event_type_names::kLoadedmetadata)
     return;
 
   // If |media_element_| is a MediaStream, clone the new tracks.
@@ -170,8 +170,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   MediaElementEventListener* listener =
       new MediaElementEventListener(&element, stream);
-  element.addEventListener(EventTypeNames::loadedmetadata, listener, false);
-  element.addEventListener(EventTypeNames::ended, listener, false);
+  element.addEventListener(event_type_names::kLoadedmetadata, listener, false);
+  element.addEventListener(event_type_names::kEnded, listener, false);
 
   // If |element| is actually playing a MediaStream, just clone it.
   if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {

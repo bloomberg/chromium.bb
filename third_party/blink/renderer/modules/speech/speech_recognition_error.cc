@@ -73,7 +73,7 @@ SpeechRecognitionError* SpeechRecognitionError::Create(
 
 SpeechRecognitionError::SpeechRecognitionError(const String& error,
                                                const String& message)
-    : Event(EventTypeNames::error, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       error_(error),
       message_(message) {}
 

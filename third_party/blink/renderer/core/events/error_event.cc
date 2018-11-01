@@ -64,7 +64,7 @@ ErrorEvent::ErrorEvent(const String& message,
                        std::unique_ptr<SourceLocation> location,
                        ScriptValue error,
                        DOMWrapperWorld* world)
-    : Event(EventTypeNames::error, Bubbles::kNo, Cancelable::kYes),
+    : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kYes),
       sanitized_message_(message),
       location_(std::move(location)),
       world_(world) {

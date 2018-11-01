@@ -84,7 +84,7 @@ DispatchEventResult DispatchSelectStart(Node* node) {
     return DispatchEventResult::kNotCanceled;
 
   return node->DispatchEvent(
-      *Event::CreateCancelableBubble(EventTypeNames::selectstart));
+      *Event::CreateCancelableBubble(event_type_names::kSelectstart));
 }
 
 SelectionInFlatTree ExpandSelectionToRespectUserSelectAll(

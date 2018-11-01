@@ -157,7 +157,7 @@ void HTMLFrameElementBase::ParseAttribute(
   } else if (name == kOnbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?
     SetAttributeEventListener(
-        EventTypeNames::beforeunload,
+        event_type_names::kBeforeunload,
         CreateAttributeEventListener(
             this, name, value,
             JSEventHandler::HandlerType::kOnBeforeUnloadEventHandler));

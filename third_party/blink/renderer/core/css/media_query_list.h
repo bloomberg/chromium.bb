@@ -58,7 +58,7 @@ class CORE_EXPORT MediaQueryList final
   String media() const;
   bool matches();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
 
   // These two functions are provided for compatibility with JS code
   // written before the change listener became a DOM event.

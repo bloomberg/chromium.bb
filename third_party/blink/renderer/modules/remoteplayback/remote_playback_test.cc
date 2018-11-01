@@ -199,10 +199,11 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   auto* disconnect_handler =
       new testing::StrictMock<MockEventListenerForRemotePlayback>();
 
-  remote_playback->addEventListener(EventTypeNames::connecting,
+  remote_playback->addEventListener(event_type_names::kConnecting,
                                     connecting_handler);
-  remote_playback->addEventListener(EventTypeNames::connect, connect_handler);
-  remote_playback->addEventListener(EventTypeNames::disconnect,
+  remote_playback->addEventListener(event_type_names::kConnect,
+                                    connect_handler);
+  remote_playback->addEventListener(event_type_names::kDisconnect,
                                     disconnect_handler);
 
   EXPECT_CALL(*connecting_handler, handleEvent(testing::_, testing::_))

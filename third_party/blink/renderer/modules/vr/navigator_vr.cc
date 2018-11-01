@@ -260,10 +260,10 @@ void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
   if (xr_)
     return;
 
-  if (event_type == EventTypeNames::vrdisplayactivate) {
+  if (event_type == event_type_names::kVrdisplayactivate) {
     listening_for_activate_ = true;
     Controller()->SetListeningForActivate(focused_);
-  } else if (event_type == EventTypeNames::vrdisplayconnect) {
+  } else if (event_type == event_type_names::kVrdisplayconnect) {
     // If the page is listening for connection events make sure we've created a
     // controller so that we'll be notified of new devices.
     Controller();
@@ -276,8 +276,8 @@ void NavigatorVR::DidRemoveEventListener(LocalDOMWindow* window,
   if (xr_)
     return;
 
-  if (event_type == EventTypeNames::vrdisplayactivate &&
-      !window->HasEventListeners(EventTypeNames::vrdisplayactivate)) {
+  if (event_type == event_type_names::kVrdisplayactivate &&
+      !window->HasEventListeners(event_type_names::kVrdisplayactivate)) {
     listening_for_activate_ = false;
     Controller()->SetListeningForActivate(false);
   }

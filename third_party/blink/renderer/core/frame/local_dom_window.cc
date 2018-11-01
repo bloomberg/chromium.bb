@@ -284,7 +284,7 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
     navigator_->SetLanguagesChanged();
 
-  DispatchEvent(*Event::Create(EventTypeNames::languagechange));
+  DispatchEvent(*Event::Create(event_type_names::kLanguagechange));
 }
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
@@ -381,12 +381,12 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
     // The task source should be kDOMManipulation, but the spec doesn't say
     // anything about this.
     EnqueueWindowEvent(
-        *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+        *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
         TaskType::kMiscPlatformAPI);
     return;
   }
   DispatchEvent(
-      *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+      *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
       document_.Get());
 }
 
@@ -500,7 +500,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
 
   for (LocalFrame* frame : frames) {
     frame->DomWindow()->DispatchEvent(
-        *Event::Create(EventTypeNames::orientationchange));
+        *Event::Create(event_type_names::kOrientationchange));
   }
 }
 
@@ -1324,19 +1324,19 @@ void LocalDOMWindow::AddedEventListener(
     it->DidAddEventListener(this, event_type);
   }
 
-  if (event_type == EventTypeNames::unload) {
+  if (event_type == event_type_names::kUnload) {
     UseCounter::Count(document(), WebFeature::kDocumentUnloadRegistered);
     TrackUnloadEventListener(this);
-  } else if (event_type == EventTypeNames::beforeunload) {
+  } else if (event_type == event_type_names::kBeforeunload) {
     UseCounter::Count(document(), WebFeature::kDocumentBeforeUnloadRegistered);
     TrackBeforeUnloadEventListener(this);
     if (GetFrame() && !GetFrame()->IsMainFrame()) {
       UseCounter::Count(document(),
                         WebFeature::kSubFrameBeforeUnloadRegistered);
     }
-  } else if (event_type == EventTypeNames::pagehide) {
+  } else if (event_type == event_type_names::kPagehide) {
     UseCounter::Count(document(), WebFeature::kDocumentPageHideRegistered);
-  } else if (event_type == EventTypeNames::pageshow) {
+  } else if (event_type == event_type_names::kPageshow) {
     UseCounter::Count(document(), WebFeature::kDocumentPageShowRegistered);
   }
 }
@@ -1354,9 +1354,9 @@ void LocalDOMWindow::RemovedEventListener(
     it->DidRemoveEventListener(this, event_type);
   }
 
-  if (event_type == EventTypeNames::unload) {
+  if (event_type == event_type_names::kUnload) {
     UntrackUnloadEventListener(this);
-  } else if (event_type == EventTypeNames::beforeunload) {
+  } else if (event_type == event_type_names::kBeforeunload) {
     UntrackBeforeUnloadEventListener(this);
   }
 }
@@ -1380,7 +1380,7 @@ void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
 }
 
 void LocalDOMWindow::DispatchLoadEvent() {
-  Event& load_event = *Event::Create(EventTypeNames::load);
+  Event& load_event = *Event::Create(event_type_names::kLoad);
   DocumentLoader* document_loader =
       GetFrame() ? GetFrame()->Loader().GetDocumentLoader() : nullptr;
   if (document_loader &&

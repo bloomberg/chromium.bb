@@ -124,9 +124,9 @@ class MODULES_EXPORT RemotePlayback final
   // ContextLifecycleObserver implementation.
   void ContextDestroyed(ExecutionContext*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting, kConnecting);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect);
 
   void Trace(blink::Visitor*) override;
 

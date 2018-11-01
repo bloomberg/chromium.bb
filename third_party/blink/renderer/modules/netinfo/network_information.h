@@ -59,8 +59,8 @@ class NetworkInformation final
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);  // Deprecated
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange, kTypechange);  // Deprecated
 
  protected:
   // EventTarget overrides.

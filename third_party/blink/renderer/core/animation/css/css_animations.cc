@@ -1154,7 +1154,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
     MaybeDispatch(Document::kAnimationStartListener,
-                  EventTypeNames::animationstart, elapsed_time);
+                  event_type_names::kAnimationstart, elapsed_time);
   }
 
   if (current_phase == AnimationEffect::kPhaseActive &&
@@ -1168,13 +1168,14 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
         animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_ + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  EventTypeNames::animationiteration,
+                  event_type_names::kAnimationiteration,
                   elapsed_time.InSecondsF());
   }
 
   if (current_phase == AnimationEffect::kPhaseAfter &&
       previous_phase_ != AnimationEffect::kPhaseAfter) {
-    MaybeDispatch(Document::kAnimationEndListener, EventTypeNames::animationend,
+    MaybeDispatch(Document::kAnimationEndListener,
+                  event_type_names::kAnimationend,
                   animation_node.RepeatedDuration());
   }
 
@@ -1203,7 +1204,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
             : property_.GetCSSProperty().GetPropertyNameString();
     const Timing& timing = animation_node.SpecifiedTiming();
     double elapsed_time = timing.iteration_duration->InSecondsF();
-    const AtomicString& event_type = EventTypeNames::transitionend;
+    const AtomicString& event_type = event_type_names::kTransitionend;
     String pseudo_element =
         PseudoElement::PseudoElementNameForEvents(GetPseudoId());
     TransitionEvent* event = TransitionEvent::Create(

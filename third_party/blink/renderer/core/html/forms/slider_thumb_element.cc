@@ -213,7 +213,7 @@ void SliderThumbElement::StopDragging() {
 
 void SliderThumbElement::DefaultEventHandler(Event& event) {
   if (event.IsPointerEvent() &&
-      event.type() == EventTypeNames::lostpointercapture) {
+      event.type() == event_type_names::kLostpointercapture) {
     StopDragging();
     return;
   }
@@ -241,15 +241,15 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
   // We intentionally do not call event->setDefaultHandled() here because
   // MediaControlTimelineElement::defaultEventHandler() wants to handle these
   // mouse events.
-  if (event_type == EventTypeNames::mousedown && is_left_button) {
+  if (event_type == event_type_names::kMousedown && is_left_button) {
     StartDragging();
     return;
   }
-  if (event_type == EventTypeNames::mouseup && is_left_button) {
+  if (event_type == event_type_names::kMouseup && is_left_button) {
     StopDragging();
     return;
   }
-  if (event_type == EventTypeNames::mousemove) {
+  if (event_type == event_type_names::kMousemove) {
     if (in_drag_mode_)
       SetPositionFromPoint(LayoutPoint(mouse_event.AbsoluteLocation()));
     return;
@@ -370,7 +370,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   if (!input || input->IsDisabledFormControl() || !event)
     return;
 
-  if (event->type() == EventTypeNames::touchend) {
+  if (event->type() == event_type_names::kTouchend) {
     // TODO: Also do this for touchcancel?
     input->DispatchFormControlChangeEvent();
     event->SetDefaultHandled();
@@ -392,7 +392,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
     return;
 
   if (touches->length() == 1) {
-    if (event->type() == EventTypeNames::touchstart) {
+    if (event->type() == event_type_names::kTouchstart) {
       start_point_ = touches->item(0)->AbsoluteLocation();
       sliding_direction_ = kNoMove;
       touch_started_ = true;

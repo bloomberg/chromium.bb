@@ -399,7 +399,7 @@ static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
   initializer->setBubbles(false);
   initializer->setCancelable(false);
 
-  return MediaEncryptedEvent::Create(EventTypeNames::encrypted, initializer);
+  return MediaEncryptedEvent::Create(event_type_names::kEncrypted, initializer);
 }
 
 void HTMLMediaElementEncryptedMedia::Encrypted(
@@ -441,7 +441,7 @@ void HTMLMediaElementEncryptedMedia::DidBlockPlaybackWaitingForKey() {
   // 2. If the media element's waiting for key value is false, queue a task
   //    to fire a simple event named waitingforkey at the media element.
   if (!is_waiting_for_key_) {
-    Event* event = Event::Create(EventTypeNames::waitingforkey);
+    Event* event = Event::Create(event_type_names::kWaitingforkey);
     event->SetTarget(media_element_);
     media_element_->ScheduleEvent(event);
   }

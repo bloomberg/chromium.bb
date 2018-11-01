@@ -30,10 +30,10 @@ class XRCanvasInputEventListener : public EventListener {
     if (!input_provider_->ShouldProcessEvents())
       return;
 
-    if (event->type() == EventTypeNames::pointerdown) {
+    if (event->type() == event_type_names::kPointerdown) {
       input_provider_->OnPointerDown(ToPointerEvent(event));
-    } else if (event->type() == EventTypeNames::pointerup ||
-               event->type() == EventTypeNames::pointercancel) {
+    } else if (event->type() == event_type_names::kPointerup ||
+               event->type() == event_type_names::kPointercancel) {
       input_provider_->OnPointerUp(ToPointerEvent(event));
     }
   }
@@ -53,9 +53,9 @@ XRCanvasInputProvider::XRCanvasInputProvider(XRSession* session,
                                              HTMLCanvasElement* canvas)
     : session_(session), canvas_(canvas) {
   listener_ = new XRCanvasInputEventListener(this);
-  canvas->addEventListener(EventTypeNames::pointerdown, listener_);
-  canvas->addEventListener(EventTypeNames::pointerup, listener_);
-  canvas->addEventListener(EventTypeNames::pointercancel, listener_);
+  canvas->addEventListener(event_type_names::kPointerdown, listener_);
+  canvas->addEventListener(event_type_names::kPointerup, listener_);
+  canvas->addEventListener(event_type_names::kPointercancel, listener_);
 }
 
 XRCanvasInputProvider::~XRCanvasInputProvider() {
@@ -65,9 +65,9 @@ void XRCanvasInputProvider::Stop() {
   if (!listener_) {
     return;
   }
-  canvas_->removeEventListener(EventTypeNames::pointerdown, listener_);
-  canvas_->removeEventListener(EventTypeNames::pointerup, listener_);
-  canvas_->removeEventListener(EventTypeNames::pointercancel, listener_);
+  canvas_->removeEventListener(event_type_names::kPointerdown, listener_);
+  canvas_->removeEventListener(event_type_names::kPointerup, listener_);
+  canvas_->removeEventListener(event_type_names::kPointercancel, listener_);
   canvas_ = nullptr;
   listener_ = nullptr;
 }

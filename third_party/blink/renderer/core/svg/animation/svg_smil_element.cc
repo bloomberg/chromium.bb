@@ -533,13 +533,13 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
     AnimationAttributeChanged();
   } else if (name == svg_names::kOnbeginAttr) {
-    SetAttributeEventListener(EventTypeNames::beginEvent,
+    SetAttributeEventListener(event_type_names::kBeginEvent,
                               CreateAttributeEventListener(this, name, value));
   } else if (name == svg_names::kOnendAttr) {
-    SetAttributeEventListener(EventTypeNames::endEvent,
+    SetAttributeEventListener(event_type_names::kEndEvent,
                               CreateAttributeEventListener(this, name, value));
   } else if (name == svg_names::kOnrepeatAttr) {
-    SetAttributeEventListener(EventTypeNames::repeatEvent,
+    SetAttributeEventListener(event_type_names::kRepeatEvent,
                               CreateAttributeEventListener(this, name, value));
   } else if (name == svg_names::kRestartAttr) {
     if (value == "never")
@@ -1130,7 +1130,7 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
   if (animation_is_contributing) {
     if (old_active_state == kInactive ||
         restarted_interval == kDidRestartInterval) {
-      ScheduleEvent(EventTypeNames::beginEvent);
+      ScheduleEvent(event_type_names::kBeginEvent);
       StartedActiveInterval();
     }
 
@@ -1143,14 +1143,14 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
 
   if ((old_active_state == kActive && GetActiveState() != kActive) ||
       restarted_interval == kDidRestartInterval) {
-    ScheduleEvent(EventTypeNames::endEvent);
+    ScheduleEvent(event_type_names::kEndEvent);
     EndedActiveInterval();
   }
 
   // Triggering all the pending events if the animation timeline is changed.
   if (seek_to_time) {
     if (GetActiveState() == kInactive)
-      ScheduleEvent(EventTypeNames::beginEvent);
+      ScheduleEvent(event_type_names::kBeginEvent);
 
     if (repeat) {
       for (unsigned repeat_event_count = 1; repeat_event_count < repeat;
@@ -1161,7 +1161,7 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
     }
 
     if (GetActiveState() == kInactive || GetActiveState() == kFrozen)
-      ScheduleEvent(EventTypeNames::endEvent);
+      ScheduleEvent(event_type_names::kEndEvent);
   }
 
   next_progress_time_ = CalculateNextProgressTime(elapsed);
@@ -1232,7 +1232,7 @@ void SVGSMILElement::EndedActiveInterval() {
 
 void SVGSMILElement::ScheduleRepeatEvents(unsigned count) {
   repeat_event_count_list_.push_back(count);
-  ScheduleEvent(EventTypeNames::repeatEvent);
+  ScheduleEvent(event_type_names::kRepeatEvent);
   ScheduleEvent(AtomicString("repeatn"));
 }
 
@@ -1244,9 +1244,10 @@ void SVGSMILElement::ScheduleEvent(const AtomicString& event_type) {
 }
 
 void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
-  DCHECK(event_type == EventTypeNames::endEvent ||
-         event_type == EventTypeNames::beginEvent ||
-         event_type == EventTypeNames::repeatEvent || event_type == "repeatn");
+  DCHECK(event_type == event_type_names::kEndEvent ||
+         event_type == event_type_names::kBeginEvent ||
+         event_type == event_type_names::kRepeatEvent ||
+         event_type == "repeatn");
   if (event_type == "repeatn") {
     unsigned repeat_event_count = repeat_event_count_list_.front();
     repeat_event_count_list_.EraseAt(0);

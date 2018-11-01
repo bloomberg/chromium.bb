@@ -79,9 +79,9 @@ class MediaSource final : public EventTargetWithInlineData,
   void removeSourceBuffer(SourceBuffer*, ExceptionState&);
   void setDuration(double, ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen, kSourceopen);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended, kSourceended);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose, kSourceclose);
 
   const AtomicString& readyState() const { return ready_state_; }
   void endOfStream(const AtomicString& error, ExceptionState&);

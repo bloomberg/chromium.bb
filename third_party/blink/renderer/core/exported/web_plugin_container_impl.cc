@@ -823,7 +823,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
 
-  if (event.type() == EventTypeNames::mousedown)
+  if (event.type() == event_type_names::kMousedown)
     FocusPlugin();
 
   WebCursorInfo cursor_info;
@@ -846,13 +846,13 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
   DCHECK(event.IsDragEvent());
 
   WebDragStatus drag_status = kWebDragStatusUnknown;
-  if (event.type() == EventTypeNames::dragenter)
+  if (event.type() == event_type_names::kDragenter)
     drag_status = kWebDragStatusEnter;
-  else if (event.type() == EventTypeNames::dragleave)
+  else if (event.type() == event_type_names::kDragleave)
     drag_status = kWebDragStatusLeave;
-  else if (event.type() == EventTypeNames::dragover)
+  else if (event.type() == event_type_names::kDragover)
     drag_status = kWebDragStatusOver;
-  else if (event.type() == EventTypeNames::drop)
+  else if (event.type() == event_type_names::kDrop)
     drag_status = kWebDragStatusDrop;
 
   if (drag_status == kWebDragStatusUnknown)
@@ -1005,7 +1005,7 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent& event) {
       if (!event.NativeEvent())
         return;
 
-      if (event.type() == EventTypeNames::touchstart)
+      if (event.type() == event_type_names::kTouchstart)
         FocusPlugin();
 
       WebCoalescedInputEvent transformed_event =

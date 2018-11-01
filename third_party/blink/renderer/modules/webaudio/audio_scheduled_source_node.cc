@@ -252,7 +252,7 @@ void AudioScheduledSourceHandler::NotifyEnded() {
   if (!Context() || !Context()->GetExecutionContext())
     return;
   if (GetNode())
-    GetNode()->DispatchEvent(*Event::Create(EventTypeNames::ended));
+    GetNode()->DispatchEvent(*Event::Create(event_type_names::kEnded));
 }
 
 // ----------------------------------------------------------------
@@ -284,11 +284,11 @@ void AudioScheduledSourceNode::stop(double when,
 }
 
 EventListener* AudioScheduledSourceNode::onended() {
-  return GetAttributeEventListener(EventTypeNames::ended);
+  return GetAttributeEventListener(event_type_names::kEnded);
 }
 
 void AudioScheduledSourceNode::setOnended(EventListener* listener) {
-  SetAttributeEventListener(EventTypeNames::ended, listener);
+  SetAttributeEventListener(event_type_names::kEnded, listener);
 }
 
 bool AudioScheduledSourceNode::HasPendingActivity() const {

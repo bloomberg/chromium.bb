@@ -221,7 +221,7 @@ void MediaDevices::OnDevicesChanged(
   DCHECK(document);
 
   if (RuntimeEnabledFeatures::OnDeviceChangeEnabled())
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::devicechange));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kDevicechange));
 
   if (device_change_test_callback_)
     std::move(device_change_test_callback_).Run();

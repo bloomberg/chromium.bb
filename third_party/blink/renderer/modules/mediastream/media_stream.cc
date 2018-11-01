@@ -267,7 +267,7 @@ void MediaStream::addTrack(MediaStreamTrack* track,
 
   if (!active() && !track->Ended()) {
     descriptor_->SetActive(true);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::active));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kActive));
   }
 
   for (auto& observer : observers_)
@@ -304,7 +304,7 @@ void MediaStream::removeTrack(MediaStreamTrack* track,
 
   if (active() && EmptyOrOnlyEndedTracks()) {
     descriptor_->SetActive(false);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::inactive));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kInactive));
   }
 
   for (auto& observer : observers_)
@@ -370,7 +370,7 @@ void MediaStream::StreamEnded() {
 
   if (active()) {
     descriptor_->SetActive(false);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::inactive));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kInactive));
   }
 }
 
@@ -378,9 +378,9 @@ bool MediaStream::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
     const AddEventListenerOptionsResolved* options) {
-  if (event_type == EventTypeNames::active) {
+  if (event_type == event_type_names::kActive) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kMediaStreamOnActive);
-  } else if (event_type == EventTypeNames::inactive) {
+  } else if (event_type == event_type_names::kInactive) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kMediaStreamOnInactive);
   }
@@ -435,11 +435,11 @@ void MediaStream::RemoveTrackByComponentAndFireEvents(
   track->UnregisterMediaStream(this);
   tracks->EraseAt(index);
   ScheduleDispatchEvent(
-      MediaStreamTrackEvent::Create(EventTypeNames::removetrack, track));
+      MediaStreamTrackEvent::Create(event_type_names::kRemovetrack, track));
 
   if (active() && EmptyOrOnlyEndedTracks()) {
     descriptor_->SetActive(false);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::inactive));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kInactive));
   }
 }
 
@@ -457,11 +457,11 @@ void MediaStream::AddTrackAndFireEvents(MediaStreamTrack* track) {
   descriptor_->AddComponent(track->Component());
 
   ScheduleDispatchEvent(
-      MediaStreamTrackEvent::Create(EventTypeNames::addtrack, track));
+      MediaStreamTrackEvent::Create(event_type_names::kAddtrack, track));
 
   if (!active() && !track->Ended()) {
     descriptor_->SetActive(true);
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::active));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kActive));
   }
 }
 

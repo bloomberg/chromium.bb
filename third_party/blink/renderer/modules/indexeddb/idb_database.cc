@@ -439,7 +439,7 @@ void IDBDatabase::ForceClose() {
   for (const auto& it : transactions_)
     it.value->abort(IGNORE_EXCEPTION_FOR_TESTING);
   this->close();
-  EnqueueEvent(Event::Create(EventTypeNames::close));
+  EnqueueEvent(Event::Create(event_type_names::kClose));
 }
 
 void IDBDatabase::close() {
@@ -493,7 +493,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
     new_version_nullable = new_version;
   }
   EnqueueEvent(IDBVersionChangeEvent::Create(
-      EventTypeNames::versionchange, old_version, new_version_nullable));
+      event_type_names::kVersionchange, old_version, new_version_nullable));
 }
 
 void IDBDatabase::EnqueueEvent(Event* event) {
@@ -506,12 +506,12 @@ DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
   if (!GetExecutionContext())
     return DispatchEventResult::kCanceledBeforeDispatch;
-  DCHECK(event.type() == EventTypeNames::versionchange ||
-         event.type() == EventTypeNames::close);
+  DCHECK(event.type() == event_type_names::kVersionchange ||
+         event.type() == event_type_names::kClose);
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);
-  if (event.type() == EventTypeNames::versionchange && !close_pending_ &&
+  if (event.type() == event_type_names::kVersionchange && !close_pending_ &&
       backend_)
     backend_->VersionChangeIgnored();
   return dispatch_result;

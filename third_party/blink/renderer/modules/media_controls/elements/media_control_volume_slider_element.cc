@@ -73,30 +73,30 @@ void MediaControlVolumeSliderElement::DefaultEventHandler(Event& event) {
     MaybeRecordInteracted();
   }
 
-  if (event.type() == EventTypeNames::pointerdown) {
+  if (event.type() == event_type_names::kPointerdown) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.VolumeChangeBegin"));
   }
 
-  if (event.type() == EventTypeNames::pointerup) {
+  if (event.type() == event_type_names::kPointerup) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.VolumeChangeEnd"));
   }
 
-  if (event.type() == EventTypeNames::input) {
+  if (event.type() == event_type_names::kInput) {
     double volume = value().ToDouble();
     MediaElement().setVolume(volume);
     MediaElement().setMuted(false);
     SetVolumeInternal(volume);
   }
 
-  if (event.type() == EventTypeNames::mouseover ||
-      event.type() == EventTypeNames::focus) {
+  if (event.type() == event_type_names::kMouseover ||
+      event.type() == event_type_names::kFocus) {
     GetMediaControls().OpenVolumeSliderIfNecessary();
   }
 
-  if (event.type() == EventTypeNames::mouseout ||
-      event.type() == EventTypeNames::blur) {
+  if (event.type() == event_type_names::kMouseout ||
+      event.type() == event_type_names::kBlur) {
     GetMediaControls().CloseVolumeSliderIfNecessary();
   }
 }

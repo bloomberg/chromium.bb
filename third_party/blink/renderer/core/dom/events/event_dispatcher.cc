@@ -95,18 +95,18 @@ void EventDispatcher::DispatchSimulatedClick(
   nodes_dispatching_simulated_clicks->insert(&node);
 
   if (mouse_event_options == kSendMouseOverUpDownEvents)
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseover,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMouseover,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
 
   if (mouse_event_options != kSendNoEvents) {
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mousedown,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMousedown,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
     node.SetActive(true);
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseup,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMouseup,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
@@ -116,7 +116,7 @@ void EventDispatcher::DispatchSimulatedClick(
   node.SetActive(false);
 
   // always send click
-  EventDispatcher(node, *MouseEvent::Create(EventTypeNames::click,
+  EventDispatcher(node, *MouseEvent::Create(event_type_names::kClick,
                                             node.GetDocument().domWindow(),
                                             underlying_event, creation_scope))
       .Dispatch();
@@ -155,8 +155,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
   //
   // We need to include non-standard textInput event for HTMLInputElement.
   const bool is_activation_event =
-      (event_->IsMouseEvent() && event_->type() == EventTypeNames::click) ||
-      event_->type() == EventTypeNames::textInput;
+      (event_->IsMouseEvent() && event_->type() == event_type_names::kClick) ||
+      event_->type() == event_type_names::kTextInput;
 
   // 7. Let activationTarget be target, if isActivationEvent is true and target
   // has activation behavior, and null otherwise.
@@ -302,7 +302,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   event_->SetCurrentTarget(nullptr);
 
   bool is_click = event_->IsMouseEvent() &&
-                  ToMouseEvent(*event_).type() == EventTypeNames::click;
+                  ToMouseEvent(*event_).type() == event_type_names::kClick;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
     // safe if event_->target()->ToNode() returns null.
@@ -331,7 +331,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // fastclick.js seems to generate these. crbug.com/642698
   // TODO(dtapuska): Change this to a target SDK quirk crbug.com/643705
   if (!is_trusted_or_click && event_->IsMouseEvent() &&
-      event_->type() == EventTypeNames::mousedown &&
+      event_->type() == event_type_names::kMousedown &&
       IsHTMLSelectElement(*node_)) {
     if (Settings* settings = node_->GetDocument().GetSettings()) {
       is_trusted_or_click = settings->GetWideViewportQuirkEnabled();
@@ -367,7 +367,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // it to open. This measures a possible breakage of not allowing untrusted
   // events to open select boxes.
   if (!event_->isTrusted() && event_->IsMouseEvent() &&
-      event_->type() == EventTypeNames::mousedown &&
+      event_->type() == event_type_names::kMousedown &&
       IsHTMLSelectElement(*node_)) {
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kUntrustedMouseDownEventDispatchedToSelect);

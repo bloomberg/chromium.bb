@@ -312,9 +312,9 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
     } const listeners_cleaner(&element);
 
     MockEventListener* event_handler = MockEventListener::Create();
-    element.addEventListener(
-        double_click_event ? EventTypeNames::dblclick : EventTypeNames::click,
-        event_handler);
+    element.addEventListener(double_click_event ? event_type_names::kDblclick
+                                                : event_type_names::kClick,
+                             event_handler);
 
     testing::InSequence s;
     EXPECT_CALL(*event_handler, handleEvent(_, _)).Times(1);

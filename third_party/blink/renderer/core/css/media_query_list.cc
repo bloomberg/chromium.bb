@@ -56,14 +56,14 @@ void MediaQueryList::addDeprecatedListener(EventListener* listener) {
   if (!listener)
     return;
 
-  addEventListener(EventTypeNames::change, listener, false);
+  addEventListener(event_type_names::kChange, listener, false);
 }
 
 void MediaQueryList::removeDeprecatedListener(EventListener* listener) {
   if (!listener)
     return;
 
-  removeEventListener(EventTypeNames::change, listener, false);
+  removeEventListener(event_type_names::kChange, listener, false);
 }
 
 void MediaQueryList::AddListener(MediaQueryListListener* listener) {
@@ -82,7 +82,7 @@ void MediaQueryList::RemoveListener(MediaQueryListListener* listener) {
 
 bool MediaQueryList::HasPendingActivity() const {
   return GetExecutionContext() &&
-         (listeners_.size() || HasEventListeners(EventTypeNames::change));
+         (listeners_.size() || HasEventListeners(event_type_names::kChange));
 }
 
 void MediaQueryList::ContextDestroyed(ExecutionContext*) {
@@ -98,7 +98,7 @@ bool MediaQueryList::MediaFeaturesChanged(
   for (const auto& listener : listeners_) {
     listeners_to_notify->push_back(listener);
   }
-  return HasEventListeners(EventTypeNames::change);
+  return HasEventListeners(event_type_names::kChange);
 }
 
 bool MediaQueryList::UpdateMatches() {

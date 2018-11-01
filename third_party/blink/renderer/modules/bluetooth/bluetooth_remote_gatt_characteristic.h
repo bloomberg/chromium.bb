@@ -97,7 +97,8 @@ class BluetoothRemoteGATTCharacteristic final
   ScriptPromise startNotifications(ScriptState*);
   ScriptPromise stopNotifications(ScriptState*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(characteristicvaluechanged);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(characteristicvaluechanged,
+                                  kCharacteristicvaluechanged);
 
  protected:
   // EventTarget overrides.

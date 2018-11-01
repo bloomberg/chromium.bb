@@ -131,7 +131,7 @@ void HTMLDialogElement::ForceLayoutForCentering() {
 }
 
 void HTMLDialogElement::ScheduleCloseEvent() {
-  Event* event = Event::Create(EventTypeNames::close);
+  Event* event = Event::Create(event_type_names::kClose);
   event->SetTarget(this);
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
@@ -209,7 +209,7 @@ bool HTMLDialogElement::IsPresentationAttribute(
 }
 
 void HTMLDialogElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::cancel) {
+  if (event.type() == event_type_names::kCancel) {
     close();
     event.SetDefaultHandled();
     return;

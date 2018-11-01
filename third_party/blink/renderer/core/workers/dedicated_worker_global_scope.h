@@ -79,8 +79,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                    const PostMessageOptions*,
                    ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror);
 
   void Trace(blink::Visitor*) override;
 

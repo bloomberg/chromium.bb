@@ -448,10 +448,10 @@ void InternalPopupMenu::SetValueAndClosePopup(int num_value,
     Element* owner = &OwnerElement();
     if (LocalFrame* frame = owner->GetDocument().GetFrame()) {
       frame->GetEventHandler().HandleTargetedMouseEvent(
-          owner, event, EventTypeNames::mouseup, Vector<WebMouseEvent>(),
+          owner, event, event_type_names::kMouseup, Vector<WebMouseEvent>(),
           Vector<WebMouseEvent>());
       frame->GetEventHandler().HandleTargetedMouseEvent(
-          owner, event, EventTypeNames::click, Vector<WebMouseEvent>(),
+          owner, event, event_type_names::kClick, Vector<WebMouseEvent>(),
           Vector<WebMouseEvent>());
     }
   }

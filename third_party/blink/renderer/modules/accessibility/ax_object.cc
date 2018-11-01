@@ -2893,7 +2893,8 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 //
 
 bool AXObject::RequestDecrementAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibledecrement);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessibledecrement);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2901,7 +2902,7 @@ bool AXObject::RequestDecrementAction() {
 }
 
 bool AXObject::RequestClickAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
+  Event* event = Event::CreateCancelable(event_type_names::kAccessibleclick);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2933,7 +2934,7 @@ bool AXObject::OnNativeClickAction() {
 }
 
 bool AXObject::RequestFocusAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessiblefocus);
+  Event* event = Event::CreateCancelable(event_type_names::kAccessiblefocus);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2941,7 +2942,8 @@ bool AXObject::RequestFocusAction() {
 }
 
 bool AXObject::RequestIncrementAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibleincrement);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessibleincrement);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2954,7 +2956,7 @@ bool AXObject::RequestScrollToGlobalPointAction(const IntPoint& point) {
 
 bool AXObject::RequestScrollToMakeVisibleAction() {
   Event* event =
-      Event::CreateCancelable(EventTypeNames::accessiblescrollintoview);
+      Event::CreateCancelable(event_type_names::kAccessiblescrollintoview);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2983,7 +2985,8 @@ bool AXObject::RequestSetValueAction(const String& value) {
 }
 
 bool AXObject::RequestShowContextMenuAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessiblecontextmenu);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessiblecontextmenu);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 

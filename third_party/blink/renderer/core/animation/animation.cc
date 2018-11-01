@@ -718,7 +718,7 @@ bool Animation::HasPendingActivity() const {
       finished_promise_->GetState() == ScriptPromisePropertyBase::kPending;
 
   return pending_finished_event_ || has_pending_promise ||
-         (!finished_ && HasEventListeners(EventTypeNames::finish));
+         (!finished_ && HasEventListeners(event_type_names::kFinish));
 }
 
 void Animation::ContextDestroyed(ExecutionContext*) {
@@ -971,7 +971,7 @@ bool Animation::Update(TimingUpdateReason reason) {
   if ((idle || Limited()) && !finished_) {
     if (reason == kTimingUpdateForAnimationFrame && (idle || start_time_)) {
       if (idle) {
-        const AtomicString& event_type = EventTypeNames::cancel;
+        const AtomicString& event_type = event_type_names::kCancel;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
@@ -983,7 +983,7 @@ bool Animation::Update(TimingUpdateReason reason) {
               pending_cancelled_event_);
         }
       } else {
-        const AtomicString& event_type = EventTypeNames::finish;
+        const AtomicString& event_type = event_type_names::kFinish;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
           pending_finished_event_ =
@@ -1231,7 +1231,7 @@ void Animation::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::finish)
+  if (event_type == event_type_names::kFinish)
     UseCounter::Count(GetExecutionContext(), WebFeature::kAnimationFinishEvent);
 }
 

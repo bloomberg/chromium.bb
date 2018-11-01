@@ -51,7 +51,7 @@ AudioProcessingEvent::AudioProcessingEvent() = default;
 AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* input_buffer,
                                            AudioBuffer* output_buffer,
                                            double playback_time)
-    : Event(EventTypeNames::audioprocess, Bubbles::kYes, Cancelable::kNo),
+    : Event(event_type_names::kAudioprocess, Bubbles::kYes, Cancelable::kNo),
       input_buffer_(input_buffer),
       output_buffer_(output_buffer),
       playback_time_(playback_time) {}

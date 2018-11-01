@@ -343,8 +343,8 @@ void FileReader::abort() {
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::abort);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kAbort);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
@@ -382,7 +382,7 @@ void FileReader::Terminate() {
 
 void FileReader::DidStartLoading() {
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
-  FireEvent(EventTypeNames::loadstart);
+  FireEvent(event_type_names::kLoadstart);
 }
 
 void FileReader::DidReceiveData() {
@@ -393,7 +393,7 @@ void FileReader::DidReceiveData() {
   } else if (now - last_progress_notification_time_ms_ >
              kProgressNotificationIntervalMS) {
     base::AutoReset<bool> firing_events(&still_firing_events_, true);
-    FireEvent(EventTypeNames::progress);
+    FireEvent(event_type_names::kProgress);
     last_progress_notification_time_ms_ = now;
   }
 }
@@ -415,7 +415,7 @@ void FileReader::DidFinishLoading() {
   // if we're still loading (therefore we need abort process) or not.
   loading_state_ = kLoadingStateNone;
 
-  FireEvent(EventTypeNames::progress);
+  FireEvent(event_type_names::kProgress);
 
   DCHECK_NE(kDone, state_);
   state_ = kDone;
@@ -424,8 +424,8 @@ void FileReader::DidFinishLoading() {
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::load);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kLoad);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
@@ -449,8 +449,8 @@ void FileReader::DidFail(FileError::ErrorCode error_code) {
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::error);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kError);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
