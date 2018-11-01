@@ -1103,7 +1103,8 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
           recipe_cmd = [
             self.iossim_path, '-d', self.platform, '-s',
             self.version, '-t', 'AutofillAutomationTestCase', '-c',
-            '-autofillautomation={}'.format(recipePath),
+            '--enable-features=AutofillShowTypePredictions {}={}'.format(
+              '-autofillautomation', recipePath),
             '-u', udid,
           ]
           for env_var in self.env_vars:
