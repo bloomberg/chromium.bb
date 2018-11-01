@@ -6,9 +6,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -77,6 +79,17 @@ class PipPositionerTest : public AshTestBase {
     Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
   }
 
+  gfx::Rect CallAvoidObstacles(const display::Display& display,
+                               gfx::Rect bounds) {
+    return PipPositioner::AvoidObstacles(display, bounds);
+  }
+
+  gfx::Rect CallAvoidObstaclesInternal(const gfx::Rect& work_area,
+                                       const std::vector<gfx::Rect>& rects,
+                                       const gfx::Rect& bounds) {
+    return PipPositioner::AvoidObstaclesInternal(work_area, rects, bounds);
+  }
+
  protected:
   aura::Window* window() { return window_; }
   wm::WindowState* window_state() { return wm::GetWindowState(window_); }
@@ -96,7 +109,7 @@ TEST_F(PipPositionerTest, PipMovementAreaIsInset) {
 
 TEST_F(PipPositionerTest, PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->ShowKeyboard(true /* lock */);
+  keyboard_controller->ShowKeyboard(/*lock=*/true);
   keyboard_controller->NotifyKeyboardWindowLoaded();
 
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
@@ -282,6 +295,294 @@ TEST_F(PipPositionerTest,
   // Expect that the PIP window is put back to where it was before.
   EXPECT_EQ(gfx::Rect(292, 200, 100, 100),
             PipPositioner::GetPositionAfterMovementAreaChange(window_state()));
+}
+
+TEST_F(PipPositionerTest,
+       AvoidObstaclesDoesNotMoveBoundsIfThereIsNoIntersection) {
+  const gfx::Rect area(0, 0, 400, 400);
+
+  // Check no collision with Rect.
+  EXPECT_EQ(gfx::Rect(200, 0, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(0, 0, 100, 100)},
+                                       gfx::Rect(200, 0, 100, 100)));
+
+  // Check no collision with edges of the work area. Provide an obstacle so
+  // it has something to stick to, to distinguish failure from correctly
+  // not moving the PIP bounds.
+  // Check corners:
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(300, 300, 1, 1)},
+                                       gfx::Rect(0, 0, 100, 100)));
+  EXPECT_EQ(gfx::Rect(300, 0, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(300, 0, 100, 100)));
+  EXPECT_EQ(gfx::Rect(0, 300, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(0, 300, 100, 100)));
+  EXPECT_EQ(gfx::Rect(300, 300, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(300, 300, 100, 100)));
+
+  // Check edges:
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(100, 0, 100, 100)));
+  EXPECT_EQ(gfx::Rect(0, 100, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(0, 100, 100, 100)));
+  EXPECT_EQ(gfx::Rect(300, 100, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(300, 100, 100, 100)));
+  EXPECT_EQ(gfx::Rect(100, 300, 100, 100),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(100, 300, 100, 100)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesOffByOneCases) {
+  const gfx::Rect area(0, 0, 400, 400);
+
+  // Test 1x1 PIP window intersecting a 1x1 obstacle.
+  EXPECT_EQ(gfx::Rect(9, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(10, 10, 1, 1)));
+  // Test 1x1 PIP window adjacent to a 1x1 obstacle.
+  EXPECT_EQ(gfx::Rect(9, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(9, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(11, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(11, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(10, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(10, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(10, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(10, 11, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(9, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(11, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(11, 11, 1, 1)));
+  EXPECT_EQ(gfx::Rect(11, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(11, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 1, 1)},
+                                       gfx::Rect(9, 11, 1, 1)));
+
+  // Test 1x1 PIP window intersecting a 2x2 obstacle.
+  EXPECT_EQ(gfx::Rect(9, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(10, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(10, 11, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 11, 1, 1)));
+
+  // Test 1x1 PIP window adjacent to a 2x2 obstacle.
+  EXPECT_EQ(gfx::Rect(9, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 11, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 12, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 12, 1, 1)));
+  EXPECT_EQ(gfx::Rect(10, 12, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(10, 12, 1, 1)));
+  EXPECT_EQ(gfx::Rect(11, 12, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 12, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 12, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(12, 12, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 11, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(12, 11, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 10, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(12, 10, 1, 1)));
+  EXPECT_EQ(gfx::Rect(12, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(12, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(11, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(10, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(10, 9, 1, 1)));
+  EXPECT_EQ(gfx::Rect(9, 9, 1, 1),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 9, 1, 1)));
+
+  // Test 2x2 PIP window intersecting a 2x2 obstacle.
+  EXPECT_EQ(gfx::Rect(8, 9, 2, 2),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 9, 2, 2)));
+  EXPECT_EQ(gfx::Rect(12, 9, 2, 2),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 9, 2, 2)));
+  EXPECT_EQ(gfx::Rect(12, 11, 2, 2),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 11, 2, 2)));
+  EXPECT_EQ(gfx::Rect(8, 11, 2, 2),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 11, 2, 2)));
+
+  // Test 3x3 PIP window intersecting a 2x2 obstacle.
+  EXPECT_EQ(gfx::Rect(7, 8, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(8, 8, 3, 3)));
+  EXPECT_EQ(gfx::Rect(12, 8, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 8, 3, 3)));
+  EXPECT_EQ(gfx::Rect(12, 11, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(11, 11, 3, 3)));
+  EXPECT_EQ(gfx::Rect(7, 11, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(8, 11, 3, 3)));
+
+  // Test 3x3 PIP window adjacent to a 2x2 obstacle.
+  EXPECT_EQ(gfx::Rect(7, 10, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(7, 10, 3, 3)));
+  EXPECT_EQ(gfx::Rect(12, 10, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(12, 10, 3, 3)));
+  EXPECT_EQ(gfx::Rect(9, 7, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 7, 3, 3)));
+  EXPECT_EQ(gfx::Rect(9, 12, 3, 3),
+            CallAvoidObstaclesInternal(area, {gfx::Rect(10, 10, 2, 2)},
+                                       gfx::Rect(9, 12, 3, 3)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesNestedObstacle) {
+  const gfx::Rect area(0, 0, 400, 400);
+  EXPECT_EQ(gfx::Rect(9, 16, 1, 1),
+            CallAvoidObstaclesInternal(
+                area, {gfx::Rect(15, 15, 5, 5), gfx::Rect(10, 10, 15, 15)},
+                gfx::Rect(16, 16, 1, 1)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesAvoidsTwoObstacles) {
+  const gfx::Rect area(0, 0, 400, 400);
+  const std::vector<gfx::Rect> obstacles = {gfx::Rect(4, 1, 4, 5),
+                                            gfx::Rect(2, 4, 4, 5)};
+
+  // Test a 2x2 PIP window in the intersection between the obstacles.
+  EXPECT_EQ(gfx::Rect(2, 2, 2, 2),
+            CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(4, 4, 2, 2)));
+  // Test a 2x2 PIP window in the lower obstacle.
+  EXPECT_EQ(gfx::Rect(0, 7, 2, 2),
+            CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(2, 7, 2, 2)));
+  // Test a 2x2 PIP window in the upper obstacle.
+  EXPECT_EQ(gfx::Rect(2, 1, 2, 2),
+            CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(4, 1, 2, 2)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesAvoidsThreeObstacles) {
+  const gfx::Rect area(0, 0, 400, 400);
+  const std::vector<gfx::Rect> obstacles = {
+      gfx::Rect(4, 1, 4, 5), gfx::Rect(2, 4, 4, 5), gfx::Rect(2, 1, 3, 4)};
+
+  // Test a 2x2 PIP window intersecting the top two obstacles.
+  EXPECT_EQ(gfx::Rect(0, 2, 2, 2),
+            CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(3, 2, 2, 2)));
+  // Test a 2x2 PIP window intersecting all three obstacles.
+  EXPECT_EQ(gfx::Rect(0, 3, 2, 2),
+            CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(3, 3, 2, 2)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesDoesNotPositionBoundsOutsideOfPipArea) {
+  // Position the bounds such that moving it the least distance to stop
+  // intersecting |obstacle| would put it outside of |area|. It should go
+  // instead to the position of second least distance, which would be below
+  // |obstacle|.
+  const gfx::Rect area(0, 0, 400, 400);
+  const gfx::Rect obstacle(50, 0, 100, 100);
+  const gfx::Rect bounds(25, 0, 100, 100);
+  EXPECT_EQ(gfx::Rect(25, 100, 100, 100),
+            CallAvoidObstaclesInternal(area, {obstacle}, bounds));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesPositionsBoundsWithLeastDisplacement) {
+  const gfx::Rect area(0, 0, 400, 400);
+  const gfx::Rect obstacle(200, 200, 100, 100);
+
+  // Intersecting slightly on the left.
+  EXPECT_EQ(gfx::Rect(100, 200, 100, 100),
+            CallAvoidObstaclesInternal(area, {obstacle},
+                                       gfx::Rect(150, 200, 100, 100)));
+
+  // Intersecting slightly on the right.
+  EXPECT_EQ(gfx::Rect(300, 200, 100, 100),
+            CallAvoidObstaclesInternal(area, {obstacle},
+                                       gfx::Rect(250, 200, 100, 100)));
+
+  // Intersecting slightly on the bottom.
+  EXPECT_EQ(gfx::Rect(200, 300, 100, 100),
+            CallAvoidObstaclesInternal(area, {obstacle},
+                                       gfx::Rect(200, 250, 100, 100)));
+
+  // Intersecting slightly on the top.
+  EXPECT_EQ(gfx::Rect(200, 100, 100, 100),
+            CallAvoidObstaclesInternal(area, {obstacle},
+                                       gfx::Rect(200, 150, 100, 100)));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesAvoidsUnifiedSystemTray) {
+  UpdateDisplay("1000x1000");
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble(/*show_by_click=*/false);
+
+  auto display = window_state()->GetDisplay();
+  gfx::Rect area = PipPositioner::GetMovementArea(display);
+  gfx::Rect bubble_bounds = unified_system_tray->GetBubbleBoundsInScreen();
+  gfx::Rect bounds = gfx::Rect(bubble_bounds.x(), bubble_bounds.y(), 100, 100);
+  gfx::Rect moved_bounds = CallAvoidObstacles(display, bounds);
+
+  // Expect that the returned bounds don't intersect the unified system tray
+  // but also don't leave the PIP movement area.
+  EXPECT_FALSE(moved_bounds.Intersects(bubble_bounds));
+  EXPECT_TRUE(area.Contains(moved_bounds));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesAvoidsFloatingKeyboard) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
+                                        base::nullopt, base::DoNothing());
+  keyboard_controller->ShowKeyboard(/*lock=*/true);
+  keyboard_controller->NotifyKeyboardWindowLoaded();
+
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(200, 200, 100, 100));
+
+  auto display = window_state()->GetDisplay();
+  gfx::Rect area = PipPositioner::GetMovementArea(display);
+  gfx::Rect moved_bounds =
+      CallAvoidObstacles(display, gfx::Rect(150, 200, 100, 100));
+
+  // Expect that the returned bounds don't intersect the floating keyboard
+  // but also don't leave the PIP movement area.
+  EXPECT_FALSE(moved_bounds.Intersects(keyboard_window->GetBoundsInScreen()));
+  EXPECT_TRUE(area.Contains(moved_bounds));
+}
+
+TEST_F(PipPositionerTest,
+       AvoidObstaclesDoesNotChangeBoundsIfThereIsNoCollision) {
+  auto display = window_state()->GetDisplay();
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
+            CallAvoidObstacles(display, gfx::Rect(100, 100, 100, 100)));
 }
 
 }  // namespace ash
