@@ -164,14 +164,11 @@ TEST(ScopedGenericTest, Receive) {
 
   EXPECT_EQ(456, a->get());
 
-#if !defined(OS_IOS)
-  // Death tests are unsupported on iOS.
   {
     ScopedInt::Receiver r(*a);
-    EXPECT_DEATH(a.reset(), "destroyed with active receiver");
-    EXPECT_DEATH(ScopedInt::Receiver(*a).get(), "existing Receiver");
+    EXPECT_DEATH_IF_SUPPORTED(a.reset(), "");
+    EXPECT_DEATH_IF_SUPPORTED(ScopedInt::Receiver(*a).get(), "");
   }
-#endif
 }
 
 namespace {
