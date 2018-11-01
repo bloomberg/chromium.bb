@@ -91,6 +91,7 @@ class TestWebState : public WebState {
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
   void SetJSInjectionReceiver(CRWJSInjectionReceiver* injection_receiver);
+  void SetTitle(const base::string16& title);
   void SetContentIsHTML(bool content_is_html);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);

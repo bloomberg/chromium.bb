@@ -93,6 +93,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/download",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/snapshots:test_utils",

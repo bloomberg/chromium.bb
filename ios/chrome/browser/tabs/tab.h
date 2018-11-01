@@ -75,9 +75,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
-// The current title of the tab.
-@property(nonatomic, readonly) NSString* title;
-
 // ID associated with this tab.
 @property(nonatomic, readonly) NSString* tabId;
 

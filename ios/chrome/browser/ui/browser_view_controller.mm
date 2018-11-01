@@ -104,6 +104,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
@@ -4542,7 +4543,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
   Tab* currentTab = [_model currentTab];
   [_printController printView:[currentTab viewForPrinting]
-                    withTitle:[currentTab title]
+                    withTitle:tab_util::GetTabTitle(currentTab.webState)
                viewController:self];
 }
 

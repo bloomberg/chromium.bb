@@ -205,6 +205,10 @@ void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
 }
 
+void TestWebState::SetTitle(const base::string16& title) {
+  title_ = title;
+}
+
 const base::string16& TestWebState::GetTitle() const {
   return title_;
 }

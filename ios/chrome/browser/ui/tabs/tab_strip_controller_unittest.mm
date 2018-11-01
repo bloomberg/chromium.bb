@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -38,15 +40,12 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, copy) NSString* title;
-
 @end
 
 @implementation TabStripControllerTestTab {
   web::WebState* _webState;
 }
 
-@synthesize title = _title;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   if ((self = [super init])) {
@@ -71,6 +70,7 @@
 @implementation TabStripControllerTestTabModel {
   FakeWebStateListDelegate _webStateListDelegate;
   std::unique_ptr<WebStateList> _webStateList;
+  std::unique_ptr<web::NavigationItem> _visibleNavigationItem;
 }
 
 @synthesize browserState = _browserState;
@@ -78,6 +78,7 @@
 - (instancetype)init {
   if ((self = [super init])) {
     _webStateList = std::make_unique<WebStateList>(&_webStateListDelegate);
+    _visibleNavigationItem = web::NavigationItem::Create();
   }
   return self;
 }
@@ -90,12 +91,12 @@
 
 - (TabStripControllerTestTab*)addTabForTestingWithTitle:(NSString*)title {
   auto testWebState = std::make_unique<web::TestWebState>();
-  testWebState->SetNavigationManager(
-      std::make_unique<web::TestNavigationManager>());
-
+  testWebState->SetTitle(base::SysNSStringToUTF16(title));
+  auto testNavigationManager = std::make_unique<web::TestNavigationManager>();
+  testNavigationManager->SetVisibleItem(_visibleNavigationItem.get());
+  testWebState->SetNavigationManager(std::move(testNavigationManager));
   TabStripControllerTestTab* tab =
       [[TabStripControllerTestTab alloc] initWithWebState:testWebState.get()];
-  tab.title = title;
 
   LegacyTabHelper::CreateForWebStateForTesting(testWebState.get(),
                                                static_cast<Tab*>(tab));
