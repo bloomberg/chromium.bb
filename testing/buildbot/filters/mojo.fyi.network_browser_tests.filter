@@ -73,19 +73,6 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# https://crbug.com/778793
-# Started failing in r514649.
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
-# Added in r519342.
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledButNoTransformDirective
--PreviewsNoScriptBrowserTest.NoScriptPreviewsRecordsOptOut
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelisted
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelistedNoTransform
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttp
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsNoWhitelisted
-
 # https://crbug.com/827582
 # Editing response cookies through headers with webRequest is not supported with
 # the network service.
