@@ -715,7 +715,7 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',)
   ) | set('%s@developer.gserviceaccount.com' % s for s in ('3su6n15k.default',)
   ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
-          for s in ('v8-ci-autoroll-builder',)
+          for s in ('v8-ci-autoroll-builder', 'wpt-autoroller',)
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll',)
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
