@@ -67,10 +67,12 @@ class OmniboxTextView : public views::View {
   // parts.
   void ReapplyStyling();
 
- private:
+  // Creates a platform-approriate RenderText, sets its format to that of
+  // a suggestion and inserts (renders) the provided |text|.
   std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
+ private:
   // Adds text from an answer field to the render text using appropriate style.
   // A prefix (such as separating space) may also be prepended to field text.
   void AppendText(const SuggestionAnswer::TextField& field,
