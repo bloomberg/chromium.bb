@@ -260,15 +260,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onRequestPaymentInformation(boolean requestShipping, boolean requestPayerName,
-            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType, String title) {
+            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType, String title,
+            String[] supportedBasicCardNetworks) {
         PaymentOptions paymentOtions = new PaymentOptions();
         paymentOtions.requestShipping = requestShipping;
         paymentOtions.requestPayerName = requestPayerName;
         paymentOtions.requestPayerPhone = requestPayerPhone;
         paymentOtions.requestPayerEmail = requestPayerEmail;
         paymentOtions.shippingType = shippingType;
-        mAutofillAssistantPaymentRequest =
-                new AutofillAssistantPaymentRequest(mWebContents, paymentOtions, title);
+        mAutofillAssistantPaymentRequest = new AutofillAssistantPaymentRequest(
+                mWebContents, paymentOtions, title, supportedBasicCardNetworks);
 
         mUiDelegateHolder.performUiOperation(
                 uiDelegate -> mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {

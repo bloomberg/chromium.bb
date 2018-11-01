@@ -407,6 +407,9 @@ message GetPaymentInformationProto {
   optional string shipping_address_name = 3;
   // When 'true' will ask the user for the credit card.
   optional bool ask_for_payment = 4;
+  // If non-empty, the UI will filter the available basic-card networks
+  // accordingly (e.g., only `visa' and `mastercard').
+  repeated string supported_basic_card_networks = 6;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

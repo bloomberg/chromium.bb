@@ -32,6 +32,7 @@ import org.chromium.payments.mojom.PaymentOptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,12 +89,15 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
     /**
      * Constructor of AutofillAssistantPaymentRequest.
      *
-     * @webContents    The web contents of the payment request associated with.
-     * @paymentOptions The options to request payment information.
-     * @title          The title to display in the payment request.
+     * @webContents                The web contents of the payment request associated with.
+     * @paymentOptions             The options to request payment information.
+     * @title                      The title to display in the payment request.
+     * @supportedBasicCardNetworks Optional array of supported basic card networks (see {@link
+     *                             BasicCardUtils}). If non-empty, only the specified card networks
+     *                             will be available for the basic-card payment method.
      */
-    public AutofillAssistantPaymentRequest(
-            WebContents webContents, PaymentOptions paymentOptions, String title) {
+    public AutofillAssistantPaymentRequest(WebContents webContents, PaymentOptions paymentOptions,
+            String title, String[] supportedBasicCardNetworks) {
         mWebContents = webContents;
         mPaymentOptions = paymentOptions;
         mTitle = title;
@@ -105,6 +109,22 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
         methodData.supportedMethod = BASIC_CARD_PAYMENT_METHOD;
+
+        // Apply basic-card filter if specified
+        if (supportedBasicCardNetworks.length > 0) {
+            ArrayList<Integer> filteredNetworks = new ArrayList<>();
+            Map<String, Integer> networks = getNetworkIdentifiers();
+            for (int i = 0; i < supportedBasicCardNetworks.length; i++) {
+                assert networks.containsKey(supportedBasicCardNetworks[i]);
+                filteredNetworks.add(networks.get(supportedBasicCardNetworks[i]));
+            }
+
+            methodData.supportedNetworks = new int[filteredNetworks.size()];
+            for (int i = 0; i < filteredNetworks.size(); i++) {
+                methodData.supportedNetworks[i] = filteredNetworks.get(i);
+            }
+        }
+
         mMethodData = new ArrayMap<>();
         mMethodData.put(BASIC_CARD_PAYMENT_METHOD, methodData);
         mCardEditor.addAcceptedPaymentMethodIfRecognized(methodData);
@@ -443,6 +463,18 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
                         PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
             }
         });
+    }
+
+    /**
+     * @return a complete map of string identifiers to BasicCardNetworks.
+     */
+    private static Map<String, Integer> getNetworkIdentifiers() {
+        Map<Integer, String> networksByInt = BasicCardUtils.getNetworks();
+        Map<String, Integer> networksByString = new HashMap<>();
+        for (Map.Entry<Integer, String> entry : networksByInt.entrySet()) {
+            networksByString.put(entry.getValue(), entry.getKey());
+        }
+        return networksByString;
     }
 
     @Override

@@ -87,12 +87,13 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback));
 
-  MOCK_METHOD3(
+  MOCK_METHOD4(
       GetPaymentInformation,
       void(payments::mojom::PaymentOptionsPtr payment_options,
            base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
                callback,
-           const std::string& title));
+           const std::string& title,
+           const std::vector<std::string>& supported_basic_card_networks));
 
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,

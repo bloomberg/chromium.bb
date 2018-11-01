@@ -70,7 +70,8 @@ class ActionDelegate {
   virtual void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::string& title) = 0;
+      const std::string& title,
+      const std::vector<std::string>& supported_basic_card_networks) = 0;
 
   // Fill the address form given by |selectors| with the given address
   // |profile|. |profile| cannot be nullptr.

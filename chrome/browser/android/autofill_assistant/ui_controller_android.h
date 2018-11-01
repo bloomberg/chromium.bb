@@ -48,7 +48,8 @@ class UiControllerAndroid : public UiController,
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::string& title) override;
+      const std::string& title,
+      const std::vector<std::string>& supported_basic_card_networks) override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
   void ShowProgressBar(int progress, const std::string& message) override;
