@@ -246,11 +246,32 @@ class TestCountUsesTimeSource : public TickClock {
   DISALLOW_COPY_AND_ASSIGN(TestCountUsesTimeSource);
 };
 
+TEST_P(SequenceManagerTestWithCustomInitialization, NowNotCalledIfUnneeded) {
+  message_loop_.reset(new MessageLoop());
+  TestCountUsesTimeSource test_count_uses_time_source;
+
+  manager_ = SequenceManagerForTest::Create(
+      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source);
+  manager_->SetWorkBatchSize(6);
+
+  for (size_t i = 0; i < 3; i++)
+    runners_.push_back(CreateTaskQueue());
+
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[1]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[1]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[2]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[2]->PostTask(FROM_HERE, BindOnce(&NopTask));
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, test_count_uses_time_source.now_calls_count());
+}
+
 TEST_P(SequenceManagerTestWithCustomInitialization,
        NowCalledMinimumNumberOfTimesToComputeTaskDurations) {
   message_loop_.reset(new MessageLoop());
-  // This memory is managed by the SequenceManager, but we need to hold a
-  // pointer to this object to read out how many times Now was called.
   TestCountUsesTimeSource test_count_uses_time_source;
 
   manager_ = SequenceManagerForTest::Create(
@@ -260,6 +281,34 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
 
   for (size_t i = 0; i < 3; i++)
     runners_.push_back(CreateTaskQueue());
+
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[1]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[1]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[2]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  runners_[2]->PostTask(FROM_HERE, BindOnce(&NopTask));
+
+  RunLoop().RunUntilIdle();
+  // Now is called when each task starts running and when its completed.
+  // 6 * 2 = 12 calls.
+  EXPECT_EQ(12, test_count_uses_time_source.now_calls_count());
+}
+
+TEST_P(SequenceManagerTestWithCustomInitialization,
+       NowCalledMinimumNumberOfTimesToComputeTaskDurationsDelayedFenceAllowed) {
+  message_loop_.reset(new MessageLoop());
+  TestCountUsesTimeSource test_count_uses_time_source;
+
+  manager_ = SequenceManagerForTest::Create(
+      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source);
+  manager_->SetWorkBatchSize(6);
+  manager_->AddTaskTimeObserver(&test_task_time_observer_);
+
+  for (size_t i = 0; i < 3; i++) {
+    runners_.push_back(
+        CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true)));
+  }
 
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
@@ -865,55 +914,57 @@ void RecordTimeAndQueueTask(
 }  // namespace
 
 TEST_P(SequenceManagerTest, DelayedFence_DelayedTasks) {
-  CreateTaskQueues(1u);
+  scoped_refptr<TestTaskQueue> queue =
+      CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
 
   std::vector<TimeTicks> run_times;
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
-      TimeDelta::FromMilliseconds(100));
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
-      TimeDelta::FromMilliseconds(200));
-  runners_[0]->PostDelayedTask(
-      FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
-      TimeDelta::FromMilliseconds(300));
+  queue->PostDelayedTask(FROM_HERE,
+                         BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
+                         TimeDelta::FromMilliseconds(100));
+  queue->PostDelayedTask(FROM_HERE,
+                         BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
+                         TimeDelta::FromMilliseconds(200));
+  queue->PostDelayedTask(FROM_HERE,
+                         BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
+                         TimeDelta::FromMilliseconds(300));
 
-  runners_[0]->InsertFenceAt(GetTickClock()->NowTicks() +
-                             TimeDelta::FromMilliseconds(250));
-  EXPECT_FALSE(runners_[0]->HasActiveFence());
+  queue->InsertFenceAt(GetTickClock()->NowTicks() +
+                       TimeDelta::FromMilliseconds(250));
+  EXPECT_FALSE(queue->HasActiveFence());
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  EXPECT_TRUE(runners_[0]->HasActiveFence());
+  EXPECT_TRUE(queue->HasActiveFence());
   EXPECT_THAT(run_times,
               ElementsAre(start_time_ + TimeDelta::FromMilliseconds(100),
                           start_time_ + TimeDelta::FromMilliseconds(200)));
   run_times.clear();
 
-  runners_[0]->RemoveFence();
+  queue->RemoveFence();
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  EXPECT_FALSE(runners_[0]->HasActiveFence());
+  EXPECT_FALSE(queue->HasActiveFence());
   EXPECT_THAT(run_times,
               ElementsAre(start_time_ + TimeDelta::FromMilliseconds(300)));
 }
 
 TEST_P(SequenceManagerTest, DelayedFence_ImmediateTasks) {
-  CreateTaskQueues(1u);
+  scoped_refptr<TestTaskQueue> queue =
+      CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
 
   std::vector<TimeTicks> run_times;
-  runners_[0]->InsertFenceAt(GetTickClock()->NowTicks() +
-                             TimeDelta::FromMilliseconds(250));
+  queue->InsertFenceAt(GetTickClock()->NowTicks() +
+                       TimeDelta::FromMilliseconds(250));
 
   for (int i = 0; i < 5; ++i) {
-    runners_[0]->PostTask(
-        FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
+    queue->PostTask(FROM_HERE,
+                    BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
     test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
     if (i < 2) {
-      EXPECT_FALSE(runners_[0]->HasActiveFence());
+      EXPECT_FALSE(queue->HasActiveFence());
     } else {
-      EXPECT_TRUE(runners_[0]->HasActiveFence());
+      EXPECT_TRUE(queue->HasActiveFence());
     }
   }
 
@@ -923,7 +974,7 @@ TEST_P(SequenceManagerTest, DelayedFence_ImmediateTasks) {
                   start_time_ + TimeDelta::FromMilliseconds(200)));
   run_times.clear();
 
-  runners_[0]->RemoveFence();
+  queue->RemoveFence();
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_THAT(run_times,
@@ -932,27 +983,28 @@ TEST_P(SequenceManagerTest, DelayedFence_ImmediateTasks) {
 }
 
 TEST_P(SequenceManagerTest, DelayedFence_RemovedFenceDoesNotActivate) {
-  CreateTaskQueues(1u);
+  scoped_refptr<TestTaskQueue> queue =
+      CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
 
   std::vector<TimeTicks> run_times;
-  runners_[0]->InsertFenceAt(GetTickClock()->NowTicks() +
-                             TimeDelta::FromMilliseconds(250));
+  queue->InsertFenceAt(GetTickClock()->NowTicks() +
+                       TimeDelta::FromMilliseconds(250));
 
   for (int i = 0; i < 3; ++i) {
-    runners_[0]->PostTask(
-        FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
-    EXPECT_FALSE(runners_[0]->HasActiveFence());
+    queue->PostTask(FROM_HERE,
+                    BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
+    EXPECT_FALSE(queue->HasActiveFence());
     test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   }
 
-  EXPECT_TRUE(runners_[0]->HasActiveFence());
-  runners_[0]->RemoveFence();
+  EXPECT_TRUE(queue->HasActiveFence());
+  queue->RemoveFence();
 
   for (int i = 0; i < 2; ++i) {
-    runners_[0]->PostTask(
-        FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
+    queue->PostTask(FROM_HERE,
+                    BindOnce(&RecordTimeTask, &run_times, GetTickClock()));
     test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
-    EXPECT_FALSE(runners_[0]->HasActiveFence());
+    EXPECT_FALSE(queue->HasActiveFence());
   }
 
   EXPECT_THAT(
@@ -967,10 +1019,10 @@ TEST_P(SequenceManagerTest, DelayedFence_TakeIncomingImmediateQueue) {
   // This test checks that everything works correctly when a work queue
   // is swapped with an immediate incoming queue and a delayed fence
   // is activated, forcing a different queue to become active.
-  CreateTaskQueues(2u);
-
-  scoped_refptr<TestTaskQueue> queue1 = runners_[0];
-  scoped_refptr<TestTaskQueue> queue2 = runners_[1];
+  scoped_refptr<TestTaskQueue> queue1 =
+      CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
+  scoped_refptr<TestTaskQueue> queue2 =
+      CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
 
   std::vector<std::pair<scoped_refptr<TestTaskQueue>, TimeTicks>> run_times;
 

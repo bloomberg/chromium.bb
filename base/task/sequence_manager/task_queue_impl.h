@@ -424,6 +424,7 @@ class BASE_EXPORT TaskQueueImpl {
 
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;
+  const bool delayed_fence_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueImpl);
 };
