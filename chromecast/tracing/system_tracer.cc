@@ -16,6 +16,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/trace_event/trace_config.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/tracing/system_tracing_common.h"
 
 namespace chromecast {
@@ -43,16 +44,57 @@ base::ScopedFD CreateClientSocket() {
   return socket_fd;
 }
 
-}  // namespace
+class SystemTracerImpl : public SystemTracer {
+ public:
+  SystemTracerImpl() : buffer_(new char[kBufferSize]) {}
+  ~SystemTracerImpl() override { Cleanup(); }
 
-SystemTracer::SystemTracer() : buffer_(new char[kBufferSize]) {}
+  void StartTracing(base::StringPiece categories,
+                    StartTracingCallback callback) override;
 
-SystemTracer::~SystemTracer() {
-  Cleanup();
-}
+  void StopTracing(const StopTracingCallback& callback) override;
 
-void SystemTracer::StartTracing(base::StringPiece categories,
-                                StartTracingCallback callback) {
+ private:
+  enum class State {
+    INITIAL,   // Not yet started.
+    STARTING,  // Sent start message, waiting for ack.
+    TRACING,   // Tracing, not yet requested stop.
+    READING,   // Trace stopped, reading output.
+    FINISHED,  // All done.
+  };
+
+  void ReceiveStartAckAndTracePipe();
+  void ReceiveTraceData();
+  void FailStartTracing();
+  void FailStopTracing();
+  void SendPartialTraceData();
+  void FinishTracing();
+  void Cleanup();
+
+  // Current state of tracing attempt.
+  State state_ = State::INITIAL;
+
+  // Unix socket connection to tracing daemon.
+  base::ScopedFD connection_fd_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> connection_watcher_;
+
+  // Pipe for trace data.
+  base::ScopedFD trace_pipe_fd_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> trace_pipe_watcher_;
+
+  // Read buffer (of size kBufferSize).
+  std::unique_ptr<char[]> buffer_;
+
+  // Callbacks for StartTracing() and StopTracing().
+  StartTracingCallback start_tracing_callback_;
+  StopTracingCallback stop_tracing_callback_;
+
+  // Trace data.
+  std::string trace_data_;
+};
+
+void SystemTracerImpl::StartTracing(base::StringPiece categories,
+                                    StartTracingCallback callback) {
   start_tracing_callback_ = std::move(callback);
   if (state_ != State::INITIAL) {
     FailStartTracing();
@@ -80,12 +122,12 @@ void SystemTracer::StartTracing(base::StringPiece categories,
 
   connection_watcher_ = base::FileDescriptorWatcher::WatchReadable(
       connection_fd_.get(),
-      base::BindRepeating(&SystemTracer::ReceiveStartAckAndTracePipe,
+      base::BindRepeating(&SystemTracerImpl::ReceiveStartAckAndTracePipe,
                           base::Unretained(this)));
   state_ = State::STARTING;
 }
 
-void SystemTracer::StopTracing(const StopTracingCallback& callback) {
+void SystemTracerImpl::StopTracing(const StopTracingCallback& callback) {
   stop_tracing_callback_ = callback;
   if (state_ != State::TRACING) {
     FailStopTracing();
@@ -102,12 +144,13 @@ void SystemTracer::StopTracing(const StopTracingCallback& callback) {
   }
 
   trace_pipe_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-      trace_pipe_fd_.get(), base::BindRepeating(&SystemTracer::ReceiveTraceData,
-                                                base::Unretained(this)));
+      trace_pipe_fd_.get(),
+      base::BindRepeating(&SystemTracerImpl::ReceiveTraceData,
+                          base::Unretained(this)));
   state_ = State::READING;
 }
 
-void SystemTracer::ReceiveStartAckAndTracePipe() {
+void SystemTracerImpl::ReceiveStartAckAndTracePipe() {
   DCHECK_EQ(state_, State::STARTING);
 
   std::vector<base::ScopedFD> fds;
@@ -135,7 +178,7 @@ void SystemTracer::ReceiveStartAckAndTracePipe() {
   std::move(start_tracing_callback_).Run(Status::OK);
 }
 
-void SystemTracer::ReceiveTraceData() {
+void SystemTracerImpl::ReceiveTraceData() {
   DCHECK_EQ(state_, State::READING);
 
   for (;;) {
@@ -164,29 +207,29 @@ void SystemTracer::ReceiveTraceData() {
   }
 }
 
-void SystemTracer::FailStartTracing() {
+void SystemTracerImpl::FailStartTracing() {
   std::move(start_tracing_callback_).Run(Status::FAIL);
   Cleanup();
 }
 
-void SystemTracer::FailStopTracing() {
+void SystemTracerImpl::FailStopTracing() {
   stop_tracing_callback_.Run(Status::FAIL, "");
   Cleanup();
 }
 
-void SystemTracer::SendPartialTraceData() {
+void SystemTracerImpl::SendPartialTraceData() {
   DCHECK_EQ(state_, State::READING);
   stop_tracing_callback_.Run(Status::KEEP_GOING, std::move(trace_data_));
   trace_data_ = "";
 }
 
-void SystemTracer::FinishTracing() {
+void SystemTracerImpl::FinishTracing() {
   DCHECK_EQ(state_, State::READING);
   stop_tracing_callback_.Run(Status::OK, std::move(trace_data_));
   Cleanup();
 }
 
-void SystemTracer::Cleanup() {
+void SystemTracerImpl::Cleanup() {
   connection_watcher_.reset();
   connection_fd_.reset();
   trace_pipe_watcher_.reset();
@@ -194,6 +237,33 @@ void SystemTracer::Cleanup() {
   start_tracing_callback_.Reset();
   stop_tracing_callback_.Reset();
   state_ = State::FINISHED;
+}
+
+class FakeSystemTracer : public SystemTracer {
+ public:
+  FakeSystemTracer() = default;
+  ~FakeSystemTracer() override = default;
+
+  void StartTracing(base::StringPiece categories,
+                    StartTracingCallback callback) override {
+    std::move(callback).Run(Status::OK);
+  }
+
+  void StopTracing(const StopTracingCallback& callback) override {
+    std::string trace_data = "# tracer: nop\n";
+    std::move(callback).Run(Status::OK, std::move(trace_data));
+  }
+};
+
+}  // namespace
+
+// static
+std::unique_ptr<SystemTracer> SystemTracer::Create() {
+#if BUILDFLAG(IS_CAST_DESKTOP_BUILD)
+  return std::make_unique<FakeSystemTracer>();
+#else
+  return std::make_unique<SystemTracerImpl>();
+#endif
 }
 
 }  // namespace chromecast

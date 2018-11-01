@@ -27,6 +27,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
@@ -198,7 +199,7 @@ class TracingControllerTest : public ContentBrowserTest {
     return last_data_;
   }
 
-  void TestStartAndStopTracingString() {
+  void TestStartAndStopTracingString(bool enable_systrace = false) {
     Navigate(shell());
 
     TracingController* controller = TracingController::GetInstance();
@@ -208,8 +209,10 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::StartTracingDoneCallback callback =
           base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
                          base::Unretained(this), run_loop.QuitClosure());
-      bool result =
-          controller->StartTracing(TraceConfig(), std::move(callback));
+      TraceConfig config;
+      if (enable_systrace)
+        config.EnableSystrace();
+      bool result = controller->StartTracing(config, std::move(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -535,6 +538,26 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
           run_loop.QuitClosure()))));
   EXPECT_FALSE(controller->StopTracing(nullptr));
   run_loop.Run();
+}
+
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
+// Only CrOS, Cast, and Windows support system tracing.
+#elif defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX)) || \
+    defined(OS_WIN)
+#define MAYBE_SystemTraceEvents SystemTraceEvents
+#else
+#define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
+#endif
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
+  // TODO(crbug.com/900603): Enable this test for perfetto once passing.
+  if (tracing::TracingUsesPerfettoBackend())
+    return;
+
+  TestStartAndStopTracingString(true /* enable_systrace */);
+  EXPECT_TRUE(last_data().size() > 0);
+  EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }
 
 }  // namespace content
