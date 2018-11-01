@@ -5,44 +5,68 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
 #include "base/rand_util.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 
 namespace viz {
 
 constexpr LocalSurfaceId g_invalid_local_surface_id;
 
-ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
+ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator(
+    const base::TickClock* tick_clock)
     : current_local_surface_id_allocation_(
           LocalSurfaceId(kInvalidParentSequenceNumber,
                          kInitialChildSequenceNumber,
                          base::UnguessableToken::Create()),
-          base::TimeTicks()) {
+          base::TimeTicks()),
+      tick_clock_(tick_clock) {
   GenerateId();
 }
+
+ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
+    : ParentLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
 
 bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
     const LocalSurfaceId& child_allocated_local_surface_id,
     base::TimeTicks child_local_surface_id_allocation_time) {
-  if (child_allocated_local_surface_id.child_sequence_number() >
-      current_local_surface_id_allocation_.local_surface_id_
-          .child_sequence_number()) {
-    current_local_surface_id_allocation_.local_surface_id_
-        .child_sequence_number_ =
-        child_allocated_local_surface_id.child_sequence_number_;
+  const LocalSurfaceId& current_local_surface_id =
+      current_local_surface_id_allocation_.local_surface_id_;
+
+  // If the child has not incremented its child sequence number then there is
+  // nothing to do here. This allocator already has the latest LocalSurfaceId.
+  if (current_local_surface_id.child_sequence_number() >=
+      child_allocated_local_surface_id.child_sequence_number()) {
+    return false;
+  }
+
+  is_invalid_ = false;
+  if (current_local_surface_id.parent_sequence_number() >
+      child_allocated_local_surface_id.parent_sequence_number()) {
+    // If the current LocalSurfaceId has a newer parent sequence number
+    // than the one provided by the child, then the merged LocalSurfaceId
+    // is actually a new LocalSurfaceId and so we report its allocation time
+    // as now.
+    current_local_surface_id_allocation_.allocation_time_ =
+        tick_clock_->NowTicks();
+  } else {
     current_local_surface_id_allocation_.allocation_time_ =
         child_local_surface_id_allocation_time;
-    is_invalid_ = false;
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "LocalSurfaceId.Embed.Flow",
-        TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
-                            .embed_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "UpdateFromChild", "local_surface_id",
-        current_local_surface_id_allocation_.local_surface_id_.ToString());
-    return true;
   }
-  return false;
+
+  current_local_surface_id_allocation_.local_surface_id_
+      .child_sequence_number_ =
+      child_allocated_local_surface_id.child_sequence_number_;
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
+                          .embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "UpdateFromChild", "local_surface_id",
+      current_local_surface_id_allocation_.local_surface_id_.ToString());
+
+  return true;
 }
 
 void ParentLocalSurfaceIdAllocator::Reset(
@@ -55,29 +79,32 @@ void ParentLocalSurfaceIdAllocator::Invalidate() {
 }
 
 void ParentLocalSurfaceIdAllocator::GenerateId() {
-  if (!is_allocation_suppressed_) {
-    ++current_local_surface_id_allocation_.local_surface_id_
-          .parent_sequence_number_;
-    current_local_surface_id_allocation_.allocation_time_ =
-        base::TimeTicks::Now();
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "LocalSurfaceId.Embed.Flow",
-        TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
-                            .embed_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-        current_local_surface_id_allocation_.local_surface_id_.ToString());
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "LocalSurfaceId.Submission.Flow",
-        TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
-                            .submission_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-        current_local_surface_id_allocation_.local_surface_id_.ToString());
-  }
   is_invalid_ = false;
+  if (is_allocation_suppressed_)
+    return;
+
+  ++current_local_surface_id_allocation_.local_surface_id_
+        .parent_sequence_number_;
+  current_local_surface_id_allocation_.allocation_time_ =
+      tick_clock_->NowTicks();
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Embed.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
+                          .embed_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_allocation_.local_surface_id_.ToString());
+
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
+                          .submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+      current_local_surface_id_allocation_.local_surface_id_.ToString());
 }
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceId()
