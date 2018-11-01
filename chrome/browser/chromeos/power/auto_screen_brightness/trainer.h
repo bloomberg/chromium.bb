@@ -20,12 +20,36 @@ struct TrainingDataPoint {
 };
 
 // Interface to train an on-device adaptive brightness curve.
+// User should call |HasValidConfiguration| first. If it returns true, then user
+// should call |SetInitialCurves| before calling other methods.
 class Trainer {
  public:
   virtual ~Trainer() = default;
 
-  virtual void SetInitialCurves(const MonotoneCubicSpline& global_curve,
+  // Returns whether trainer has been configured properly, i.e. if all params
+  // are set up. It is an error to call other methods unless
+  // |HasValidConfiguration| returns true.
+  virtual bool HasValidConfiguration() const = 0;
+
+  // Initializes this trainer with the specified default global curve and
+  // initial current curve (the personal curve). This should only be called if
+  // trainer |HasValidConfiguration| returns true.
+  // Returns true if |current_curve| is valid, i.e. satisfying constraints (e.g.
+  // slope). If |current_curve| is invalid, |global_curve| will be used in its
+  // place. The caller has an option to reset these curves.
+  virtual bool SetInitialCurves(const MonotoneCubicSpline& global_curve,
                                 const MonotoneCubicSpline& current_curve) = 0;
+
+  // Returns the global curve. This should only be called if trainer
+  // |HasValidConfiguration| returns true and after |SetInitialCurves| is
+  // called.
+  virtual MonotoneCubicSpline GetGlobalCurve() const = 0;
+
+  // Returns the curve currently used as personal curve. It could be the same as
+  // the global curve. This should only be called if trainer
+  // |HasValidConfiguration| returns true and after |SetInitialCurves| is
+  // called.
+  virtual MonotoneCubicSpline GetCurrentCurve() const = 0;
 
   // Updates current curve stored in trainer with |data|. This function should
   // only be called after |SetInitialCurves|.

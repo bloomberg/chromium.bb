@@ -122,63 +122,116 @@ double Gaussian(double x, double sigma) {
 
 }  // namespace
 
-// TODO(jiameng): move these params checking into another method and log errors
-// in UMA if any value is invalid. Also disable it if param isn't valid.
+GaussianTrainer::Params::Params() = default;
+
+// TODO(jiameng): log errors in UMA if any value is invalid.
 GaussianTrainer::GaussianTrainer() {
   params_.brightness_bound_scale = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightness_bound_scale",
       params_.brightness_bound_scale);
-  DCHECK_GT(params_.brightness_bound_scale, 0.0);
+  if (params_.brightness_bound_scale <= 0.0) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.brightness_bound_offset = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightness_bound_offset",
       params_.brightness_bound_offset);
-  DCHECK_GE(params_.brightness_bound_offset, 0.0);
+  if (params_.brightness_bound_offset < 0.0) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.brightness_step_size = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "brightness_step_size",
       params_.brightness_step_size);
-  DCHECK_GT(params_.brightness_step_size, 0.0);
+  if (params_.brightness_step_size <= 0.0) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.sigma = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "sigma", params_.sigma);
-  DCHECK_GT(params_.sigma, 0.0);
+  if (params_.sigma <= 0.0) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.low_log_lux_threshold = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "low_log_lux_threshold",
       params_.low_log_lux_threshold);
+  params_.high_log_lux_threshold = GetFieldTrialParamByFeatureAsDouble(
+      features::kAutoScreenBrightness, "high_log_lux_threshold",
+      params_.high_log_lux_threshold);
+  if (params_.low_log_lux_threshold >= params_.high_log_lux_threshold) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.min_grad_low_lux = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "min_grad_low_lux",
       params_.min_grad_low_lux);
+  params_.min_grad_high_lux = GetFieldTrialParamByFeatureAsDouble(
+      features::kAutoScreenBrightness, "min_grad_high_lux",
+      params_.min_grad_high_lux);
+
   params_.min_grad = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "min_grad", params_.min_grad);
   params_.max_grad = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "max_grad", params_.max_grad);
 
-  DCHECK_GE(params_.min_grad_low_lux, 0.0);
-  DCHECK_LT(params_.min_grad_low_lux, 1.0);
-  DCHECK_GE(params_.min_grad, 0.0);
-  DCHECK_LT(params_.min_grad, 1.0);
-  DCHECK_GE(params_.min_grad, params_.min_grad_low_lux);
-  DCHECK_GT(params_.max_grad, params_.min_grad);
+  if (params_.min_grad_low_lux < 0.0 || params_.min_grad_low_lux >= 1.0) {
+    valid_params_ = false;
+    return;
+  }
+
+  if (params_.min_grad_high_lux < 0.0 || params_.min_grad_high_lux >= 1.0) {
+    valid_params_ = false;
+    return;
+  }
+
+  if (params_.min_grad < 0.0 || params_.min_grad >= 1.0) {
+    valid_params_ = false;
+    return;
+  }
+
+  if (params_.min_grad < params_.min_grad_low_lux) {
+    valid_params_ = false;
+    return;
+  }
+
+  if (params_.min_grad < params_.min_grad_high_lux) {
+    valid_params_ = false;
+    return;
+  }
+
+  if (params_.max_grad < 1.0) {
+    valid_params_ = false;
+    return;
+  }
 
   params_.min_brightness = GetFieldTrialParamByFeatureAsDouble(
       features::kAutoScreenBrightness, "min_brightness",
       params_.min_brightness);
-  DCHECK_GE(params_.min_brightness, 0.0);
+  if (params_.min_brightness < 0.0) {
+    valid_params_ = false;
+    return;
+  }
 }
 
 GaussianTrainer::~GaussianTrainer() = default;
 
-// TODO(jiameng): add slope constraint check in |current_curve| and return check
-// result to the caller.
-void GaussianTrainer::SetInitialCurves(
+bool GaussianTrainer::HasValidConfiguration() const {
+  return valid_params_;
+}
+
+bool GaussianTrainer::SetInitialCurves(
     const MonotoneCubicSpline& global_curve,
     const MonotoneCubicSpline& current_curve) {
-  // This function should be called once only.
-  DCHECK(!global_curve_);
-  DCHECK(!current_curve_);
+  DCHECK(valid_params_);
+
+  // This function could be called again if the caller wants to reset the
+  // curves.
   global_curve_.emplace(global_curve);
   current_curve_.emplace(current_curve);
 
@@ -204,15 +257,39 @@ void GaussianTrainer::SetInitialCurves(
   DCHECK_GT(global_brightness[0], 0);
 
   for (size_t i = 0; i < num_points - 1; ++i) {
-    const double min_grad = global_log_lux[i] < params_.low_log_lux_threshold
-                                ? params_.min_grad_low_lux
-                                : params_.min_grad;
+    double min_grad = params_.min_grad;
+    if (global_log_lux[i] < params_.low_log_lux_threshold) {
+      min_grad = params_.min_grad_low_lux;
+    } else if (global_log_lux[i] > params_.high_log_lux_threshold) {
+      min_grad = params_.min_grad_high_lux;
+    }
 
     const double ratio = global_brightness[i + 1] / global_brightness[i];
     DCHECK_GE(ratio, 1);
     min_ratios_[i] = std::pow(ratio, min_grad);
     max_ratios_[i] = std::pow(ratio, params_.max_grad);
   }
+
+  if (!IsInitialPersonalCurveValid()) {
+    // Use global curve instead if personal curve isn't valid.
+    current_curve_.emplace(global_curve);
+    brightness_ = current_curve_->GetControlPointsY();
+    return false;
+  }
+
+  return true;
+}
+
+MonotoneCubicSpline GaussianTrainer::GetGlobalCurve() const {
+  DCHECK(valid_params_);
+  DCHECK(global_curve_);
+  return *global_curve_;
+}
+
+MonotoneCubicSpline GaussianTrainer::GetCurrentCurve() const {
+  DCHECK(valid_params_);
+  DCHECK(current_curve_);
+  return *current_curve_;
 }
 
 MonotoneCubicSpline GaussianTrainer::Train(
@@ -231,6 +308,20 @@ MonotoneCubicSpline GaussianTrainer::Train(
   current_curve_.emplace(MonotoneCubicSpline(ambient_log_lux_, brightness_));
   need_to_update_curve_ = false;
   return *current_curve_;
+}
+
+bool GaussianTrainer::IsInitialPersonalCurveValid() const {
+  // |global_curve_| is valid by construction.
+  if (*global_curve_ == *current_curve_)
+    return true;
+
+  for (size_t i = 0; i < brightness_.size() - 1; ++i) {
+    const double ratio = brightness_[i + 1] / brightness_[i];
+    if (ratio < min_ratios_[i] || ratio > max_ratios_[i])
+      return false;
+  }
+
+  return true;
 }
 
 void GaussianTrainer::AdjustCurveWithSingleDataPoint(

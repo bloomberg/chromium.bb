@@ -49,30 +49,62 @@ MonotoneCubicSpline CreateTestCurveFromTrainingData(
   return MonotoneCubicSpline(xs, ys);
 }
 
-// Testing trainer.
+void CheckOptionalCurves(
+    const base::Optional<MonotoneCubicSpline>& result_curve,
+    const base::Optional<MonotoneCubicSpline>& expected_curve) {
+  EXPECT_EQ(result_curve.has_value(), expected_curve.has_value());
+  if (result_curve) {
+    EXPECT_EQ(*result_curve, *expected_curve);
+  }
+}
+
+// Fake testing trainer that has configuration status and validity of personal
+// curve specified in the constructor.
 class FakeTrainer : public Trainer {
  public:
-  FakeTrainer() = default;
+  FakeTrainer(bool is_configured, bool is_personal_curve_valid)
+      : is_configured_(is_configured),
+        is_personal_curve_valid_(is_personal_curve_valid) {
+    // If personal curve is valid, then the trainer must be configured.
+    DCHECK(!is_personal_curve_valid_ || is_configured_);
+  }
   ~FakeTrainer() override = default;
 
   // Trainer overrides:
-  void SetInitialCurves(const MonotoneCubicSpline& global_curve,
-                        const MonotoneCubicSpline& current_curve) override {
-    CHECK(!global_curve_);
-    CHECK(!current_curve_);
+  bool HasValidConfiguration() const override { return is_configured_; }
 
+  bool SetInitialCurves(const MonotoneCubicSpline& global_curve,
+                        const MonotoneCubicSpline& current_curve) override {
+    DCHECK(is_configured_);
     global_curve_.emplace(global_curve);
-    current_curve_.emplace(current_curve);
+    current_curve_.emplace(is_personal_curve_valid_ ? current_curve
+                                                    : global_curve);
+    return is_personal_curve_valid_;
+  }
+
+  MonotoneCubicSpline GetGlobalCurve() const override {
+    DCHECK(is_configured_);
+    DCHECK(global_curve_);
+    return *global_curve_;
+  }
+
+  MonotoneCubicSpline GetCurrentCurve() const override {
+    DCHECK(is_configured_);
+    DCHECK(current_curve_);
+    return *current_curve_;
   }
 
   MonotoneCubicSpline Train(
       const std::vector<TrainingDataPoint>& data) override {
-    CHECK(current_curve_);
+    DCHECK(is_configured_);
+    DCHECK(current_curve_);
     current_curve_.emplace(CreateTestCurveFromTrainingData(data));
-    return current_curve_.value();
+    return *current_curve_;
   }
 
  private:
+  bool is_configured_;
+  bool is_personal_curve_valid_;
   base::Optional<MonotoneCubicSpline> global_curve_;
   base::Optional<MonotoneCubicSpline> current_curve_;
 
@@ -95,34 +127,28 @@ class TestObserver : public Modeller::Observer {
       const base::Optional<MonotoneCubicSpline>& personal_curve) override {
     model_initialized_ = true;
     if (global_curve)
-      global_curve_.emplace(global_curve.value());
+      global_curve_.emplace(*global_curve);
 
     if (personal_curve)
-      personal_curve_.emplace(personal_curve.value());
+      personal_curve_.emplace(*personal_curve);
   }
 
-  Modeller::Status model_status() const {
-    CHECK(model_initialized_);
-
-    if (personal_curve_)
-      return Modeller::Status::kPersonal;
-
-    if (global_curve_)
-      return Modeller::Status::kGlobal;
-
-    return Modeller::Status::kDisabled;
+  base::Optional<MonotoneCubicSpline> global_curve() const {
+    return global_curve_;
   }
 
-  MonotoneCubicSpline brightness_curve() const {
-    if (personal_curve_)
-      return personal_curve_.value();
-
-    CHECK(global_curve_);
-    return global_curve_.value();
+  base::Optional<MonotoneCubicSpline> personal_curve() const {
+    return personal_curve_;
   }
 
-  bool model_initialized() { return model_initialized_; }
-  bool has_brightness_curve() { return global_curve_ || personal_curve_; }
+  void CheckStatus(bool is_model_initialized,
+                   const base::Optional<MonotoneCubicSpline>& global_curve,
+                   const base::Optional<MonotoneCubicSpline>& personal_curve) {
+    EXPECT_EQ(is_model_initialized, model_initialized_);
+    CheckOptionalCurves(global_curve, global_curve_);
+    CheckOptionalCurves(personal_curve, personal_curve_);
+  }
+
   bool trained_curve_received() { return trained_curve_received_; }
 
  private:
@@ -153,15 +179,28 @@ class ModellerImplTest : public testing::Test {
     base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
-  void SetUpModeller() {
+  // Sets up |modeller_| with a FakeTrainer.
+  void SetUpModeller(bool is_trainer_configured, bool is_personal_curve_valid) {
     modeller_ = ModellerImpl::CreateForTesting(
         profile_.get(), &fake_als_reader_, &fake_brightness_monitor_,
-        &user_activity_detector_, std::make_unique<FakeTrainer>(),
+        &user_activity_detector_,
+        std::make_unique<FakeTrainer>(is_trainer_configured,
+                                      is_personal_curve_valid),
         base::SequencedTaskRunnerHandle::Get(),
         scoped_task_environment_.GetMockTickClock());
 
     test_observer_ = std::make_unique<TestObserver>();
     modeller_->AddObserver(test_observer_.get());
+  }
+
+  void Init(AlsReader::AlsInitStatus als_reader_status,
+            BrightnessMonitor::Status brightness_monitor_status,
+            bool is_trainer_configured = true,
+            bool is_personal_curve_valid = true) {
+    fake_als_reader_.set_als_init_status(als_reader_status);
+    fake_brightness_monitor_.set_status(brightness_monitor_status);
+    SetUpModeller(is_trainer_configured, is_personal_curve_valid);
+    scoped_task_environment_.RunUntilIdle();
   }
 
  protected:
@@ -198,97 +237,102 @@ class ModellerImplTest : public testing::Test {
 
 // AlsReader is |kDisabled| when Modeller is created.
 TEST_F(ModellerImplTest, AlsReaderDisabledOnInit) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kDisabled);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kDisabled,
+       BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 }
 
 // BrightnessMonitor is |kDisabled| when Modeller is created.
 TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnInit) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kDisabled);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kSuccess,
+       BrightnessMonitor::Status::kDisabled);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 }
 
 // AlsReader is |kDisabled| on later notification.
 TEST_F(ModellerImplTest, AlsReaderDisabledOnNotification) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kInProgress);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->model_initialized());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kInProgress,
+       BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(false /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kDisabled);
   fake_als_reader_.ReportReaderInitialized();
-  EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  scoped_task_environment_.RunUntilIdle();
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 }
 
 // AlsReader is |kSuccess| on later notification.
 TEST_F(ModellerImplTest, AlsReaderEnabledOnNotification) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kInProgress);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->model_initialized());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kInProgress,
+       BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(false /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_als_reader_.ReportReaderInitialized();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_EQ(test_observer_->brightness_curve(),
-            modeller_->GetGlobalCurveForTesting());
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 }
 
 // BrightnessMonitor is |kDisabled| on later notification.
 TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnNotification) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kInitializing);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->model_initialized());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kSuccess,
+       BrightnessMonitor::Status::kInitializing);
+
+  test_observer_->CheckStatus(false /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kDisabled);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
-  EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 }
 
 // BrightnessMonitor is |kSuccess| on later notification.
 TEST_F(ModellerImplTest, BrightnessMonitorEnabledOnNotification) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kInitializing);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(test_observer_->model_initialized());
-  EXPECT_FALSE(test_observer_->has_brightness_curve());
+  Init(AlsReader::AlsInitStatus::kSuccess,
+       BrightnessMonitor::Status::kInitializing);
+
+  test_observer_->CheckStatus(false /* is_model_initialized */,
+                              base::nullopt /* global_curve */,
+                              base::nullopt /* personal_curve */);
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_EQ(test_observer_->brightness_curve(),
-            modeller_->GetGlobalCurveForTesting());
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 }
 
 // There is no saved curve, hence a global curve is created.
 TEST_F(ModellerImplTest, NoSavedCurve) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_EQ(test_observer_->brightness_curve(),
-            modeller_->GetGlobalCurveForTesting());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 }
 
 // A curve is loaded from disk, this is a personal curve.
@@ -300,23 +344,41 @@ TEST_F(ModellerImplTest, CurveLoadedFromProfilePath) {
   WriteCurveToFile(curve);
 
   scoped_task_environment_.RunUntilIdle();
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(), curve);
+}
+
+// A curve is loaded from disk, this is a personal curve. This personal curve
+// doesn't satisfy Trainer slope constraint, hence it's ignored and the global
+// curve is used instead.
+TEST_F(ModellerImplTest, PersonalCurveError) {
+  const std::vector<double> xs = {0, 10, 20, 40, 60, 80, 90, 100};
+  const std::vector<double> ys = {0, 5, 10, 15, 20, 25, 30, 40};
+  MonotoneCubicSpline curve(xs, ys);
+
+  WriteCurveToFile(curve);
+
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_EQ(Modeller::Status::kPersonal, test_observer_->model_status());
-  EXPECT_EQ(curve, test_observer_->brightness_curve());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       true /* is_trainer_configured */, false /* is_personal_curve_valid */);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 }
 
 // Ambient light values are received. We check average ambient light has been
 // calculated from the past |kNumberAmbientValuesToTrack| samples only.
 TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 
   const int first_lux = 1000;
   double running_sum = first_lux;
@@ -340,11 +402,11 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
 // |kMaxTrainingDataPoints| to trigger early training. This all happens within a
 // small window shorter than |kTrainingDelay|.
 TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 
   std::vector<TrainingDataPoint> expected_data;
   for (size_t i = 0; i < ModellerImpl::kMaxTrainingDataPoints - 1; ++i) {
@@ -380,20 +442,23 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
-  const MonotoneCubicSpline& result_curve = test_observer_->brightness_curve();
+
+  const base::Optional<MonotoneCubicSpline>& result_curve =
+      test_observer_->personal_curve();
+  DCHECK(result_curve);
 
   const MonotoneCubicSpline expected_curve =
       CreateTestCurveFromTrainingData(expected_data);
-  EXPECT_EQ(expected_curve, result_curve);
+  EXPECT_EQ(expected_curve, *result_curve);
 }
 
 // User activities resets timer used to start training.
 TEST_F(ModellerImplTest, MultipleUserActivities) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 
   fake_als_reader_.ReportAmbientLightUpdate(30);
   std::vector<TrainingDataPoint> expected_data;
@@ -443,21 +508,23 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
-  const MonotoneCubicSpline& result_curve = test_observer_->brightness_curve();
+  const base::Optional<MonotoneCubicSpline>& result_curve =
+      test_observer_->personal_curve();
+  DCHECK(result_curve);
 
   const MonotoneCubicSpline expected_curve =
       CreateTestCurveFromTrainingData(expected_data);
-  EXPECT_EQ(expected_curve, result_curve);
+  EXPECT_EQ(expected_curve, *result_curve);
 }
 
 // No training is done because number of training data points is less than
 // |kMinTrainingDataPoints|.
 TEST_F(ModellerImplTest, MinTrainingDataPointsRequired) {
-  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
-  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
-  SetUpModeller();
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
 
   fake_als_reader_.ReportAmbientLightUpdate(30);
   modeller_->OnUserBrightnessChanged(10, 20);

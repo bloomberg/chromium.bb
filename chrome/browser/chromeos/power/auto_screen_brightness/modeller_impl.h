@@ -188,12 +188,18 @@ class ModellerImpl : public Modeller,
 
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
   base::Optional<bool> brightness_monitor_success_;
-  Status model_status_ = Status::kInitializing;
+
+  // Whether this modeller has initialized successfully, including connecting
+  // to AlsReader, BrightnessMonitor and loading a Trainer.
+  // Initially has no value. Guaranteed to have a value after the completion of
+  // |OnCurveLoadedFromDisk|.
+  base::Optional<bool> is_modeller_enabled_;
 
   base::FilePath curve_path_;
 
-  // Latest personal curve, either loaded from disk or trained.
-  base::Optional<MonotoneCubicSpline> personal_curve_;
+  // True if a personal curve was successfully loaded from disk and passed to
+  // Trainer and Trainer reported it was valid.
+  bool has_initial_personal_curve_ = false;
 
   // Global curve constructed from predefined params.
   const MonotoneCubicSpline global_curve_;

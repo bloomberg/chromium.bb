@@ -23,6 +23,7 @@ class GaussianTrainer : public Trainer {
  public:
   // TODO(jiameng): revise default values.
   struct Params {
+    Params();
     // |brightness_bound_scale| and |brightness_bound_offset| are used to define
     // training example outliers.
     double brightness_bound_scale = 1.5;
@@ -45,6 +46,11 @@ class GaussianTrainer : public Trainer {
     double low_log_lux_threshold = 0.1;
     double min_grad_low_lux = 0;
 
+    // If log lux is above |high_log_lux_threshold| then we'll use
+    // |min_grad_high_lux| as gradient constraint.
+    double high_log_lux_threshold = 7.5;
+    double min_grad_high_lux = 0;
+
     // Min and max grad as a power of brightness ratios.
     double min_grad = 0.25;
     double max_grad = 1;
@@ -56,12 +62,19 @@ class GaussianTrainer : public Trainer {
   ~GaussianTrainer() override;
 
   // Trainer overrides:
-  void SetInitialCurves(const MonotoneCubicSpline& global_curve,
+  bool HasValidConfiguration() const override;
+  bool SetInitialCurves(const MonotoneCubicSpline& global_curve,
                         const MonotoneCubicSpline& current_curve) override;
+  MonotoneCubicSpline GetGlobalCurve() const override;
+  MonotoneCubicSpline GetCurrentCurve() const override;
   MonotoneCubicSpline Train(
       const std::vector<TrainingDataPoint>& data) override;
 
  private:
+  // Returns whether initial personal curve (passed in by |SetInitialCurves|) is
+  // valid, i.e. satisfying min/max ratio constraints.
+  bool IsInitialPersonalCurveValid() const;
+
   // Updates |brightness_| using |data|. It also sets |need_to_update_curve_|
   // to true if |brightness_| is actually changed.
   void AdjustCurveWithSingleDataPoint(const TrainingDataPoint& data);
@@ -71,6 +84,9 @@ class GaussianTrainer : public Trainer {
   // constraints. It does this by changing points to the left and to the right
   // of |center_index|.
   void EnforceMonotonicity(size_t center_index);
+
+  // Default params_ are valid.
+  bool valid_params_ = true;
 
   Params params_;
   // |global_curve| does not change after |SetInitialCurves| is called.
