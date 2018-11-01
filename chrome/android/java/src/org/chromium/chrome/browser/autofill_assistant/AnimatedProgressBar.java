@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.util.Property;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -22,8 +23,36 @@ import java.util.Queue;
  * pulsing.
  */
 public class AnimatedProgressBar {
-    private static final String PROGRESS_PROPERTY_NAME = "progress";
-    private static final String PROGRESS_COLOR_PROPERTY_NAME = "progressColor";
+    // TODO(806868): Move these properties into MaterialProgressBar.java.
+    private static final Property<MaterialProgressBar, Integer> PROGRESS_PROPERTY =
+            new Property<MaterialProgressBar, Integer>(Integer.class, "progress") {
+                @Override
+                public Integer get(MaterialProgressBar progressBar) {
+                    // TODO(806868): Implement get once this property is moved into
+                    // MaterialProgressBar.java.
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public void set(MaterialProgressBar progressBar, Integer progress) {
+                    progressBar.setProgress(progress);
+                }
+            };
+
+    private static final Property<MaterialProgressBar, Integer> COLOR_PROPERTY =
+            new Property<MaterialProgressBar, Integer>(Integer.class, "progressColor") {
+                @Override
+                public Integer get(MaterialProgressBar progressBar) {
+                    // TODO(806868): Implement get once this property is moved into
+                    // MaterialProgressBar.java.
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public void set(MaterialProgressBar progressBar, Integer progressColor) {
+                    progressBar.setProgressColor(progressColor);
+                }
+            };
 
     // The number of ms the progress bar would take to go from 0 to 100%.
     private static final int PROGRESS_BAR_SPEED_MS = 3_000;
@@ -54,8 +83,8 @@ public class AnimatedProgressBar {
 
     public void setProgress(int progress) {
         if (progress > mLastProgress) {
-            ObjectAnimator progressAnimation = ObjectAnimator.ofInt(
-                    mProgressBar, PROGRESS_PROPERTY_NAME, mLastProgress, progress);
+            ObjectAnimator progressAnimation =
+                    ObjectAnimator.ofInt(mProgressBar, PROGRESS_PROPERTY, mLastProgress, progress);
             progressAnimation.setDuration(PROGRESS_BAR_SPEED_MS * (progress - mLastProgress) / 100);
             progressAnimation.setInterpolator(ChromeAnimation.getAccelerateInterpolator());
             progressAnimation.addListener(new AnimatorListenerAdapter() {
@@ -82,8 +111,8 @@ public class AnimatedProgressBar {
 
     public void enablePulsing() {
         if (mPulseAnimation == null) {
-            mPulseAnimation = ObjectAnimator.ofInt(
-                    mProgressBar, PROGRESS_COLOR_PROPERTY_NAME, mNormalColor, mPulsedColor);
+            mPulseAnimation =
+                    ObjectAnimator.ofInt(mProgressBar, COLOR_PROPERTY, mNormalColor, mPulsedColor);
             mPulseAnimation.setDuration(PROGRESS_BAR_PULSING_DURATION_MS);
             mPulseAnimation.setEvaluator(new ArgbEvaluator());
             mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
