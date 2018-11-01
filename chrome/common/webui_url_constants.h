@@ -235,7 +235,6 @@ extern const char kChromeUIMetroFlowURL[];
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kChromeUICastHost[];
-extern const char kChromeUICastURL[];
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

@@ -27,13 +27,12 @@ window.addEventListener('load', function init() {
     var newHash = window.location.hash.substr(1);
     var extensionViewSrcParts =
         splitUrlOnHash(extensionView.getAttribute('src'));
-    if (newHash !== extensionViewSrcParts[1]) {
+    if (newHash !== extensionViewSrcParts[1] && newHash.startsWith('offers')) {
       extensionView.load(extensionViewSrcParts[0] + '#' + newHash);
     }
   });
 
   extensionView.load(
       'chrome-extension://' + loadTimeData.getString('extensionId') +
-          '/cast_setup/index.html#' + window.location.hash.substr(1) ||
-      'devices');
+          '/cast_setup/index.html#offers');
 });
