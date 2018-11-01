@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -45,6 +46,12 @@ class ContextualSuggestionsEventReporter implements SuggestionsEventReporter {
                 ? ContextualSuggestionsEvent.SUGGESTION_DOWNLOADED
                 : ContextualSuggestionsEvent.SUGGESTION_CLICKED;
         mSuggestionSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), eventId);
+
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "ContextualSuggestions.SuggestionClickPosition.Global", suggestion.getGlobalRank());
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "ContextualSuggestions.SuggestionClickPosition.Cluster",
+                suggestion.getPerSectionRank());
     }
 
     @Override
