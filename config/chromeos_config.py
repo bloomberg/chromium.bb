@@ -2691,7 +2691,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'reef',
       'terra',
-      'tricky',
       'veyron_minnie',
       'veyron_rialto',
   ])
@@ -2701,6 +2700,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'nyan_big',
       'scarlet',
+      'tricky',  # crbug.com/901046
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
