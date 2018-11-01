@@ -57,6 +57,9 @@ class TrackDataContainer : public MediaStreamComponent::TrackData {
 
 }  // namespace
 
+const char WebMediaStreamTrack::kResizeModeNone[] = "none";
+const char WebMediaStreamTrack::kResizeModeRescale[] = "crop-and-scale";
+
 WebMediaStreamTrack::WebMediaStreamTrack(
     MediaStreamComponent* media_stream_component)
     : private_(media_stream_component) {}

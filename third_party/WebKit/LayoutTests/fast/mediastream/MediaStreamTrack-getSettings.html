@@ -55,6 +55,8 @@ promise_test(function() {
     assert_true('aspectRatio' in settings,
                 'Aspect ratio missing: ' + JSON.stringify(settings));
     assert_equals(settings.width / settings.height, settings.aspectRatio);
+    assert_in_array(settings.resizeMode, [ "none", "crop-and-scale" ],
+                'Invalid resizeMode: ' + JSON.stringify(settings));
   });
 }, 'A video track returns the expected variables');
 
