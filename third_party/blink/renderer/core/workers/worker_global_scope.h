@@ -60,6 +60,7 @@ class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class OffscreenFontSelector;
 class V8VoidFunction;
+class WorkerClassicScriptLoader;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -144,6 +145,10 @@ class CORE_EXPORT WorkerGlobalScope
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
+  void ImportClassicScriptPausable(
+      const KURL& script_url,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id);
   void ImportModuleScriptPausable(
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
@@ -168,6 +173,9 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
     return animation_frame_provider_;
   }
+
+  // Returns true when this is a nested worker.
+  virtual bool IsNestedWorker() const { return false; }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -198,6 +206,16 @@ class CORE_EXPORT WorkerGlobalScope
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
+
+  // Returns true if this worker script is supposed to be fetched on the main
+  // thread and passed to the worker thread.
+  bool IsScriptFetchedOnMainThread();
+
+  void DidReceiveResponseForClassicScript(
+      scoped_refptr<WorkerClassicScriptLoader> classic_script_loader);
+  void DidImportClassicScript(
+      scoped_refptr<WorkerClassicScriptLoader> classic_script_loader,
+      const v8_inspector::V8StackTraceId& stack_id);
 
   // |kNotHandled| is used when the script was not in
   // InstalledScriptsManager, which means it was not an installed script.

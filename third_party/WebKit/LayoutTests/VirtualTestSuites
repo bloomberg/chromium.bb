@@ -700,6 +700,16 @@
              "--disable-features=NetworkService"]
   },
   {
+    "prefix": "off-main-thread-worker-script-fetch",
+    "base": "external/wpt/workers",
+    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+  },
+  {
+    "prefix": "off-main-thread-worker-script-fetch",
+    "base": "fast/workers",
+    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+  },
+  {
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
     "args": ["--enable-features=RTCUnifiedPlanByDefault"]

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -96,6 +97,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
     mojom::IPAddressSpace creation_address_space,
+    bool is_nested_worker,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
   DCHECK(response_callback || finished_callback);
@@ -112,11 +114,21 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     // https://crbug.com/794548.
     mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
   } else {
-    // For nested workers, impose the strict MIME-type checks because the
-    // feature is new (enabled by default in M69) and there is no backward
-    // compatibility issue.
     DCHECK(execution_context.IsWorkerGlobalScope());
-    mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
+    if (is_nested_worker) {
+      // For nested workers, impose the strict MIME-type checks because the
+      // feature is new (enabled by default in M69) and there is no backward
+      // compatibility issue.
+      mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
+    } else {
+      // For worker creation on a document with off-the-main-thread top-level
+      // worker classic script loading, don't impose strict MIME-type checks for
+      // backward compatibility.
+      // TODO(nhiroki): Always impose strict MIME-type checks on all web
+      // workers (https://crbug.com/794548).
+      DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
+      mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
+    }
   }
 
   ResourceRequest request(url);

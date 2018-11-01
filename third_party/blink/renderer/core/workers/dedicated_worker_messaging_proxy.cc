@@ -54,10 +54,23 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
       std::move(creation_params),
       CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
+  // Step 13: "Obtain script by switching on the value of options's type
+  // member:"
   if (options->type() == "classic") {
-    GetWorkerThread()->EvaluateClassicScript(
-        script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+    // "classic: Fetch a classic worker script given url, outside settings,
+    // destination, and inside settings."
+    if (RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled()) {
+      GetWorkerThread()->ImportClassicScript(script_url,
+                                             outside_settings_object, stack_id);
+    } else {
+      // Legacy code path (to be deprecated, see https://crbug.com/835717):
+      GetWorkerThread()->EvaluateClassicScript(
+          script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+    }
   } else if (options->type() == "module") {
+    // "module: Fetch a module worker script graph given url, outside settings,
+    // destination, the value of the credentials member of options, and inside
+    // settings."
     network::mojom::FetchCredentialsMode credentials_mode;
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);

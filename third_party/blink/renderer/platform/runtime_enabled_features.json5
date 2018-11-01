@@ -867,6 +867,9 @@
       name: "OffMainThreadCSSPaint",
     },
     {
+      name: "OffMainThreadWorkerScriptFetch",
+    },
+    {
       name: "OffscreenCanvas",
       status: "stable",
     },

@@ -320,7 +320,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
       mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      worker_start_data_.address_space, base::OnceClosure(),
+      worker_start_data_.address_space, false /* is_nested_worker */,
+      base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since OnScriptLoaderFinished() might have been already

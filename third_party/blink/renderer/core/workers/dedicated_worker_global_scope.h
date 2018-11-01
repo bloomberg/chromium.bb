@@ -62,6 +62,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // WorkerGlobalScope
+  bool IsNestedWorker() const override;
   void ImportModuleScript(
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,

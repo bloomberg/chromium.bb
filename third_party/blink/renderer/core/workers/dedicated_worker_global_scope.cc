@@ -65,6 +65,10 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::DedicatedWorkerGlobalScope;
 }
 
+bool DedicatedWorkerGlobalScope::IsNestedWorker() const {
+  return static_cast<DedicatedWorkerThread*>(GetThread())->IsNestedWorker();
+}
+
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void DedicatedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
