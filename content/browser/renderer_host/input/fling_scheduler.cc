@@ -24,31 +24,39 @@ FlingScheduler::~FlingScheduler() {
     observed_compositor_->RemoveAnimationObserver(this);
 }
 
-void FlingScheduler::ScheduleFlingProgress(
-    base::WeakPtr<FlingController> fling_controller) {
-  DCHECK(fling_controller);
-  fling_controller_ = fling_controller;
+void FlingScheduler::ScheduleFlingProgress() {
   // Don't do anything if a ui::Compositor is already being observed.
   if (observed_compositor_)
     return;
+
+  host_->SetNeedsBeginFrameForFlingProgress();
+}
+
+void FlingScheduler::RegisterFlingSchedulerObserver(
+    base::WeakPtr<FlingController> fling_controller) {
+  DCHECK(fling_controller);
+  fling_controller_ = fling_controller;
+  DCHECK(!observed_compositor_);
+
   ui::Compositor* compositor = GetCompositor();
   // If a ui::Compositor can't be obtained, ask the host for BeginFrames.
-  if (!compositor) {
-    host_->SetNeedsBeginFrameForFlingProgress();
+  if (!compositor)
     return;
-  }
+
   compositor->AddAnimationObserver(this);
   observed_compositor_ = compositor;
 }
 
-void FlingScheduler::DidStopFlingingOnBrowser(
-    base::WeakPtr<FlingController> fling_controller) {
-  DCHECK(fling_controller);
+void FlingScheduler::UnregisterFlingSchedulerObserver() {
   if (observed_compositor_) {
     observed_compositor_->RemoveAnimationObserver(this);
     observed_compositor_ = nullptr;
   }
   fling_controller_ = nullptr;
+}
+
+void FlingScheduler::DidStopFlingingOnBrowser() {
+  UnregisterFlingSchedulerObserver();
   host_->DidStopFlinging();
 }
 

@@ -20,33 +20,41 @@ FlingSchedulerAndroid::~FlingSchedulerAndroid() {
     observed_window_->RemoveObserver(this);
 }
 
-void FlingSchedulerAndroid::ScheduleFlingProgress(
-    base::WeakPtr<FlingController> fling_controller) {
-  DCHECK(fling_controller);
-  fling_controller_ = fling_controller;
+void FlingSchedulerAndroid::ScheduleFlingProgress() {
   if (!observed_window_) {
-    ui::WindowAndroid* window = GetRootWindow();
     // If the root window does not have a Compositor (happens on Android
     // WebView), we'll never receive an OnAnimate call. In this case fall back
     // to BeginFrames coming from the host.
-    if (!window || !window->GetCompositor()) {
-      host_->SetNeedsBeginFrameForFlingProgress();
-      return;
-    }
-    window->AddObserver(this);
-    observed_window_ = window;
+    host_->SetNeedsBeginFrameForFlingProgress();
+    return;
   }
   observed_window_->SetNeedsAnimate();
 }
 
-void FlingSchedulerAndroid::DidStopFlingingOnBrowser(
+void FlingSchedulerAndroid::RegisterFlingSchedulerObserver(
     base::WeakPtr<FlingController> fling_controller) {
   DCHECK(fling_controller);
+  fling_controller_ = fling_controller;
+
+  DCHECK(!observed_window_);
+  ui::WindowAndroid* window = GetRootWindow();
+  if (!window || !window->GetCompositor())
+    return;
+
+  window->AddObserver(this);
+  observed_window_ = window;
+}
+
+void FlingSchedulerAndroid::UnregisterFlingSchedulerObserver() {
   if (observed_window_) {
     observed_window_->RemoveObserver(this);
     observed_window_ = nullptr;
   }
   fling_controller_ = nullptr;
+}
+
+void FlingSchedulerAndroid::DidStopFlingingOnBrowser() {
+  UnregisterFlingSchedulerObserver();
   host_->DidStopFlinging();
 }
 

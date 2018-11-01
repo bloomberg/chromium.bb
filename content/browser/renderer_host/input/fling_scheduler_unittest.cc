@@ -18,15 +18,13 @@ class FakeFlingScheduler : public FlingScheduler {
  public:
   FakeFlingScheduler(RenderWidgetHostImpl* host) : FlingScheduler(host) {}
 
-  void ScheduleFlingProgress(
-      base::WeakPtr<FlingController> fling_controller) override {
-    FlingScheduler::ScheduleFlingProgress(fling_controller);
+  void ScheduleFlingProgress() override {
+    FlingScheduler::ScheduleFlingProgress();
     fling_in_progress_ = true;
   }
 
-  void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) override {
-    FlingScheduler::DidStopFlingingOnBrowser(fling_controller);
+  void DidStopFlingingOnBrowser() override {
+    FlingScheduler::DidStopFlingingOnBrowser();
     fling_in_progress_ = false;
   }
 
@@ -56,6 +54,7 @@ class FlingSchedulerTest : public testing::Test,
     fling_scheduler_ = std::make_unique<FakeFlingScheduler>(widget_host_);
     fling_controller_ = std::make_unique<FlingController>(
         this, fling_scheduler_.get(), FlingController::Config());
+    fling_controller_->RegisterFlingSchedulerObserver();
   }
 
   void TearDown() override {
