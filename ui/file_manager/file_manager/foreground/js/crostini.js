@@ -59,6 +59,11 @@ Crostini.registerSharedPath = function(entry, volumeManager) {
     paths = {};
     Crostini.SHARED_PATHS_[info.rootType] = paths;
   }
+  // Remove any existing paths that are children of the new path.
+  for (let path in paths) {
+    if (path.startsWith(entry.fullPath))
+      delete paths[path];
+  }
   paths[entry.fullPath] = true;
 
   // Record UMA.
@@ -90,7 +95,7 @@ Crostini.unregisterSharedPath = function(entry, volumeManager) {
  * @param {!Entry} entry
  * @param {!VolumeManager} volumeManager
  * @return {boolean} True if path is shared either by a direct
- * share or from one of its ancestor directories.
+ *   share or from one of its ancestor directories.
  */
 Crostini.isPathShared = function(entry, volumeManager) {
   const root = volumeManager.getLocationInfo(entry).rootType;
@@ -99,12 +104,12 @@ Crostini.isPathShared = function(entry, volumeManager) {
     return false;
   // Check path and all ancestor directories.
   let path = entry.fullPath;
-  while (path != '') {
+  while (path.length > 1) {
     if (paths[path])
       return true;
     path = path.substring(0, path.lastIndexOf('/'));
   }
-  return false;
+  return !!paths['/'];
 };
 
 /**
