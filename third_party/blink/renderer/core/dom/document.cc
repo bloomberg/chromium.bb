@@ -5898,11 +5898,9 @@ void Document::setDesignMode(const String& value) {
   if (new_value == design_mode_)
     return;
   design_mode_ = new_value;
-  StyleChangeType type = RuntimeEnabledFeatures::LayoutNGEnabled()
-                             ? kNeedsReattachStyleChange
-                             : kSubtreeStyleChange;
-  SetNeedsStyleRecalc(type, StyleChangeReasonForTracing::Create(
-                                style_change_reason::kDesignMode));
+  SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kDesignMode));
 }
 
 Document* Document::ParentDocument() const {
