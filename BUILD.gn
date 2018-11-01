@@ -39,15 +39,12 @@ config("nasm_config") {
   include_dirs = [
     ".",
     "asm",
-    "config",
     "disasm",
     "include",
     "output",
     "x86",
   ]
 
-  # TODO(dalecurtis): Try using a common config.h for now, but Mac may need its
-  # own and Windows may need to use the pregenerated msvc.h one.
   defines = [ "HAVE_CONFIG_H" ]
 
   if (is_clang) {
@@ -67,6 +64,12 @@ config("nasm_config") {
 if (current_toolchain == host_toolchain) {
   executable("nasm") {
     sources = nasmlib_sources + nasm_sources
+    sources += [
+      "config/config.h",
+      "config/config-mac.h",
+      "config/config-linux.h",
+      "config/config-win.h",
+    ]
 
     configs -= configs_to_delete
     configs += configs_to_add

@@ -13,17 +13,32 @@ This contains the source to NASM, the assembler used for parts of Chromium.
 Local Modifications:
 * Applied deterministic.diff to make nasm deterministic.
 * Modified .gitignore not to hide generated files Chromium needs.
+* Replaced config/config.h with per-platform includer.
 
 To update, have clang in your system path (from //third_party/llvm-
 build/Release+Asserts/bin) then do the following:
 
-git remote add upstream https://repo.or.cz/nasm.git
-git fetch upstream
-git merge upstream/master
-CC=clang CXX=clang++ ./autogen.sh
-CC=clang CXX=clang++ ./configure
-make perlreq
-./generate_nasm_sources.py
-git add <any new .c/.h files which show up>
-git commit -a
+  git remote add upstream https://repo.or.cz/nasm.git
+  git fetch upstream
+  git merge upstream/master
+  CC=clang CXX=clang++ ./autogen.sh
+  CC=clang CXX=clang++ ./configure
+  make perlreq
+  ./generate_nasm_sources.py
+  git add <any new .c/.h files which show up>
 
+  # Copy config/config.h to config-(mac|win|linux).h
+  # Revert config/config.h to the checked in version
+
+  git commit -a
+
+In the event any new config.h flags are added, you may need to regenerate the
+config.h for each platform. You may be able to just copy new flags into all
+platform configurations, but this may not always work.
+
+The mac configuration may need some additional changes depending on the current
+SDK version being targeted by Chrome; the following change was made for 10.9:
+/* #undef HAVE_FACCESSAT */
+
+TODO(dalecurtis): Seem if there's a CFLAG that can be given to configure to
+avoid it using 10.10 features while Chrome targets 10.9 SDK.
