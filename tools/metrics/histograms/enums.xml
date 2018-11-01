@@ -10714,6 +10714,19 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO"/>
 </enum>
 
+<enum name="DeviceSyncRequestFailureReason">
+  <int value="0" label="Requested succeeded but unexpected result"/>
+  <int value="1" label="Service not yet initialized"/>
+  <int value="2" label="Device offline"/>
+  <int value="3" label="Server endpoint not found"/>
+  <int value="4" label="Authentication error"/>
+  <int value="5" label="Bad request"/>
+  <int value="6" label="Response malformed"/>
+  <int value="7" label="Internal server error"/>
+  <int value="8" label="Unknown network error"/>
+  <int value="9" label="Unknown error"/>
+</enum>
+
 <enum name="DeviceTechnologyType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ethernet"/>
