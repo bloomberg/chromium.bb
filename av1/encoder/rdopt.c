@@ -9726,12 +9726,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         mbmi->motion_mode = SIMPLE_TRANSLATION;
         mbmi->comp_group_idx = 0;
 
-        const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
         const int comp_index_ctx = get_comp_index_context(cm, xd);
-        if (masked_compound_used) {
-          compmode_interinter_cost +=
-              x->comp_group_idx_cost[comp_group_idx_ctx][0];
-        }
         compmode_interinter_cost += x->comp_idx_cost[comp_index_ctx][0];
       }
 
@@ -9878,7 +9873,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
             cpi, x, bsize, mi_col, mi_row, cur_mv, masked_compound_used,
             &orig_dst, &tmp_dst, rd_buffers, &rate_mv, &best_rd_compound,
             rd_stats, ref_best_rd);
-        if (ref_best_rd < INT64_MAX && best_rd_compound / 3 > ref_best_rd) {
+        if (ref_best_rd < INT64_MAX &&
+            (best_rd_compound >> 3) * 6 > ref_best_rd) {
           restore_dst_buf(xd, orig_dst, num_planes);
           continue;
         }
@@ -9907,17 +9903,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       } else if (cpi->sf.model_based_post_interp_filter_breakout &&
                  ref_best_rd != INT64_MAX && (rd >> 3) * 3 > ref_best_rd) {
         restore_dst_buf(xd, orig_dst, num_planes);
-        if ((rd >> 3) * 2 > ref_best_rd) break;
-        continue;
-      }
-
-      if (search_jnt_comp) {
-        // if 1/2 model rd is larger than best_rd in jnt_comp mode,
-        // use jnt_comp mode, save additional search
-        if ((rd >> 3) * 4 > best_rd) {
-          restore_dst_buf(xd, orig_dst, num_planes);
-          continue;
-        }
+        break;
       }
 
       if (!is_comp_pred)
