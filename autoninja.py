@@ -15,7 +15,7 @@ import os
 import re
 import sys
 
-# The -t tools are incompatible with -j and -l
+# The -t tools are incompatible with -j
 t_specified = False
 j_specified = False
 output_dir = '.'
@@ -80,13 +80,5 @@ if not j_specified and not t_specified:
       core_addition = int(core_addition)
       args.append('-j')
       args.append('%d' % (num_cores + core_addition))
-
-if not t_specified:
-  # Specify a maximum CPU load so that running builds in two different command
-  # prompts won't overload the system too much. This is not reliable enough to
-  # be used to auto-adjust between goma/non-goma loads, but it is a nice
-  # fallback load balancer.
-  args.append('-l')
-  args.append('%d' % num_cores)
 
 print ' '.join(args)
