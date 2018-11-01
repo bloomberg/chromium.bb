@@ -9,7 +9,6 @@
 #include "base/test/test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/swiftshader/tests/GLESUnitTests/SwiftShaderTest.h"
 
 namespace {
 
@@ -19,6 +18,12 @@ int RunHelper(base::TestSuite* test_suite) {
 }
 
 }  // namespace
+
+class SwiftShaderTestEnvironment : public testing::Environment {
+ public:
+  void SetUp() override {}
+  void TearDown() override {}
+};
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
