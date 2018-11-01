@@ -79,6 +79,10 @@ class DriveIntegrationServiceObserver {
   virtual void OnFileSystemBeingUnmounted() {
   }
 
+  // Triggered when mounting the filesystem has failed in a fashion that will
+  // not be automatically retried.
+  virtual void OnFileSystemMountFailed() {}
+
  protected:
   virtual ~DriveIntegrationServiceObserver() {}
 };
@@ -124,6 +128,8 @@ class DriveIntegrationService : public KeyedService,
   bool is_enabled() const { return enabled_; }
 
   bool IsMounted() const;
+
+  bool mount_failed() const { return mount_failed_; }
 
   // Returns the path of the mount point for drive. It is only valid to call if
   // |IsMounted()|.
@@ -245,6 +251,7 @@ class DriveIntegrationService : public KeyedService,
   Profile* profile_;
   State state_;
   bool enabled_;
+  bool mount_failed_ = false;
   // Custom mount point name that can be injected for testing in constructor.
   std::string mount_point_name_;
 

@@ -497,6 +497,7 @@ void EventRouter::Shutdown() {
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
+    integration_service->RemoveObserver(this);
     if (integration_service->GetDriveFsHost()) {
       integration_service->GetDriveFsHost()->RemoveObserver(
           drivefs_event_router_.get());
@@ -549,6 +550,7 @@ void EventRouter::ObserveEvents() {
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
+    integration_service->AddObserver(this);
     if (integration_service->GetDriveFsHost()) {
       integration_service->GetDriveFsHost()->AddObserver(
           drivefs_event_router_.get());
@@ -1082,6 +1084,10 @@ void EventRouter::OnRenameCompleted(const std::string& device_path,
 void EventRouter::SetDispatchDirectoryChangeEventImplForTesting(
     const DispatchDirectoryChangeEventImplCallback& callback) {
   dispatch_directory_change_event_impl_ = callback;
+}
+
+void EventRouter::OnFileSystemMountFailed() {
+  OnFileManagerPrefsChanged();
 }
 
 base::WeakPtr<EventRouter> EventRouter::GetWeakPtr() {
