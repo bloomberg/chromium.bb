@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/gaia_urls.h"

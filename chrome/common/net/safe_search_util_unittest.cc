@@ -4,7 +4,7 @@
 
 #include "chrome/common/net/safe_search_util.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/url_constants.h"
 #include "net/http/http_request_headers.h"

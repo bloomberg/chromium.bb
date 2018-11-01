@@ -5,7 +5,7 @@
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
 
 #include "base/android/jni_android.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "jni/ScreenOrientationListener_jni.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

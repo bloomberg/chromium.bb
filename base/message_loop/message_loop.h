@@ -7,4 +7,7 @@
 
 #include "base/message_loop/message_loop_impl.h"
 
+// TODO(crbug.com/891670) : Extract a common interface for base::MessageLoop
+// in this file (to be shared with base::SequenceManager during the migration).
+
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_FORWARD_H_

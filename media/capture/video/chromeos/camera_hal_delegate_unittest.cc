@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"

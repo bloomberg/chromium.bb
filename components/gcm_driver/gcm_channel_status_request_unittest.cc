@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/gcm_driver/gcm_channel_status_request.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "components/sync/protocol/experiment_status.pb.h"

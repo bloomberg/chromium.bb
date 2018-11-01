@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

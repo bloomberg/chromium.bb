@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/common/previews_state.h"

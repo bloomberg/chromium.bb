@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_version.h"
 #include "testing/gmock/include/gmock/gmock.h"

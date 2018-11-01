@@ -7,7 +7,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/offline_pages/task/task.h"
 #include "components/offline_pages/task/test_task_runner.h"

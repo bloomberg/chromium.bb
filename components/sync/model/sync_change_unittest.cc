@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/protocol/preference_specifics.pb.h"

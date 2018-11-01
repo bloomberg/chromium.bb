@@ -24,7 +24,7 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

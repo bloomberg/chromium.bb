@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_variant.h"

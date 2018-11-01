@@ -6,7 +6,7 @@
 
 #import "base/base64.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"

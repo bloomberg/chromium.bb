@@ -5,7 +5,7 @@
 #include "components/signin/core/browser/signin_tracker.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"

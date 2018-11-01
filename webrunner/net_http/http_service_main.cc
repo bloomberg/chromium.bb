@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "webrunner/net_http/http_service_impl.h"

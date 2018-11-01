@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/threading/thread.h"
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"

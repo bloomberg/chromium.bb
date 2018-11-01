@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "testing/gtest/include/gtest/gtest.h"

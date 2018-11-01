@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/oobe_config/oobe_config.pb.h"
 #include "dbus/message.h"

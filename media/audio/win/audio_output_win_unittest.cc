@@ -12,7 +12,7 @@
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"

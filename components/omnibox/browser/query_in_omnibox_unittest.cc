@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/query_in_omnibox.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"

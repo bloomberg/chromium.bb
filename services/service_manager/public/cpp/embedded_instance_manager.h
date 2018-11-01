@@ -13,7 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "services/service_manager/public/cpp/embedded_service_info.h"

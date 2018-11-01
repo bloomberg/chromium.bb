@@ -9,7 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"

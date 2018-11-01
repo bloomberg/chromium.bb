@@ -7,7 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"

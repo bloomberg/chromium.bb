@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "services/data_decoder/image_decoder_impl.h"

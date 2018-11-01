@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/chrome_cleaner/ipc/mock_chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"

@@ -4,7 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/common/service_process_util.h"

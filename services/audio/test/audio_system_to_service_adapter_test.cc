@@ -4,7 +4,7 @@
 
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_system_test_util.h"
