@@ -16,6 +16,48 @@ _SUMMARY_TYPE = models.TextNodeType('summary')
 
 _LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 
+_ENUMERATION_TYPE = models.ObjectNodeType(
+    'enumeration',
+    attributes=[],
+    single_line=True)
+
+_QUANTILES_TYPE = models.ObjectNodeType(
+    'quantiles',
+    attributes=[
+      ('type', unicode),
+    ],
+    single_line=True)
+
+_INDEX_TYPE = models.ObjectNodeType(
+    'index',
+    attributes=[
+      ('fields', unicode),
+    ],
+    single_line=True)
+
+_STATISTICS_TYPE =  models.ObjectNodeType(
+    'statistics',
+    attributes=[],
+    children=[
+        models.ChildType('quantiles', _QUANTILES_TYPE, False),
+        models.ChildType('enumeration', _ENUMERATION_TYPE, False),
+    ])
+
+_HISTORY_TYPE =  models.ObjectNodeType(
+    'history',
+    attributes=[],
+    children=[
+        models.ChildType('index', _INDEX_TYPE, False),
+        models.ChildType('statistics', _STATISTICS_TYPE, True),
+    ])
+
+_AGGREGATION_TYPE =  models.ObjectNodeType(
+    'aggregation',
+    attributes=[],
+    children=[
+        models.ChildType('history', _HISTORY_TYPE, False),
+    ])
+
 _METRIC_TYPE =  models.ObjectNodeType(
     'metric',
     attributes=[
@@ -26,6 +68,7 @@ _METRIC_TYPE =  models.ObjectNodeType(
         models.ChildType('obsolete', _OBSOLETE_TYPE, False),
         models.ChildType('owners', _OWNER_TYPE, True),
         models.ChildType('summary', _SUMMARY_TYPE, False),
+        models.ChildType('aggregation', _AGGREGATION_TYPE, True),
     ])
 
 _EVENT_TYPE =  models.ObjectNodeType(
