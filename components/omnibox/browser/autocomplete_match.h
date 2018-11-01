@@ -79,7 +79,6 @@ struct AutocompleteMatch {
       URL       = 1 << 0,  // A URL
       MATCH     = 1 << 1,  // A match for the user's search term
       DIM       = 1 << 2,  // "Helper text"
-      INVISIBLE = 1 << 3,  // "Prefix" text we don't want to see
     };
     // clang-format on
 
@@ -434,6 +433,9 @@ struct AutocompleteMatch {
   // Optional override to use for types that specify an icon sub-type.
   DocumentType document_type;
 
+  // Holds the common part of tail suggestion.
+  base::string16 tail_suggest_common_prefix;
+
   // The main text displayed in the address bar dropdown.
   base::string16 contents;
   ACMatchClassifications contents_class;
@@ -516,6 +518,9 @@ struct AutocompleteMatch {
   // A list of matches culled during de-duplication process, retained to
   // ensure if a match is deleted, the duplicates are deleted as well.
   std::vector<AutocompleteMatch> duplicate_matches;
+
+  // So users of AutocompleteMatch can use the same ellipsis that it uses.
+  static const char kEllipsis[];
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.

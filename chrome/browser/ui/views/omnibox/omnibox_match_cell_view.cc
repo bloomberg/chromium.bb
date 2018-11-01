@@ -25,6 +25,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 
@@ -329,6 +330,11 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                                                         color));
     }
   }
+  if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
+    // Used for indent calculation.
+    SetTailSuggestCommonPrefixWidth(match.tail_suggest_common_prefix);
+  else
+    SetTailSuggestCommonPrefixWidth(base::string16());
 }
 
 const char* OmniboxMatchCellView::GetClassName() const {
@@ -352,7 +358,8 @@ void OmniboxMatchCellView::Layout() {
   } else if (is_old_style_answer_) {
     LayoutOldStyleAnswer(icon_view_width, text_indent);
   } else {
-    LayoutOneLineSuggestion(icon_view_width, text_indent);
+    LayoutOneLineSuggestion(icon_view_width,
+                            text_indent + tail_suggest_common_prefix_width_);
   }
 }
 
@@ -398,8 +405,9 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
   if (description_view_->text().empty()) {
     // This vertically centers content in the rare case that no description is
     // provided.
-    content_view_->SetBounds(x + GetTextIndent(), y, text_width,
-                             child_area.height());
+    content_view_->SetBounds(
+        x + GetTextIndent() + tail_suggest_common_prefix_width_, y, text_width,
+        child_area.height());
     description_view_->SetSize(gfx::Size());
   } else {
     const int text_height = content_view_->GetLineHeight();
@@ -436,4 +444,24 @@ void OmniboxMatchCellView::LayoutOneLineSuggestion(int icon_view_width,
     description_view_->SetSize(gfx::Size());
     separator_view_->SetSize(gfx::Size());
   }
+}
+
+void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
+    const base::string16& common_prefix) {
+  if (common_prefix.empty()) {
+    tail_suggest_common_prefix_width_ = 0;
+    return;
+  }
+  std::unique_ptr<gfx::RenderText> render_text =
+      content_view_->CreateRenderText(common_prefix);
+  auto size = render_text->GetStringSize();
+  tail_suggest_common_prefix_width_ = size.width();
+  // Only calculate fixed string width once.
+  if (!ellipsis_width_) {
+    render_text->SetText(base::ASCIIToUTF16(AutocompleteMatch::kEllipsis));
+    size = render_text->GetStringSize();
+    ellipsis_width_ = size.width();
+  }
+  // Indent text by prefix, but come back by width of ellipsis.
+  tail_suggest_common_prefix_width_ -= ellipsis_width_;
 }

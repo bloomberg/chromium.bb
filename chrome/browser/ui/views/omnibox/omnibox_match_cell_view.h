@@ -62,6 +62,18 @@ class OmniboxMatchCellView : public views::View {
   OmniboxTextView* separator_view_;
 
  private:
+  void SetTailSuggestCommonPrefixWidth(const base::string16& common_prefix);
+
+  // This (permanently) holds the rendered width of
+  // AutocompleteMatch::kEllipsis so that we don't have to keep calculating
+  // it.
+  int ellipsis_width_ = 0;
+
+  // This holds the rendered width of the common prefix of a set of tail
+  // suggestions so that it doesn't have to be re-calculated if the prefix
+  // doesn't change.
+  int tail_suggest_common_prefix_width_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(OmniboxMatchCellView);
 };
 

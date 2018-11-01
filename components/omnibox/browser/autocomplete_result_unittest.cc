@@ -942,19 +942,18 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
       // It should not touch this, since it's not a tail suggestion.
       {
           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-          "superman",
-          "superman",
-          {{0, ACMatchClassification::NONE}, {5, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::NONE}, {5, ACMatchClassification::MATCH}},
+          "this is a test",
+          "this is a test",
+          {{0, ACMatchClassification::NONE}, {9, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::NONE}, {9, ACMatchClassification::MATCH}},
       },
       // Make sure it finds this tail suggestion, and prepends appropriately.
       {
           AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
-          "star",
-          "superstar",
+          "a recording",
+          "... a recording",
           {{0, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::INVISIBLE},
-           {5, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::MATCH}},
       },
   };
   ACMatches matches;
@@ -967,8 +966,9 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
     matches.push_back(match);
   }
   // Tail suggestion needs one-off initialization.
-  matches[1].RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "5");
-  matches[1].RecordAdditionalInfo(kACMatchPropertySuggestionText, "superstar");
+  matches[1].RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "9");
+  matches[1].RecordAdditionalInfo(kACMatchPropertySuggestionText,
+                                  "this is a test");
   AutocompleteResult result;
   result.AppendMatches(AutocompleteInput(), matches);
   result.InlineTailPrefixes();

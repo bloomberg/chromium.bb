@@ -81,6 +81,8 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
   0
 };
 
+const char AutocompleteMatch::kEllipsis[] = "... ";
+
 AutocompleteMatch::AutocompleteMatch()
     : provider(nullptr),
       relevance(0),
@@ -125,6 +127,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       image_dominant_color(match.image_dominant_color),
       image_url(match.image_url),
       document_type(match.document_type),
+      tail_suggest_common_prefix(match.tail_suggest_common_prefix),
       contents(match.contents),
       contents_class(match.contents_class),
       description(match.description),
@@ -170,6 +173,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   image_dominant_color = match.image_dominant_color;
   image_url = match.image_url;
   document_type = match.document_type;
+  tail_suggest_common_prefix = match.tail_suggest_common_prefix;
   contents = match.contents;
   contents_class = match.contents_class;
   description = match.description;
@@ -750,14 +754,15 @@ AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
 
 void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {
   if (type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-    contents = common_prefix + contents;
+    tail_suggest_common_prefix = common_prefix;
+    // Insert an ellipsis before uncommon part.
+    const auto ellipsis = base::ASCIIToUTF16(kEllipsis);
+    contents = ellipsis + contents;
     // Shift existing styles.
-    for (ACMatchClassification& classification : contents_class)
-      classification.offset += common_prefix.size();
-    // Prefix with invisible text.
-    contents_class.insert(
-        contents_class.begin(),
-        ACMatchClassification(0, ACMatchClassification::INVISIBLE));
+    for (ACMatchClassification& classification : contents_class) {
+      if (classification.offset > 0)
+        classification.offset += ellipsis.size();
+    }
   }
 }
 

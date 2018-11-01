@@ -354,8 +354,6 @@ void OmniboxTextView::ReapplyStyling() {
       render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
     } else if (classifications[i].style & ACMatchClassification::DIM) {
       part = OmniboxPart::RESULTS_TEXT_DIMMED;
-    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      part = OmniboxPart::RESULTS_TEXT_INVISIBLE;
     }
     render_text_->ApplyColor(result_view_->GetColor(part), current_range);
   }

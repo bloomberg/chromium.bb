@@ -686,14 +686,12 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
   // Add a suggestion to exercise classification text styling.
   result->suggestions.emplace_back(OmniboxSuggestion(
       base::UTF8ToUTF16("Suggestion with classification"),
-      base::UTF8ToUTF16("none url match dim invsible"),
-      ACMatchClassifications(),
+      base::UTF8ToUTF16("none url match dim"), ACMatchClassifications(),
       {
           ACMatchClassification(0, ACMatchClassification::NONE),
           ACMatchClassification(5, ACMatchClassification::URL),
           ACMatchClassification(9, ACMatchClassification::MATCH),
           ACMatchClassification(15, ACMatchClassification::DIM),
-          ACMatchClassification(19, ACMatchClassification::INVISIBLE),
       },
       &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
       base::string16(), base::string16()));
