@@ -168,12 +168,13 @@ bool DisplayResourceProvider::OnMemoryDump(
 
 #if defined(OS_ANDROID)
 void DisplayResourceProvider::SendPromotionHints(
-    const OverlayCandidateList::PromotionHintInfoMap& promotion_hints) {
+    const OverlayCandidateList::PromotionHintInfoMap& promotion_hints,
+    const ResourceIdSet& requestor_set) {
   GLES2Interface* gl = ContextGL();
   if (!gl)
     return;
 
-  for (const auto& id : wants_promotion_hints_set_) {
+  for (const auto& id : requestor_set) {
     auto it = resources_.find(id);
     if (it == resources_.end())
       continue;
@@ -210,14 +211,27 @@ bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   return resource->transferable.is_backed_by_surface_texture;
 }
 
-bool DisplayResourceProvider::WantsPromotionHintForTesting(ResourceId id) {
-  return wants_promotion_hints_set_.count(id) > 0;
-}
-
 size_t DisplayResourceProvider::CountPromotionHintRequestsForTesting() {
   return wants_promotion_hints_set_.size();
 }
 #endif
+
+bool DisplayResourceProvider::DoesResourceWantPromotionHint(
+    ResourceId id) const {
+#if defined(OS_ANDROID)
+  return wants_promotion_hints_set_.count(id) > 0;
+#else
+  return false;
+#endif
+}
+
+bool DisplayResourceProvider::DoAnyResourcesWantPromotionHints() const {
+#if defined(OS_ANDROID)
+  return wants_promotion_hints_set_.size() > 0;
+#else
+  return false;
+#endif
+}
 
 bool DisplayResourceProvider::IsOverlayCandidate(ResourceId id) {
   ChildResource* resource = TryGetResource(id);
