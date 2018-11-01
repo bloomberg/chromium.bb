@@ -6,21 +6,38 @@
 
 #include "base/stl_util.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ar.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/bn_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ckb_ar.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ckb_en.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/deva_phone.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ethi.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/fa.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/gu_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/km.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/kn_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/lo.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ml_phone.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/my.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/my_myansan.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ne_inscript.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ne_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ru_phone_aatseel.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ru_phone_yazhert.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/si.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ta_inscript.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ta_itrans.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ta_phone.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ta_tamil99.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ta_typewriter.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/te_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/th.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/th_pattajoti.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/th_tis.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/us.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/vi_tcvn.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/vi_telex.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/vi_viqr.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/vi_vni.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace chromeos {
@@ -53,6 +70,11 @@ struct RawDataEntry {
 
 static const std::map<std::string, RawDataEntry> kRawData = {
     {ar::kId, RawDataEntry(ar::kKeyMap, ar::kIs102)},
+    {bn_phone::kId, RawDataEntry(bn_phone::kKeyMap,
+                                 bn_phone::kIs102,
+                                 bn_phone::kTransforms,
+                                 bn_phone::kTransformsLen,
+                                 bn_phone::kHistoryPrune)},
     {ckb_ar::kId, RawDataEntry(ckb_ar::kKeyMap, ckb_ar::kIs102)},
     {ckb_en::kId, RawDataEntry(ckb_en::kKeyMap, ckb_en::kIs102)},
     {deva_phone::kId, RawDataEntry(us::kKeyMap,
@@ -60,21 +82,82 @@ static const std::map<std::string, RawDataEntry> kRawData = {
                                    deva_phone::kTransforms,
                                    deva_phone::kTransformsLen,
                                    deva_phone::kHistoryPrune)},
+    {ethi::kId, RawDataEntry(ethi::kKeyMap,
+                             ethi::kIs102,
+                             ethi::kTransforms,
+                             ethi::kTransformsLen,
+                             ethi::kHistoryPrune)},
     {fa::kId, RawDataEntry(fa::kKeyMap, fa::kIs102)},
+    {gu_phone::kId, RawDataEntry(gu_phone::kKeyMap,
+                                 gu_phone::kIs102,
+                                 gu_phone::kTransforms,
+                                 gu_phone::kTransformsLen,
+                                 gu_phone::kHistoryPrune)},
     {km::kId, RawDataEntry(km::kKeyMap, km::kIs102)},
+    {kn_phone::kId, RawDataEntry(us::kKeyMap,
+                                 us::kIs102,
+                                 kn_phone::kTransforms,
+                                 kn_phone::kTransformsLen,
+                                 kn_phone::kHistoryPrune)},
     {lo::kId, RawDataEntry(lo::kKeyMap, lo::kIs102)},
     {ne_inscript::kId, RawDataEntry(ne_inscript::kKeyMap, ne_inscript::kIs102)},
+    {ne_phone::kId, RawDataEntry(ne_phone::kKeyMap, ne_phone::kIs102)},
     {ru_phone_aatseel::kId,
      RawDataEntry(ru_phone_aatseel::kKeyMap, ru_phone_aatseel::kIs102)},
     {ru_phone_yazhert::kId,
      RawDataEntry(ru_phone_yazhert::kKeyMap, ru_phone_yazhert::kIs102)},
+    {si::kId, RawDataEntry(si::kKeyMap,
+                           si::kIs102,
+                           si::kTransforms,
+                           si::kTransformsLen,
+                           si::kHistoryPrune)},
     {ta_inscript::kId, RawDataEntry(ta_inscript::kKeyMap, ta_inscript::kIs102)},
+    {ta_itrans::kId, RawDataEntry(us::kKeyMap,
+                                  us::kIs102,
+                                  ta_itrans::kTransforms,
+                                  ta_itrans::kTransformsLen,
+                                  ta_itrans::kHistoryPrune)},
+    {ta_phone::kId, RawDataEntry(ta_phone::kKeyMap,
+                                 ta_phone::kIs102,
+                                 ta_phone::kTransforms,
+                                 ta_phone::kTransformsLen,
+                                 ta_phone::kHistoryPrune)},
+    {ta_tamil99::kId, RawDataEntry(ta_tamil99::kKeyMap,
+                                   ta_tamil99::kIs102,
+                                   ta_tamil99::kTransforms,
+                                   ta_tamil99::kTransformsLen,
+                                   ta_tamil99::kHistoryPrune)},
     {ta_typewriter::kId,
      RawDataEntry(ta_typewriter::kKeyMap, ta_typewriter::kIs102)},
+    {te_phone::kId, RawDataEntry(us::kKeyMap,
+                                 us::kIs102,
+                                 te_phone::kTransforms,
+                                 te_phone::kTransformsLen,
+                                 te_phone::kHistoryPrune)},
     {th::kId, RawDataEntry(th::kKeyMap, th::kIs102)},
     {th_pattajoti::kId,
      RawDataEntry(th_pattajoti::kKeyMap, th_pattajoti::kIs102)},
-    {th_tis::kId, RawDataEntry(th_tis::kKeyMap, th_tis::kIs102)}};
+    {th_tis::kId, RawDataEntry(th_tis::kKeyMap, th_tis::kIs102)},
+    {vi_tcvn::kId, RawDataEntry(us::kKeyMap,
+                                us::kIs102,
+                                vi_tcvn::kTransforms,
+                                vi_tcvn::kTransformsLen,
+                                vi_tcvn::kHistoryPrune)},
+    {vi_telex::kId, RawDataEntry(us::kKeyMap,
+                                 us::kIs102,
+                                 vi_telex::kTransforms,
+                                 vi_telex::kTransformsLen,
+                                 vi_telex::kHistoryPrune)},
+    {vi_viqr::kId, RawDataEntry(us::kKeyMap,
+                                us::kIs102,
+                                vi_viqr::kTransforms,
+                                vi_viqr::kTransformsLen,
+                                vi_viqr::kHistoryPrune)},
+    {vi_vni::kId, RawDataEntry(us::kKeyMap,
+                               us::kIs102,
+                               vi_vni::kTransforms,
+                               vi_vni::kTransformsLen,
+                               vi_vni::kHistoryPrune)}};
 
 static const char* k101Keys[] = {
     // Row #1
