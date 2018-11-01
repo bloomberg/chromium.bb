@@ -268,7 +268,7 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
           GURL(), "Downloads-testing_profile-hash",
           base::FilePath("path/in/downloads")),
       &inside));
-  EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads", inside.value());
+  EXPECT_EQ("/mnt/chromeos/Downloads/path/in/downloads", inside.value());
 
   EXPECT_FALSE(ConvertFileSystemURLToPathInsideCrostini(
       &profile,
@@ -282,7 +282,8 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
           GURL(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("root/path/in/mydrive")),
       &inside));
-  EXPECT_EQ("/ChromeOS/Google Drive/My Drive/path/in/mydrive", inside.value());
+  EXPECT_EQ("/mnt/chromeos/Google Drive/My Drive/path/in/mydrive",
+            inside.value());
 
   EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
       &profile,
@@ -290,7 +291,7 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
           GURL(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("team_drives/path/in/teamdrives")),
       &inside));
-  EXPECT_EQ("/ChromeOS/Google Drive/Team Drives/path/in/teamdrives",
+  EXPECT_EQ("/mnt/chromeos/Google Drive/Team Drives/path/in/teamdrives",
             inside.value());
 
   EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
@@ -299,7 +300,7 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
           GURL(), "drivefs-84675c855b63e12f384d45f033826980",
           base::FilePath("Computers/path/in/computers")),
       &inside));
-  EXPECT_EQ("/ChromeOS/Google Drive/Computers/path/in/computers",
+  EXPECT_EQ("/mnt/chromeos/Google Drive/Computers/path/in/computers",
             inside.value());
 }
 
