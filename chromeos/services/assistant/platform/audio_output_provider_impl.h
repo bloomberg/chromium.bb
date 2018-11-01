@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
@@ -90,6 +91,8 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   service_manager::Connector* connector_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  mojom::AssistantAudioDecoderFactoryPtr audio_decoder_factory_ptr_;
+  mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };

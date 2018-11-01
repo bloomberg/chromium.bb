@@ -24,6 +24,9 @@ interface AssistantAudioDecoder {
 
   // Reads the audio data and decodes.
   Decode();
+
+  // Close decoder to clean up.
+  CloseDecoder() => ();
 };
 
 // Interface for assistant audio decoder service to call into client.

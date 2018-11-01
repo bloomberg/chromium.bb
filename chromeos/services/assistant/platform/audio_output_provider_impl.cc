@@ -84,15 +84,17 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
       service_manager::Connector* connector,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      mojom::AssistantAudioDecoderFactory* audio_decoder_factory,
       assistant_client::OutputStreamType type,
       assistant_client::OutputStreamFormat format)
       : connector_(connector),
         main_thread_task_runner_(task_runner),
         background_thread_task_runner_(background_task_runner),
+        audio_decoder_factory_(audio_decoder_factory),
         stream_type_(type),
         format_(format),
         audio_stream_handler_(
-            std::make_unique<AudioStreamHandler>(connector_, task_runner)),
+            std::make_unique<AudioStreamHandler>(task_runner)),
         device_owner_(
             std::make_unique<AudioDeviceOwner>(task_runner,
                                                background_task_runner)) {}
@@ -121,7 +123,8 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
           FROM_HERE,
           base::BindOnce(
               &AudioStreamHandler::StartAudioDecoder,
-              base::Unretained(audio_stream_handler_.get()), delegate,
+              base::Unretained(audio_stream_handler_.get()),
+              audio_decoder_factory_, delegate,
               base::BindOnce(&AudioDeviceOwner::StartOnMainThread,
                              base::Unretained(device_owner_.get()),
                              audio_stream_handler_.get(), connector_)));
@@ -151,6 +154,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   service_manager::Connector* connector_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_thread_task_runner_;
+  mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
 
   const assistant_client::OutputStreamType stream_type_;
   assistant_client::OutputStreamFormat format_;
@@ -234,7 +238,11 @@ AudioOutputProviderImpl::AudioOutputProviderImpl(
     : volume_control_impl_(connector),
       connector_(connector),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      background_task_runner_(background_task_runner) {}
+      background_task_runner_(background_task_runner) {
+  connector_->BindInterface(mojom::kAudioDecoderServiceName,
+                            mojo::MakeRequest(&audio_decoder_factory_ptr_));
+  audio_decoder_factory_ = audio_decoder_factory_ptr_.get();
+}
 
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;
 
@@ -244,7 +252,8 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
   // Owned by one arbitrary thread inside libassistant. It will be destroyed
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
   return new AudioOutputImpl(connector_, main_thread_task_runner_,
-                             background_task_runner_, type, stream_format);
+                             background_task_runner_, audio_decoder_factory_,
+                             type, stream_format);
 }
 
 std::vector<assistant_client::OutputStreamEncoding>
