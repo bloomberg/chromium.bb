@@ -4945,16 +4945,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     inForegroundWithCompletion:(ProceduralBlock)completion {
   // Create the new page image, and load with the new tab snapshot except if
   // it is the NTP.
-  CGFloat newPageOffset = 0;
   UIView* newPage = nil;
-  CGFloat offset = 0;
   GURL tabURL = tab.webState->GetVisibleURL();
   // Toolbar snapshot is only used for the UIRefresh animation.
   UIView* toolbarSnapshot;
 
   if (tabURL == kChromeUINewTabURL && !_isOffTheRecord &&
       ![self canShowTabStrip]) {
-    offset = 0;
     // Add a snapshot of the primary toolbar to the background as the
     // animation runs.
     UIViewController* toolbarViewController =
@@ -4978,20 +4975,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       newPage.frame = viewBounds;
     }
   } else {
-    UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
     tab.view.frame = self.contentArea.bounds;
     // Setting the frame here doesn't trigger a layout pass. Trigger it manually
     // if needed. Not triggering it can create problem if the previous frame
     // wasn't the right one, for example in https://crbug.com/852106.
     [tab.view layoutIfNeeded];
-    pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
-                               ->UpdateSnapshot(/*with_overlays=*/true,
-                                                /*visible_frame_only=*/true);
-    newPage = pageScreenshot;
-    offset =
-        pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
+    if (base::FeatureList::IsEnabled(
+            web::features::kBrowserContainerFullscreen)) {
+      newPage = tab.view;
+      newPage.userInteractionEnabled = NO;
+    } else {
+      UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
+      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
+                                 ->UpdateSnapshot(/*with_overlays=*/true,
+                                                  /*visible_frame_only=*/true);
+      newPage = pageScreenshot;
+    }
   }
-  newPageOffset = newPage.frame.origin.y;
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   auto commonCompletion = ^{
