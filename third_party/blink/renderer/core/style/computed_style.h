@@ -1114,6 +1114,7 @@ class ComputedStyle : public ComputedStyleBase,
   void ClearResetDirectives();
 
   // Variables.
+  bool HasVariables() const;
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 

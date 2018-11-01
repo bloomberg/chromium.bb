@@ -32,6 +32,8 @@ class CORE_EXPORT StyleInitialData : public RefCounted<StyleInitialData> {
     return !(*this == other);
   }
 
+  bool HasInitialVariables() const { return variables_->size(); }
+
   const CSSValue* GetInitialVariable(const AtomicString& name) const {
     return variables_->at(name);
   }
