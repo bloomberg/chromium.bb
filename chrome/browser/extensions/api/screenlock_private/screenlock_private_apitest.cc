@@ -113,10 +113,6 @@ IN_PROC_BROWSER_TEST_F(ScreenlockPrivateApiTest, MAYBE_LockUnlock) {
   RunTest("screenlock_private/lock_unlock");
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenlockPrivateApiTest, AuthType) {
-  RunTest("screenlock_private/auth_type");
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

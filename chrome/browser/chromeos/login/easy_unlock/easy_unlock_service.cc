@@ -392,8 +392,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
       << "Check failed: " << GetAccountId().Serialize() << " vs "
       << account_id.Serialize();
 
-  auth_attempt_.reset(new EasyUnlockAuthAttempt(app_manager_.get(), account_id,
-                                                auth_attempt_type));
+  auth_attempt_.reset(new EasyUnlockAuthAttempt(account_id, auth_attempt_type));
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
 

@@ -110,11 +110,6 @@ class TestAppManager : public EasyUnlockAppManager {
       state_ = STATE_DISABLED;
   }
 
-  bool SendAuthAttemptEvent() override {
-    ADD_FAILURE() << "Not reached.";
-    return false;
-  }
-
  private:
   // The current app state.
   State state_;

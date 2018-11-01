@@ -22,34 +22,6 @@ namespace extensions {
 
 namespace screenlock = api::screenlock_private;
 
-namespace {
-
-screenlock::AuthType FromLockHandlerAuthType(
-    proximity_auth::mojom::AuthType auth_type) {
-  switch (auth_type) {
-    case proximity_auth::mojom::AuthType::OFFLINE_PASSWORD:
-      return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-    case proximity_auth::mojom::AuthType::NUMERIC_PIN:
-      return screenlock::AUTH_TYPE_NUMERICPIN;
-    case proximity_auth::mojom::AuthType::USER_CLICK:
-      return screenlock::AUTH_TYPE_USERCLICK;
-    case proximity_auth::mojom::AuthType::ONLINE_SIGN_IN:
-      // Apps should treat forced online sign in same as system password.
-      return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-    case proximity_auth::mojom::AuthType::EXPAND_THEN_USER_CLICK:
-      // This type is used for public sessions, which do not support screen
-      // locking.
-      NOTREACHED();
-      return screenlock::AUTH_TYPE_NONE;
-    case proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD:
-      return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-  }
-  NOTREACHED();
-  return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-}
-
-}  // namespace
-
 ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
@@ -151,23 +123,4 @@ ScreenlockPrivateEventRouter::GetFactoryInstance() {
 void ScreenlockPrivateEventRouter::Shutdown() {
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 }
-
-bool ScreenlockPrivateEventRouter::OnAuthAttempted(
-    proximity_auth::mojom::AuthType auth_type,
-    const std::string& value) {
-  EventRouter* router = EventRouter::Get(browser_context_);
-  if (!router->HasEventListener(screenlock::OnAuthAttempted::kEventName))
-    return false;
-
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->AppendString(screenlock::ToString(FromLockHandlerAuthType(auth_type)));
-  args->AppendString(value);
-
-  std::unique_ptr<Event> event(
-      new Event(events::SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED,
-                screenlock::OnAuthAttempted::kEventName, std::move(args)));
-  router->BroadcastEvent(std::move(event));
-  return true;
-}
-
 }  // namespace extensions

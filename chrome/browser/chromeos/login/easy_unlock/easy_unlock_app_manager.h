@@ -41,9 +41,6 @@ class EasyUnlockAppManager {
 
   // Disables Easy Unlock app.
   virtual void DisableAppIfLoaded() = 0;
-
-  // Sends screenlockPrivate.onAuthAttempted event to Easy Unlock app.
-  virtual bool SendAuthAttemptEvent() = 0;
 };
 
 }  // namespace chromeos
