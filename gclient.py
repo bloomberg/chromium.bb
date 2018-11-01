@@ -681,7 +681,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       try:
         local_scope = gclient_eval.Parse(
             deps_content, self._get_option('validate_syntax', False),
-            filepath, self.get_vars())
+            filepath, self.get_vars(), self.get_builtin_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
 
@@ -1192,11 +1192,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       d = d.parent
     return tuple(out)
 
-  def get_vars(self):
-    """Returns a dictionary of effective variable values
-    (DEPS file contents with applied custom_vars overrides)."""
-    # Provide some built-in variables.
-    result = {
+  def get_builtin_vars(self):
+    return {
         'checkout_android': 'android' in self.target_os,
         'checkout_chromeos': 'chromeos' in self.target_os,
         'checkout_fuchsia': 'fuchsia' in self.target_os,
@@ -1216,15 +1213,22 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         'checkout_x64': 'x64' in self.target_cpu,
         'host_cpu': detect_host_arch.HostArch(),
     }
-    # Variable precedence:
-    # - built-in
+
+  def get_vars(self):
+    """Returns a dictionary of effective variable values
+    (DEPS file contents with applied custom_vars overrides)."""
+    # Variable precedence (last has highest):
     # - DEPS vars
     # - parents, from first to last
+    # - built-in
     # - custom_vars overrides
+    result = {}
     result.update(self._vars)
     if self.parent:
       parent_vars = self.parent.get_vars()
       result.update(parent_vars)
+    # Provide some built-in variables.
+    result.update(self.get_builtin_vars())
     result.update(self.custom_vars or {})
     return result
 

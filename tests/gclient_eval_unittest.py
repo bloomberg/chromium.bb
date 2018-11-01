@@ -701,6 +701,55 @@ class ParseTest(unittest.TestCase):
                                'condition': 'baz'}},
       }, local_scope)
 
+  def test_has_builtin_vars(self):
+    builtin_vars = {'builtin_var': 'foo'}
+    deps_file = '\n'.join([
+      'deps = {',
+      '  "a_dep": "a{builtin_var}b",',
+      '}',
+    ])
+    for validate_syntax in False, True:
+      local_scope = gclient_eval.Parse(
+          deps_file, validate_syntax, '<unknown>', None, builtin_vars)
+      self.assertEqual({
+        'deps': {'a_dep': {'url': 'afoob',
+                           'dep_type': 'git'}},
+      }, local_scope)
+
+  def test_declaring_builtin_var_has_no_effect(self):
+    builtin_vars = {'builtin_var': 'foo'}
+    deps_file = '\n'.join([
+        'vars = {',
+        '  "builtin_var": "bar",',
+        '}',
+        'deps = {',
+        '  "a_dep": "a{builtin_var}b",',
+        '}',
+    ])
+    for validate_syntax in False, True:
+      local_scope = gclient_eval.Parse(
+          deps_file, validate_syntax, '<unknown>', None, builtin_vars)
+      self.assertEqual({
+        'vars': {'builtin_var': 'bar'},
+        'deps': {'a_dep': {'url': 'afoob',
+                           'dep_type': 'git'}},
+      }, local_scope)
+
+  def test_override_builtin_var(self):
+    builtin_vars = {'builtin_var': 'foo'}
+    vars_override = {'builtin_var': 'override'}
+    deps_file = '\n'.join([
+      'deps = {',
+      '  "a_dep": "a{builtin_var}b",',
+      '}',
+    ])
+    for validate_syntax in False, True:
+      local_scope = gclient_eval.Parse(
+          deps_file, validate_syntax, '<unknown>', vars_override, builtin_vars)
+      self.assertEqual({
+        'deps': {'a_dep': {'url': 'aoverrideb',
+                           'dep_type': 'git'}},
+      }, local_scope, str(local_scope))
 
   def test_expands_vars(self):
     for validate_syntax in True, False:
