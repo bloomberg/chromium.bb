@@ -972,6 +972,9 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
   if (dirEntry instanceof VolumeEntry)
     dirEntry = assert(dirEntry.rootEntry);
 
+  // TODO(lucmult): Remove this log once flakiness is fixed.
+  console.log('changeDirectoryEntry: ' + dirEntry.name);
+
   // Increment the sequence value.
   this.changeDirectorySequence_++;
   this.clearSearch_();
