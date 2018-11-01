@@ -207,6 +207,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   // TODO(satyamshekhar): generate a valid nonce for this connection_id.
   packet.nonce_proof = 1010101;
   packet.client_address = client_address;
+  GetEndpointId(&packet.endpoint_id);
   // Takes ownership of the packet.
   SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(server_address, client_address,
                                                  BuildPublicReset(packet)));

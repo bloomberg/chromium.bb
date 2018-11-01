@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
@@ -1475,6 +1476,22 @@ void QuicChromiumClientSession::OnConnectionClosed(
   logger_->OnConnectionClosed(error, error_details, source);
   bool is_google_host = HasGoogleHost(GURL("https://" + session_key_.host()));
   if (source == quic::ConnectionCloseSource::FROM_PEER) {
+    if (error == quic::QUIC_PUBLIC_RESET) {
+      // is_from_google_server will be true if the received EPID is
+      // kEPIDGoogleFrontEnd or kEPIDGoogleFrontEnd0.
+      const bool is_from_google_server =
+          error_details.find(base::StringPrintf(
+              "From %s", quic::kEPIDGoogleFrontEnd)) != std::string::npos;
+
+      if (IsCryptoHandshakeConfirmed()) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "Net.QuicSession.ClosedByPublicReset.HandshakeConfirmed",
+            is_from_google_server);
+      } else {
+        UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedByPublicReset",
+                              is_from_google_server);
+      }
+    }
     if (IsCryptoHandshakeConfirmed()) {
       if (is_google_host) {
         base::UmaHistogramSparse(

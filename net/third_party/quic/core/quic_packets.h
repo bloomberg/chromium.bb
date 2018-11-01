@@ -103,6 +103,10 @@ struct QUIC_EXPORT_PRIVATE QuicPublicResetPacket {
   QuicConnectionId connection_id;
   QuicPublicResetNonceProof nonce_proof;
   QuicSocketAddress client_address;
+  // An arbitrary string to identify an endpoint. Used by clients to
+  // differentiate traffic from Google servers vs Non-google servers.
+  // Will not be used if empty().
+  QuicString endpoint_id;
 };
 
 struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {

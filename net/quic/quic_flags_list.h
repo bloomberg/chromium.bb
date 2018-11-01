@@ -300,3 +300,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_client_conn_ver_negotiation,
           false)
+
+// If true, public reset packets sent from GFE will include a kEPID tag.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_server_epid_in_public_reset,
+          false)

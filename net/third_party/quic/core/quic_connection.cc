@@ -35,6 +35,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
@@ -552,10 +553,14 @@ void QuicConnection::OnPublicResetPacket(const QuicPublicResetPacket& packet) {
   // routed to this QuicConnection has been redirected before control reaches
   // here.  (Check for a bug regression.)
   DCHECK_EQ(connection_id_, packet.connection_id);
+  DCHECK_EQ(perspective_, Perspective::IS_CLIENT);
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPublicResetPacket(packet);
   }
-  const QuicString error_details = "Received public reset.";
+  QuicString error_details = "Received public reset.";
+  if (perspective_ == Perspective::IS_CLIENT && !packet.endpoint_id.empty()) {
+    QuicStrAppend(&error_details, " From ", packet.endpoint_id, ".");
+  }
   QUIC_DLOG(INFO) << ENDPOINT << error_details;
   TearDownLocalConnectionState(QUIC_PUBLIC_RESET, error_details,
                                ConnectionCloseSource::FROM_PEER);
