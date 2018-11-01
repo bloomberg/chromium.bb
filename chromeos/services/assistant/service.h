@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
@@ -59,6 +60,7 @@ class Service : public service_manager::Service,
   ash::mojom::AssistantController* assistant_controller() {
     return assistant_controller_.get();
   }
+  ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
 
   void RequestAccessToken();
 
@@ -83,10 +85,6 @@ class Service : public service_manager::Service,
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // mojom::AssistantPlatform overrides:
-  void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions) override;
-
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
@@ -94,9 +92,15 @@ class Service : public service_manager::Service,
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  void OnLocaleChanged(const std::string& locale) override;
 
+  void UpdateAssistantManagerState();
   void BindAssistantSettingsManager(
       mojom::AssistantSettingsManagerRequest request);
+
+  // mojom::AssistantPlatform overrides:
+  void Init(mojom::ClientPtr client,
+            mojom::DeviceActionsPtr device_actions) override;
 
   identity::mojom::IdentityManager* GetIdentityManager();
 
@@ -107,16 +111,17 @@ class Service : public service_manager::Service,
   void GetAccessTokenCallback(const base::Optional<std::string>& token,
                               base::Time expiration_time,
                               const GoogleServiceAuthError& error);
+  void RetryRefreshToken();
+
+  void CreateAssistantManagerService();
+
+  void FinalizeAssistantManagerService();
+
+  void StopAssistantManagerService();
 
   void AddAshSessionObserver();
 
   void UpdateListeningState();
-
-  void CreateAssistantManagerService(bool enable_hotword);
-
-  void FinalizeAssistantManagerService();
-
-  void RetryRefreshToken();
 
   service_manager::BinderRegistry registry_;
 
@@ -143,15 +148,11 @@ class Service : public service_manager::Service,
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
-  // Whether the assistant has been enabled in settings.
-  bool settings_enabled_ = false;
-  // Whether the hotword has been enabled.
-  bool hotword_enabled_ = false;
+
+  base::Optional<std::string> access_token_;
 
   ash::mojom::AssistantControllerPtr assistant_controller_;
-  ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
-  mojo::Binding<ash::mojom::VoiceInteractionObserver>
-      voice_interaction_observer_binding_;
+  ash::AssistantStateProxy assistant_state_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;
 

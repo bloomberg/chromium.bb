@@ -56,7 +56,6 @@ class AssistantManagerServiceImpl
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
-      public ash::DefaultVoiceInteractionObserver,
       public assistant_client::DeviceStateListener {
  public:
   // |service| owns this class and must outlive this class.
@@ -64,13 +63,13 @@ class AssistantManagerServiceImpl
       service_manager::Connector* connector,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
-      bool enable_hotword,
       network::NetworkConnectionTracker* network_connection_tracker);
 
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token,
+             bool enable_hotword,
              base::OnceClosure callback) override;
   void Stop() override;
   State GetState() const override;
@@ -141,27 +140,24 @@ class AssistantManagerServiceImpl
   // Last search source will be cleared after it is retrieved.
   std::string GetLastSearchSource() override;
 
-  // ash::mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnLocaleChanged(const std::string& locale) override;
-
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
   void OnTimerSoundingStarted() override;
   void OnTimerSoundingFinished() override;
 
  private:
-  void StartAssistantInternal(const std::string& access_token,
-                              const std::string& arc_version);
-  void PostInitAssistant(base::OnceClosure post_init_callback);
-
-  std::string BuildUserAgent(const std::string& arc_version) const;
+  std::unique_ptr<assistant_client::AssistantManager> StartAssistantInternal(
+      const std::string& access_token,
+      bool enable_hotword,
+      const std::string& arc_version,
+      const std::string& locale,
+      bool spoken_feedback_enabled);
+  void PostInitAssistant(
+      base::OnceClosure post_init_callback,
+      std::unique_ptr<assistant_client::AssistantManager>* assistant_manager);
 
   // Update device id, type and locale
   void UpdateDeviceSettings();
-  void UpdateInternalOptions();
 
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
@@ -210,11 +206,10 @@ class AssistantManagerServiceImpl
       std::unique_ptr<ui::AssistantTree> assistant_tree,
       const std::vector<uint8_t>& assistant_screenshot);
 
-  void FillServerExperimentIds(std::vector<std::string>& server_experiment_ids);
+  void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
 
   State state_ = State::STOPPED;
   std::unique_ptr<PlatformApiImpl> platform_api_;
-  bool enable_hotword_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
@@ -227,20 +222,12 @@ class AssistantManagerServiceImpl
       interaction_subscribers_;
   mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
       notification_subscribers_;
-  ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
-  mojo::Binding<ash::mojom::VoiceInteractionObserver>
-      voice_interaction_observer_binding_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
   mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
 
   Service* service_;  // unowned.
 
-  base::Optional<std::string> arc_version_;
-
-  bool assistant_enabled_ = false;
-  bool context_enabled_ = false;
   bool spoken_feedback_enabled_ = false;
-  std::string locale_;
 
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;

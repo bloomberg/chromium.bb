@@ -62,67 +62,104 @@ constexpr base::Feature kChromeOSAssistantDogfood{
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 
 constexpr float kDefaultSliderStep = 0.1f;
+
+bool IsScreenContextAllowed(ash::AssistantStateBase* assistant_state) {
+  return assistant_state->allowed_state() ==
+             ash::mojom::AssistantAllowedState::ALLOWED &&
+         assistant_state->settings_enabled().value_or(false) &&
+         assistant_state->context_enabled().value_or(false);
+}
+
+void UpdateInternalOptions(
+    assistant_client::AssistantManagerInternal* assistant_manager_internal,
+    const std::string& arc_version,
+    const std::string& locale,
+    bool spoken_feedback_enabled) {
+  // Build user agent string.
+  std::string user_agent;
+  base::StringAppendF(&user_agent,
+                      "Mozilla/5.0 (X11; CrOS %s %s; %s) "
+                      "AppleWebKit/%d.%d (KHTML, like Gecko)",
+                      base::SysInfo::OperatingSystemArchitecture().c_str(),
+                      base::SysInfo::OperatingSystemVersion().c_str(),
+                      base::SysInfo::GetLsbReleaseBoard().c_str(),
+                      WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
+
+  if (!arc_version.empty())
+    base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
+
+  // Build internal options
+  auto* internal_options =
+      assistant_manager_internal->CreateDefaultInternalOptions();
+  SetAssistantOptions(internal_options, user_agent, locale,
+                      spoken_feedback_enabled);
+  assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
+    DVLOG(2) << "set options: " << success;
+  });
+}
+
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
-    bool enable_hotword,
     network::NetworkConnectionTracker* network_connection_tracker)
-    : enable_hotword_(enable_hotword),
-      action_module_(std::make_unique<action::CrosActionModule>(this)),
+    : action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
-      voice_interaction_observer_binding_(this),
       service_(service),
       background_thread_("background thread"),
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
-      connector, std::move(battery_monitor), enable_hotword,
-      background_thread_.task_runner(), network_connection_tracker);
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &voice_interaction_controller_);
+      connector, std::move(battery_monitor), background_thread_.task_runner(),
+      network_connection_tracker);
   connector->BindInterface(ash::mojom::kServiceName,
                            &ash_message_center_controller_);
-
-  // TODO(b/112281490): Combine this observer with the one in service.cc.
-  ash::mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  voice_interaction_controller_->AddObserver(std::move(ptr));
-
-  // Initialize |assistant_enabled_| to the value in settings.
-  voice_interaction_controller_->IsSettingEnabled(base::BindOnce(
-      &AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled,
-      weak_factory_.GetWeakPtr()));
-
-  // Initialize |context_enabled_| to the value in settings.
-  voice_interaction_controller_->IsContextEnabled(base::BindOnce(
-      &AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled,
-      weak_factory_.GetWeakPtr()));
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
 void AssistantManagerServiceImpl::Start(const std::string& access_token,
+                                        bool enable_hotword,
                                         base::OnceClosure post_init_callback) {
+  DCHECK(!assistant_manager_);
+
   // Set the flag to avoid starting the service multiple times.
   state_ = State::STARTED;
 
   started_time_ = base::TimeTicks::Now();
 
+  platform_api_->OnHotwordEnabled(enable_hotword);
+
+  using AssistantManagerPtr =
+      std::unique_ptr<assistant_client::AssistantManager>;
+  // This is a tempory holder of the |assistant_client::AssistantManager| that
+  // is going to be created on the background thread. It is owned by the
+  // background task callback closure.
+  auto* new_assistant_manager = new AssistantManagerPtr();
+
   // LibAssistant creation will make file IO and sync wait. Post the creation to
   // background thread to avoid DCHECK.
   background_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                     base::Unretained(this), access_token,
-                     chromeos::version_loader::GetARCVersion()),
+      base::BindOnce(
+          [](AssistantManagerPtr* result,
+             base::OnceCallback<AssistantManagerPtr()> task) {
+            *result = std::move(task).Run();
+          },
+          new_assistant_manager,
+          base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
+                         base::Unretained(this), access_token, enable_hotword,
+                         chromeos::version_loader::GetARCVersion(),
+                         service_->assistant_state()->locale().value(),
+                         spoken_feedback_enabled_)),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
-                     base::Unretained(this), std::move(post_init_callback)));
+                     base::Unretained(this), std::move(post_init_callback),
+                     base::Owned(new_assistant_manager)));
 }
 
 void AssistantManagerServiceImpl::Stop() {
@@ -282,7 +319,7 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
 }
 
 void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
-  if (!assistant_enabled_ || !context_enabled_)
+  if (!IsScreenContextAllowed(service_->assistant_state()))
     return;
 
   // It is illegal to call this method without having first cached screen
@@ -297,7 +334,7 @@ void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
 
 void AssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {
-  if (!assistant_enabled_ || !context_enabled_)
+  if (!IsScreenContextAllowed(service_->assistant_state()))
     return;
 
   service_->assistant_controller()->RequestScreenshot(
@@ -728,73 +765,51 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
           weak_factory_.GetWeakPtr(), error_code));
 }
 
-void AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled(
-    bool enabled) {
-  assistant_enabled_ = enabled;
-}
-
-void AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled(
-    bool enabled) {
-  context_enabled_ = enabled;
-}
-
-void AssistantManagerServiceImpl::OnVoiceInteractionHotwordEnabled(
-    bool enabled) {
-  enable_hotword_ = enabled;
-  platform_api_->OnHotwordEnabled(enabled);
-}
-
-void AssistantManagerServiceImpl::OnLocaleChanged(const std::string& locale) {
-  if (locale == locale_)
-    return;
-
-  locale_ = locale;
-
-  // When |locale_| changes we need to update our internal options to
-  // synchronize our LibAssistant locale configuration.
-  if (assistant_manager_internal_) {
-    background_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AssistantManagerServiceImpl::UpdateInternalOptions,
-                       weak_factory_.GetWeakPtr()));
-  }
-}
-
-void AssistantManagerServiceImpl::StartAssistantInternal(
+std::unique_ptr<assistant_client::AssistantManager>
+AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& access_token,
-    const std::string& arc_version) {
+    bool enable_hotword,
+    const std::string& arc_version,
+    const std::string& locale,
+    bool spoken_feedback_enabled) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
-  arc_version_ = arc_version;
+  std::unique_ptr<assistant_client::AssistantManager> assistant_manager;
+  assistant_manager.reset(assistant_client::AssistantManager::Create(
+      platform_api_.get(), CreateLibAssistantConfig(!enable_hotword)));
+  auto* assistant_manager_internal =
+      UnwrapAssistantManagerInternal(assistant_manager.get());
 
-  assistant_manager_.reset(assistant_client::AssistantManager::Create(
-      platform_api_.get(), CreateLibAssistantConfig(!enable_hotword_)));
-  assistant_manager_internal_ =
-      UnwrapAssistantManagerInternal(assistant_manager_.get());
+  UpdateInternalOptions(assistant_manager_internal, arc_version, locale,
+                        spoken_feedback_enabled);
 
-  UpdateInternalOptions();
-
-  assistant_manager_internal_->SetDisplayConnection(display_connection_.get());
-  assistant_manager_internal_->RegisterActionModule(action_module_.get());
-  assistant_manager_internal_->SetAssistantManagerDelegate(this);
-  assistant_manager_->AddConversationStateListener(this);
-  assistant_manager_->AddDeviceStateListener(this);
+  assistant_manager_internal->SetDisplayConnection(display_connection_.get());
+  assistant_manager_internal->RegisterActionModule(action_module_.get());
+  assistant_manager_internal->SetAssistantManagerDelegate(this);
+  assistant_manager->AddConversationStateListener(this);
+  assistant_manager->AddDeviceStateListener(this);
 
   std::vector<std::string> server_experiment_ids;
-  FillServerExperimentIds(server_experiment_ids);
+  FillServerExperimentIds(&server_experiment_ids);
 
   if (server_experiment_ids.size() > 0)
-    assistant_manager_internal_->AddExtraExperimentIds(server_experiment_ids);
+    assistant_manager_internal->AddExtraExperimentIds(server_experiment_ids);
 
-  SetAccessToken(access_token);
+  assistant_manager->SetAuthTokens(
+      {std::pair<std::string, std::string>(kUserID, access_token)});
+  assistant_manager->Start();
 
-  assistant_manager_->Start();
+  return assistant_manager;
 }
 
 void AssistantManagerServiceImpl::PostInitAssistant(
-    base::OnceClosure post_init_callback) {
+    base::OnceClosure post_init_callback,
+    std::unique_ptr<assistant_client::AssistantManager>* assistant_manager) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
+  assistant_manager_ = std::move(*assistant_manager);
+  assistant_manager_internal_ =
+      UnwrapAssistantManagerInternal(assistant_manager_.get());
   state_ = State::RUNNING;
 
   const base::TimeDelta time_since_started =
@@ -805,22 +820,6 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   UpdateDeviceSettings();
 }
 
-std::string AssistantManagerServiceImpl::BuildUserAgent(
-    const std::string& arc_version) const {
-  std::string user_agent;
-  base::StringAppendF(&user_agent,
-                      "Mozilla/5.0 (X11; CrOS %s %s; %s) "
-                      "AppleWebKit/%d.%d (KHTML, like Gecko)",
-                      base::SysInfo::OperatingSystemArchitecture().c_str(),
-                      base::SysInfo::OperatingSystemVersion().c_str(),
-                      base::SysInfo::GetLsbReleaseBoard().c_str(),
-                      WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
-
-  if (!arc_version.empty()) {
-    base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
-  }
-  return user_agent;
-}
 
 void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
@@ -841,26 +840,11 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   VLOG(1) << "Update assistant device locale: "
           << base::i18n::GetConfiguredLocale();
   device_settings_update->mutable_device_settings()->set_locale(
-      locale_.empty() ? base::i18n::GetConfiguredLocale() : locale_);
+      service_->assistant_state()->locale().value());
 
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
   SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
-}
-
-void AssistantManagerServiceImpl::UpdateInternalOptions() {
-  DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
-
-  if (!assistant_manager_internal_)
-    return;
-
-  auto* internal_options =
-      assistant_manager_internal_->CreateDefaultInternalOptions();
-  SetAssistantOptions(internal_options, BuildUserAgent(arc_version_.value()),
-                      locale_, spoken_feedback_enabled_);
-  assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
-    DVLOG(2) << "set options: " << success;
-  });
 }
 
 void AssistantManagerServiceImpl::HandleGetSettingsResponse(
@@ -1088,7 +1072,7 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
 
 void AssistantManagerServiceImpl::CacheScreenContext(
     CacheScreenContextCallback callback) {
-  if (!assistant_enabled_ || !context_enabled_) {
+  if (!IsScreenContextAllowed(service_->assistant_state())) {
     std::move(callback).Run();
     return;
   }
@@ -1121,12 +1105,11 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 
   // When |spoken_feedback_enabled_| changes we need to update our internal
   // options to turn on/off A11Y features in LibAssistant.
-  if (assistant_manager_internal_) {
-    background_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AssistantManagerServiceImpl::UpdateInternalOptions,
-                       weak_factory_.GetWeakPtr()));
-  }
+  if (assistant_manager_internal_)
+    UpdateInternalOptions(assistant_manager_internal_,
+                          chromeos::version_loader::GetARCVersion(),
+                          service_->assistant_state()->locale().value(),
+                          spoken_feedback_enabled_);
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(
@@ -1173,9 +1156,9 @@ std::string AssistantManagerServiceImpl::GetLastSearchSource() {
 }
 
 void AssistantManagerServiceImpl::FillServerExperimentIds(
-    std::vector<std::string>& server_experiment_ids) {
+    std::vector<std::string>* server_experiment_ids) {
   if (base::FeatureList::IsEnabled(kChromeOSAssistantDogfood)) {
-    server_experiment_ids.emplace_back(kServersideDogfoodExperimentId);
+    server_experiment_ids->emplace_back(kServersideDogfoodExperimentId);
   }
 }
 

@@ -660,7 +660,9 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
+  switch (
+      Shell::Get()->voice_interaction_controller()->allowed_state().value_or(
+          mojom::AssistantAllowedState::ALLOWED)) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
       ShowToast(kVoiceInteractionErrorToastId,

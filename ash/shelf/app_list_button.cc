@@ -272,9 +272,11 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setColor(kShelfIconColor);
 
     if (UseVoiceInteractionStyle()) {
-      mojom::VoiceInteractionState state = Shell::Get()
-                                               ->voice_interaction_controller()
-                                               ->voice_interaction_state();
+      mojom::VoiceInteractionState state =
+          Shell::Get()
+              ->voice_interaction_controller()
+              ->voice_interaction_state()
+              .value_or(mojom::VoiceInteractionState::STOPPED);
       // active: 100% alpha, inactive: 54% alpha
       fg_flags.setAlpha(state == mojom::VoiceInteractionState::RUNNING
                             ? kVoiceInteractionRunningAlpha
@@ -393,12 +395,16 @@ void AppListButton::StartVoiceInteractionAnimation() {
   // voice interaction setup flow has completed.
   ShelfAlignment alignment = shelf_->alignment();
   mojom::VoiceInteractionState state =
-      Shell::Get()->voice_interaction_controller()->voice_interaction_state();
+      Shell::Get()
+          ->voice_interaction_controller()
+          ->voice_interaction_state()
+          .value_or(mojom::VoiceInteractionState::STOPPED);
   bool show_icon =
       (alignment == SHELF_ALIGNMENT_BOTTOM ||
        alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
       state == mojom::VoiceInteractionState::STOPPED &&
-      Shell::Get()->voice_interaction_controller()->setup_completed() &&
+      Shell::Get()->voice_interaction_controller()->setup_completed().value_or(
+          false) &&
       chromeos::switches::IsVoiceInteractionEnabled();
   assistant_overlay_->StartAnimation(show_icon);
 }
@@ -406,8 +412,8 @@ void AppListButton::StartVoiceInteractionAnimation() {
 bool AppListButton::UseVoiceInteractionStyle() {
   VoiceInteractionController* controller =
       Shell::Get()->voice_interaction_controller();
-  bool settings_enabled = controller->settings_enabled();
-  bool setup_completed = controller->setup_completed();
+  bool settings_enabled = controller->settings_enabled().value_or(false);
+  bool setup_completed = controller->setup_completed().value_or(false);
   bool is_feature_allowed =
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
   if (assistant_overlay_ && is_feature_allowed &&

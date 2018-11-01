@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 
 namespace ash {
 
@@ -16,7 +17,8 @@ namespace ash {
 // ash::mojom::VoiceInteractionObserver interface. Child class only need to
 // override the methods they are actually interested in.
 class ASH_PUBLIC_EXPORT DefaultVoiceInteractionObserver
-    : public mojom::VoiceInteractionObserver {
+    : public mojom::VoiceInteractionObserver,
+      public base::CheckedObserver {
  public:
   ~DefaultVoiceInteractionObserver() override = default;
 
