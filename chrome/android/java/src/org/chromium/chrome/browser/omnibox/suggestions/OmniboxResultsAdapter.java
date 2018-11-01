@@ -17,6 +17,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -120,7 +121,6 @@ public class OmniboxResultsAdapter extends BaseAdapter {
                 createSuggestionViewDelegate(item.getSuggestion(), position));
         model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
         model.set(SuggestionViewProperties.LAYOUT_DIRECTION, mLayoutDirection);
-        model.set(SuggestionViewProperties.TEXT_LINE_1_ALIGNMENT_CONSTRAINTS, Pair.create(0f, 0f));
 
         OmniboxSuggestion suggestion = item.getSuggestion();
         // Suggestions with attached answers are rendered with rich results regardless of which
@@ -128,7 +128,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         if (suggestion.hasAnswer()) {
             setStateForAnswerSuggestion(model, suggestion.getAnswer(), item.getAnswerImage());
         } else {
-            setStateForTextSuggestion(model, item, textLine1Paint);
+            setStateForTextSuggestion(model, item);
         }
     }
 
@@ -164,11 +164,10 @@ public class OmniboxResultsAdapter extends BaseAdapter {
      * @param showDescriptionIfPresent Whether to show the description text of the suggestion if
      *                                 the item contains valid data.
      * @param shouldHighlight Whether the query should be highlighted.
-     * @param textLine1Paint The paint used for the first text line.
      * @return The first line of text.
      */
-    private Spannable getSuggestedQuery(PropertyModel model, OmniboxResultItem suggestionItem,
-            boolean showDescriptionIfPresent, boolean shouldHighlight, Paint textLine1Paint) {
+    private Spannable getSuggestedQuery(OmniboxResultItem suggestionItem,
+            boolean showDescriptionIfPresent, boolean shouldHighlight) {
         String userQuery = suggestionItem.getMatchedQuery();
         String suggestedQuery = null;
         List<MatchClassification> classifications;
@@ -205,19 +204,6 @@ public class OmniboxResultsAdapter extends BaseAdapter {
                                     classifications.get(i).style));
                 }
                 classifications.add(0, new MatchClassification(0, MatchClassificationStyle.NONE));
-
-                if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
-                    float requiredWidth =
-                            textLine1Paint.measureText(fillIntoEdit, 0, fillIntoEdit.length());
-                    float matchContentsWidth =
-                            textLine1Paint.measureText(suggestedQuery, 0, suggestedQuery.length());
-
-                    model.set(SuggestionViewProperties.TEXT_LINE_1_ALIGNMENT_CONSTRAINTS,
-                            Pair.create(requiredWidth, matchContentsWidth));
-                    // Update the max text widths values in SuggestionList. These will be passed to
-                    // the contents view on layout.
-                    mSuggestionDelegate.onTextWidthsUpdated(requiredWidth, matchContentsWidth);
-                }
             }
         }
 
@@ -226,8 +212,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         return str;
     }
 
-    private void setStateForTextSuggestion(
-            PropertyModel model, OmniboxResultItem suggestionItem, Paint textLine1Paint) {
+    private void setStateForTextSuggestion(PropertyModel model, OmniboxResultItem suggestionItem) {
         OmniboxSuggestion suggestion = suggestionItem.getSuggestion();
         int suggestionType = suggestion.getType();
         @SuggestionIcon
@@ -256,8 +241,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
             } else {
                 textLine2 = null;
             }
-            textLine1 =
-                    getSuggestedQuery(model, suggestionItem, true, !urlHighlighted, textLine1Paint);
+            textLine1 = getSuggestedQuery(suggestionItem, true, !urlHighlighted);
         } else {
             suggestionIcon = SuggestionIcon.MAGNIFIER;
             if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
@@ -267,7 +251,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
                 // Show history icon for suggestions based on user queries.
                 suggestionIcon = SuggestionIcon.HISTORY;
             }
-            textLine1 = getSuggestedQuery(model, suggestionItem, false, true, textLine1Paint);
+            textLine1 = getSuggestedQuery(suggestionItem, false, true);
             if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
                     || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
                 textLine2 = SpannableString.valueOf(suggestion.getDescription());
@@ -474,13 +458,22 @@ public class OmniboxResultsAdapter extends BaseAdapter {
             }
 
             @Override
-            public float getMaxRequiredWidth() {
-                return mSuggestionDelegate.getMaxRequiredWidth();
-            }
+            public int getAdditionalTextLine1StartPadding(TextView line1, int maxTextWidth) {
+                if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) return 0;
+                if (suggestion.getType() != OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) return 0;
 
-            @Override
-            public float getMaxMatchContentsWidth() {
-                return mSuggestionDelegate.getMaxMatchContentsWidth();
+                String fillIntoEdit = suggestion.getFillIntoEdit();
+                float fullTextWidth =
+                        line1.getPaint().measureText(fillIntoEdit, 0, fillIntoEdit.length());
+                String query = line1.getText().toString();
+                float abbreviatedTextWidth = line1.getPaint().measureText(query, 0, query.length());
+                mSuggestionDelegate.onTextWidthsUpdated(fullTextWidth, abbreviatedTextWidth);
+
+                final float maxRequiredWidth = mSuggestionDelegate.getMaxRequiredWidth();
+                final float maxMatchContentsWidth = mSuggestionDelegate.getMaxMatchContentsWidth();
+                return (int) ((maxTextWidth > maxRequiredWidth)
+                                ? (fullTextWidth - abbreviatedTextWidth)
+                                : Math.max(maxTextWidth - maxMatchContentsWidth, 0));
             }
         };
     }
