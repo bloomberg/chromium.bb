@@ -49,9 +49,6 @@
 -PDFExtensionTest.*
 -PDFExtensionHitTestTest.*
 
-# JS failure: hasAccessToCurrentWindow: FAIL (no message)
--LockScreenNoteTakingTest.*
-
 # Missing magnification manager and also RefCounted check failed:
 # CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -LoginScreenDefaultPolicyLoginScreenBrowsertest.*
@@ -134,9 +131,6 @@
 
 # Flaky on ASAN bot. crbug.com/884216
 -KeyboardOverlayUIBrowserTest.*
-
-# Lock screen tests.
--LockScreenNoteTakingTest.Launch
 
 # PRE steps crash on shutdown.
 # FATAL:ref_counted.h(85)] Check failed: CalledOnValidSequence()
