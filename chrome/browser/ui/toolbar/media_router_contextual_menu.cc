@@ -92,10 +92,6 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
   }
   if (!browser_->profile()->IsOffTheRecord()) {
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
-                                     IDS_MEDIA_ROUTER_MANAGE_DEVICES);
-#endif
     menu_model_->AddCheckItemWithStringId(
         IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
         IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
@@ -182,11 +178,6 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
     case IDC_MEDIA_ROUTER_LEARN_MORE:
       ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));
       break;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    case IDC_MEDIA_ROUTER_MANAGE_DEVICES:
-      ShowSingletonTab(browser_, GURL(chrome::kChromeUICastURL));
-      break;
-#endif
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
       ReportIssue();
       break;

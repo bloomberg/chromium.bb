@@ -240,7 +240,6 @@ const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUICastHost[] = "cast";
-const char kChromeUICastURL[] = "chrome://cast/";
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

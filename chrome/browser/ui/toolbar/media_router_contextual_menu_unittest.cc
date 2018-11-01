@@ -143,12 +143,6 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   // Report an issue
   int expected_number_items = 9;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // On all platforms except Linux, there's an additional menu item to access
-  // Cast device management.
-  expected_number_items++;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
   ui::SimpleMenuModel* model =
       static_cast<ui::SimpleMenuModel*>(action_->GetContextMenu());
   // Verify the number of menu items, including separators.
@@ -174,22 +168,6 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
     EXPECT_TRUE(model->IsEnabledAt(i));
     EXPECT_TRUE(model->IsVisibleAt(i));
   }
-}
-
-// Note that "Manage devices" is always disabled on Linux.
-TEST_F(MediaRouterContextualMenuUnitTest, ManageDevicesDisabledInIncognito) {
-  std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
-  std::unique_ptr<Browser> incognito_browser(
-      CreateBrowser(profile()->GetOffTheRecordProfile(), Browser::TYPE_TABBED,
-                    false, window.get()));
-
-  action_ = std::make_unique<MediaRouterAction>(
-      incognito_browser.get(),
-      browser_action_test_util_->GetToolbarActionsBar());
-  ui::SimpleMenuModel* model =
-      static_cast<ui::SimpleMenuModel*>(action_->GetContextMenu());
-  EXPECT_EQ(-1, model->GetIndexOfCommandId(IDC_MEDIA_ROUTER_MANAGE_DEVICES));
-  action_.reset();
 }
 
 // "Report an issue" should be present for normal profiles but not for
