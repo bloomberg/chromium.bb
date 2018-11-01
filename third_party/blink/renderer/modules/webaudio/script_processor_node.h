@@ -139,7 +139,7 @@ class ScriptProcessorNode final
                                      unsigned number_of_output_channels,
                                      ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
   size_t bufferSize() const;
 
   // ScriptWrappable

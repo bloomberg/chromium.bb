@@ -238,7 +238,7 @@ void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
                                       "tracks available.");
     return;
   }
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::start));
+  ScheduleDispatchEvent(Event::Create(event_type_names::kStart));
 }
 
 void MediaRecorder::stop(ExceptionState& exception_state) {
@@ -266,7 +266,7 @@ void MediaRecorder::pause(ExceptionState& exception_state) {
 
   recorder_handler_->Pause();
 
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::pause));
+  ScheduleDispatchEvent(Event::Create(event_type_names::kPause));
 }
 
 void MediaRecorder::resume(ExceptionState& exception_state) {
@@ -282,7 +282,7 @@ void MediaRecorder::resume(ExceptionState& exception_state) {
   state_ = State::kRecording;
 
   recorder_handler_->Resume();
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::resume));
+  ScheduleDispatchEvent(Event::Create(event_type_names::kResume));
 }
 
 void MediaRecorder::requestData(ExceptionState& exception_state) {
@@ -345,7 +345,7 @@ void MediaRecorder::WriteData(const char* data,
                               double timecode) {
   if (stopped_ && !last_in_slice) {
     stopped_ = false;
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::start));
+    ScheduleDispatchEvent(Event::Create(event_type_names::kStart));
   }
 
   if (!blob_data_) {
@@ -368,12 +368,12 @@ void MediaRecorder::WriteData(const char* data,
 void MediaRecorder::OnError(const WebString& message) {
   DLOG(ERROR) << message.Ascii();
   StopRecording();
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::error));
+  ScheduleDispatchEvent(Event::Create(event_type_names::kError));
 }
 
 void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
   ScheduleDispatchEvent(
-      BlobEvent::Create(EventTypeNames::dataavailable, blob, timecode));
+      BlobEvent::Create(event_type_names::kDataavailable, blob, timecode));
 }
 
 void MediaRecorder::StopRecording() {
@@ -384,7 +384,7 @@ void MediaRecorder::StopRecording() {
 
   WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
             WTF::CurrentTimeMS());
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::stop));
+  ScheduleDispatchEvent(Event::Create(event_type_names::kStop));
 }
 
 void MediaRecorder::ScheduleDispatchEvent(Event* event) {

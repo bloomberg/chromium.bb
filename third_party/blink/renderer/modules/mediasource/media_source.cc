@@ -255,12 +255,12 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer,
 void MediaSource::OnReadyStateChange(const AtomicString& old_state,
                                      const AtomicString& new_state) {
   if (IsOpen()) {
-    ScheduleEvent(EventTypeNames::sourceopen);
+    ScheduleEvent(event_type_names::kSourceopen);
     return;
   }
 
   if (old_state == OpenKeyword() && new_state == EndedKeyword()) {
-    ScheduleEvent(EventTypeNames::sourceended);
+    ScheduleEvent(event_type_names::kSourceended);
     return;
   }
 
@@ -275,7 +275,7 @@ void MediaSource::OnReadyStateChange(const AtomicString& old_state,
 
   attached_element_.Clear();
 
-  ScheduleEvent(EventTypeNames::sourceclose);
+  ScheduleEvent(event_type_names::kSourceclose);
 }
 
 bool MediaSource::IsUpdating() const {

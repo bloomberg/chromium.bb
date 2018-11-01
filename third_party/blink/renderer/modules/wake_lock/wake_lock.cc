@@ -76,7 +76,7 @@ void WakeLock::ChangeActiveStatus(bool active) {
     wake_lock_service_->CancelWakeLock();
 
   active_ = active;
-  EnqueueEvent(*Event::Create(EventTypeNames::activechange),
+  EnqueueEvent(*Event::Create(event_type_names::kActivechange),
                TaskType::kMiscPlatformAPI);
 }
 

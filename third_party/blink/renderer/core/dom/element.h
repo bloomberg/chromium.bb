@@ -156,10 +156,10 @@ class CORE_EXPORT Element : public ContainerNode {
   static Element* Create(const QualifiedName&, Document*);
   ~Element() override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;

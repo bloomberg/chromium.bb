@@ -64,7 +64,7 @@ class CORE_EXPORT HTMLInputElement
 
   bool HasPendingActivity() const final;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange, kWebkitspeechchange);
 
   bool ShouldAutocomplete() const final;
 

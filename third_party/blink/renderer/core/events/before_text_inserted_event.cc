@@ -31,7 +31,7 @@
 namespace blink {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
-    : Event(EventTypeNames::webkitBeforeTextInserted,
+    : Event(event_type_names::kWebkitBeforeTextInserted,
             Bubbles::kNo,
             Cancelable::kYes),
       text_(text) {}

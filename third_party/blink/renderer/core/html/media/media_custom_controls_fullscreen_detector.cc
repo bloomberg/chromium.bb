@@ -43,20 +43,21 @@ bool MediaCustomControlsFullscreenDetector::operator==(
 }
 
 void MediaCustomControlsFullscreenDetector::Attach() {
-  VideoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
+  VideoElement().addEventListener(event_type_names::kLoadedmetadata, this,
+                                  true);
   VideoElement().GetDocument().addEventListener(
-      EventTypeNames::webkitfullscreenchange, this, true);
+      event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().addEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
 }
 
 void MediaCustomControlsFullscreenDetector::Detach() {
-  VideoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+  VideoElement().removeEventListener(event_type_names::kLoadedmetadata, this,
                                      true);
   VideoElement().GetDocument().removeEventListener(
-      EventTypeNames::webkitfullscreenchange, this, true);
+      event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().removeEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
   check_viewport_intersection_timer_.Stop();
 
   VideoElement().SetIsEffectivelyFullscreen(
@@ -102,9 +103,9 @@ bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
 void MediaCustomControlsFullscreenDetector::handleEvent(
     ExecutionContext* context,
     Event* event) {
-  DCHECK(event->type() == EventTypeNames::loadedmetadata ||
-         event->type() == EventTypeNames::webkitfullscreenchange ||
-         event->type() == EventTypeNames::fullscreenchange);
+  DCHECK(event->type() == event_type_names::kLoadedmetadata ||
+         event->type() == event_type_names::kWebkitfullscreenchange ||
+         event->type() == event_type_names::kFullscreenchange);
 
   // Video is not loaded yet.
   if (VideoElement().getReadyState() < HTMLMediaElement::kHaveMetadata)

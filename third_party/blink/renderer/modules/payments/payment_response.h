@@ -64,7 +64,7 @@ class MODULES_EXPORT PaymentResponse final
 
   bool HasPendingActivity() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(payerdetailchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(payerdetailchange, kPayerdetailchange);
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

@@ -121,7 +121,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull,
+                                  kResourcetimingbufferfull);
 
   void AddLongTaskTiming(
       TimeTicks start_time,
@@ -159,7 +160,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned EventTimingBufferSize() const;
   void clearEventTimings();
   void setEventTimingBufferMaxSize(unsigned);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull,
+                                  kEventtimingbufferfull);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,

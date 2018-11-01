@@ -20,7 +20,7 @@ class ServiceWorkerGlobalScopeCookieStore {
  public:
   static CookieStore* cookieStore(ServiceWorkerGlobalScope&);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cookiechange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cookiechange, kCookiechange);
 };
 
 }  // namespace blink

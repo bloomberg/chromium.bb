@@ -104,7 +104,7 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   } else
     DoOperation(kOperationWrite);
 
-  FireEvent(EventTypeNames::writestart);
+  FireEvent(event_type_names::kWritestart);
 }
 
 void FileWriter::seek(long long position, ExceptionState& exception_state) {
@@ -145,7 +145,7 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     queued_operation_ = kOperationTruncate;
   } else
     DoOperation(kOperationTruncate);
-  FireEvent(EventTypeNames::writestart);
+  FireEvent(event_type_names::kWritestart);
 }
 
 void FileWriter::abort(ExceptionState& exception_state) {
@@ -187,7 +187,7 @@ void FileWriter::DidWriteImpl(int64_t bytes, bool complete) {
       (now - last_progress_notification_time_ms_ >
        kProgressNotificationIntervalMS)) {
     last_progress_notification_time_ms_ = now;
-    FireEvent(EventTypeNames::progress);
+    FireEvent(event_type_names::kProgress);
   }
 
   if (complete) {
@@ -297,12 +297,13 @@ void FileWriter::SignalCompletion(base::File::Error error) {
   if (error != base::File::FILE_OK) {
     error_ = FileError::CreateDOMException(error);
     if (base::File::FILE_ERROR_ABORT == error)
-      FireEvent(EventTypeNames::abort);
+      FireEvent(event_type_names::kAbort);
     else
-      FireEvent(EventTypeNames::error);
-  } else
-    FireEvent(EventTypeNames::write);
-  FireEvent(EventTypeNames::writeend);
+      FireEvent(event_type_names::kError);
+  } else {
+    FireEvent(event_type_names::kWrite);
+  }
+  FireEvent(event_type_names::kWriteend);
 
   probe::AsyncTaskCanceled(GetExecutionContext(), this);
 }

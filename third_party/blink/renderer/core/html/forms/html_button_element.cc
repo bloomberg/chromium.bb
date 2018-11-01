@@ -105,7 +105,8 @@ void HTMLButtonElement::ParseAttribute(
 }
 
 void HTMLButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::DOMActivate && !IsDisabledFormControl()) {
+  if (event.type() == event_type_names::kDOMActivate &&
+      !IsDisabledFormControl()) {
     if (Form() && type_ == SUBMIT) {
       Form()->PrepareForSubmission(event, this);
       event.SetDefaultHandled();
@@ -117,13 +118,13 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
   }
 
   if (event.IsKeyboardEvent()) {
-    if (event.type() == EventTypeNames::keydown &&
+    if (event.type() == event_type_names::kKeydown &&
         ToKeyboardEvent(event).key() == " ") {
       SetActive(true);
       // No setDefaultHandled() - IE dispatches a keypress in this case.
       return;
     }
-    if (event.type() == EventTypeNames::keypress) {
+    if (event.type() == event_type_names::kKeypress) {
       switch (ToKeyboardEvent(event).charCode()) {
         case '\r':
           DispatchSimulatedClick(&event);
@@ -135,7 +136,7 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
           return;
       }
     }
-    if (event.type() == EventTypeNames::keyup &&
+    if (event.type() == event_type_names::kKeyup &&
         ToKeyboardEvent(event).key() == " ") {
       if (IsActive())
         DispatchSimulatedClick(&event);

@@ -156,8 +156,8 @@ void HTMLFormElement::HandleLocalEvents(Event& event) {
   Node* target_node = event.target()->ToNode();
   if (event.eventPhase() != Event::kCapturingPhase && target_node &&
       target_node != this &&
-      (event.type() == EventTypeNames::submit ||
-       event.type() == EventTypeNames::reset)) {
+      (event.type() == event_type_names::kSubmit ||
+       event.type() == event_type_names::kReset)) {
     event.stopPropagation();
     return;
   }
@@ -289,7 +289,7 @@ void HTMLFormElement::PrepareForSubmission(
                 "the end of the file. Please add an explicit end tag "
                 "('</" +
                 tag_name + ">')"));
-        DispatchEvent(*Event::Create(EventTypeNames::error));
+        DispatchEvent(*Event::Create(event_type_names::kError));
         return;
       }
     }
@@ -310,8 +310,8 @@ void HTMLFormElement::PrepareForSubmission(
                                                      true);
     frame->Client()->DispatchWillSendSubmitEvent(this);
     should_submit =
-        DispatchEvent(*Event::CreateCancelableBubble(EventTypeNames::submit)) ==
-        DispatchEventResult::kNotCanceled;
+        DispatchEvent(*Event::CreateCancelableBubble(
+            event_type_names::kSubmit)) == DispatchEventResult::kNotCanceled;
   }
   if (should_submit) {
     planned_navigation_ = nullptr;
@@ -510,7 +510,7 @@ void HTMLFormElement::reset() {
 
   is_in_reset_function_ = true;
 
-  if (DispatchEvent(*Event::CreateCancelableBubble(EventTypeNames::reset)) !=
+  if (DispatchEvent(*Event::CreateCancelableBubble(event_type_names::kReset)) !=
       DispatchEventResult::kNotCanceled) {
     is_in_reset_function_ = false;
     return;

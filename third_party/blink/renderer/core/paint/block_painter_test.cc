@@ -464,7 +464,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
   // created for both the parent and child.
   BlockPainterMockEventListener* callback = new BlockPainterMockEventListener();
   auto* parent_element = GetElementById("parent");
-  parent_element->addEventListener(EventTypeNames::touchstart, callback);
+  parent_element->addEventListener(event_type_names::kTouchstart, callback);
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* child = GetLayoutObjectByElementId("child");

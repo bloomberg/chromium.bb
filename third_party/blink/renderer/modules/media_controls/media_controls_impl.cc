@@ -1461,24 +1461,24 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
   if (is_touch_event)
     HandleTouchEvent(&event);
 
-  if (event.type() == EventTypeNames::mouseover && !is_touch_event)
+  if (event.type() == event_type_names::kMouseover && !is_touch_event)
     is_touch_interaction_ = false;
 
-  if ((event.type() == EventTypeNames::pointerover ||
-       event.type() == EventTypeNames::pointermove ||
-       event.type() == EventTypeNames::pointerout) &&
+  if ((event.type() == event_type_names::kPointerover ||
+       event.type() == event_type_names::kPointermove ||
+       event.type() == event_type_names::kPointerout) &&
       !is_touch_interaction_) {
     HandlePointerEvent(&event);
   }
 
-  if (event.type() == EventTypeNames::click && !is_touch_interaction_)
+  if (event.type() == event_type_names::kClick && !is_touch_interaction_)
     HandleClickEvent(&event);
 
   // If the user is interacting with the controls via the keyboard, don't hide
   // the controls. This will fire when the user tabs between controls (focusin)
   // or when they seek either the timeline or volume sliders (input).
-  if (event.type() == EventTypeNames::focusin ||
-      event.type() == EventTypeNames::input) {
+  if (event.type() == event_type_names::kFocusin ||
+      event.type() == event_type_names::kInput) {
     ResetHideMediaControlsTimer();
   }
 
@@ -1507,7 +1507,7 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
 }
 
 void MediaControlsImpl::HandlePointerEvent(Event* event) {
-  if (event->type() == EventTypeNames::pointerover) {
+  if (event->type() == event_type_names::kPointerover) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
@@ -1515,12 +1515,12 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
         StartHideMediaControlsIfNecessary();
       }
     }
-  } else if (event->type() == EventTypeNames::pointerout) {
+  } else if (event->type() == event_type_names::kPointerout) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = false;
       StopHideMediaControlsTimer();
     }
-  } else if (event->type() == EventTypeNames::pointermove) {
+  } else if (event->type() == event_type_names::kPointermove) {
     // When we get a mouse move, show the media controls, and start a timer
     // that will hide the media controls after a 3 seconds without a mouse move.
     is_mouse_over_controls_ = true;
@@ -1566,7 +1566,7 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
     is_mouse_over_controls_ = false;
     is_touch_interaction_ = true;
 
-    if (event->type() == EventTypeNames::click &&
+    if (event->type() == event_type_names::kClick &&
         !ContainsRelatedTarget(event)) {
       event->SetDefaultHandled();
 
@@ -1586,7 +1586,7 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
     return;
   }
 
-  if (event->type() == EventTypeNames::gesturetap &&
+  if (event->type() == event_type_names::kGesturetap &&
       !ContainsRelatedTarget(event) && !MediaElement().paused()) {
     if (!IsVisible()) {
       MakeOpaque();

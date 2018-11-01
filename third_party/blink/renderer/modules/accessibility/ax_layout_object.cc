@@ -2451,7 +2451,7 @@ bool AXLayoutObject::OnNativeSetSelectionAction(const AXSelection& selection) {
 
   if (anchor_object->GetLayoutObject()->GetNode() &&
       anchor_object->GetLayoutObject()->GetNode()->DispatchEvent(
-          *Event::CreateCancelableBubble(EventTypeNames::selectstart)) !=
+          *Event::CreateCancelableBubble(event_type_names::kSelectstart)) !=
           DispatchEventResult::kNotCanceled)
     return false;
 

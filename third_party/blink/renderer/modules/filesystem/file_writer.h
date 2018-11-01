@@ -88,12 +88,12 @@ class FileWriter final : public EventTargetWithInlineData,
     return ContextLifecycleObserver::GetExecutionContext();
   }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(write);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart, kWritestart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(write, kWrite);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend, kWriteend);
 
   void Trace(blink::Visitor*) override;
 

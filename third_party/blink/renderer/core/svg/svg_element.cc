@@ -883,13 +883,13 @@ void SVGElement::RemovedEventListener(
 }
 
 static bool HasLoadListener(Element* element) {
-  if (element->HasEventListeners(EventTypeNames::load))
+  if (element->HasEventListeners(event_type_names::kLoad))
     return true;
 
   for (element = element->ParentOrShadowHostElement(); element;
        element = element->ParentOrShadowHostElement()) {
     EventListenerVector* entry =
-        element->GetEventListeners(EventTypeNames::load);
+        element->GetEventListeners(event_type_names::kLoad);
     if (!entry)
       continue;
     for (wtf_size_t i = 0; i < entry->size(); ++i) {
@@ -906,7 +906,7 @@ bool SVGElement::SendSVGLoadEventIfPossible() {
     return false;
   if ((IsStructurallyExternal() || IsSVGSVGElement(*this)) &&
       HasLoadListener(this))
-    DispatchEvent(*Event::Create(EventTypeNames::load));
+    DispatchEvent(*Event::Create(event_type_names::kLoad));
   return true;
 }
 
@@ -1071,10 +1071,10 @@ const ComputedStyle* SVGElement::EnsureComputedStyle(
 }
 
 bool SVGElement::HasFocusEventListeners() const {
-  return HasEventListeners(EventTypeNames::focusin) ||
-         HasEventListeners(EventTypeNames::focusout) ||
-         HasEventListeners(EventTypeNames::focus) ||
-         HasEventListeners(EventTypeNames::blur);
+  return HasEventListeners(event_type_names::kFocusin) ||
+         HasEventListeners(event_type_names::kFocusout) ||
+         HasEventListeners(event_type_names::kFocus) ||
+         HasEventListeners(event_type_names::kBlur);
 }
 
 void SVGElement::MarkForLayoutAndParentResourceInvalidation(

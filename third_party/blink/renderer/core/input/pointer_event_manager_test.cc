@@ -126,7 +126,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
       "</body>");
   CheckPointerEventListenerCallback* callback =
       CheckPointerEventListenerCallback::Create();
-  GetDocument().body()->addEventListener(EventTypeNames::pointercancel,
+  GetDocument().body()->addEventListener(event_type_names::kPointercancel,
                                          callback);
 
   WebView().HandleInputEvent(WebCoalescedInputEvent(
@@ -181,7 +181,8 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
   WebView().SetPageScaleFactor(2);
   PointerEventCoordinateListenerCallback* callback =
       PointerEventCoordinateListenerCallback::Create();
-  GetDocument().body()->addEventListener(EventTypeNames::pointerdown, callback);
+  GetDocument().body()->addEventListener(event_type_names::kPointerdown,
+                                         callback);
 
   WebView().HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,

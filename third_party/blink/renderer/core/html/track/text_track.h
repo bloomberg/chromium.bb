@@ -102,7 +102,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   void CueWillChange(TextTrackCue*);
   void CueDidChange(TextTrackCue*, bool update_cue_index);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange, kCuechange);
 
   enum TextTrackType { kTrackElement, kAddTrack, kInBand };
   TextTrackType TrackType() const { return track_type_; }

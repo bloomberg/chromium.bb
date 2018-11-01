@@ -75,14 +75,14 @@ class DataListIndicatorElement final : public HTMLDivElement {
     // associated to the document. We don't want to open it in this case
     // because we opens a datalist chooser later.
     // FIXME: We should dispatch mousedown events even in such case.
-    if (event.type() == EventTypeNames::mousedown)
+    if (event.type() == event_type_names::kMousedown)
       event.stopPropagation();
     return nullptr;
   }
 
   void DefaultEventHandler(Event& event) override {
     DCHECK(GetDocument().IsActive());
-    if (event.type() != EventTypeNames::click)
+    if (event.type() != event_type_names::kClick)
       return;
     HTMLInputElement* host = HostInput();
     if (host && !host->IsDisabledOrReadOnly()) {
@@ -227,11 +227,11 @@ void TextFieldInputType::ForwardEvent(Event& event) {
   if (GetElement().GetLayoutObject() &&
       (event.IsMouseEvent() || event.IsDragEvent() ||
        event.HasInterface(EventNames::WheelEvent) ||
-       event.type() == EventTypeNames::blur ||
-       event.type() == EventTypeNames::focus)) {
+       event.type() == event_type_names::kBlur ||
+       event.type() == event_type_names::kFocus)) {
     LayoutTextControlSingleLine* layout_text_control =
         ToLayoutTextControlSingleLine(GetElement().GetLayoutObject());
-    if (event.type() == EventTypeNames::blur) {
+    if (event.type() == event_type_names::kBlur) {
       if (LayoutBox* inner_editor_layout_object =
               GetElement().InnerEditorElement()->GetLayoutBox()) {
         // FIXME: This class has no need to know about PaintLayer!
@@ -245,7 +245,7 @@ void TextFieldInputType::ForwardEvent(Event& event) {
       }
 
       layout_text_control->CapsLockStateMayHaveChanged();
-    } else if (event.type() == EventTypeNames::focus) {
+    } else if (event.type() == event_type_names::kFocus) {
       layout_text_control->CapsLockStateMayHaveChanged();
     }
 
@@ -261,7 +261,7 @@ void TextFieldInputType::HandleBlurEvent() {
 }
 
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
-  return (event.type() == EventTypeNames::textInput &&
+  return (event.type() == event_type_names::kTextInput &&
           event.HasInterface(EventNames::TextEvent) &&
           ToTextEvent(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);

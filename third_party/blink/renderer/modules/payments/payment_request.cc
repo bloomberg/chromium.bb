@@ -1140,7 +1140,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   shipping_address_ = new PaymentAddress(std::move(address));
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
-      GetExecutionContext(), EventTypeNames::shippingaddresschange);
+      GetExecutionContext(), event_type_names::kShippingaddresschange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
   DispatchEvent(*event);
@@ -1159,7 +1159,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   shipping_option_ = shipping_option_id;
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
-      GetExecutionContext(), EventTypeNames::shippingoptionchange);
+      GetExecutionContext(), event_type_names::kShippingoptionchange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
   DispatchEvent(*event);
@@ -1179,7 +1179,7 @@ void PaymentRequest::OnPayerDetailChange(
   DCHECK(!complete_resolver_);
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
-      GetExecutionContext(), EventTypeNames::payerdetailchange);
+      GetExecutionContext(), event_type_names::kPayerdetailchange);
   event->SetTarget(payment_response_);
   event->SetPaymentDetailsUpdater(this);
   payment_response_->UpdatePayerDetail(std::move(detail));

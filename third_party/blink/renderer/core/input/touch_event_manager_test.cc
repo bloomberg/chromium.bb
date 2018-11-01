@@ -65,7 +65,8 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
     </body>
   )HTML");
   CheckEventListenerCallback* callback = CheckEventListenerCallback::Create();
-  GetDocument().body()->addEventListener(EventTypeNames::touchstart, callback);
+  GetDocument().body()->addEventListener(event_type_names::kTouchstart,
+                                         callback);
 
   GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerDown),

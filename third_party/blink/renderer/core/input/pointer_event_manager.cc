@@ -41,11 +41,11 @@ const AtomicString& MouseEventNameForPointerEventInputType(
     const WebInputEvent::Type& event_type) {
   switch (event_type) {
     case WebInputEvent::Type::kPointerDown:
-      return EventTypeNames::mousedown;
+      return event_type_names::kMousedown;
     case WebInputEvent::Type::kPointerUp:
-      return EventTypeNames::mouseup;
+      return event_type_names::kMouseup;
     case WebInputEvent::Type::kPointerMove:
-      return EventTypeNames::mousemove;
+      return event_type_names::kMousemove;
     default:
       NOTREACHED();
       return g_empty_atom;
@@ -103,20 +103,20 @@ PointerEventManager::PointerEventBoundaryEventDispatcher::
 void PointerEventManager::PointerEventBoundaryEventDispatcher::DispatchOut(
     EventTarget* target,
     EventTarget* related_target) {
-  Dispatch(target, related_target, EventTypeNames::pointerout, false);
+  Dispatch(target, related_target, event_type_names::kPointerout, false);
 }
 
 void PointerEventManager::PointerEventBoundaryEventDispatcher::DispatchOver(
     EventTarget* target,
     EventTarget* related_target) {
-  Dispatch(target, related_target, EventTypeNames::pointerover, false);
+  Dispatch(target, related_target, event_type_names::kPointerover, false);
 }
 
 void PointerEventManager::PointerEventBoundaryEventDispatcher::DispatchLeave(
     EventTarget* target,
     EventTarget* related_target,
     bool check_for_listener) {
-  Dispatch(target, related_target, EventTypeNames::pointerleave,
+  Dispatch(target, related_target, event_type_names::kPointerleave,
            check_for_listener);
 }
 
@@ -124,18 +124,18 @@ void PointerEventManager::PointerEventBoundaryEventDispatcher::DispatchEnter(
     EventTarget* target,
     EventTarget* related_target,
     bool check_for_listener) {
-  Dispatch(target, related_target, EventTypeNames::pointerenter,
+  Dispatch(target, related_target, event_type_names::kPointerenter,
            check_for_listener);
 }
 
 AtomicString
 PointerEventManager::PointerEventBoundaryEventDispatcher::GetLeaveEvent() {
-  return EventTypeNames::pointerleave;
+  return event_type_names::kPointerleave;
 }
 
 AtomicString
 PointerEventManager::PointerEventBoundaryEventDispatcher::GetEnterEvent() {
-  return EventTypeNames::pointerenter;
+  return event_type_names::kPointerenter;
 }
 
 void PointerEventManager::PointerEventBoundaryEventDispatcher::Dispatch(
@@ -163,7 +163,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
-  if (event_type == EventTypeNames::pointerdown) {
+  if (event_type == event_type_names::kPointerdown) {
     Node* node = target->ToNode();
     if (node && IsHTMLCanvasElement(*node) &&
         ToHTMLCanvasElement(*node).NeedsUnbufferedInputEvents()) {
@@ -173,7 +173,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
 
   if (!check_for_listener || target->HasEventListeners(event_type)) {
     UseCounter::Count(frame_, WebFeature::kPointerEventDispatch);
-    if (event_type == EventTypeNames::pointerdown)
+    if (event_type == event_type_names::kPointerdown)
       UseCounter::Count(frame_, WebFeature::kPointerEventDispatchPointerDown);
 
     DCHECK(!dispatching_pointer_id_);
@@ -432,7 +432,7 @@ WebInputEventResult PointerEventManager::DispatchTouchPointerEvent(
     // primary pointers.
     // TODO(mustaq): What about other cases (e.g. GestureTwoFingerTap)?
     if (result != WebInputEventResult::kNotHandled &&
-        pointer_event->type() == EventTypeNames::pointerdown &&
+        pointer_event->type() == event_type_names::kPointerdown &&
         pointer_event->isPrimary()) {
       touch_ids_for_canceled_pointerdowns_.push_back(
           web_pointer_event.unique_touch_event_id);
@@ -451,15 +451,15 @@ WebInputEventResult PointerEventManager::SendTouchPointerEvent(
   ProcessCaptureAndPositionOfPointerEvent(pointer_event, target);
 
   // Setting the implicit capture for touch
-  if (pointer_event->type() == EventTypeNames::pointerdown)
+  if (pointer_event->type() == event_type_names::kPointerdown)
     SetPointerCapture(pointer_event->pointerId(), target);
 
   WebInputEventResult result = DispatchPointerEvent(
       GetEffectiveTargetForPointerEvent(target, pointer_event->pointerId()),
       pointer_event);
 
-  if (pointer_event->type() == EventTypeNames::pointerup ||
-      pointer_event->type() == EventTypeNames::pointercancel) {
+  if (pointer_event->type() == event_type_names::kPointerup ||
+      pointer_event->type() == event_type_names::kPointercancel) {
     ReleasePointerCapture(pointer_event->pointerId());
 
     // If the pointer is not hovering it implies that pointerup also means
@@ -578,11 +578,11 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
   WebInputEvent::Type event_type;
   // TODO(crbug.com/665924): The following ifs skip the mouseover/leave cases,
   // we should fixed them when further merge the code path.
-  if (mouse_event_name == EventTypeNames::mousemove)
+  if (mouse_event_name == event_type_names::kMousemove)
     event_type = WebInputEvent::kPointerMove;
-  else if (mouse_event_name == EventTypeNames::mousedown)
+  else if (mouse_event_name == event_type_names::kMousedown)
     event_type = WebInputEvent::kPointerDown;
-  else if (mouse_event_name == EventTypeNames::mouseup)
+  else if (mouse_event_name == event_type_names::kMouseup)
     event_type = WebInputEvent::kPointerUp;
   else
     return WebInputEventResult::kNotHandled;
@@ -674,7 +674,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
 
   if ((event_type == WebInputEvent::kPointerDown ||
        event_type == WebInputEvent::kPointerUp) &&
-      pointer_event->type() == EventTypeNames::pointermove &&
+      pointer_event->type() == event_type_names::kPointermove &&
       RuntimeEnabledFeatures::PointerRawMoveEnabled() &&
       frame_->GetEventHandlerRegistry().HasEventHandlers(
           EventHandlerRegistry::kPointerRawMoveEvent)) {
@@ -688,7 +688,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
       DispatchPointerEvent(effective_target, pointer_event);
 
   if (result != WebInputEventResult::kNotHandled &&
-      pointer_event->type() == EventTypeNames::pointerdown &&
+      pointer_event->type() == event_type_names::kPointerdown &&
       pointer_event->isPrimary()) {
     prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
         mouse_event.pointer_type)] = true;
@@ -717,12 +717,12 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
             mouse_event, canvas_region_id, nullptr));
   }
 
-  if (pointer_event->type() == EventTypeNames::pointerup ||
-      pointer_event->type() == EventTypeNames::pointercancel) {
+  if (pointer_event->type() == event_type_names::kPointerup ||
+      pointer_event->type() == event_type_names::kPointercancel) {
     ReleasePointerCapture(pointer_event->pointerId());
 
     // Send got/lostpointercapture rightaway if necessary.
-    if (pointer_event->type() == EventTypeNames::pointerup) {
+    if (pointer_event->type() == event_type_names::kPointerup) {
       // If pointerup releases the capture we also send boundary events
       // rightaway when the pointer that supports hover. The following function
       // does nothing when there was no capture to begin with in the first
@@ -814,14 +814,15 @@ void PointerEventManager::ProcessPendingPointerCapture(
     }
     DispatchPointerEvent(
         target, pointer_event_factory_.CreatePointerCaptureEvent(
-                    pointer_event, EventTypeNames::lostpointercapture));
+                    pointer_event, event_type_names::kLostpointercapture));
   }
 
   if (pending_pointer_capture_target) {
     SetNodeUnderPointer(pointer_event, pending_pointer_capture_target);
-    DispatchPointerEvent(pending_pointer_capture_target,
-                         pointer_event_factory_.CreatePointerCaptureEvent(
-                             pointer_event, EventTypeNames::gotpointercapture));
+    DispatchPointerEvent(
+        pending_pointer_capture_target,
+        pointer_event_factory_.CreatePointerCaptureEvent(
+            pointer_event, event_type_names::kGotpointercapture));
     pointer_capture_target_.Set(pointer_id, pending_pointer_capture_target);
   } else {
     pointer_capture_target_.erase(pointer_id);

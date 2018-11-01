@@ -54,7 +54,7 @@ class HashChangeEvent final : public Event {
   HashChangeEvent() = default;
 
   HashChangeEvent(const String& old_url, const String& new_url)
-      : Event(EventTypeNames::hashchange, Bubbles::kNo, Cancelable::kNo),
+      : Event(event_type_names::kHashchange, Bubbles::kNo, Cancelable::kNo),
         old_url_(old_url),
         new_url_(new_url) {}
 

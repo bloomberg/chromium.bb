@@ -300,8 +300,8 @@ void TouchEvent::preventDefault() {
                                  message);
   }
 
-  if ((type() == EventTypeNames::touchstart ||
-       type() == EventTypeNames::touchmove) &&
+  if ((type() == event_type_names::kTouchstart ||
+       type() == event_type_names::kTouchmove) &&
       view() && view()->IsLocalDOMWindow() && view()->GetFrame() &&
       current_touch_action_ == TouchAction::kTouchActionAuto) {
     switch (HandlingPassive()) {

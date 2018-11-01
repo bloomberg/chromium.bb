@@ -561,7 +561,7 @@ void XMLHttpRequest::TrackProgress(long long length) {
   ChangeState(kLoading);
   if (async_) {
     // readyStateChange event is fired as well.
-    DispatchProgressEventFromSnapshot(EventTypeNames::progress);
+    DispatchProgressEventFromSnapshot(event_type_names::kProgress);
   }
 }
 
@@ -590,14 +590,14 @@ void XMLHttpRequest::DispatchReadyStateChangeEvent() {
         action = XMLHttpRequestProgressEventThrottle::kFlush;
     }
     progress_event_throttle_->DispatchReadyStateChangeEvent(
-        Event::Create(EventTypeNames::readystatechange), action);
+        Event::Create(event_type_names::kReadystatechange), action);
   }
 
   if (state_ == kDone && !error_) {
     TRACE_EVENT1("devtools.timeline", "XHRLoad", "data",
                  InspectorXhrLoadEvent::Data(GetExecutionContext(), this));
-    DispatchProgressEventFromSnapshot(EventTypeNames::load);
-    DispatchProgressEventFromSnapshot(EventTypeNames::loadend);
+    DispatchProgressEventFromSnapshot(event_type_names::kLoad);
+    DispatchProgressEventFromSnapshot(event_type_names::kLoadend);
   }
 }
 
@@ -1015,7 +1015,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   bool upload_events = false;
   if (async_) {
     probe::AsyncTaskScheduled(&execution_context, "XMLHttpRequest.send", this);
-    DispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
+    DispatchProgressEvent(event_type_names::kLoadstart, 0, 0);
     // Event handler could have invalidated this send operation,
     // (re)setting the send flag and/or initiating another send
     // operation; leave quietly if so.
@@ -1024,7 +1024,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     if (http_body && upload_) {
       upload_events = upload_->HasEventListeners();
       upload_->DispatchEvent(
-          *ProgressEvent::Create(EventTypeNames::loadstart, false, 0, 0));
+          *ProgressEvent::Create(event_type_names::kLoadstart, false, 0, 0));
       // See above.
       if (!send_flag_ || loader_)
         return;
@@ -1166,7 +1166,7 @@ void XMLHttpRequest::abort() {
     if ((state_ == kOpened && send_flag_) || state_ == kHeadersReceived ||
         state_ == kLoading) {
       DCHECK(!loader_);
-      HandleRequestError(DOMExceptionCode::kNoError, EventTypeNames::abort,
+      HandleRequestError(DOMExceptionCode::kNoError, event_type_names::kAbort,
                          received_length, expected_length);
     }
   }
@@ -1284,7 +1284,7 @@ void XMLHttpRequest::DispatchProgressEvent(const AtomicString& type,
 
   ExecutionContext* context = GetExecutionContext();
   probe::AsyncTask async_task(
-      context, this, type == EventTypeNames::loadend ? nullptr : "progress",
+      context, this, type == event_type_names::kLoadend ? nullptr : "progress",
       async_);
   progress_event_throttle_->DispatchProgressEvent(type, length_computable,
                                                   loaded, total);
@@ -1306,7 +1306,7 @@ void XMLHttpRequest::HandleNetworkError() {
   if (!InternalAbort())
     return;
 
-  HandleRequestError(DOMExceptionCode::kNetworkError, EventTypeNames::error,
+  HandleRequestError(DOMExceptionCode::kNetworkError, event_type_names::kError,
                      received_length, expected_length);
 }
 
@@ -1323,7 +1323,7 @@ void XMLHttpRequest::HandleDidCancel() {
   pending_abort_event_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
       WTF::Bind(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
-                DOMExceptionCode::kAbortError, EventTypeNames::abort,
+                DOMExceptionCode::kAbortError, event_type_names::kAbort,
                 received_length, expected_length));
 }
 
@@ -1360,10 +1360,10 @@ void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
   // false|, when |handleRequestError| is called after |internalAbort()|.  This
   // is safe, however, as |this| will be kept alive from a strong ref
   // |Event::m_target|.
-  DispatchProgressEvent(EventTypeNames::progress, received_length,
+  DispatchProgressEvent(event_type_names::kProgress, received_length,
                         expected_length);
   DispatchProgressEvent(type, received_length, expected_length);
-  DispatchProgressEvent(EventTypeNames::loadend, received_length,
+  DispatchProgressEvent(event_type_names::kLoadend, received_length,
                         expected_length);
 }
 
@@ -1745,9 +1745,10 @@ void XMLHttpRequest::DidSendData(unsigned long long bytes_sent,
 
   if (bytes_sent == total_bytes_to_be_sent && !upload_complete_) {
     upload_complete_ = true;
-    if (upload_events_allowed_)
-      upload_->DispatchEventAndLoadEnd(EventTypeNames::load, true, bytes_sent,
-                                       total_bytes_to_be_sent);
+    if (upload_events_allowed_) {
+      upload_->DispatchEventAndLoadEnd(event_type_names::kLoad, true,
+                                       bytes_sent, total_bytes_to_be_sent);
+    }
   }
 }
 
@@ -1946,8 +1947,9 @@ void XMLHttpRequest::HandleDidTimeout() {
   if (!InternalAbort())
     return;
 
-  HandleRequestError(DOMExceptionCode::kTimeoutError, EventTypeNames::timeout,
-                     received_length, expected_length);
+  HandleRequestError(DOMExceptionCode::kTimeoutError,
+                     event_type_names::kTimeout, received_length,
+                     expected_length);
 }
 
 void XMLHttpRequest::Pause() {

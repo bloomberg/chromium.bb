@@ -286,18 +286,18 @@ void RTCQuicTransport::RemoveStream(RTCQuicStream* stream) {
 
 void RTCQuicTransport::OnConnected() {
   state_ = RTCQuicTransportState::kConnected;
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCQuicTransport::OnConnectionFailed(const std::string& error_details,
                                           bool from_remote) {
   Close(RTCQuicTransportState::kFailed);
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCQuicTransport::OnRemoteStopped() {
   Close(RTCQuicTransportState::kClosed);
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {

@@ -90,7 +90,7 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
 
   void SimulateAnimationIterations(int count) {
     for (int i = 0; i < count; i++) {
-      TriggerEvent(EventTypeNames::animationiteration);
+      TriggerEvent(event_type_names::kAnimationiteration);
     }
   }
 
@@ -103,7 +103,7 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     ExpectAnimationIterationCount("infinite");
   }
 
-  void SimulateAnimationEnd() { TriggerEvent(EventTypeNames::animationend); }
+  void SimulateAnimationEnd() { TriggerEvent(event_type_names::kAnimationend); }
 
   void SimulateControlsHidden() { loading_element_->OnControlsHidden(); }
 

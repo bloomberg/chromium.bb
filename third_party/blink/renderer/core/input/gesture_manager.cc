@@ -177,7 +177,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
         gesture_event.TimeStamp());
     mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
         current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
-        EventTypeNames::mousemove, fake_mouse_move);
+        event_type_names::kMousemove, fake_mouse_move);
   }
 
   // Do a new hit-test in case the mousemove event changed the DOM.
@@ -229,7 +229,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     mouse_down_event_result =
         mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
             current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
-            EventTypeNames::mousedown, fake_mouse_down);
+            event_type_names::kMousedown, fake_mouse_down);
     selection_controller_->InitializeSelectionState();
     if (mouse_down_event_result == WebInputEventResult::kNotHandled) {
       mouse_down_event_result = mouse_event_manager_->HandleMouseFocus(
@@ -274,7 +274,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
           ? WebInputEventResult::kHandledSuppressed
           : mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
                 current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
-                EventTypeNames::mouseup, fake_mouse_up);
+                event_type_names::kMouseup, fake_mouse_up);
 
   WebInputEventResult click_event_result = WebInputEventResult::kNotHandled;
   if (tapped_element) {
@@ -290,7 +290,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
           *tapped_element, event_handling_util::ParentForClickEvent);
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-              click_target_node, String(), EventTypeNames::click,
+              click_target_node, String(), event_type_names::kClick,
               fake_mouse_up);
     }
     mouse_event_manager_->SetClickElement(nullptr);
@@ -401,7 +401,7 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
         gesture_event.TimeStamp());
     mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
         targeted_event.GetHitTestResult().InnerNode(),
-        targeted_event.CanvasRegionId(), EventTypeNames::mousemove,
+        targeted_event.CanvasRegionId(), event_type_names::kMousemove,
         fake_mouse_move);
   }
 

@@ -523,7 +523,7 @@ bool ScriptProcessorNode::HasPendingActivity() const {
 
   // If |onaudioprocess| event handler is defined, the node should not be
   // GCed even if it is out of scope.
-  if (HasEventListeners(EventTypeNames::audioprocess))
+  if (HasEventListeners(event_type_names::kAudioprocess))
     return true;
 
   return false;

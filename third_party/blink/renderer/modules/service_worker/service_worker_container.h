@@ -97,8 +97,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange, kControllerchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   // Returns the ServiceWorkerRegistration object described by the given info.
   // Creates a new object if needed, or else returns the existing one.

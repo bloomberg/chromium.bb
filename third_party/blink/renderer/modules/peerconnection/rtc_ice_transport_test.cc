@@ -260,9 +260,9 @@ TEST_F(RTCIceTransportTest, OnGatheringStateChangedCompleteFiresEvents) {
           EXPECT_EQ("complete", ice_transport->gatheringState());
         }));
   }
-  ice_transport->addEventListener(EventTypeNames::icecandidate,
+  ice_transport->addEventListener(event_type_names::kIcecandidate,
                                   ice_candidate_listener);
-  ice_transport->addEventListener(EventTypeNames::gatheringstatechange,
+  ice_transport->addEventListener(event_type_names::kGatheringstatechange,
                                   gathering_state_change_listener);
   delegate->OnGatheringStateChanged(cricket::kIceGatheringComplete);
 
@@ -336,7 +336,8 @@ TEST_F(RTCIceTransportTest, OnStateChangedCompletedUpdatesStateAndFiresEvent) {
   EXPECT_CALL(*event_listener, handleEvent(_, _))
       .WillOnce(InvokeWithoutArgs(
           [ice_transport] { EXPECT_EQ("connected", ice_transport->state()); }));
-  ice_transport->addEventListener(EventTypeNames::statechange, event_listener);
+  ice_transport->addEventListener(event_type_names::kStatechange,
+                                  event_listener);
 
   ice_transport->addRemoteCandidate(
       RTCIceCandidateFromString(scope, kRemoteIceCandidateStr1),
@@ -366,7 +367,8 @@ TEST_F(RTCIceTransportTest, OnStateChangedFailedUpdatesStateAndFiresEvent) {
   EXPECT_CALL(*event_listener, handleEvent(_, _))
       .WillOnce(InvokeWithoutArgs(
           [ice_transport] { EXPECT_EQ("failed", ice_transport->state()); }));
-  ice_transport->addEventListener(EventTypeNames::statechange, event_listener);
+  ice_transport->addEventListener(event_type_names::kStatechange,
+                                  event_listener);
 
   ice_transport->addRemoteCandidate(
       RTCIceCandidateFromString(scope, kRemoteIceCandidateStr1),
@@ -403,8 +405,8 @@ TEST_F(RTCIceTransportTest, InitialOnSelectedCandidatePairChangedFiresEvent) {
         EXPECT_EQ(ice_transport->getRemoteCandidates()[0]->candidate(),
                   selected_candidate_pair->remote()->candidate());
       }));
-  ice_transport->addEventListener(EventTypeNames::selectedcandidatepairchange,
-                                  event_listener);
+  ice_transport->addEventListener(
+      event_type_names::kSelectedcandidatepairchange, event_listener);
 
   ice_transport->addRemoteCandidate(
       RTCIceCandidateFromString(scope, kRemoteIceCandidateStr1),
@@ -444,8 +446,8 @@ TEST_F(RTCIceTransportTest,
         EXPECT_EQ(ice_transport->getRemoteCandidates()[1]->candidate(),
                   selected_candidate_pair->remote()->candidate());
       }));
-  ice_transport->addEventListener(EventTypeNames::selectedcandidatepairchange,
-                                  event_listener);
+  ice_transport->addEventListener(
+      event_type_names::kSelectedcandidatepairchange, event_listener);
 
   ice_transport->addRemoteCandidate(
       RTCIceCandidateFromString(scope, kRemoteIceCandidateStr1),
@@ -492,7 +494,7 @@ TEST_F(RTCIceTransportTest,
             ice_transport->getSelectedCandidatePair();
         EXPECT_EQ(nullptr, selected_candidate_pair);
       }));
-  ice_transport->addEventListener(EventTypeNames::statechange,
+  ice_transport->addEventListener(event_type_names::kStatechange,
                                   state_change_event_listener);
 
   Persistent<MockEventListener> selected_candidate_pair_change_event_listener =
@@ -500,7 +502,7 @@ TEST_F(RTCIceTransportTest,
   EXPECT_CALL(*selected_candidate_pair_change_event_listener, handleEvent(_, _))
       .Times(1);  // First event is for the connected pair.
   ice_transport->addEventListener(
-      EventTypeNames::selectedcandidatepairchange,
+      event_type_names::kSelectedcandidatepairchange,
       selected_candidate_pair_change_event_listener);
 
   // Establish the connection
@@ -545,8 +547,8 @@ TEST_F(RTCIceTransportTest,
         EXPECT_EQ(kRemoteIceCandidateStr1,
                   selected_candidate_pair->remote()->candidate());
       }));
-  ice_transport->addEventListener(EventTypeNames::selectedcandidatepairchange,
-                                  event_listener);
+  ice_transport->addEventListener(
+      event_type_names::kSelectedcandidatepairchange, event_listener);
 
   ice_transport->addRemoteCandidate(
       RTCIceCandidateFromString(scope, kRemoteIceCandidateStr1),

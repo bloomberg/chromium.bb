@@ -367,7 +367,7 @@ void DOMWebSocket::Connect(const String& url,
     // resuming the queue. If we don't do this, the event is fired synchronously
     // with the constructor, meaning that it's impossible to listen for.
     event_queue_->Pause();
-    event_queue_->Dispatch(Event::Create(EventTypeNames::error));
+    event_queue_->Dispatch(Event::Create(event_type_names::kError));
     event_queue_->Unpause();
     return;
   }
@@ -709,7 +709,7 @@ void DOMWebSocket::DidConnect(const String& subprotocol,
   state_ = kOpen;
   subprotocol_ = subprotocol;
   extensions_ = extensions;
-  event_queue_->Dispatch(Event::Create(EventTypeNames::open));
+  event_queue_->Dispatch(Event::Create(event_type_names::kOpen));
 }
 
 void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
@@ -769,7 +769,7 @@ void DOMWebSocket::DidError() {
     LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   ReflectBufferedAmountConsumption();
   state_ = kClosed;
-  event_queue_->Dispatch(Event::Create(EventTypeNames::error));
+  event_queue_->Dispatch(Event::Create(event_type_names::kError));
 }
 
 void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {

@@ -1442,7 +1442,7 @@ void ContentSecurityPolicy::DispatchViolationEvents(
     return;
 
   SecurityPolicyViolationEvent& event = *SecurityPolicyViolationEvent::Create(
-      EventTypeNames::securitypolicyviolation, violation_data);
+      event_type_names::kSecuritypolicyviolation, violation_data);
   DCHECK(event.bubbles());
 
   if (auto* document = DynamicTo<Document>(*execution_context_)) {

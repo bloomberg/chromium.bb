@@ -351,7 +351,7 @@ void HTMLInputElement::DispatchFocusInEvent(
     Element* old_focused_element,
     WebFocusType type,
     InputDeviceCapabilities* source_capabilities) {
-  if (event_type == EventTypeNames::DOMFocusIn)
+  if (event_type == event_type_names::kDOMFocusIn)
     input_type_view_->HandleFocusInEvent(old_focused_element, type);
   HTMLFormControlElementWithState::DispatchFocusInEvent(
       event_type, old_focused_element, type, source_capabilities);
@@ -802,7 +802,7 @@ void HTMLInputElement::ParseAttribute(
   } else if (name == kOnsearchAttr) {
     // Search field and slider attributes all just cause updateFromElement to be
     // called through style recalcing.
-    SetAttributeEventListener(EventTypeNames::search,
+    SetAttributeEventListener(event_type_names::kSearch,
                               CreateAttributeEventListener(this, name, value));
   } else if (name == kIncrementalAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kIncrementalAttribute);
@@ -1235,12 +1235,12 @@ void HTMLInputElement::SetValueFromRenderer(const String& value) {
 
 EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
     Event& event) {
-  if (event.type() == EventTypeNames::textInput &&
+  if (event.type() == event_type_names::kTextInput &&
       input_type_view_->ShouldSubmitImplicitly(event)) {
     event.stopPropagation();
     return nullptr;
   }
-  if (event.type() != EventTypeNames::click)
+  if (event.type() != event_type_names::kClick)
     return nullptr;
   if (!event.IsMouseEvent() ||
       ToMouseEvent(event).button() !=
@@ -1259,7 +1259,7 @@ void HTMLInputElement::PostDispatchEventHandler(
 }
 
 void HTMLInputElement::DefaultEventHandler(Event& evt) {
-  if (evt.IsMouseEvent() && evt.type() == EventTypeNames::click &&
+  if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
       ToMouseEvent(evt).button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     input_type_view_->HandleClickEvent(ToMouseEvent(evt));
@@ -1267,7 +1267,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
       return;
   }
 
-  if (evt.IsKeyboardEvent() && evt.type() == EventTypeNames::keydown) {
+  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeydown) {
     input_type_view_->HandleKeydownEvent(ToKeyboardEvent(evt));
     if (evt.DefaultHandled())
       return;
@@ -1277,8 +1277,8 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
   // all events in text fields.  Makes editing keyboard handling take precedence
   // over the keydown and keypress handling in this function.
   bool call_base_class_early =
-      IsTextField() && (evt.type() == EventTypeNames::keydown ||
-                        evt.type() == EventTypeNames::keypress);
+      IsTextField() && (evt.type() == event_type_names::kKeydown ||
+                        evt.type() == event_type_names::kKeypress);
   if (call_base_class_early) {
     TextControlElement::DefaultEventHandler(evt);
     if (evt.DefaultHandled())
@@ -1291,7 +1291,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
   // the element, or presses enter while it is the active element. JavaScript
   // code wishing to activate the element must dispatch a DOMActivate event - a
   // click event will not do the job.
-  if (evt.type() == EventTypeNames::DOMActivate) {
+  if (evt.type() == event_type_names::kDOMActivate) {
     input_type_view_->HandleDOMActivateEvent(evt);
     if (evt.DefaultHandled())
       return;
@@ -1299,13 +1299,13 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 
   // Use key press event here since sending simulated mouse events
   // on key down blocks the proper sending of the key press event.
-  if (evt.IsKeyboardEvent() && evt.type() == EventTypeNames::keypress) {
+  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeypress) {
     input_type_view_->HandleKeypressEvent(ToKeyboardEvent(evt));
     if (evt.DefaultHandled())
       return;
   }
 
-  if (evt.IsKeyboardEvent() && evt.type() == EventTypeNames::keyup) {
+  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeyup) {
     input_type_view_->HandleKeyupEvent(ToKeyboardEvent(evt));
     if (evt.DefaultHandled())
       return;
@@ -1340,7 +1340,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
         static_cast<BeforeTextInsertedEvent&>(evt));
   }
 
-  if (evt.IsMouseEvent() && evt.type() == EventTypeNames::mousedown) {
+  if (evt.IsMouseEvent() && evt.type() == event_type_names::kMousedown) {
     input_type_view_->HandleMouseDownEvent(ToMouseEvent(evt));
     if (evt.DefaultHandled())
       return;

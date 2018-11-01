@@ -162,7 +162,7 @@ bool IsElementVisible(Element& element) {
 }
 
 void SimulateTransitionEnd(Element& element) {
-  element.DispatchEvent(*Event::Create(EventTypeNames::transitionend));
+  element.DispatchEvent(*Event::Create(event_type_names::kTransitionend));
 }
 
 // This must match MediaControlDownloadButtonElement::DownloadActionMetrics.

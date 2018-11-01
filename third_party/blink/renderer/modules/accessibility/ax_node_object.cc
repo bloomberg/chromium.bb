@@ -697,10 +697,10 @@ Element* AXNodeObject::MouseButtonListener() const {
 
   for (Element* element = ToElement(node); element;
        element = element->parentElement()) {
-    if (element->HasEventListeners(EventTypeNames::click) ||
-        element->HasEventListeners(EventTypeNames::mousedown) ||
-        element->HasEventListeners(EventTypeNames::mouseup) ||
-        element->HasEventListeners(EventTypeNames::DOMActivate))
+    if (element->HasEventListeners(event_type_names::kClick) ||
+        element->HasEventListeners(event_type_names::kMousedown) ||
+        element->HasEventListeners(event_type_names::kMouseup) ||
+        element->HasEventListeners(event_type_names::kDOMActivate))
       return element;
   }
 
@@ -959,10 +959,10 @@ bool AXNodeObject::IsClickable() const {
 
   // Note: we can't call |node->WillRespondToMouseClickEvents()| because that
   // triggers a style recalc and can delete this.
-  if (node->HasEventListeners(EventTypeNames::mouseup) ||
-      node->HasEventListeners(EventTypeNames::mousedown) ||
-      node->HasEventListeners(EventTypeNames::click) ||
-      node->HasEventListeners(EventTypeNames::DOMActivate)) {
+  if (node->HasEventListeners(event_type_names::kMouseup) ||
+      node->HasEventListeners(event_type_names::kMousedown) ||
+      node->HasEventListeners(event_type_names::kClick) ||
+      node->HasEventListeners(event_type_names::kDOMActivate)) {
     return true;
   }
 

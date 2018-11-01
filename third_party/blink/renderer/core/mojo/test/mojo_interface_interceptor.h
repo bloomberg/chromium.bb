@@ -45,7 +45,7 @@ class MojoInterfaceInterceptor final
   void start(ExceptionState&);
   void stop();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest, kInterfacerequest);
 
   void Trace(blink::Visitor*) override;
 

@@ -9,7 +9,7 @@
 namespace blink {
 
 FormDataEvent::FormDataEvent(FormData& form_data)
-    : Event(EventTypeNames::formdata, Bubbles::kYes, Cancelable::kNo),
+    : Event(event_type_names::kFormdata, Bubbles::kYes, Cancelable::kNo),
       form_data_(form_data) {}
 
 FormDataEvent* FormDataEvent::Create(FormData& form_data) {

@@ -100,7 +100,7 @@ class TextEvent final : public UIEvent {
 };
 
 inline bool IsTextEvent(const Event& event) {
-  return event.type() == EventTypeNames::textInput &&
+  return event.type() == event_type_names::kTextInput &&
          event.HasInterface(EventNames::TextEvent);
 }
 

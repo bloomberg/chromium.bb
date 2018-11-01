@@ -78,7 +78,7 @@ void DateTimeFieldElement::DefaultEventHandler(Event& event) {
 
 void DateTimeFieldElement::DefaultKeyboardEventHandler(
     KeyboardEvent& keyboard_event) {
-  if (keyboard_event.type() != EventTypeNames::keydown)
+  if (keyboard_event.type() != event_type_names::kKeydown)
     return;
 
   if (IsDisabled() || IsFieldOwnerDisabled())

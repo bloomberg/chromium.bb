@@ -46,7 +46,7 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     const String& url,
     int status,
     const String& message)
-    : Event(EventTypeNames::error, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       reason_(ErrorReasonToString(reason)),
       url_(url),
       status_(status),

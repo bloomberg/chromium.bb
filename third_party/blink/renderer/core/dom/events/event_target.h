@@ -252,62 +252,61 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
   GC_PLUGIN_IGNORE("513199") EventTargetData event_target_data_;
 };
 
+// Macros to define an attribute event listener.
+//  |lower_name| - Lower-cased event type name.  e.g. |focus|
+//  |symbol_name| - C++ symbol name in event_type_names namespace. e.g. |kFocus|
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.
-#define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute)                  \
-  EventListener* on##attribute() {                                  \
-    return GetAttributeEventListener(EventTypeNames::attribute);    \
-  }                                                                 \
-  void setOn##attribute(EventListener* listener) {                  \
-    SetAttributeEventListener(EventTypeNames::attribute, listener); \
+
+#define DEFINE_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)        \
+  EventListener* on##lower_name() {                                     \
+    return GetAttributeEventListener(event_type_names::symbol_name);    \
+  }                                                                     \
+  void setOn##lower_name(EventListener* listener) {                     \
+    SetAttributeEventListener(event_type_names::symbol_name, listener); \
   }
 
-#define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute)                    \
-  static EventListener* on##attribute(EventTarget& eventTarget) {            \
-    return eventTarget.GetAttributeEventListener(EventTypeNames::attribute); \
-  }                                                                          \
-  static void setOn##attribute(EventTarget& eventTarget,                     \
-                               EventListener* listener) {                    \
-    eventTarget.SetAttributeEventListener(EventTypeNames::attribute,         \
-                                          listener);                         \
+#define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)  \
+  static EventListener* on##lower_name(EventTarget& eventTarget) {       \
+    return eventTarget.GetAttributeEventListener(                        \
+        event_type_names::symbol_name);                                  \
+  }                                                                      \
+  static void setOn##lower_name(EventTarget& eventTarget,                \
+                                EventListener* listener) {               \
+    eventTarget.SetAttributeEventListener(event_type_names::symbol_name, \
+                                          listener);                     \
   }
 
-#define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute)                    \
-  EventListener* on##attribute() {                                           \
-    return GetDocument().GetWindowAttributeEventListener(                    \
-        EventTypeNames::attribute);                                          \
-  }                                                                          \
-  void setOn##attribute(EventListener* listener) {                           \
-    GetDocument().SetWindowAttributeEventListener(EventTypeNames::attribute, \
-                                                  listener);                 \
+#define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name) \
+  EventListener* on##lower_name() {                                     \
+    return GetDocument().GetWindowAttributeEventListener(               \
+        event_type_names::symbol_name);                                 \
+  }                                                                     \
+  void setOn##lower_name(EventListener* listener) {                     \
+    GetDocument().SetWindowAttributeEventListener(                      \
+        event_type_names::symbol_name, listener);                       \
   }
 
-#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute)             \
-  static EventListener* on##attribute(EventTarget& eventTarget) {            \
-    if (Node* node = eventTarget.ToNode())                                   \
-      return node->GetDocument().GetWindowAttributeEventListener(            \
-          EventTypeNames::attribute);                                        \
-    DCHECK(eventTarget.ToLocalDOMWindow());                                  \
-    return eventTarget.GetAttributeEventListener(EventTypeNames::attribute); \
-  }                                                                          \
-  static void setOn##attribute(EventTarget& eventTarget,                     \
-                               EventListener* listener) {                    \
-    if (Node* node = eventTarget.ToNode())                                   \
-      node->GetDocument().SetWindowAttributeEventListener(                   \
-          EventTypeNames::attribute, listener);                              \
-    else {                                                                   \
-      DCHECK(eventTarget.ToLocalDOMWindow());                                \
-      eventTarget.SetAttributeEventListener(EventTypeNames::attribute,       \
-                                            listener);                       \
-    }                                                                        \
-  }
-
-#define DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(attribute, eventName) \
-  EventListener* on##attribute() {                                   \
-    return GetAttributeEventListener(EventTypeNames::eventName);     \
-  }                                                                  \
-  void setOn##attribute(EventListener* listener) {                   \
-    SetAttributeEventListener(EventTypeNames::eventName, listener);  \
+#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name) \
+  static EventListener* on##lower_name(EventTarget& eventTarget) {             \
+    if (Node* node = eventTarget.ToNode()) {                                   \
+      return node->GetDocument().GetWindowAttributeEventListener(              \
+          event_type_names::symbol_name);                                      \
+    }                                                                          \
+    DCHECK(eventTarget.ToLocalDOMWindow());                                    \
+    return eventTarget.GetAttributeEventListener(                              \
+        event_type_names::symbol_name);                                        \
+  }                                                                            \
+  static void setOn##lower_name(EventTarget& eventTarget,                      \
+                                EventListener* listener) {                     \
+    if (Node* node = eventTarget.ToNode()) {                                   \
+      node->GetDocument().SetWindowAttributeEventListener(                     \
+          event_type_names::symbol_name, listener);                            \
+    } else {                                                                   \
+      DCHECK(eventTarget.ToLocalDOMWindow());                                  \
+      eventTarget.SetAttributeEventListener(event_type_names::symbol_name,     \
+                                            listener);                         \
+    }                                                                          \
   }
 
 DISABLE_CFI_PERF

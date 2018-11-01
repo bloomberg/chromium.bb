@@ -40,14 +40,15 @@ class MediaControlPanelElement::TransitionEventListener final
     DCHECK(!attached_);
     attached_ = true;
 
-    element_->addEventListener(EventTypeNames::transitionend, this, false);
+    element_->addEventListener(event_type_names::kTransitionend, this, false);
   }
 
   void Detach() {
     DCHECK(attached_);
     attached_ = false;
 
-    element_->removeEventListener(EventTypeNames::transitionend, this, false);
+    element_->removeEventListener(event_type_names::kTransitionend, this,
+                                  false);
   }
 
   bool IsAttached() const { return attached_; }
@@ -63,7 +64,7 @@ class MediaControlPanelElement::TransitionEventListener final
 
  private:
   void handleEvent(ExecutionContext* context, Event* event) override {
-    if (event->type() == EventTypeNames::transitionend) {
+    if (event->type() == event_type_names::kTransitionend) {
       callback_.Run();
       return;
     }
@@ -173,7 +174,8 @@ void MediaControlPanelElement::DetachTransitionEventListener() {
 void MediaControlPanelElement::DefaultEventHandler(Event& event) {
   // Suppress the media element activation behavior (toggle play/pause) when
   // any part of the control panel is clicked.
-  if (event.type() == EventTypeNames::click && !MediaControlsImpl::IsModern()) {
+  if (event.type() == event_type_names::kClick &&
+      !MediaControlsImpl::IsModern()) {
     event.SetDefaultHandled();
     return;
   }

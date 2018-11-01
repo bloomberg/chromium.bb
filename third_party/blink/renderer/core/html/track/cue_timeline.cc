@@ -299,13 +299,13 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
     // less than the endTime in the cue.
     if (task.second->startTime() >= task.second->endTime()) {
       media_element.ScheduleEvent(
-          CreateEventWithTarget(EventTypeNames::enter, task.second.Get()));
+          CreateEventWithTarget(event_type_names::kEnter, task.second.Get()));
       media_element.ScheduleEvent(
-          CreateEventWithTarget(EventTypeNames::exit, task.second.Get()));
+          CreateEventWithTarget(event_type_names::kExit, task.second.Get()));
     } else {
       bool is_enter_event = task.first == task.second->startTime();
       AtomicString event_name =
-          is_enter_event ? EventTypeNames::enter : EventTypeNames::exit;
+          is_enter_event ? event_type_names::kEnter : event_type_names::kExit;
       media_element.ScheduleEvent(
           CreateEventWithTarget(event_name, task.second.Get()));
     }
@@ -320,7 +320,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
   // ...
   for (const auto& track : affected_tracks) {
     media_element.ScheduleEvent(
-        CreateEventWithTarget(EventTypeNames::cuechange, track.Get()));
+        CreateEventWithTarget(event_type_names::kCuechange, track.Get()));
 
     // ... if the text track has a corresponding track element, to then fire a
     // simple event named cuechange at the track element as well.
@@ -329,7 +329,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
           ToLoadableTextTrack(track.Get())->TrackElement();
       DCHECK(track_element);
       media_element.ScheduleEvent(
-          CreateEventWithTarget(EventTypeNames::cuechange, track_element));
+          CreateEventWithTarget(event_type_names::kCuechange, track_element));
     }
   }
 

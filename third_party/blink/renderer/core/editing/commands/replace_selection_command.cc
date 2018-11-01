@@ -184,7 +184,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
     shadow_ancestor_element = editable_root;
 
   if (!editable_root->GetAttributeEventListener(
-          EventTypeNames::webkitBeforeTextInserted)
+          event_type_names::kWebkitBeforeTextInserted)
       // FIXME: Remove these checks once textareas and textfields actually
       // register an event handler.
       &&

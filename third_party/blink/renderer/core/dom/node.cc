@@ -2511,8 +2511,8 @@ void Node::HandleLocalEvents(Event& event) {
     if (HasEventListeners(event.type())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kDispatchMouseEventOnDisabledFormControl);
-      if (event.type() == EventTypeNames::mousedown ||
-          event.type() == EventTypeNames::mouseup) {
+      if (event.type() == event_type_names::kMousedown ||
+          event.type() == event_type_names::kMouseup) {
         UseCounter::Count(
             GetDocument(),
             WebFeature::kDispatchMouseUpDownEventOnDisabledFormControl);
@@ -2544,8 +2544,8 @@ void Node::DispatchSubtreeModifiedEvent() {
   if (!GetDocument().HasListenerType(Document::kDOMSubtreeModifiedListener))
     return;
 
-  DispatchScopedEvent(*MutationEvent::Create(EventTypeNames::DOMSubtreeModified,
-                                             Event::Bubbles::kYes));
+  DispatchScopedEvent(*MutationEvent::Create(
+      event_type_names::kDOMSubtreeModified, Event::Bubbles::kYes));
 }
 
 DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
@@ -2554,7 +2554,7 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
   UIEvent& event = *UIEvent::Create();
-  event.initUIEvent(EventTypeNames::DOMActivate, true, true,
+  event.initUIEvent(event_type_names::kDOMActivate, true, true,
                     GetDocument().domWindow(), detail);
   event.SetUnderlyingEvent(&underlying_event);
   event.SetComposed(underlying_event.composed());
@@ -2574,7 +2574,7 @@ void Node::DispatchSimulatedClick(Event* underlying_event,
 
 void Node::DispatchInputEvent() {
   // Legacy 'input' event for forms set value and checked.
-  Event* event = Event::CreateBubble(EventTypeNames::input);
+  Event* event = Event::CreateBubble(event_type_names::kInput);
   event->SetComposed(true);
   DispatchScopedEvent(*event);
 }
@@ -2583,26 +2583,26 @@ void Node::DefaultEventHandler(Event& event) {
   if (event.target() != this)
     return;
   const AtomicString& event_type = event.type();
-  if (event_type == EventTypeNames::keydown ||
-      event_type == EventTypeNames::keypress) {
+  if (event_type == event_type_names::kKeydown ||
+      event_type == event_type_names::kKeypress) {
     if (event.IsKeyboardEvent()) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultKeyboardEventHandler(
             ToKeyboardEvent(&event));
       }
     }
-  } else if (event_type == EventTypeNames::click) {
+  } else if (event_type == event_type_names::kClick) {
     int detail = event.IsUIEvent() ? ToUIEvent(event).detail() : 0;
     if (DispatchDOMActivateEvent(detail, event) !=
         DispatchEventResult::kNotCanceled)
       event.SetDefaultHandled();
-  } else if (event_type == EventTypeNames::contextmenu &&
+  } else if (event_type == event_type_names::kContextmenu &&
              event.IsMouseEvent()) {
     if (Page* page = GetDocument().GetPage()) {
       page->GetContextMenuController().HandleContextMenuEvent(
           ToMouseEvent(&event));
     }
-  } else if (event_type == EventTypeNames::textInput) {
+  } else if (event_type == event_type_names::kTextInput) {
     if (event.HasInterface(EventNames::TextEvent)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultTextInputEventHandler(
@@ -2610,7 +2610,8 @@ void Node::DefaultEventHandler(Event& event) {
       }
     }
   } else if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
-             event_type == EventTypeNames::mousedown && event.IsMouseEvent()) {
+             event_type == event_type_names::kMousedown &&
+             event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() ==
         static_cast<short>(WebPointerProperties::Button::kMiddle)) {
@@ -2640,7 +2641,7 @@ void Node::DefaultEventHandler(Event& event) {
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
       }
     }
-  } else if (event_type == EventTypeNames::mouseup && event.IsMouseEvent()) {
+  } else if (event_type == event_type_names::kMouseup && event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() ==
         static_cast<short>(WebPointerProperties::Button::kBack)) {
@@ -2665,7 +2666,7 @@ void Node::WillCallDefaultEventHandler(const Event& event) {
   if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse)
     return;
 
-  if (event.type() != EventTypeNames::keydown ||
+  if (event.type() != event_type_names::kKeydown ||
       GetDocument().HadKeyboardEvent())
     return;
 
@@ -2689,9 +2690,9 @@ bool Node::HasActivationBehavior() const {
 bool Node::WillRespondToMouseMoveEvents() {
   if (IsDisabledFormControl(this))
     return false;
-  return HasEventListeners(EventTypeNames::mousemove) ||
-         HasEventListeners(EventTypeNames::mouseover) ||
-         HasEventListeners(EventTypeNames::mouseout);
+  return HasEventListeners(event_type_names::kMousemove) ||
+         HasEventListeners(event_type_names::kMouseover) ||
+         HasEventListeners(event_type_names::kMouseout);
 }
 
 bool Node::WillRespondToMouseClickEvents() {
@@ -2699,19 +2700,19 @@ bool Node::WillRespondToMouseClickEvents() {
     return false;
   GetDocument().UpdateStyleAndLayoutTree();
   return HasEditableStyle(*this) ||
-         HasEventListeners(EventTypeNames::mouseup) ||
-         HasEventListeners(EventTypeNames::mousedown) ||
-         HasEventListeners(EventTypeNames::click) ||
-         HasEventListeners(EventTypeNames::DOMActivate);
+         HasEventListeners(event_type_names::kMouseup) ||
+         HasEventListeners(event_type_names::kMousedown) ||
+         HasEventListeners(event_type_names::kClick) ||
+         HasEventListeners(event_type_names::kDOMActivate);
 }
 
 bool Node::WillRespondToTouchEvents() {
   if (IsDisabledFormControl(this))
     return false;
-  return HasEventListeners(EventTypeNames::touchstart) ||
-         HasEventListeners(EventTypeNames::touchmove) ||
-         HasEventListeners(EventTypeNames::touchcancel) ||
-         HasEventListeners(EventTypeNames::touchend);
+  return HasEventListeners(event_type_names::kTouchstart) ||
+         HasEventListeners(event_type_names::kTouchmove) ||
+         HasEventListeners(event_type_names::kTouchcancel) ||
+         HasEventListeners(event_type_names::kTouchend);
 }
 
 unsigned Node::ConnectedSubframeCount() const {

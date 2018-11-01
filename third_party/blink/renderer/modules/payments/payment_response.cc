@@ -129,7 +129,7 @@ bool PaymentResponse::HasPendingActivity() const {
 }
 
 const AtomicString& PaymentResponse::InterfaceName() const {
-  return EventTypeNames::payerdetailchange;
+  return event_type_names::kPayerdetailchange;
 }
 
 ExecutionContext* PaymentResponse::GetExecutionContext() const {

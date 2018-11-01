@@ -40,12 +40,12 @@ RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
-    : Event(EventTypeNames::tonechange, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kTonechange, Bubbles::kNo, Cancelable::kNo),
       tone_(tone) {}
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(
     const RTCDTMFToneChangeEventInit* initializer)
-    : Event(EventTypeNames::tonechange, initializer) {
+    : Event(event_type_names::kTonechange, initializer) {
   if (initializer->hasTone())
     tone_ = initializer->tone();
 }

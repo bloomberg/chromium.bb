@@ -214,8 +214,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   WebIDBCallbacks* WebCallbacks() const { return web_callbacks_; }
 #endif  // DCHECK_IS_ON()
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
 
   void SetCursorDetails(IndexedDB::CursorType, WebIDBCursorDirection);
   void SetPendingCursor(IDBCursor*);

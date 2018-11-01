@@ -19,7 +19,7 @@ bool ActivateInvisibleEvent::IsActivateInvisibleEvent() const {
 }
 
 ActivateInvisibleEvent::ActivateInvisibleEvent(Element* activated_element)
-    : Event(EventTypeNames::activateinvisible,
+    : Event(event_type_names::kActivateinvisible,
             Bubbles::kYes,
             Cancelable::kYes,
             ComposedMode::kScoped),

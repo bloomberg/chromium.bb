@@ -87,11 +87,11 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void setAppendWindowStart(double, ExceptionState&);
   double appendWindowEnd() const;
   void setAppendWindowEnd(double, ExceptionState&);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatestart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(update);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatestart, kUpdatestart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(update, kUpdate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateend, kUpdateend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
   TrackDefaultList* trackDefaults() const { return track_defaults_.Get(); }
   void setTrackDefaults(TrackDefaultList*, ExceptionState&);
 

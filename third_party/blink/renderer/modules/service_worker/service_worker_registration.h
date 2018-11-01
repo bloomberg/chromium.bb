@@ -84,7 +84,7 @@ class ServiceWorkerRegistration final
   ScriptPromise update(ScriptState*);
   ScriptPromise unregister(ScriptState*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound);
 
   ~ServiceWorkerRegistration() override;
 

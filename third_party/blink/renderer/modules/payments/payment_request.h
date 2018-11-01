@@ -69,9 +69,10 @@ class MODULES_EXPORT PaymentRequest final
   const String& shippingOption() const { return shipping_option_; }
   const String& shippingType() const { return shipping_type_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange,
+                                  kShippingaddresschange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange, kShippingoptionchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange, kPaymentmethodchange);
 
   ScriptPromise canMakePayment(ScriptState*);
 

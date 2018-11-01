@@ -1260,7 +1260,7 @@ void WebViewImpl::EnablePopupMouseWheelEventListener(
   // We register an empty event listener, EmptyEventListener, so that mouse
   // wheel events get sent to the WebView.
   popup_mouse_wheel_event_listener_ = EmptyEventListener::Create();
-  document->addEventListener(EventTypeNames::mousewheel,
+  document->addEventListener(event_type_names::kMousewheel,
                              popup_mouse_wheel_event_listener_, false);
   local_root_with_empty_mouse_wheel_listener_ = local_root;
 }
@@ -1274,7 +1274,7 @@ void WebViewImpl::DisablePopupMouseWheelEventListener() {
   DCHECK(document);
   // Document may have already removed the event listener, for instance, due
   // to a navigation, but remove it anyway.
-  document->removeEventListener(EventTypeNames::mousewheel,
+  document->removeEventListener(event_type_names::kMousewheel,
                                 popup_mouse_wheel_event_listener_.Release(),
                                 false);
   local_root_with_empty_mouse_wheel_listener_ = nullptr;
@@ -1764,26 +1764,26 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseEnter:
-      event_type = EventTypeNames::mouseover;
+      event_type = event_type_names::kMouseover;
       break;
     case WebInputEvent::kMouseMove:
-      event_type = EventTypeNames::mousemove;
+      event_type = event_type_names::kMousemove;
       break;
     case WebInputEvent::kPointerRawMove:
       // There will be no mouse event for raw move events.
-      event_type = EventTypeNames::pointerrawmove;
+      event_type = event_type_names::kPointerrawmove;
       break;
     case WebInputEvent::kMouseLeave:
-      event_type = EventTypeNames::mouseout;
+      event_type = event_type_names::kMouseout;
       break;
     case WebInputEvent::kMouseDown:
-      event_type = EventTypeNames::mousedown;
+      event_type = event_type_names::kMousedown;
       gesture_indicator = LocalFrame::NotifyUserActivation(
           node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
       mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:
-      event_type = EventTypeNames::mouseup;
+      event_type = event_type_names::kMouseup;
       gesture_indicator = std::make_unique<UserGestureIndicator>(
           std::move(mouse_capture_gesture_token_));
       break;

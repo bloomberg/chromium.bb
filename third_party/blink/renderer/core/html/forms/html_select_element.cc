@@ -1293,7 +1293,7 @@ bool HTMLSelectElement::ShouldOpenPopupForKeyPressEvent(
 }
 
 void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::keydown) {
+  if (event.type() == event_type_names::kKeydown) {
     if (!GetLayoutObject() || !event.IsKeyboardEvent())
       return;
 
@@ -1353,7 +1353,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
   }
 
-  if (event.type() == EventTypeNames::keypress) {
+  if (event.type() == event_type_names::kKeypress) {
     if (!GetLayoutObject() || !event.IsKeyboardEvent())
       return;
 
@@ -1381,7 +1381,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
     }
   }
 
-  if (event.type() == EventTypeNames::mousedown && event.IsMouseEvent() &&
+  if (event.type() == event_type_names::kMousedown && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     InputDeviceCapabilities* source_capabilities =
@@ -1491,7 +1491,7 @@ void HTMLSelectElement::HandleMouseRelease() {
 }
 
 void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::gesturetap && event.IsGestureEvent()) {
+  if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
     focus();
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
@@ -1508,7 +1508,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::mousedown &&
+  } else if (event.type() == event_type_names::kMousedown &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
                  static_cast<short>(WebPointerProperties::Button::kLeft)) {
@@ -1537,7 +1537,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::mousemove &&
+  } else if (event.type() == event_type_names::kMousemove &&
              event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() !=
@@ -1573,7 +1573,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       }
     }
 
-  } else if (event.type() == EventTypeNames::mouseup && event.IsMouseEvent() &&
+  } else if (event.type() == event_type_names::kMouseup &&
+             event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
                  static_cast<short>(WebPointerProperties::Button::kLeft) &&
              GetLayoutObject()) {
@@ -1586,7 +1587,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
     else
       HandleMouseRelease();
 
-  } else if (event.type() == EventTypeNames::keydown) {
+  } else if (event.type() == event_type_names::kKeydown) {
     if (!event.IsKeyboardEvent())
       return;
     const String& key = ToKeyboardEvent(event).key();
@@ -1683,7 +1684,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::keypress) {
+  } else if (event.type() == event_type_names::kKeypress) {
     if (!event.IsKeyboardEvent())
       return;
     int key_code = ToKeyboardEvent(event).keyCode();
@@ -1708,8 +1709,8 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (!GetLayoutObject())
     return;
 
-  if (event.type() == EventTypeNames::click ||
-      event.type() == EventTypeNames::change) {
+  if (event.type() == event_type_names::kClick ||
+      event.type() == event_type_names::kChange) {
     user_has_edited_the_field_ = true;
   }
 
@@ -1725,7 +1726,7 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (event.DefaultHandled())
     return;
 
-  if (event.type() == EventTypeNames::keypress && event.IsKeyboardEvent()) {
+  if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
     auto& keyboard_event = ToKeyboardEvent(event);
     if (!keyboard_event.ctrlKey() && !keyboard_event.altKey() &&
         !keyboard_event.metaKey() &&

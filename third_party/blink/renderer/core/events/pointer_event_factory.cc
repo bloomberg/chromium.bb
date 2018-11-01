@@ -58,15 +58,15 @@ unsigned short ButtonToButtonsBitfield(WebPointerProperties::Button button) {
 const AtomicString& PointerEventNameForEventType(WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::kPointerDown:
-      return EventTypeNames::pointerdown;
+      return event_type_names::kPointerdown;
     case WebInputEvent::kPointerUp:
-      return EventTypeNames::pointerup;
+      return event_type_names::kPointerup;
     case WebInputEvent::kPointerMove:
-      return EventTypeNames::pointermove;
+      return event_type_names::kPointermove;
     case WebInputEvent::kPointerRawMove:
-      return EventTypeNames::pointerrawmove;
+      return event_type_names::kPointerrawmove;
     case WebInputEvent::kPointerCancel:
-      return EventTypeNames::pointercancel;
+      return event_type_names::kPointercancel;
     default:
       NOTREACHED();
       return g_empty_atom;
@@ -210,14 +210,15 @@ PointerEventInit* PointerEventFactory::ConvertIdTypeButtonsEvent(
 void PointerEventFactory::SetEventSpecificFields(
     PointerEventInit* pointer_event_init,
     const AtomicString& type) {
-  pointer_event_init->setBubbles(type != EventTypeNames::pointerenter &&
-                                 type != EventTypeNames::pointerleave);
-  pointer_event_init->setCancelable(type != EventTypeNames::pointerenter &&
-                                    type != EventTypeNames::pointerleave &&
-                                    type != EventTypeNames::pointercancel &&
-                                    type != EventTypeNames::pointerrawmove &&
-                                    type != EventTypeNames::gotpointercapture &&
-                                    type != EventTypeNames::lostpointercapture);
+  pointer_event_init->setBubbles(type != event_type_names::kPointerenter &&
+                                 type != event_type_names::kPointerleave);
+  pointer_event_init->setCancelable(
+      type != event_type_names::kPointerenter &&
+      type != event_type_names::kPointerleave &&
+      type != event_type_names::kPointercancel &&
+      type != event_type_names::kPointerrawmove &&
+      type != event_type_names::kGotpointercapture &&
+      type != event_type_names::kLostpointercapture);
 
   pointer_event_init->setComposed(true);
   pointer_event_init->setDetail(0);
@@ -255,7 +256,7 @@ PointerEvent* PointerEventFactory::Create(
              0) ||
         (event_type == WebInputEvent::kPointerUp &&
          pointer_event_init->buttons() != 0))
-      type = EventTypeNames::pointermove;
+      type = event_type_names::kPointermove;
   } else {
     pointer_event_init->setButton(
         static_cast<int>(WebPointerProperties::Button::kNoButton));
@@ -272,12 +273,12 @@ PointerEvent* PointerEventFactory::Create(
 
   HeapVector<Member<PointerEvent>> coalesced_pointer_events,
       predicted_pointer_events;
-  if (type == EventTypeNames::pointermove ||
-      type == EventTypeNames::pointerrawmove) {
+  if (type == event_type_names::kPointermove ||
+      type == event_type_names::kPointerrawmove) {
     coalesced_pointer_events = CreateEventSequence(
         web_pointer_event, pointer_event_init, coalesced_events, view);
   }
-  if (type == EventTypeNames::pointermove) {
+  if (type == event_type_names::kPointermove) {
     predicted_pointer_events = CreateEventSequence(
         web_pointer_event, pointer_event_init, predicted_events, view);
   }
@@ -304,10 +305,10 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
       pointer_id_mapping_.at(pointer_id).incoming_id.GetPointerType()));
   pointer_event_init->setIsPrimary(IsPrimary(pointer_id));
 
-  SetEventSpecificFields(pointer_event_init, EventTypeNames::pointercancel);
+  SetEventSpecificFields(pointer_event_init, event_type_names::kPointercancel);
 
-  return PointerEvent::Create(EventTypeNames::pointercancel, pointer_event_init,
-                              platfrom_time_stamp);
+  return PointerEvent::Create(event_type_names::kPointercancel,
+                              pointer_event_init, platfrom_time_stamp);
 }
 
 PointerEvent* PointerEventFactory::CreatePointerEventFrom(
@@ -349,21 +350,22 @@ PointerEvent* PointerEventFactory::CreatePointerRawMoveEvent(
   // This function is for creating pointerrawmove event from a pointerdown/up
   // event that caused by chorded buttons and hence its type is changed to
   // pointermove.
-  DCHECK(pointer_event->type() == EventTypeNames::pointermove &&
+  DCHECK(pointer_event->type() == event_type_names::kPointermove &&
          (pointer_event->buttons() &
           ~ButtonToButtonsBitfield(static_cast<WebPointerProperties::Button>(
               pointer_event->button()))) != 0 &&
          pointer_event->button() != 0);
 
-  return CreatePointerEventFrom(pointer_event, EventTypeNames::pointerrawmove,
+  return CreatePointerEventFrom(pointer_event,
+                                event_type_names::kPointerrawmove,
                                 pointer_event->relatedTarget());
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCaptureEvent(
     PointerEvent* pointer_event,
     const AtomicString& type) {
-  DCHECK(type == EventTypeNames::gotpointercapture ||
-         type == EventTypeNames::lostpointercapture);
+  DCHECK(type == event_type_names::kGotpointercapture ||
+         type == event_type_names::kLostpointercapture);
 
   return CreatePointerEventFrom(pointer_event, type,
                                 pointer_event->relatedTarget());
@@ -373,10 +375,10 @@ PointerEvent* PointerEventFactory::CreatePointerBoundaryEvent(
     PointerEvent* pointer_event,
     const AtomicString& type,
     EventTarget* related_target) {
-  DCHECK(type == EventTypeNames::pointerout ||
-         type == EventTypeNames::pointerleave ||
-         type == EventTypeNames::pointerover ||
-         type == EventTypeNames::pointerenter);
+  DCHECK(type == event_type_names::kPointerout ||
+         type == event_type_names::kPointerleave ||
+         type == event_type_names::kPointerover ||
+         type == event_type_names::kPointerenter);
 
   return CreatePointerEventFrom(pointer_event, type, related_target);
 }

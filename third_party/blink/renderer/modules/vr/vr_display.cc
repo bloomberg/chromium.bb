@@ -332,7 +332,7 @@ void VRDisplay::OnBlur(bool is_immersive) {
   DVLOG(1) << __FUNCTION__;
   display_blurred_ = true;
   navigator_vr_->EnqueueVREvent(
-      VRDisplayEvent::Create(EventTypeNames::vrdisplayblur, this, ""));
+      VRDisplayEvent::Create(event_type_names::kVrdisplayblur, this, ""));
 }
 
 void VRDisplay::OnFocus(bool is_immersive) {
@@ -344,7 +344,7 @@ void VRDisplay::OnFocus(bool is_immersive) {
   RequestVSync();
 
   navigator_vr_->EnqueueVREvent(
-      VRDisplayEvent::Create(EventTypeNames::vrdisplayfocus, this, ""));
+      VRDisplayEvent::Create(event_type_names::kVrdisplayfocus, this, ""));
 }
 
 void ReportPresentationResult(PresentationResult result) {
@@ -869,8 +869,8 @@ void VRDisplay::OnPresentChange() {
     DVLOG(1) << __FUNCTION__ << ": device not valid, not sending event";
     return;
   }
-  navigator_vr_->EnqueueVREvent(
-      VRDisplayEvent::Create(EventTypeNames::vrdisplaypresentchange, this, ""));
+  navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
+      event_type_names::kVrdisplaypresentchange, this, ""));
 }
 
 void VRDisplay::OnChanged(device::mojom::blink::VRDisplayInfoPtr display,
@@ -893,12 +893,12 @@ void VRDisplay::OnExitPresent(bool is_immersive) {
 
 void VRDisplay::OnConnected() {
   navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
-      EventTypeNames::vrdisplayconnect, this, "connect"));
+      event_type_names::kVrdisplayconnect, this, "connect"));
 }
 
 void VRDisplay::OnDisconnected() {
   navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
-      EventTypeNames::vrdisplaydisconnect, this, "disconnect"));
+      event_type_names::kVrdisplaydisconnect, this, "disconnect"));
 }
 
 void VRDisplay::StopPresenting() {
@@ -944,15 +944,15 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
 
   base::AutoReset<bool> in_activate(&in_display_activate_, true);
 
-  navigator_vr_->DispatchVREvent(
-      VRDisplayEvent::Create(EventTypeNames::vrdisplayactivate, this, reason));
+  navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
+      event_type_names::kVrdisplayactivate, this, reason));
   std::move(on_handled).Run(!pending_present_request_ && !is_presenting_);
 }
 
 void VRDisplay::OnDeactivate(
     device::mojom::blink::VRDisplayEventReason reason) {
   navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
-      EventTypeNames::vrdisplaydeactivate, this, reason));
+      event_type_names::kVrdisplaydeactivate, this, reason));
 }
 
 void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {

@@ -898,7 +898,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
   // NETWORK_IDLE, queue a task to fire a simple event named abort at the media
   // element.
   if (network_state_ == kNetworkLoading || network_state_ == kNetworkIdle)
-    ScheduleEvent(EventTypeNames::abort);
+    ScheduleEvent(event_type_names::kAbort);
 
   ResetMediaPlayerAndMediaSource();
 
@@ -907,7 +907,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
   if (network_state_ != kNetworkEmpty) {
     // 4.1 - Queue a task to fire a simple event named emptied at the media
     // element.
-    ScheduleEvent(EventTypeNames::emptied);
+    ScheduleEvent(event_type_names::kEmptied);
 
     // 4.2 - If a fetching process is in progress for the media element, the
     // user agent should stop it.
@@ -1075,7 +1075,7 @@ void HTMLMediaElement::SelectMediaResource() {
 
   // 8 - Queue a task to fire a simple event named loadstart at the media
   // element.
-  ScheduleEvent(EventTypeNames::loadstart);
+  ScheduleEvent(event_type_names::kLoadstart);
 
   // 9 - Run the appropriate steps...
   switch (mode) {
@@ -1566,7 +1566,7 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
   UpdateDisplayState();
 
   // 5 - Fire a simple event named error at the media element.
-  ScheduleEvent(EventTypeNames::error);
+  ScheduleEvent(event_type_names::kError);
 
   // 6 - Reject pending play promises with NotSupportedError.
   ScheduleRejectPlayPromises(DOMExceptionCode::kNotSupportedError);
@@ -1595,7 +1595,7 @@ void HTMLMediaElement::MediaEngineError(MediaError* err) {
   error_ = err;
 
   // 3 - Queue a task to fire a simple event named error at the media element.
-  ScheduleEvent(EventTypeNames::error);
+  ScheduleEvent(event_type_names::kError);
 
   // 4 - Set the element's networkState attribute to the NETWORK_IDLE value.
   SetNetworkState(kNetworkIdle);
@@ -1740,8 +1740,8 @@ void HTMLMediaElement::ChangeNetworkStateFromLoadingToIdle() {
     // Schedule one last progress event so we guarantee that at least one is
     // fired for files that load very quickly.
     if (GetWebMediaPlayer() && GetWebMediaPlayer()->DidLoadingProgress())
-      ScheduleEvent(EventTypeNames::progress);
-    ScheduleEvent(EventTypeNames::suspend);
+      ScheduleEvent(event_type_names::kProgress);
+    ScheduleEvent(event_type_names::kSuspend);
     SetNetworkState(kNetworkIdle);
   }
 }
@@ -1793,7 +1793,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     // attribute to change to a value lower than kHaveFutureData, then a waiting
     // will be fired at the element.
     if (was_potentially_playing && ready_state_ < kHaveFutureData)
-      ScheduleEvent(EventTypeNames::waiting);
+      ScheduleEvent(event_type_names::kWaiting);
 
     // 4.8.12.9 steps 12-14
     if (ready_state_ >= kHaveCurrentData)
@@ -1809,7 +1809,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
       // 4.8.12.8
       ScheduleTimeupdateEvent(false);
-      ScheduleEvent(EventTypeNames::waiting);
+      ScheduleEvent(event_type_names::kWaiting);
     }
   }
 
@@ -1826,11 +1826,11 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     SetOfficialPlaybackPosition(EarliestPossiblePosition());
 
     duration_ = web_media_player_->Duration();
-    ScheduleEvent(EventTypeNames::durationchange);
+    ScheduleEvent(event_type_names::kDurationchange);
 
     if (IsHTMLVideoElement())
-      ScheduleEvent(EventTypeNames::resize);
-    ScheduleEvent(EventTypeNames::loadedmetadata);
+      ScheduleEvent(event_type_names::kResize);
+    ScheduleEvent(event_type_names::kLoadedmetadata);
 
     bool jumped = false;
     if (default_playback_start_position_ > 0) {
@@ -1866,7 +1866,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
     have_fired_loaded_data_ = true;
     should_update_display_state = true;
-    ScheduleEvent(EventTypeNames::loadeddata);
+    ScheduleEvent(event_type_names::kLoadeddata);
     SetShouldDelayLoadEvent(false);
 
     // If the player did a lazy load, it's expecting to be called when the
@@ -1883,7 +1883,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
   if (ready_state_ == kHaveFutureData && old_state <= kHaveCurrentData &&
       tracks_are_ready) {
-    ScheduleEvent(EventTypeNames::canplay);
+    ScheduleEvent(event_type_names::kCanplay);
     if (is_potentially_playing)
       ScheduleNotifyPlaying();
     should_update_display_state = true;
@@ -1892,19 +1892,19 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
   if (ready_state_ == kHaveEnoughData && old_state < kHaveEnoughData &&
       tracks_are_ready) {
     if (old_state <= kHaveCurrentData) {
-      ScheduleEvent(EventTypeNames::canplay);
+      ScheduleEvent(event_type_names::kCanplay);
       if (is_potentially_playing)
         ScheduleNotifyPlaying();
     }
 
     if (autoplay_policy_->RequestAutoplayByAttribute()) {
       paused_ = false;
-      ScheduleEvent(EventTypeNames::play);
+      ScheduleEvent(event_type_names::kPlay);
       ScheduleNotifyPlaying();
       can_autoplay_ = false;
     }
 
-    ScheduleEvent(EventTypeNames::canplaythrough);
+    ScheduleEvent(event_type_names::kCanplaythrough);
 
     should_update_display_state = true;
   }
@@ -1931,7 +1931,7 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
   double timedelta = time - previous_progress_time_;
 
   if (GetWebMediaPlayer() && GetWebMediaPlayer()->DidLoadingProgress()) {
-    ScheduleEvent(EventTypeNames::progress);
+    ScheduleEvent(event_type_names::kProgress);
     previous_progress_time_ = time;
     sent_stalled_event_ = false;
     if (GetLayoutObject())
@@ -1943,7 +1943,7 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
     // 'stalled' does not apply. See discussion in https://crbug.com/517240
     // We also don't need to take any action wrt delaying-the-load-event.
     // MediaSource disables the delayed load when first attached.
-    ScheduleEvent(EventTypeNames::stalled);
+    ScheduleEvent(event_type_names::kStalled);
     sent_stalled_event_ = true;
     SetShouldDelayLoadEvent(false);
   }
@@ -2069,7 +2069,7 @@ void HTMLMediaElement::Seek(double time) {
   last_seek_time_ = time;
 
   // 10 - Queue a task to fire a simple event named seeking at the element.
-  ScheduleEvent(EventTypeNames::seeking);
+  ScheduleEvent(event_type_names::kSeeking);
 
   // 11 - Set the current playback position to the given new playback position.
   GetWebMediaPlayer()->Seek(time);
@@ -2092,7 +2092,7 @@ void HTMLMediaElement::FinishSeek() {
   ScheduleTimeupdateEvent(false);
 
   // 17 - Queue a task to fire a simple event named seeked at the element.
-  ScheduleEvent(EventTypeNames::seeked);
+  ScheduleEvent(event_type_names::kSeeked);
 
   SetDisplayMode(kVideo);
 }
@@ -2252,7 +2252,7 @@ void HTMLMediaElement::setDefaultPlaybackRate(double rate) {
     return;
 
   default_playback_rate_ = rate;
-  ScheduleEvent(EventTypeNames::ratechange);
+  ScheduleEvent(event_type_names::kRatechange);
 }
 
 double HTMLMediaElement::playbackRate() const {
@@ -2284,7 +2284,7 @@ void HTMLMediaElement::setPlaybackRate(double rate,
 
   if (playback_rate_ != rate) {
     playback_rate_ = rate;
-    ScheduleEvent(EventTypeNames::ratechange);
+    ScheduleEvent(event_type_names::kRatechange);
   }
 
   UpdatePlaybackRate();
@@ -2480,10 +2480,10 @@ void HTMLMediaElement::PlayInternal() {
 
   if (paused_) {
     paused_ = false;
-    ScheduleEvent(EventTypeNames::play);
+    ScheduleEvent(event_type_names::kPlay);
 
     if (ready_state_ <= kHaveCurrentData)
-      ScheduleEvent(EventTypeNames::waiting);
+      ScheduleEvent(event_type_names::kWaiting);
     else if (ready_state_ >= kHaveFutureData)
       ScheduleNotifyPlaying();
   } else if (ready_state_ >= kHaveFutureData) {
@@ -2514,7 +2514,7 @@ void HTMLMediaElement::PauseInternal() {
   if (!paused_) {
     paused_ = true;
     ScheduleTimeupdateEvent(false);
-    ScheduleEvent(EventTypeNames::pause);
+    ScheduleEvent(event_type_names::kPause);
 
     // Force an update to official playback position. Automatic updates from
     // currentPlaybackPosition() will be blocked while paused_ = true. This
@@ -2634,7 +2634,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exception_state) {
 
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
-  ScheduleEvent(EventTypeNames::volumechange);
+  ScheduleEvent(event_type_names::kVolumechange);
 }
 
 bool HTMLMediaElement::muted() const {
@@ -2650,7 +2650,7 @@ void HTMLMediaElement::setMuted(bool muted) {
 
   muted_ = muted;
 
-  ScheduleEvent(EventTypeNames::volumechange);
+  ScheduleEvent(event_type_names::kVolumechange);
 
   // If it is unmute and AutoplayPolicy doesn't want the playback to continue,
   // pause the playback.
@@ -2722,7 +2722,7 @@ void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
   if (periodic_event && !media_time_has_progressed)
     return;
 
-  ScheduleEvent(EventTypeNames::timeupdate);
+  ScheduleEvent(event_type_names::kTimeupdate);
 
   last_time_update_event_media_time_ = media_time;
 
@@ -3265,11 +3265,11 @@ void HTMLMediaElement::TimeChanged() {
         // changes paused to true and fires a simple event named pause at the
         // media element.
         paused_ = true;
-        ScheduleEvent(EventTypeNames::pause);
+        ScheduleEvent(event_type_names::kPause);
         ScheduleRejectPlayPromises(DOMExceptionCode::kAbortError);
       }
       // Queue a task to fire a simple event named ended at the media element.
-      ScheduleEvent(EventTypeNames::ended);
+      ScheduleEvent(event_type_names::kEnded);
     }
   }
   UpdatePlayState();
@@ -3299,7 +3299,7 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
   BLINK_MEDIA_LOG << "durationChanged(" << (void*)this << ") : " << duration_
                   << " -> " << duration;
   duration_ = duration;
-  ScheduleEvent(EventTypeNames::durationchange);
+  ScheduleEvent(event_type_names::kDurationchange);
 
   if (GetLayoutObject())
     GetLayoutObject()->UpdateFromElement();
@@ -3391,7 +3391,7 @@ void HTMLMediaElement::SizeChanged() {
 
   DCHECK(HasVideo());  // "resize" makes no sense in absence of video.
   if (ready_state_ > kHaveNothing && IsHTMLVideoElement())
-    ScheduleEvent(EventTypeNames::resize);
+    ScheduleEvent(event_type_names::kResize);
 
   if (GetLayoutObject())
     GetLayoutObject()->UpdateFromElement();
@@ -4078,7 +4078,7 @@ void HTMLMediaElement::ScheduleRejectPlayPromises(DOMExceptionCode code) {
 }
 
 void HTMLMediaElement::ScheduleNotifyPlaying() {
-  ScheduleEvent(EventTypeNames::playing);
+  ScheduleEvent(event_type_names::kPlaying);
   ScheduleResolvePlayPromises();
 }
 

@@ -19,7 +19,7 @@ RTCQuicStreamEvent* RTCQuicStreamEvent::Create(
 }
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(RTCQuicStream* stream)
-    : Event(EventTypeNames::quicstream, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kQuicstream, Bubbles::kNo, Cancelable::kNo),
       stream_(stream) {}
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(

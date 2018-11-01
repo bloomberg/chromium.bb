@@ -64,7 +64,7 @@ TEST_F(RTCQuicStreamTest, NewRemoteStreamFiresEvent) {
         auto* stream_event = static_cast<RTCQuicStreamEvent*>(event);
         EXPECT_NE(nullptr, stream_event->stream());
       }));
-  quic_transport->addEventListener(EventTypeNames::quicstream,
+  quic_transport->addEventListener(event_type_names::kQuicstream,
                                    quic_stream_listener);
 
   ASSERT_TRUE(transport_delegate);
@@ -123,7 +123,7 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetFiresStateChangeToClosed) {
   EXPECT_CALL(*state_change_listener, handleEvent(_, _))
       .WillOnce(InvokeWithoutArgs(
           [quic_stream]() { EXPECT_EQ("closed", quic_stream->state()); }));
-  quic_stream->addEventListener(EventTypeNames::statechange,
+  quic_stream->addEventListener(event_type_names::kStatechange,
                                 state_change_listener);
 
   RunUntilIdle();
@@ -157,7 +157,7 @@ TEST_F(RTCQuicStreamTest, PendingOnRemoteResetIgnoredAfterReset) {
   Persistent<MockEventListener> state_change_listener =
       CreateMockEventListener();
   EXPECT_CALL(*state_change_listener, handleEvent(_, _)).Times(0);
-  quic_stream->addEventListener(EventTypeNames::statechange,
+  quic_stream->addEventListener(event_type_names::kStatechange,
                                 state_change_listener);
 
   RunUntilIdle();

@@ -88,7 +88,7 @@ MessageEvent::MessageEvent(const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
                            MessagePortArray* ports)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeScriptValue),
       origin_(origin),
       last_event_id_(last_event_id),
@@ -103,7 +103,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            EventTarget* source,
                            MessagePortArray* ports,
                            UserActivation* user_activation)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -121,7 +121,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            EventTarget* source,
                            Vector<MessagePortChannel> channels,
                            UserActivation* user_activation)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -134,7 +134,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
 }
 
 MessageEvent::MessageEvent(const String& origin, EventTarget* source)
-    : Event(EventTypeNames::messageerror, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessageerror, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeNull),
       origin_(origin),
       source_(source) {
@@ -142,19 +142,19 @@ MessageEvent::MessageEvent(const String& origin, EventTarget* source)
 }
 
 MessageEvent::MessageEvent(const String& data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeString),
       data_as_string_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(Blob* data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeBlob),
       data_as_blob_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeArrayBuffer),
       data_as_array_buffer_(data),
       origin_(origin) {}

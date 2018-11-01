@@ -169,7 +169,7 @@ TEST_F(MediaControlInputElementTest, ClickRecordsInteraction) {
   ControlInputElement().MaybeRecordDisplayed();
 
   ControlInputElement().DispatchSimulatedClick(
-      Event::CreateBubble(EventTypeNames::click), kSendNoEvents);
+      Event::CreateBubble(event_type_names::kClick), kSendNoEvents);
 
   histogram_tester_.ExpectTotalCount(kControlInputElementHistogramName, 2);
   histogram_tester_.ExpectBucketCount(kControlInputElementHistogramName, 0, 1);

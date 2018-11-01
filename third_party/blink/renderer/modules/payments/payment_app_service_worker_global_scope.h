@@ -14,9 +14,9 @@ class PaymentAppServiceWorkerGlobalScope {
   STATIC_ONLY(PaymentAppServiceWorkerGlobalScope);
 
  public:
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(abortpayment);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canmakepayment);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(paymentrequest);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(abortpayment, kAbortpayment);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canmakepayment, kCanmakepayment);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(paymentrequest, kPaymentrequest);
 };
 
 }  // namespace blink

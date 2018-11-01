@@ -733,7 +733,7 @@ class IndexPopulator final : public EventListener {
     IDB_TRACE("IDBObjectStore::IndexPopulator::handleEvent");
 
     DCHECK_EQ(ExecutionContext::From(script_state_), execution_context);
-    DCHECK_EQ(event->type(), EventTypeNames::success);
+    DCHECK_EQ(event->type(), event_type_names::kSuccess);
     EventTarget* target = event->target();
     IDBRequest* request = static_cast<IDBRequest*>(target);
 

@@ -596,7 +596,7 @@ void LocalFrame::DidResume() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
     const TimeTicks resume_event_start = CurrentTimeTicks();
-    GetDocument()->DispatchEvent(*Event::Create(EventTypeNames::resume));
+    GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
     const TimeTicks resume_event_end = CurrentTimeTicks();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,

@@ -89,12 +89,12 @@ void MIDIAccess::Dispose() {
 }
 
 EventListener* MIDIAccess::onstatechange() {
-  return GetAttributeEventListener(EventTypeNames::statechange);
+  return GetAttributeEventListener(event_type_names::kStatechange);
 }
 
 void MIDIAccess::setOnstatechange(EventListener* listener) {
   has_pending_activity_ = listener;
-  SetAttributeEventListener(EventTypeNames::statechange, listener);
+  SetAttributeEventListener(event_type_names::kStatechange, listener);
 }
 
 bool MIDIAccess::HasPendingActivity() const {

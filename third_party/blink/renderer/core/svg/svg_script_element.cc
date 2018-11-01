@@ -49,7 +49,7 @@ void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kOnerrorAttr) {
     SetAttributeEventListener(
-        EventTypeNames::error,
+        event_type_names::kError,
         CreateAttributeEventListener(
             this, params.name, params.new_value,
             JSEventHandler::HandlerType::kOnErrorEventHandler));
@@ -156,12 +156,12 @@ Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
 }
 
 void SVGScriptElement::DispatchLoadEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(event_type_names::kLoad));
   have_fired_load_ = true;
 }
 
 void SVGScriptElement::DispatchErrorEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void SVGScriptElement::SetScriptElementForBinding(

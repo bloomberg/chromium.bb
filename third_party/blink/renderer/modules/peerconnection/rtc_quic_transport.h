@@ -65,9 +65,9 @@ class MODULES_EXPORT RTCQuicTransport final
              ExceptionState& exception_state);
   void stop();
   RTCQuicStream* createStream(ExceptionState& exception_state);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream, kQuicstream);
 
   // Called by the RTCIceTransport when its start() method is called.
   void OnTransportStarted();

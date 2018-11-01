@@ -419,7 +419,7 @@ void RTCIceTransport::OnGatheringStateChanged(
     DispatchEvent(*RTCPeerConnectionIceEvent::Create(nullptr));
   }
   gathering_state_ = new_state;
-  DispatchEvent(*Event::Create(EventTypeNames::gatheringstatechange));
+  DispatchEvent(*Event::Create(event_type_names::kGatheringstatechange));
 }
 
 void RTCIceTransport::OnCandidateGathered(
@@ -429,8 +429,8 @@ void RTCIceTransport::OnCandidateGathered(
   RTCPeerConnectionIceEventInit* event_init =
       RTCPeerConnectionIceEventInit::Create();
   event_init->setCandidate(candidate);
-  DispatchEvent(*RTCPeerConnectionIceEvent::Create(EventTypeNames::icecandidate,
-                                                   event_init));
+  DispatchEvent(*RTCPeerConnectionIceEvent::Create(
+      event_type_names::kIcecandidate, event_init));
 }
 
 static RTCIceTransportState ConvertIceTransportState(
@@ -459,7 +459,7 @@ void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
   if (state_ == RTCIceTransportState::kFailed) {
     selected_candidate_pair_ = nullptr;
   }
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCIceTransport::OnSelectedCandidatePairChanged(
@@ -472,7 +472,7 @@ void RTCIceTransport::OnSelectedCandidatePairChanged(
   selected_candidate_pair_ = RTCIceCandidatePair::Create();
   selected_candidate_pair_->setLocal(local);
   selected_candidate_pair_->setRemote(remote);
-  DispatchEvent(*Event::Create(EventTypeNames::selectedcandidatepairchange));
+  DispatchEvent(*Event::Create(event_type_names::kSelectedcandidatepairchange));
 }
 
 bool RTCIceTransport::RaiseExceptionIfClosed(

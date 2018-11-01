@@ -79,7 +79,7 @@ class MIDIPort : public EventTargetWithInlineData,
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   // EventTarget
   const AtomicString& InterfaceName() const override {

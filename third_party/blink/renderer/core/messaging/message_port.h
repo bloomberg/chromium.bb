@@ -103,19 +103,19 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void ContextDestroyed(ExecutionContext*) override { close(); }
 
   void setOnmessage(EventListener* listener) {
-    SetAttributeEventListener(EventTypeNames::message, listener);
+    SetAttributeEventListener(event_type_names::kMessage, listener);
     start();
   }
   EventListener* onmessage() {
-    return GetAttributeEventListener(EventTypeNames::message);
+    return GetAttributeEventListener(event_type_names::kMessage);
   }
 
   void setOnmessageerror(EventListener* listener) {
-    SetAttributeEventListener(EventTypeNames::messageerror, listener);
+    SetAttributeEventListener(event_type_names::kMessageerror, listener);
     start();
   }
   EventListener* onmessageerror() {
-    return GetAttributeEventListener(EventTypeNames::messageerror);
+    return GetAttributeEventListener(event_type_names::kMessageerror);
   }
 
   // A port starts out its life entangled, and remains entangled until it is

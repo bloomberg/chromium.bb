@@ -1275,7 +1275,7 @@ void Element::InvisibleAttributeChanged(const AtomicString& old_value,
 
 void Element::DefaultEventHandler(Event& event) {
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      event.type() == EventTypeNames::activateinvisible &&
+      event.type() == event_type_names::kActivateinvisible &&
       event.target() == this) {
     removeAttribute(kInvisibleAttr);
     event.SetDefaultHandled();
@@ -3249,17 +3249,17 @@ bool Element::SupportsSpatialNavigationFocus() const {
   if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) ||
       SpatialNavigationIgnoresEventHandlers(GetDocument().GetFrame()))
     return false;
-  if (HasEventListeners(EventTypeNames::click) ||
-      HasEventListeners(EventTypeNames::keydown) ||
-      HasEventListeners(EventTypeNames::keypress) ||
-      HasEventListeners(EventTypeNames::keyup))
+  if (HasEventListeners(event_type_names::kClick) ||
+      HasEventListeners(event_type_names::kKeydown) ||
+      HasEventListeners(event_type_names::kKeypress) ||
+      HasEventListeners(event_type_names::kKeyup))
     return true;
   if (!IsSVGElement())
     return false;
-  return (HasEventListeners(EventTypeNames::focus) ||
-          HasEventListeners(EventTypeNames::blur) ||
-          HasEventListeners(EventTypeNames::focusin) ||
-          HasEventListeners(EventTypeNames::focusout));
+  return (HasEventListeners(event_type_names::kFocus) ||
+          HasEventListeners(event_type_names::kBlur) ||
+          HasEventListeners(event_type_names::kFocusin) ||
+          HasEventListeners(event_type_names::kFocusout));
 }
 
 bool Element::IsFocusable() const {
@@ -3290,17 +3290,17 @@ Element* Element::AdjustedFocusedElementInTreeScope() const {
 void Element::DispatchFocusEvent(Element* old_focused_element,
                                  WebFocusType type,
                                  InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(*FocusEvent::Create(EventTypeNames::focus, Event::Bubbles::kNo,
-                                    GetDocument().domWindow(), 0,
-                                    old_focused_element, source_capabilities));
+  DispatchEvent(*FocusEvent::Create(
+      event_type_names::kFocus, Event::Bubbles::kNo, GetDocument().domWindow(),
+      0, old_focused_element, source_capabilities));
 }
 
 void Element::DispatchBlurEvent(Element* new_focused_element,
                                 WebFocusType type,
                                 InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(*FocusEvent::Create(EventTypeNames::blur, Event::Bubbles::kNo,
-                                    GetDocument().domWindow(), 0,
-                                    new_focused_element, source_capabilities));
+  DispatchEvent(*FocusEvent::Create(
+      event_type_names::kBlur, Event::Bubbles::kNo, GetDocument().domWindow(),
+      0, new_focused_element, source_capabilities));
 }
 
 void Element::DispatchFocusInEvent(
@@ -3311,8 +3311,8 @@ void Element::DispatchFocusInEvent(
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
-  DCHECK(event_type == EventTypeNames::focusin ||
-         event_type == EventTypeNames::DOMFocusIn);
+  DCHECK(event_type == event_type_names::kFocusin ||
+         event_type == event_type_names::kDOMFocusIn);
   DispatchScopedEvent(*FocusEvent::Create(
       event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
       old_focused_element, source_capabilities));
@@ -3325,8 +3325,8 @@ void Element::DispatchFocusOutEvent(
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
-  DCHECK(event_type == EventTypeNames::focusout ||
-         event_type == EventTypeNames::DOMFocusOut);
+  DCHECK(event_type == event_type_names::kFocusout ||
+         event_type == event_type_names::kDOMFocusOut);
   DispatchScopedEvent(*FocusEvent::Create(
       event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
       new_focused_element, source_capabilities));

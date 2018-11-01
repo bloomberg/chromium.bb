@@ -338,11 +338,11 @@ bool MouseEvent::IsMouseEvent() const {
 
 short MouseEvent::button() const {
   const AtomicString& event_name = type();
-  if (button_ == -1 || event_name == EventTypeNames::mousemove ||
-      event_name == EventTypeNames::mouseleave ||
-      event_name == EventTypeNames::mouseenter ||
-      event_name == EventTypeNames::mouseover ||
-      event_name == EventTypeNames::mouseout) {
+  if (button_ == -1 || event_name == event_type_names::kMousemove ||
+      event_name == event_type_names::kMouseleave ||
+      event_name == event_type_names::kMouseenter ||
+      event_name == event_type_names::kMouseover ||
+      event_name == event_type_names::kMouseout) {
     return 0;
   }
   return button_;
@@ -360,8 +360,8 @@ unsigned MouseEvent::which() const {
 Node* MouseEvent::toElement() const {
   // MSIE extension - "the object toward which the user is moving the mouse
   // pointer"
-  if (type() == EventTypeNames::mouseout ||
-      type() == EventTypeNames::mouseleave)
+  if (type() == event_type_names::kMouseout ||
+      type() == event_type_names::kMouseleave)
     return relatedTarget() ? relatedTarget()->ToNode() : nullptr;
 
   return target() ? target()->ToNode() : nullptr;
@@ -370,8 +370,8 @@ Node* MouseEvent::toElement() const {
 Node* MouseEvent::fromElement() const {
   // MSIE extension - "object from which activation or the mouse pointer is
   // exiting during the event" (huh?)
-  if (type() != EventTypeNames::mouseout &&
-      type() != EventTypeNames::mouseleave)
+  if (type() != event_type_names::kMouseout &&
+      type() != event_type_names::kMouseleave)
     return relatedTarget() ? relatedTarget()->ToNode() : nullptr;
 
   return target() ? target()->ToNode() : nullptr;
@@ -385,7 +385,7 @@ void MouseEvent::Trace(blink::Visitor* visitor) {
 DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
   GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(), relatedTarget());
 
-  bool is_click = type() == EventTypeNames::click;
+  bool is_click = type() == event_type_names::kClick;
   bool send_to_disabled_form_controls =
       RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled();
 
@@ -402,8 +402,8 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
     if (GetEventPath().HasEventListenersInPath(type())) {
       UseCounter::Count(dispatcher.GetNode().GetDocument(),
                         WebFeature::kDispatchMouseEventOnDisabledFormControl);
-      if (type() == EventTypeNames::mousedown ||
-          type() == EventTypeNames::mouseup) {
+      if (type() == event_type_names::kMousedown ||
+          type() == event_type_names::kMouseup) {
         UseCounter::Count(
             dispatcher.GetNode().GetDocument(),
             WebFeature::kDispatchMouseUpDownEventOnDisabledFormControl);
@@ -430,7 +430,7 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
   // other DOM-compliant browsers like Firefox, and so we do the same.
   MouseEvent& double_click_event = *MouseEvent::Create();
   double_click_event.InitMouseEventInternal(
-      EventTypeNames::dblclick, bubbles(), cancelable(), view(), detail(),
+      event_type_names::kDblclick, bubbles(), cancelable(), view(), detail(),
       screenX(), screenY(), clientX(), clientY(), GetModifiers(), button(),
       related_target, sourceCapabilities(), buttons());
   double_click_event.SetComposed(composed());

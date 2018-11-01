@@ -631,14 +631,14 @@ void MediaStreamTrack::SourceChangedState() {
   switch (ready_state_) {
     case MediaStreamSource::kReadyStateLive:
       component_->SetMuted(false);
-      DispatchEvent(*Event::Create(EventTypeNames::unmute));
+      DispatchEvent(*Event::Create(event_type_names::kUnmute));
       break;
     case MediaStreamSource::kReadyStateMuted:
       component_->SetMuted(true);
-      DispatchEvent(*Event::Create(EventTypeNames::mute));
+      DispatchEvent(*Event::Create(event_type_names::kMute));
       break;
     case MediaStreamSource::kReadyStateEnded:
-      DispatchEvent(*Event::Create(EventTypeNames::ended));
+      DispatchEvent(*Event::Create(event_type_names::kEnded));
       PropagateTrackEnded();
       break;
   }
@@ -671,7 +671,7 @@ bool MediaStreamTrack::HasPendingActivity() const {
   //
   // Hence insisting on keeping this object alive until the 'ended'
   // state has been reached & handled.
-  return !Ended() && HasEventListeners(EventTypeNames::ended);
+  return !Ended() && HasEventListeners(event_type_names::kEnded);
 }
 
 std::unique_ptr<AudioSourceProvider> MediaStreamTrack::CreateWebAudioSource() {

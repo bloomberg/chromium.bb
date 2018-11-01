@@ -104,7 +104,7 @@ void TextControlElement::DispatchBlurEvent(
 }
 
 void TextControlElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::webkitEditableContentChanged &&
+  if (event.type() == event_type_names::kWebkitEditableContentChanged &&
       GetLayoutObject() && GetLayoutObject()->IsTextControl()) {
     last_change_was_user_edit_ = !GetDocument().IsRunningExecCommand();
     user_has_edited_the_field_ |= last_change_was_user_edit_;
@@ -128,8 +128,8 @@ void TextControlElement::DefaultEventHandler(Event& event) {
 }
 
 void TextControlElement::ForwardEvent(Event& event) {
-  if (event.type() == EventTypeNames::blur ||
-      event.type() == EventTypeNames::focus)
+  if (event.type() == event_type_names::kBlur ||
+      event.type() == event_type_names::kFocus)
     return;
   InnerEditorElement()->DefaultEventHandler(event);
 }
@@ -263,7 +263,7 @@ void TextControlElement::DispatchFormControlChangeEvent() {
 void TextControlElement::EnqueueChangeEvent() {
   if (!value_before_first_user_edit_.IsNull() &&
       !EqualIgnoringNullity(value_before_first_user_edit_, value())) {
-    Event* event = Event::CreateBubble(EventTypeNames::change);
+    Event* event = Event::CreateBubble(event_type_names::kChange);
     event->SetTarget(this);
     GetDocument().EnqueueAnimationFrameEvent(event);
   }
@@ -733,11 +733,11 @@ void TextControlElement::SelectionChanged(bool user_triggered) {
       frame->Selection().GetSelectionInDOMTree();
   if (selection.Type() != kRangeSelection)
     return;
-  DispatchEvent(*Event::CreateBubble(EventTypeNames::select));
+  DispatchEvent(*Event::CreateBubble(event_type_names::kSelect));
 }
 
 void TextControlElement::ScheduleSelectEvent() {
-  Event* event = Event::CreateBubble(EventTypeNames::select);
+  Event* event = Event::CreateBubble(event_type_names::kSelect);
   event->SetTarget(this);
   GetDocument().EnqueueAnimationFrameEvent(event);
 }

@@ -1472,7 +1472,7 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
   is_in_printing_ = true;
 #endif
 
-  DispatchPrintEventRecursively(EventTypeNames::beforeprint);
+  DispatchPrintEventRecursively(event_type_names::kBeforeprint);
 }
 
 void WebLocalFrameImpl::DispatchAfterPrintEvent() {
@@ -1483,7 +1483,7 @@ void WebLocalFrameImpl::DispatchAfterPrintEvent() {
 #endif
 
   if (View())
-    DispatchPrintEventRecursively(EventTypeNames::afterprint);
+    DispatchPrintEventRecursively(event_type_names::kAfterprint);
 }
 
 void WebLocalFrameImpl::DispatchPrintEventRecursively(

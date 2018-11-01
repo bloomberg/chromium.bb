@@ -13,7 +13,7 @@ namespace blink {
 VisualViewportResizeEvent::~VisualViewportResizeEvent() = default;
 
 VisualViewportResizeEvent::VisualViewportResizeEvent()
-    : Event(EventTypeNames::resize, Bubbles::kNo, Cancelable::kNo) {}
+    : Event(event_type_names::kResize, Bubbles::kNo, Cancelable::kNo) {}
 
 void VisualViewportResizeEvent::DoneDispatchingEventAtCurrentTarget() {
   UseCounter::Count(currentTarget()->GetExecutionContext(),

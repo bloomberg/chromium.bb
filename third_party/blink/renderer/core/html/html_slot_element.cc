@@ -215,7 +215,7 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
 
 void HTMLSlotElement::DispatchSlotChangeEvent() {
   DCHECK(!IsInUserAgentShadowRoot());
-  Event* event = Event::CreateBubble(EventTypeNames::slotchange);
+  Event* event = Event::CreateBubble(event_type_names::kSlotchange);
   event->SetTarget(this);
   DispatchScopedEvent(*event);
 }

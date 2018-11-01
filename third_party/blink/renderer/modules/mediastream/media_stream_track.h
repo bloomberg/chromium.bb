@@ -85,9 +85,9 @@ class MODULES_EXPORT MediaStreamTrack
   MediaTrackSettings* getSettings() const;
   ScriptPromise applyConstraints(ScriptState*, const MediaTrackConstraints*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(ended, kEnded);
 
   MediaStreamComponent* Component() { return component_; }
   bool Ended() const;

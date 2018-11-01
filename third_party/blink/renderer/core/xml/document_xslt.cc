@@ -124,7 +124,8 @@ bool DocumentXSLT::ProcessingInstructionInsertedIntoDocument(
     return true;
 
   DOMContentLoadedListener* listener = DOMContentLoadedListener::Create(pi);
-  document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
+  document.addEventListener(event_type_names::kDOMContentLoaded, listener,
+                            false);
   DCHECK(!pi->EventListenerForXSLT());
   pi->SetEventListenerForXSLT(listener);
   return true;
@@ -140,7 +141,7 @@ bool DocumentXSLT::ProcessingInstructionRemovedFromDocument(
     return true;
 
   DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-  document.removeEventListener(EventTypeNames::DOMContentLoaded,
+  document.removeEventListener(event_type_names::kDOMContentLoaded,
                                pi->EventListenerForXSLT(), false);
   pi->ClearEventListenerForXSLT();
   return true;

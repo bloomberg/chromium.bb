@@ -142,7 +142,7 @@ void MediaDocument::DefaultEventHandler(Event& event) {
   if (!target_node)
     return;
 
-  if (event.type() == EventTypeNames::keydown && event.IsKeyboardEvent()) {
+  if (event.type() == event_type_names::kKeydown && event.IsKeyboardEvent()) {
     HTMLVideoElement* video =
         Traversal<HTMLVideoElement>::FirstWithin(*target_node);
     if (!video)

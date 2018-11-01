@@ -66,7 +66,7 @@ TextEvent::TextEvent()
 TextEvent::TextEvent(AbstractView* view,
                      const String& data,
                      TextEventInputType input_type)
-    : UIEvent(EventTypeNames::textInput,
+    : UIEvent(event_type_names::kTextInput,
               Bubbles::kYes,
               Cancelable::kYes,
               ComposedMode::kComposed,
@@ -85,7 +85,7 @@ TextEvent::TextEvent(AbstractView* view,
                      DocumentFragment* pasting_fragment,
                      bool should_smart_replace,
                      bool should_match_style)
-    : UIEvent(EventTypeNames::textInput,
+    : UIEvent(event_type_names::kTextInput,
               Bubbles::kYes,
               Cancelable::kYes,
               ComposedMode::kComposed,

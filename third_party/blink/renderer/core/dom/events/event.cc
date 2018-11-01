@@ -45,16 +45,16 @@ static bool IsEventTypeScopedInV0(const AtomicString& event_type) {
   // WebKit never allowed selectstart event to cross the the shadow DOM
   // boundary.  Changing this breaks existing sites.
   // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-  return event_type == EventTypeNames::abort ||
-         event_type == EventTypeNames::change ||
-         event_type == EventTypeNames::error ||
-         event_type == EventTypeNames::load ||
-         event_type == EventTypeNames::reset ||
-         event_type == EventTypeNames::resize ||
-         event_type == EventTypeNames::scroll ||
-         event_type == EventTypeNames::select ||
-         event_type == EventTypeNames::selectstart ||
-         event_type == EventTypeNames::slotchange;
+  return event_type == event_type_names::kAbort ||
+         event_type == event_type_names::kChange ||
+         event_type == event_type_names::kError ||
+         event_type == event_type_names::kLoad ||
+         event_type == event_type_names::kReset ||
+         event_type == event_type_names::kResize ||
+         event_type == event_type_names::kScroll ||
+         event_type == event_type_names::kSelect ||
+         event_type == event_type_names::kSelectstart ||
+         event_type == event_type_names::kSlotchange;
 }
 
 Event::Event() : Event("", Bubbles::kNo, Cancelable::kNo) {

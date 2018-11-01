@@ -57,7 +57,7 @@ void PresentationAvailability::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::change) {
+  if (event_type == event_type_names::kChange) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationAvailabilityChangeEventListener);
   }
@@ -70,7 +70,7 @@ void PresentationAvailability::AvailabilityChanged(
     return;
 
   value_ = value;
-  DispatchEvent(*Event::Create(EventTypeNames::change));
+  DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 bool PresentationAvailability::HasPendingActivity() const {

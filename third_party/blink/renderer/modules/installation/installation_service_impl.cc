@@ -33,7 +33,7 @@ void InstallationServiceImpl::OnInstall() {
   if (!dom_window)
     return;
 
-  dom_window->DispatchEvent(*Event::Create(EventTypeNames::appinstalled));
+  dom_window->DispatchEvent(*Event::Create(event_type_names::kAppinstalled));
 }
 
 }  // namespace blink

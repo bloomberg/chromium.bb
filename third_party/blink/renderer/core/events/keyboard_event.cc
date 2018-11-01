@@ -40,11 +40,11 @@ namespace {
 const AtomicString& EventTypeForKeyboardEventType(WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::kKeyUp:
-      return EventTypeNames::keyup;
+      return event_type_names::kKeyup;
     case WebInputEvent::kRawKeyDown:
-      return EventTypeNames::keydown;
+      return event_type_names::kKeydown;
     case WebInputEvent::kChar:
-      return EventTypeNames::keypress;
+      return event_type_names::kKeypress;
     case WebInputEvent::kKeyDown:
       // The caller should disambiguate the combined event into RawKeyDown or
       // Char events.
@@ -53,7 +53,7 @@ const AtomicString& EventTypeForKeyboardEventType(WebInputEvent::Type type) {
       break;
   }
   NOTREACHED();
-  return EventTypeNames::keydown;
+  return event_type_names::kKeydown;
 }
 
 KeyboardEvent::KeyLocationCode GetKeyLocationCode(const WebInputEvent& key) {
@@ -114,10 +114,11 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
 
   // Firefox: 0 for keydown/keyup events, character code for keypress
   // We match Firefox
-  if (type() == EventTypeNames::keypress)
+  if (type() == event_type_names::kKeypress)
     char_code_ = key.text[0];
 
-  if (type() == EventTypeNames::keydown || type() == EventTypeNames::keyup)
+  if (type() == event_type_names::kKeydown ||
+      type() == event_type_names::kKeyup)
     key_code_ = key.windows_key_code;
   else
     key_code_ = char_code_;

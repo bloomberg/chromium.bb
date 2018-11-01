@@ -55,9 +55,9 @@ class Sensor : public EventTargetWithInlineData,
   bool hasReading() const;
   DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
 
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;

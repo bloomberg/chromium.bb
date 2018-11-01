@@ -467,7 +467,7 @@ void ServiceWorkerContainer::SetController(
                       WebFeature::kServiceWorkerControlledPage);
   }
   if (should_notify_controller_change)
-    DispatchEvent(*Event::Create(EventTypeNames::controllerchange));
+    DispatchEvent(*Event::Create(event_type_names::kControllerchange));
 }
 
 void ServiceWorkerContainer::DispatchMessageEvent(

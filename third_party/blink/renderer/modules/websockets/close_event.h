@@ -74,7 +74,7 @@ class CloseEvent final : public Event {
   CloseEvent() : was_clean_(false), code_(0) {}
 
   CloseEvent(bool was_clean, int code, const String& reason)
-      : Event(EventTypeNames::close, Bubbles::kNo, Cancelable::kNo),
+      : Event(event_type_names::kClose, Bubbles::kNo, Cancelable::kNo),
         was_clean_(was_clean),
         code_(code),
         reason_(reason) {}

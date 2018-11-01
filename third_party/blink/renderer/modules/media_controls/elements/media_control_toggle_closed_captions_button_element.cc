@@ -104,7 +104,7 @@ MediaControlToggleClosedCaptionsButtonElement::GetNameForHistograms() const {
 
 void MediaControlToggleClosedCaptionsButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     if (MediaElement().textTracks()->length() == 1) {
       // If only one track exists, toggle it on/off
       if (MediaElement().textTracks()->HasShowingTracks())

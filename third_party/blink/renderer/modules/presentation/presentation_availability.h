@@ -61,7 +61,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   bool value() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
 
   void Trace(blink::Visitor*) override;
 

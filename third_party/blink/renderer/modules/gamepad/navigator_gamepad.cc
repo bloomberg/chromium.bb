@@ -260,8 +260,8 @@ void NavigatorGamepad::DispatchOneEvent() {
 
   Gamepad* gamepad = pending_events_.TakeFirst();
   const AtomicString& event_name = gamepad->connected()
-                                       ? EventTypeNames::gamepadconnected
-                                       : EventTypeNames::gamepaddisconnected;
+                                       ? event_type_names::kGamepadconnected
+                                       : event_type_names::kGamepaddisconnected;
   DomWindow()->DispatchEvent(*GamepadEvent::Create(
       event_name, Event::Bubbles::kNo, Event::Cancelable::kYes, gamepad));
 
@@ -315,8 +315,8 @@ bool NavigatorGamepad::HasLastData() {
 }
 
 static bool IsGamepadEvent(const AtomicString& event_type) {
-  return event_type == EventTypeNames::gamepadconnected ||
-         event_type == EventTypeNames::gamepaddisconnected;
+  return event_type == event_type_names::kGamepadconnected ||
+         event_type == event_type_names::kGamepaddisconnected;
 }
 
 void NavigatorGamepad::DidAddEventListener(LocalDOMWindow*,
@@ -337,8 +337,8 @@ void NavigatorGamepad::DidAddEventListener(LocalDOMWindow*,
 void NavigatorGamepad::DidRemoveEventListener(LocalDOMWindow* window,
                                               const AtomicString& event_type) {
   if (IsGamepadEvent(event_type) &&
-      !window->HasEventListeners(EventTypeNames::gamepadconnected) &&
-      !window->HasEventListeners(EventTypeNames::gamepaddisconnected)) {
+      !window->HasEventListeners(event_type_names::kGamepadconnected) &&
+      !window->HasEventListeners(event_type_names::kGamepaddisconnected)) {
     DidRemoveGamepadEventListeners();
   }
 }

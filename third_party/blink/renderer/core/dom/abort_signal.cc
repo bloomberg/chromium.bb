@@ -44,7 +44,7 @@ void AbortSignal::SignalAbort() {
     std::move(closure).Run();
   }
   abort_algorithms_.clear();
-  DispatchEvent(*Event::Create(EventTypeNames::abort));
+  DispatchEvent(*Event::Create(event_type_names::kAbort));
 }
 
 void AbortSignal::Follow(AbortSignal* parentSignal) {

@@ -166,7 +166,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   XMLHttpRequestUpload* upload();
   bool IsAsync() { return async_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange, kReadystatechange);
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "XMLHttpRequest"; }

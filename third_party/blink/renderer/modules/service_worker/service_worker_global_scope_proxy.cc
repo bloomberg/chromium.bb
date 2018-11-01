@@ -224,7 +224,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
       registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
-      EventTypeNames::backgroundfetchabort, init, observer);
+      event_type_names::kBackgroundfetchabort, init, observer);
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -242,7 +242,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
       registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
-      EventTypeNames::backgroundfetchclick, init, observer);
+      event_type_names::kBackgroundfetchclick, init, observer);
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -267,7 +267,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
       registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
-      EventTypeNames::backgroundfetchfail, init, observer,
+      event_type_names::kBackgroundfetchfail, init, observer,
       worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -294,7 +294,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
       registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
-      EventTypeNames::backgroundfetchsuccess, init, observer,
+      event_type_names::kBackgroundfetchsuccess, init, observer,
       worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -305,7 +305,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kActivate, event_id);
   Event* event = ExtendableEvent::Create(
-      EventTypeNames::activate, ExtendableEventInit::Create(), observer);
+      event_type_names::kActivate, ExtendableEventInit::Create(), observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
@@ -321,7 +321,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchCookieChangeEvent(
   HeapVector<Member<CookieListItem>> deleted;
   CookieChangeEvent::ToEventInfo(cookie, change_cause, changed, deleted);
   Event* event = ExtendableCookieChangeEvent::Create(
-      EventTypeNames::cookiechange, std::move(changed), std::move(deleted),
+      event_type_names::kCookiechange, std::move(changed), std::move(deleted),
       observer);
 
   // TODO(pwnall): Handle handle the case when
@@ -405,7 +405,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
   FetchEvent* fetch_event = FetchEvent::Create(
-      script_state, EventTypeNames::fetch, event_init, respond_with_observer,
+      script_state, event_type_names::kFetch, event_init, respond_with_observer,
       wait_until_observer, navigation_preload_sent);
   if (navigation_preload_sent) {
     // Keep |fetchEvent| until OnNavigationPreloadComplete() or
@@ -472,7 +472,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kInstall, event_id);
   Event* event =
-      InstallEvent::Create(EventTypeNames::install,
+      InstallEvent::Create(event_type_names::kInstall,
                            ExtendableEventInit::Create(), event_id, observer);
   WorkerGlobalScope()->SetIsInstalling(true);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -494,7 +494,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationClickEvent(
   if (0 <= action_index && action_index < static_cast<int>(data.actions.size()))
     event_init->setAction(data.actions[action_index].action);
   event_init->setReply(reply);
-  Event* event = NotificationEvent::Create(EventTypeNames::notificationclick,
+  Event* event = NotificationEvent::Create(event_type_names::kNotificationclick,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -511,7 +511,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
   event_init->setNotification(Notification::Create(
       WorkerGlobalScope(), notification_id,
       mojom::blink::NotificationData::From(data), false /* showing */));
-  Event* event = NotificationEvent::Create(EventTypeNames::notificationclose,
+  Event* event = NotificationEvent::Create(event_type_names::kNotificationclose,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -521,7 +521,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPushEvent(int event_id,
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPush, event_id);
-  Event* event = PushEvent::Create(EventTypeNames::push,
+  Event* event = PushEvent::Create(event_type_names::kPush,
                                    PushMessageData::Create(data), observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -533,7 +533,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(int event_id,
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
   Event* event =
-      SyncEvent::Create(EventTypeNames::sync, id, last_chance, observer);
+      SyncEvent::Create(event_type_names::kSync, id, last_chance, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
@@ -546,7 +546,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
                                           wait_until_observer);
 
   Event* event = AbortPaymentEvent::Create(
-      EventTypeNames::abortpayment, ExtendableEventInit::Create(),
+      event_type_names::kAbortpayment, ExtendableEventInit::Create(),
       respond_with_observer, wait_until_observer);
 
   WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
@@ -564,7 +564,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
                                             wait_until_observer);
 
   Event* event = CanMakePaymentEvent::Create(
-      EventTypeNames::canmakepayment,
+      event_type_names::kCanmakepayment,
       PaymentEventDataConversion::ToCanMakePaymentEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
           web_event_data),
@@ -585,7 +585,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
                                                 wait_until_observer);
 
   Event* event = PaymentRequestEvent::Create(
-      EventTypeNames::paymentrequest,
+      event_type_names::kPaymentrequest,
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
           web_app_request),
@@ -597,7 +597,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
 
 bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  return WorkerGlobalScope()->HasEventListeners(EventTypeNames::fetch);
+  return WorkerGlobalScope()->HasEventListeners(event_type_names::kFetch);
 }
 
 void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {

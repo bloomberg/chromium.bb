@@ -189,12 +189,12 @@ void PresentationConnection::DidChangeState(
     case mojom::blink::PresentationConnectionState::CONNECTING:
       return;
     case mojom::blink::PresentationConnectionState::CONNECTED:
-      DispatchStateChangeEvent(Event::Create(EventTypeNames::connect));
+      DispatchStateChangeEvent(Event::Create(event_type_names::kConnect));
       return;
     case mojom::blink::PresentationConnectionState::CLOSED:
       return;
     case mojom::blink::PresentationConnectionState::TERMINATED:
-      DispatchStateChangeEvent(Event::Create(EventTypeNames::terminate));
+      DispatchStateChangeEvent(Event::Create(event_type_names::kTerminate));
       return;
   }
   NOTREACHED();
@@ -240,7 +240,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
 
   // Fire onconnectionavailable event asynchronously.
   auto* event = PresentationConnectionAvailableEvent::Create(
-      EventTypeNames::connectionavailable, connection);
+      event_type_names::kConnectionavailable, connection);
   request->GetExecutionContext()
       ->GetTaskRunner(TaskType::kPresentation)
       ->PostTask(FROM_HERE,
@@ -381,17 +381,17 @@ void PresentationConnection::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connect) {
+  if (event_type == event_type_names::kConnect) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionConnectEventListener);
-  } else if (event_type == EventTypeNames::close) {
+  } else if (event_type == event_type_names::kClose) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionCloseEventListener);
-  } else if (event_type == EventTypeNames::terminate) {
+  } else if (event_type == event_type_names::kTerminate) {
     UseCounter::Count(
         GetExecutionContext(),
         WebFeature::kPresentationConnectionTerminateEventListener);
-  } else if (event_type == EventTypeNames::message) {
+  } else if (event_type == event_type_names::kMessage) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionMessageEventListener);
   }
@@ -590,7 +590,8 @@ void PresentationConnection::DidClose(
 
   state_ = mojom::blink::PresentationConnectionState::CLOSED;
   DispatchStateChangeEvent(PresentationConnectionCloseEvent::Create(
-      EventTypeNames::close, ConnectionCloseReasonToString(reason), message));
+      event_type_names::kClose, ConnectionCloseReasonToString(reason),
+      message));
 }
 
 void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {

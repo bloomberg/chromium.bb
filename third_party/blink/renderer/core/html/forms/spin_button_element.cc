@@ -92,7 +92,7 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
   auto& mouse_event = ToMouseEvent(event);
   IntPoint local = RoundedIntPoint(box->AbsoluteToLocal(
       FloatPoint(mouse_event.AbsoluteLocation()), kUseTransforms));
-  if (mouse_event.type() == EventTypeNames::mousedown &&
+  if (mouse_event.type() == event_type_names::kMousedown &&
       mouse_event.button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {
@@ -111,11 +111,11 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
       }
       event.SetDefaultHandled();
     }
-  } else if (mouse_event.type() == EventTypeNames::mouseup &&
+  } else if (mouse_event.type() == event_type_names::kMouseup &&
              mouse_event.button() ==
                  static_cast<short>(WebPointerProperties::Button::kLeft)) {
     ReleaseCapture();
-  } else if (event.type() == EventTypeNames::mousemove) {
+  } else if (event.type() == event_type_names::kMousemove) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {
       if (!capturing_) {
         if (LocalFrame* frame = GetDocument().GetFrame()) {

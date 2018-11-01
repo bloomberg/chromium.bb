@@ -168,7 +168,7 @@ void EventSource::ScheduleReconnect() {
   state_ = kConnecting;
   connect_timer_.StartOneShot(TimeDelta::FromMilliseconds(reconnect_delay_),
                               FROM_HERE);
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void EventSource::ConnectTimerFired(TimerBase*) {
@@ -269,7 +269,7 @@ void EventSource::DidReceiveResponse(
       last_event_id = parser_->LastEventId();
     }
     parser_ = new EventSourceParser(last_event_id, this);
-    DispatchEvent(*Event::Create(EventTypeNames::open));
+    DispatchEvent(*Event::Create(event_type_names::kOpen));
   } else {
     loader_->Cancel();
   }
@@ -343,7 +343,7 @@ void EventSource::AbortConnectionAttempt() {
   state_ = kClosed;
   NetworkRequestEnded();
 
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void EventSource::ContextDestroyed(ExecutionContext*) {

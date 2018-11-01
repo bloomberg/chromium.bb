@@ -134,10 +134,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   void Trace(blink::Visitor*) override;
 

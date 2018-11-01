@@ -64,7 +64,7 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
       network::mojom::FetchCredentialsMode) override;
 
   // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
   String name() const { return name_; }
 
   void ConnectPausable(MessagePortChannel channel);

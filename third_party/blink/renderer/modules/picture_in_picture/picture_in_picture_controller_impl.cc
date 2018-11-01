@@ -126,7 +126,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 
   picture_in_picture_element_->DispatchEvent(
       *EnterPictureInPictureEvent::Create(
-          EventTypeNames::enterpictureinpicture,
+          event_type_names::kEnterpictureinpicture,
           WrapPersistent(picture_in_picture_window_.Get())));
 
   element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
@@ -170,7 +170,7 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
 
     element->OnExitedPictureInPicture();
     element->DispatchEvent(
-        *Event::CreateBubble(EventTypeNames::leavepictureinpicture));
+        *Event::CreateBubble(event_type_names::kLeavepictureinpicture));
   }
 
   if (resolver)
@@ -189,7 +189,7 @@ void PictureInPictureControllerImpl::OnPictureInPictureControlClicked(
       picture_in_picture_element_) {
     picture_in_picture_element_->DispatchEvent(
         *PictureInPictureControlEvent::Create(
-            EventTypeNames::pictureinpicturecontrolclick, control_id));
+            event_type_names::kPictureinpicturecontrolclick, control_id));
   }
 }
 

@@ -228,7 +228,7 @@ void CanvasRenderingContext2D::Trace(blink::Visitor* visitor) {
 
 void CanvasRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
   if (canvas() && ContextLostRestoredEventsEnabled()) {
-    Event* event = Event::CreateCancelable(EventTypeNames::contextlost);
+    Event* event = Event::CreateCancelable(event_type_names::kContextlost);
     canvas()->DispatchEvent(*event);
     if (event->defaultPrevented()) {
       context_restorable_ = false;
@@ -273,7 +273,7 @@ void CanvasRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
   Reset();
   context_lost_mode_ = kNotLostContext;
   if (ContextLostRestoredEventsEnabled()) {
-    Event* event(Event::Create(EventTypeNames::contextrestored));
+    Event* event(Event::Create(event_type_names::kContextrestored));
     canvas()->DispatchEvent(*event);
   }
 }

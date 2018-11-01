@@ -354,7 +354,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseDown:
-      event_type = EventTypeNames::mousedown;
+      event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
       gesture_indicator =
@@ -367,12 +367,12 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:
-      event_type = EventTypeNames::mouseup;
+      event_type = event_type_names::kMouseup;
       gesture_indicator = std::make_unique<UserGestureIndicator>(
           std::move(pointer_lock_gesture_token_));
       break;
     case WebInputEvent::kMouseMove:
-      event_type = EventTypeNames::mousemove;
+      event_type = event_type_names::kMousemove;
       break;
     default:
       NOTREACHED() << input_event.GetType();

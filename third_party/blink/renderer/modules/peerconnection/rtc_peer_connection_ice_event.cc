@@ -42,7 +42,7 @@ RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
 }
 
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(RTCIceCandidate* candidate)
-    : Event(EventTypeNames::icecandidate, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kIcecandidate, Bubbles::kNo, Cancelable::kNo),
       candidate_(candidate) {}
 
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(

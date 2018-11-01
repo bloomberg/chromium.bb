@@ -32,7 +32,9 @@ class MediaControlPanelElementTest : public PageTestBase {
   }
 
  protected:
-  void SimulateTransitionEnd() { TriggerEvent(EventTypeNames::transitionend); }
+  void SimulateTransitionEnd() {
+    TriggerEvent(event_type_names::kTransitionend);
+  }
 
   void ExpectPanelIsDisplayed() { EXPECT_TRUE(GetPanel().IsWanted()); }
 

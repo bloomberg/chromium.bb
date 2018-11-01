@@ -356,9 +356,9 @@ inline void DispatchBlurEvent(const Document& document,
                               Element& focused_element) {
   focused_element.DispatchBlurEvent(nullptr, kWebFocusTypePage);
   if (focused_element == document.FocusedElement()) {
-    focused_element.DispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
+    focused_element.DispatchFocusOutEvent(event_type_names::kFocusout, nullptr);
     if (focused_element == document.FocusedElement())
-      focused_element.DispatchFocusOutEvent(EventTypeNames::DOMFocusOut,
+      focused_element.DispatchFocusOutEvent(event_type_names::kDOMFocusOut,
                                             nullptr);
   }
 }
@@ -367,11 +367,12 @@ inline void DispatchFocusEvent(const Document& document,
                                Element& focused_element) {
   focused_element.DispatchFocusEvent(nullptr, kWebFocusTypePage);
   if (focused_element == document.FocusedElement()) {
-    focused_element.DispatchFocusInEvent(EventTypeNames::focusin, nullptr,
+    focused_element.DispatchFocusInEvent(event_type_names::kFocusin, nullptr,
                                          kWebFocusTypePage);
-    if (focused_element == document.FocusedElement())
-      focused_element.DispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr,
-                                           kWebFocusTypePage);
+    if (focused_element == document.FocusedElement()) {
+      focused_element.DispatchFocusInEvent(event_type_names::kDOMFocusIn,
+                                           nullptr, kWebFocusTypePage);
+    }
   }
 }
 
@@ -398,8 +399,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
   }
 
   if (LocalDOMWindow* window = document->domWindow()) {
-    window->DispatchEvent(
-        *Event::Create(focused ? EventTypeNames::focus : EventTypeNames::blur));
+    window->DispatchEvent(*Event::Create(focused ? event_type_names::kFocus
+                                                 : event_type_names::kBlur));
   }
   if (focused && document->FocusedElement()) {
     Element* focused_element(document->FocusedElement());
@@ -789,13 +790,14 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
   // states of both frames.
   if (old_frame && old_frame->View()) {
     old_frame->Selection().SetFrameIsFocused(false);
-    old_frame->DomWindow()->DispatchEvent(*Event::Create(EventTypeNames::blur));
+    old_frame->DomWindow()->DispatchEvent(
+        *Event::Create(event_type_names::kBlur));
   }
 
   if (new_frame && new_frame->View() && IsFocused()) {
     new_frame->Selection().SetFrameIsFocused(true);
     new_frame->DomWindow()->DispatchEvent(
-        *Event::Create(EventTypeNames::focus));
+        *Event::Create(event_type_names::kFocus));
   }
 
   is_changing_focused_frame_ = false;

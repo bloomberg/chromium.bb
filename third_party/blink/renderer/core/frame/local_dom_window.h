@@ -249,22 +249,19 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   bool isSecureContext() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend, kAnimationend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration, kAnimationiteration);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart, kAnimationstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend, kTransitionend);
 
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart,
-                                         webkitAnimationStart);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
-                                         webkitAnimationIteration);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend,
-                                         webkitAnimationEnd);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend,
-                                         webkitTransitionEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, kWebkitAnimationStart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
+                                  kWebkitAnimationIteration);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, kWebkitAnimationEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, kWebkitTransitionEnd);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange);
 
   void RegisterEventListenerObserver(EventListenerObserver*);
 

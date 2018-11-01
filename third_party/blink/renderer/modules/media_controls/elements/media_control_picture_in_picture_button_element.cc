@@ -66,7 +66,7 @@ const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
 
 void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     PictureInPictureControllerImpl& controller =
         PictureInPictureControllerImpl::From(MediaElement().GetDocument());
 

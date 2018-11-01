@@ -69,7 +69,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
     return;
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionupdate, frame.DomWindow(), text);
+      event_type_names::kCompositionupdate, frame.DomWindow(), text);
   target->DispatchEvent(*event);
 }
 
@@ -84,7 +84,7 @@ void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
     return;
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionend, frame.DomWindow(), text);
+      event_type_names::kCompositionend, frame.DomWindow(), text);
   EventDispatcher::DispatchScopedEvent(*target, *event);
 }
 
@@ -736,7 +736,7 @@ bool InputMethodController::DispatchCompositionStartEvent(const String& text) {
     return IsAvailable();
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionstart, GetFrame().DomWindow(), text);
+      event_type_names::kCompositionstart, GetFrame().DomWindow(), text);
   target->DispatchEvent(*event);
 
   return IsAvailable();

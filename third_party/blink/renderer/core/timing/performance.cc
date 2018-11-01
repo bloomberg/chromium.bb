@@ -294,7 +294,7 @@ void Performance::clearResourceTimings() {
 void Performance::setResourceTimingBufferSize(unsigned size) {
   resource_timing_buffer_size_ = size;
   if (IsResourceTimingBufferFull())
-    DispatchEvent(*Event::Create(EventTypeNames::resourcetimingbufferfull));
+    DispatchEvent(*Event::Create(event_type_names::kResourcetimingbufferfull));
 }
 
 bool Performance::PassesTimingAllowCheck(
@@ -475,7 +475,7 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   event_timing_buffer_.push_back(&entry);
 
   if (IsEventTimingBufferFull())
-    DispatchEvent(*Event::Create(EventTypeNames::eventtimingbufferfull));
+    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
 unsigned Performance::EventTimingBufferSize() const {
@@ -489,7 +489,7 @@ void Performance::clearEventTimings() {
 void Performance::setEventTimingBufferMaxSize(unsigned size) {
   event_timing_buffer_max_size_ = size;
   if (IsEventTimingBufferFull())
-    DispatchEvent(*Event::Create(EventTypeNames::eventtimingbufferfull));
+    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
 void Performance::AddFirstPaintTiming(TimeTicks start_time) {
@@ -517,7 +517,7 @@ void Performance::AddResourceTimingBuffer(PerformanceEntry& entry) {
   resource_timing_buffer_.push_back(&entry);
 
   if (IsResourceTimingBufferFull())
-    DispatchEvent(*Event::Create(EventTypeNames::resourcetimingbufferfull));
+    DispatchEvent(*Event::Create(event_type_names::kResourcetimingbufferfull));
 }
 
 bool Performance::IsResourceTimingBufferFull() {

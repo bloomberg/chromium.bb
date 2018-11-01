@@ -440,14 +440,14 @@ void FireEvent(const AtomicString& type, Element* element, Document* document) {
 
 const AtomicString& AdjustEventType(const AtomicString& type,
                                     Fullscreen::RequestType request_type) {
-  DCHECK(type == EventTypeNames::fullscreenchange ||
-         type == EventTypeNames::fullscreenerror);
+  DCHECK(type == event_type_names::kFullscreenchange ||
+         type == event_type_names::kFullscreenerror);
 
   if (request_type == Fullscreen::RequestType::kUnprefixed)
     return type;
-  return type == EventTypeNames::fullscreenchange
-             ? EventTypeNames::webkitfullscreenchange
-             : EventTypeNames::webkitfullscreenerror;
+  return type == event_type_names::kFullscreenchange
+             ? event_type_names::kWebkitfullscreenchange
+             : event_type_names::kWebkitfullscreenerror;
 }
 
 void EnqueueEvent(const AtomicString& type,
@@ -673,7 +673,7 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
   if (error) {
     // 10.1. Append (fullscreenerror, |pending|) to |pendingDoc|'s list of
     // pending fullscreen events.
-    EnqueueEvent(EventTypeNames::fullscreenerror, pending, document,
+    EnqueueEvent(event_type_names::kFullscreenerror, pending, document,
                  request_type);
 
     // 10.2. Reject |promise| with a TypeError exception and terminate these
@@ -730,7 +730,8 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
 
     // 13.5. Append (fullscreenchange, |element|) to |doc|'s list of pending
     // fullscreen events.
-    EnqueueEvent(EventTypeNames::fullscreenchange, *element, doc, request_type);
+    EnqueueEvent(event_type_names::kFullscreenchange, *element, doc,
+                 request_type);
   }
 
   // 14. Resolve |promise| with undefined.
@@ -823,7 +824,8 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
 
     // 7.1. Append (fullscreenchange, |doc|'s fullscreen element) to
     // |doc|'s list of pending fullscreen events.
-    EnqueueEvent(EventTypeNames::fullscreenchange, *element, doc, request_type);
+    EnqueueEvent(event_type_names::kFullscreenchange, *element, doc,
+                 request_type);
 
     // 7.2. Unfullscreen |element|.
     Unfullscreen(*element);
@@ -919,7 +921,7 @@ void Fullscreen::ContinueExitFullscreen(Document* doc,
 
     // 12.1. Append (fullscreenchange, |exitDoc|'s fullscreen element) to
     // |exitDoc|'s list of pending fullscreen events.
-    EnqueueEvent(EventTypeNames::fullscreenchange, *exit_element, *exit_doc,
+    EnqueueEvent(event_type_names::kFullscreenchange, *exit_element, *exit_doc,
                  request_type);
 
     // 12.2. If |resize| is true, unfullscreen |exitDoc|.
@@ -938,7 +940,7 @@ void Fullscreen::ContinueExitFullscreen(Document* doc,
 
     // 13.1. Append (fullscreenchange, |descendantDoc|'s fullscreen element) to
     // |descendantDoc|'s list of pending fullscreen events.
-    EnqueueEvent(EventTypeNames::fullscreenchange, *descendant_element,
+    EnqueueEvent(event_type_names::kFullscreenchange, *descendant_element,
                  *descendant_doc, request_type);
 
     // 13.2. Unfullscreen |descendantDoc|.

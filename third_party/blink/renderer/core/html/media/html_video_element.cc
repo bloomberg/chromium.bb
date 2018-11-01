@@ -745,10 +745,10 @@ void HTMLVideoElement::SetIsEffectivelyFullscreen(
 void HTMLVideoElement::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (event_type == EventTypeNames::enterpictureinpicture) {
+  if (event_type == event_type_names::kEnterpictureinpicture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEnterPictureInPictureEventListener);
-  } else if (event_type == EventTypeNames::leavepictureinpicture) {
+  } else if (event_type == event_type_names::kLeavepictureinpicture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kLeavePictureInPictureEventListener);
   }
