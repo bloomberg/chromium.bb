@@ -75,15 +75,6 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
                                ::gpu::mojom::blink::MailboxPtr id);
   void DidDeleteSharedBitmap(::gpu::mojom::blink::MailboxPtr id);
 
-  // This enum is used in histogram, so it should be append-only.
-  enum OffscreenCanvasCommitType {
-    kCommitGPUCanvasGPUCompositing = 0,
-    kCommitGPUCanvasSoftwareCompositing = 1,
-    kCommitSoftwareCanvasGPUCompositing = 2,
-    kCommitSoftwareCanvasSoftwareCompositing = 3,
-    kOffscreenCanvasCommitTypeCount,
-  };
-
  private:
   friend class CanvasResourceDispatcherTest;
   struct FrameResource;

@@ -226,30 +226,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
   sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, is_clipped, is_opaque,
               1.f, SkBlendMode::kSrcOver, 0);
 
-  OffscreenCanvasCommitType commit_type;
-  if (canvas_resource->IsAccelerated()) {
-    // While |image| is texture backed, it could be generated with "software
-    // rendering" aka swiftshader. If the compositor is not also using
-    // swiftshader, then we could not give a swiftshader based texture
-    // to the compositor. However in that case, IsGpuCompositingEnabled() will
-    // also be false, so we will avoid doing so.
-    if (SharedGpuContext::IsGpuCompositingEnabled()) {
-      // Case 1: both canvas and compositor are gpu accelerated.
-      commit_type = kCommitGPUCanvasGPUCompositing;
-    } else {
-      // Case 2: canvas is accelerated but gpu compositing is disabled.
-      commit_type = kCommitGPUCanvasSoftwareCompositing;
-    }
-  } else {
-    if (SharedGpuContext::IsGpuCompositingEnabled()) {
-      // Case 3: canvas is not gpu-accelerated, but compositor is.
-      commit_type = kCommitSoftwareCanvasGPUCompositing;
-    } else {
-      // Case 4: both canvas and compositor are not gpu accelerated.
-      commit_type = kCommitSoftwareCanvasSoftwareCompositing;
-    }
-  }
-
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();
 
@@ -293,92 +269,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
                kNearestNeighbor, false);
 
   frame->render_pass_list.push_back(std::move(pass));
-
-  base::TimeDelta elapsed_time = WTF::CurrentTimeTicks() - commit_start_time;
-
-  switch (commit_type) {
-    case kCommitGPUCanvasGPUCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram, commit_gpu_canvas_gpu_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
-             10000000, 50));
-        commit_gpu_canvas_gpu_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_gpu_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
-             10000000, 50));
-        commit_gpu_canvas_gpu_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitGPUCanvasSoftwareCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingMain", 0,
-             10000000, 50));
-        commit_gpu_canvas_software_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "GPUCanvasSoftwareCompositingWorker",
-             0, 10000000, 50));
-        commit_gpu_canvas_software_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitSoftwareCanvasGPUCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingMain", 0,
-             10000000, 50));
-        commit_software_canvas_gpu_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasGPUCompositingWorker",
-             0, 10000000, 50));
-        commit_software_canvas_gpu_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitSoftwareCanvasSoftwareCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_software_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasSoftwareCompositingMain",
-             0, 10000000, 50));
-        commit_software_canvas_software_compositing_main_timer
-            .CountMicroseconds(elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_software_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasSoftwareCompositingWorker",
-             0, 10000000, 50));
-        commit_software_canvas_software_compositing_worker_timer
-            .CountMicroseconds(elapsed_time);
-      }
-      break;
-    case kOffscreenCanvasCommitTypeCount:
-      NOTREACHED();
-  }
 
   if (change_size_for_next_commit_) {
     parent_local_surface_id_allocator_.GenerateId();
