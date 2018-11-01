@@ -3221,7 +3221,7 @@ void PDFiumEngine::GetPDFiumRect(int page_index,
 }
 
 int PDFiumEngine::GetRenderingFlags() const {
-  int flags = FPDF_LCD_TEXT | FPDF_NO_CATCH;
+  int flags = FPDF_LCD_TEXT;
   if (render_grayscale_)
     flags |= FPDF_GRAYSCALE;
   if (client_->IsPrintPreview())
