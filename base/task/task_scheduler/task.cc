@@ -17,6 +17,8 @@ AtomicSequenceNumber g_sequence_nums_for_tracing;
 
 }  // namespace
 
+Task::Task() = default;
+
 Task::Task(const Location& posted_from, OnceClosure task, TimeDelta delay)
     : PendingTask(posted_from,
                   std::move(task),

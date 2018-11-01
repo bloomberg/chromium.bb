@@ -24,6 +24,7 @@ enum class Nestable {
 // Contains data about a pending task. Stored in TaskQueue and DelayedTaskQueue
 // for use by classes that queue and execute tasks.
 struct BASE_EXPORT PendingTask {
+  PendingTask();
   PendingTask(const Location& posted_from,
               OnceClosure task,
               TimeTicks delayed_run_time = TimeTicks(),
