@@ -16,11 +16,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -37,8 +35,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/scoped_unified_consent.h"
@@ -50,6 +46,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -206,10 +203,12 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     error_ = GoogleServiceAuthError::AuthErrorNone();
 
     // Sign in the user.
-    mock_signin_ = SigninManagerFactory::GetForProfile(profile());
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+
     std::string username = GetTestUser();
     if (!username.empty())
-      mock_signin_->SetAuthenticatedAccountInfo(username, username);
+      identity_test_env()->SetPrimaryAccount(username);
 
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -236,7 +235,16 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     handler_->set_web_ui(nullptr);
     handler_->DisallowJavascript();
     handler_->sync_startup_tracker_.reset();
+    identity_test_env_adaptor_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  content::BrowserContext* CreateBrowserContext() override {
+    // Setup the profile.
+    std::unique_ptr<TestingProfile> profile =
+        IdentityTestEnvironmentProfileAdaptor::
+            CreateProfileForIdentityTestEnvironment();
+    return profile.release();
   }
 
   // Setup the expectations for calls made when displaying the config page.
@@ -258,7 +266,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync engine.
-    ASSERT_TRUE(mock_signin_->IsInitialized());
     ON_CALL(*mock_pss_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   }
@@ -325,9 +332,14 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     return std::string(kTestUser);
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_adaptor_->identity_test_env();
+  }
+
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
-  SigninManagerBase* mock_signin_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
   content::TestWebUI web_ui_;
   TestWebUIProvider test_provider_;
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
@@ -347,9 +359,7 @@ TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
   ON_CALL(*mock_pss_, IsFirstSetupComplete()).WillByDefault(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.
-  SigninManager* manager = SigninManager::FromSigninManagerBase(mock_signin_);
-  manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                   signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_test_env()->ClearPrimaryAccount();
   base::ListValue list_args;
   handler_->HandleStartSignin(&list_args);
 
@@ -818,7 +828,9 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   SetupInitializedProfileSyncService();
-  mock_signin_->SetAuthenticatedAccountInfo(kTestUser, kTestUser);
+  DCHECK_EQ(
+      identity_test_env()->identity_manager()->GetPrimaryAccountInfo().email,
+      kTestUser);
   FakeAuthStatusProvider provider(
       SigninErrorControllerFactory::GetForProfile(profile()));
   provider.SetAuthError(kTestUser, error_);
@@ -1027,21 +1039,25 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
                    : signin::AccountConsistencyMethod::kDiceFixAuthErrors);
 
   // Setup the profile.
-  TestingProfile profile;
+  std::unique_ptr<TestingProfile> profile =
+      IdentityTestEnvironmentProfileAdaptor::
+          CreateProfileForIdentityTestEnvironment();
+
   AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(&profile);
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(&profile);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(&profile);
+      AccountTrackerServiceFactory::GetForProfile(profile.get());
   std::string account_1 =
       account_tracker->SeedAccountInfo("1234", "a@gmail.com");
   std::string account_2 =
       account_tracker->SeedAccountInfo("5678", "b@gmail.com");
-  token_service->UpdateCredentials(account_1, "token");
-  token_service->UpdateCredentials(account_2, "token");
-  signin_manager->SetAuthenticatedAccountInfo("1234", "a@gmail.com");
 
-  PeopleHandler handler(&profile);
+  auto identity_test_env_adaptor =
+      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
+  auto* identity_test_env = identity_test_env_adaptor->identity_test_env();
+  identity_test_env->SetRefreshTokenForAccount(account_1);
+  identity_test_env->SetRefreshTokenForAccount(account_2);
+  identity_test_env->SetPrimaryAccount("a@gmail.com");
+
+  PeopleHandler handler(profile.get());
   std::unique_ptr<base::ListValue> accounts_list =
       handler.GetStoredAccountsList();
 
