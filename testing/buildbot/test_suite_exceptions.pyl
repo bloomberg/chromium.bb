@@ -263,33 +263,13 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.android.fyi
+      'x64 Device Tester',
+      'x86 Cloud Tester',
+      # chromium.clang
+      'ToTAndroid',
+      'ToTAndroidCFI',
     ],
-    'modifications': {
-      'android-kitkat-arm-rel': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'android-marshmallow-arm64-rel': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'Lollipop Phone Tester': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'Marshmallow 64 bit Tester': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-    },
   },
   'chrome_sync_shell_test_apk': {
     'modifications': {
