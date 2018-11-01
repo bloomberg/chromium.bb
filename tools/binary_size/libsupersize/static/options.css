@@ -4,7 +4,7 @@
 
 /** Body modifier class, indicates when options should be visible. */
 .show-options {
-  grid-template-columns: auto 256px;
+  grid-template-columns: auto 306px;
 }
 
 .show-options .options {
