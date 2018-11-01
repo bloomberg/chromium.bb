@@ -137,8 +137,11 @@ NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
       std::min(other.rect.LineEndOffset(), offset.line_offset + inline_size),
       other.rect.BlockEndOffset());
 
-  return NGLayoutOpportunity(NGBfcRect(start_offset, end_offset),
-                             other.shape_exclusions);
+  return NGLayoutOpportunity(
+      NGBfcRect(start_offset, end_offset),
+      other.shape_exclusions
+          ? base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))
+          : nullptr);
 }
 
 // Creates a new layout opportunity. The given shelf *must* intersect with the
@@ -172,6 +175,7 @@ NGExclusionSpaceInternal::NGExclusionSpaceInternal()
     : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
       num_exclusions_(0),
       both_clear_offset_(LayoutUnit::Min()),
+      track_shape_exclusions_(false),
       derived_geometry_(nullptr) {}
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal(
@@ -179,6 +183,7 @@ NGExclusionSpaceInternal::NGExclusionSpaceInternal(
     : exclusions_(other.exclusions_),
       num_exclusions_(other.num_exclusions_),
       both_clear_offset_(other.both_clear_offset_),
+      track_shape_exclusions_(other.track_shape_exclusions_),
       derived_geometry_(std::move(other.derived_geometry_)) {
   // This copy-constructor does fun things. It moves the derived_geometry_ to
   // the newly created exclusion space where it'll more-likely be used.
@@ -193,6 +198,7 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
   exclusions_ = other.exclusions_;
   num_exclusions_ = other.num_exclusions_;
   both_clear_offset_ = other.both_clear_offset_;
+  track_shape_exclusions_ = other.track_shape_exclusions_;
   derived_geometry_ = std::move(other.derived_geometry_);
   other.derived_geometry_ = nullptr;
   return *this;
@@ -201,12 +207,15 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
 NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
     NGExclusionSpaceInternal&&) noexcept = default;
 
-NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry()
-    : last_float_block_start_(LayoutUnit::Min()),
+NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry(
+    bool track_shape_exclusions)
+    : track_shape_exclusions_(track_shape_exclusions),
+      last_float_block_start_(LayoutUnit::Min()),
       left_float_clear_offset_(LayoutUnit::Min()),
       right_float_clear_offset_(LayoutUnit::Min()) {
   // The exclusion space must always have at least one shelf, at -Infinity.
-  shelves_.emplace_back(/* block_offset */ LayoutUnit::Min());
+  shelves_.emplace_back(/* block_offset */ LayoutUnit::Min(),
+                        track_shape_exclusions_);
 }
 
 void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
@@ -221,7 +230,14 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
         exclusions_->GetVector().begin() + num_exclusions_);
     std::swap(exclusions_, exclusions);
 
-    // The derived_geometry_ is now invalid.
+    // The derived_geometry_ member is now invalid.
+    derived_geometry_ = nullptr;
+  }
+
+  // If this is the first exclusion with shape_data, the derived_geometry_
+  // member now needs to perform additional bookkeeping, and is invalid.
+  if (!track_shape_exclusions_ && exclusion->shape_data) {
+    track_shape_exclusions_ = true;
     derived_geometry_ = nullptr;
   }
 
@@ -408,7 +424,8 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
                 exclusion.rect.BlockStartOffset(),
                 exclusion.rect.BlockEndOffset());
           }
-          shelf.shape_exclusions->line_left_shapes.emplace_back(&exclusion);
+          if (shelf.shape_exclusions)
+            shelf.shape_exclusions->line_left_shapes.emplace_back(&exclusion);
         } else {
           DCHECK_EQ(exclusion.type, EFloat::kRight);
           if (exclusion.rect.LineStartOffset() <= shelf.line_right) {
@@ -420,7 +437,8 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
                 exclusion.rect.BlockStartOffset(),
                 exclusion.rect.BlockEndOffset());
           }
-          shelf.shape_exclusions->line_right_shapes.emplace_back(&exclusion);
+          if (shelf.shape_exclusions)
+            shelf.shape_exclusions->line_right_shapes.emplace_back(&exclusion);
         }
 
         // We collect all exclusions in shape_exclusions (even if they don't
@@ -468,7 +486,8 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
 
       // We only want to add the shelf if it's at a different block offset.
       if (exclusion_end_offset != shelf_copy->block_offset) {
-        NGShelf new_shelf(/* block_offset */ exclusion_end_offset);
+        NGShelf new_shelf(/* block_offset */ exclusion_end_offset,
+                          track_shape_exclusions_);
 
         // shelf_copy->line_{left,right}_edges will not valid after these calls.
         CollectSolidEdges(&shelf_copy->line_left_edges, new_shelf.block_offset,
@@ -527,7 +546,7 @@ NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
         if ((opportunity.rect.InlineSize() >= minimum_size.inline_size ||
              opportunity.rect.InlineSize() == available_inline_size) &&
             opportunity.rect.BlockSize() >= minimum_size.block_size) {
-          return_opportunity = opportunity;
+          return_opportunity = std::move(opportunity);
           return true;
         }
 
@@ -546,7 +565,7 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
   IterateAllLayoutOpportunities(
       offset, available_inline_size,
       [&opportunities](const NGLayoutOpportunity opportunity) -> bool {
-        opportunities.push_back(opportunity);
+        opportunities.push_back(std::move(opportunity));
         return false;
       });
 
@@ -631,7 +650,8 @@ const NGExclusionSpaceInternal::DerivedGeometry&
 NGExclusionSpaceInternal::GetDerivedGeometry() const {
   // Re-build the geometry if it isn't present.
   if (!derived_geometry_) {
-    derived_geometry_ = std::make_unique<DerivedGeometry>();
+    derived_geometry_ =
+        std::make_unique<DerivedGeometry>(track_shape_exclusions_);
     DCHECK_LE(num_exclusions_, exclusions_->size());
     for (wtf_size_t i = 0; i < num_exclusions_; ++i)
       derived_geometry_->Add(*exclusions_->GetVector()[i]);
