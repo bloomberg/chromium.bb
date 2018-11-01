@@ -3932,7 +3932,6 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
   if (!GetFrame().GetDocument()->IsActive())
     return;
 
-  RecordDeferredLoadingStats();
   if (!NeedsLayout()) {
     // Notify javascript IntersectionObservers
     if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
@@ -4069,68 +4068,6 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
     parent = parent->ParentFrameView();
   }
 #endif
-}
-
-void LocalFrameView::RecordDeferredLoadingStats() {
-  if (!GetFrame().GetDocument()->GetFrame() ||
-      !GetFrame().IsCrossOriginSubframe())
-    return;
-
-  LocalFrameView* parent = ParentFrameView();
-  if (!parent) {
-    HTMLFrameOwnerElement* element = GetFrame().DeprecatedLocalOwner();
-    // We would fall into an else block on some teardowns and other weird cases.
-    if (!element || !element->GetLayoutObject()) {
-      GetFrame().GetDocument()->RecordDeferredLoadReason(
-          WouldLoadReason::kNoParent);
-    }
-    return;
-  }
-  // Small inaccuracy: frames with origins that match the top level might be
-  // nested in a cross-origin frame. To keep code simpler, count such frames as
-  // WouldLoadVisible, even when their parent is offscreen.
-  WouldLoadReason why_parent_loaded = WouldLoadReason::kVisible;
-  if (parent->ParentFrameView() && parent->GetFrame().IsCrossOriginSubframe())
-    why_parent_loaded = parent->GetFrame().GetDocument()->DeferredLoadReason();
-
-  // If the parent wasn't loaded, the children won't be either.
-  if (why_parent_loaded == WouldLoadReason::kCreated)
-    return;
-  // These frames are never meant to be seen so we will need to load them.
-  IntRect frame_rect(FrameRect());
-  if (frame_rect.IsEmpty() || frame_rect.MaxY() < 0 || frame_rect.MaxX() < 0) {
-    GetFrame().GetDocument()->RecordDeferredLoadReason(why_parent_loaded);
-    return;
-  }
-
-  IntSize parent_size(parent->Size());
-  // First clause: for this rough data collection we assume the user never
-  // scrolls right.
-  if (frame_rect.X() >= parent_size.Width() || parent_size.Height() <= 0)
-    return;
-
-  int this_frame_screens_away = 0;
-  // If an frame is created above the current scoll position, this logic counts
-  // it as visible.
-  if (frame_rect.Y() > 0)
-    this_frame_screens_away = frame_rect.Y() / parent_size.Height();
-  DCHECK_GE(this_frame_screens_away, 0);
-
-  int parent_screens_away = 0;
-  if (why_parent_loaded <= WouldLoadReason::kVisible) {
-    parent_screens_away = static_cast<int>(WouldLoadReason::kVisible) -
-                          static_cast<int>(why_parent_loaded);
-  }
-
-  int total_screens_away = this_frame_screens_away + parent_screens_away;
-
-  // We're collecting data for frames that are at most 3 screens away.
-  if (total_screens_away > 3)
-    return;
-
-  GetFrame().GetDocument()->RecordDeferredLoadReason(
-      static_cast<WouldLoadReason>(static_cast<int>(WouldLoadReason::kVisible) -
-                                   total_screens_away));
 }
 
 void LocalFrameView::SetNeedsForcedCompositingUpdate() {

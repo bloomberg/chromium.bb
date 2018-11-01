@@ -229,26 +229,6 @@ enum ShadowCascadeOrder {
   kShadowCascadeV1
 };
 
-// Collect data about deferred loading of offscreen cross-origin documents. All
-// cross-origin documents log Created. Only those that would load log a reason.
-// We can then see the % of cross-origin documents that never have to load.
-// See https://crbug.com/635105.
-// Logged to UMA, don't re-arrange entries without creating a new histogram.
-enum class WouldLoadReason {
-  kInvalid,
-  kCreated,
-  k3ScreensAway,
-  k2ScreensAway,
-  k1ScreenAway,
-  kVisible,
-  // If outer and inner frames aren't in the same process we can't determine
-  // if the inner frame is visible, so just load it.
-  // TODO(dgrogan): Revisit after https://crbug.com/650433 is fixed.
-  kNoParent,
-
-  kCount,
-};
-
 enum class SecureContextState { kUnknown, kNonSecure, kSecure };
 
 using DocumentClassFlags = unsigned char;
@@ -1404,9 +1384,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsInMainFrame() const;
 
-  void RecordDeferredLoadReason(WouldLoadReason);
-  WouldLoadReason DeferredLoadReason() { return would_load_reason_; }
-
   const PropertyRegistry* GetPropertyRegistry() const;
   PropertyRegistry* GetPropertyRegistry();
 
@@ -1904,8 +1881,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool may_contain_v0_shadow_ = false;
 
   Member<SnapCoordinator> snap_coordinator_;
-
-  WouldLoadReason would_load_reason_;
 
   Member<PropertyRegistry> property_registry_;
 
