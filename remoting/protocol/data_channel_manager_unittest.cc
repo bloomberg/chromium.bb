@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/test_data_channel_manager.pb.h"

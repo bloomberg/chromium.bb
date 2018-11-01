@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

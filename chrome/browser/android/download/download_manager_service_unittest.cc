@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
 #include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"

@@ -4,7 +4,7 @@
 
 #include "media/base/android/media_service_throttler.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/android/media_server_crash_listener.h"
 #include "media/base/fake_single_thread_task_runner.h"

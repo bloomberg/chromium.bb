@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"

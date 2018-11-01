@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/mojo/media_router_traits_test_service.mojom.h"

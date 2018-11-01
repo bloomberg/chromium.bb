@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"

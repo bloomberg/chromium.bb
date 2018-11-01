@@ -21,7 +21,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/pickle.h"

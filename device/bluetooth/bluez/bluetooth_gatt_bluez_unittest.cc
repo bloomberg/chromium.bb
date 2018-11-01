@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "dbus/object_path.h"

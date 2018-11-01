@@ -9,7 +9,7 @@
 
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"

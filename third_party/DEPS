@@ -8,5 +8,4 @@ include_rules = [
   '-third_party/icu/source/common/unicode',
   '-third_party/icu/source/i18n/unicode',
   '-url',
-  '+base/message_loop/message_loop_forward.h',
 ]

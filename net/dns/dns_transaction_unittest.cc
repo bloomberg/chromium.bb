@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"

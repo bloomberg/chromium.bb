@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/device/battery/battery_status_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

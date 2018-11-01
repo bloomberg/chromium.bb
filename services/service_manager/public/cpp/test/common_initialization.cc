@@ -4,7 +4,7 @@
 
 #include "services/service_manager/public/cpp/test/common_initialization.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

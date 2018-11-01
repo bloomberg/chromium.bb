@@ -7,7 +7,7 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #import "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"

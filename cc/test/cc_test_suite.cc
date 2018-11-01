@@ -5,7 +5,7 @@
 #include "cc/test/cc_test_suite.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/base/histograms.h"
 #include "components/viz/test/paths.h"

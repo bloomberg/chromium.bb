@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"

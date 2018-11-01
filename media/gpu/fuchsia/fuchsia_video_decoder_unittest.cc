@@ -5,7 +5,7 @@
 #include "media/gpu/fuchsia/fuchsia_video_decoder.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder.h"

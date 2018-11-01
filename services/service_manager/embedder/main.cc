@@ -13,7 +13,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"

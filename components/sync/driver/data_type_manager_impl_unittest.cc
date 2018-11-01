@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/configure_context.h"

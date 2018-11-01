@@ -5,7 +5,7 @@
 #include "content/browser/browser_main_loop.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sys_info.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_command_line.h"

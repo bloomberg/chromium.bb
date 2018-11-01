@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_input_controller.h"

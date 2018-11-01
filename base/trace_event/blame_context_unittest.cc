@@ -5,7 +5,7 @@
 #include "base/trace_event/blame_context.h"
 
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/traced_value.h"
 #include "testing/gtest/include/gtest/gtest.h"

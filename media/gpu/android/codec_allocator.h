@@ -12,7 +12,7 @@
 #include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"

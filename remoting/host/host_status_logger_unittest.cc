@@ -4,7 +4,7 @@
 
 #include "remoting/host/host_status_logger.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"

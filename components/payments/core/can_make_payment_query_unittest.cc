@@ -4,7 +4,7 @@
 
 #include "components/payments/core/can_make_payment_query.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "gpu/GLES2/gl2extchromium.h"

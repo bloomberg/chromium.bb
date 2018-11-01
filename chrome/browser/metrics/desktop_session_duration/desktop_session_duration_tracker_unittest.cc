@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

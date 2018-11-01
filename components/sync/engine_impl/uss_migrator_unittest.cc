@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/hash_util.h"
