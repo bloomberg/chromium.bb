@@ -11,6 +11,7 @@
 #include "base/sha1.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -37,15 +38,16 @@ constexpr int kCacheResizeWhenFull = 48 * 1024 * 1024;  // 48mb.
 constexpr int kCacheItemsTimeToLiveDays = 7;
 constexpr int kImageCacheEvictionIntervalHours = 24;
 
-std::string HashUrlToKey(const std::string& input) {
-  return base32::Base32Encode(base::SHA1HashString(input));
-}
-
 void OnStartupEvictionQueued() {}
 
 }  // namespace
 
 namespace image_fetcher {
+
+// static
+std::string ImageCache::HashUrlToKey(const std::string& input) {
+  return base32::Base32Encode(base::SHA1HashString(input));
+}
 
 // static
 void ImageCache::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -102,8 +104,7 @@ void ImageCache::QueueOrStartRequest(base::OnceClosure request) {
     return;
   }
 
-  // Post task for fairness with tasks that may be queued.
-  task_runner_->PostTask(FROM_HERE, std::move(request));
+  std::move(request).Run();
 }
 
 void ImageCache::MaybeStartInitialization() {
@@ -129,7 +130,7 @@ void ImageCache::OnDependencyInitialized() {
 
   // Everything is initialized, take care of the queued requests.
   for (base::OnceClosure& request : queued_requests_) {
-    task_runner_->PostTask(FROM_HERE, std::move(request));
+    std::move(request).Run();
   }
   queued_requests_.clear();
 
@@ -147,7 +148,7 @@ void ImageCache::OnDependencyInitialized() {
 }
 
 void ImageCache::SaveImageImpl(const std::string& url, std::string image_data) {
-  std::string key = HashUrlToKey(url);
+  std::string key = ImageCache::HashUrlToKey(url);
 
   // If the cache is full, evict some stuff.
   RunEvictionWhenFull();
@@ -160,7 +161,7 @@ void ImageCache::SaveImageImpl(const std::string& url, std::string image_data) {
 void ImageCache::LoadImageImpl(bool read_only,
                                const std::string& url,
                                ImageDataCallback callback) {
-  std::string key = HashUrlToKey(url);
+  std::string key = ImageCache::HashUrlToKey(url);
 
   data_store_->LoadImage(key, std::move(callback));
   if (!read_only) {
@@ -169,7 +170,7 @@ void ImageCache::LoadImageImpl(bool read_only,
 }
 
 void ImageCache::DeleteImageImpl(const std::string& url) {
-  std::string key = HashUrlToKey(url);
+  std::string key = ImageCache::HashUrlToKey(url);
 
   data_store_->DeleteImage(key);
   metadata_store_->DeleteImageMetadata(key);

@@ -165,6 +165,11 @@ class ImageCacheTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ImageCacheTest);
 };
 
+TEST_F(ImageCacheTest, HashUrlToKeyTest) {
+  ASSERT_EQ(ImageCache::HashUrlToKey("foo"), ImageCache::HashUrlToKey("foo"));
+  ASSERT_NE(ImageCache::HashUrlToKey("foo"), ImageCache::HashUrlToKey("bar"));
+}
+
 TEST_F(ImageCacheTest, SanityTest) {
   CreateImageCache();
   InitializeImageCache();

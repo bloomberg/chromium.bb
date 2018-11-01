@@ -31,6 +31,7 @@ class ImageMetadataStore;
 // ImageMetadataStore.
 class ImageCache : public base::RefCounted<ImageCache> {
  public:
+  static std::string HashUrlToKey(const std::string& input);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   ImageCache(std::unique_ptr<ImageDataStore> data_storage,
