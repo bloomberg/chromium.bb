@@ -194,7 +194,6 @@ Resource::Resource(const ResourceRequest& request,
       encoded_size_(0),
       encoded_size_memory_usage_(0),
       decoded_size_(0),
-      overhead_size_(CalculateOverheadSize()),
       cache_identifier_(MemoryCache::DefaultCacheIdentifier()),
       link_preload_(false),
       is_revalidating_(false),
@@ -203,7 +202,8 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(CurrentTime()),
-      resource_request_(request) {
+      resource_request_(request),
+      overhead_size_(CalculateOverheadSize()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
   if (IsMainThread())
