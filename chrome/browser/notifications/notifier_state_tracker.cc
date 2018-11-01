@@ -91,6 +91,13 @@ bool NotifierStateTracker::IsNotifierEnabled(
 #else
       break;
 #endif
+    case NotifierId::CROSTINI_APPLICATION:
+#if defined(OS_CHROMEOS)
+      // Disabling Crostini notifications is not supported yet.
+      return true;
+#else
+      break;
+#endif
     case NotifierId::SIZE:
       break;
   }

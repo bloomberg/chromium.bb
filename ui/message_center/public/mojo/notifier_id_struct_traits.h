@@ -24,6 +24,8 @@ struct EnumTraits<message_center::mojom::NotifierType,
         return message_center::mojom::NotifierType::WEB_PAGE;
       case message_center::NotifierId::SYSTEM_COMPONENT:
         return message_center::mojom::NotifierType::SYSTEM_COMPONENT;
+      case message_center::NotifierId::CROSTINI_APPLICATION:
+        return message_center::mojom::NotifierType::CROSTINI_APPLICATION;
       case message_center::NotifierId::SIZE:
         break;
     }
@@ -45,6 +47,9 @@ struct EnumTraits<message_center::mojom::NotifierType,
         return true;
       case message_center::mojom::NotifierType::SYSTEM_COMPONENT:
         *out = message_center::NotifierId::SYSTEM_COMPONENT;
+        return true;
+      case message_center::mojom::NotifierType::CROSTINI_APPLICATION:
+        *out = message_center::NotifierId::CROSTINI_APPLICATION;
         return true;
       case message_center::mojom::NotifierType::SIZE:
         break;

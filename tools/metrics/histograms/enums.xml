@@ -36393,6 +36393,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Arc++"/>
   <int value="2" label="Web Page"/>
   <int value="3" label="System Component"/>
+  <int value="4" label="Crostini"/>
 </enum>
 
 <enum name="NotifyResult">
