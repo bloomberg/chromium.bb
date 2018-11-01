@@ -649,6 +649,15 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
   Client().WorkerScriptLoaded();
 }
 
+void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+
+  // Tell ServiceWorkerContextClient about the failure. The generic
+  // WorkerContextFailedToStart() wouldn't make sense because
+  // WorkerContextStarted() was already called.
+  Client().FailedToLoadInstalledScript();
+}
+
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
@@ -686,17 +695,12 @@ void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  // close() is not web-exposed. This is called when ServiceWorkerGlobalScope
-  // internally requests close() due to failure on startup when installed
-  // scripts couldn't be read.
+  // close() is not web-exposed for ServiceWorker. This is called when
+  // ServiceWorkerGlobalScope internally requests close(), for example, due to
+  // failure on startup when installed scripts couldn't be read.
   //
   // This may look like a roundabout way to terminate the thread, but close()
   // seems like the standard way to initiate termination from inside the thread.
-
-  // Tell ServiceWorkerContextClient about the failure. The generic
-  // WorkerContextFailedToStart() wouldn't make sense because
-  // WorkerContextStarted() was already called.
-  Client().FailedToLoadInstalledScript();
 
   // ServiceWorkerGlobalScope expects us to terminate the thread, so request
   // that here.

@@ -154,6 +154,7 @@ class ServiceWorkerGlobalScopeProxy final
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
   void DidLoadInstalledScript() override;
+  void DidFailToLoadInstalledScript() override;
   void WillEvaluateClassicScript(size_t script_size,
                                  size_t cached_metadata_size) override;
   void WillEvaluateImportedClassicScript(size_t script_size,

@@ -75,6 +75,10 @@ class CORE_EXPORT WorkerReportingProxy {
   // via ResourceLoader. Called before WillEvaluateClassicScript().
   virtual void DidLoadInstalledScript() {}
 
+  // Invoked when it's failed to load the worker's main script from
+  // InstalledScriptsManager.
+  virtual void DidFailToLoadInstalledScript() {}
+
   // Invoked when the main classic script is about to be evaluated.
   virtual void WillEvaluateClassicScript(size_t script_size,
                                          size_t cached_metadata_size) {}
