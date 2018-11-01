@@ -51,7 +51,6 @@ namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
 
-class EasyUnlockAppManager;
 class EasyUnlockServiceObserver;
 
 class EasyUnlockService : public KeyedService {
@@ -110,7 +109,7 @@ class EasyUnlockService : public KeyedService {
   virtual void RecordPasswordLoginEvent(const AccountId& account_id) const = 0;
 
   // Sets the service up and schedules service initialization.
-  void Initialize(std::unique_ptr<EasyUnlockAppManager> app_manager);
+  void Initialize();
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
@@ -206,13 +205,6 @@ class EasyUnlockService : public KeyedService {
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();
 
-  // Disables easy unlock app without affecting lock screen state.
-  // Used primarily by signin service when user logged in state changes to
-  // logged in but before screen gets unlocked. At this point service shutdown
-  // is imminent and the app can be safely unloaded, but, for esthetic reasons,
-  // the lock screen UI should remain unchanged until the screen unlocks.
-  void DisableAppWithoutResettingScreenlockState();
-
   // Resets the screenlock state set by this service.
   void ResetScreenlockState();
 
@@ -245,9 +237,6 @@ class EasyUnlockService : public KeyedService {
   // A class to detect whether a bluetooth adapter is present.
   class BluetoothDetector;
 
-  // Initializes the service after EasyUnlockAppManager is ready.
-  void InitializeOnAppManagerReady();
-
   // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
   // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
   // is created. Do not cache the returned value, as it may go away if Easy
@@ -274,8 +263,6 @@ class EasyUnlockService : public KeyedService {
 
   ChromeProximityAuthClient proximity_auth_client_;
 
-  std::unique_ptr<EasyUnlockAppManager> app_manager_;
-
   // Created lazily in |GetScreenlockStateHandler|.
   std::unique_ptr<EasyUnlockScreenlockStateHandler> screenlock_state_handler_;
 
@@ -289,9 +276,6 @@ class EasyUnlockService : public KeyedService {
   // Handles connecting, authenticating, and updating the UI on the lock/sign-in
   // screen. After a |RemoteDeviceRef| instance is provided, this object will
   // handle the rest.
-  // TODO(tengs): This object is intended as a replacement of the background
-  // page of the easy_unlock Chrome app. We are in the process of removing the
-  // app in favor of |proximity_auth_system_|.
   std::unique_ptr<proximity_auth::ProximityAuthSystem> proximity_auth_system_;
 
   // Monitors suspend and wake state of ChromeOS.

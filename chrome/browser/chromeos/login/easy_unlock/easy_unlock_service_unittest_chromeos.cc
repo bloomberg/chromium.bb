@@ -17,7 +17,6 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
@@ -71,99 +70,6 @@ class MockEasyUnlockNotificationController
   DISALLOW_COPY_AND_ASSIGN(MockEasyUnlockNotificationController);
 };
 
-// App manager to be used in EasyUnlockService tests.
-// This effectivelly abstracts the extension system from the tests.
-class TestAppManager : public EasyUnlockAppManager {
- public:
-  TestAppManager()
-      : state_(STATE_NOT_LOADED),
-        ready_(false) {}
-  ~TestAppManager() override {}
-
-  // The easy unlock app state.
-  enum State { STATE_NOT_LOADED, STATE_LOADED, STATE_DISABLED };
-
-  State state() const { return state_; }
-
-  // Marks the manager as ready and runs |ready_callback_| if there is one set.
-  void SetReady() {
-    ready_ = true;
-    if (!ready_callback_.is_null()) {
-      ready_callback_.Run();
-      ready_callback_ = base::Closure();
-    }
-  }
-
-  void EnsureReady(const base::Closure& ready_callback) override {
-    ASSERT_TRUE(ready_callback_.is_null());
-    if (ready_) {
-      ready_callback.Run();
-      return;
-    }
-    ready_callback_ = ready_callback;
-  }
-
-  void LoadApp() override { state_ = STATE_LOADED; }
-
-  void DisableAppIfLoaded() override {
-    if (state_ == STATE_LOADED)
-      state_ = STATE_DISABLED;
-  }
-
- private:
-  // The current app state.
-  State state_;
-
-  // Whether the manager is ready. Set using |SetReady|.
-  bool ready_;
-  // If |EnsureReady| was called before |SetReady|, cached callback that will be
-  // called when manager becomes ready.
-  base::Closure ready_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppManager);
-};
-
-// Helper factory that tracks AppManagers passed to EasyUnlockServices per
-// browser context owning a EasyUnlockService. Used to allow tests access to the
-// TestAppManagers passed to the created services.
-class TestAppManagerFactory {
- public:
-  TestAppManagerFactory() {}
-  ~TestAppManagerFactory() {}
-
-  // Creates a TestAppManager for the provided browser context. If a
-  // TestAppManager was already created for the context, returns NULL.
-  std::unique_ptr<TestAppManager> Create(content::BrowserContext* context) {
-    if (Find(context))
-      return std::unique_ptr<TestAppManager>();
-    std::unique_ptr<TestAppManager> app_manager(new TestAppManager());
-    mapping_[context] = app_manager.get();
-    return app_manager;
-  }
-
-  // Finds a TestAppManager created for |context|. Returns NULL if no
-  // TestAppManagers have been created for the context.
-  TestAppManager* Find(content::BrowserContext* context) {
-    std::map<content::BrowserContext*, TestAppManager*>::iterator it =
-        mapping_.find(context);
-    if (it == mapping_.end())
-      return NULL;
-    return it->second;
-  }
-
- private:
-  // Mapping from browser contexts to test AppManagers. The AppManagers are not
-  // owned by this.
-  std::map<content::BrowserContext*, TestAppManager*> mapping_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppManagerFactory);
-};
-
-// Global TestAppManager factory. It should be created and destroyed in
-// EasyUnlockServiceTest::SetUp and EasyUnlockServiceTest::TearDown,
-// respectively.
-TestAppManagerFactory* app_manager_factory = nullptr;
-
 device_sync::FakeDeviceSyncClient* GetDefaultDeviceSyncClient() {
   static base::NoDestructor<device_sync::FakeDeviceSyncClient> fake_client;
   return fake_client.get();
@@ -177,26 +83,15 @@ GetDefaultMultiDeviceSetupClient() {
 }
 
 // EasyUnlockService factory function injected into testing profiles.
-// It creates an EasyUnlockService with test AppManager.
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  EXPECT_TRUE(app_manager_factory);
-  if (!app_manager_factory)
-    return nullptr;
-
-  std::unique_ptr<EasyUnlockAppManager> app_manager =
-      app_manager_factory->Create(context);
-  EXPECT_TRUE(app_manager.get());
-  if (!app_manager.get())
-    return nullptr;
-
   std::unique_ptr<EasyUnlockServiceRegular> service(
       new EasyUnlockServiceRegular(
           Profile::FromBrowserContext(context),
           nullptr /* secure_channel_client */,
           std::make_unique<MockEasyUnlockNotificationController>(),
           GetDefaultDeviceSyncClient(), GetDefaultMultiDeviceSetupClient()));
-  service->Initialize(std::move(app_manager));
+  service->Initialize();
   return std::move(service);
 }
 
@@ -212,8 +107,6 @@ class EasyUnlockServiceTest : public testing::Test {
   ~EasyUnlockServiceTest() override {}
 
   void SetUp() override {
-    app_manager_factory = new TestAppManagerFactory();
-
     mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
     EXPECT_CALL(*mock_adapter_, IsPresent())
@@ -240,9 +133,6 @@ class EasyUnlockServiceTest : public testing::Test {
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-
-    delete app_manager_factory;
-    app_manager_factory = nullptr;
   }
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
@@ -260,24 +150,6 @@ class EasyUnlockServiceTest : public testing::Test {
 
   FakePowerManagerClient* power_manager_client() {
     return power_manager_client_;
-  }
-
-  // Checks whether AppManager passed to EasyUnlockservice for |profile| has
-  // Easy Unlock app loaded.
-  bool EasyUnlockAppInState(Profile* profile, TestAppManager::State state) {
-    EXPECT_TRUE(app_manager_factory);
-    if (!app_manager_factory)
-      return false;
-    TestAppManager* app_manager = app_manager_factory->Find(profile);
-    EXPECT_TRUE(app_manager);
-    return app_manager && app_manager->state() == state;
-  }
-
-  void SetAppManagerReady(content::BrowserContext* context) {
-    ASSERT_TRUE(app_manager_factory);
-    TestAppManager* app_manager = app_manager_factory->Find(context);
-    ASSERT_TRUE(app_manager);
-    app_manager->SetReady();
   }
 
   // Sets up a test profile using the provided |email|. Will generate a unique
@@ -339,70 +211,17 @@ class EasyUnlockServiceTest : public testing::Test {
 TEST_F(EasyUnlockServiceTest, NoBluetoothNoService) {
   set_is_bluetooth_adapter_present(false);
 
-  // This should start easy unlock service initialization.
-  SetAppManagerReady(profile_.get());
-
   EasyUnlockService* service = EasyUnlockService::Get(profile_.get());
   ASSERT_TRUE(service);
 
   EXPECT_FALSE(service->IsAllowed());
-  EXPECT_TRUE(
-      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_NOT_LOADED));
-}
-
-// TODO(https://crbug.com/893878): Fix disabled test.
-TEST_F(EasyUnlockServiceTest, DISABLED_DisabledOnSuspend) {
-  // This should start easy unlock service initialization.
-  SetAppManagerReady(profile_.get());
-
-  EasyUnlockService* service = EasyUnlockService::Get(profile_.get());
-  ASSERT_TRUE(service);
-
-  EXPECT_TRUE(service->IsAllowed());
-  EXPECT_TRUE(
-      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_LOADED));
-
-  power_manager_client()->SendSuspendImminent(
-      power_manager::SuspendImminent_Reason_OTHER);
-  EXPECT_TRUE(
-      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_DISABLED));
-
-  power_manager_client()->SendSuspendDone();
-  EXPECT_TRUE(
-      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_LOADED));
-}
-
-// TODO(https://crbug.com/893878): Fix disabled test.
-TEST_F(EasyUnlockServiceTest, DISABLED_NotAllowedForSecondaryProfile) {
-  SetAppManagerReady(profile_.get());
-
-  EasyUnlockService* primary_service = EasyUnlockService::Get(profile_.get());
-  ASSERT_TRUE(primary_service);
-
-  // A sanity check for the test to confirm that the primary profile service
-  // is allowed under these conditions..
-  ASSERT_TRUE(primary_service->IsAllowed());
-
-  SetUpSecondaryProfile();
-  SetAppManagerReady(secondary_profile_.get());
-
-  EasyUnlockService* secondary_service =
-      EasyUnlockService::Get(secondary_profile_.get());
-  ASSERT_TRUE(secondary_service);
-
-  EXPECT_FALSE(secondary_service->IsAllowed());
-  EXPECT_TRUE(EasyUnlockAppInState(secondary_profile_.get(),
-                                   TestAppManager::STATE_NOT_LOADED));
 }
 
 TEST_F(EasyUnlockServiceTest, NotAllowedForEphemeralAccounts) {
   ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
       .WillByDefault(Return(true));
 
-  SetAppManagerReady(profile_.get());
   EXPECT_FALSE(EasyUnlockService::Get(profile_.get())->IsAllowed());
-  EXPECT_TRUE(
-      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_NOT_LOADED));
 }
 
 TEST_F(EasyUnlockServiceTest, GetAccountId) {
