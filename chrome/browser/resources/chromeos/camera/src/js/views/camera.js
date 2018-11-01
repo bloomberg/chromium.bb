@@ -452,34 +452,43 @@ camera.views.Camera.prototype.prepareImageCapture_ = function() {
 };
 
 /**
- * Returns constraints-candidates with the specified device id.
- * @param {string} deviceId Device id to be set in the constraints.
- * @return {Array<Object>}
+ * Returns constraints-candidates for all available video-devices.
+ * @return {!Promise<Array<Object>>} Promise for the result.
  * @private
  */
-camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
-  var recordMode = this.recordMode;
-  var videoConstraints =
-      [{
-        aspectRatio: { ideal: recordMode ? 1.7777777778 : 1.3333333333 },
-        width: { min: 1280 },
-        frameRate: { min: 24 },
-      },
-      {
-        width: { min: 640 },
-        frameRate: { min: 24 },
-      }];
+camera.views.Camera.prototype.constraintsCandidates_ = function() {
+  var deviceConstraints = (deviceId, recordMode) => {
+    var videoConstraints =
+        [{
+          aspectRatio: { ideal: recordMode ? 1.7777777778 : 1.3333333333 },
+          width: { min: 1280 },
+          frameRate: { min: 24 },
+        },
+        {
+          width: { min: 640 },
+          frameRate: { min: 24 },
+        }];
 
-  // Constraints are ordered by priority.
-  return videoConstraints.map((constraint) => {
-    // Each passed-in video-constraint will be modified here.
-    if (deviceId) {
-      constraint.deviceId = { exact: deviceId };
-    } else {
-      // As a default camera use the one which is facing the user.
-      constraint.facingMode = { exact: 'user' };
-    }
-    return { audio: recordMode, video: constraint };
+    // Constraints are ordered by priority.
+    return videoConstraints.map((constraint) => {
+      // Each passed-in video-constraint will be modified here.
+      if (deviceId) {
+        constraint.deviceId = { exact: deviceId };
+      } else {
+        // As a default camera use the one which is facing the user.
+        constraint.facingMode = { exact: 'user' };
+      }
+      return { audio: recordMode, video: constraint };
+    });
+  };
+
+  return this.options_.videoDeviceIds().then((deviceIds) => {
+    var recordMode = this.recordMode;
+    var candidates = [];
+    deviceIds.forEach((deviceId) => {
+      candidates = candidates.concat(deviceConstraints(deviceId, recordMode));
+    });
+    return candidates;
   });
 };
 
@@ -510,21 +519,13 @@ camera.views.Camera.prototype.stop_ = function() {
  * @private
  */
 camera.views.Camera.prototype.start_ = function() {
-  // TODO(yuli): Check 'suspend' before getting device-ids.
-  this.started_ = this.options_.videoDeviceIds().then((deviceIds) => {
-    var candidates = [];
-    deviceIds.forEach((deviceId) => {
-      candidates = candidates.concat(this.constraintsCandidates_(deviceId));
-    });
-
-    var tryStartWithConstraints = (index) => {
-      if (this.locked_ || chrome.app.window.current().isMinimized()) {
-        return Promise.reject('suspend');
-      }
+  var suspend = this.locked_ || chrome.app.window.current().isMinimized();
+  this.started_ = (suspend ? Promise.reject('suspend') :
+      this.constraintsCandidates_()).then((candidates) => {
+    var tryStartWithCandidate = (index) => {
       if (index >= candidates.length) {
         return Promise.reject('out-of-candidates');
       }
-
       var constraints = candidates[index];
       return navigator.mediaDevices.getUserMedia(constraints).then(
           this.preview_.start.bind(this.preview_)).then(() => {
@@ -536,11 +537,11 @@ camera.views.Camera.prototype.start_ = function() {
         console.error(error);
         return new Promise((resolve) => {
           // TODO(mtomasz): Workaround for crbug.com/383241.
-          setTimeout(() => resolve(tryStartWithConstraints(index + 1)), 0);
+          setTimeout(() => resolve(tryStartWithCandidate(index + 1)), 0);
         });
       });
     };
-    return tryStartWithConstraints(0);
+    return tryStartWithCandidate(0);
   }).catch((error) => {
     if (error != 'suspend') {
       console.error(error);
