@@ -190,6 +190,9 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
 
 bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
                                                float scroll_y) {
+  if (IsAnimating())
+    return false;
+
   if (!IsDragInProgress())
     return false;
 
@@ -209,11 +212,15 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
 bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
                                                 bool* out_dragged_down) {
+  if (IsAnimating())
+    return false;
+
   if (!IsDragInProgress()) {
     if (window_) {
       // |window_| may not be nullptr when this release event is triggered by
       // opening |window_| with modal dialog in OnPressEvent(). In that case,
       // just leave the |window_| in show state and stop tracking.
+      AnimateToFinalState();
       RemoveObserversAndStopTracking();
       return true;
     }
@@ -551,26 +558,27 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
 }
 
 bool HomeLauncherGestureHandler::IsIdle() {
-  if (IsDragInProgress())
-    return false;
+  return !IsDragInProgress() && !IsAnimating();
+}
 
+bool HomeLauncherGestureHandler::IsAnimating() {
   if (window_ && window_->layer()->GetAnimator()->is_animating())
-    return false;
+    return true;
 
   if (window2_ && window2_->layer()->GetAnimator()->is_animating())
-    return false;
+    return true;
 
   for (const auto& descendant : transient_descendants_values_) {
     if (descendant.first->layer()->GetAnimator()->is_animating())
-      return false;
+      return true;
   }
 
   for (const auto& descendant : transient_descendants_values2_) {
     if (descendant.first->layer()->GetAnimator()->is_animating())
-      return false;
+      return true;
   }
 
-  return true;
+  return false;
 }
 
 bool HomeLauncherGestureHandler::IsFinalStateShow() {
