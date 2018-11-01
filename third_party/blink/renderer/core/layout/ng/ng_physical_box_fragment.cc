@@ -157,7 +157,6 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
       ink_overflow.Unite(rect);
     }
   }
-  ink_overflow.Unite(descendant_outlines_.ToLayoutRect());
   return NGPhysicalOffsetRect(ink_overflow);
 }
 

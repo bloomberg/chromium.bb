@@ -91,7 +91,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   Vector<NGBaseline> baselines_;
   NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
-  NGPhysicalOffsetRect descendant_outlines_;
   NGLinkStorage children_[];
 };
 
