@@ -40,12 +40,13 @@ class MockUiController : public UiController {
   }
   MOCK_METHOD1(OnChooseCard,
                void(base::OnceCallback<void(const std::string&)>& callback));
-  MOCK_METHOD3(
+  MOCK_METHOD4(
       GetPaymentInformation,
       void(payments::mojom::PaymentOptionsPtr payment_options,
            base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
                callback,
-           const std::string& title));
+           const std::string& title,
+           const std::vector<std::string>& supported_basic_card_networks));
   MOCK_METHOD0(HideDetails, void());
   MOCK_METHOD1(ShowDetails, void(const DetailsProto& details));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));

@@ -249,7 +249,8 @@ void UiControllerAndroid::ChooseCard(
 void UiControllerAndroid::GetPaymentInformation(
     payments::mojom::PaymentOptionsPtr payment_options,
     base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    const std::string& title) {
+    const std::string& title,
+    const std::vector<std::string>& supported_basic_card_networks) {
   DCHECK(!get_payment_information_callback_);
   get_payment_information_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
@@ -259,7 +260,8 @@ void UiControllerAndroid::GetPaymentInformation(
       payment_options->request_payer_phone,
       payment_options->request_payer_email,
       static_cast<int>(payment_options->shipping_type),
-      base::android::ConvertUTF8ToJavaString(env, title));
+      base::android::ConvertUTF8ToJavaString(env, title),
+      base::android::ToJavaArrayOfStrings(env, supported_basic_card_networks));
 }
 
 void UiControllerAndroid::HideDetails() {

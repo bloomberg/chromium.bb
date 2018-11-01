@@ -34,6 +34,10 @@ void GetPaymentInformationAction::InternalProcessAction(
   payment_options->request_payer_email = ask_for_payment;
   payment_options->request_payer_name = ask_for_payment;
   payment_options->request_payer_phone = ask_for_payment;
+  std::vector<std::string> supported_basic_card_networks;
+  std::copy(get_payment_information.supported_basic_card_networks().begin(),
+            get_payment_information.supported_basic_card_networks().end(),
+            std::back_inserter(supported_basic_card_networks));
 
   payment_options->request_shipping =
       !get_payment_information.shipping_address_name().empty();
@@ -43,7 +47,7 @@ void GetPaymentInformationAction::InternalProcessAction(
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
                      weak_ptr_factory_.GetWeakPtr(), delegate,
                      std::move(get_payment_information), std::move(callback)),
-      get_payment_information.prompt());
+      get_payment_information.prompt(), supported_basic_card_networks);
 }
 
 void GetPaymentInformationAction::OnGetPaymentInformation(
