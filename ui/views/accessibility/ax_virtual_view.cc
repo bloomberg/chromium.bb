@@ -163,6 +163,11 @@ void AXVirtualView::OverrideBoundsRect(const gfx::RectF& location) {
   custom_data_.location = location;
 }
 
+ui::AXNodeData& AXVirtualView::GetData() {
+  return const_cast<ui::AXNodeData&>(
+      const_cast<const AXVirtualView*>(this)->GetData());
+}
+
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& AXVirtualView::GetData() const {
@@ -194,7 +199,7 @@ gfx::NativeWindow AXVirtualView::GetTopLevelWidget() {
 
 gfx::NativeViewAccessible AXVirtualView::GetParent() {
   if (parent_view_)
-    return parent_view_->GetNativeViewAccessible();
+    return parent_view_->GetNativeObject();
 
   if (virtual_parent_view_)
     return virtual_parent_view_->GetNativeObject();
@@ -251,7 +256,7 @@ bool AXVirtualView::IsParentVisible() const {
   if (parent_view_) {
     const auto* parent_node = static_cast<ui::AXPlatformNodeBase*>(
         ui::AXPlatformNode::FromNativeViewAccessible(
-            parent_view_->GetNativeViewAccessible()));
+            parent_view_->GetNativeObject()));
     if (!parent_node) {
       NOTREACHED() << "AXVirtualView should be created on a platform with "
                       "native accessibility support.";

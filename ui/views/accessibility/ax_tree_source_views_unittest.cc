@@ -147,7 +147,7 @@ TEST_F(AXTreeSourceViewsTest, GetTreeDataWithFocus) {
 
 TEST_F(AXTreeSourceViewsTest, IgnoredView) {
   View* ignored_view = new View();
-  ignored_view->GetViewAccessibility().set_is_ignored(true);
+  ignored_view->GetViewAccessibility().OverrideIsIgnored(true);
   widget_->GetContentsView()->AddChildView(ignored_view);
 
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();

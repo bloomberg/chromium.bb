@@ -14,6 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
+
 class Rect;
 }
 
@@ -38,7 +39,7 @@ class AXPlatformNode;
 // otherwise.
 class AX_EXPORT AXPlatformNodeDelegate {
  public:
-  virtual ~AXPlatformNodeDelegate() {}
+  virtual ~AXPlatformNodeDelegate() = default;
 
   // Get the accessibility data that should be exposed for this node.
   // Virtually all of the information is obtained from this structure
@@ -155,7 +156,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
  protected:
-  AXPlatformNodeDelegate() {}
+  AXPlatformNodeDelegate() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegate);

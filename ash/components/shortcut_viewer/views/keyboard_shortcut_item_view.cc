@@ -136,7 +136,7 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   // Use leaf list item role so that name is spoken by screen reader, but
   // redundant child label text is not also spoken.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
-  GetViewAccessibility().OverrideIsLeaf();
+  GetViewAccessibility().OverrideIsLeaf(true);
   accessible_name_ = description_label_view_->text() +
                      base::ASCIIToUTF16(", ") + shortcut_label_view_->text();
 }
