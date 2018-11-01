@@ -38,12 +38,7 @@
 
 namespace blink {
 
-// Maximum font size, in pixels, at which embedded bitmaps will be used
-// if available.
-const float kMaxSizeForEmbeddedBitmap = 24.0f;
-
 void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
-  const float ts = text_size_ >= 0 ? text_size_ : 12;
   font->setTextSize(SkFloatToScalar(text_size_));
   font->setTypeface(typeface_);
   font->setFakeBoldText(synthetic_bold_);
@@ -55,9 +50,6 @@ void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
       SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
       SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
   flags &= ~kTextFlagsMask;
-
-  if (ts <= kMaxSizeForEmbeddedBitmap)
-    flags |= SkPaint::kEmbeddedBitmapText_Flag;
 
   // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
   // without font smoothing, subpixel text positioning leads to uneven spacing
