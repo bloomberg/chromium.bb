@@ -447,10 +447,6 @@ std::vector<PlatformHandleInTransit> Channel::Message::TakeHandles() {
     mach_ports_header_->num_ports = 0;
   }
 #endif
-  if (is_legacy_message())
-    legacy_header()->num_handles = 0;
-  else
-    header()->num_handles = 0;
   return std::move(handle_vector_);
 }
 
