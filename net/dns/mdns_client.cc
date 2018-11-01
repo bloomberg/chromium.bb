@@ -4,6 +4,7 @@
 
 #include "net/dns/mdns_client.h"
 
+#include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
@@ -68,7 +69,7 @@ IPEndPoint GetMDnsGroupEndPoint(AddressFamily address_family) {
 }
 
 IPEndPoint GetMDnsReceiveEndPoint(AddressFamily address_family) {
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
   // With Windows, binding to a mulitcast group address is not allowed.
   // Multicast messages will be received appropriate to the multicast groups the
   // socket has joined. Sockets intending to receive multicast messages should
@@ -84,12 +85,12 @@ IPEndPoint GetMDnsReceiveEndPoint(AddressFamily address_family) {
       NOTREACHED();
       return IPEndPoint();
   }
-#else   // !OS_WIN
+#else   // !(defined(OS_WIN) || defined(OS_FUCHSIA))
   // With POSIX, any socket can receive messages for multicast groups joined by
   // any socket on the system. Sockets intending to receive messages for a
   // specific multicast group should bind to that group address.
   return GetMDnsGroupEndPoint(address_family);
-#endif  // !OS_WIN
+#endif  // !(defined(OS_WIN) || defined(OS_FUCHSIA))
 }
 
 InterfaceIndexFamilyList GetMDnsInterfacesToBind() {
