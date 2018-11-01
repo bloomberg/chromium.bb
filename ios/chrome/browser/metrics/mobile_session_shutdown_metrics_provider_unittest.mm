@@ -38,9 +38,6 @@ class MobileSessionShutdownMetricsProviderForTesting
     is_first_launch_after_upgrade_ = value;
   }
   void set_has_crash_logs(bool value) { has_crash_logs_ = value; }
-  void set_has_uploaded_crash_reports_in_background(bool value) {
-    has_uploaded_crash_reports_in_background_ = value;
-  }
   void set_received_memory_warning_before_last_shutdown(bool value) {
     received_memory_warning_before_last_shutdown_ = value;
   }
@@ -51,9 +48,6 @@ class MobileSessionShutdownMetricsProviderForTesting
     return is_first_launch_after_upgrade_;
   }
   bool HasCrashLogs() override { return has_crash_logs_; }
-  bool HasUploadedCrashReportsInBackground() override {
-    return has_uploaded_crash_reports_in_background_;
-  }
   bool ReceivedMemoryWarningBeforeLastShutdown() override {
     return received_memory_warning_before_last_shutdown_;
   }
@@ -61,7 +55,6 @@ class MobileSessionShutdownMetricsProviderForTesting
  private:
   bool is_first_launch_after_upgrade_;
   bool has_crash_logs_;
-  bool has_uploaded_crash_reports_in_background_;
   bool received_memory_warning_before_last_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderForTesting);
@@ -96,24 +89,18 @@ class MobileSessionShutdownMetricsProviderTest
 // most significant):
 //  - received memory warning;
 //  - crash log present;
-//  - uploaded crash reports in background;
 //  - last shutdown was clean;
 //  - first launch after upgrade.
 TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   const bool received_memory_warning = GetParam() % 2;
   const bool has_crash_logs = (GetParam() >> 1) % 2;
-  const bool has_uploaded_crash_reports_in_background = (GetParam() >> 2) % 2;
-  const bool was_last_shutdown_clean = (GetParam() >> 3) % 2;
-  const bool is_first_launch_after_upgrade = (GetParam() >> 4) % 2;
+  const bool was_last_shutdown_clean = (GetParam() >> 2) % 2;
+  const bool is_first_launch_after_upgrade = (GetParam() >> 3) % 2;
 
   // Expected bucket for each possible value of GetParam().
   const MobileSessionShutdownType expected_buckets[] = {
       SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
       // If wasLastShutdownClean is true, the memory warning and crash log don't
@@ -122,19 +109,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
       SHUTDOWN_IN_BACKGROUND,
       SHUTDOWN_IN_BACKGROUND,
       SHUTDOWN_IN_BACKGROUND,
-      SHUTDOWN_IN_BACKGROUND,
-      SHUTDOWN_IN_BACKGROUND,
-      SHUTDOWN_IN_BACKGROUND,
-      SHUTDOWN_IN_BACKGROUND,
       // If firstLaunchAfterUpgrade is true, the other flags don't matter.
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
-      FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
@@ -165,8 +140,6 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   metrics_provider_->set_received_memory_warning_before_last_shutdown(
       received_memory_warning);
   metrics_provider_->set_has_crash_logs(has_crash_logs);
-  metrics_provider_->set_has_uploaded_crash_reports_in_background(
-      has_uploaded_crash_reports_in_background);
 
   // Create a histogram tester for verifying samples written to the shutdown
   // type histogram.
@@ -181,4 +154,4 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
 
 INSTANTIATE_TEST_CASE_P(/* No InstantiationName */,
                         MobileSessionShutdownMetricsProviderTest,
-                        testing::Range(0, 32));
+                        testing::Range(0, 16));

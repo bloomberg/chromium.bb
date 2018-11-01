@@ -57,16 +57,14 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
 
   // If the last app lifetime ended in a crash, log the type of crash.
   MobileSessionShutdownType shutdown_type;
-  const bool with_crash_log =
-      HasUploadedCrashReportsInBackground() || HasCrashLogs();
   if (ReceivedMemoryWarningBeforeLastShutdown()) {
-    if (with_crash_log) {
+    if (HasCrashLogs()) {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING;
     } else {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING;
     }
   } else {
-    if (with_crash_log) {
+    if (HasCrashLogs()) {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING;
     } else {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING;
@@ -81,11 +79,6 @@ bool MobileSessionShutdownMetricsProvider::IsFirstLaunchAfterUpgrade() {
 
 bool MobileSessionShutdownMetricsProvider::HasCrashLogs() {
   return breakpad_helper::HasReportToUpload();
-}
-
-bool MobileSessionShutdownMetricsProvider::
-    HasUploadedCrashReportsInBackground() {
-  return false;
 }
 
 bool MobileSessionShutdownMetricsProvider::
