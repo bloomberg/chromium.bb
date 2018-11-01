@@ -1715,6 +1715,10 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
         MixedContentChecker::ShouldAutoupgrade(
             origin_context->Url(),
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
+      if (origin_context->IsDocument()) {
+        Document* document = static_cast<Document*>(origin_context);
+        resource_request.SetUkmSourceId(document->UkmSourceID());
+      }
       resource_request.SetIsAutomaticUpgrade(true);
     } else {
       return;
