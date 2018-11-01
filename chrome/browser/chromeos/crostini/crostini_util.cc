@@ -389,7 +389,7 @@ base::FilePath ContainerHomeDirectoryForProfile(Profile* profile) {
 }
 
 base::FilePath ContainerChromeOSBaseDirectory() {
-  return base::FilePath("/ChromeOS/");
+  return base::FilePath("/mnt/chromeos");
 }
 
 std::string AppNameFromCrostiniAppId(const std::string& id) {
