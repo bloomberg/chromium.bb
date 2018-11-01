@@ -335,6 +335,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_SEARCH_RESULTS" desc="Message announced to screenreader users when searching completes and results are showing.">
           Search results for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
         </message>
+        <message name="IDS_SEARCH_RESULTS_SINGULAR" desc="Message announced to screenreader users when searching completes and results are showing.">
+          1 result for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
+        </message>
+        <message name="IDS_SEARCH_RESULTS_PLURAL" desc="Message announced to screenreader users when searching completes and results are showing.">
+          <ph name="RESULT_COUNT">$1<ex>15</ex></ph> results for '<ph name="SEARCH_TEXT">$2<ex>cookies</ex></ph>'
+        </message>
         <message name="IDS_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
           No search results found
         </message>

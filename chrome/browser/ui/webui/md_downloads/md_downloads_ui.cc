@@ -44,7 +44,9 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchResultsFor", IDS_SEARCH_RESULTS);
+  source->AddLocalizedString("searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_SEARCH_RESULTS_SINGULAR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
 
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);

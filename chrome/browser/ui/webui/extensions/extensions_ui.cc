@@ -134,7 +134,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"ok", IDS_OK},
     {"save", IDS_SAVE},
-    {"searchResults", IDS_SEARCH_RESULTS},
+    {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
+    {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
 
     // Multi-use strings defined in md_extensions_strings.grdp.
     {"remove", IDS_MD_EXTENSIONS_REMOVE},
