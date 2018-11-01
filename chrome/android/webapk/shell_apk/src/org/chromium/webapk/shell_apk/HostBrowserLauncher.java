@@ -65,8 +65,8 @@ public class HostBrowserLauncher {
         intent.putExtra(WebApkConstants.EXTRA_URL, params.getStartUrl())
                 .putExtra(WebApkConstants.EXTRA_SOURCE, params.getSource())
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, context.getPackageName())
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME,
-                        params.getLaunchingActivityClassName())
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
+                        params.getSelectedShareTargetActivityClassName())
                 .putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, params.getForceNavigation());
 
         // Only pass on the start time if no user action was required between launching the webapk

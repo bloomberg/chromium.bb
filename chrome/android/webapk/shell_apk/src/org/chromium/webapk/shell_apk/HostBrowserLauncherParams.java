@@ -30,7 +30,7 @@ public class HostBrowserLauncherParams {
     private int mSource;
     private boolean mForceNavigation;
     private long mLaunchTimeMs;
-    private String mLaunchingActivityClassName;
+    private String mSelectedShareTargetActivityClassName;
 
     /**
      * Constructs a HostBrowserLauncherParams object from the passed in Intent and from <meta-data>
@@ -44,21 +44,21 @@ public class HostBrowserLauncherParams {
         int hostBrowserMajorChromiumVersion = HostBrowserUtils.queryHostBrowserMajorChromiumVersion(
                 context, hostBrowserPackageName);
 
-        ComponentName launchingActivityComponent = intent.getComponent();
-        if (intent.getStringExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME)
-                != null) {
-            launchingActivityComponent = new ComponentName(context.getPackageName(),
-                    intent.getStringExtra(
-                            WebApkConstants.EXTRA_WEBAPK_LAUNCHING_ACTIVITY_CLASS_NAME));
-        }
-
         String startUrl = null;
         int source = WebApkConstants.SHORTCUT_SOURCE_UNKNOWN;
         boolean forceNavigation = false;
 
+        String selectedShareTargetActivityClassName = intent.getStringExtra(
+                WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
         if (Intent.ACTION_SEND.equals(intent.getAction())
                 || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
-            Bundle shareTargetMetaData = fetchActivityMetaData(context, launchingActivityComponent);
+            selectedShareTargetActivityClassName = intent.getComponent().getClassName();
+        }
+
+        if (selectedShareTargetActivityClassName != null) {
+            Bundle shareTargetMetaData = fetchActivityMetaData(context,
+                    new ComponentName(
+                            context.getPackageName(), selectedShareTargetActivityClassName));
             startUrl = computeStartUrlForShareTarget(shareTargetMetaData, intent);
             source = WebApkConstants.SHORTCUT_SOURCE_SHARE;
             forceNavigation = true;
@@ -82,7 +82,7 @@ public class HostBrowserLauncherParams {
 
         return new HostBrowserLauncherParams(hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,
-                forceNavigation, launchTimeMs, launchingActivityComponent.getClassName());
+                forceNavigation, launchTimeMs, selectedShareTargetActivityClassName);
     }
 
     private static Bundle fetchActivityMetaData(
@@ -191,7 +191,7 @@ public class HostBrowserLauncherParams {
     private HostBrowserLauncherParams(String hostBrowserPackageName,
             int hostBrowserMajorChromiumVersion, boolean dialogShown, Intent originalIntent,
             String startUrl, int source, boolean forceNavigation, long launchTimeMs,
-            String launchingActivityClassName) {
+            String selectedShareTargetActivityClassName) {
         mHostBrowserPackageName = hostBrowserPackageName;
         mHostBrowserMajorChromiumVersion = hostBrowserMajorChromiumVersion;
         mDialogShown = dialogShown;
@@ -200,7 +200,7 @@ public class HostBrowserLauncherParams {
         mSource = source;
         mForceNavigation = forceNavigation;
         mLaunchTimeMs = launchTimeMs;
-        mLaunchingActivityClassName = launchingActivityClassName;
+        mSelectedShareTargetActivityClassName = selectedShareTargetActivityClassName;
     }
 
     /** Returns the chosen host browser. */
@@ -249,8 +249,8 @@ public class HostBrowserLauncherParams {
         return mLaunchTimeMs;
     }
 
-    /** Returns the class name of the activity which received the intent.*/
-    public String getLaunchingActivityClassName() {
-        return mLaunchingActivityClassName;
+    /** Returns the class name of the share activity that the user selected. */
+    public String getSelectedShareTargetActivityClassName() {
+        return mSelectedShareTargetActivityClassName;
     }
 }
