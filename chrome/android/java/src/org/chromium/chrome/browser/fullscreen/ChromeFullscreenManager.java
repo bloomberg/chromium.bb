@@ -551,9 +551,16 @@ public class ChromeFullscreenManager
 
     private boolean shouldShowAndroidControls() {
         if (mBrowserControlsAndroidViewHidden) return false;
-        if (getTab() != null
-                && TabBrowserControlsOffsetHelper.from(getTab()).isControlsOffsetOverridden()) {
-            return true;
+
+        Tab tab = getTab();
+        if (tab != null) {
+            if (tab.isInitialized()) {
+                if (TabBrowserControlsOffsetHelper.from(tab).isControlsOffsetOverridden()) {
+                    return true;
+                }
+            } else {
+                assert false : "Accessing a destroyed tab, setTab should have been called";
+            }
         }
 
         boolean showControls = !drawControlsAsTexture();

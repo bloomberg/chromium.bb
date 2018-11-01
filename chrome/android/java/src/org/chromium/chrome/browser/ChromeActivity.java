@@ -1307,11 +1307,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mContextualSuggestionsCoordinator = null;
         }
 
-        if (mTabModelsInitialized) {
-            TabModelSelector selector = getTabModelSelector();
-            if (selector != null) selector.destroy();
-        }
-
         if (mDidAddPolicyChangeListener) {
             CombinedPolicyProvider.get().removePolicyChangeListener(this);
             mDidAddPolicyChangeListener = false;
@@ -1327,6 +1322,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mActivityTabStartupMetricsTracker != null) {
             mActivityTabStartupMetricsTracker.destroy();
             mActivityTabStartupMetricsTracker = null;
+        }
+
+        if (mFullscreenManager != null) {
+            mFullscreenManager.destroy();
+            mFullscreenManager = null;
+        }
+
+        if (mTabModelsInitialized) {
+            TabModelSelector selector = getTabModelSelector();
+            if (selector != null) selector.destroy();
         }
 
         AccessibilityManager manager = (AccessibilityManager)
