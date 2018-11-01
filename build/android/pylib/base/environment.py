@@ -25,6 +25,9 @@ class Environment(object):
     """
     self._output_manager = output_manager
 
+    # Some subclasses have different teardown behavior on receiving SIGTERM.
+    self._received_sigterm = False
+
   def SetUp(self):
     raise NotImplementedError
 
@@ -41,3 +44,6 @@ class Environment(object):
   @property
   def output_manager(self):
     return self._output_manager
+
+  def ReceivedSigterm(self):
+    self._received_sigterm = True
