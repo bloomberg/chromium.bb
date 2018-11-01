@@ -605,6 +605,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2536525645274582300">User decides whether to enable Google Location services</translation>
+<translation id="254653220329944566">Enables <ph name="PRODUCT_NAME" /> cloud reporting</translation>
 <translation id="2550593661567988768">Simplex printing only</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
@@ -1961,6 +1962,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="614662973812186053">This policy also controls Android usage and diagnostic data collection.</translation>
+<translation id="6153048425064249648">This policy controls <ph name="PRODUCT_NAME" /> cloud reporting which uploads information about the browser operation to Google Admin console.
+
+      When this policy is left unset or set to False, there is no data collected or uploaded.
+      When this policy is set to True, the data is collected and uploaded to Google Admin console.
+      To control what data is uploaded, please use policies in the group Chrome Reporting Extension.
+
+      This policy is only effective when the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      This policy force installs <ph name="CHROME_REPORTING_EXTENSION_NAME" /> for the reporting and overrides any extension policies related to that extension.</translation>
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>

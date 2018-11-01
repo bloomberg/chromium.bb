@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2705137772291741111">Den gemte (cachelagrede) kopi af dette website kunne ikke læses.</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
-<translation id="2710942282213947212">Der er software på computeren, som forhindrer Chromium i at oprette en sikker forbindelse til nettet</translation>
 <translation id="2712173769900027643">Spørg om tilladelse</translation>
 <translation id="2720342946869265578">Tæt på</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Leveringsadresse</translation>
 <translation id="5250209940322997802">"Opret forbindelse til netværk"</translation>
 <translation id="5251803541071282808">Skyen</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Følg denne vejledning for at deaktivere softwaren midlertidigt, så du kan komme på nettet. Du skal have administratorrettigheder.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Klik på <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, og søg efter og vælg <ph name="BEGIN_BOLD" />"Vis lokale tjenester"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Vælg <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Starttype<ph name="END_BOLD" /> skal du vælge <ph name="BEGIN_BOLD" />Deaktiveret<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Tjenestestatus<ph name="END_BOLD" /> skal du klikke på <ph name="BEGIN_BOLD" />Stop<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Klik på <ph name="BEGIN_BOLD" />Anvend<ph name="END_BOLD" /> og derefter på <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Besøg <ph name="BEGIN_LEARN_MORE_LINK" />Hjælp til Chrome<ph name="END_LEARN_MORE_LINK" /> for at få flere oplysninger om, hvordan du permanent fjerner softwaren fra din computer
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Se alle gemte adgangskoder</translation>
 <translation id="5287240709317226393">Vis cookies</translation>
 <translation id="5288108484102287882">Validering af politikværdier har genereret advarsler</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB-enheder</translation>
 <translation id="6071091556643036997">Politiktypen er ugyldig.</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
-<translation id="6096226585778084111">Indlæser <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto. Du kan miste adgang til beskyttet indhold på <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="610911394827799129">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 adgangskode (synkroniseret)}one{# adgangskode (synkroniseret)}other{# adgangskoder (synkroniseret)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Potentielle debiteringer forude</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
-<translation id="6397451950548600259">Der er software på computeren, som forhindrer, at Chrome kan oprette en sikker forbindelse til nettet</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6410264514553301377">Angiv udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Du har spurgt en af dine forældre, om det er i orden, at du besøger dette website.</translation>

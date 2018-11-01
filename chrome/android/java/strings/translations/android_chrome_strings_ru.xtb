@@ -117,6 +117,7 @@
 <translation id="1832521218263067499">Случаи нарушения безопасности</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="1868024384445905608">Теперь файлы в Chrome будут скачиваться ещё быстрее</translation>
+<translation id="187628348035757895">Для разработчиков</translation>
 <translation id="1878302395768190018">Выбрать нужные вам параметры можно будет в настройках Chrome в любое время</translation>
 <translation id="1880072593381090678">Популярные страницы из Chrome</translation>
 <translation id="1883903952484604915">Скачанные</translation>
@@ -937,6 +938,7 @@
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="8084114998886531721">Сохраненный пароль</translation>
 <translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
+<translation id="8087980556724996220">Автозаполнение будет отключено через <ph name="DURATION_SECONDS" /> сек…</translation>
 <translation id="8103578431304235997">Вкладка инкогнито</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Предлагать похожие страницы</translation>

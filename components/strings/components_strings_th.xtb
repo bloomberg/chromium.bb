@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">ค่าไม่ตรงกับรูปแบบ</translation>
 <translation id="2705137772291741111">อ่านสำเนาที่บันทึกไว้ (แคช) ของเว็บไซต์นี้ไม่ได้</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
-<translation id="2710942282213947212">ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chromium ไม่สามารถเชื่อมต่อกับเว็บอย่างปลอดภัย</translation>
 <translation id="2712173769900027643">ขออนุญาต</translation>
 <translation id="2720342946869265578">ใกล้เคียง</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5250209940322997802">"เชื่อมต่อกับเครือข่าย"</translation>
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />ทำตามขั้นตอนการปิดใช้ซอฟต์แวร์ชั่วคราวต่อไปนี้เพื่อให้เข้าสู่เว็บได้ คุณจะต้องมีสิทธิ์ของผู้ดูแลระบบ<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />คลิก<ph name="BEGIN_BOLD" />เริ่ม<ph name="END_BOLD" /> จากนั้นค้นหาและเลือก <ph name="BEGIN_BOLD" />"ดูบริการภายใน"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />เลือก <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />เลือก<ph name="BEGIN_BOLD" />ปิดใช้อยู่<ph name="END_BOLD" />ในส่วน<ph name="BEGIN_BOLD" />ประเภทการเริ่มต้น<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />คลิก<ph name="BEGIN_BOLD" />หยุด<ph name="END_BOLD" />ในส่วน<ph name="BEGIN_BOLD" />สถานะบริการ<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />คลิก<ph name="BEGIN_BOLD" />ใช้<ph name="END_BOLD" /> แล้วคลิก<ph name="BEGIN_BOLD" />ตกลง<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ไปที่<ph name="BEGIN_LEARN_MORE_LINK" />ศูนย์ช่วยเหลือของ Chrome<ph name="END_LEARN_MORE_LINK" /> เพื่อเรียนรู้วิธีนำซอฟต์แวร์ออกจากคอมพิวเตอร์อย่างถาวร
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">แสดงรหัสผ่านที่บันทึกไว้ทั้งหมด</translation>
 <translation id="5287240709317226393">แสดงคุกกี้</translation>
 <translation id="5288108484102287882">มีคำเตือนจากการตรวจสอบความถูกต้องของค่านโยบาย</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">อุปกรณ์ USB</translation>
 <translation id="6071091556643036997">ประเภทนโยบายไม่ถูกต้อง</translation>
 <translation id="6080696365213338172">คุณเข้าถึงเนื้อหาโดยใช้ใบรับรองที่ผู้ดูแลระบบออกให้ ข้อมูลที่คุณให้กับ <ph name="DOMAIN" /> อาจถูกสกัดกั้นโดยผู้ดูแลระบบ</translation>
-<translation id="6096226585778084111">กำลังโหลด <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google คุณอาจสูญเสียสิทธิ์เข้าถึงเนื้อหาที่มีการคุ้มครองจาก <ph name="SITE" /> และเว็บไซต์อื่นๆ บางเว็บ</translation>
 <translation id="610911394827799129">บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ไม่มี}=1{รหัสผ่าน (ที่ซิงค์) 1 รายการ}other{รหัสผ่าน (ที่ซิงค์) # รายการ}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">อาจมีการเรียกเก็บเงิน</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{อีก 1 คำแนะนำ}other{อีก # คำแนะนำ}}</translation>
 <translation id="6387754724289022810">เพื่อความสะดวกในการชำระเงินในครั้งถัดไป โปรดบันทึกบัตรและที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google สำหรับอุปกรณฺ์นี้</translation>
-<translation id="6397451950548600259">ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chrome ไม่สามารถเชื่อมต่อกับเว็บอย่างปลอดภัย</translation>
 <translation id="6404511346730675251">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="6410264514553301377">ป้อนวันหมดอายุและ CVC ของ <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">คุณถามผู้ปกครองแล้วว่าสามารถเข้าชมเว็บไซต์นี้ได้ไหม</translation>

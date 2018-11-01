@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
 <translation id="2709516037105925701">Completare automată</translation>
-<translation id="2710942282213947212">Pe computer există software care împiedică Chromium să se conecteze în siguranță la internet</translation>
 <translation id="2712173769900027643">Solicită permisiunea</translation>
 <translation id="2720342946869265578">În apropiere</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Adresă de expediere</translation>
 <translation id="5250209940322997802">„Conectează-te la rețea”</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Urmează acești pași ca să dezactivezi temporar software-ul, astfel încât să poți accesa internetul. Vei avea nevoie de privilegii de administrator.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Dă clic pe <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, apoi caută și selectează <ph name="BEGIN_BOLD" />„View local services”<ph name="END_BOLD" /> (Vezi serviciile locale).
-    <ph name="LIST_ITEM" />Selectează <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Sub <ph name="BEGIN_BOLD" />Startup type<ph name="END_BOLD" /> (Tip de pornire), selectează <ph name="BEGIN_BOLD" />Disabled<ph name="END_BOLD" /> (Dezactivat)
-    <ph name="LIST_ITEM" />Sub <ph name="BEGIN_BOLD" />Service status<ph name="END_BOLD" /> (Starea serviciului), dă clic pe <ph name="BEGIN_BOLD" />Stop<ph name="END_BOLD" /> (Oprește)
-    <ph name="LIST_ITEM" />Clic pe <ph name="BEGIN_BOLD" />Apply<ph name="END_BOLD" /> (Aplică), apoi dă clic pe <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Accesează <ph name="BEGIN_LEARN_MORE_LINK" />Centrul de ajutor Chrome<ph name="END_LEARN_MORE_LINK" /> pentru a afla cum poți să elimini definitiv software-ul de pe computer
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Afișează toate parolele salvate</translation>
 <translation id="5287240709317226393">Afișați cookie-urile</translation>
 <translation id="5288108484102287882">Validarea valorilor de politică a returnat avertismente</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Dispozitive USB</translation>
 <translation id="6071091556643036997">Tipul de politică nu este valid.</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
-<translation id="6096226585778084111">Se încarcă <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Te deconectează de pe majoritatea site-urilor. Nu te vei deconecta de la Contul Google. Este posibil să pierzi accesul la conținutul protejat de pe <ph name="SITE" /> și de pe alte site-uri.</translation>
 <translation id="610911394827799129">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Niciuna}=1{1 parolă (sincronizată)}few{# parole (sincronizate)}other{# de parole (sincronizate)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Urmează costuri potențiale.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{o altă sugestie}few{alte # sugestii}other{alte # de sugestii}}</translation>
 <translation id="6387754724289022810">Pentru a plăti mai rapid data viitoare, salvează cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
-<translation id="6397451950548600259">Pe computer există software care împiedică browserul Chrome să se conecteze în siguranță la internet</translation>
 <translation id="6404511346730675251">Modificați marcajul</translation>
 <translation id="6410264514553301377">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Ți-ai întrebat părintele dacă poți accesa acest site</translation>

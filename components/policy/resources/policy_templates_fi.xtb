@@ -586,6 +586,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2529880111512635313">Määritä sovellukset ja laajennukset, joiden asennus pakotetaan.</translation>
 <translation id="253135976343875019">Käyttämättömyysvaroituksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="2536525645274582300">Käyttäjä päättää, otetaanko Googlen sijaintipalvelut käyttöön</translation>
+<translation id="254653220329944566">Sallii <ph name="PRODUCT_NAME" /> ‑pilviraportoinnin</translation>
 <translation id="2550593661567988768">Vain yksipuolinen tulostus</translation>
 <translation id="2552966063069741410">Aikavyöhyke</translation>
 <translation id="2562339630163277285">Määrittää Instant-hakuihin käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
@@ -1884,6 +1885,15 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6133088669883929098">Salli kaikkien sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6145799962557135888">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="614662973812186053">Tämä käytäntö hallinnoi myös Androidin käyttöä ja diagnostiikkatietojen keräämistä.</translation>
+<translation id="6153048425064249648">Käytäntö hallitsee <ph name="PRODUCT_NAME" /> ‑pilviraportointia, joka lähettää tietoja selaimen toiminnasta Google-hallintakonsoliin.
+
+      Jos käytännölle ei määritetä arvoa tai sen arvo on Epätosi, dataa ei kerätä tai ladata konsoliin.
+      Jos käytännön sen arvo on Tosi, dataa kerätään ja ladataan Google-hallintakonsoliin.
+      Voit valita ladattavan datan Chromen ilmoituslaajennukseen liittyvillä käytännöillä.
+
+      Tämä käytäntö toimii vain, jos <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> on otettu käyttöön koneella.
+
+      Käytäntö asentaa pakollisena <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ‑laajennuksen raportointia varten ja ohittaa kaikki laajennukseen liittyvät käytännöt.</translation>
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>

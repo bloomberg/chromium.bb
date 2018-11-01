@@ -117,6 +117,7 @@
 <translation id="1832521218263067499">Випадки порушення безпеки</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
+<translation id="187628348035757895">Параметри розробника</translation>
 <translation id="1878302395768190018">Це можна будь-коли змінити в налаштуваннях Chrome</translation>
 <translation id="1880072593381090678">Популярні сторінки з Chrome</translation>
 <translation id="1883903952484604915">Мої файли</translation>
@@ -937,6 +938,7 @@
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8084114998886531721">Збережений пароль</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
+<translation id="8087980556724996220">Асистент автозаповнення припинить роботу через <ph name="DURATION_SECONDS" /> с…</translation>
 <translation id="8103578431304235997">Анонімна вкладка</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Пропонувати схожі сторінки</translation>

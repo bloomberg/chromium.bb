@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Завантажити зображення</translation>
 <translation id="1029317248976101138">Збільшити</translation>
 <translation id="1030706264415084469">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому пристрої</translation>
+<translation id="1030889518049751641">Переглянути журнал активності</translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
 <translation id="103279545524624934">Щоб запускати додатки Android, звільніть місце на диску.</translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
@@ -163,6 +164,7 @@
     Вам потрібно знову налаштувати свій профіль.<ph name="BR" />
     <ph name="BR" />
     На наступному екрані надішліть відгук, щоб допомогти нам вирішити цю проблему.</translation>
+<translation id="1217668622537098248">Після дії повернутися до натискання лівою кнопкою</translation>
 <translation id="121783623783282548">Паролі не збігаються.</translation>
 <translation id="1218860753635451122">Натиснувши кнопку "Прийняти", ви дозволяєте цим службам Google обробляти ваші дані, як описано вище.</translation>
 <translation id="122082903575839559">Алгоритм підпису сертифіката</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Якщо ключ безпеки не вказано в списку, утримуйте його кнопку принаймні 5 секунд.</translation>
 <translation id="275662540872599901">екран вимкнено</translation>
 <translation id="2761898608071930085">Інший обліковий запис</translation>
+<translation id="276233135255363312">{0,plural, =1{У вас одне вікно в режимі анонімного перегляду.}one{У вас # вікно в режимі анонімного перегляду.}few{У вас # вікна в режимі анонімного перегляду.}many{У вас # вікон у режимі анонімного перегляду.}other{У вас # вікна в режимі анонімного перегляду.}}</translation>
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2765217105034171413">Малий</translation>
 <translation id="2766006623206032690">Вста&amp;вити та перейти</translation>
@@ -2186,6 +2189,7 @@
 <translation id="4312866146174492540">Блокувати (за умовчанням)</translation>
 <translation id="4316850752623536204">Веб-сайт розробника</translation>
 <translation id="4320177379694898372">Немає з’єднання з Інтернетом</translation>
+<translation id="4320948194796820126">Додайте закладку в електронну пошту</translation>
 <translation id="4322394346347055525">Закрити інші вкладки</translation>
 <translation id="4324577459193912240">Файл неповний</translation>
 <translation id="4330387663455830245">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> транслює вікно.</translation>
 <translation id="4364830672918311045">Показувати сповіщення</translation>
 <translation id="4365673000813822030">На жаль, синхронізація перестала працювати.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> у додатку <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Введені електронна адреса та пароль не збігаються</translation>
 <translation id="437184764829821926">Розширені налаштування шрифтів</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -2690,6 +2695,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ваш жорсткий диск заповнено. Збережіть в іншому місці чи звільніть місце на цьому жорстоку диску.</translation>
 <translation id="5125751979347152379">Недійсна URL-адреса.</translation>
+<translation id="5127805178023152808">Синхронізацію вимкнено</translation>
 <translation id="5127881134400491887">Керувати мережевими з’єднаннями</translation>
 <translation id="512903556749061217">підключено</translation>
 <translation id="5133483819862530305">Від заходу до сходу сонця</translation>
@@ -3069,6 +3075,7 @@
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5669691691057771421">Введіть новий PIN-код</translation>
 <translation id="5671641761787789573">Зображення заблоковано</translation>
+<translation id="567643736130151854">Увійдіть в обліковий запис і ввімкніть синхронізацію, щоб мати доступ до своїх закладок, паролів та інших даних на всіх пристроях</translation>
 <translation id="5677503058916217575">Мова сторінки:</translation>
 <translation id="5677928146339483299">Заблоковано</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />: надано доступ для перегляду й редагування.</translation>
@@ -4957,6 +4964,7 @@
 <translation id="8571213806525832805">Останні 4 тижні</translation>
 <translation id="8574990355410201600">Завжди дозволяти звук на сторінці <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Утримуйте <ph name="KEY_EQUIVALENT" />, щоб вийти</translation>
+<translation id="8578421807258988326">{0,plural, =1{Закрити це вікно}one{Закрити всі вікна в режимі анонімного перегляду}few{Закрити всі вікна в режимі анонімного перегляду}many{Закрити всі вікна в режимі анонімного перегляду}other{Закрити всі вікна в режимі анонімного перегляду}}</translation>
 <translation id="8578639784464423491">Не може перевищувати 99 літер</translation>
 <translation id="8579285237314169903">Синхронізація стількох елементів: <ph name="NUMBER_OF_FILES" />…</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
@@ -4976,7 +4984,6 @@
 <translation id="8609465669617005112">Угору</translation>
 <translation id="8610103157987623234">Неправильний формат, повторіть спробу</translation>
 <translation id="8615618338313291042">Програма в режимі анонімного перегляду: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Не синхронізується</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Статус роумінгу</translation>
 <translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>

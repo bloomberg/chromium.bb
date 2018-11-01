@@ -577,6 +577,7 @@
 <translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
 <translation id="2536525645274582300">Korisnik odlučuje hoće li omogućiti Googleove usluge lokacije</translation>
+<translation id="254653220329944566">Omogućuje izvješćivanje u oblaku preglednika <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Samo jednostrani ispis</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
 <translation id="2562339630163277285">Određuje URL tražilice koja se upotrebljava za davanje instant rezultata. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER" /> koji će se u trenutku postavljanja upita zamijeniti tekstom koji je korisnik dotad unio.
@@ -1879,6 +1880,15 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6133088669883929098">Dopusti svim web-lokacijama da upotrebljavaju generiranje ključeva</translation>
 <translation id="6145799962557135888">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju pokretati JavaScript. Ako to pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="614662973812186053">To pravilo kontrolira i prikupljanje podataka o upotrebi i dijagnostici na Androidu.</translation>
+<translation id="6153048425064249648">Ovo pravilo upravlja izvješćivanjem u oblaku preglednika <ph name="PRODUCT_NAME" /> koje prenosi informacije o radu tog preglednika na konzolu Google Admina.
+
+      Kad se to pravilo ne postavi ili se postavi na False, podaci se ne prikupljaju niti se prenose.
+      Kad se to pravilo postavi na True, podaci se prikupljaju i prenose na konzolu Google Admina.
+      Da biste upravljali time koji se podaci prenose, upotrijebite pravila u grupi Chromeovo proširenje za prijavljivanje.
+
+      To je pravilo učinkovito samo kad je računalo prijavljeno pomoću pravila <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      To pravilo prisilno instalira <ph name="CHROME_REPORTING_EXTENSION_NAME" /> radi izvješćivanja i nadjačava sva pravila proširenja povezana s tim proširenjem.</translation>
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>
 <translation id="6157537876488211233">Popis pravila zaobilaženja proxyja odvojenih zarezima</translation>
 <translation id="6158324314836466367">Naziv web-trgovine tvrtke (obustavljeno)</translation>

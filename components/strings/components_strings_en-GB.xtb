@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
-<translation id="2710942282213947212">Software on your computer is stopping Chromium from safely connecting to the web</translation>
 <translation id="2712173769900027643">Ask permission</translation>
 <translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Delivery Address</translation>
 <translation id="5250209940322997802">'Connect to network'</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Follow these steps to temporarily disable the software so that you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Click <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, then search for and select <ph name="BEGIN_BOLD" />'View local services'<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Select <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Startup type<ph name="END_BOLD" />, select <ph name="BEGIN_BOLD" />Disabled<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Service status<ph name="END_BOLD" />, click <ph name="BEGIN_BOLD" />Stop<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Click <ph name="BEGIN_BOLD" />Apply<ph name="END_BOLD" />, then click <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Visit the <ph name="BEGIN_LEARN_MORE_LINK" />Chrome help centre<ph name="END_LEARN_MORE_LINK" /> to learn how to permanently remove the software from your computer
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Show all saved passwords</translation>
 <translation id="5287240709317226393">Show cookies</translation>
 <translation id="5288108484102287882">Validation of policy values has raised warnings</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB devices</translation>
 <translation id="6071091556643036997">The policy type is invalid.</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
-<translation id="6096226585778084111">Loading <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Signs you out of most sites. You won't be signed out of your Google account. You may lose access to protected content from <ph name="SITE" /> and some other sites.</translation>
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{None}=1{1 password (synced)}other{# passwords (synced)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Potential charges ahead.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="6387754724289022810">To pay faster next time, save your card and billing address to your Google Account and to this device.</translation>
-<translation id="6397451950548600259">Software on your computer is stopping Chrome from safely connecting to the web</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6410264514553301377">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">You asked your parent if it's OK to visit this site</translation>

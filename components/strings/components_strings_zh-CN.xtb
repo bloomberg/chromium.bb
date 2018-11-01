@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">值不符合格式要求。</translation>
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
-<translation id="2710942282213947212">您计算机上的软件导致 Chromium 无法安全地连接到网络</translation>
 <translation id="2712173769900027643">请求批准</translation>
 <translation id="2720342946869265578">附近</translation>
 <translation id="2721148159707890343">请求成功</translation>
@@ -631,16 +630,6 @@
 <translation id="5230733896359313003">送货地址</translation>
 <translation id="5250209940322997802">“连接到网络”</translation>
 <translation id="5251803541071282808">云端</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />按照下述步骤操作可临时停用此类软件，以便您能够连接到网络。您需要具有管理员权限。<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />点击<ph name="BEGIN_BOLD" />开始<ph name="END_BOLD" />，然后搜索并选择<ph name="BEGIN_BOLD" />“查看本地服务”<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />选择 <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />选择<ph name="BEGIN_BOLD" />启动类型<ph name="END_BOLD" />下方的<ph name="BEGIN_BOLD" />停用<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />点击<ph name="BEGIN_BOLD" />服务状态<ph name="END_BOLD" />下方的<ph name="BEGIN_BOLD" />停止<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />依次点击<ph name="BEGIN_BOLD" />应用<ph name="END_BOLD" />和<ph name="BEGIN_BOLD" />确定<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />访问 <ph name="BEGIN_LEARN_MORE_LINK" />Chrome 帮助中心<ph name="END_LEARN_MORE_LINK" />，了解如何从您的计算机中永久移除此类软件
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">显示所有已保存的密码</translation>
 <translation id="5287240709317226393">显示 Cookie</translation>
 <translation id="5288108484102287882">政策值验证引发了警告</translation>
@@ -758,7 +747,6 @@
 <translation id="6059925163896151826">USB 设备</translation>
 <translation id="6071091556643036997">政策类型无效。</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
-<translation id="6096226585778084111">正在加载 <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">会致使您从大多数网站退出，但不会退出您的 Google 帐号。您可能会无法再访问 <ph name="SITE" /> 及一些其他网站上的受保护内容。</translation>
 <translation id="610911394827799129">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{无}=1{1 个密码（已同步）}other{# 个密码（已同步）}}</translation>
@@ -795,7 +783,6 @@
 <translation id="6383221683286411806">可能产生费用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387754724289022810">只要将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号和此设备，下次即可更便捷地完成付款。</translation>
-<translation id="6397451950548600259">您计算机上的软件导致 Chrome 无法安全地连接到网络</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>
 <translation id="6414888972213066896">您已向父亲/母亲发送请求，询问其是否允许您访问此网站</translation>

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Carregar Imagem</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469">O URL <ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
+<translation id="1030889518049751641">Ver registro de atividades</translation>
 <translation id="1031362278801463162">Carregando visualização</translation>
 <translation id="103279545524624934">Libere espaço em disco para iniciar apps Android.</translation>
 <translation id="1033780634303702874">Acessar seus dispositivos de série</translation>
@@ -163,6 +164,7 @@
     Será necessário configurar seu perfil novamente.<ph name="BR" />
     <ph name="BR" />
     Na próxima tela, envie um feedback para nos ajudar a corrigir o problema.</translation>
+<translation id="1217668622537098248">Reverter para o clique com botão esquerdo após a ação</translation>
 <translation id="121783623783282548">As senhas não correspondem.</translation>
 <translation id="1218860753635451122">Ao clicar no botão "Concordo", você aceita o processo descrito acima para esses serviços do Google.</translation>
 <translation id="122082903575839559">Algoritmo de assinatura do certificado</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Se a chave de segurança não estiver na lista, pressione o botão da chave por pelo menos cinco segundos.</translation>
 <translation id="275662540872599901">tela desativada</translation>
 <translation id="2761898608071930085">Usar outra conta</translation>
+<translation id="276233135255363312">{0,plural, =1{Você tem uma janela anônima.}one{Você tem # janela anônima.}other{Você tem # janelas anônimas.}}</translation>
 <translation id="2762441749940182211">Câmera bloqueada</translation>
 <translation id="2765217105034171413">Pequeno</translation>
 <translation id="2766006623206032690">Co&amp;lar e ir</translation>
@@ -2186,6 +2189,7 @@
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
 <translation id="4316850752623536204">Website do desenvolvedor</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
+<translation id="4320948194796820126">Adicione um marcador ao seu e-mail</translation>
 <translation id="4322394346347055525">Fechar outras guias</translation>
 <translation id="4324577459193912240">Arquivo incompleto</translation>
 <translation id="4330387663455830245">Nunca traduzir <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@
 <translation id="4364567974334641491">O app <ph name="APP_NAME" /> está compartilhando uma janela.</translation>
 <translation id="4364830672918311045">Exibir notificações</translation>
 <translation id="4365673000813822030">Ops, a sincronização parou de funcionar.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> com <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">O e-mail e a senha que você digitou não coincidem.</translation>
 <translation id="437184764829821926">Configurações de fonte avançadas</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -2690,6 +2695,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Seu disco rígido está cheio. Salve em outro local ou libere mais espaço no disco rígido.</translation>
 <translation id="5125751979347152379">URL inválido.</translation>
+<translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5127881134400491887">Gerenciar conexões de rede</translation>
 <translation id="512903556749061217">conectado</translation>
 <translation id="5133483819862530305">Do pôr ao nascer do sol</translation>
@@ -3070,6 +3076,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5669691691057771421">Digite o novo PIN</translation>
 <translation id="5671641761787789573">Imagens bloqueadas</translation>
+<translation id="567643736130151854">Faça login e ative a sincronização para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5678550637669481956">Foi concedido acesso de leitura e gravação a <ph name="VOLUME_NAME" />.</translation>
@@ -4960,6 +4967,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8571213806525832805">Últimas quatro semanas</translation>
 <translation id="8574990355410201600">Sempre permitir som em <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Pressione e segure <ph name="KEY_EQUIVALENT" /> para sair.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Fechar esta janela}one{Fechar todas as janelas anônimas}other{Fechar todas as janelas anônimas}}</translation>
 <translation id="8578639784464423491">Não pode exceder 99 letras</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES" /> itens...</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
@@ -4979,7 +4987,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8610103157987623234">Formato incorreto. Tente novamente</translation>
 <translation id="8615618338313291042">Aplicativo anônimo: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Não está sincronizando</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status do roaming</translation>
 <translation id="8620765578342452535">Configurar conexões de rede</translation>

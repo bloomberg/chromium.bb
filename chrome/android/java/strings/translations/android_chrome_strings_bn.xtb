@@ -353,7 +353,7 @@
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="3810838688059735925">ভিডিও</translation>
 <translation id="3810973564298564668">পরিচালনা</translation>
-<translation id="3814315701645566481"><ph name="URL" />-এর জন্য কি সব ডেটা মুছে ফেলতে চান?</translation>
+<translation id="3814315701645566481"><ph name="URL" />-এর সব ডেটা মুছে ফেলতে চান?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টি ডাউনলোড মোছা হয়েছে</translation>
 <translation id="3819562311292413223">আপনার জন্য নিবন্ধ ডাউনলোড করা</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
@@ -559,7 +559,7 @@
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> মোছা হয়েছে</translation>
-<translation id="5363230136052241468">নতুন ট্যাব পৃষ্ঠা লোড করতে হোম বোতাম ট্যাপ করুন</translation>
+<translation id="5363230136052241468">নতুন ট্যাব পৃষ্ঠা লোড করতে হোম বোতামে ট্যাপ করুন</translation>
 <translation id="5372829067651257087">URL কপি করা হয়েছে।</translation>
 <translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
 <translation id="5400569084694353794">এই অ্যাপ্লিকেশানটি ব্যবহার করার মাধ্যমে আপনি Chrome এর <ph name="BEGIN_LINK1" />পরিষেবার শর্তাবলি<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />গোপনীয়তা বিজ্ঞপ্তিতে<ph name="END_LINK2" /> সম্মত হচ্ছেন৷</translation>

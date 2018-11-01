@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
-<translation id="2710942282213947212">Pinipigilan ng software sa iyong computer na makakonekta nang ligtas ang Chromium sa web</translation>
 <translation id="2712173769900027643">Humingi ng pahintulot</translation>
 <translation id="2720342946869265578">Malapit</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Address na Padadalhan</translation>
 <translation id="5250209940322997802">"Kumonekta sa network"</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Sundin ang mga hakbang na ito upang pansamantalang i-disable ang software upang makapunta ka sa web. Kakailanganin mo ang mga pribilehiyong pang-administrator.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />I-click ang <ph name="BEGIN_BOLD" />Magsimula<ph name="END_BOLD" />, pagkatapos ay hanapin at piliin ang <ph name="BEGIN_BOLD" />"Tingnan ang mga lokal na serbisyo"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Piliin ang <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Sa ilalim ng <ph name="BEGIN_BOLD" />Uri ng startup<ph name="END_BOLD" />, piliin ang <ph name="BEGIN_BOLD" />Naka-disable<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Sa ilalim ng <ph name="BEGIN_BOLD" />Status ng serbisyo<ph name="END_BOLD" />, i-click ang <ph name="BEGIN_BOLD" />Ihinto<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />I-click ang <ph name="BEGIN_BOLD" />Ilapat<ph name="END_BOLD" />, pagkatapos ay i-click ang <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Bisitahin ang <ph name="BEGIN_LEARN_MORE_LINK" />help center ng Chrome<ph name="END_LEARN_MORE_LINK" /> upang alamin kung paano permanenteng alisin ang software sa iyong computer
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Ipakita ang lahat ng naka-save na password</translation>
 <translation id="5287240709317226393">Ipakita ang cookies</translation>
 <translation id="5288108484102287882">Na-validate ang mga value ng patakaran at nagkaroon ng mga babala</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Mga USB device</translation>
 <translation id="6071091556643036997">Invalid ang uri ng patakaran.</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
-<translation id="6096226585778084111">Nilo-load ang <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Sina-sign out ka sa karamihang site. Hindi ka masa-sign out sa iyong Google Account. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Wala}=1{1 password (naka-sync)}one{# password (naka-sync)}other{# na password (naka-sync)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Maaaring magkaroon ng singil.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 pang suhestyon}one{# pang suhestyon}other{# pang suhestyon}}</translation>
 <translation id="6387754724289022810">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card at billing address sa Google Account mo at sa device na ito.</translation>
-<translation id="6397451950548600259">Pinipigilan ng software sa iyong computer na makakonekta nang ligtas ang Chrome sa web</translation>
 <translation id="6404511346730675251">I-edit ang bookmark</translation>
 <translation id="6410264514553301377">Ilagay ang petsa ng pag-expire at CVC para sa <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Tinanong mo ang iyong magulang kung maaari mong bisitahin ang site na ito</translation>

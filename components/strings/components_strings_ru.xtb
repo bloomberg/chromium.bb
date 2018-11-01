@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
-<translation id="2710942282213947212">ПО, установленное на компьютере, не позволяет Chromium безопасно подключиться к Интернету</translation>
 <translation id="2712173769900027643">Попросить разрешения</translation>
 <translation id="2720342946869265578">Мое окружение</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
@@ -633,16 +632,6 @@
 <translation id="5230733896359313003">Адрес доставки</translation>
 <translation id="5250209940322997802">"Подключитесь к сети"</translation>
 <translation id="5251803541071282808">Облако</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Чтобы временно отключить ПО и установить соединение с Интернетом, следуйте инструкциям ниже. Вам потребуются права администратора.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Нажмите <ph name="BEGIN_BOLD" />Пуск<ph name="END_BOLD" /> и выполните поиск по запросу <ph name="BEGIN_BOLD" />Просмотр локальных служб<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Выберите <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />В поле <ph name="BEGIN_BOLD" />Тип запуска<ph name="END_BOLD" /> выберите <ph name="BEGIN_BOLD" />Отключена<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />В разделе <ph name="BEGIN_BOLD" />Состояние службы<ph name="END_BOLD" /> нажмите <ph name="BEGIN_BOLD" />Остановить<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Нажмите <ph name="BEGIN_BOLD" />Применить<ph name="END_BOLD" />, затем <ph name="BEGIN_BOLD" />ОК<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Посетите <ph name="BEGIN_LEARN_MORE_LINK" />Справочный центр Chrome<ph name="END_LEARN_MORE_LINK" />, чтобы узнать, как окончательно удалить ПО с компьютера.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Показать все сохраненные пароли</translation>
 <translation id="5287240709317226393">Показать файлы сookie</translation>
 <translation id="5288108484102287882">При проверке значений политик обнаружены некритичные ошибки</translation>
@@ -760,7 +749,6 @@
 <translation id="6059925163896151826">USB-устройства</translation>
 <translation id="6071091556643036997">Указан неверный тип правил.</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
-<translation id="6096226585778084111">Загрузка страницы <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Вы выйдете из аккаунтов на большинстве сайтов, но останетесь в аккаунте Google. При этом вы можете потерять доступ к защищенному контенту на <ph name="SITE" /> и других веб-ресурсах.</translation>
 <translation id="610911394827799129">Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Нет}=1{1 синхронизированный пароль}one{# синхронизированный пароль}few{# синхронизированных пароля}many{# синхронизированных паролей}other{# синхронизированного пароля}}</translation>
@@ -790,7 +778,7 @@
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недоступен.</translation>
 <translation id="6321917430147971392">Проверьте настройки DNS</translation>
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
-<translation id="6328784461820205019">"Подключение не защищено" или "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" или "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" или "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" или "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" или "Ошибка сертификата SSL"</translation>
+<translation id="6328784461820205019">"Подключение не защищено", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" или "Ошибка сертификата SSL"</translation>
 <translation id="6328786501058569169">Это поддельный сайт</translation>
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать политики по названию</translation>
@@ -798,7 +786,6 @@
 <translation id="6383221683286411806">Возможное списание средств</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
 <translation id="6387754724289022810">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google и на этом устройстве.</translation>
-<translation id="6397451950548600259">ПО, установленное на компьютере, не позволяет Chrome безопасно подключиться к Интернету</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6410264514553301377">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Запрос на просмотр сайта отправлен вашему родителю</translation>

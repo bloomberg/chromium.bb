@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
 <translation id="2705137772291741111">De in het cachegeheugen opgeslagen versie van deze site is niet bereikbaar.</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
-<translation id="2710942282213947212">Software op je computer voorkomt dat Chromium veilig verbinding kan maken met internet</translation>
 <translation id="2712173769900027643">Toestemming vragen</translation>
 <translation id="2720342946869265578">In de buurt</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
@@ -630,16 +629,6 @@
 <translation id="5230733896359313003">Verzendadres</translation>
 <translation id="5250209940322997802">'Verbinding maken met netwerk'</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Volg deze stappen om de software tijdelijk uit te schakelen zodat je verbinding met internet kunt maken. Je hebt beheerdersrechten nodig.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Klik op <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> en zoek en selecteer <ph name="BEGIN_BOLD" />Lokale services weergeven<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Selecteer <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Selecteer <ph name="BEGIN_BOLD" />Uitgeschakeld<ph name="END_BOLD" /> onder <ph name="BEGIN_BOLD" />Opstarttype<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Klik onder <ph name="BEGIN_BOLD" />Servicestatus<ph name="END_BOLD" /> op <ph name="BEGIN_BOLD" />Stoppen<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Klik op <ph name="BEGIN_BOLD" />Toepassen<ph name="END_BOLD" /> en vervolgens op <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Ga naar het <ph name="BEGIN_LEARN_MORE_LINK" />Helpcentrum van Chrome<ph name="END_LEARN_MORE_LINK" /> voor meer informatie over hoe je de software definitief van je computer kunt verwijderen.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Alle opgeslagen wachtwoorden weergeven</translation>
 <translation id="5287240709317226393">Cookies weergeven</translation>
 <translation id="5288108484102287882">Tijdens de validatie van de beleidswaarden zijn er waarschuwingen geconstateerd</translation>
@@ -757,7 +746,6 @@
 <translation id="6059925163896151826">USB-apparaten</translation>
 <translation id="6071091556643036997">Het type beleid is ongeldig.</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> laden…</translation>
 <translation id="6096619198407627433">Hiermee word je uitgelogd bij de meeste sites. Je wordt niet uitgelogd van je Google-account. Mogelijk heb je geen toegang meer tot beveiligde content van <ph name="SITE" /> en sommige andere sites.</translation>
 <translation id="610911394827799129">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Geen}=1{1 wachtwoord (gesynchroniseerd)}other{# wachtwoorden (gesynchroniseerd)}}</translation>
@@ -794,7 +782,6 @@
 <translation id="6383221683286411806">Er worden later mogelijk kosten in rekening gebracht.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andere suggestie}other{# andere suggesties}}</translation>
 <translation id="6387754724289022810">Sla je kaart en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
-<translation id="6397451950548600259">Software op je computer voorkomt dat Chrome veilig verbinding kan maken met internet</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6410264514553301377">Geef de vervaldatum en CVC-code op voor <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Je hebt je ouder of voogd gevraagd of je deze site mag bezoeken</translation>

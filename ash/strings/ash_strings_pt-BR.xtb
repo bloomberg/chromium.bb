@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2865888419503095837">Informações de rede</translation>
+<translation id="287224423103674444">Você pressionou o atalho para a rotação da tela. Você quer girar a tela?</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2878884018241093801">Nenhum item recente</translation>
 <translation id="2903844815300039659">Conectado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -260,6 +261,7 @@
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
+<translation id="5710450975648804523">O "Não perturbe" está ativado</translation>
 <translation id="574392208103952083">Médio</translation>
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
@@ -379,7 +381,9 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7654687942625752712">Pressione as duas teclas de volumes e as mantenha pressionadas por cinco segundos para desativar o feedback falado.</translation>
 <translation id="7692480393933218409">Carregando dispositivos USB-C conectados</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificação}one{# notificação}other{# notificações}}</translation>
 <translation id="776344839111254542">Clique para ver detalhes da atualização</translation>
+<translation id="7780159184141939021">Girar tela</translation>
 <translation id="7796353162336583443">Toque no botão da stylus na estante para criar uma nota, uma captura de tela, usar o Google Assistente, o apontador laser ou a lupa.</translation>
 <translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>

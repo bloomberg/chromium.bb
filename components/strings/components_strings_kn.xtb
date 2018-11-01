@@ -267,7 +267,6 @@
 <translation id="2704283930420550640">ಮೌಲ್ಯವು ಸ್ವರೂಪಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2705137772291741111">ಈ ಸೈಟ್‌ನ ಉಳಿಸಿದ (ಸಂಗ್ರಹವಾಗಿರುವ) ನಕಲನ್ನು ಓದಲಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
-<translation id="2710942282213947212">ಸುರಕ್ಷಿತವಾಗಿ ವೆಬ್‌ಗೆ ಸಂಪರ್ಕಿಸುವ Chromium ನ ಕಾರ್ಯವನ್ನು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿರುವ ಸಾಫ್ಟ್‌ವೇರ್‌ ಸ್ಥಗಿತಗೊಳಿಸಿದೆ</translation>
 <translation id="2712173769900027643">ಅನುಮತಿ ಕೇಳಿ</translation>
 <translation id="2720342946869265578">ಸಮೀಪ ಸಾಧನ</translation>
 <translation id="2721148159707890343">ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -630,15 +629,6 @@
 <translation id="5230733896359313003">ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸ</translation>
 <translation id="5250209940322997802">"ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ"</translation>
 <translation id="5251803541071282808">ಮೇಘ</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />ಈ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ ತಾತ್ಕಾಲಿಕವಾಗಿ ಸಾಫ್ಟ್‌ವೇರ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದರೆ ನೀವು ವೆಬ್‌ ಅನ್ನು ಪಡೆದುಕೊಳ್ಳಬಹುದಾಗಿದೆ. ನಿಮಗೆ ನಿರ್ವಾಹಕರ ಸವಲತ್ತುಗಳ ಅಗತ್ಯವಿದೆ.<ph name="END_PARAGRAPH" />
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />ಕ್ಲಿಕ್ ಮಾಡಿ <ph name="BEGIN_BOLD" />ಪ್ರಾರಂಭಿಸಿ<ph name="END_BOLD" />, ನಂತರ ಹುಡುಕಿ ಮತ್ತು <ph name="BEGIN_BOLD" />"ಸ್ಥಳೀಯ ಸೇವೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ"<ph name="END_BOLD" /> ಆಯ್ಕೆಮಾಡಿ
-    <ph name="LIST_ITEM" />ಆಯ್ಕೆಮಾಡಿ <ph name="BEGIN_BOLD" />ದೃಶ್ಯಾವಳಿಅನ್ವೇಷಣೆ<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ಕೆಳಗಿನ <ph name="BEGIN_BOLD" />ಸ್ಟಾರ್ಟ್ಅಪ್ ಪ್ರಕಾರ<ph name="END_BOLD" />, ಆಯ್ಕೆಮಾಡಿ <ph name="BEGIN_BOLD" />ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ಕೆಳಗಿನ <ph name="BEGIN_BOLD" />ಸೇವೆ ಸ್ಥಿತಿಗಳು<ph name="END_BOLD" />, ಕ್ಲಿಕ್ ಮಾಡಿ <ph name="BEGIN_BOLD" />ನಿಲ್ಲಿಸಿ<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ಕ್ಲಿಕ್ ಮಾಡಿ<ph name="BEGIN_BOLD" />ಅನ್ವಯಿಸು<ph name="END_BOLD" />, ನಂತರ <ph name="BEGIN_BOLD" />ಹೌದು<ph name="END_BOLD" /> ಎಂದು ಕ್ಲಿಕ್‌ ಮಾಡು
-    <ph name="LIST_ITEM" />ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಮೂಲಕ ಶಾಶ್ವತವಾಗಿ ಸಾಫ್ಟ್‌ವೇರ್ ತೆಗೆಯುವುದು ಹೇಗೆ ಎಂದು ತಿಳಿಯಲು <ph name="BEGIN_LEARN_MORE_LINK" />Chrome ಸಹಾಯ ಕೇಂದ್ರಕ್ಕೆ<ph name="END_LEARN_MORE_LINK" /> ಭೇಟಿ ನೀಡಿ
-<ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">ಉಳಿಸಿದ ಎಲ್ಲ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5287240709317226393">ಕುಕೀಸ್ ಅನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5288108484102287882">ಕಾರ್ಯನೀತಿ ಮೌಲ್ಯಗಳ ಮೌಲ್ಯೀಕರಣ ಪ್ರಕ್ರಿಯೆಯು ಎಚ್ಚರಿಕೆಯ ಸಂದೇಶಗಳನ್ನು ತೋರಿಸುತ್ತಿದೆ</translation>
@@ -756,7 +746,6 @@
 <translation id="6059925163896151826">USB ಸಾಧನಗಳು</translation>
 <translation id="6071091556643036997">ಕಾರ್ಯನೀತಿಯ ವಿಧ ಅಮಾನ್ಯವಾಗಿದೆ.</translation>
 <translation id="6080696365213338172">ನಿರ್ವಾಹಕರು-ಒದಗಿಸಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಳಸಿಕೊಂಡು ನೀವು ವಿಷಯವನ್ನು ಪ್ರವೇಶಿಸಿರುವಿರಿ. <ph name="DOMAIN" /> ಗೆ ನೀವು ಒದಗಿಸುವ ಡೇಟಾವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ತಡೆಹಿಡಿಯಬಹುದಾಗಿದೆ.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> ಅನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ…</translation>
 <translation id="6096619198407627433">ನಿಮ್ಮನ್ನು ಬಹುತೇಕ ಸೈಟ್‌ಗಳಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತದೆ. ಆದರೆ ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ ನಿಮ್ಮನ್ನು ಸೈನ್‌ ಔಟ್‌ ಮಾಡುವುದಿಲ್ಲ. <ph name="SITE" /> ಮತ್ತು ಕೆಲವು ಇತರ ಸೈಟ್‌ಗಳ ಸುರಕ್ಷಿತ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ನೀವು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="610911394827799129">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಪಾಸ್‌ವರ್ಡ್ (ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}one{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}other{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}}</translation>
@@ -793,7 +782,6 @@
 <translation id="6383221683286411806">ಮುಂದಕ್ಕೆ ಶುಲ್ಕವಿರುವ ಸಾಧ್ಯತೆಗಳಿವೆ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ಇತರ ಸಲಹೆ}one{# ಇತರ ಸಲಹೆಗಳು}other{# ಇತರ ಸಲಹೆಗಳು}}</translation>
 <translation id="6387754724289022810">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌ ಮತ್ತು ನಿಮ್ಮ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ.</translation>
-<translation id="6397451950548600259">ಸುರಕ್ಷಿತವಾಗಿ ವೆಬ್‌ಗೆ ಸಂಪರ್ಕಿಸುವ Chromeನ ಕಾರ್ಯವನ್ನು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿರುವ ಸಾಫ್ಟ್‌ವೇರ್‌ ಸ್ಥಗಿತಗೊಳಿಸಿದೆ</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> ಗೆ ಮುಕ್ತಾಯ ದಿನಾಂಕ ಮತ್ತು ಸಿವಿಸಿ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="6414888972213066896">ಈ ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡುವುದು ಸರಿಯೇ ಎಂದು ನೀವು ನಿಮ್ಮ ಪೋಷಕರನ್ನು ಕೇಳಿರುವಿರಿ</translation>

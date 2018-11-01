@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
 <translation id="2709516037105925701">자동 완성</translation>
-<translation id="2710942282213947212">컴퓨터에 설치된 소프트웨어로 인해 Chromium이 안전하게 웹에 접속할 수 없음</translation>
 <translation id="2712173769900027643">권한 요청</translation>
 <translation id="2720342946869265578">근처</translation>
 <translation id="2721148159707890343">요청 성공</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">배송지 주소</translation>
 <translation id="5250209940322997802">'네트워크에 연결'</translation>
 <translation id="5251803541071282808">클라우드</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />소프트웨어를 일시적으로 사용 중지하여 웹에 접속하려면 다음 단계를 따르세요. 관리자 권한이 필요합니다.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />시작<ph name="END_BOLD" />을 클릭한 다음 <ph name="BEGIN_BOLD" />'로컬 서비스 보기'<ph name="END_BOLD" />를 검색하여 선택합니다.
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />를 선택합니다.
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />시작 유형<ph name="END_BOLD" />에서 <ph name="BEGIN_BOLD" />사용 중지됨<ph name="END_BOLD" />을 선택합니다.
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />서비스 상태<ph name="END_BOLD" />에서 <ph name="BEGIN_BOLD" />중지<ph name="END_BOLD" />를 클릭합니다.
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />적용<ph name="END_BOLD" />을 클릭한 다음 <ph name="BEGIN_BOLD" />확인<ph name="END_BOLD" />을 클릭합니다.
-    <ph name="LIST_ITEM" /><ph name="BEGIN_LEARN_MORE_LINK" />Chrome 고객센터<ph name="END_LEARN_MORE_LINK" />를 방문하여 컴퓨터에서 소프트웨어를 영구적으로 삭제하는 방법을 알아보세요.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">저장된 비밀번호 모두 표시</translation>
 <translation id="5287240709317226393">쿠키 표시</translation>
 <translation id="5288108484102287882">정책 값 유효성 검사 결과 경고가 발생했습니다.</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB 기기</translation>
 <translation id="6071091556643036997">잘못된 정책 유형입니다.</translation>
 <translation id="6080696365213338172">관리자 제공 인증서를 사용하여 콘텐츠에 액세스했습니다. 사용자가 <ph name="DOMAIN" />에 제공한 데이터가 관리자에 의해 차단될 수 있습니다.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> 로드 중…</translation>
 <translation id="6096619198407627433">대부분의 사이트에서 로그아웃됩니다. Google 계정에서는 로그아웃되지 않습니다. <ph name="SITE" /> 및 기타 일부 사이트의 보호된 콘텐츠에 액세스하지 못할 수 있습니다.</translation>
 <translation id="610911394827799129">Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 방문 기록이 다른 형식으로 남아 있을 수도 있습니다</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{없음}=1{비밀번호 1개(동기화됨)}other{비밀번호 #개(동기화됨)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">해당 사이트에서 비용이 청구될 수 있음</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{그 외 제안 1건}other{그 외 제안 #건}}</translation>
 <translation id="6387754724289022810">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드와 청구서 수신 주소를 저장하세요.</translation>
-<translation id="6397451950548600259">컴퓨터의 소프트웨어로 인해 Chrome이 안전하게 웹에 접속할 수 없습니다.</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" />의 만료일과 CVC를 입력하세요.</translation>
 <translation id="6414888972213066896">이 사이트를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>

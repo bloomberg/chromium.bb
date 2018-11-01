@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
-<translation id="2710942282213947212">Il software installato sul computer sta impedendo a Chromium di connettersi in sicurezza a Internet</translation>
 <translation id="2712173769900027643">Chiedi autorizzazione</translation>
 <translation id="2720342946869265578">Qui vicino</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
@@ -631,16 +630,6 @@
 <translation id="5230733896359313003">Indirizzo di spedizione</translation>
 <translation id="5250209940322997802">"Collegati alla rete"</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Svolgi i seguenti passaggi per disattivare temporaneamente il software e accedere così al Web. Devi disporre di privilegi di amministratore.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Fai clic su <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, quindi cerca e seleziona <ph name="BEGIN_BOLD" />"Visualizza servizi locali"<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Seleziona <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Nella sezione <ph name="BEGIN_BOLD" />Tipo di avvio<ph name="END_BOLD" />, seleziona <ph name="BEGIN_BOLD" />Disabilitato<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Nella sezione <ph name="BEGIN_BOLD" />Stato del servizio<ph name="END_BOLD" />, fai clic su <ph name="BEGIN_BOLD" />Interrompi<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Fai clic su <ph name="BEGIN_BOLD" />Applica<ph name="END_BOLD" />, quindi su <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Visita il <ph name="BEGIN_LEARN_MORE_LINK" />Centro assistenza di Chrome<ph name="END_LEARN_MORE_LINK" /> per avere informazioni su come rimuovere definitivamente il software dal computer.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Mostra tutte le password salvate</translation>
 <translation id="5287240709317226393">Mostra cookie</translation>
 <translation id="5288108484102287882">La convalida dei valori della norma ha generato degli avvisi</translation>
@@ -758,7 +747,6 @@
 <translation id="6059925163896151826">Dispositivi USB</translation>
 <translation id="6071091556643036997">Il tipo di norma non è valido.</translation>
 <translation id="6080696365213338172">Hai raggiunto i contenuti utilizzando un certificato fornito dall'amministratore. I dati che fornisci a <ph name="DOMAIN" /> possono essere intercettati dal tuo amministratore.</translation>
-<translation id="6096226585778084111">Caricamento di <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Uscirai dalla maggior parte dei siti, ma non dal tuo Account Google. Potresti non riuscire più ad accedere ai contenuti protetti del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="610911394827799129">Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nessuna}=1{1 password (sincronizzata)}other{# password (sincronizzate)}}</translation>
@@ -795,7 +783,6 @@
 <translation id="6383221683286411806">Potrebbe essere applicato un addebito.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
 <translation id="6387754724289022810">Per pagare più velocemente la prossima volta, salva la carta e l'indirizzo di fatturazione sul tuo account Google e su questo dispositivo.</translation>
-<translation id="6397451950548600259">Il software installato sul computer sta impedendo a Chrome di connettersi in sicurezza a Internet.</translation>
 <translation id="6404511346730675251">Modifica preferito</translation>
 <translation id="6410264514553301377">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Hai chiesto ai tuoi genitori l'autorizzazione per visitare questo sito</translation>

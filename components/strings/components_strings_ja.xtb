@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
-<translation id="2710942282213947212">パソコンにインストールされているソフトウェアが原因で、Chromium からインターネットに安全に接続することができません</translation>
 <translation id="2712173769900027643">権限をリクエスト</translation>
 <translation id="2720342946869265578">周辺</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">配送先住所</translation>
 <translation id="5250209940322997802">「ネットワークに接続してください」</translation>
 <translation id="5251803541071282808">クラウド</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />このソフトウェアを一時的に無効にしてインターネットに接続できるようにするには、次の手順を行います。なお、この作業には管理者権限が必要です。<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />スタート<ph name="END_BOLD" /> メニューをクリックし、[<ph name="BEGIN_BOLD" />ローカル サービスの表示<ph name="END_BOLD" />] を検索して選択します
-    <ph name="LIST_ITEM" />[<ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />] を選択します
-    <ph name="LIST_ITEM" />[<ph name="BEGIN_BOLD" />スタートアップの種類<ph name="END_BOLD" />] の下で [<ph name="BEGIN_BOLD" />無効<ph name="END_BOLD" />] を選択します
-    <ph name="LIST_ITEM" />[<ph name="BEGIN_BOLD" />サービスの状態<ph name="END_BOLD" />] の下で [<ph name="BEGIN_BOLD" />停止<ph name="END_BOLD" />] をクリックします
-    <ph name="LIST_ITEM" />[<ph name="BEGIN_BOLD" />適用<ph name="END_BOLD" />] をクリックし、[<ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />] をクリックします
-    <ph name="LIST_ITEM" />このソフトウェアをパソコンから完全に削除する方法については、<ph name="BEGIN_LEARN_MORE_LINK" />Chrome ヘルプセンター記事<ph name="END_LEARN_MORE_LINK" />をご覧ください
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">保存したパスワードをすべて表示</translation>
 <translation id="5287240709317226393">Cookie を表示</translation>
 <translation id="5288108484102287882">ポリシー値の検証で警告が返されました</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB デバイス</translation>
 <translation id="6071091556643036997">ポリシーのタイプが無効です。</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN" /> に提供するデータは管理者によって傍受される可能性があります。</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> を読み込んでいます…</translation>
 <translation id="6096619198407627433">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。<ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="610911394827799129">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{なし}=1{1 個のパスワード（同期済み）}other{# 個のパスワード（同期済み）}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">続行すると料金が請求される可能性があります。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
 <translation id="6387754724289022810">カードと請求先住所を Google アカウントとこの端末に保存すると、次回のお支払いが簡単になります。</translation>
-<translation id="6397451950548600259">パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> の有効期限と CVC を入力</translation>
 <translation id="6414888972213066896">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>

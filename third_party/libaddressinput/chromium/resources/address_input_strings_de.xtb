@@ -40,7 +40,7 @@
 <translation id="8184169487503545976">Dieses Postleitzahlenformat wird nicht erkannt.</translation>
 <translation id="820600307078153032">Das Format der Postleitzahl wurde nicht erkannt. Beispiel für eine gültige Postleitzahl: <ph name="EXAMPLE" /></translation>
 <translation id="8446364922515257065">Do/Si</translation>
-<translation id="8449204988444194299">Post Town</translation>
+<translation id="8449204988444194299">Stadt</translation>
 <translation id="8471101563037901452">Die Postleitzahl stimmt offenbar nicht mit dem Rest der Adresse überein. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK" />Schlagen Sie sie hier nach<ph name="END_LINK" />.</translation>
 <translation id="9104066683700680171">Diese Postleitzahl scheint nicht zum Rest dieser Adresse zu passen.</translation>
 <translation id="9207002871037636573">Sie müssen eine Postleitzahl angeben, wie beispielsweise <ph name="EXAMPLE" />.</translation>

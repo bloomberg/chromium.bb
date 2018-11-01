@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
-<translation id="2710942282213947212">Programska oprema v računalniku Chromiumu preprečuje vzpostavitev varne povezave s spletom</translation>
 <translation id="2712173769900027643">Zahtevaj dovoljenje</translation>
 <translation id="2720342946869265578">V bližini</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Naslov za pošiljanje</translation>
 <translation id="5250209940322997802">»Vzpostavite povezavo z omrežjem«</translation>
 <translation id="5251803541071282808">Oblak</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Upoštevajte ta navodila, če želite začasno onemogočiti programsko opremo, da se boste lahko povezali v splet. Potrebujete skrbniške pravice.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Kliknite <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, nato poiščite in izberite <ph name="BEGIN_BOLD" />»Ogled lokalnih storitev«<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Izberite <ph name="BEGIN_BOLD" />»VisualDiscovery«<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pri <ph name="BEGIN_BOLD" />Vrsta zagona<ph name="END_BOLD" /> izberite <ph name="BEGIN_BOLD" />Onemogočeno<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pri <ph name="BEGIN_BOLD" />Stanje storitve<ph name="END_BOLD" /> kliknite <ph name="BEGIN_BOLD" />Ustavi<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Kliknite <ph name="BEGIN_BOLD" />Uporabi<ph name="END_BOLD" />, nato kliknite <ph name="BEGIN_BOLD" />V redu<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Obiščite <ph name="BEGIN_LEARN_MORE_LINK" />center za pomoč za Chrome<ph name="END_LEARN_MORE_LINK" />, če želite izvedeti, kako trajno odstranite programsko opremo iz računalnika.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Prikaži vsa shranjena gesla</translation>
 <translation id="5287240709317226393">Pokaži piškotke</translation>
 <translation id="5288108484102287882">Preverjanje vrednosti pravilnika je aktiviralo opozorila</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Naprave USB</translation>
 <translation id="6071091556643036997">Vrsta pravilnika je neveljavna.</translation>
 <translation id="6080696365213338172">Do vsebine ste dostopali z geslom, ki ga je zagotovil skrbnik. Podatke, ki jih pošljete v <ph name="DOMAIN" />, lahko prestreže skrbnik.</translation>
-<translation id="6096226585778084111">Nalaganje <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Odjavljeni boste z večine spletnih mest. Ne boste odjavljeni iz Google Računa. Morda boste izgubili dostop do zaščitene vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="610911394827799129">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Brez}=1{1 geslo (sinhronizirano)}one{# geslo (sinhronizirano)}two{# gesli (sinhronizirani)}few{# gesla (sinhronizirana)}other{# gesel (sinhroniziranih)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Morda bo prišlo do bremenitev.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{in še 1 predlog}one{in še # predlog}two{in še # predloga}few{in še # predlogi}other{in še # predlogov}}</translation>
 <translation id="6387754724289022810">Če želite naslednjič hitreje plačati, shranite kartico in naslov za izstavitev računa v Google Računu in v tej napravi.</translation>
-<translation id="6397451950548600259">Programska oprema v računalniku Chromu preprečuje vzpostavitev varne povezave s spletom</translation>
 <translation id="6404511346730675251">Uredi zaznamek</translation>
 <translation id="6410264514553301377">Vnesite datum poteka veljavnosti in kodo CVC za kartico <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Starša si vprašal(-a), ali smeš obiskati to spletno mesto</translation>

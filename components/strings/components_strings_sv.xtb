@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Värdet matchar inte formatet.</translation>
 <translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
-<translation id="2710942282213947212">Programvara på datorn förhindrar att Chromium ansluts till internet på ett säkert sätt</translation>
 <translation id="2712173769900027643">Begär behörighet</translation>
 <translation id="2720342946869265578">I närheten</translation>
 <translation id="2721148159707890343">Begäran genomfördes</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Leveransadress</translation>
 <translation id="5250209940322997802">Anslut till ett nätverk</translation>
 <translation id="5251803541071282808">Moln</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Följ stegen nedan för att inaktivera programvaran tillfälligt så att du kan komma ut på internet. Du måste ha administratörsbehörighet.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Klicka på <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> och sök efter och välj <ph name="BEGIN_BOLD" />Visa lokala tjänster<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Välj <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Starttyp<ph name="END_BOLD" /> väljer du <ph name="BEGIN_BOLD" />Inaktiverad<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Under <ph name="BEGIN_BOLD" />Tjänststatus<ph name="END_BOLD" /> klickar du på <ph name="BEGIN_BOLD" />Stopp<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Klicka på <ph name="BEGIN_BOLD" />Använd<ph name="END_BOLD" /> och sedan på <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Besök <ph name="BEGIN_LEARN_MORE_LINK" />hjälpcentret för Chrome<ph name="END_LEARN_MORE_LINK" /> för att lära dig hur du tar bort programvara från datorn permanent
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Visa alla sparade lösenord</translation>
 <translation id="5287240709317226393">Visa cookies</translation>
 <translation id="5288108484102287882">Valideringen av principvärdena har utlöst varningar</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6071091556643036997">Ogiltig policytyp.</translation>
 <translation id="6080696365213338172">Du har visat innehåll med hjälp av ett certifikat från en administratör. Det innebär att data som du har angett på <ph name="DOMAIN" /> även kan visas av administratören.</translation>
-<translation id="6096226585778084111">Läser in <ph name="SITE_NAME" /> …</translation>
 <translation id="6096619198407627433">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot. Du kan förlora tillgången till skyddat innehåll från <ph name="SITE" /> och några andra webbplatser.</translation>
 <translation id="610911394827799129">Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 lösenord (synkroniserat)}other{# lösenord (synkroniserade)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Du kan komma att debiteras.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
 <translation id="6387754724289022810">Spara kortet och faktureringsadressen i Google-kontot och på enheten så går det snabbare att betala nästa gång.</translation>
-<translation id="6397451950548600259">Programvara på datorn förhindrar att Chrome ansluter till internet på ett säkert sätt</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6410264514553301377">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Du har frågat en förälder om lov att besöka den här webbplatsen.</translation>

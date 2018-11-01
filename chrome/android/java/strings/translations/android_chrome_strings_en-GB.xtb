@@ -117,6 +117,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1832521218263067499">Security incidents</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1868024384445905608">Chrome now downloads files faster</translation>
+<translation id="187628348035757895">Developer options</translation>
 <translation id="1878302395768190018">You can customise this at any time in Chrome Settings</translation>
 <translation id="1880072593381090678">Popular pages from Chrome</translation>
 <translation id="1883903952484604915">My files</translation>
@@ -937,6 +938,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084114998886531721">Saved password</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
+<translation id="8087980556724996220">Auto-fill Assistant will stop in <ph name="DURATION_SECONDS" /> s…</translation>
 <translation id="8103578431304235997">Incognito Tab</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Suggest related pages</translation>

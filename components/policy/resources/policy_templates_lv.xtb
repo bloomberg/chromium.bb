@@ -594,6 +594,7 @@
 <translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2536525645274582300">Lietotājs var izlemt, vai iespējot Google atrašanās vietu pakalpojumus.</translation>
+<translation id="254653220329944566">Iespējo <ph name="PRODUCT_NAME" /> mākoņa pārskatus</translation>
 <translation id="2550593661567988768">Tikai vienpusējā drukāšana</translation>
 <translation id="2552966063069741410">Laika josla</translation>
 <translation id="2562339630163277285">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota dinamiskās meklēšanas rezultātu iegūšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja ievadīto tekstu.
@@ -1944,6 +1945,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="614662973812186053">Šī politika kontrolē arī Android lietojuma un diagnostikas datu kolekciju.</translation>
+<translation id="6153048425064249648">Ar šo politiku tiek kontrolēti <ph name="PRODUCT_NAME" /> mākoņa pārskati, kas augšupielādē informāciju par pārlūka darbību Google Admin konsolē.
+
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “False”, netiek apkopoti vai augšupielādēti nekādi dati.
+      Ja šai politikai ir iestatīta vērtība “True”, dati tiek apkopoti un augšupielādēti Google Admin konsolē.
+      Lai kontrolētu, kādi dati tiek augšupielādēti, lūdzu, izmantojiet politikas grupā “Chrome pārskatu paplašinājums”.
+
+      Šī politika ir spēkā tikai tad, ja ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Izmantojot šo politiku, ir jāinstalē <ph name="CHROME_REPORTING_EXTENSION_NAME" />, lai varētu veidot pārskatus, un tiek ignorētas jebkādas paplašinājumu politikas, kas saistītas ar attiecīgo paplašinājumu.</translation>
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>

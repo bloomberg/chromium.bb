@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
-<translation id="2710942282213947212">Software di komputer membuat Chromium tidak terhubung dengan aman ke web</translation>
 <translation id="2712173769900027643">Minta izin</translation>
 <translation id="2720342946869265578">Di Sekitar</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5250209940322997802">"Sambungkan ke jaringan"</translation>
 <translation id="5251803541071282808">Awan</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Ikuti langkah-langkah berikut untuk menonaktifkan software sementara waktu, sehingga Anda dapat online. Anda memerlukan hak istimewa administrator.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Klik <ph name="BEGIN_BOLD" />Mulai<ph name="END_BOLD" />, lalu telusuri dan pilih <ph name="BEGIN_BOLD" />"Tampilkan layanan lokal"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pilih <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pada <ph name="BEGIN_BOLD" />Jenis startup<ph name="END_BOLD" />, pilih <ph name="BEGIN_BOLD" />Nonaktif<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pada <ph name="BEGIN_BOLD" />Status layanan<ph name="END_BOLD" />, klik <ph name="BEGIN_BOLD" />Berhenti<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Klik <ph name="BEGIN_BOLD" />Terapkan<ph name="END_BOLD" />, lalu klik <ph name="BEGIN_BOLD" />Oke<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Buka <ph name="BEGIN_LEARN_MORE_LINK" />pusat bantuan Chrome<ph name="END_LEARN_MORE_LINK" /> untuk mempelajari cara menghapus software secara permanen dari komputer
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Tampilkan semua sandi tersimpan</translation>
 <translation id="5287240709317226393">Tampilkan cookie</translation>
 <translation id="5288108484102287882">Validasi nilai kebijakan telah memunculkan peringatan</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Perangkat USB</translation>
 <translation id="6071091556643036997">Jenis kebijakan tidak valid.</translation>
 <translation id="6080696365213338172">Anda telah mengakses konten menggunakan sertifikat yang diberikan oleh administrator. Data yang diberikan ke <ph name="DOMAIN" /> dapat dicegat oleh administrator Anda.</translation>
-<translation id="6096226585778084111">Memuat <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Membuat Anda logout dari sebagian besar situs. Anda tidak akan logout dari Akun Google. Anda dapat kehilangan akses ke konten yang dilindungi dari <ph name="SITE" /> dan beberapa situs lain.</translation>
 <translation id="610911394827799129">Akun Google Anda mungkin memiliki bentuk histori browsing lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Tidak ada}=1{1 sandi (disinkronkan)}other{# sandi (disinkronkan)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Kemungkinan mengenakan tagihan di awal.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 saran lain}other{# saran lain}}</translation>
 <translation id="6387754724289022810">Untuk membayar lebih cepat di pembelian berikutnya, simpan kartu dan alamat penagihan ke akun Google Anda.</translation>
-<translation id="6397451950548600259">Software di komputer menghentikan Chrome agar tidak terhubung dengan aman ke web</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6410264514553301377">Masukkan tanggal kedaluwarsa dan CVC <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Kamu telah meminta izin kepada orang tua untuk mengunjungi situs ini</translation>

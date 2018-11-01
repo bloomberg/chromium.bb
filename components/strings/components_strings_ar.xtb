@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
 <translation id="2705137772291741111">تعذر قراءة النسخة المحفوظة (المخزنة في ذاكرة التخزين المؤقت) لموقع الويب هذا.</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
-<translation id="2710942282213947212">‏تعمل البرامج على جهاز الكمبيوتر على منع اتصال Chromium بالويب بشكل آمن</translation>
 <translation id="2712173769900027643">طلب إذن</translation>
 <translation id="2720342946869265578">المجاورة</translation>
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">عنوان الشحن</translation>
 <translation id="5250209940322997802">"الاتصال بالشبكة"</translation>
 <translation id="5251803541071282808">السحاب</translation>
-<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />اتبع هذه الخطوات لإيقاف البرامج مؤقتًا حتى يتسنى لك الوصول إلى الويب. سيلزمك الحصول على امتيازات المشرف.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />انقر على <ph name="BEGIN_BOLD" />البدء<ph name="END_BOLD" />، ثم ابحث عن <ph name="BEGIN_BOLD" />"عرض الخدمات المحلية"<ph name="END_BOLD" /> وحدِّده
-    <ph name="LIST_ITEM" />حدِّد <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ضمن <ph name="BEGIN_BOLD" />نوع بدء التشغيل<ph name="END_BOLD" />، حدِّد <ph name="BEGIN_BOLD" />غير مفعّل<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ضمن <ph name="BEGIN_BOLD" />حالة التشغيل<ph name="END_BOLD" />، انقر على <ph name="BEGIN_BOLD" />إيقاف<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />انقر على <ph name="BEGIN_BOLD" />تطبيق<ph name="END_BOLD" />، ثم انقر على <ph name="BEGIN_BOLD" />موافق<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />تفضَّل بزيارة <ph name="BEGIN_LEARN_MORE_LINK" />مركز مساعدة Chrome<ph name="END_LEARN_MORE_LINK" /> للتعرُّف على كيفية إزالة البرامج من جهاز الكمبيوتر نهائيًا
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">عرض جميع كلمات المرور المحفوظة</translation>
 <translation id="5287240709317226393">عرض ملفات تعريف الارتباط</translation>
 <translation id="5288108484102287882">لقد أدى التحقُّق من قيم السياسة إلى ظهور تحذيرات.</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">‏أجهزة USB</translation>
 <translation id="6071091556643036997">نوع السياسة غير صالح.</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
-<translation id="6096226585778084111">جارٍ تحميل <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">‏يُسجَّل خروجك من معظم المواقع الإلكترونية. ولن يُسجَّل خروجك من حسابك على Google. قد تفقد إمكانية الوصول إلى محتوى محمي من <ph name="SITE" /> وبعض المواقع الإلكترونية الأخرى.</translation>
 <translation id="610911394827799129">‏قد يتضمن حسابك على Google نماذج أخرى من سجل التصفح على <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{بدون}=1{ كلمة مرور واحدة (تمت مزامنتها)}two{كلمتا مرور (#) (تمت مزامنتهما)}few{# كلمات مرور (تمت مزامنتها)}many{# كلمة مرور (تمت مزامنتها)}other{# كلمة مرور (تمت مزامنتها)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">رسوم محتملة في انتظارك.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
 <translation id="6387754724289022810">‏للدفع بشكلٍ أسرع في المرة القادمة، يجب حفظ تفاصيل البطاقة المصرفية وعنوان إرسال الفواتير في حسابك على Google وعلى هذا الجهاز.</translation>
-<translation id="6397451950548600259">‏تعمل البرامج على جهاز الكمبيوتر على منع اتصال Chrome بأمان بالويب</translation>
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
 <translation id="6410264514553301377">‏أدخِل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>

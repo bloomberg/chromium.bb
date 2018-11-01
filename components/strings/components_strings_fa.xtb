@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
 <translation id="2705137772291741111">کپی ذخیره‌شده (ذخیره موقت‌شده) این سایت قابل خواندن نبود.</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
-<translation id="2710942282213947212">‏نرم‌افزاری در رایانه‌تان مانع از اتصال ایمن Chromium به وب می‌شود</translation>
 <translation id="2712173769900027643">درخواست اجازه</translation>
 <translation id="2720342946869265578">اطراف</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">نشانی تحویل کالا</translation>
 <translation id="5250209940322997802">«به شبکه متصل شوید»</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />با دنبال کردن این مراحل، نرم‌افزار را موقتاً غیرفعال کنید تا بتوانید به وب دسترسی داشته باشید. انجام این مراحل به امتیازهای سرپرستی نیاز دارد.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />روی <ph name="BEGIN_BOLD" />شروع<ph name="END_BOLD" /> کلیک کنید، سپس <ph name="BEGIN_BOLD" />«مشاهده سرویس‌های محلی»<ph name="END_BOLD" /> را جستجو و انتخاب کنید
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> را انتخاب کنید
-    <ph name="LIST_ITEM" />در بخش <ph name="BEGIN_BOLD" />نوع راه‌اندازی<ph name="END_BOLD" />، <ph name="BEGIN_BOLD" />غیرفعال‌<ph name="END_BOLD" /> را انتخاب کنید
-    <ph name="LIST_ITEM" />در بخش <ph name="BEGIN_BOLD" />وضعیت سرویس<ph name="END_BOLD" />، روی <ph name="BEGIN_BOLD" />توقف<ph name="END_BOLD" /> کلیک کنید
-    <ph name="LIST_ITEM" />روی <ph name="BEGIN_BOLD" />اعمال<ph name="END_BOLD" />، سپس <ph name="BEGIN_BOLD" />تأیید<ph name="END_BOLD" /> کلیک کنید
-    <ph name="LIST_ITEM" />برای آشنایی با نحوه برداشتن دائم نرم‌افزار از رایانه، به <ph name="BEGIN_LEARN_MORE_LINK" />مرکز راهنمایی Chrome<ph name="END_LEARN_MORE_LINK" /> بروید
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">نمایش همه گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5287240709317226393">نمایش کوکی‌ها</translation>
 <translation id="5288108484102287882">اعتبارسنجی مقادیر خط‌مشی با چند هشدار به پایان رسید</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">‏دستگاه‌های USB</translation>
 <translation id="6071091556643036997">نوع خط‌مشی نامعتبر است.</translation>
 <translation id="6080696365213338172">شما با استفاده از گواهی ارائه شده توسط سرپرست سیستم به محتوا دسترسی پیدا کرده‌اید. داده‌هایی که به <ph name="DOMAIN" /> ارائه می‌کنید ممکن است توسط سرپرست سیستم رهگیری شوند.</translation>
-<translation id="6096226585778084111">درحال بارگیری <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">‏شما را از سیستم اکثر سایت‌ها خارج می‌کند. از سیستم حساب Google خود خارج نمی‌شوید. ممکن است دسترسی به محتوای محافظت‌شده <ph name="SITE" /> یا برخی سایت‌های دیگر را از دست بدهید.</translation>
 <translation id="610911394827799129">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (همگام‌سازی‌شده)}one{# گذرواژه (همگام‌سازی‌شده)}other{# گذرواژه (همگام‌سازی‌شده)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">احتمالاً هزینه‌هایی اعمال می‌شود.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
 <translation id="6387754724289022810">‏برای اینکه دفعات بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود و این دستگاه ذخیره کنید.</translation>
-<translation id="6397451950548600259">‏نرم‌افزاری در رایانه شما مانع از اتصال ایمن Chrome به وب می‌شود</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6410264514553301377">‏CVC‏ و تاریخ انقضای <ph name="CREDIT_CARD" /> را وارد کنید</translation>
 <translation id="6414888972213066896">از والدینتان پرسیدید آیا اجازه بازدید از این سایت را دارید</translation>

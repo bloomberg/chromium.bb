@@ -117,6 +117,7 @@
 <translation id="1832521218263067499">Συμβάντα ασφαλείας</translation>
 <translation id="1853692000353488670">Νέα καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="1868024384445905608">Το Chrome κατεβάζει πλέον τα αρχεία πιο γρήγορα</translation>
+<translation id="187628348035757895">Επιλογές για προγραμματιστές</translation>
 <translation id="1878302395768190018">Μπορείτε να προσαρμόσετε την επιλογή ανά πάσα στιγμή από τις ρυθμίσεις του Chrome</translation>
 <translation id="1880072593381090678">Δημοφιλείς σελίδες από το Chrome</translation>
 <translation id="1883903952484604915">Τα αρχεία μου</translation>
@@ -937,6 +938,7 @@
 <translation id="8073388330009372546">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="8084114998886531721">Αποθηκευμένος κωδικός πρόσβασης</translation>
 <translation id="8087000398470557479">Αυτό το περιεχόμενο προέρχεται από το <ph name="DOMAIN_NAME" /> και παρέχεται από την Google.</translation>
+<translation id="8087980556724996220">Η λειτουργία του Βοηθού αυτόματης συμπλήρωσης θα διακοπεί σε <ph name="DURATION_SECONDS" /> δ.</translation>
 <translation id="8103578431304235997">Καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Προτάσεις για σχετικές σελίδες</translation>

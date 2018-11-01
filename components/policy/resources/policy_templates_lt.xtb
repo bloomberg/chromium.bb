@@ -605,6 +605,7 @@
 <translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2536525645274582300">Ar įgalinti „Google“ vietovės paslaugas, nusprendžia naudotojas</translation>
+<translation id="254653220329944566">Įgalinamas „<ph name="PRODUCT_NAME" />“ ataskaitų teikimas debesyje</translation>
 <translation id="2550593661567988768">Tik vienpusis spausdinimas</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
 <translation id="2562339630163277285">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
@@ -1957,6 +1958,15 @@
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="614662973812186053">Ši politika taip pat valdo „Android“ naudojimą ir diagnostikos duomenų rinkimą.</translation>
+<translation id="6153048425064249648">Ši politika valdo „<ph name="PRODUCT_NAME" />“ ataskaitų teikimo debesyje funkciją, kurią naudojant įkeliama informacija apie naršyklės veikimą į „Google“ administratoriaus pultą.
+
+      Kai ši politika nenustatyta arba nustatyta į „Netiesa“, duomenys nerenkami ir neįkeliami.
+      Kai ši politika nustatyta į „Tiesa“, duomenys renkami ir įkeliami į „Google“ administratoriaus pultą.
+      Kad galėtumėte valdyti, kurie duomenys įkeliami, naudokite politiką grupės „Chrome“ ataskaitų teikimo plėtinyje.
+
+      Ši politika efektyvi, tik kai įrenginys užregistruotas politikoje „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.
+
+      Ši politika priverstinai įdiegia „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ataskaitoms teikti ir nepaiso plėtinių politikos, susijusios su tuo plėtiniu.</translation>
 <translation id="6155936611791017817">Nustatyti numatytąją didelio žymeklio prisijungimo ekrane būklę</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>

@@ -34,14 +34,14 @@
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7393381084163773901">Alamat</translation>
 <translation id="7602447984296396718">Tampaknya kode pos ini tidak cocok dengan sisa alamat ini.</translation>
-<translation id="7738983109397305830">Kode postingan ini tampaknya tidak cocok dengan bagian lain dari alamat ini Tidak tahu kode pos Anda? Temukan <ph name="BEGIN_LINK" />di sini<ph name="END_LINK" />.</translation>
+<translation id="7738983109397305830">Kode pos ini tampaknya tidak cocok dengan bagian lain dari alamat ini Tidak tahu kode pos Anda? Temukan <ph name="BEGIN_LINK" />di sini<ph name="END_LINK" />.</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7805765407568469194">Desa/Kecamatan</translation>
 <translation id="8184169487503545976">Format kode pos ini tidak dikenal.</translation>
 <translation id="820600307078153032">Format kode pos ini tidak dikenal. Contoh kode pos yang valid: <ph name="EXAMPLE" />.</translation>
 <translation id="8446364922515257065">Do/Si</translation>
 <translation id="8449204988444194299">Kota</translation>
-<translation id="8471101563037901452">Kode postingan ini tampaknya tidak cocok dengan bagian lain dari alamat ini. Tidak tahu kode pos Anda? Temukan <ph name="BEGIN_LINK" />di sini<ph name="END_LINK" />.</translation>
+<translation id="8471101563037901452">Kode pos ini tampaknya tidak cocok dengan bagian lain dari alamat ini. Tidak tahu kode pos Anda? Temukan <ph name="BEGIN_LINK" />di sini<ph name="END_LINK" />.</translation>
 <translation id="9104066683700680171">Tampaknya kode pos ini tidak cocok dengan sisa alamat ini.</translation>
 <translation id="9207002871037636573">Anda harus memberikan kode pos, misalnya <ph name="EXAMPLE" />.</translation>
 </translationbundle>

@@ -3,6 +3,12 @@
 <translationbundle lang="sv">
 <translation id="1296843352074373664">Google-användare</translation>
 <translation id="1383286653814676580">Används för att köra inloggningssidan för Google Credential Provider.</translation>
+<translation id="195232392645680541">Logga in med ditt Google-konto.</translation>
+<translation id="3623301090691182018">Inloggning på Google-konto</translation>
+<translation id="4057329986137569701">Ett internt fel uppstod.</translation>
+<translation id="4128734677223009352">Det gick inte att logga in på Google-kontot. Kontrollera att datorn är ansluten till internet och försök sedan igen.</translation>
+<translation id="4307406925561182259">Logga in med det uppdaterade lösenordet för Google-kontot.</translation>
+<translation id="6613125771987245372">Det är inte tillåtet att logga in med det här Google-kontot. Testa med ett annat konto.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>
 <translation id="8860262547644202689">Google Credential Provider Helper</translation>

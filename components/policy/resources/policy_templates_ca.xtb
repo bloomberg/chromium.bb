@@ -568,6 +568,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2536525645274582300">L'usuari decideix si vol activar els serveis d'ubicació de Google</translation>
+<translation id="254653220329944566">Activa els informes al núvol de <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Només impressió per una cara</translation>
 <translation id="2552966063069741410">Zona horària</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats instantanis. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
@@ -1859,6 +1860,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recollida de dades d'ús i de diagnòstic d'Android.</translation>
+<translation id="6153048425064249648">Aquesta política controla els informes al núvol de <ph name="PRODUCT_NAME" />, que carreguen informació sobre el funcionament del navegador a la Consola d'administració de Google.
+
+      Si aquesta política no es defineix o es defineix en "false", no es recopilaran ni es penjaran dades.
+      Si aquesta política es defineix en "true", les dades es recopilaran i es penjaran a la Consola d'administració de Google.
+      Per controlar les dades que es pengen, utilitza les polítiques del grup Chrome Reporting Extension.
+
+      Aquesta política només funciona quan l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Aquesta política força la instal·lació de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> per als informes i substitueix les polítiques d'extensió relacionades amb aquesta extensió.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>

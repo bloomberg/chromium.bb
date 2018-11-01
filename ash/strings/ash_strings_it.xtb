@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2865888419503095837">Informazioni di rete</translation>
+<translation id="287224423103674444">Hai premuto la scorciatoia per la rotazione dello schermo. Vuoi ruotare lo schermo?</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2878884018241093801">Nessun elemento recente</translation>
 <translation id="2903844815300039659">Connesso a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -260,6 +261,7 @@
 <translation id="5669267381087807207">In fase di attivazione</translation>
 <translation id="5673434351075758678">Da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="5691772641933328258">Impronta digitale non riconosciuta</translation>
+<translation id="5710450975648804523">Funzione Non disturbare attiva</translation>
 <translation id="574392208103952083">Medie</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5750765938512549687">Bluetooth non attivo</translation>
@@ -378,7 +380,9 @@
 <translation id="7654687942625752712">Tieni premuti entrambi i tasti del volume per cinque secondi per disattivare la funzione di lettura vocale.</translation>
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}other{# notifiche}}</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
+<translation id="7780159184141939021">Ruota lo schermo</translation>
 <translation id="7796353162336583443">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare l'Assistente Google, il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="7798302898096527229">Premi il tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>

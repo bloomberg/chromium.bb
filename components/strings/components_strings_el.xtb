@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Η τιμή δεν συμφωνεί με τη μορφή.</translation>
 <translation id="2705137772291741111">Δεν είναι δυνατή η ανάγνωση του αποθηκευμένου αντιγράφου (κρυφής μνήμης) αυτού του ιστότοπου.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
-<translation id="2710942282213947212">Κάποιο λογισμικό στον υπολογιστή σας παρεμποδίζει την ασφαλή σύνδεση του Chromium στον ιστό</translation>
 <translation id="2712173769900027643">Να ζητηθεί άδεια</translation>
 <translation id="2720342946869265578">Σε κοντινή απόσταση</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>
@@ -635,16 +634,6 @@
 <translation id="5230733896359313003">Διεύθυνση αποστολής</translation>
 <translation id="5250209940322997802">"Σύνδεση σε δίκτυο"</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Ακολουθήστε αυτά τα βήματα, για να απενεργοποιήσετε προσωρινά το λογισμικό, προκειμένου να συνδεθείτε στον ιστό. Θα πρέπει να έχετε προνόμια προγραμματιστή.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Κάντε κλικ στο στοιχείο <ph name="BEGIN_BOLD" />Έναρξη<ph name="END_BOLD" /> και έπειτα αναζητήστε και επιλέξτε το στοιχείο <ph name="BEGIN_BOLD" />"Προβολή τοπικών υπηρεσιών"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Επιλέξτε <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Στην ενότητα <ph name="BEGIN_BOLD" />Τύπος εκκίνησης<ph name="END_BOLD" />, επιλέξτε <ph name="BEGIN_BOLD" />Απενεργοποιημένη<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Στην ενότητα <ph name="BEGIN_BOLD" />Κατάσταση υπηρεσίας<ph name="END_BOLD" />, κάντε κλικ στο στοιχείο <ph name="BEGIN_BOLD" />Διακοπή<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Κάντε κλικ στο στοιχείο <ph name="BEGIN_BOLD" />Εφαρμογή<ph name="END_BOLD" /> και έπειτα στο στοιχείο <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Επισκεφτείτε το <ph name="BEGIN_LEARN_MORE_LINK" />Κέντρο βοήθειας του Chrome<ph name="END_LEARN_MORE_LINK" />, για να μάθετε πώς μπορείτε να καταργήσετε οριστικά το λογισμικό από τον υπολογιστή σας
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Εμφάνιση όλων των αποθηκευμένων κωδικών πρόσβασης</translation>
 <translation id="5287240709317226393">Εμφάνιση cookie</translation>
 <translation id="5288108484102287882">Η επικύρωση των τιμών πολιτικής είχε ως αποτέλεσμα την εμφάνιση προειδοποιήσεων</translation>
@@ -762,7 +751,6 @@
 <translation id="6059925163896151826">Συσκευές USB</translation>
 <translation id="6071091556643036997">Ο τύπος πολιτικής δεν είναι έγκυρος.</translation>
 <translation id="6080696365213338172">Η πρόσβασή σας στο περιεχόμενο πραγματοποιήθηκε με τη χρήση ενός πιστοποιητικού που παρασχέθηκε από διαχειριστή. Τα δεδομένα που παρέχετε στο <ph name="DOMAIN" /> μπορεί να ελέγχονται από το διαχειριστή σας.</translation>
-<translation id="6096226585778084111">Γίνεται φόρτωση <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Σας αποσυνδέει από τους περισσότερους ιστοτόπους. Δεν θα αποσυνδεθείτε από τον Λογαριασμό σας Google. Μπορεί να μην έχετε πλέον πρόσβαση σε προστατευόμενο περιεχόμενο από το <ph name="SITE" /> και από ορισμένους άλλους ιστοτόπους.</translation>
 <translation id="610911394827799129">Ο Λογαριασμός Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης (συγχρονισμένος)}other{# κωδικοί πρόσβασης (συγχρονισμένοι)}}</translation>
@@ -800,7 +788,6 @@
 <translation id="6383221683286411806">Ακολουθούν πιθανές χρεώσεις.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 πρόταση ακόμα}other{# προτάσεις ακόμα}}</translation>
 <translation id="6387754724289022810">Για πιο γρήγορες πληρωμές, αποθηκεύστε τα στοιχεία της κάρτας και τη διεύθυνση χρέωσης στον Λογαριασμό σας Google και σε αυτήν τη συσκευή.</translation>
-<translation id="6397451950548600259">Κάποιο λογισμικό στον υπολογιστή σας παρεμποδίζει την ασφαλή σύνδεση του Chrome στον ιστό</translation>
 <translation id="6404511346730675251">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="6410264514553301377">Εισαγάγετε την ημερομηνία λήξης και τον κωδικό CVC για την κάρτα <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Ρώτησες τους γονείς σου εάν σου επιτρέπουν να επισκεφτείς αυτόν τον ιστότοπο</translation>

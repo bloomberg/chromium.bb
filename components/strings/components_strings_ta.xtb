@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">மதிப்பானது வடிவமைப்பிற்குப் பொருந்தவில்லை.</translation>
 <translation id="2705137772291741111">இந்தத் தளத்தின் சேமிக்கப்பட்ட (தற்காலிகச் சேமிப்பு) நகலைப் படிக்க முடியவில்லை.</translation>
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
-<translation id="2710942282213947212">உங்கள் கணினியில் உள்ள மென்பொருளானது, இணையத்துடன் Chromium பாதுகாப்பாக இணைவதை நிறுத்துகிறது</translation>
 <translation id="2712173769900027643">அனுமதி கேள்</translation>
 <translation id="2720342946869265578">அருகிலுள்ளவை</translation>
 <translation id="2721148159707890343">கோரிக்கை வெற்றி</translation>
@@ -631,16 +630,6 @@
 <translation id="5230733896359313003">ஷிப்பிங் முகவரி</translation>
 <translation id="5250209940322997802">"நெட்வொர்க்குடன் இணைக்கவும்"</translation>
 <translation id="5251803541071282808">கிளவுடு</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />மென்பொருளைத் தற்காலிகமாக முடக்கி, இணையத்துடன் இணைவதற்கு, பின்வரும் படிகளைப் பின்பற்றவும். உங்களுக்கு நிர்வாகி முன்னுரிமைகள் தேவைப்படும்.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-   <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />தொடங்கு<ph name="END_BOLD" /> என்பதைக் கிளிக் செய்து, பிறகு <ph name="BEGIN_BOLD" />"உள்ளூர் சேவைகளைக் காட்டு"<ph name="END_BOLD" /> என்பதைத் தேடி, தேர்ந்தெடுக்கவும்
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> என்பதைத் தேர்ந்தெடுக்கவும்
-   <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />தொடங்கப்படும் வகை<ph name="END_BOLD" /> என்பதன் கீழ், <ph name="BEGIN_BOLD" />முடக்கப்பட்டது<ph name="END_BOLD" /> என்பதைத் தேர்ந்தெடுக்கவும்
-   <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />சேவை நிலை<ph name="END_BOLD" /> என்பதன் கீழ், <ph name="BEGIN_BOLD" />நிறுத்து<ph name="END_BOLD" /> என்பதைக் கிளிக் செய்யவும்
-   <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />பயன்படுத்து<ph name="END_BOLD" /> என்பதைக் கிளிக் செய்து, பிறகு <ph name="BEGIN_BOLD" />சரி<ph name="END_BOLD" /> என்பதைக் கிளிக் செய்யவும்
-   <ph name="LIST_ITEM" />உங்கள் கணினியிலிருந்து மென்பொருளை நிரந்தரமாக அகற்றுவது எப்படி என்பதை அறிய, <ph name="BEGIN_LEARN_MORE_LINK" />Chrome உதவி மையம்<ph name="END_LEARN_MORE_LINK" /> என்பதற்குச் செல்லவும்
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">சேமித்த எல்லாக் கடவுச்சொற்களையும் காட்டு</translation>
 <translation id="5287240709317226393">குக்கீகளைக் காட்டும்</translation>
 <translation id="5288108484102287882">கொள்கை மதிப்புகளின் சரிபார்ப்பு எச்சரிக்கைகளை எழுப்பியுள்ளது</translation>
@@ -758,7 +747,6 @@
 <translation id="6059925163896151826">USB சாதனங்கள்</translation>
 <translation id="6071091556643036997">கொள்கை வகை செல்லுபடியாகவில்லை.</translation>
 <translation id="6080696365213338172">நிர்வாகி வழங்கிய சான்றிதழைப் பயன்படுத்தி உள்ளடக்கத்தை அணுகியுள்ளீர்கள். <ph name="DOMAIN" /> க்கு நீங்கள் வழங்கிய தரவானது உங்கள் நிர்வாகியால் இடைமறிக்கப்படலாம்.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" />ஐ ஏற்றுகிறது…</translation>
 <translation id="6096619198407627433">பெரும்பாலான தளங்களிலிருந்து உங்களை வெளியேற்றும். உங்கள் Google கணக்கிலிருந்து வெளியேற்றப்பட மாட்டீர்கள். <ph name="SITE" /> மற்றும் சில தளங்களின் பாதுகாக்கப்பட்ட உள்ளடக்கத்திற்கான அணுகலை நீங்கள் இழக்கக்கூடும்.</translation>
 <translation id="610911394827799129"><ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற முகவரியில், உங்கள் Google கணக்கிற்கான பிற வகை உலாவல் வரலாறும் இருக்கக்கூடும்</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ஏதுமில்லை}=1{1 கடவுச்சொல் (ஒத்திசைத்தது)}other{# கடவுச்சொற்கள் (ஒத்திசைத்தவை)}}</translation>
@@ -795,7 +783,6 @@
 <translation id="6383221683286411806">கட்டணங்கள் விதிக்கப்படச் சாத்தியமுள்ளது.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{மேலும் 1 பரிந்துரை}other{மேலும் # பரிந்துரைகள்}}</translation>
 <translation id="6387754724289022810">அடுத்த முறை விரைவாகப் பணம் அனுப்ப, உங்கள் கார்டையும் பில்லிங் முகவரியையும் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
-<translation id="6397451950548600259">உங்கள் கணினியில் உள்ள மென்பொருளானது, Chrome இணையத்துடன் பாதுகாப்பாக இணைவதைத் தடுக்கிறது</translation>
 <translation id="6404511346730675251">புக்மார்க்களைத் திருத்து</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" />க்கான காலாவதித் தேதியையும் CVC எண்ணையும் உள்ளிடவும்</translation>
 <translation id="6414888972213066896">இந்தத் தளத்தைப் பார்வையிடலாமா என, நீங்கள் பெற்றோரிடம் கேட்டுள்ளீர்கள்</translation>

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Учитај слику</translation>
 <translation id="1029317248976101138">Зумирај</translation>
 <translation id="1030706264415084469"><ph name="URL" /> жели трајно да складишти велике количине података на уређају</translation>
+<translation id="1030889518049751641">Прикажи евиденцију активности</translation>
 <translation id="1031362278801463162">Учитавање прегледа</translation>
 <translation id="103279545524624934">Ослободите простор на диску да бисте покренули Android апликације.</translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
@@ -163,6 +164,7 @@
     Мораћете да поново подесите профил.<ph name="BR" />
     <ph name="BR" />
     На следећем екрану пошаљите повратне информације које ће нам помоћи да решимо проблем.</translation>
+<translation id="1217668622537098248">Врати на леви клик после радње</translation>
 <translation id="121783623783282548">Лозинке се не подударају.</translation>
 <translation id="1218860753635451122">Ако кликнете на дугме „Прихватам“, прихватате горенаведену обраду за ове Google услуге.</translation>
 <translation id="122082903575839559">Алгоритам потписа сертификата</translation>
@@ -1176,6 +1178,7 @@
 <translation id="2755628026949580719">Ако безбедносни кључ није наведен, притисните и држите дугме на кључу најмање 5 секунди.</translation>
 <translation id="275662540872599901">екран је искључен</translation>
 <translation id="2761898608071930085">Користите други налог</translation>
+<translation id="276233135255363312">{0,plural, =1{Имате један прозор без архивирања.}one{Имате # прозор без архивирања.}few{Имате # прозора без архивирања.}other{Имате # прозора без архивирања.}}</translation>
 <translation id="2762441749940182211">Камера је блокирана</translation>
 <translation id="2765217105034171413">Мала</translation>
 <translation id="2766006623206032690">На&amp;лепи и иди</translation>
@@ -2182,6 +2185,7 @@
 <translation id="4312866146174492540">Блокирај (подразумевано)</translation>
 <translation id="4316850752623536204">Веб-сајт програмера</translation>
 <translation id="4320177379694898372">Нема интернет везе</translation>
+<translation id="4320948194796820126">Додајте обележивач у имејл</translation>
 <translation id="4322394346347055525">Затвори друге картице</translation>
 <translation id="4324577459193912240">Датотека је непотпуна</translation>
 <translation id="4330387663455830245">Никад не преводи <ph name="LANGUAGE" /></translation>
@@ -2202,6 +2206,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> дели прозор.</translation>
 <translation id="4364830672918311045">Приказуј обавештења</translation>
 <translation id="4365673000813822030">Упс, синхронизација је престала да функционише.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> помоћу апликације <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Имејл и лозинка које сте унели се не подударају</translation>
 <translation id="437184764829821926">Напредна подешавања фонта</translation>
 <translation id="4372884569765913867">1×1</translation>
@@ -2686,6 +2691,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Хард-диск је пун. Сачувајте на другу локацију или направите више простора на хард-диску.</translation>
 <translation id="5125751979347152379">Неважећа URL адреса.</translation>
+<translation id="5127805178023152808">Синхронизација је искључена</translation>
 <translation id="5127881134400491887">Управљање мрежним везама</translation>
 <translation id="512903556749061217">прикључено</translation>
 <translation id="5133483819862530305">Од заласка до изласка сунца</translation>
@@ -3066,6 +3072,7 @@
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5669691691057771421">Унесите нови PIN</translation>
 <translation id="5671641761787789573">Слике су блокиране</translation>
+<translation id="567643736130151854">Пријавите се да би вам обележивачи, лозинке и други садржај били доступни на свим уређајима</translation>
 <translation id="5677503058916217575">Језик странице:</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5678550637669481956">Одобрен је приступ за <ph name="VOLUME_NAME" /> ради читања и писања.</translation>
@@ -4955,6 +4962,7 @@
 <translation id="8571213806525832805">Последње 4 недеље</translation>
 <translation id="8574990355410201600">Увек дозволи звук на <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Држите <ph name="KEY_EQUIVALENT" /> да бисте затворили</translation>
+<translation id="8578421807258988326">{0,plural, =1{Затвори овај прозор}one{Затвори све прозоре без архивирања}few{Затвори све прозоре без архивирања}other{Затвори све прозоре без архивирања}}</translation>
 <translation id="8578639784464423491">Дозвољено је највише 99 знакова</translation>
 <translation id="8579285237314169903">Синхронизују се ставке (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="857943718398505171">Дозвољено (препоручено)</translation>
@@ -4974,7 +4982,6 @@
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8610103157987623234">Погрешан формат. Пробајте поново</translation>
 <translation id="8615618338313291042">Апл. у режиму без архивирања: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Не синхронизује се</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Статус роминга</translation>
 <translation id="8620765578342452535">Конфигуриши мрежне везе</translation>

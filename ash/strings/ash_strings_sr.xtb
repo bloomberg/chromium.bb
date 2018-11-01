@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Полица</translation>
 <translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
 <translation id="2865888419503095837">Информације о мрежи</translation>
+<translation id="287224423103674444">Притиснули сте пречицу за ротацију екрана. Желите ли да ротирате екран?</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="2878884018241093801">Нема недавних ставки</translation>
 <translation id="2903844815300039659">Повезано на мрежу <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5673434351075758678">Са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ после синхронизације уређаја.</translation>
 <translation id="5691772641933328258">Отисак прста није препознат</translation>
+<translation id="5710450975648804523">Режим Не узнемиравај је укључен</translation>
 <translation id="574392208103952083">Средња</translation>
 <translation id="5744083938413354016">Превлачење додиром</translation>
 <translation id="5750765938512549687">Bluetooth је искључен</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Притисните оба тастера за јачину звука и задржите их пет секунди да бисте онемогућили повратни говор.</translation>
 <translation id="7692480393933218409">Пуњење повезаних уређаја са USB прикључком типа C</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 обавештење}one{# обавештење}few{# обавештења}other{# обавештења}}</translation>
 <translation id="776344839111254542">Кликните за приказ детаља ажурирања</translation>
+<translation id="7780159184141939021">Ротирајте екран</translation>
 <translation id="7796353162336583443">Додирните дугме писаљке на полици да бисте направили белешку и снимак екрана и да бисте користили Google помоћник, ласерски показивач или лупу.</translation>
 <translation id="7798302898096527229">Притисните тастер за претрагу или Shift да бисте отказали.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>

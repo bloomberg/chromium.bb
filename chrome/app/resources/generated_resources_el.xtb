@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Φόρτωση εικόνας</translation>
 <translation id="1029317248976101138">Μεγέθυνση</translation>
 <translation id="1030706264415084469">Ο ιστότοπος <ph name="URL" /> θέλει να αποθηκεύσει δεδομένα μεγάλου όγκου μόνιμα στη συσκευή σας</translation>
+<translation id="1030889518049751641">Προβολή αρχείου καταγραφής δραστηριότητας</translation>
 <translation id="1031362278801463162">Φόρτωση προεπισκόπησης</translation>
 <translation id="103279545524624934">Ελευθερώστε χώρο στον δίσκο, για την εκκίνηση εφαρμογών Android.</translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
@@ -163,6 +164,7 @@
     Θα πρέπει να ρυθμίσετε ξανά το προφίλ σας.<ph name="BR" />
     <ph name="BR" />
     Στην επόμενη οθόνη, σας προτείνουμε να μας στείλετε περισσότερες πληροφορίες για να μπορέσουμε να διορθώσουμε το πρόβλημα.</translation>
+<translation id="1217668622537098248">Επαναφορά σε αριστερό κλικ μετά από κάποια ενέργεια</translation>
 <translation id="121783623783282548">Δεν ταιριάζουν οι κωδικοί πρόσβασης.</translation>
 <translation id="1218860753635451122">Εάν κάνετε κλικ στο κουμπί "Συμφωνώ", αποδέχεστε την επεξεργασία που περιγράφεται παραπάνω για αυτές τις υπηρεσίες Google.</translation>
 <translation id="122082903575839559">Αλγόριθμος υπογραφής πιστοποιητικού</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Εάν το κλειδί ασφαλείας σας δεν εμφανίζεται, πατήστε το κουμπί του κλειδιού για τουλάχιστον 5 δευτερόλεπτα.</translation>
 <translation id="275662540872599901">η οθόνη απενεργοποιήθηκε</translation>
 <translation id="2761898608071930085">Χρήση άλλου λογαριασμού</translation>
+<translation id="276233135255363312">{0,plural, =1{Έχετε ένα παράθυρο για ανώνυμη περιήγηση.}other{Έχετε # παράθυρα για ανώνυμη περιήγηση.}}</translation>
 <translation id="2762441749940182211">Η κάμερα έχει αποκλειστεί</translation>
 <translation id="2765217105034171413">Μικρό</translation>
 <translation id="2766006623206032690">Επικό&amp;λληση και μετάβαση</translation>
@@ -2186,6 +2189,7 @@
 <translation id="4312866146174492540">Αποκλεισμός (προεπιλογή)</translation>
 <translation id="4316850752623536204">Ιστότοπος προγραμματιστή</translation>
 <translation id="4320177379694898372">Χωρίς σύνδεση στο διαδίκτυο</translation>
+<translation id="4320948194796820126">Προσθήκη σελιδοδείκτη στο ηλεκτρονικό ταχυδρομείο σας</translation>
 <translation id="4322394346347055525">Κλείσιμο Άλλων Καρτελών</translation>
 <translation id="4324577459193912240">Το αρχείο είναι ελλιπές</translation>
 <translation id="4330387663455830245">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@
 <translation id="4364567974334641491">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται ένα παράθυρο.</translation>
 <translation id="4364830672918311045">Εμφάνιση ειδοποιήσεων</translation>
 <translation id="4365673000813822030">Ωχ, ο συγχρονισμός σταμάτησε να λειτουργεί.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> με την εφαρμογή <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Η διεύθυνση ηλεκτρονικού ταχυδρομείου και ο κωδικός πρόσβασης δεν ταιριάζουν</translation>
 <translation id="437184764829821926">Σύνθετες ρυθμίσεις γραμματοσειράς</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -2690,6 +2695,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ο σκληρός σας δίσκος είναι πλήρης. Αποθηκεύστε σε άλλη τοποθεσία ή αδειάστε τον σκληρό δίσκο.</translation>
 <translation id="5125751979347152379">Μη έγκυρη διεύθυνση URL.</translation>
+<translation id="5127805178023152808">Ο συγχρονισμός είναι απενεργοποιημένος</translation>
 <translation id="5127881134400491887">Διαχείριση συνδέσεων δικτύου</translation>
 <translation id="512903556749061217">συνδέθηκε</translation>
 <translation id="5133483819862530305">Από ηλιοβασίλεμα σε ανατολή</translation>
@@ -3070,6 +3076,7 @@
 <translation id="5669267381087807207">Ενεργοποίηση</translation>
 <translation id="5669691691057771421">Εισαγωγή νέου κωδικού PIN</translation>
 <translation id="5671641761787789573">Οι εικόνες αποκλείστηκαν</translation>
+<translation id="567643736130151854">Συνδεθείτε και ενεργοποιήστε τον συγχρονισμό, για να έχετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης και άλλα σε όλες τις συσκευές</translation>
 <translation id="5677503058916217575">Γλώσσα σελίδας:</translation>
 <translation id="5677928146339483299">Αποκλεισμένος</translation>
 <translation id="5678550637669481956">Παραχωρήθηκε πρόσβαση ανάγνωσης και εγγραφής σε <ph name="VOLUME_NAME" />.</translation>
@@ -4958,6 +4965,7 @@
 <translation id="8571213806525832805">Τελευταίες 4 εβδομάδες</translation>
 <translation id="8574990355410201600">Να επιτρέπεται πάντα ο ήχος στο <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Κρατήστε πατημένο το πλήκτρο <ph name="KEY_EQUIVALENT" /> για τερματισμό.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Κλείσιμο αυτού του παραθύρου}other{Κλείσιμο όλων των παραθύρων για ανώνυμη περιήγηση}}</translation>
 <translation id="8578639784464423491">Δεν μπορεί να υπερβαίνει τα 99 γράμματα</translation>
 <translation id="8579285237314169903">Γίνεται συγχρονισμός <ph name="NUMBER_OF_FILES" /> στοιχείων…</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>
@@ -4977,7 +4985,6 @@
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>
 <translation id="8610103157987623234">Λανθασμένη μορφή, δοκιμάστε ξανά</translation>
 <translation id="8615618338313291042">Εφαρμογή ανώνυμης περιήγησης: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Δεν συγχρονίζεται</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Κατάσταση περιαγωγής</translation>
 <translation id="8620765578342452535">Διαμόρφωση συνδέσεων δικτύου</translation>
