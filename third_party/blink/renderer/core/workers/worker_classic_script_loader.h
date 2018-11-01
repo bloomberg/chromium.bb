@@ -76,6 +76,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
                                         network::mojom::FetchRequestMode,
                                         network::mojom::FetchCredentialsMode,
                                         mojom::IPAddressSpace,
+                                        bool is_nested_worker,
                                         base::OnceClosure response_callback,
                                         base::OnceClosure finished_callback);
 

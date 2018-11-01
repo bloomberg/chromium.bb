@@ -166,6 +166,19 @@ void WorkerThread::EvaluateClassicScript(
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
+void WorkerThread::ImportClassicScript(
+    const KURL& script_url,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+      CrossThreadBind(&WorkerThread::ImportClassicScriptOnWorkerThread,
+                      CrossThreadUnretained(this), script_url,
+                      WTF::Passed(outside_settings_object->CopyData()),
+                      stack_id));
+}
+
 void WorkerThread::ImportModuleScript(
     const KURL& script_url,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
@@ -494,6 +507,18 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
   To<WorkerGlobalScope>(GlobalScope())
       ->EvaluateClassicScriptPausable(script_url, std::move(source_code),
                                       std::move(cached_meta_data), stack_id);
+}
+
+void WorkerThread::ImportClassicScriptOnWorkerThread(
+    const KURL& script_url,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  To<WorkerGlobalScope>(GlobalScope())
+      ->ImportClassicScriptPausable(script_url,
+                                    new FetchClientSettingsObjectSnapshot(
+                                        std::move(outside_settings_object)),
+                                    stack_id);
 }
 
 void WorkerThread::ImportModuleScriptOnWorkerThread(

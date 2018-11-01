@@ -29,9 +29,10 @@ namespace blink {
 
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
-  DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
+  DedicatedWorkerThreadForTest(ExecutionContext* parent_execution_context,
+                               DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread("fake worker name",
-                              nullptr /* parent_execution_context*/,
+                              parent_execution_context,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
         ThreadCreationParams(WebThreadType::kTestThread));
@@ -158,7 +159,8 @@ class DedicatedWorkerMessagingProxyForTest
 
  private:
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
-    return std::make_unique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
+    return std::make_unique<DedicatedWorkerThreadForTest>(GetExecutionContext(),
+                                                          WorkerObjectProxy());
   }
 
   scoped_refptr<const SecurityOrigin> security_origin_;

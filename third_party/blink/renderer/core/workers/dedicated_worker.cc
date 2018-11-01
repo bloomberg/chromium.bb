@@ -163,11 +163,22 @@ void DedicatedWorker::Start() {
       ThreadDebugger::From(ToIsolate(GetExecutionContext()))
           ->StoreCurrentStackTrace("Worker Created");
 
-  // Step 13: "Obtain script by switching on the value of options's type
-  // member:"
+  if (RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled() ||
+      options_->type() == "module") {
+    // Specify empty source code here because scripts will be fetched on the
+    // worker thread.
+    auto* outside_settings_object =
+        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
+    context_proxy_->StartWorkerGlobalScope(
+        CreateGlobalScopeCreationParams(script_request_url_), options_,
+        script_request_url_, outside_settings_object, stack_id,
+        String() /* source_code */);
+    return;
+  }
   if (options_->type() == "classic") {
-    // "classic: Fetch a classic worker script given url, outside settings,
-    // destination, and inside settings."
+    // Legacy code path (to be deprecated, see https://crbug.com/835717):
+    // A worker thread will start after scripts are fetched on the current
+    // thread.
     network::mojom::FetchRequestMode fetch_request_mode =
         network::mojom::FetchRequestMode::kSameOrigin;
     network::mojom::FetchCredentialsMode fetch_credentials_mode =
@@ -178,25 +189,10 @@ void DedicatedWorker::Start() {
         mojom::RequestContextType::WORKER, fetch_request_mode,
         fetch_credentials_mode,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),
+        GetExecutionContext()->IsWorkerGlobalScope(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
         WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this),
                   stack_id));
-    return;
-  }
-  if (options_->type() == "module") {
-    // "module: Fetch a module worker script graph given url, outside settings,
-    // destination, the value of the credentials member of options, and inside
-    // settings."
-    //
-    // Specify empty source code here because module scripts will be fetched on
-    // the worker thread as opposed to classic scripts that are fetched on the
-    // main thread.
-    auto* outside_settings_object =
-        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
-    context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(script_request_url_), options_,
-        script_request_url_, outside_settings_object, stack_id,
-        String() /* source_code */);
     return;
   }
   NOTREACHED() << "Invalid type: " << options_->type();

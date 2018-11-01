@@ -134,6 +134,7 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       *shadow_page_->GetDocument(), script_request_url_,
       mojom::RequestContextType::SHARED_WORKER, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
+      false /* is_nested_worker */,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
       Bind(&WebSharedWorkerImpl::OnScriptLoaderFinished,
