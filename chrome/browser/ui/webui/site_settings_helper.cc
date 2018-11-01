@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
+#include <algorithm>
 #include <functional>
-#include <string>
 
 #include "base/feature_list.h"
 #include "base/values.h"
