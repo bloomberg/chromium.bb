@@ -39,14 +39,14 @@ uint8_t data[] = {
     0x50, 0x65, 0xf3, 0x41, 0x27, 0x01,
 };
 
-const mdns::DomainName openscreen_service{
-    {11, '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e', 'e', 'n',
-     4,  '_', 'u', 'd', 'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
-const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
-
 }  // namespace
 
 TEST(MdnsResponderAdapterImplTest, ExampleData) {
+  const mdns::DomainName openscreen_service{
+      {11, '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e', 'e', 'n',
+       4,  '_', 'u', 'd', 'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
+  const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
+
   auto mdns_adapter = std::unique_ptr<mdns::MdnsResponderAdapter>(
       new mdns::MdnsResponderAdapterImpl);
   mdns_adapter->Init();

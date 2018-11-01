@@ -7,10 +7,12 @@
 
 #include "api/public/screen_publisher.h"
 #include "base/macros.h"
+#include "base/with_destruction_callback.h"
 
 namespace openscreen {
 
-class ScreenPublisherImpl final : public ScreenPublisher {
+class ScreenPublisherImpl final : public ScreenPublisher,
+                                  public WithDestructionCallback {
  public:
   class Delegate {
    public:

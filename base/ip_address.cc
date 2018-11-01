@@ -17,15 +17,16 @@ bool IPAddress::Parse(const std::string& s, IPAddress* address) {
 
 IPAddress::IPAddress() : version_(Version::kV4), bytes_({}) {}
 IPAddress::IPAddress(const std::array<uint8_t, 4>& bytes)
-    : version_(Version::kV4), bytes_{bytes[0], bytes[1], bytes[2], bytes[3]} {}
+    : version_(Version::kV4),
+      bytes_{{bytes[0], bytes[1], bytes[2], bytes[3]}} {}
 IPAddress::IPAddress(const uint8_t (&b)[4])
     : version_(Version::kV4), bytes_{{b[0], b[1], b[2], b[3]}} {}
 IPAddress::IPAddress(Version version, const uint8_t* b) : version_(version) {
   if (version_ == Version::kV4) {
-    bytes_ = {b[0], b[1], b[2], b[3]};
+    bytes_ = {{b[0], b[1], b[2], b[3]}};
   } else {
-    bytes_ = {b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
-              b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]};
+    bytes_ = {{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9],
+               b[10], b[11], b[12], b[13], b[14], b[15]}};
   }
 }
 IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)

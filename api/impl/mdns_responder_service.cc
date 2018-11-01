@@ -28,7 +28,7 @@ MdnsResponderService::MdnsResponderService(
     const std::string& service_protocol,
     std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
     std::unique_ptr<MdnsPlatformService> platform)
-    : service_type_{service_name, service_protocol},
+    : service_type_{{service_name, service_protocol}},
       mdns_responder_factory_(std::move(mdns_responder_factory)),
       platform_(std::move(platform)) {}
 
@@ -235,7 +235,7 @@ void MdnsResponderService::StartService() {
   CHECK(mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1,
                                      &domain_name))
       << "bad hostname configured: " << service_hostname_;
-  CHECK(domain_name.Append(mdns::DomainName::kLocalDomain));
+  CHECK(domain_name.Append(mdns::DomainName::GetLocalDomain()));
   mdns_responder_->RegisterService(service_instance_name_, service_type_[0],
                                    service_type_[1], domain_name, service_port_,
                                    service_txt_lines_);

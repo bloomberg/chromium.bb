@@ -47,7 +47,10 @@ struct Service {
   uint16_t port;
   std::vector<std::string> txt;
 };
-std::map<mdns::DomainName, Service, mdns::DomainNameComparator> g_services;
+
+using ServiceMap =
+    std::map<mdns::DomainName, Service, mdns::DomainNameComparator>;
+ServiceMap* g_services = nullptr;
 
 void sigusr1_dump_services(int) {
   g_dump_services = true;
@@ -159,15 +162,15 @@ void LogService(const Service& s) {
 
 void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
   for (auto& ptr_event : mdns_adapter->TakePtrResponses()) {
-    auto it = g_services.find(ptr_event.service_instance);
+    auto it = g_services->find(ptr_event.service_instance);
     switch (ptr_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
         mdns_adapter->StartSrvQuery(ptr_event.service_instance);
         mdns_adapter->StartTxtQuery(ptr_event.service_instance);
-        if (it == g_services.end()) {
-          g_services.emplace(ptr_event.service_instance,
-                             ptr_event.service_instance);
+        if (it == g_services->end()) {
+          g_services->emplace(ptr_event.service_instance,
+                              ptr_event.service_instance);
         }
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
@@ -175,15 +178,15 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         // and friends) so this simple logic is actually broken, but I don't
         // want to do a better design or pointer hell for just a demo.
         LOG_WARN << "ptr-remove: " << ptr_event.service_instance;
-        if (it != g_services.end())
-          g_services.erase(it);
+        if (it != g_services->end())
+          g_services->erase(it);
 
         break;
     }
   }
   for (auto& srv_event : mdns_adapter->TakeSrvResponses()) {
-    auto it = g_services.find(srv_event.service_instance);
-    if (it == g_services.end())
+    auto it = g_services->find(srv_event.service_instance);
+    if (it == g_services->end())
       continue;
 
     switch (srv_event.header.response_type) {
@@ -201,8 +204,8 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     }
   }
   for (auto& txt_event : mdns_adapter->TakeTxtResponses()) {
-    auto it = g_services.find(txt_event.service_instance);
-    if (it == g_services.end())
+    auto it = g_services->find(txt_event.service_instance);
+    if (it == g_services->end())
       continue;
 
     switch (txt_event.header.response_type) {
@@ -221,11 +224,11 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     // update the first.  I didn't think this would happen but I noticed this
     // happens for cast groups.
     auto it =
-        std::find_if(g_services.begin(), g_services.end(),
+        std::find_if(g_services->begin(), g_services->end(),
                      [&a_event](const std::pair<mdns::DomainName, Service>& s) {
                        return s.second.domain_name == a_event.domain_name;
                      });
-    if (it == g_services.end())
+    if (it == g_services->end())
       continue;
 
     switch (a_event.header.response_type) {
@@ -275,8 +278,8 @@ void BrowseDemo(const std::string& service_name,
   while (!g_done) {
     HandleEvents(mdns_adapter.get());
     if (g_dump_services) {
-      LOG_INFO << "num services: " << g_services.size();
-      for (const auto& s : g_services) {
+      LOG_INFO << "num services: " << g_services->size();
+      for (const auto& s : *g_services) {
         LogService(s.second);
       }
       g_dump_services = false;
@@ -289,8 +292,8 @@ void BrowseDemo(const std::string& service_name,
                                    packet.socket);
     }
   }
-  LOG_INFO << "num services: " << g_services.size();
-  for (const auto& s : g_services) {
+  LOG_INFO << "num services: " << g_services->size();
+  for (const auto& s : *g_services) {
     LogService(s.second);
   }
   platform::StopWatchingNetworkChange(waiter);
@@ -323,6 +326,9 @@ int main(int argc, char** argv) {
   if (labels.size() != 2)
     return 1;
 
+  openscreen::ServiceMap services;
+  openscreen::g_services = &services;
   openscreen::BrowseDemo(labels[0], labels[1], service_instance);
+  openscreen::g_services = nullptr;
   return 0;
 }

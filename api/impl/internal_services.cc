@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "api/impl/mdns_responder_service.h"
-#include "base/make_unique.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/error.h"
 #include "platform/api/socket.h"
@@ -27,7 +26,7 @@ class MdnsResponderAdapterImplFactory final
   ~MdnsResponderAdapterImplFactory() override = default;
 
   std::unique_ptr<mdns::MdnsResponderAdapter> Create() override {
-    return MakeUnique<mdns::MdnsResponderAdapterImpl>();
+    return std::make_unique<mdns::MdnsResponderAdapterImpl>();
   }
 };
 
@@ -47,23 +46,29 @@ bool SetupMulticastSocket(platform::UdpSocketPtr socket, int32_t ifindex) {
   return true;
 }
 
+// Ref-counted singleton instance of InternalServices. This lives only as long
+// as there is at least one ScreenListener and/or ScreenPublisher alive.
+InternalServices* g_instance = nullptr;
+int g_instance_ref_count = 0;
+
 }  // namespace
 
 // static
 void InternalServices::RunEventLoopOnce() {
-  auto* services = GetInstance();
-  services->mdns_service_->HandleNewEvents(
-      platform::OnePlatformLoopIteration(services->internal_service_waiter_));
+  CHECK(g_instance) << "No listener or publisher is alive.";
+  g_instance->mdns_service_.HandleNewEvents(
+      platform::OnePlatformLoopIteration(g_instance->internal_service_waiter_));
 }
 
 // static
 std::unique_ptr<ScreenListener> InternalServices::CreateListener(
     const MdnsScreenListenerConfig& config,
     ScreenListener::Observer* observer) {
-  auto* services = GetInstance();
-  services->EnsureMdnsServiceCreated();
+  auto* services = ReferenceSingleton();
   auto listener =
-      MakeUnique<ScreenListenerImpl>(observer, services->mdns_service_.get());
+      std::make_unique<ScreenListenerImpl>(observer, &services->mdns_service_);
+  listener->SetDestructionCallback(&InternalServices::DereferenceSingleton,
+                                   services);
   return listener;
 }
 
@@ -71,22 +76,17 @@ std::unique_ptr<ScreenListener> InternalServices::CreateListener(
 std::unique_ptr<ScreenPublisher> InternalServices::CreatePublisher(
     const ScreenPublisher::Config& config,
     ScreenPublisher::Observer* observer) {
-  auto* services = GetInstance();
-  services->EnsureMdnsServiceCreated();
+  auto* services = ReferenceSingleton();
   // TODO(btolsch): Hostname and instance should either come from config or
   // platform+generated.
-  services->mdns_service_->SetServiceConfig(
+  services->mdns_service_.SetServiceConfig(
       "turtle-deadbeef", "deadbeef", config.connection_server_port,
       config.network_interface_indices, {"fn=" + config.friendly_name});
   auto publisher =
-      MakeUnique<ScreenPublisherImpl>(observer, services->mdns_service_.get());
+      std::make_unique<ScreenPublisherImpl>(observer, &services->mdns_service_);
+  publisher->SetDestructionCallback(&InternalServices::DereferenceSingleton,
+                                    services);
   return publisher;
-}
-
-// static
-InternalServices* InternalServices::GetInstance() {
-  static InternalServices services;
-  return &services;
 }
 
 InternalServices::InternalPlatformLinkage::InternalPlatformLinkage(
@@ -142,26 +142,17 @@ void InternalServices::InternalPlatformLinkage::DeregisterInterfaces(
   }
 }
 
-InternalServices::InternalServices() = default;
-InternalServices::~InternalServices() = default;
-
-void InternalServices::EnsureInternalServiceEventWaiterCreated() {
-  if (internal_service_waiter_)
-    return;
-
-  internal_service_waiter_ = platform::CreateEventWaiter();
+InternalServices::InternalServices()
+    : mdns_service_(kServiceName,
+                    kServiceProtocol,
+                    std::make_unique<MdnsResponderAdapterImplFactory>(),
+                    std::make_unique<InternalPlatformLinkage>(this)),
+      internal_service_waiter_(platform::CreateEventWaiter()) {
+  DCHECK(internal_service_waiter_);
 }
 
-void InternalServices::EnsureMdnsServiceCreated() {
-  EnsureInternalServiceEventWaiterCreated();
-  if (mdns_service_)
-    return;
-
-  auto mdns_responder_factory = MakeUnique<MdnsResponderAdapterImplFactory>();
-  auto platform = MakeUnique<InternalPlatformLinkage>(this);
-  mdns_service_ = MakeUnique<MdnsResponderService>(
-      kServiceName, kServiceProtocol, std::move(mdns_responder_factory),
-      std::move(platform));
+InternalServices::~InternalServices() {
+  DestroyEventWaiter(internal_service_waiter_);
 }
 
 void InternalServices::RegisterMdnsSocket(platform::UdpSocketPtr socket) {
@@ -170,6 +161,27 @@ void InternalServices::RegisterMdnsSocket(platform::UdpSocketPtr socket) {
 
 void InternalServices::DeregisterMdnsSocket(platform::UdpSocketPtr socket) {
   platform::StopWatchingUdpSocketReadable(internal_service_waiter_, socket);
+}
+
+// static
+InternalServices* InternalServices::ReferenceSingleton() {
+  if (!g_instance) {
+    CHECK_EQ(g_instance_ref_count, 0);
+    g_instance = new InternalServices();
+  }
+  ++g_instance_ref_count;
+  return g_instance;
+}
+
+// static
+void InternalServices::DereferenceSingleton(void* instance) {
+  CHECK_EQ(static_cast<InternalServices*>(instance), g_instance);
+  CHECK_GT(g_instance_ref_count, 0);
+  --g_instance_ref_count;
+  if (g_instance_ref_count == 0) {
+    delete g_instance;
+    g_instance = nullptr;
+  }
 }
 
 }  // namespace openscreen

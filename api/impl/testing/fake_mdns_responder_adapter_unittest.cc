@@ -11,11 +11,6 @@ namespace openscreen {
 constexpr char kTestServiceInstance[] = "turtle";
 constexpr char kTestServiceName[] = "_foo";
 constexpr char kTestServiceProtocol[] = "_udp";
-const mdns::DomainName kTestServiceType{
-    {4, '_', 'f', 'o', 'o', 4, '_', 'u', 'd', 'p', 0}};
-const mdns::DomainName kTestServiceTypeCanon{{4, '_', 'f', 'o', 'o', 4, '_',
-                                              'u', 'd', 'p', 5, 'l', 'o', 'c',
-                                              'a', 'l', 0}};
 
 TEST(FakeMdnsResponderAdapterTest, AQueries) {
   FakeMdnsResponderAdapter mdns_responder;
@@ -90,6 +85,12 @@ TEST(FakeMdnsResponderAdapterTest, AaaaQueries) {
 }
 
 TEST(FakeMdnsResponderAdapterTest, PtrQueries) {
+  const mdns::DomainName kTestServiceType{
+      {4, '_', 'f', 'o', 'o', 4, '_', 'u', 'd', 'p', 0}};
+  const mdns::DomainName kTestServiceTypeCanon{{4, '_', 'f', 'o', 'o', 4, '_',
+                                                'u', 'd', 'p', 5, 'l', 'o', 'c',
+                                                'a', 'l', 0}};
+
   FakeMdnsResponderAdapter mdns_responder;
 
   mdns_responder.Init();

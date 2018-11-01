@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "api/impl/mdns_platform_service.h"
+#include "api/impl/mdns_responder_service.h"
 #include "api/impl/mdns_screen_listener_factory.h"
 #include "api/impl/mdns_screen_publisher_factory.h"
 #include "api/impl/screen_listener_impl.h"
@@ -20,8 +21,6 @@
 #include "platform/base/event_loop.h"
 
 namespace openscreen {
-
-class MdnsResponderService;
 
 // Factory for ScreenListener and ScreenPublisher instances; owns internal
 // objects needed to instantiate them such as MdnsResponderService and runs an
@@ -40,8 +39,6 @@ class InternalServices {
       ScreenPublisher::Observer* observer);
 
  private:
-  static InternalServices* GetInstance();
-
   class InternalPlatformLinkage final : public MdnsPlatformService {
    public:
     explicit InternalPlatformLinkage(InternalServices* parent);
@@ -59,13 +56,14 @@ class InternalServices {
   InternalServices();
   ~InternalServices();
 
-  void EnsureInternalServiceEventWaiterCreated();
-  void EnsureMdnsServiceCreated();
-
   void RegisterMdnsSocket(platform::UdpSocketPtr socket);
   void DeregisterMdnsSocket(platform::UdpSocketPtr socket);
 
-  std::unique_ptr<MdnsResponderService> mdns_service_;
+  static InternalServices* ReferenceSingleton();
+  static void DereferenceSingleton(void* instance);
+
+  MdnsResponderService mdns_service_;
+
   // TODO(btolsch): To support e.g. both QUIC and mDNS listening for separate
   // sockets, we need to either:
   //  - give them their own individual waiter objects

@@ -9,10 +9,12 @@
 #include "api/public/screen_info.h"
 #include "api/public/screen_listener.h"
 #include "base/macros.h"
+#include "base/with_destruction_callback.h"
 
 namespace openscreen {
 
-class ScreenListenerImpl final : public ScreenListener {
+class ScreenListenerImpl final : public ScreenListener,
+                                 public WithDestructionCallback {
  public:
   class Delegate {
    public:

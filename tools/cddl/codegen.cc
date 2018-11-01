@@ -4,6 +4,7 @@
 
 #include "tools/cddl/codegen.h"
 
+#include <cinttypes>
 #include <set>
 #include <string>
 #include <utility>
@@ -149,7 +150,7 @@ bool WriteTypeDefinition(int fd, const CppType& type) {
     case CppType::Which::kEnum: {
       dprintf(fd, "\nenum %s : uint64_t {\n", ToCamelCase(type.name).c_str());
       for (const auto& x : type.enum_type.members) {
-        dprintf(fd, "  k%s = %luull,\n", ToCamelCase(x.first).c_str(),
+        dprintf(fd, "  k%s = %" PRIu64 "ull,\n", ToCamelCase(x.first).c_str(),
                 x.second);
       }
       dprintf(fd, "};\n");
@@ -419,7 +420,8 @@ bool WriteEncoder(int fd,
     } break;
     case CppType::Which::kTaggedType: {
       dprintf(fd,
-              "  CBOR_RETURN_ON_ERROR(cbor_encode_tag(&encoder%d, %luull));\n",
+              "  CBOR_RETURN_ON_ERROR(cbor_encode_tag(&encoder%d, %" PRIu64
+              "ull));\n",
               encoder_depth, cpp_type.tagged_type.tag);
       if (!WriteEncoder(fd, name, *cpp_type.tagged_type.real_type,
                         nested_type_scope, encoder_depth)) {
@@ -786,7 +788,7 @@ bool WriteDecoder(int fd,
       dprintf(fd, "  uint64_t tag%d = 0;\n", temp_tag);
       dprintf(fd, "  cbor_value_get_tag(&it%d, &tag%d);\n", decoder_depth,
               temp_tag);
-      dprintf(fd, "  if (tag%d != %luull) {\n", temp_tag,
+      dprintf(fd, "  if (tag%d != %" PRIu64 "ull) {\n", temp_tag,
               cpp_type.tagged_type.tag);
       dprintf(fd, "    return -1;\n");
       dprintf(fd, "  }\n");

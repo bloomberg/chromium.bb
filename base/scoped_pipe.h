@@ -46,7 +46,7 @@ class ScopedPipe {
     return *this;
   }
 
-  PipeType get() { return pipe_; }
+  PipeType get() const { return pipe_; }
   PipeType release() {
     PipeType pipe = pipe_;
     pipe_ = Traits::kInvalidValue;

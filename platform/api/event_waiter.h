@@ -38,6 +38,8 @@ struct Events {
   std::vector<UdpSocketWritableEvent> udp_writable_events;
 };
 
+// TODO(miu): This should be a std::unique_ptr<> instead of two separate
+// methods, so that code structure auto-scopes the lifetime of the instance.
 EventWaiterPtr CreateEventWaiter();
 void DestroyEventWaiter(EventWaiterPtr waiter);
 

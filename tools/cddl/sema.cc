@@ -7,15 +7,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <cinttypes>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-// TODO(btolsch): This stores the name of the root rule.  This should probably
-// go into CppSymbolTable.  Also, this needs to be used to generate the
-// top-level tag enum.
-std::string g_one_rule_to_ring_them_all;
 
 CddlType::CddlType() : map(nullptr) {}
 CddlType::~CddlType() {
@@ -283,7 +279,7 @@ void DumpType(CddlType* type, int indent_level) {
       printf("kGroupnameChoice:\n");
       break;
     case CddlType::Which::kTaggedType:
-      printf("kTaggedType: %lu\n", type->tagged_type.tag_value);
+      printf("kTaggedType: %" PRIu64 "\n", type->tagged_type.tag_value);
       DumpType(type->tagged_type.type, indent_level + 1);
       break;
   }
@@ -336,7 +332,7 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     return result;
   }
   bool is_type = node->type == AstNode::Type::kTypename;
-  g_one_rule_to_ring_them_all = node->text;
+  table.one_rule_to_ring_them_all = node->text;
 
   node = node->sibling;
   if (node->type != AstNode::Type::kAssign)
@@ -347,13 +343,13 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     CddlType* type = AnalyzeType(&table, *node);
     if (!type)
       return result;
-    table.type_map.emplace(g_one_rule_to_ring_them_all, type);
+    table.type_map.emplace(table.one_rule_to_ring_them_all, type);
   } else {
     table.groups.emplace_back(new CddlGroup);
     CddlGroup* group = table.groups.back().get();
     group->entries.emplace_back(new CddlGroup::Entry);
     AnalyzeGroupEntry(&table, *node, group->entries.back().get());
-    table.group_map.emplace(g_one_rule_to_ring_them_all, group);
+    table.group_map.emplace(table.one_rule_to_ring_them_all, group);
   }
 
   const AstNode* rule = rules.sibling;
@@ -584,7 +580,7 @@ std::pair<bool, CppSymbolTable> BuildCppTypes(
   result.first = false;
   auto& table = result.second;
   for (const auto& type_entry : cddl_table.type_map) {
-    if (type_entry.first == g_one_rule_to_ring_them_all)
+    if (type_entry.first == cddl_table.one_rule_to_ring_them_all)
       continue;
     if (!MakeCppType(&table, cddl_table, type_entry.first,
                      *type_entry.second)) {

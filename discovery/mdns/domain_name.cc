@@ -13,7 +13,9 @@ namespace openscreen {
 namespace mdns {
 
 // static
-const DomainName DomainName::kLocalDomain{{5, 'l', 'o', 'c', 'a', 'l', 0}};
+DomainName DomainName::GetLocalDomain() {
+  return DomainName{{5, 'l', 'o', 'c', 'a', 'l', 0}};
+}
 
 // static
 bool DomainName::Append(const DomainName& first,
@@ -58,12 +60,13 @@ bool DomainName::operator!=(const DomainName& other) const {
 }
 
 bool DomainName::EndsWithLocalDomain() const {
-  if (domain_name_.size() < kLocalDomain.domain_name_.size())
+  const DomainName local_domain = GetLocalDomain();
+  if (domain_name_.size() < local_domain.domain_name_.size())
     return false;
 
-  return std::equal(kLocalDomain.domain_name_.begin(),
-                    kLocalDomain.domain_name_.end(),
-                    domain_name_.end() - kLocalDomain.domain_name_.size());
+  return std::equal(local_domain.domain_name_.begin(),
+                    local_domain.domain_name_.end(),
+                    domain_name_.end() - local_domain.domain_name_.size());
 }
 
 bool DomainName::Append(const DomainName& after) {

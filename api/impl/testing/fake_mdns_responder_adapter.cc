@@ -340,7 +340,7 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
 
   auto canonical_service_type = service_type;
   if (!canonical_service_type.EndsWithLocalDomain())
-    CHECK(canonical_service_type.Append(mdns::DomainName::kLocalDomain));
+    CHECK(canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
   auto maybe_inserted = ptr_queries_.insert(canonical_service_type);
   if (maybe_inserted.second) {
@@ -400,7 +400,7 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
     const mdns::DomainName& service_type) {
   auto canonical_service_type = service_type;
   if (!canonical_service_type.EndsWithLocalDomain())
-    CHECK(canonical_service_type.Append(mdns::DomainName::kLocalDomain));
+    CHECK(canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
   auto it = ptr_queries_.find(canonical_service_type);
   if (it == ptr_queries_.end())

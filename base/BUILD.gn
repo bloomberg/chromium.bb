@@ -14,6 +14,8 @@ source_set("base") {
     "scoped_pipe.h",
     "stringprintf.h",
     "time.h",
+    "with_destruction_callback.cc",
+    "with_destruction_callback.h",
   ]
 }
 

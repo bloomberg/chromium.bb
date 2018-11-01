@@ -43,7 +43,8 @@ struct DomainName {
     return true;
   }
 
-  static const DomainName kLocalDomain;
+  static DomainName GetLocalDomain();
+
   static constexpr uint8_t kDomainNameMaxLabelLength = 63u;
   static constexpr uint16_t kDomainNameMaxLength = 256u;
 

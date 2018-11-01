@@ -394,8 +394,9 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartPtrQuery(
     std::copy(service_type.domain_name().begin(),
               service_type.domain_name().end(), question.qname.c);
   } else {
+    const DomainName local_domain = DomainName::GetLocalDomain();
     DomainName service_type_with_local;
-    if (!DomainName::Append(service_type, DomainName::kLocalDomain,
+    if (!DomainName::Append(service_type, local_domain,
                             &service_type_with_local)) {
       return MdnsResponderErrorCode::kDomainOverflowError;
     }
@@ -578,8 +579,9 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::RegisterService(
   type.c[0] = 0;
   AppendDomainLabel(&type, &name);
   AppendDomainLabel(&type, &protocol);
-  std::copy(DomainName::kLocalDomain.domain_name().begin(),
-            DomainName::kLocalDomain.domain_name().end(), domain.c);
+  const DomainName local_domain = DomainName::GetLocalDomain();
+  std::copy(local_domain.domain_name().begin(),
+            local_domain.domain_name().end(), domain.c);
   std::copy(target_host.domain_name().begin(), target_host.domain_name().end(),
             host.c);
   AssignMdnsPort(&port, target_port);
@@ -622,8 +624,9 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::DeregisterService(
   type.c[0] = 0;
   AppendDomainLabel(&type, &name);
   AppendDomainLabel(&type, &protocol);
-  std::copy(DomainName::kLocalDomain.domain_name().begin(),
-            DomainName::kLocalDomain.domain_name().end(), domain.c);
+  const DomainName local_domain = DomainName::GetLocalDomain();
+  std::copy(local_domain.domain_name().begin(),
+            local_domain.domain_name().end(), domain.c);
   if (ConstructServiceName(&full_instance_name, &instance, &type, &domain))
     return MdnsResponderErrorCode::kInvalidParameters;
 
