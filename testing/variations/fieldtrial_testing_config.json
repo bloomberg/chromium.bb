@@ -5593,6 +5593,21 @@
             ]
         }
     ],
+    "WinOOPSelectFileDialog": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WinOOPSelectFileDialog"
+                    ]
+                }
+            ]
+        }
+    ],
     "WorkStealingInScriptRunner": [
         {
             "platforms": [
