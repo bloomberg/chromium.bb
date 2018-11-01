@@ -86,6 +86,15 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
                                std::move(new_client_request), original_loader,
                                original_client_request);
   }
+
+  void RestartWithFlags(int additional_load_flags) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithFlags(additional_load_flags);
+  }
+
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -393,6 +402,16 @@ void ThrottlingURLLoader::StartNow() {
   response_url_ = start_info_->url_request.url;
 }
 
+void ThrottlingURLLoader::RestartWithFlagsNow() {
+  DCHECK(has_pending_restart_);
+  url_loader_.reset();
+  client_binding_.Close();
+  start_info_->url_request.load_flags |= pending_restart_flags_;
+  has_pending_restart_ = false;
+  pending_restart_flags_ = 0;
+  StartNow();
+}
+
 bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
                                                bool throttle_deferred,
                                                bool* should_defer) {
@@ -415,6 +434,11 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
     Resume();
 }
 
+void ThrottlingURLLoader::RestartWithFlags(int additional_load_flags) {
+  pending_restart_flags_ |= additional_load_flags;
+  has_pending_restart_ = true;
+}
+
 void ThrottlingURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head) {
   debug_log_.emplace_back("OnReceiveResponse");
@@ -422,6 +446,36 @@ void ThrottlingURLLoader::OnReceiveResponse(
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
 
+  // Dispatch BeforeWillProcessResponse().
+  if (!throttles_.empty()) {
+    pending_restart_flags_ = 0;
+    has_pending_restart_ = false;
+    bool deferred = false;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      throttle->BeforeWillProcessResponse(response_url_, response_head,
+                                          &throttle_deferred);
+      if (!HandleThrottleResult(throttle, throttle_deferred, &deferred)) {
+        debug_log_.emplace_back("OnReceiveResponse::Return (before)");
+        return;
+      }
+    }
+
+    if (deferred) {
+      deferred_stage_ = DEFERRED_BEFORE_RESPONSE;
+      client_binding_.PauseIncomingMethodCallProcessing();
+      debug_log_.emplace_back("OnReceiveResponse::Deferred (before)");
+      return;
+    }
+
+    if (has_pending_restart_) {
+      RestartWithFlagsNow();
+      return;
+    }
+  }
+
+  // Dispatch WillProcessResponse().
   network::ResourceResponseHead response_head_copy = response_head;
   if (!throttles_.empty()) {
     bool deferred = false;
@@ -619,6 +673,17 @@ void ThrottlingURLLoader::Resume() {
       response_url_ = redirect_info_->redirect_info.new_url;
       forwarding_client_->OnReceiveRedirect(redirect_info_->redirect_info,
                                             redirect_info_->response_head);
+      // Note: |this| may be deleted here.
+      break;
+    }
+    case DEFERRED_BEFORE_RESPONSE: {
+      // TODO(eroman): For simplicity we require throttles that defer during
+      // BeforeWillProcessResponse() to do a restart. We could support deferring
+      // and choosing not to restart if needed, however the current consumers
+      // don't need that.
+      CHECK(has_pending_restart_);
+
+      RestartWithFlagsNow();
       // Note: |this| may be deleted here.
       break;
     }

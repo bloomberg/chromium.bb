@@ -2751,6 +2751,16 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
   return nullptr;
 }
 
+void AddDataReductionProxyBinding(
+    content::ResourceContext* resource_context,
+    data_reduction_proxy::mojom::DataReductionProxyRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (io_data && io_data->data_reduction_proxy_io_data()) {
+    io_data->data_reduction_proxy_io_data()->Clone(std::move(request));
+  }
+}
+
 }  // namespace
 
 void ChromeContentBrowserClient::SelectClientCertificate(
@@ -3575,6 +3585,12 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    registry->AddInterface(base::BindRepeating(
+        &AddDataReductionProxyBinding,
+        render_process_host->GetBrowserContext()->GetResourceContext()));
+  }
+
 #if defined(OS_WIN)
   // Add the ModuleEventSink interface. This is the interface used by renderer
   // processes to notify the browser of modules in their address space. The
@@ -4378,7 +4394,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
                                       request_options->GeneratePageId());
     result.push_back(std::make_unique<
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-        headers));
+        headers, io_data->data_reduction_proxy_io_data()));
   }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

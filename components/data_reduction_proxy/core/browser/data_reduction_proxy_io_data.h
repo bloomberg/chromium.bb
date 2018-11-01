@@ -21,10 +21,13 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace net {
@@ -49,7 +52,7 @@ class NetworkPropertiesManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
-class DataReductionProxyIOData {
+class DataReductionProxyIOData : public mojom::DataReductionProxy {
  public:
   // Constructs a DataReductionProxyIOData object. |enabled| sets the initial
   // state of the Data Reduction Proxy.
@@ -63,7 +66,7 @@ class DataReductionProxyIOData {
       const std::string& user_agent,
       const std::string& channel);
 
-  virtual ~DataReductionProxyIOData();
+  ~DataReductionProxyIOData() override;
 
   // Performs UI thread specific shutdown logic.
   void ShutdownOnUIThread();
@@ -209,6 +212,12 @@ class DataReductionProxyIOData {
   // The Client type of this build.
   Client client() const { return client_; }
 
+  // mojom::DataReductionProxy implementation:
+  void MarkProxiesAsBad(base::TimeDelta bypass_duration,
+                        const net::ProxyList& bad_proxies,
+                        MarkProxiesAsBadCallback callback) override;
+  void Clone(mojom::DataReductionProxyRequest request) override;
+
  private:
   friend class TestDataReductionProxyIOData;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyIODataTest, TestConstruction);
@@ -317,6 +326,8 @@ class DataReductionProxyIOData {
   net::EffectiveConnectionType effective_connection_type_;
 
   network::mojom::CustomProxyConfigClientPtr proxy_config_client_;
+
+  mojo::BindingSet<mojom::DataReductionProxy> bindings_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

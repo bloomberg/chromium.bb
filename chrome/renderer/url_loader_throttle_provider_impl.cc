@@ -118,6 +118,12 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
         content::mojom::kBrowserServiceName,
         mojo::MakeRequest(&safe_browsing_info_));
   }
+
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    content::RenderThread::Get()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName,
+        mojo::MakeRequest(&data_reduction_proxy_));
+  }
 }
 
 URLLoaderThrottleProviderImpl::~URLLoaderThrottleProviderImpl() {
@@ -131,6 +137,10 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   DETACH_FROM_THREAD(thread_checker_);
   if (other.safe_browsing_)
     other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
+  if (other.data_reduction_proxy_) {
+    other.data_reduction_proxy_->Clone(
+        mojo::MakeRequest(&data_reduction_proxy_));
+  }
   // An ad_delay_factory_ is created, rather than cloning the existing one.
 }
 
@@ -164,7 +174,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
     throttles.push_back(
         std::make_unique<
             data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-            net::HttpRequestHeaders()));
+            net::HttpRequestHeaders(), data_reduction_proxy_.get()));
   }
 
   if ((network_service_enabled ||

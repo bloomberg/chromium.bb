@@ -16,6 +16,7 @@
 
 namespace net {
 class HttpRequestHeaders;
+class ProxyResolutionService;
 class URLRequest;
 }  // namespace net
 
@@ -32,6 +33,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
       mojom::CustomProxyConfigPtr initial_config,
       mojom::CustomProxyConfigClientRequest config_client_request);
   ~NetworkServiceProxyDelegate() override;
+
+  void SetProxyResolutionService(
+      net::ProxyResolutionService* proxy_resolution_service) {
+    proxy_resolution_service_ = proxy_resolution_service;
+  }
 
   // These methods are forwarded from the NetworkDelegate.
   void OnBeforeStartTransaction(net::URLRequest* request,
@@ -69,6 +75,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // mojom::CustomProxyConfigClient implementation:
   void OnCustomProxyConfigUpdated(
       mojom::CustomProxyConfigPtr proxy_config) override;
+  void MarkProxiesAsBad(base::TimeDelta bypass_duration,
+                        const net::ProxyList& bad_proxies,
+                        MarkProxiesAsBadCallback callback) override;
 
   mojom::CustomProxyConfigPtr proxy_config_;
   mojo::Binding<mojom::CustomProxyConfigClient> binding_;
@@ -79,6 +88,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // if a request used a custom proxy if the config happened to change during
   // the request.
   std::deque<mojom::CustomProxyConfigPtr> previous_proxy_configs_;
+
+  net::ProxyResolutionService* proxy_resolution_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceProxyDelegate);
 };

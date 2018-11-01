@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -354,16 +355,8 @@ bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto found = retry_map.find(proxy_server.ToURI());
-
-  if (found == retry_map.end() || found->second.bad_until < GetTicksNow()) {
-    return false;
-  }
-
-  if (retry_delay)
-     *retry_delay = found->second.current_delay;
-
-  return true;
+  return IsProxyBypassedAtTime(retry_map, proxy_server, GetTicksNow(),
+                               retry_delay);
 }
 
 bool DataReductionProxyConfig::ContainsDataReductionProxy(

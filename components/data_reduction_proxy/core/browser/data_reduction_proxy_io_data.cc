@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -25,6 +24,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -436,6 +436,24 @@ void DataReductionProxyIOData::SetCustomProxyConfigClient(
     network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
   proxy_config_client_.Bind(std::move(config_client_info));
   UpdateCustomProxyConfig();
+}
+
+void DataReductionProxyIOData::MarkProxiesAsBad(
+    base::TimeDelta bypass_duration,
+    const net::ProxyList& bad_proxies,
+    mojom::DataReductionProxy::MarkProxiesAsBadCallback callback) {
+  // TODO(https://crbug.com/721403): Do sanity checks on |bypass_duration| and
+  // |bad_proxies|.
+  //
+  // In particular need to enforce that only data reduction
+  // proxies are permitted to be marked as bad. Allowing renderers to
+  // arbitrarily bypass *any* proxy would be a more powerful capability.
+  proxy_config_client_->MarkProxiesAsBad(bypass_duration, bad_proxies,
+                                         std::move(callback));
+}
+
+void DataReductionProxyIOData::Clone(mojom::DataReductionProxyRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace data_reduction_proxy

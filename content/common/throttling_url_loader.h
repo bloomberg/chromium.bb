@@ -28,9 +28,9 @@ namespace content {
 
 // ThrottlingURLLoader is a wrapper around the
 // network::mojom::URLLoader[Factory] interfaces. It applies a list of
-// URLLoaderThrottle instances which could defer, resume or cancel the URL
-// loading. If the Mojo connection fails during the request it is canceled with
-// net::ERR_ABORTED.
+// URLLoaderThrottle instances which could defer, resume restart or cancel the
+// URL loading. If the Mojo connection fails during the request it is canceled
+// with net::ERR_ABORTED.
 class CONTENT_EXPORT ThrottlingURLLoader
     : public network::mojom::URLLoaderClient {
  public:
@@ -96,6 +96,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void StartNow();
+  void RestartWithFlagsNow();
 
   // Processes the result of a URLLoaderThrottle call, adding the throttle to
   // the blocking set if it deferred and updating |*should_defer| accordingly.
@@ -109,6 +110,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // deferring throttle, the request remains deferred. Otherwise it resumes
   // progress.
   void StopDeferringForThrottle(URLLoaderThrottle* throttle);
+
+  void RestartWithFlags(int additional_load_flags);
 
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
@@ -150,6 +153,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
     DEFERRED_NONE,
     DEFERRED_START,
     DEFERRED_REDIRECT,
+    DEFERRED_BEFORE_RESPONSE,
     DEFERRED_RESPONSE
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
@@ -255,6 +259,9 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   base::Optional<std::vector<std::string>> to_be_removed_request_headers_;
   base::Optional<net::HttpRequestHeaders> modified_request_headers_;
+
+  int pending_restart_flags_ = 0;
+  bool has_pending_restart_ = false;
 
   base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_;
 
