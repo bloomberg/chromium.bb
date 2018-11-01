@@ -1088,9 +1088,12 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_SITE;
       break;
     case NotifierId::SYSTEM_COMPONENT:
-    case NotifierId::SIZE:
       block_notifications_message_id =
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS;
+      break;
+    case NotifierId::CROSTINI_APPLICATION:
+    case NotifierId::SIZE:
+      NOTREACHED();
       break;
   }
   DCHECK_NE(block_notifications_message_id, 0);

@@ -47,6 +47,12 @@ void MessageCenterStatsCollector::NotificationStats::RecordAggregateStats() {
   }
 }
 
+void MessageCenterStatsCollector::RecordNotifierType(
+    NotifierId::NotifierType type) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.NotifierType", type,
+                            NotifierId::NotifierType::SIZE);
+}
+
 MessageCenterStatsCollector::MessageCenterStatsCollector(
     MessageCenter* message_center)
     : message_center_(message_center) {
@@ -65,6 +71,11 @@ void MessageCenterStatsCollector::OnNotificationAdded(
   DCHECK(iter != stats_.end());
 
   stats_[notification_id].CollectAction(NOTIFICATION_ACTION_ADD);
+
+  const auto* notification =
+      message_center_->FindVisibleNotificationById(notification_id);
+  if (notification)
+    RecordNotifierType(notification->notifier_id().type);
 }
 
 void MessageCenterStatsCollector::OnNotificationRemoved(

@@ -63,8 +63,11 @@ Notification::Notification(
     const base::RepeatingCallback<void(const base::Optional<int>&)>&
         click_callback)
     : notification_id_(notification_id) {
+  // Currently, exo::Notification is used only for Crostini notifications.
+  // TODO(toshikikikuchi): When this class is used for other reasons,
+  // re-consider the way to set the notifier type.
   auto notifier = message_center::NotifierId(
-      message_center::NotifierId::APPLICATION, notifier_id);
+      message_center::NotifierId::CROSTINI_APPLICATION, notifier_id);
   notifier.profile_id = ash::Shell::Get()
                             ->session_controller()
                             ->GetPrimaryUserSession()
