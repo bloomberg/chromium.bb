@@ -282,10 +282,13 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   CreateShell();
 
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  aura::test::EnvTestHelper env_helper(Shell::Get()->aura_env());
+  env_helper.ResetEnvForTesting();
+
   aura::test::SetEnvForTestWindows(Shell::Get()->aura_env());
 
-  aura::test::EnvTestHelper(Shell::Get()->aura_env())
-      .SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
+  env_helper.SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::Get();
 

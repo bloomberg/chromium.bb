@@ -134,6 +134,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   }
 
   EnvTestHelper env_helper(env);
+
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  env_helper.ResetEnvForTesting();
+
   if (env_mode == Env::Mode::MUS) {
     env_window_tree_client_setter_ =
         std::make_unique<EnvWindowTreeClientSetter>(window_tree_client_);

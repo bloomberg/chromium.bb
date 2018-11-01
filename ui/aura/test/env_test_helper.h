@@ -67,6 +67,10 @@ class EnvTestHelper {
     env_->always_use_last_mouse_location_ = value;
   }
 
+  // Reset aura::Env to eliminate potential test dependency.
+  // (https://crbug.com/586514)
+  void ResetEnvForTesting() { env_->is_touch_down_ = false; }
+
   void SetGestureRecognizer(
       std::unique_ptr<ui::GestureRecognizer> gesture_recognizer) {
     env_->gesture_recognizer_ = std::move(gesture_recognizer);

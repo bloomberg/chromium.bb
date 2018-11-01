@@ -284,7 +284,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
   mutable gfx::Point last_mouse_location_;
-  bool is_touch_down_;
+  bool is_touch_down_ = false;
   bool get_last_mouse_location_from_mus_;
   // This may be set to true in tests to force using |last_mouse_location_|
   // rather than querying WindowTreeClient.
