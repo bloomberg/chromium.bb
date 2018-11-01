@@ -34,11 +34,6 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
-    # https://crbug.com/868599
-    'WindowTest.testCanMaximizeTheWindowFromFrame',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
-    'WindowTest.testCanMaximizeTheWindow',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
