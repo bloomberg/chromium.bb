@@ -80,6 +80,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   void AddObserver(WindowTreeHostObserver* observer);
   void RemoveObserver(WindowTreeHostObserver* observer);
+  bool HasObserver(const WindowTreeHostObserver* observer) const;
 
   Window* window() { return window_; }
   const Window* window() const { return window_; }
@@ -229,6 +230,18 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // WindowEventDispatcher during event dispatch.
   virtual bool ShouldSendKeyEventToIme();
 
+  // Enables native window occlusion tracking for the native window this host
+  // represents.
+  virtual void EnableNativeWindowOcclusionTracking();
+
+  // Disables native window occlusion tracking for the native window this host
+  // represents.
+  virtual void DisableNativeWindowOcclusionTracking();
+
+  // Remembers the current occlusion state, and if it has changed, notifies
+  // observers of the change.
+  virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
@@ -327,6 +340,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // attempt to reach back up to access this object which will be valid until
   // the end of the dtor).
   Window* window_;  // Owning.
+
+  // Keeps track of the occlusion state of the host, and used to send
+  // notifications to observers when it changes.
+  Window::OcclusionState occlusion_state_;
 
   base::ObserverList<WindowTreeHostObserver>::Unchecked observers_;
 

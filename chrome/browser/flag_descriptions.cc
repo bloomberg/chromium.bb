@@ -2859,6 +2859,12 @@ const char kGoogleBrandedContextMenuDescription[] =
 
 #if defined(OS_WIN)
 
+const char kCalculateNativeWinOcclusionName[] =
+    "Calculate window occlusion on Windows";
+const char kCalculateNativeWinOcclusionDescription[] =
+    "Calculate window occlusion on Windows will be used in the future "
+    "to throttle and potentially unload foreground tabs in occluded windows";
+
 const char kCloudPrintXpsName[] = "XPS in Google Cloud Print";
 const char kCloudPrintXpsDescription[] =
     "XPS enables advanced options for classic printers connected to the Cloud "

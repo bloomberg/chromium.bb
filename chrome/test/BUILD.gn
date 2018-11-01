@@ -4796,6 +4796,7 @@ if (!is_android) {
 
     if (use_aura) {
       sources += [ "../browser/ui/views/drag_and_drop_interactive_uitest.cc" ]
+      deps += [ "//ui/aura:aura_interactive_ui_tests" ]
     } else {
       sources -= [
         "base/interactive_test_utils_aura.cc",

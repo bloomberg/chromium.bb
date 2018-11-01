@@ -15,6 +15,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/win/shell.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/corewm/tooltip_win.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -175,7 +177,6 @@ DesktopWindowTreeHostWin::CreateDragDropClient(
 
 void DesktopWindowTreeHostWin::Close() {
   content_window()->Hide();
-
   // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;
@@ -880,6 +881,9 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
+  // TODO(davidbienvenu): Check for getting mouse events for an occluded window
+  // with either a DCHECK or a stat.  Event can cause this object to be deleted
+  // so look at occlusion state before we do anything with the event.
   SendEventToSink(event);
   return event->handled();
 }

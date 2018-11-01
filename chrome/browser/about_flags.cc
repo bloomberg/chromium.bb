@@ -4326,6 +4326,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHomeLauncherGesturesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableHomeLauncherGestures)},
 #endif
+#if defined(OS_WIN)
+    {"calculate-native-win-occlusion",
+     flag_descriptions::kCalculateNativeWinOcclusionName,
+     flag_descriptions::kCalculateNativeWinOcclusionDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kCalculateNativeWinOcclusion)},
+#endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
     {"happiness-tarcking-surveys-for-desktop",

@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -445,9 +446,18 @@ void WindowOcclusionTracker::TrackedWindowAddedToRoot(Window* window) {
   DCHECK(root_window);
   RootWindowState& root_window_state = root_windows_[root_window];
   ++root_window_state.num_tracked_windows;
-  if (root_window_state.num_tracked_windows == 1)
-    AddObserverToWindowAndDescendants(root_window);
   MarkRootWindowAsDirty(&root_window_state);
+
+  // It's only useful to track the host if |window| is the first tracked window
+  // under |root_window|.  All windows under the same root have the same host.
+  if (root_window_state.num_tracked_windows == 1) {
+    AddObserverToWindowAndDescendants(root_window);
+    auto* host = root_window->GetHost();
+    if (host) {
+      host->AddObserver(this);
+      host->EnableNativeWindowOcclusionTracking();
+    }
+  }
   MaybeComputeOcclusion();
 }
 
@@ -460,6 +470,8 @@ void WindowOcclusionTracker::TrackedWindowRemovedFromRoot(Window* window) {
   if (root_window_state_it->second.num_tracked_windows == 0) {
     RemoveObserverFromWindowAndDescendants(root_window);
     root_windows_.erase(root_window_state_it);
+    root_window->GetHost()->RemoveObserver(this);
+    root_window->GetHost()->DisableNativeWindowOcclusionTracking();
   }
 }
 
@@ -645,5 +657,9 @@ void WindowOcclusionTracker::OnWindowLayerRecreated(Window* window) {
     MaybeComputeOcclusion();
   }
 }
+
+void WindowOcclusionTracker::OnOcclusionStateChanged(
+    WindowTreeHost* host,
+    aura::Window::OcclusionState new_state) {}
 
 }  // namespace aura

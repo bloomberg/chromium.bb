@@ -32,6 +32,7 @@ UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
 
 #if defined(OS_WIN)
+UI_BASE_EXPORT extern const base::Feature kCalculateNativeWinOcclusion;
 UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
 UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpad;

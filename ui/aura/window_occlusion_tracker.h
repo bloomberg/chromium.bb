@@ -16,6 +16,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 
 struct SkIRect;
@@ -46,7 +47,8 @@ class Env;
 // Note that an occluded window may be drawn on the screen by window switching
 // features such as "Alt-Tab" or "Overview".
 class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
-                                           public WindowObserver {
+                                           public WindowObserver,
+                                           public WindowTreeHostObserver {
  public:
   // Prevents window occlusion state computations within its scope. If an event
   // that could cause window occlusion states to change occurs within the scope
@@ -232,6 +234,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Windows whose occlusion data is tracked.
   base::flat_map<Window*, OcclusionData> tracked_windows_;
+  // WindowTreeHostObserver
+  void OnOcclusionStateChanged(WindowTreeHost* host,
+                               Window::OcclusionState new_state) override;
 
   // Windows whose bounds or transform are animated.
   //

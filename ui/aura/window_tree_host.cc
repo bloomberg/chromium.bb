@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -38,6 +39,10 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+
+#if defined(OS_WIN)
+#include "ui/aura/native_window_occlusion_tracker_win.h"
+#endif  // OS_WIN
 
 namespace aura {
 
@@ -78,6 +83,12 @@ class ScopedLocalSurfaceIdValidator {
 };
 #endif
 
+#if defined(OS_WIN)
+bool IsNativeWindowOcclusionEnabled() {
+  return base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
+}
+#endif  // OS_WIN
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,6 +127,10 @@ void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
 
 void WindowTreeHost::RemoveObserver(WindowTreeHostObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool WindowTreeHost::HasObserver(const WindowTreeHostObserver* observer) const {
+  return observers_.HasObserver(observer);
 }
 
 ui::EventSink* WindowTreeHost::event_sink() {
@@ -292,11 +307,38 @@ bool WindowTreeHost::ShouldSendKeyEventToIme() {
   return true;
 }
 
+void WindowTreeHost::EnableNativeWindowOcclusionTracking() {
+#if defined(OS_WIN)
+  if (IsNativeWindowOcclusionEnabled()) {
+    NativeWindowOcclusionTrackerWin::GetOrCreateInstance()->Enable(window());
+  }
+#endif  // OS_WIN
+}
+
+void WindowTreeHost::DisableNativeWindowOcclusionTracking() {
+#if defined(OS_WIN)
+  if (IsNativeWindowOcclusionEnabled()) {
+    occlusion_state_ = Window::OcclusionState::UNKNOWN;
+    NativeWindowOcclusionTrackerWin::GetOrCreateInstance()->Disable(window());
+  }
+#endif  // OS_WIN
+}
+
+void WindowTreeHost::SetNativeWindowOcclusionState(
+    Window::OcclusionState state) {
+  if (occlusion_state_ != state) {
+    occlusion_state_ = state;
+    for (WindowTreeHostObserver& observer : observers_)
+      observer.OnOcclusionStateChanged(this, state);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
 WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
     : window_(window.release()),  // See header for details on ownership.
+      occlusion_state_(Window::OcclusionState::UNKNOWN),
       last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
       owned_input_method_(false),
