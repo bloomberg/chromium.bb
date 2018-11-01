@@ -192,7 +192,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(
                     settings.bounds.x() + settings.bounds.width(),
                     settings.bounds.y() + settings.bounds.height());
 
-  int flags = FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH;
+  int flags = FPDF_ANNOT | FPDF_PRINTING;
   if (!settings.use_color)
     flags |= FPDF_GRAYSCALE;
 
@@ -272,7 +272,7 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   // Shift top-left corner of bounds to (0, 0) if it's not there.
   dest.set_point(dest.point() - settings.bounds.point());
 
-  int flags = FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH;
+  int flags = FPDF_ANNOT | FPDF_PRINTING;
   if (!settings.use_color)
     flags |= FPDF_GRAYSCALE;
 
