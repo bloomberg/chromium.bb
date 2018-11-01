@@ -41,7 +41,7 @@ class RTCDTMFToneChangeEvent final : public Event {
   static RTCDTMFToneChangeEvent* Create(const String& tone);
   static RTCDTMFToneChangeEvent* Create(
       const AtomicString& type,
-      const RTCDTMFToneChangeEventInit& initializer);
+      const RTCDTMFToneChangeEventInit* initializer);
 
   const String& tone() const;
 
@@ -51,7 +51,7 @@ class RTCDTMFToneChangeEvent final : public Event {
 
  private:
   explicit RTCDTMFToneChangeEvent(const String& tone);
-  explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
+  explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit*);
 
   String tone_;
 };

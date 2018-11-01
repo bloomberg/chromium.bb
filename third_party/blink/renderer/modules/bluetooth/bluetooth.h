@@ -26,7 +26,7 @@ class Bluetooth final : public ScriptWrappable {
 
   // IDL exposed interface:
   ScriptPromise requestDevice(ScriptState*,
-                              const RequestDeviceOptions&,
+                              const RequestDeviceOptions*,
                               ExceptionState&);
 
   mojom::blink::WebBluetoothService* Service() { return service_.get(); }

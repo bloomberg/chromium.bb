@@ -49,7 +49,7 @@ class FocusEvent final : public UIEvent {
   }
 
   static FocusEvent* Create(const AtomicString& type,
-                            const FocusEventInit& initializer) {
+                            const FocusEventInit* initializer) {
     return new FocusEvent(type, initializer);
   }
 
@@ -73,7 +73,7 @@ class FocusEvent final : public UIEvent {
              int,
              EventTarget*,
              InputDeviceCapabilities*);
-  FocusEvent(const AtomicString& type, const FocusEventInit&);
+  FocusEvent(const AtomicString& type, const FocusEventInit*);
 
   Member<EventTarget> related_target_;
 };

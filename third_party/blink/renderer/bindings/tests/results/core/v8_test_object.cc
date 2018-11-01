@@ -5569,35 +5569,25 @@ static void dictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
 static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  TestDictionary result;
-  impl->testDictionaryMethod(result);
+  TestDictionary* result = impl->testDictionaryMethod();
   V8SetReturnValue(info, result);
 }
 
 static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<TestDictionary> result;
-  impl->nullableTestDictionaryMethod(result);
-  if (!result)
-    V8SetReturnValueNull(info);
-  else
-    V8SetReturnValue(info, result.value());
+  TestDictionary* result = impl->nullableTestDictionaryMethod();
+  V8SetReturnValue(info, result);
 }
 
 static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestDictionary result;
-  TestObject::staticTestDictionaryMethod(result);
+  TestDictionary* result = TestObject::staticTestDictionaryMethod();
   V8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void staticNullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  base::Optional<TestDictionary> result;
-  TestObject::staticNullableTestDictionaryMethod(result);
-  if (!result)
-    V8SetReturnValueNull(info);
-  else
-    V8SetReturnValue(info, result.value(), info.GetIsolate()->GetCurrentContext()->Global());
+  TestDictionary* result = TestObject::staticNullableTestDictionaryMethod();
+  V8SetReturnValue(info, result, info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5605,8 +5595,8 @@ static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  TestDictionary arg;
-  V8TestDictionary::ToImpl(info.GetIsolate(), info[0], arg, exceptionState);
+  TestDictionary* arg;
+  arg = NativeValueTraits<TestDictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -7074,12 +7064,12 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  TestDictionary testDictionaryArg;
+  TestDictionary* testDictionaryArg;
   if (!info[0]->IsNullOrUndefined() && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('testDictionaryArg') is not an object.");
     return;
   }
-  V8TestDictionary::ToImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState);
+  testDictionaryArg = NativeValueTraits<TestDictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 

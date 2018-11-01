@@ -109,10 +109,10 @@ class VRDisplay final : public EventTargetWithInlineData,
   void cancelAnimationFrame(int id);
 
   ScriptPromise requestPresent(ScriptState*,
-                               const HeapVector<VRLayerInit>& layers);
+                               const HeapVector<Member<VRLayerInit>>& layers);
   ScriptPromise exitPresent(ScriptState*);
 
-  HeapVector<VRLayerInit> getLayers();
+  HeapVector<Member<VRLayerInit>> getLayers();
 
   void submitFrame();
 
@@ -219,7 +219,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   // VR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.
   int16_t vr_frame_id_ = -1;
-  VRLayerInit layer_;
+  Member<VRLayerInit> layer_;
   double depth_near_ = 0.01;
   double depth_far_ = 10000.0;
 

@@ -39,7 +39,7 @@ class MediaEncryptedEvent final : public Event {
 
   static MediaEncryptedEvent* Create(
       const AtomicString& type,
-      const MediaEncryptedEventInit& initializer) {
+      const MediaEncryptedEventInit* initializer) {
     return new MediaEncryptedEvent(type, initializer);
   }
 
@@ -52,7 +52,7 @@ class MediaEncryptedEvent final : public Event {
 
  private:
   MediaEncryptedEvent(const AtomicString& type,
-                      const MediaEncryptedEventInit& initializer);
+                      const MediaEncryptedEventInit* initializer);
 
   String init_data_type_;
   Member<DOMArrayBuffer> init_data_;

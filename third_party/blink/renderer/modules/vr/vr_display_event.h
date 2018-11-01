@@ -26,7 +26,7 @@ class VRDisplayEvent final : public Event {
                                 device::mojom::blink::VRDisplayEventReason);
 
   static VRDisplayEvent* Create(const AtomicString& type,
-                                const VRDisplayEventInit& initializer) {
+                                const VRDisplayEventInit* initializer) {
     return new VRDisplayEvent(type, initializer);
   }
 
@@ -44,7 +44,7 @@ class VRDisplayEvent final : public Event {
   VRDisplayEvent(const AtomicString& type,
                  VRDisplay*,
                  String);
-  VRDisplayEvent(const AtomicString&, const VRDisplayEventInit&);
+  VRDisplayEvent(const AtomicString&, const VRDisplayEventInit*);
 
   Member<VRDisplay> display_;
   String reason_;

@@ -28,7 +28,7 @@ Animation* ElementAnimation::animate(
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeAnimationOptions()) {
     composite = EffectModel::StringToCompositeOperation(
-                    options.GetAsKeyframeAnimationOptions().composite())
+                    options.GetAsKeyframeAnimationOptions()->composite())
                     .value();
   }
 
@@ -44,7 +44,7 @@ Animation* ElementAnimation::animate(
 
   Animation* animation = animateInternal(element, effect, timing);
   if (options.IsKeyframeAnimationOptions())
-    animation->setId(options.GetAsKeyframeAnimationOptions().id());
+    animation->setId(options.GetAsKeyframeAnimationOptions()->id());
   return animation;
 }
 

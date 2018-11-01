@@ -78,24 +78,25 @@ static Vector<String> ConvertInitDataTypes(
   return result;
 }
 
-static HeapVector<MediaKeySystemMediaCapability> ConvertCapabilities(
+static HeapVector<Member<MediaKeySystemMediaCapability>> ConvertCapabilities(
     const WebVector<WebMediaKeySystemMediaCapability>& capabilities) {
-  HeapVector<MediaKeySystemMediaCapability> result(
+  HeapVector<Member<MediaKeySystemMediaCapability>> result(
       SafeCast<wtf_size_t>(capabilities.size()));
   for (wtf_size_t i = 0; i < result.size(); i++) {
-    MediaKeySystemMediaCapability capability;
-    capability.setContentType(capabilities[i].content_type);
-    capability.setRobustness(capabilities[i].robustness);
+    MediaKeySystemMediaCapability* capability =
+        MediaKeySystemMediaCapability::Create();
+    capability->setContentType(capabilities[i].content_type);
+    capability->setRobustness(capabilities[i].robustness);
 
     switch (capabilities[i].encryption_scheme) {
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified:
-        capability.setEncryptionSchemeToNull();
+        capability->setEncryptionSchemeToNull();
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc:
-        capability.setEncryptionScheme("cenc");
+        capability->setEncryptionScheme("cenc");
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs:
-        capability.setEncryptionScheme("cbcs");
+        capability->setEncryptionScheme("cbcs");
         break;
     }
 
@@ -136,32 +137,32 @@ MediaKeySystemAccess::MediaKeySystemAccess(
 
 MediaKeySystemAccess::~MediaKeySystemAccess() = default;
 
-void MediaKeySystemAccess::getConfiguration(
-    MediaKeySystemConfiguration& result) {
+MediaKeySystemConfiguration* MediaKeySystemAccess::getConfiguration() const {
   WebMediaKeySystemConfiguration configuration = access_->GetConfiguration();
-
+  MediaKeySystemConfiguration* result = MediaKeySystemConfiguration::Create();
   // |initDataTypes|, |audioCapabilities|, and |videoCapabilities| can only be
   // empty if they were not present in the requested configuration.
   if (!configuration.init_data_types.IsEmpty())
-    result.setInitDataTypes(
+    result->setInitDataTypes(
         ConvertInitDataTypes(configuration.init_data_types));
   if (!configuration.audio_capabilities.IsEmpty())
-    result.setAudioCapabilities(
+    result->setAudioCapabilities(
         ConvertCapabilities(configuration.audio_capabilities));
   if (!configuration.video_capabilities.IsEmpty())
-    result.setVideoCapabilities(
+    result->setVideoCapabilities(
         ConvertCapabilities(configuration.video_capabilities));
 
   // |distinctiveIdentifier|, |persistentState|, and |sessionTypes| are always
   // set by requestMediaKeySystemAccess().
-  result.setDistinctiveIdentifier(
+  result->setDistinctiveIdentifier(
       ConvertMediaKeysRequirement(configuration.distinctive_identifier));
-  result.setPersistentState(
+  result->setPersistentState(
       ConvertMediaKeysRequirement(configuration.persistent_state));
-  result.setSessionTypes(ConvertSessionTypes(configuration.session_types));
+  result->setSessionTypes(ConvertSessionTypes(configuration.session_types));
 
   // |label| will (and should) be a null string if it was not set.
-  result.setLabel(configuration.label);
+  result->setLabel(configuration.label);
+  return result;
 }
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {

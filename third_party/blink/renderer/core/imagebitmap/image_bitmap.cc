@@ -60,54 +60,54 @@ static inline IntRect NormalizeRect(const IntRect& rect) {
   return IntRect(x, y, width, height);
 }
 
-ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
+ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
                                         base::Optional<IntRect> crop_rect,
                                         IntSize source_size) {
   ImageBitmap::ParsedOptions parsed_options;
-  if (options.imageOrientation() == kImageOrientationFlipY) {
+  if (options->imageOrientation() == kImageOrientationFlipY) {
     parsed_options.flip_y = true;
   } else {
     parsed_options.flip_y = false;
-    DCHECK(options.imageOrientation() == kImageBitmapOptionNone);
+    DCHECK(options->imageOrientation() == kImageBitmapOptionNone);
   }
 
-  if (options.imagePixelFormat() == kImageBitmapPixelFormatUint8Name)
+  if (options->imagePixelFormat() == kImageBitmapPixelFormatUint8Name)
     parsed_options.pixel_format = kImageBitmapPixelFormat_Uint8;
 
-  if (options.premultiplyAlpha() == kImageBitmapOptionNone) {
+  if (options->premultiplyAlpha() == kImageBitmapOptionNone) {
     parsed_options.premultiply_alpha = false;
   } else {
     parsed_options.premultiply_alpha = true;
-    DCHECK(options.premultiplyAlpha() == kImageBitmapOptionDefault ||
-           options.premultiplyAlpha() == kImageBitmapOptionPremultiply);
+    DCHECK(options->premultiplyAlpha() == kImageBitmapOptionDefault ||
+           options->premultiplyAlpha() == kImageBitmapOptionPremultiply);
   }
 
   parsed_options.has_color_space_conversion =
-      (options.colorSpaceConversion() != kImageBitmapOptionNone);
+      (options->colorSpaceConversion() != kImageBitmapOptionNone);
   parsed_options.preserve_source_color_space =
-      (options.colorSpaceConversion() ==
+      (options->colorSpaceConversion() ==
        kPreserveImageBitmapColorSpaceConversion);
   parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
-  if (options.colorSpaceConversion() != kSRGBImageBitmapColorSpaceConversion &&
-      options.colorSpaceConversion() !=
+  if (options->colorSpaceConversion() != kSRGBImageBitmapColorSpaceConversion &&
+      options->colorSpaceConversion() !=
           kPreserveImageBitmapColorSpaceConversion &&
-      options.colorSpaceConversion() != kImageBitmapOptionNone &&
-      options.colorSpaceConversion() != kImageBitmapOptionDefault) {
+      options->colorSpaceConversion() != kImageBitmapOptionNone &&
+      options->colorSpaceConversion() != kImageBitmapOptionDefault) {
     parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
-    if (options.colorSpaceConversion() ==
+    if (options->colorSpaceConversion() ==
         kLinearRGBImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(
           kLinearRGBCanvasColorSpace);
-    } else if (options.colorSpaceConversion() ==
+    } else if (options->colorSpaceConversion() ==
                kP3ImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(kP3CanvasColorSpace);
-    } else if (options.colorSpaceConversion() ==
+    } else if (options->colorSpaceConversion() ==
                kRec2020ImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(kRec2020CanvasColorSpace);
     } else {
       NOTREACHED()
           << "Invalid ImageBitmap creation attribute colorSpaceConversion: "
-          << options.colorSpaceConversion();
+          << options->colorSpaceConversion();
     }
   }
 
@@ -118,21 +118,21 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
   } else {
     parsed_options.crop_rect = NormalizeRect(*crop_rect);
   }
-  if (!options.hasResizeWidth() && !options.hasResizeHeight()) {
+  if (!options->hasResizeWidth() && !options->hasResizeHeight()) {
     parsed_options.resize_width = parsed_options.crop_rect.Width();
     parsed_options.resize_height = parsed_options.crop_rect.Height();
-  } else if (options.hasResizeWidth() && options.hasResizeHeight()) {
-    parsed_options.resize_width = options.resizeWidth();
-    parsed_options.resize_height = options.resizeHeight();
-  } else if (options.hasResizeWidth() && !options.hasResizeHeight()) {
-    parsed_options.resize_width = options.resizeWidth();
+  } else if (options->hasResizeWidth() && options->hasResizeHeight()) {
+    parsed_options.resize_width = options->resizeWidth();
+    parsed_options.resize_height = options->resizeHeight();
+  } else if (options->hasResizeWidth() && !options->hasResizeHeight()) {
+    parsed_options.resize_width = options->resizeWidth();
     parsed_options.resize_height = ceil(
-        static_cast<float>(options.resizeWidth()) /
+        static_cast<float>(options->resizeWidth()) /
         parsed_options.crop_rect.Width() * parsed_options.crop_rect.Height());
   } else {
-    parsed_options.resize_height = options.resizeHeight();
+    parsed_options.resize_height = options->resizeHeight();
     parsed_options.resize_width = ceil(
-        static_cast<float>(options.resizeHeight()) /
+        static_cast<float>(options->resizeHeight()) /
         parsed_options.crop_rect.Height() * parsed_options.crop_rect.Width());
   }
   if (static_cast<int>(parsed_options.resize_width) ==
@@ -144,11 +144,11 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
   }
   parsed_options.should_scale_input = true;
 
-  if (options.resizeQuality() == kImageBitmapOptionResizeQualityHigh)
+  if (options->resizeQuality() == kImageBitmapOptionResizeQualityHigh)
     parsed_options.resize_quality = kHigh_SkFilterQuality;
-  else if (options.resizeQuality() == kImageBitmapOptionResizeQualityMedium)
+  else if (options->resizeQuality() == kImageBitmapOptionResizeQualityMedium)
     parsed_options.resize_quality = kMedium_SkFilterQuality;
-  else if (options.resizeQuality() == kImageBitmapOptionResizeQualityPixelated)
+  else if (options->resizeQuality() == kImageBitmapOptionResizeQualityPixelated)
     parsed_options.resize_quality = kNone_SkFilterQuality;
   else
     parsed_options.resize_quality = kLow_SkFilterQuality;
@@ -554,7 +554,7 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
 ImageBitmap::ImageBitmap(ImageElementBase* image,
                          base::Optional<IntRect> crop_rect,
                          Document* document,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   scoped_refptr<Image> input = image->CachedImage()->GetImage();
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
@@ -577,7 +577,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
                          base::Optional<IntRect> crop_rect,
                          Document* document,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, video->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options))
@@ -612,7 +612,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          base::Optional<IntRect> crop_rect,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> image_input = canvas->GetSourceImageForCanvas(
       &status, kPreferAcceleration, FloatSize());
@@ -638,7 +638,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
 
 ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
                          base::Optional<IntRect> crop_rect,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
       &status, kPreferNoAcceleration, FloatSize(offscreen_canvas->Size()));
@@ -687,7 +687,7 @@ ImageBitmap::ImageBitmap(const void* pixel_data,
 
 ImageBitmap::ImageBitmap(ImageData* data,
                          base::Optional<IntRect> crop_rect,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, data->BitmapSourceSize());
   // ImageData is always unpremul.
@@ -764,7 +764,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
                          base::Optional<IntRect> crop_rect,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   scoped_refptr<StaticBitmapImage> input = bitmap->BitmapImage();
   if (!input)
     return;
@@ -787,7 +787,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
 
 ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
                          base::Optional<IntRect> crop_rect,
-                         const ImageBitmapOptions& options) {
+                         const ImageBitmapOptions* options) {
   bool origin_clean = image->OriginClean();
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->Size());
@@ -841,44 +841,44 @@ ImageBitmap::~ImageBitmap() {
 ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
                                  base::Optional<IntRect> crop_rect,
                                  Document* document,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(image, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLVideoElement* video,
                                  base::Optional<IntRect> crop_rect,
                                  Document* document,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(video, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLCanvasElement* canvas,
                                  base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(canvas, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(OffscreenCanvas* offscreen_canvas,
                                  base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(offscreen_canvas, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageData* data,
                                  base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(data, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageBitmap* bitmap,
                                  base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(bitmap, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image,
                                  base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions& options) {
+                                 const ImageBitmapOptions* options) {
   return new ImageBitmap(std::move(image), crop_rect, options);
 }
 
@@ -960,7 +960,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                                        base::Optional<IntRect> crop_rect,
                                        Document* document,
                                        ScriptState* script_state,
-                                       const ImageBitmapOptions& options) {
+                                       const ImageBitmapOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -1078,7 +1078,7 @@ ScriptPromise ImageBitmap::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, Create(this, crop_rect, options));
 }

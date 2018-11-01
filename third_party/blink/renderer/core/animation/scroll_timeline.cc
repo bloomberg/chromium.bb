@@ -63,33 +63,34 @@ bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
 }  // namespace
 
 ScrollTimeline* ScrollTimeline::Create(Document& document,
-                                       ScrollTimelineOptions options,
+                                       ScrollTimelineOptions* options,
                                        ExceptionState& exception_state) {
-  Element* scroll_source = options.scrollSource() ? options.scrollSource()
-                                                  : document.scrollingElement();
+  Element* scroll_source = options->scrollSource()
+                               ? options->scrollSource()
+                               : document.scrollingElement();
 
   ScrollDirection orientation;
-  if (!StringToScrollDirection(options.orientation(), orientation)) {
+  if (!StringToScrollDirection(options->orientation(), orientation)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Invalid orientation");
     return nullptr;
   }
 
   CSSPrimitiveValue* start_scroll_offset = nullptr;
-  if (!StringToScrollOffset(options.startScrollOffset(),
+  if (!StringToScrollOffset(options->startScrollOffset(),
                             &start_scroll_offset)) {
     exception_state.ThrowTypeError("Invalid startScrollOffset");
     return nullptr;
   }
 
   CSSPrimitiveValue* end_scroll_offset = nullptr;
-  if (!StringToScrollOffset(options.endScrollOffset(), &end_scroll_offset)) {
+  if (!StringToScrollOffset(options->endScrollOffset(), &end_scroll_offset)) {
     exception_state.ThrowTypeError("Invalid endScrollOffset");
     return nullptr;
   }
 
   // TODO(smcgruer): Support 'auto' value.
-  if (options.timeRange().IsScrollTimelineAutoKeyword()) {
+  if (options->timeRange().IsScrollTimelineAutoKeyword()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "'auto' value for timeRange not yet supported");
@@ -98,7 +99,7 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
 
   return new ScrollTimeline(scroll_source, orientation, start_scroll_offset,
                             end_scroll_offset,
-                            options.timeRange().GetAsDouble());
+                            options->timeRange().GetAsDouble());
 }
 
 ScrollTimeline::ScrollTimeline(Element* scroll_source,

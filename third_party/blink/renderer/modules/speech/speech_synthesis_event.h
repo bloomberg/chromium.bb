@@ -37,7 +37,7 @@ class SpeechSynthesisEvent : public Event {
 
  public:
   static SpeechSynthesisEvent* Create(const AtomicString& type,
-                                      const SpeechSynthesisEventInit& init);
+                                      const SpeechSynthesisEventInit* init);
 
   SpeechSynthesisUtterance* utterance() const { return utterance_; }
   unsigned charIndex() const { return char_index_; }

@@ -300,9 +300,9 @@ void HTMLMarqueeElement::ContinueAnimation() {
 
   StringKeyframeEffectModel* effect_model = CreateEffectModel(parameters);
   Timing timing;
-  OptionalEffectTiming effect_timing;
-  effect_timing.setFill("forwards");
-  effect_timing.setDuration(
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setFill("forwards");
+  effect_timing->setDuration(
       UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration));
   TimingInput::Update(timing, effect_timing, nullptr, ASSERT_NO_EXCEPTION);
 

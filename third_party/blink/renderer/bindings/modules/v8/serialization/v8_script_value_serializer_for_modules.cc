@@ -67,11 +67,12 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Point2D>& corner_points = detected_barcode->cornerPoints();
+    const HeapVector<Member<Point2D>>& corner_points =
+        detected_barcode->cornerPoints();
     WriteUint32(static_cast<uint32_t>(corner_points.size()));
     for (const auto& corner_point : corner_points) {
-      WriteDouble(corner_point.x());
-      WriteDouble(corner_point.y());
+      WriteDouble(corner_point->x());
+      WriteDouble(corner_point->y());
     }
     return true;
   }
@@ -83,15 +84,15 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Landmark>& landmarks = detected_face->landmarks();
+    const HeapVector<Member<Landmark>>& landmarks = detected_face->landmarks();
     WriteUint32(static_cast<uint32_t>(landmarks.size()));
     for (const auto& landmark : landmarks) {
-      WriteUTF8String(landmark.type());
-      const HeapVector<Point2D>& locations = landmark.locations();
+      WriteUTF8String(landmark->type());
+      const HeapVector<Member<Point2D>>& locations = landmark->locations();
       WriteUint32(static_cast<uint32_t>(locations.size()));
       for (const auto& location : locations) {
-        WriteDouble(location.x());
-        WriteDouble(location.y());
+        WriteDouble(location->x());
+        WriteDouble(location->y());
       }
     }
     return true;
@@ -105,11 +106,12 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Point2D>& corner_points = detected_text->cornerPoints();
+    const HeapVector<Member<Point2D>>& corner_points =
+        detected_text->cornerPoints();
     WriteUint32(static_cast<uint32_t>(corner_points.size()));
     for (const auto& corner_point : corner_points) {
-      WriteDouble(corner_point.x());
-      WriteDouble(corner_point.y());
+      WriteDouble(corner_point->x());
+      WriteDouble(corner_point->y());
     }
     return true;
   }

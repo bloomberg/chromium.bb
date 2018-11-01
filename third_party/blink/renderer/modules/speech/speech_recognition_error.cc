@@ -67,7 +67,7 @@ SpeechRecognitionError* SpeechRecognitionError::Create(
 
 SpeechRecognitionError* SpeechRecognitionError::Create(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit& initializer) {
+    const SpeechRecognitionErrorInit* initializer) {
   return new SpeechRecognitionError(event_name, initializer);
 }
 
@@ -79,12 +79,12 @@ SpeechRecognitionError::SpeechRecognitionError(const String& error,
 
 SpeechRecognitionError::SpeechRecognitionError(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit& initializer)
+    const SpeechRecognitionErrorInit* initializer)
     : Event(event_name, initializer) {
-  if (initializer.hasError())
-    error_ = initializer.error();
-  if (initializer.hasMessage())
-    message_ = initializer.message();
+  if (initializer->hasError())
+    error_ = initializer->error();
+  if (initializer->hasMessage())
+    message_ = initializer->message();
 }
 
 const AtomicString& SpeechRecognitionError::InterfaceName() const {

@@ -62,7 +62,7 @@ class ErrorEvent final : public Event {
 
   static ErrorEvent* Create(ScriptState* script_state,
                             const AtomicString& type,
-                            const ErrorEventInit& initializer) {
+                            const ErrorEventInit* initializer) {
     return new ErrorEvent(script_state, type, initializer);
   }
   static ErrorEvent* CreateSanitizedError(DOMWrapperWorld* world) {
@@ -103,7 +103,7 @@ class ErrorEvent final : public Event {
              std::unique_ptr<SourceLocation>,
              ScriptValue error,
              DOMWrapperWorld*);
-  ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit&);
+  ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit*);
 
   String unsanitized_message_;
   String sanitized_message_;

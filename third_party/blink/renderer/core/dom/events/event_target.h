@@ -141,7 +141,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                         const AddEventListenerOptionsOrBoolean&);
   bool addEventListener(const AtomicString& event_type,
                         EventListener*,
-                        AddEventListenerOptionsResolved&);
+                        AddEventListenerOptionsResolved*);
 
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
@@ -151,7 +151,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                            const EventListenerOptionsOrBoolean&);
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
-                           EventListenerOptions&);
+                           EventListenerOptions*);
   virtual void RemoveAllEventListeners();
 
   DispatchEventResult DispatchEvent(Event&);
@@ -191,10 +191,10 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   virtual bool AddEventListenerInternal(const AtomicString& event_type,
                                         EventListener*,
-                                        const AddEventListenerOptionsResolved&);
+                                        const AddEventListenerOptionsResolved*);
   virtual bool RemoveEventListenerInternal(const AtomicString& event_type,
                                            const EventListener*,
-                                           const EventListenerOptions&);
+                                           const EventListenerOptions*);
 
   // Called when an event listener has been successfully added.
   virtual void AddedEventListener(const AtomicString& event_type,
@@ -216,7 +216,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   LocalDOMWindow* ExecutingWindow();
   void SetDefaultAddEventListenerOptions(const AtomicString& event_type,
                                          EventListener*,
-                                         AddEventListenerOptionsResolved&);
+                                         AddEventListenerOptionsResolved*);
 
   RegisteredEventListener* GetAttributeRegisteredEventListener(
       const AtomicString& event_type);

@@ -15,7 +15,7 @@ class AbsoluteOrientationSensor final : public OrientationSensor {
 
  public:
   static AbsoluteOrientationSensor* Create(ExecutionContext*,
-                                           const SpatialSensorOptions&,
+                                           const SpatialSensorOptions*,
                                            ExceptionState&);
   static AbsoluteOrientationSensor* Create(ExecutionContext*, ExceptionState&);
 
@@ -23,7 +23,7 @@ class AbsoluteOrientationSensor final : public OrientationSensor {
 
  private:
   AbsoluteOrientationSensor(ExecutionContext*,
-                            const SpatialSensorOptions&,
+                            const SpatialSensorOptions*,
                             ExceptionState&);
 };
 

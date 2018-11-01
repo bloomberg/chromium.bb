@@ -996,10 +996,11 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedBarcode) {
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Point2D>& corner_points = detected_barcode->cornerPoints();
+  const HeapVector<Member<Point2D>>& corner_points =
+      detected_barcode->cornerPoints();
   EXPECT_EQ(1u, corner_points.size());
-  EXPECT_EQ(1, corner_points[0].x());
-  EXPECT_EQ(2, corner_points[0].y());
+  EXPECT_EQ(1, corner_points[0]->x());
+  EXPECT_EQ(2, corner_points[0]->y());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedFace) {
@@ -1020,13 +1021,13 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedFace) {
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Landmark>& landmarks = detected_face->landmarks();
+  const HeapVector<Member<Landmark>>& landmarks = detected_face->landmarks();
   EXPECT_EQ(1u, landmarks.size());
-  EXPECT_EQ("eye", landmarks[0].type());
-  const HeapVector<Point2D>& locations = landmarks[0].locations();
+  EXPECT_EQ("eye", landmarks[0]->type());
+  const HeapVector<Member<Point2D>>& locations = landmarks[0]->locations();
   EXPECT_EQ(1u, locations.size());
-  EXPECT_EQ(1, locations[0].x());
-  EXPECT_EQ(2, locations[0].y());
+  EXPECT_EQ(1, locations[0]->x());
+  EXPECT_EQ(2, locations[0]->y());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedText) {
@@ -1048,10 +1049,11 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedText) {
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Point2D>& corner_points = detected_text->cornerPoints();
+  const HeapVector<Member<Point2D>>& corner_points =
+      detected_text->cornerPoints();
   EXPECT_EQ(1u, corner_points.size());
-  EXPECT_EQ(1, corner_points[0].x());
-  EXPECT_EQ(2, corner_points[0].y());
+  EXPECT_EQ(1, corner_points[0]->x());
+  EXPECT_EQ(2, corner_points[0]->y());
 }
 
 }  // namespace

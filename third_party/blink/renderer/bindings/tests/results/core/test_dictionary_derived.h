@@ -21,12 +21,10 @@
 namespace blink {
 
 class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
-  DISALLOW_NEW();
  public:
-  TestDictionaryDerivedImplementedAs();
+  static TestDictionaryDerivedImplementedAs* Create() { return new TestDictionaryDerivedImplementedAs(); }
+
   virtual ~TestDictionaryDerivedImplementedAs();
-  TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&);
-  TestDictionaryDerivedImplementedAs& operator=(const TestDictionaryDerivedImplementedAs&);
 
   bool hasDerivedStringMember() const { return !derived_string_member_.IsNull(); }
   const String& derivedStringMember() const {
@@ -56,6 +54,9 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   void Trace(blink::Visitor*) override;
+
+ protected:
+  TestDictionaryDerivedImplementedAs();
 
  private:
   bool has_required_long_member_ = false;

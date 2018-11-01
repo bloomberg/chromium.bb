@@ -19,8 +19,8 @@ PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
 
 PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
     const AtomicString& event_type,
-    const PresentationConnectionAvailableEventInit& initializer)
-    : Event(event_type, initializer), connection_(initializer.connection()) {}
+    const PresentationConnectionAvailableEventInit* initializer)
+    : Event(event_type, initializer), connection_(initializer->connection()) {}
 
 const AtomicString& PresentationConnectionAvailableEvent::InterfaceName()
     const {

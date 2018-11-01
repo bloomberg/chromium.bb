@@ -1301,7 +1301,8 @@ void ContentSecurityPolicy::ReportViolation(
   DCHECK((execution_context_ && !context_frame) ||
          ((effective_type == DirectiveType::kFrameAncestors) && context_frame));
 
-  SecurityPolicyViolationEventInit violation_data;
+  SecurityPolicyViolationEventInit* violation_data =
+      SecurityPolicyViolationEventInit::Create();
 
   // If we're processing 'frame-ancestors', use |contextFrame|'s execution
   // context to gather data. Otherwise, use the policy's execution context.
@@ -1309,7 +1310,7 @@ void ContentSecurityPolicy::ReportViolation(
       context_frame ? context_frame->GetDocument() : execution_context_;
   DCHECK(relevant_context);
   GatherSecurityPolicyViolationEventData(
-      &violation_data, relevant_context, directive_text, effective_type,
+      violation_data, relevant_context, directive_text, effective_type,
       blocked_url, header, redirect_status, header_type, violation_type,
       std::move(source_location), source);
 
@@ -1317,8 +1318,8 @@ void ContentSecurityPolicy::ReportViolation(
   // resources should be allowed regardless. We apparently do, however, so
   // we should at least stop spamming reporting endpoints. See
   // https://crbug.com/524356 for detail.
-  if (!violation_data.sourceFile().IsEmpty() &&
-      ShouldBypassContentSecurityPolicy(KURL(violation_data.sourceFile()),
+  if (!violation_data->sourceFile().IsEmpty() &&
+      ShouldBypassContentSecurityPolicy(KURL(violation_data->sourceFile()),
                                         execution_context_)) {
     return;
   }
@@ -1330,15 +1331,16 @@ void ContentSecurityPolicy::ReportViolation(
   // we're not processing 'frame-ancestors').
   if (execution_context_) {
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
-                             WrapPersistent(this), violation_data,
-                             WrapPersistent(element)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
+                      WrapPersistent(this), WrapPersistent(violation_data),
+                      WrapPersistent(element)));
   }
 }
 
 void ContentSecurityPolicy::PostViolationReport(
-    const SecurityPolicyViolationEventInit& violation_data,
+    const SecurityPolicyViolationEventInit* violation_data,
     LocalFrame* context_frame,
     const Vector<String>& report_endpoints,
     bool use_reporting_api) {
@@ -1356,24 +1358,24 @@ void ContentSecurityPolicy::PostViolationReport(
   // let's kill them. https://crbug.com/695363
 
   std::unique_ptr<JSONObject> csp_report = JSONObject::Create();
-  csp_report->SetString("document-uri", violation_data.documentURI());
-  csp_report->SetString("referrer", violation_data.referrer());
+  csp_report->SetString("document-uri", violation_data->documentURI());
+  csp_report->SetString("referrer", violation_data->referrer());
   csp_report->SetString("violated-directive",
-                        violation_data.violatedDirective());
+                        violation_data->violatedDirective());
   csp_report->SetString("effective-directive",
-                        violation_data.effectiveDirective());
-  csp_report->SetString("original-policy", violation_data.originalPolicy());
-  csp_report->SetString("disposition", violation_data.disposition());
-  csp_report->SetString("blocked-uri", violation_data.blockedURI());
-  if (violation_data.lineNumber())
-    csp_report->SetInteger("line-number", violation_data.lineNumber());
-  if (violation_data.columnNumber())
-    csp_report->SetInteger("column-number", violation_data.columnNumber());
-  if (!violation_data.sourceFile().IsEmpty())
-    csp_report->SetString("source-file", violation_data.sourceFile());
-  csp_report->SetInteger("status-code", violation_data.statusCode());
+                        violation_data->effectiveDirective());
+  csp_report->SetString("original-policy", violation_data->originalPolicy());
+  csp_report->SetString("disposition", violation_data->disposition());
+  csp_report->SetString("blocked-uri", violation_data->blockedURI());
+  if (violation_data->lineNumber())
+    csp_report->SetInteger("line-number", violation_data->lineNumber());
+  if (violation_data->columnNumber())
+    csp_report->SetInteger("column-number", violation_data->columnNumber());
+  if (!violation_data->sourceFile().IsEmpty())
+    csp_report->SetString("source-file", violation_data->sourceFile());
+  csp_report->SetInteger("status-code", violation_data->statusCode());
 
-  csp_report->SetString("script-sample", violation_data.sample());
+  csp_report->SetString("script-sample", violation_data->sample());
 
   std::unique_ptr<JSONObject> report_object = JSONObject::Create();
   report_object->SetObject("csp-report", std::move(csp_report));
@@ -1413,12 +1415,12 @@ void ContentSecurityPolicy::PostViolationReport(
         // document's URL.
         DCHECK(!context_frame || !execution_context_);
         DCHECK(!context_frame ||
-               GetDirectiveType(violation_data.effectiveDirective()) ==
+               GetDirectiveType(violation_data->effectiveDirective()) ==
                    DirectiveType::kFrameAncestors);
         KURL url =
             context_frame
                 ? frame->GetDocument()->CompleteURLWithOverride(
-                      report_endpoint, KURL(violation_data.blockedURI()))
+                      report_endpoint, KURL(violation_data->blockedURI()))
                 // We use the FallbackBaseURL to ensure that we don't
                 // respect base elements when determining the report
                 // endpoint URL.
@@ -1433,7 +1435,7 @@ void ContentSecurityPolicy::PostViolationReport(
 }
 
 void ContentSecurityPolicy::DispatchViolationEvents(
-    const SecurityPolicyViolationEventInit& violation_data,
+    const SecurityPolicyViolationEventInit* violation_data,
     Element* element) {
   // Worklets don't support Events in general.
   if (execution_context_->IsWorkletGlobalScope())

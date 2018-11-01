@@ -148,7 +148,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
 
 ScriptPromise CacheStorage::match(ScriptState* script_state,
                                   const RequestInfo& request,
-                                  const CacheQueryOptions& options,
+                                  const CacheQueryOptions* options,
                                   ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
 
@@ -163,14 +163,14 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
 
 ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                       const Request* request,
-                                      const CacheQueryOptions& options) {
+                                      const CacheQueryOptions* options) {
   WebServiceWorkerRequest web_request;
   request->PopulateWebServiceWorkerRequest(web_request);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
-  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options->ignoreMethod()) {
     resolver->Resolve();
     return promise;
   }
@@ -179,7 +179,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
       web_request, Cache::ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions& options,
+             const CacheQueryOptions* options,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -200,7 +200,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
               TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.CacheStorage.Match2",
                                        elapsed);
-              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
                 UMA_HISTOGRAM_LONG_TIMES(
                     "ServiceWorkerCache.CacheStorage.Match2."
                     "IgnoreSearchEnabled",
@@ -216,7 +216,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), options));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
 
   return promise;
 }

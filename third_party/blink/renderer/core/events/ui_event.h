@@ -42,7 +42,7 @@ class CORE_EXPORT UIEvent : public Event {
  public:
   static UIEvent* Create() { return new UIEvent; }
   static UIEvent* Create(const AtomicString& type,
-                         const UIEventInit& initializer) {
+                         const UIEventInit* initializer) {
     return new UIEvent(type, initializer);
   }
   ~UIEvent() override;
@@ -60,10 +60,10 @@ class CORE_EXPORT UIEvent : public Event {
                            int detail,
                            InputDeviceCapabilities* source_capabilities);
 
-  AbstractView* view() const { return view_.Get(); }
+  AbstractView* view() const { return view_; }
   int detail() const { return detail_; }
   InputDeviceCapabilities* sourceCapabilities() const {
-    return source_capabilities_.Get();
+    return source_capabilities_;
   }
 
   const AtomicString& InterfaceName() const override;
@@ -84,9 +84,9 @@ class CORE_EXPORT UIEvent : public Event {
           int detail,
           InputDeviceCapabilities* source_capabilities);
   UIEvent(const AtomicString&,
-          const UIEventInit&,
+          const UIEventInit*,
           TimeTicks platform_time_stamp);
-  UIEvent(const AtomicString& type, const UIEventInit& init)
+  UIEvent(const AtomicString& type, const UIEventInit* init)
       : UIEvent(type, init, CurrentTimeTicks()) {}
 
  private:

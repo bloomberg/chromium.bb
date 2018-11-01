@@ -273,11 +273,11 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
               StaticBitmapImage::Create(source_image);
 
           // Prepare encoding options
-          ImageEncodeOptions options;
-          options.setQuality(1);
-          options.setType(blob_mime_type);
-          options.setColorSpace(blob_color_space);
-          options.setPixelFormat(blob_pixel_format);
+          ImageEncodeOptions* options = ImageEncodeOptions::Create();
+          options->setQuality(1);
+          options->setType(blob_mime_type);
+          options->setColorSpace(blob_color_space);
+          options->setPixelFormat(blob_pixel_format);
 
           // Encode the image using CanvasAsyncBlobCreator
           CanvasAsyncBlobCreator* async_blob_creator =

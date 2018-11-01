@@ -23,7 +23,7 @@ class MODULES_EXPORT BlobEvent final : public Event {
   ~BlobEvent() override = default;
 
   static BlobEvent* Create(const AtomicString& type,
-                           const BlobEventInit& initializer);
+                           const BlobEventInit* initializer);
   static BlobEvent* Create(const AtomicString& type,
                            Blob* blob,
                            double timecode);
@@ -37,7 +37,7 @@ class MODULES_EXPORT BlobEvent final : public Event {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
+  BlobEvent(const AtomicString& type, const BlobEventInit* initializer);
   BlobEvent(const AtomicString& type, Blob* blob, double timecode);
 
   Member<Blob> blob_;

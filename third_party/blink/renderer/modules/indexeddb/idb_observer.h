@@ -31,7 +31,7 @@ class MODULES_EXPORT IDBObserver final : public ScriptWrappable {
   // Implement the IDBObserver IDL.
   void observe(IDBDatabase*,
                IDBTransaction*,
-               const IDBObserverInit&,
+               const IDBObserverInit*,
                ExceptionState&);
   void unobserve(IDBDatabase*, ExceptionState&);
 

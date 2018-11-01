@@ -191,7 +191,7 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
  public:
   static AudioBufferSourceNode* Create(BaseAudioContext&, ExceptionState&);
   static AudioBufferSourceNode* Create(BaseAudioContext*,
-                                       AudioBufferSourceOptions&,
+                                       AudioBufferSourceOptions*,
                                        ExceptionState&);
   void Trace(blink::Visitor*) override;
   AudioBufferSourceHandler& GetAudioBufferSourceHandler() const;

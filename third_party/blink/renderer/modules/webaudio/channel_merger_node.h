@@ -66,7 +66,7 @@ class ChannelMergerNode final : public AudioNode {
                                    unsigned number_of_inputs,
                                    ExceptionState&);
   static ChannelMergerNode* Create(BaseAudioContext*,
-                                   const ChannelMergerOptions&,
+                                   const ChannelMergerOptions*,
                                    ExceptionState&);
 
  private:

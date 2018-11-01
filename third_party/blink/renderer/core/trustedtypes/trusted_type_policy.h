@@ -24,7 +24,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
 
  public:
   static TrustedTypePolicy* Create(const String& policy_name,
-                                   const TrustedTypePolicyOptions&,
+                                   TrustedTypePolicyOptions*,
                                    bool exposed);
 
   TrustedHTML* createHTML(ScriptState*, const String&, ExceptionState&);
@@ -42,11 +42,11 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
 
  private:
   TrustedTypePolicy(const String& policy_name,
-                    const TrustedTypePolicyOptions&,
+                    TrustedTypePolicyOptions*,
                     bool exposed);
 
   String name_;
-  TrustedTypePolicyOptions policy_options_;
+  Member<TrustedTypePolicyOptions> policy_options_;
 };
 
 }  // namespace blink

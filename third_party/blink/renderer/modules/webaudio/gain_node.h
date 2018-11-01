@@ -73,7 +73,7 @@ class GainNode final : public AudioNode {
  public:
   static GainNode* Create(BaseAudioContext&, ExceptionState&);
   static GainNode* Create(BaseAudioContext*,
-                          const GainOptions&,
+                          const GainOptions*,
                           ExceptionState&);
   void Trace(blink::Visitor*) override;
 

@@ -15,11 +15,7 @@ namespace blink {
 TestPermissiveDictionary::TestPermissiveDictionary() {
 }
 
-TestPermissiveDictionary::~TestPermissiveDictionary() {}
-
-TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionary&) = default;
-
-TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
+TestPermissiveDictionary::~TestPermissiveDictionary() = default;
 
 void TestPermissiveDictionary::Trace(blink::Visitor* visitor) {
   IDLDictionaryBase::Trace(visitor);

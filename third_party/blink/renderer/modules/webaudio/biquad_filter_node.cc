@@ -112,7 +112,7 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext& context,
 }
 
 BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,
-                                           const BiquadFilterOptions& options,
+                                           const BiquadFilterOptions* options,
                                            ExceptionState& exception_state) {
   BiquadFilterNode* node = Create(*context, exception_state);
 
@@ -121,11 +121,11 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->setType(options.type());
-  node->q()->setValue(options.Q());
-  node->detune()->setValue(options.detune());
-  node->frequency()->setValue(options.frequency());
-  node->gain()->setValue(options.gain());
+  node->setType(options->type());
+  node->q()->setValue(options->Q());
+  node->detune()->setValue(options->detune());
+  node->frequency()->setValue(options->frequency());
+  node->gain()->setValue(options->gain());
 
   return node;
 }

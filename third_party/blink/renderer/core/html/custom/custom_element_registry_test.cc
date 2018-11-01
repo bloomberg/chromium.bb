@@ -43,7 +43,7 @@ class CustomElementRegistryTest : public PageTestBase {
 
   CustomElementDefinition* Define(const AtomicString& name,
                                   CustomElementDefinitionBuilder& builder,
-                                  const ElementDefinitionOptions& options,
+                                  const ElementDefinitionOptions* options,
                                   ExceptionState& exception_state) {
     return Registry().DefineInternal(GetScriptState(), name, builder, options,
                                      exception_state);
@@ -284,7 +284,8 @@ TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements) {
   NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    Define("a-a", builder, ElementDefinitionOptions(), should_not_throw);
+    Define("a-a", builder, ElementDefinitionOptions::Create(),
+           should_not_throw);
   }
   LogUpgradeDefinition* definition =
       static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
@@ -326,7 +327,8 @@ TEST_F(CustomElementRegistryTest, attributeChangedCallback) {
   NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    Define("a-a", builder, ElementDefinitionOptions(), should_not_throw);
+    Define("a-a", builder, ElementDefinitionOptions::Create(),
+           should_not_throw);
   }
   LogUpgradeDefinition* definition =
       static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
@@ -361,7 +363,8 @@ TEST_F(CustomElementRegistryTest, disconnectedCallback) {
   NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    Define("a-a", builder, ElementDefinitionOptions(), should_not_throw);
+    Define("a-a", builder, ElementDefinitionOptions::Create(),
+           should_not_throw);
   }
   LogUpgradeDefinition* definition =
       static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
@@ -388,7 +391,8 @@ TEST_F(CustomElementRegistryTest, adoptedCallback) {
   NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    Define("a-a", builder, ElementDefinitionOptions(), should_not_throw);
+    Define("a-a", builder, ElementDefinitionOptions::Create(),
+           should_not_throw);
   }
   LogUpgradeDefinition* definition =
       static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
@@ -417,10 +421,10 @@ TEST_F(CustomElementRegistryTest, adoptedCallback) {
 TEST_F(CustomElementRegistryTest, lookupCustomElementDefinition) {
   NonThrowableExceptionState should_not_throw;
   TestCustomElementDefinitionBuilder builder;
-  CustomElementDefinition* definition_a =
-      Define("a-a", builder, ElementDefinitionOptions(), should_not_throw);
-  ElementDefinitionOptions options;
-  options.setExtends("div");
+  CustomElementDefinition* definition_a = Define(
+      "a-a", builder, ElementDefinitionOptions::Create(), should_not_throw);
+  ElementDefinitionOptions* options = ElementDefinitionOptions::Create();
+  options->setExtends("div");
   CustomElementDefinition* definition_b =
       Define("b-b", builder, options, should_not_throw);
   // look up defined autonomous custom element
@@ -451,8 +455,8 @@ TEST_F(CustomElementRegistryTest, DefineEmbedderCustomElements) {
   NonThrowableExceptionState should_not_throw;
   TestCustomElementDefinitionBuilder builder;
   CustomElementDefinition* definition_embedder =
-      Define("embeddercustomelement", builder, ElementDefinitionOptions(),
-             should_not_throw);
+      Define("embeddercustomelement", builder,
+             ElementDefinitionOptions::Create(), should_not_throw);
   CustomElementDefinition* definition =
       Registry().DefinitionFor(CustomElementDescriptor(
           "embeddercustomelement", "embeddercustomelement"));
@@ -473,8 +477,8 @@ TEST_F(CustomElementRegistryTest, DisallowedEmbedderCustomElements) {
 
   TestCustomElementDefinitionBuilder builder;
   CustomElementDefinition* definition_embedder =
-      Define("embeddercustomelement", builder, ElementDefinitionOptions(),
-             IGNORE_EXCEPTION_FOR_TESTING);
+      Define("embeddercustomelement", builder,
+             ElementDefinitionOptions::Create(), IGNORE_EXCEPTION_FOR_TESTING);
   CustomElementDefinition* definition =
       Registry().DefinitionFor(CustomElementDescriptor(
           "embeddercustomelement", "embeddercustomelement"));

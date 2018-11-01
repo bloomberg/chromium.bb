@@ -58,20 +58,21 @@ class MODULES_EXPORT ImageCapture final
   ScriptPromise getPhotoSettings(ScriptState*);
 
   ScriptPromise setOptions(ScriptState*,
-                           const PhotoSettings&,
+                           const PhotoSettings*,
                            bool trigger_take_photo = false);
 
   ScriptPromise takePhoto(ScriptState*);
-  ScriptPromise takePhoto(ScriptState*, const PhotoSettings&);
+  ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
 
   ScriptPromise grabFrame(ScriptState*);
 
-  MediaTrackCapabilities& GetMediaTrackCapabilities();
-  void SetMediaTrackConstraints(ScriptPromiseResolver*,
-                                const HeapVector<MediaTrackConstraintSet>&);
-  const MediaTrackConstraintSet& GetMediaTrackConstraints() const;
+  MediaTrackCapabilities* GetMediaTrackCapabilities() const;
+  void SetMediaTrackConstraints(
+      ScriptPromiseResolver*,
+      const HeapVector<Member<MediaTrackConstraintSet>>&);
+  const MediaTrackConstraintSet* GetMediaTrackConstraints() const;
   void ClearMediaTrackConstraints();
-  void GetMediaTrackSettings(MediaTrackSettings&) const;
+  void GetMediaTrackSettings(MediaTrackSettings*) const;
 
   void Trace(blink::Visitor*) override;
 
@@ -101,10 +102,10 @@ class MODULES_EXPORT ImageCapture final
   std::unique_ptr<WebImageCaptureFrameGrabber> frame_grabber_;
   media::mojom::blink::ImageCapturePtr service_;
 
-  MediaTrackCapabilities capabilities_;
-  MediaTrackSettings settings_;
-  MediaTrackConstraintSet current_constraints_;
-  PhotoSettings photo_settings_;
+  Member<MediaTrackCapabilities> capabilities_;
+  Member<MediaTrackSettings> settings_;
+  Member<MediaTrackConstraintSet> current_constraints_;
+  Member<PhotoSettings> photo_settings_;
 
   Member<PhotoCapabilities> photo_capabilities_;
 

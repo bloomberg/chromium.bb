@@ -786,7 +786,7 @@ class IndexPopulator final : public EventListener {
 IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
                                       const String& name,
                                       const IDBKeyPath& key_path,
-                                      const IDBIndexParameters& options,
+                                      const IDBIndexParameters* options,
                                       ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::createIndexRequestSetup", "store_name",
              metadata_->name.Utf8());
@@ -820,7 +820,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
         "The keyPath argument contains an invalid key path.");
     return nullptr;
   }
-  if (key_path.GetType() == IDBKeyPath::kArrayType && options.multiEntry()) {
+  if (key_path.GetType() == IDBKeyPath::kArrayType && options->multiEntry()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The keyPath argument was an array and the multiEntry option is true.");
@@ -835,13 +835,13 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   int64_t index_id = metadata_->max_index_id + 1;
   DCHECK_NE(index_id, IDBIndexMetadata::kInvalidId);
   BackendDB()->CreateIndex(transaction_->Id(), Id(), index_id, name, key_path,
-                           options.unique(), options.multiEntry());
+                           options->unique(), options->multiEntry());
 
   ++metadata_->max_index_id;
 
   scoped_refptr<IDBIndexMetadata> index_metadata =
       base::AdoptRef(new IDBIndexMetadata(
-          name, index_id, key_path, options.unique(), options.multiEntry()));
+          name, index_id, key_path, options->unique(), options->multiEntry()));
   IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
   metadata_->indexes.Set(index_id, index_metadata);

@@ -34,11 +34,11 @@ TEST_F(ScrollTimelineTest,
 
   // Create the ScrollTimeline. This shouldn't cause the scrollSource to need
   // compositing, as it isn't attached to any animation yet.
-  ScrollTimelineOptions options;
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   DoubleOrScrollTimelineAutoKeyword time_range =
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options.setTimeRange(time_range);
-  options.setScrollSource(GetElementById("scroller"));
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(DocumentLifecycle::kPaintClean,

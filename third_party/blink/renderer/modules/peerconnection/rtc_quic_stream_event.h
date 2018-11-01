@@ -18,7 +18,7 @@ class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
  public:
   static RTCQuicStreamEvent* Create(RTCQuicStream* stream);
   static RTCQuicStreamEvent* Create(const AtomicString& type,
-                                    const RTCQuicStreamEventInit& init);
+                                    const RTCQuicStreamEventInit* init);
 
   ~RTCQuicStreamEvent() override;
 
@@ -34,7 +34,7 @@ class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
  private:
   RTCQuicStreamEvent(RTCQuicStream* stream);
   RTCQuicStreamEvent(const AtomicString& type,
-                     const RTCQuicStreamEventInit& init);
+                     const RTCQuicStreamEventInit* init);
 
   Member<RTCQuicStream> stream_;
 };

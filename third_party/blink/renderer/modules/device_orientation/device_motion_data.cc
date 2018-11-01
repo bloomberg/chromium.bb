@@ -43,10 +43,10 @@ DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::Create(
 }
 
 DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::Create(
-    const DeviceAccelerationInit& init) {
+    const DeviceAccelerationInit* init) {
   return new DeviceMotionData::Acceleration(
-      init.hasX(), init.hasX() ? init.x() : 0, init.hasY(),
-      init.hasY() ? init.y() : 0, init.hasZ(), init.hasZ() ? init.z() : 0);
+      init->hasX(), init->hasX() ? init->x() : 0, init->hasY(),
+      init->hasY() ? init->y() : 0, init->hasZ(), init->hasZ() ? init->z() : 0);
 }
 
 DeviceMotionData::Acceleration::Acceleration(bool can_provide_x,
@@ -77,11 +77,11 @@ DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::Create(
 }
 
 DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::Create(
-    const DeviceRotationRateInit& init) {
+    const DeviceRotationRateInit* init) {
   return new DeviceMotionData::RotationRate(
-      init.hasAlpha(), init.hasAlpha() ? init.alpha() : 0, init.hasBeta(),
-      init.hasBeta() ? init.beta() : 0, init.hasGamma(),
-      init.hasGamma() ? init.gamma() : 0);
+      init->hasAlpha(), init->hasAlpha() ? init->alpha() : 0, init->hasBeta(),
+      init->hasBeta() ? init->beta() : 0, init->hasGamma(),
+      init->hasGamma() ? init->gamma() : 0);
 }
 
 DeviceMotionData::RotationRate::RotationRate(bool can_provide_alpha,
@@ -110,19 +110,19 @@ DeviceMotionData* DeviceMotionData::Create(
                               rotation_rate, interval);
 }
 
-DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit& init) {
+DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit* init) {
   return DeviceMotionData::Create(
-      init.hasAcceleration()
-          ? DeviceMotionData::Acceleration::Create(init.acceleration())
+      init->hasAcceleration()
+          ? DeviceMotionData::Acceleration::Create(init->acceleration())
           : nullptr,
-      init.hasAccelerationIncludingGravity()
+      init->hasAccelerationIncludingGravity()
           ? DeviceMotionData::Acceleration::Create(
-                init.accelerationIncludingGravity())
+                init->accelerationIncludingGravity())
           : nullptr,
-      init.hasRotationRate()
-          ? DeviceMotionData::RotationRate::Create(init.rotationRate())
+      init->hasRotationRate()
+          ? DeviceMotionData::RotationRate::Create(init->rotationRate())
           : nullptr,
-      init.interval());
+      init->interval());
 }
 
 DeviceMotionData::DeviceMotionData() : interval_(0) {}

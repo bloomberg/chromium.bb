@@ -23,8 +23,8 @@ MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(MojoHandle* handle)
 
 MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(
     const AtomicString& type,
-    const MojoInterfaceRequestEventInit& initializer)
+    const MojoInterfaceRequestEventInit* initializer)
     : Event(type, Bubbles::kNo, Cancelable::kNo),
-      handle_(initializer.handle()) {}
+      handle_(initializer->handle()) {}
 
 }  // namespace blink

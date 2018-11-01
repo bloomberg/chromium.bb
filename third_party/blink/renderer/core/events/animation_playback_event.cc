@@ -17,12 +17,12 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(const AtomicString& type,
 
 AnimationPlaybackEvent::AnimationPlaybackEvent(
     const AtomicString& type,
-    const AnimationPlaybackEventInit& initializer)
+    const AnimationPlaybackEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasCurrentTime())
-    current_time_ = initializer.currentTime();
-  if (initializer.hasTimelineTime())
-    timeline_time_ = initializer.timelineTime();
+  if (initializer->hasCurrentTime())
+    current_time_ = initializer->currentTime();
+  if (initializer->hasTimelineTime())
+    timeline_time_ = initializer->timelineTime();
 }
 
 AnimationPlaybackEvent::~AnimationPlaybackEvent() = default;

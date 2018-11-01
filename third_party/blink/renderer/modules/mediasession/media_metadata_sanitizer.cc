@@ -60,19 +60,19 @@ bool CheckMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
 // Sanitize MediaImage and do mojo serialization. Returns null when
 // |image.src()| is bad.
 blink::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
-    const MediaImage& image,
+    const MediaImage* image,
     ExecutionContext* context) {
   blink::mojom::blink::MediaImagePtr mojo_image;
 
-  KURL url = KURL(image.src());
+  KURL url = KURL(image->src());
   if (!CheckMediaImageSrcSanity(url, context))
     return mojo_image;
 
   mojo_image = blink::mojom::blink::MediaImage::New();
   mojo_image->src = url;
-  mojo_image->type = image.type().Left(kMaxImageTypeLength);
+  mojo_image->type = image->type().Left(kMaxImageTypeLength);
   for (const auto& web_size :
-       WebIconSizesParser::ParseIconSizes(image.sizes())) {
+       WebIconSizesParser::ParseIconSizes(image->sizes())) {
     mojo_image->sizes.push_back(web_size);
     if (mojo_image->sizes.size() == kMaxNumberOfImageSizes) {
       context->AddConsoleMessage(ConsoleMessage::Create(
@@ -100,7 +100,7 @@ MediaMetadataSanitizer::SanitizeAndConvertToMojo(const MediaMetadata* metadata,
   mojo_metadata->artist = metadata->artist().Left(kMaxStringLength);
   mojo_metadata->album = metadata->album().Left(kMaxStringLength);
 
-  for (const MediaImage& image : metadata->artwork()) {
+  for (const MediaImage* image : metadata->artwork()) {
     blink::mojom::blink::MediaImagePtr mojo_image =
         SanitizeMediaImageAndConvertToMojo(image, context);
     if (!mojo_image.is_null())

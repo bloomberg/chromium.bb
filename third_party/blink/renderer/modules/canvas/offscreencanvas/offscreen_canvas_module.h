@@ -23,7 +23,7 @@ class MODULES_EXPORT OffscreenCanvasModule {
   static void getContext(ExecutionContext*,
                          OffscreenCanvas&,
                          const String&,
-                         const CanvasContextCreationAttributesModule&,
+                         const CanvasContextCreationAttributesModule*,
                          ExceptionState&,
                          OffscreenRenderingContext&);
 };

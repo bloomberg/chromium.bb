@@ -96,10 +96,10 @@ class MODULES_EXPORT IDBDatabase final
   DOMStringList* objectStoreNames() const;
 
   IDBObjectStore* createObjectStore(const String& name,
-                                    const IDBObjectStoreParameters& options,
+                                    const IDBObjectStoreParameters* options,
                                     ExceptionState& exception_state) {
-    return createObjectStore(name, IDBKeyPath(options.keyPath()),
-                             options.autoIncrement(), exception_state);
+    return createObjectStore(name, IDBKeyPath(options->keyPath()),
+                             options->autoIncrement(), exception_state);
   }
   IDBTransaction* transaction(ScriptState*,
                               const StringOrStringSequence& store_names,

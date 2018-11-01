@@ -52,7 +52,7 @@ class WaveShaperNode final : public AudioNode {
  public:
   static WaveShaperNode* Create(BaseAudioContext&, ExceptionState&);
   static WaveShaperNode* Create(BaseAudioContext*,
-                                const WaveShaperOptions&,
+                                const WaveShaperOptions*,
                                 ExceptionState&);
 
   // setCurve() is called on the main thread.

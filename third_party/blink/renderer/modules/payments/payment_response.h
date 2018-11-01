@@ -59,7 +59,7 @@ class MODULES_EXPORT PaymentResponse final
   const String& payerPhone() const { return payer_phone_; }
 
   ScriptPromise complete(ScriptState*, const String& result = "");
-  ScriptPromise retry(ScriptState*, const PaymentValidationErrors&);
+  ScriptPromise retry(ScriptState*, const PaymentValidationErrors*);
 
   bool HasPendingActivity() const override;
 

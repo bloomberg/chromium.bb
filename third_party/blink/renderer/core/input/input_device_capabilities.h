@@ -20,7 +20,7 @@ class CORE_EXPORT InputDeviceCapabilities final : public ScriptWrappable {
   }
 
   static InputDeviceCapabilities* Create(
-      const InputDeviceCapabilitiesInit& initializer) {
+      const InputDeviceCapabilitiesInit* initializer) {
     return new InputDeviceCapabilities(initializer);
   }
 
@@ -28,7 +28,7 @@ class CORE_EXPORT InputDeviceCapabilities final : public ScriptWrappable {
 
  private:
   InputDeviceCapabilities(bool fires_touch_events);
-  InputDeviceCapabilities(const InputDeviceCapabilitiesInit&);
+  InputDeviceCapabilities(const InputDeviceCapabilitiesInit*);
 
   // Whether this device dispatches touch events. This mainly lets developers
   // avoid handling both touch and mouse events dispatched for a single user

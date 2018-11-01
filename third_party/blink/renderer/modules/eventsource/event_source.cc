@@ -64,11 +64,11 @@ const unsigned long long EventSource::kDefaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
-                                const EventSourceInit& event_source_init)
+                                const EventSourceInit* event_source_init)
     : ContextLifecycleObserver(context),
       url_(url),
       current_url_(url),
-      with_credentials_(event_source_init.withCredentials()),
+      with_credentials_(event_source_init->withCredentials()),
       state_(kConnecting),
       connect_timer_(context->GetTaskRunner(TaskType::kRemoteEvent),
                      this,
@@ -77,7 +77,7 @@ inline EventSource::EventSource(ExecutionContext* context,
 
 EventSource* EventSource::Create(ExecutionContext* context,
                                  const String& url,
-                                 const EventSourceInit& event_source_init,
+                                 const EventSourceInit* event_source_init,
                                  ExceptionState& exception_state) {
   UseCounter::Count(context, IsA<Document>(context)
                                  ? WebFeature::kEventSourceDocument

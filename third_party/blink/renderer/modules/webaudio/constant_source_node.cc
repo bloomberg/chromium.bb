@@ -132,7 +132,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
 
 ConstantSourceNode* ConstantSourceNode::Create(
     BaseAudioContext* context,
-    const ConstantSourceOptions& options,
+    const ConstantSourceOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -141,7 +141,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
   if (!node)
     return nullptr;
 
-  node->offset()->setValue(options.offset());
+  node->offset()->setValue(options->offset());
 
   return node;
 }

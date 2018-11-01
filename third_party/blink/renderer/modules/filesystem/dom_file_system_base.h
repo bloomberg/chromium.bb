@@ -135,13 +135,13 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                  ErrorCallbackBase*);
   void GetFile(const EntryBase*,
                const String& path,
-               const FileSystemFlags&,
+               const FileSystemFlags*,
                EntryCallbacks::OnDidGetEntryCallback*,
                ErrorCallbackBase*,
                SynchronousType = kAsynchronous);
   void GetDirectory(const EntryBase*,
                     const String& path,
-                    const FileSystemFlags&,
+                    const FileSystemFlags*,
                     EntryCallbacks::OnDidGetEntryCallback*,
                     ErrorCallbackBase*,
                     SynchronousType = kAsynchronous);

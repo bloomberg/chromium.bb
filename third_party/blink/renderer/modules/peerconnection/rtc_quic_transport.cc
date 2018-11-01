@@ -149,8 +149,10 @@ String RTCQuicTransport::state() const {
   return String();
 }
 
-void RTCQuicTransport::getLocalParameters(RTCQuicParameters& result) const {
-  HeapVector<RTCDtlsFingerprint> fingerprints;
+RTCQuicParameters* RTCQuicTransport::getLocalParameters() const {
+  RTCQuicParameters* result = RTCQuicParameters::Create();
+
+  HeapVector<Member<RTCDtlsFingerprint>> fingerprints;
   for (const auto& certificate : certificates_) {
     // TODO(github.com/w3c/webrtc-quic/issues/33): The specification says that
     // getLocalParameters should return one fingerprint per certificate but is
@@ -160,12 +162,12 @@ void RTCQuicTransport::getLocalParameters(RTCQuicParameters& result) const {
       fingerprints.push_back(certificate_fingerprint);
     }
   }
-  result.setFingerprints(fingerprints);
+  result->setFingerprints(fingerprints);
+  return result;
 }
 
-void RTCQuicTransport::getRemoteParameters(
-    base::Optional<RTCQuicParameters>& result) const {
-  result = remote_parameters_;
+RTCQuicParameters* RTCQuicTransport::getRemoteParameters() const {
+  return remote_parameters_;
 }
 
 const HeapVector<Member<RTCCertificate>>& RTCQuicTransport::getCertificates()
@@ -190,7 +192,7 @@ static quic::Perspective QuicPerspectiveFromIceRole(cricket::IceRole ice_role) {
   return quic::Perspective::IS_CLIENT;
 }
 
-void RTCQuicTransport::start(const RTCQuicParameters& remote_parameters,
+void RTCQuicTransport::start(const RTCQuicParameters* remote_parameters,
                              ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
@@ -200,16 +202,16 @@ void RTCQuicTransport::start(const RTCQuicParameters& remote_parameters,
                                       "Cannot start() multiple times.");
     return;
   }
-  remote_parameters_ = remote_parameters;
+  remote_parameters_ = const_cast<RTCQuicParameters*>(remote_parameters);
   if (transport_->IsStarted()) {
     StartConnection();
   }
 }
 
 static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
-    const RTCDtlsFingerprint& dtls_fingerprint) {
-  std::string algorithm = WebString(dtls_fingerprint.algorithm()).Utf8();
-  std::string value = WebString(dtls_fingerprint.value()).Utf8();
+    const RTCDtlsFingerprint* dtls_fingerprint) {
+  std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
+  std::string value = WebString(dtls_fingerprint->value()).Utf8();
   std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint(
       rtc::SSLFingerprint::CreateFromRfc4572(algorithm, value));
   DCHECK(rtc_fingerprint);
@@ -232,7 +234,7 @@ void RTCQuicTransport::StartConnection() {
       rtc_certificates, std::move(p2p_quic_transport_factory_)));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
-  for (const RTCDtlsFingerprint& fingerprint :
+  for (const RTCDtlsFingerprint* fingerprint :
        remote_parameters_->fingerprints()) {
     rtc_fingerprints.push_back(RTCDtlsFingerprintToSSLFingerprint(fingerprint));
   }

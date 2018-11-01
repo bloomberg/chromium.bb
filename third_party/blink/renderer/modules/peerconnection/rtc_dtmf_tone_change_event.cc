@@ -35,7 +35,7 @@ RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(const String& tone) {
 
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(
     const AtomicString& type,
-    const RTCDTMFToneChangeEventInit& initializer) {
+    const RTCDTMFToneChangeEventInit* initializer) {
   return new RTCDTMFToneChangeEvent(initializer);
 }
 
@@ -44,10 +44,10 @@ RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
       tone_(tone) {}
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(
-    const RTCDTMFToneChangeEventInit& initializer)
+    const RTCDTMFToneChangeEventInit* initializer)
     : Event(EventTypeNames::tonechange, initializer) {
-  if (initializer.hasTone())
-    tone_ = initializer.tone();
+  if (initializer->hasTone())
+    tone_ = initializer->tone();
 }
 
 RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent() = default;

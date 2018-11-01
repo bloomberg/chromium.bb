@@ -41,7 +41,7 @@ class PageTransitionEvent final : public Event {
   }
   static PageTransitionEvent* Create(
       const AtomicString& type,
-      const PageTransitionEventInit& initializer) {
+      const PageTransitionEventInit* initializer) {
     return new PageTransitionEvent(type, initializer);
   }
 
@@ -56,7 +56,7 @@ class PageTransitionEvent final : public Event {
  private:
   PageTransitionEvent();
   PageTransitionEvent(const AtomicString& type, bool persisted);
-  PageTransitionEvent(const AtomicString&, const PageTransitionEventInit&);
+  PageTransitionEvent(const AtomicString&, const PageTransitionEventInit*);
 
   bool persisted_;
 };

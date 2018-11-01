@@ -44,12 +44,12 @@ class RegisteredEventListener final {
  public:
   RegisteredEventListener();
   RegisteredEventListener(EventListener* listener,
-                          const AddEventListenerOptionsResolved& options);
+                          const AddEventListenerOptionsResolved* options);
   RegisteredEventListener& operator=(const RegisteredEventListener& that);
 
   void Trace(Visitor* visitor);
 
-  AddEventListenerOptionsResolved Options() const;
+  AddEventListenerOptionsResolved* Options() const;
 
   const EventListener* Callback() const { return callback_; }
 
@@ -78,7 +78,7 @@ class RegisteredEventListener final {
   }
 
   bool Matches(const EventListener* listener,
-               const EventListenerOptions& options) const;
+               const EventListenerOptions* options) const;
 
   bool ShouldFire(const Event&) const;
 

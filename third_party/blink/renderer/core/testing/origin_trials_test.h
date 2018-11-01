@@ -32,13 +32,15 @@ class OriginTrialsTest : public ScriptWrappable {
   static const unsigned short kConstant = 1;
 
   bool throwingAttribute(ScriptState*, ExceptionState&);
-  void getDictionaryMethod(OriginTrialsTestDictionary&) {}
-  void checkDictionaryMethod(const OriginTrialsTestDictionary&) {}
+  OriginTrialsTestDictionary* getDictionaryMethod() {
+    return OriginTrialsTestDictionary::Create();
+  }
+  void checkDictionaryMethod(const OriginTrialsTestDictionary*) {}
 
   bool unconditionalAttribute() { return true; }
   static bool staticUnconditionalAttribute() { return true; }
   bool unconditionalMethod() { return true; }
-  void unconditionalDictionaryMethod(const OriginTrialsTestDictionary& dict) {}
+  void unconditionalDictionaryMethod(const OriginTrialsTestDictionary* dict) {}
   static bool staticUnconditionalMethod() { return true; }
   static const unsigned short kUnconditionalConstant = 99;
 

@@ -21,7 +21,7 @@ namespace blink {
 
 TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const String& policy_name,
-    const TrustedTypePolicyOptions& policy_options,
+    const TrustedTypePolicyOptions* policy_options,
     bool exposed,
     ExceptionState& exception_state) {
   if (!GetFrame()
@@ -38,8 +38,9 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
                                    " already exists.");
     return nullptr;
   }
-  TrustedTypePolicy* policy =
-      TrustedTypePolicy::Create(policy_name, policy_options, exposed);
+  TrustedTypePolicy* policy = TrustedTypePolicy::Create(
+      policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options),
+      exposed);
   policy_map_.insert(policy_name, policy);
   return policy;
 }

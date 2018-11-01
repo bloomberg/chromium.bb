@@ -151,7 +151,7 @@ CanvasColorParams CanvasRenderingContextHost::ColorParams() const {
 
 ScriptPromise CanvasRenderingContextHost::convertToBlob(
     ScriptState* script_state,
-    const ImageEncodeOptions& options,
+    const ImageEncodeOptions* options,
     ExceptionState& exception_state) const {
   WTF::String object_name = "Canvas";
   if (this->IsOffscreenCanvas())
@@ -199,7 +199,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
         image_bitmap, options, function_type, start_time,
         ExecutionContext::From(script_state), resolver);
-    async_creator->ScheduleAsyncBlobCreation(options.quality());
+    async_creator->ScheduleAsyncBlobCreation(options->quality());
     return resolver->Promise();
   }
   exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,

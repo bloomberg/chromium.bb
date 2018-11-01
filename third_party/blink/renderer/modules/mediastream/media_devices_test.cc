@@ -274,7 +274,7 @@ class MediaDevicesTest : public testing::Test {
 
 TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
   V8TestingScope scope;
-  MediaStreamConstraints constraints;
+  MediaStreamConstraints* constraints = MediaStreamConstraints::Create();
   ScriptPromise promise =
       GetMediaDevices(scope.GetExecutionContext())
           ->getUserMedia(scope.GetScriptState(), constraints,

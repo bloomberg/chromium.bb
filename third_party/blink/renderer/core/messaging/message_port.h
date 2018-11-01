@@ -66,7 +66,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   const PostMessageOptions&,
+                   const PostMessageOptions*,
                    ExceptionState&);
 
   void start();

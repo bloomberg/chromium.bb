@@ -131,7 +131,7 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   bool AddEventListenerInternal(
       const AtomicString& event_type,
       EventListener*,
-      const AddEventListenerOptionsResolved&) override;
+      const AddEventListenerOptionsResolved*) override;
 
  private:
   MediaStream(ExecutionContext*, MediaStreamDescriptor*);

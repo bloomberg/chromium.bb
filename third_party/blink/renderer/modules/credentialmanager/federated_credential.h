@@ -20,7 +20,7 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FederatedCredential* Create(const FederatedCredentialInit&,
+  static FederatedCredential* Create(const FederatedCredentialInit*,
                                      ExceptionState&);
   static FederatedCredential* Create(
       const String& id,

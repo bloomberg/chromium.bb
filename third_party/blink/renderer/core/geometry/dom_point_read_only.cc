@@ -31,11 +31,11 @@ ScriptValue DOMPointReadOnly::toJSONForBinding(
   return result.GetScriptValue();
 }
 
-DOMPointReadOnly* DOMPointReadOnly::fromPoint(const DOMPointInit& other) {
-  return new DOMPointReadOnly(other.x(), other.y(), other.z(), other.w());
+DOMPointReadOnly* DOMPointReadOnly::fromPoint(const DOMPointInit* other) {
+  return new DOMPointReadOnly(other->x(), other->y(), other->z(), other->w());
 }
 
-DOMPoint* DOMPointReadOnly::matrixTransform(DOMMatrixInit& other,
+DOMPoint* DOMPointReadOnly::matrixTransform(DOMMatrixInit* other,
                                             ExceptionState& exception_state) {
   DOMMatrixReadOnly* matrix =
       DOMMatrixReadOnly::fromMatrix(other, exception_state);

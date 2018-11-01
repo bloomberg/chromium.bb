@@ -29,7 +29,7 @@ class MojoInterfaceRequestEvent final : public Event {
 
   static MojoInterfaceRequestEvent* Create(
       const AtomicString& type,
-      const MojoInterfaceRequestEventInit& initializer) {
+      const MojoInterfaceRequestEventInit* initializer) {
     return new MojoInterfaceRequestEvent(type, initializer);
   }
 
@@ -44,7 +44,7 @@ class MojoInterfaceRequestEvent final : public Event {
  private:
   explicit MojoInterfaceRequestEvent(MojoHandle*);
   MojoInterfaceRequestEvent(const AtomicString& type,
-                            const MojoInterfaceRequestEventInit&);
+                            const MojoInterfaceRequestEventInit*);
 
   Member<MojoHandle> handle_;
 };

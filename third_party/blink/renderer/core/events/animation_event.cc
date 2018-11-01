@@ -32,11 +32,11 @@ namespace blink {
 AnimationEvent::AnimationEvent() : elapsed_time_(0.0) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
-                               const AnimationEventInit& initializer)
+                               const AnimationEventInit* initializer)
     : Event(type, initializer),
-      animation_name_(initializer.animationName()),
-      elapsed_time_(initializer.elapsedTime()),
-      pseudo_element_(initializer.pseudoElement()) {}
+      animation_name_(initializer->animationName()),
+      elapsed_time_(initializer->elapsedTime()),
+      pseudo_element_(initializer->pseudoElement()) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
                                const String& animation_name,

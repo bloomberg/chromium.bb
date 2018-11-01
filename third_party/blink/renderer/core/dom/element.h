@@ -130,11 +130,11 @@ struct FocusParams {
   STACK_ALLOCATED();
 
  public:
-  FocusParams() = default;
+  FocusParams() : options(FocusOptions::Create()) {}
   FocusParams(SelectionBehaviorOnFocus selection,
               WebFocusType focus_type,
               InputDeviceCapabilities* capabilities,
-              FocusOptions focus_options = FocusOptions())
+              const FocusOptions* focus_options = FocusOptions::Create())
       : selection_behavior(selection),
         type(focus_type),
         source_capabilities(capabilities),
@@ -144,7 +144,7 @@ struct FocusParams {
       SelectionBehaviorOnFocus::kRestore;
   WebFocusType type = kWebFocusTypeNone;
   Member<InputDeviceCapabilities> source_capabilities = nullptr;
-  FocusOptions options = FocusOptions();
+  Member<const FocusOptions> options;
 };
 
 typedef HeapVector<TraceWrapperMember<Attr>> AttrNodeList;
@@ -287,8 +287,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
   void scrollIntoView(bool align_to_top = true);
-  void scrollIntoViewWithOptions(const ScrollIntoViewOptions&);
-  void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions&);
+  void scrollIntoViewWithOptions(const ScrollIntoViewOptions*);
+  void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions*);
   void scrollIntoViewIfNeeded(bool center_if_needed = true);
 
   int OffsetLeft();
@@ -309,9 +309,9 @@ class CORE_EXPORT Element : public ContainerNode {
   int scrollHeight();
 
   void scrollBy(double x, double y);
-  virtual void scrollBy(const ScrollToOptions&);
+  virtual void scrollBy(const ScrollToOptions*);
   void scrollTo(double x, double y);
-  virtual void scrollTo(const ScrollToOptions&);
+  virtual void scrollTo(const ScrollToOptions*);
 
   IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual
@@ -530,8 +530,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // throws an exception.  Multiple shadow roots are allowed only when
   // createShadowRoot() is used without any parameters from JavaScript.
   ShadowRoot* createShadowRoot(ExceptionState&);
-  ShadowRoot* attachShadow(const ShadowRootInit&,
-                           ExceptionState&);
+  ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
   ShadowRoot& CreateV0ShadowRootForTesting() {
     return CreateShadowRootInternal();
@@ -627,11 +626,11 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual Image* ImageContents() { return nullptr; }
 
   virtual void focus(const FocusParams& = FocusParams());
-  void focus(FocusOptions);
+  void focus(const FocusOptions*);
 
   void UpdateFocusAppearance(SelectionBehaviorOnFocus);
   virtual void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
-                                                const FocusOptions&);
+                                                const FocusOptions*);
   virtual void blur();
 
   // Whether this element can receive focus at all. Most elements are not
@@ -949,10 +948,10 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual void ParserDidSetAttributes() {}
 
  private:
-  void ScrollLayoutBoxBy(const ScrollToOptions&);
-  void ScrollLayoutBoxTo(const ScrollToOptions&);
-  void ScrollFrameBy(const ScrollToOptions&);
-  void ScrollFrameTo(const ScrollToOptions&);
+  void ScrollLayoutBoxBy(const ScrollToOptions*);
+  void ScrollLayoutBoxTo(const ScrollToOptions*);
+  void ScrollFrameBy(const ScrollToOptions*);
+  void ScrollFrameTo(const ScrollToOptions*);
 
   bool HasElementFlag(ElementFlags mask) const {
     return HasRareData() && HasElementFlagInternal(mask);

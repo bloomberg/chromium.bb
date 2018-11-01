@@ -48,10 +48,10 @@ class MODULES_EXPORT FetchEvent final
                                                         Member<DOMException>>;
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
-                            const FetchEventInit&);
+                            const FetchEventInit*);
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
-                            const FetchEventInit&,
+                            const FetchEventInit*,
                             FetchRespondWithObserver*,
                             WaitUntilObserver*,
                             bool navigation_preload_sent);
@@ -86,7 +86,7 @@ class MODULES_EXPORT FetchEvent final
  protected:
   FetchEvent(ScriptState*,
              const AtomicString& type,
-             const FetchEventInit&,
+             const FetchEventInit*,
              FetchRespondWithObserver*,
              WaitUntilObserver*,
              bool navigation_preload_sent);

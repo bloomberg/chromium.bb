@@ -58,10 +58,10 @@ FocusEvent::FocusEvent(const AtomicString& type,
       related_target_(related_target) {}
 
 FocusEvent::FocusEvent(const AtomicString& type,
-                       const FocusEventInit& initializer)
+                       const FocusEventInit* initializer)
     : UIEvent(type, initializer) {
-  if (initializer.hasRelatedTarget())
-    related_target_ = initializer.relatedTarget();
+  if (initializer->hasRelatedTarget())
+    related_target_ = initializer->relatedTarget();
 }
 
 void FocusEvent::Trace(blink::Visitor* visitor) {

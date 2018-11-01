@@ -193,7 +193,7 @@ class CORE_EXPORT Node : public EventTarget {
   NodeList* childNodes();
   Node* firstChild() const;
   Node* lastChild() const;
-  Node* getRootNode(const GetRootNodeOptions&) const;
+  Node* getRootNode(const GetRootNodeOptions*) const;
 
   // Scroll Customization API. See crbug.com/410974 for details.
   void setDistributeScroll(V8ScrollStateCallback*,

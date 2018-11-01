@@ -26,7 +26,7 @@ class CORE_EXPORT PropertyRegistration
     : public GarbageCollectedFinalized<PropertyRegistration> {
  public:
   static void registerProperty(ExecutionContext*,
-                               const PropertyDescriptor&,
+                               const PropertyDescriptor*,
                                ExceptionState&);
 
   static const PropertyRegistration* From(const ExecutionContext*,

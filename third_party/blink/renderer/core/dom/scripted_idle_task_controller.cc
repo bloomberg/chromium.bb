@@ -122,12 +122,12 @@ int ScriptedIdleTaskController::NextCallbackId() {
 ScriptedIdleTaskController::CallbackId
 ScriptedIdleTaskController::RegisterCallback(
     IdleTask* idle_task,
-    const IdleRequestOptions& options) {
+    const IdleRequestOptions* options) {
   DCHECK(idle_task);
 
   CallbackId id = NextCallbackId();
   idle_tasks_.Set(id, idle_task);
-  long long timeout_millis = options.timeout();
+  long long timeout_millis = options->timeout();
 
   probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
                             idle_task);

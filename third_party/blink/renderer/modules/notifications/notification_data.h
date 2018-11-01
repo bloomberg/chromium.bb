@@ -25,7 +25,7 @@ class NotificationOptions;
 MODULES_EXPORT mojom::blink::NotificationDataPtr CreateNotificationData(
     ExecutionContext* context,
     const String& title,
-    const NotificationOptions& options,
+    const NotificationOptions* options,
     ExceptionState& exception_state);
 
 }  // namespace blink

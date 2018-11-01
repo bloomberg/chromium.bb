@@ -125,8 +125,8 @@ void IdleSpellCheckController::SetNeedsInvocation() {
   if (state_ == State::kColdModeRequested)
     DisposeIdleCallback();
 
-  IdleRequestOptions options;
-  options.setTimeout(kHotModeRequestTimeoutMS);
+  IdleRequestOptions* options = IdleRequestOptions::Create();
+  options->setTimeout(kHotModeRequestTimeoutMS);
   idle_callback_handle_ =
       GetDocument().RequestIdleCallback(IdleCallback::Create(this), options);
   state_ = State::kHotModeRequested;
@@ -161,7 +161,7 @@ void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
   }
 
   idle_callback_handle_ = GetDocument().RequestIdleCallback(
-      IdleCallback::Create(this), IdleRequestOptions());
+      IdleCallback::Create(this), IdleRequestOptions::Create());
   state_ = State::kColdModeRequested;
 }
 

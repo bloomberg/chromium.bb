@@ -14,7 +14,7 @@ PictureInPictureControlEvent* PictureInPictureControlEvent::Create(
 
 PictureInPictureControlEvent* PictureInPictureControlEvent::Create(
     const AtomicString& type,
-    const PictureInPictureControlEventInit& initializer) {
+    const PictureInPictureControlEventInit* initializer) {
   return new PictureInPictureControlEvent(type, initializer);
 }
 
@@ -32,7 +32,7 @@ PictureInPictureControlEvent::PictureInPictureControlEvent(
 
 PictureInPictureControlEvent::PictureInPictureControlEvent(
     AtomicString const& type,
-    const PictureInPictureControlEventInit& initializer)
-    : Event(type, initializer), id_(initializer.id()) {}
+    const PictureInPictureControlEventInit* initializer)
+    : Event(type, initializer), id_(initializer->id()) {}
 
 }  // namespace blink

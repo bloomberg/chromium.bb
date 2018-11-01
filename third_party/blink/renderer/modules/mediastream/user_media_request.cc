@@ -358,16 +358,16 @@ UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
     WebUserMediaRequest::MediaType media_type,
-    const MediaStreamConstraints& options,
+    const MediaStreamConstraints* options,
     Callbacks* callbacks,
     MediaErrorState& error_state) {
   WebMediaConstraints audio =
-      ParseOptions(context, options.audio(), error_state);
+      ParseOptions(context, options->audio(), error_state);
   if (error_state.HadException())
     return nullptr;
 
   WebMediaConstraints video =
-      ParseOptions(context, options.video(), error_state);
+      ParseOptions(context, options->video(), error_state);
   if (error_state.HadException())
     return nullptr;
 
@@ -411,7 +411,7 @@ UserMediaRequest* UserMediaRequest::Create(
 
     // TODO(emircan): Enable when audio capture is actually supported, see
     // https://crbug.com/896333.
-    if (!options.audio().IsNull() && options.audio().GetAsBoolean()) {
+    if (!options->audio().IsNull() && options->audio().GetAsBoolean()) {
       error_state.ThrowTypeError("Audio capture is not supported");
       return nullptr;
     }
@@ -435,7 +435,7 @@ UserMediaRequest* UserMediaRequest::Create(
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
-    const MediaStreamConstraints& options,
+    const MediaStreamConstraints* options,
     V8NavigatorUserMediaSuccessCallback* success_callback,
     V8NavigatorUserMediaErrorCallback* error_callback,
     MediaErrorState& error_state) {

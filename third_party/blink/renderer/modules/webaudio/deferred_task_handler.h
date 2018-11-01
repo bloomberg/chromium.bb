@@ -161,7 +161,7 @@ class MODULES_EXPORT DeferredTaskHandler final
     explicit GraphAutoLocker(DeferredTaskHandler& handler) : handler_(handler) {
       handler_.lock();
     }
-    explicit GraphAutoLocker(BaseAudioContext*);
+    explicit GraphAutoLocker(const BaseAudioContext*);
 
     ~GraphAutoLocker() { handler_.unlock(); }
 

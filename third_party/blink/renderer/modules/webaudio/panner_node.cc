@@ -718,7 +718,7 @@ PannerNode* PannerNode::Create(BaseAudioContext& context,
 }
 
 PannerNode* PannerNode::Create(BaseAudioContext* context,
-                               const PannerOptions& options,
+                               const PannerOptions* options,
                                ExceptionState& exception_state) {
   PannerNode* node = Create(*context, exception_state);
 
@@ -727,23 +727,23 @@ PannerNode* PannerNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->setPanningModel(options.panningModel());
-  node->setDistanceModel(options.distanceModel());
+  node->setPanningModel(options->panningModel());
+  node->setDistanceModel(options->distanceModel());
 
-  node->positionX()->setValue(options.positionX());
-  node->positionY()->setValue(options.positionY());
-  node->positionZ()->setValue(options.positionZ());
+  node->positionX()->setValue(options->positionX());
+  node->positionY()->setValue(options->positionY());
+  node->positionZ()->setValue(options->positionZ());
 
-  node->orientationX()->setValue(options.orientationX());
-  node->orientationY()->setValue(options.orientationY());
-  node->orientationZ()->setValue(options.orientationZ());
+  node->orientationX()->setValue(options->orientationX());
+  node->orientationY()->setValue(options->orientationY());
+  node->orientationZ()->setValue(options->orientationZ());
 
-  node->setRefDistance(options.refDistance(), exception_state);
-  node->setMaxDistance(options.maxDistance(), exception_state);
-  node->setRolloffFactor(options.rolloffFactor(), exception_state);
-  node->setConeInnerAngle(options.coneInnerAngle());
-  node->setConeOuterAngle(options.coneOuterAngle());
-  node->setConeOuterGain(options.coneOuterGain(), exception_state);
+  node->setRefDistance(options->refDistance(), exception_state);
+  node->setMaxDistance(options->maxDistance(), exception_state);
+  node->setRolloffFactor(options->rolloffFactor(), exception_state);
+  node->setConeInnerAngle(options->coneInnerAngle());
+  node->setConeOuterAngle(options->coneOuterAngle());
+  node->setConeOuterGain(options->coneOuterGain(), exception_state);
 
   return node;
 }

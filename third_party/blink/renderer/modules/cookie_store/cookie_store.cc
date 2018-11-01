@@ -36,23 +36,23 @@ namespace {
 
 // Returns null if and only if an exception is thrown.
 network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
-    const CookieStoreGetOptions& options,
+    const CookieStoreGetOptions* options,
     ExceptionState& exception_state) {
   auto backend_options = network::mojom::blink::CookieManagerGetOptions::New();
 
   // TODO(crbug.com/729800): Handle the url option.
 
-  if (options.matchType() == "starts-with") {
+  if (options->matchType() == "starts-with") {
     backend_options->match_type =
         network::mojom::blink::CookieMatchType::STARTS_WITH;
   } else {
-    DCHECK_EQ(options.matchType(), WTF::String("equals"));
+    DCHECK_EQ(options->matchType(), WTF::String("equals"));
     backend_options->match_type =
         network::mojom::blink::CookieMatchType::EQUALS;
   }
 
-  if (options.hasName()) {
-    backend_options->name = options.name();
+  if (options->hasName()) {
+    backend_options->name = options->name();
   } else {
     // No name provided. Use a filter that matches all cookies. This overrides
     // a user-provided matchType.
@@ -67,34 +67,34 @@ network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
 // Returns no value if and only if an exception is thrown.
 base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     const KURL& cookie_url,
-    const CookieStoreSetExtraOptions& options,
+    const CookieStoreSetExtraOptions* options,
     ExceptionState& exception_state) {
-  const String& name = options.name();
-  const String& value = options.value();
+  const String& name = options->name();
+  const String& value = options->value();
   if (name.IsEmpty() && value.Contains('=')) {
     exception_state.ThrowTypeError(
         "Cookie value cannot contain '=' if the name is empty");
     return base::nullopt;
   }
 
-  WTF::Time expires = options.hasExpires()
-                          ? WTF::Time::FromJavaTime(options.expires())
+  WTF::Time expires = options->hasExpires()
+                          ? WTF::Time::FromJavaTime(options->expires())
                           : WTF::Time();
 
   String cookie_url_host = cookie_url.Host();
   String domain;
-  if (options.hasDomain()) {
+  if (options->hasDomain()) {
     // The leading dot (".") from the domain attribute is stripped in the
     // Set-Cookie header, for compatibility. This API doesn't have compatibility
     // constraints, so reject the edge case outright.
-    if (options.domain().StartsWith(".")) {
+    if (options->domain().StartsWith(".")) {
       exception_state.ThrowTypeError("Cookie domain cannot start with \".\"");
       return base::nullopt;
     }
 
-    domain = String(".") + options.domain();
+    domain = String(".") + options->domain();
     if (!cookie_url_host.EndsWith(domain) &&
-        cookie_url_host != options.domain()) {
+        cookie_url_host != options->domain()) {
       exception_state.ThrowTypeError(
           "Cookie domain must domain-match current host");
       return base::nullopt;
@@ -109,24 +109,24 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
   // 2) Only secure origins can set the "secure" option to true.
   DCHECK(SecurityOrigin::IsSecure(cookie_url));
 
-  const bool secure = options.secure();
+  const bool secure = options->secure();
   if (!secure && (name.StartsWith("__Secure-") || name.StartsWith("__Host-"))) {
     exception_state.ThrowTypeError(
         "__Secure- and __Host- cookies must be secure");
   }
 
   network::mojom::CookieSameSite same_site;
-  if (options.sameSite() == "strict") {
+  if (options->sameSite() == "strict") {
     same_site = network::mojom::CookieSameSite::STRICT_MODE;
-  } else if (options.sameSite() == "lax") {
+  } else if (options->sameSite() == "lax") {
     same_site = network::mojom::CookieSameSite::LAX_MODE;
   } else {
-    DCHECK_EQ(options.sameSite(), "unrestricted");
+    DCHECK_EQ(options->sameSite(), "unrestricted");
     same_site = network::mojom::CookieSameSite::NO_RESTRICTION;
   }
 
   return WebCanonicalCookie::Create(
-      name, value, domain, options.path(), WTF::Time() /*creation*/, expires,
+      name, value, domain, options->path(), WTF::Time() /*creation*/, expires,
       WTF::Time() /*last_access*/, secure, false /*http_only*/, same_site,
       WebCanonicalCookie::kDefaultPriority);
 }
@@ -134,30 +134,30 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
 // Returns null if and only if an exception is thrown.
 blink::mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
     const KURL& default_cookie_url,
-    const CookieStoreGetOptions& subscription,
+    const CookieStoreGetOptions* subscription,
     ExceptionState& exception_state) {
   auto backend_subscription =
       blink::mojom::blink::CookieChangeSubscription::New();
 
-  if (subscription.hasURL()) {
-    KURL subscription_url(default_cookie_url, subscription.url());
+  if (subscription->hasURL()) {
+    KURL subscription_url(default_cookie_url, subscription->url());
     // TODO(crbug.com/729800): Check that the URL is under default_cookie_url.
     backend_subscription->url = subscription_url;
   } else {
     backend_subscription->url = default_cookie_url;
   }
 
-  if (subscription.matchType() == "starts-with") {
+  if (subscription->matchType() == "starts-with") {
     backend_subscription->match_type =
         network::mojom::blink::CookieMatchType::STARTS_WITH;
   } else {
-    DCHECK_EQ(subscription.matchType(), WTF::String("equals"));
+    DCHECK_EQ(subscription->matchType(), WTF::String("equals"));
     backend_subscription->match_type =
         network::mojom::blink::CookieMatchType::EQUALS;
   }
 
-  if (subscription.hasName()) {
-    backend_subscription->name = subscription.name();
+  if (subscription->hasName()) {
+    backend_subscription->name = subscription->name();
   } else {
     // No name provided. Use a filter that matches all cookies. This overrides
     // a user-provided matchType.
@@ -169,27 +169,29 @@ blink::mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
   return backend_subscription;
 }
 
-void ToCookieChangeSubscription(
-    const blink::mojom::blink::CookieChangeSubscription& backend_subscription,
-    CookieStoreGetOptions& subscription) {
-  subscription.setURL(backend_subscription.url);
+CookieStoreGetOptions* ToCookieChangeSubscription(
+    const blink::mojom::blink::CookieChangeSubscription& backend_subscription) {
+  CookieStoreGetOptions* subscription = CookieStoreGetOptions::Create();
+  subscription->setURL(backend_subscription.url);
 
   if (backend_subscription.match_type !=
           network::mojom::blink::CookieMatchType::STARTS_WITH ||
       !backend_subscription.name.IsEmpty()) {
-    subscription.setName(backend_subscription.name);
+    subscription->setName(backend_subscription.name);
   }
 
   switch (backend_subscription.match_type) {
     case network::mojom::blink::CookieMatchType::STARTS_WITH:
-      subscription.setMatchType(WTF::String("starts-with"));
+      subscription->setMatchType(WTF::String("starts-with"));
       break;
     case network::mojom::blink::CookieMatchType::EQUALS:
-      subscription.setMatchType(WTF::String("equals"));
+      subscription->setMatchType(WTF::String("equals"));
       break;
   }
 
-  subscription.setURL(backend_subscription.url);
+  subscription->setURL(backend_subscription.url);
+
+  return subscription;
 }
 
 const KURL& DefaultCookieURL(ExecutionContext* execution_context) {
@@ -219,13 +221,13 @@ CookieStore::~CookieStore() = default;
 ScriptPromise CookieStore::getAll(ScriptState* script_state,
                                   const String& name,
                                   ExceptionState& exception_state) {
-  CookieStoreGetOptions options;
-  options.setName(name);
+  CookieStoreGetOptions* options = CookieStoreGetOptions::Create();
+  options->setName(name);
   return getAll(script_state, options, exception_state);
 }
 
 ScriptPromise CookieStore::getAll(ScriptState* script_state,
-                                  const CookieStoreGetOptions& options,
+                                  const CookieStoreGetOptions* options,
                                   ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
@@ -237,13 +239,13 @@ ScriptPromise CookieStore::getAll(ScriptState* script_state,
 ScriptPromise CookieStore::get(ScriptState* script_state,
                                const String& name,
                                ExceptionState& exception_state) {
-  CookieStoreGetOptions options;
-  options.setName(name);
+  CookieStoreGetOptions* options = CookieStoreGetOptions::Create();
+  options->setName(name);
   return get(script_state, options, exception_state);
 }
 
 ScriptPromise CookieStore::get(ScriptState* script_state,
-                               const CookieStoreGetOptions& options,
+                               const CookieStoreGetOptions* options,
                                ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
@@ -255,22 +257,23 @@ ScriptPromise CookieStore::get(ScriptState* script_state,
 ScriptPromise CookieStore::set(ScriptState* script_state,
                                const String& name,
                                const String& value,
-                               const CookieStoreSetOptions& options,
+                               const CookieStoreSetOptions* options,
                                ExceptionState& exception_state) {
-  CookieStoreSetExtraOptions set_options;
-  set_options.setName(name);
-  set_options.setValue(value);
-  if (options.hasExpires())
-    set_options.setExpires(options.expires());
-  set_options.setDomain(options.domain());
-  set_options.setPath(options.path());
-  set_options.setSecure(options.secure());
-  set_options.setSameSite(options.sameSite());
+  CookieStoreSetExtraOptions* set_options =
+      CookieStoreSetExtraOptions::Create();
+  set_options->setName(name);
+  set_options->setValue(value);
+  if (options->hasExpires())
+    set_options->setExpires(options->expires());
+  set_options->setDomain(options->domain());
+  set_options->setPath(options->path());
+  set_options->setSecure(options->secure());
+  set_options->setSameSite(options->sameSite());
   return set(script_state, set_options, exception_state);
 }
 
 ScriptPromise CookieStore::set(ScriptState* script_state,
-                               const CookieStoreSetExtraOptions& options,
+                               const CookieStoreSetExtraOptions* options,
                                ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
@@ -284,30 +287,32 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
 
-  CookieStoreSetExtraOptions set_options;
-  set_options.setName(name);
-  set_options.setValue(g_empty_string);
-  set_options.setExpires(0);
+  CookieStoreSetExtraOptions* set_options =
+      CookieStoreSetExtraOptions::Create();
+  set_options->setName(name);
+  set_options->setValue(g_empty_string);
+  set_options->setExpires(0);
   return DoWrite(script_state, set_options, exception_state);
 }
 
 ScriptPromise CookieStore::Delete(ScriptState* script_state,
-                                  const CookieStoreDeleteOptions& options,
+                                  const CookieStoreDeleteOptions* options,
                                   ExceptionState& exception_state) {
-  CookieStoreSetExtraOptions set_options;
-  set_options.setName(options.name());
-  set_options.setValue(g_empty_string);
-  set_options.setExpires(0);
-  set_options.setDomain(options.domain());
-  set_options.setPath(options.path());
-  set_options.setSecure(true);
-  set_options.setSameSite("strict");
+  CookieStoreSetExtraOptions* set_options =
+      CookieStoreSetExtraOptions::Create();
+  set_options->setName(options->name());
+  set_options->setValue(g_empty_string);
+  set_options->setExpires(0);
+  set_options->setDomain(options->domain());
+  set_options->setPath(options->path());
+  set_options->setSecure(true);
+  set_options->setSameSite("strict");
   return DoWrite(script_state, set_options, exception_state);
 }
 
 ScriptPromise CookieStore::subscribeToChanges(
     ScriptState* script_state,
-    const HeapVector<CookieStoreGetOptions>& subscriptions,
+    const HeapVector<Member<CookieStoreGetOptions>>& subscriptions,
     ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
@@ -315,7 +320,7 @@ ScriptPromise CookieStore::subscribeToChanges(
   Vector<blink::mojom::blink::CookieChangeSubscriptionPtr>
       backend_subscriptions;
   backend_subscriptions.ReserveInitialCapacity(subscriptions.size());
-  for (const CookieStoreGetOptions& subscription : subscriptions) {
+  for (const CookieStoreGetOptions* subscription : subscriptions) {
     blink::mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);
@@ -394,7 +399,7 @@ void CookieStore::RemoveAllEventListeners() {
 void CookieStore::OnCookieChange(
     const WebCanonicalCookie& backend_cookie,
     network::mojom::blink::CookieChangeCause change_cause) {
-  HeapVector<CookieListItem> changed, deleted;
+  HeapVector<Member<CookieListItem>> changed, deleted;
   CookieChangeEvent::ToEventInfo(backend_cookie, change_cause, changed,
                                  deleted);
   if (changed.IsEmpty() && deleted.IsEmpty()) {
@@ -437,7 +442,7 @@ CookieStore::CookieStore(
 
 ScriptPromise CookieStore::DoRead(
     ScriptState* script_state,
-    const CookieStoreGetOptions& options,
+    const CookieStoreGetOptions* options,
     DoReadBackendResultConverter backend_result_converter,
     ExceptionState& exception_state) {
   network::mojom::blink::CookieManagerGetOptionsPtr backend_options =
@@ -469,12 +474,11 @@ void CookieStore::GetAllForUrlToGetAllResult(
   if (!script_state->ContextIsValid())
     return;
 
-  HeapVector<CookieListItem> cookies;
+  HeapVector<Member<CookieListItem>> cookies;
   cookies.ReserveInitialCapacity(backend_cookies.size());
   for (const auto& backend_cookie : backend_cookies) {
-    CookieListItem& cookie = cookies.emplace_back();
-    CookieChangeEvent::ToCookieListItem(backend_cookie, false /* is_deleted */,
-                                        cookie);
+    cookies.push_back(CookieChangeEvent::ToCookieListItem(
+        backend_cookie, false /* is_deleted */));
   }
 
   resolver->Resolve(std::move(cookies));
@@ -494,14 +498,13 @@ void CookieStore::GetAllForUrlToGetResult(
   }
 
   const auto& backend_cookie = backend_cookies.front();
-  CookieListItem cookie;
-  CookieChangeEvent::ToCookieListItem(backend_cookie, false /* is_deleted */,
-                                      cookie);
+  CookieListItem* cookie = CookieChangeEvent::ToCookieListItem(
+      backend_cookie, false /* is_deleted */);
   resolver->Resolve(cookie);
 }
 
 ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
-                                   const CookieStoreSetExtraOptions& options,
+                                   const CookieStoreSetExtraOptions* options,
                                    ExceptionState& exception_state) {
   base::Optional<WebCanonicalCookie> canonical_cookie =
       ToWebCanonicalCookie(default_cookie_url_, options, exception_state);
@@ -574,11 +577,12 @@ void CookieStore::OnGetCookieChangeSubscriptionResult(
     return;
   }
 
-  HeapVector<CookieStoreGetOptions> subscriptions;
+  HeapVector<Member<CookieStoreGetOptions>> subscriptions;
   subscriptions.ReserveInitialCapacity(backend_result.size());
   for (const auto& backend_subscription : backend_result) {
-    CookieStoreGetOptions& subscription = subscriptions.emplace_back();
-    ToCookieChangeSubscription(*backend_subscription, subscription);
+    CookieStoreGetOptions* subscription =
+        ToCookieChangeSubscription(*backend_subscription);
+    subscriptions.push_back(subscription);
   }
 
   resolver->Resolve(std::move(subscriptions));

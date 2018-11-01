@@ -108,13 +108,13 @@ Event::Event(const AtomicString& event_type,
       platform_time_stamp_(platform_time_stamp) {}
 
 Event::Event(const AtomicString& event_type,
-             const EventInit& initializer,
+             const EventInit* initializer,
              TimeTicks platform_time_stamp)
     : Event(event_type,
-            initializer.bubbles() ? Bubbles::kYes : Bubbles::kNo,
-            initializer.cancelable() ? Cancelable::kYes : Cancelable::kNo,
-            initializer.composed() ? ComposedMode::kComposed
-                                   : ComposedMode::kScoped,
+            initializer->bubbles() ? Bubbles::kYes : Bubbles::kNo,
+            initializer->cancelable() ? Cancelable::kYes : Cancelable::kNo,
+            initializer->composed() ? ComposedMode::kComposed
+                                    : ComposedMode::kScoped,
             platform_time_stamp) {}
 
 Event::~Event() = default;

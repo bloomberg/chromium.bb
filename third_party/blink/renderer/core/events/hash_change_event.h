@@ -37,7 +37,7 @@ class HashChangeEvent final : public Event {
   }
 
   static HashChangeEvent* Create(const AtomicString& type,
-                                 const HashChangeEventInit& initializer) {
+                                 const HashChangeEventInit* initializer) {
     return new HashChangeEvent(type, initializer);
   }
 
@@ -59,12 +59,12 @@ class HashChangeEvent final : public Event {
         new_url_(new_url) {}
 
   HashChangeEvent(const AtomicString& type,
-                  const HashChangeEventInit& initializer)
+                  const HashChangeEventInit* initializer)
       : Event(type, initializer) {
-    if (initializer.hasOldURL())
-      old_url_ = initializer.oldURL();
-    if (initializer.hasNewURL())
-      new_url_ = initializer.newURL();
+    if (initializer->hasOldURL())
+      old_url_ = initializer->oldURL();
+    if (initializer->hasNewURL())
+      new_url_ = initializer->newURL();
   }
 
   String old_url_;

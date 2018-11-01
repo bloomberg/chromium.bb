@@ -36,7 +36,7 @@ class XRWebGLLayer final : public XRLayer,
   static XRWebGLLayer* Create(
       XRSession*,
       const WebGLRenderingContextOrWebGL2RenderingContext&,
-      const XRWebGLLayerInit&,
+      const XRWebGLLayerInit*,
       ExceptionState&);
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }

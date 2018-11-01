@@ -37,18 +37,18 @@ class CORE_EXPORT Request final : public Body {
   // From Request.idl:
   static Request* Create(ScriptState*,
                          const RequestInfo&,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
 
   static Request* Create(ScriptState*, const String&, ExceptionState&);
   static Request* Create(ScriptState*,
                          const String&,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
   static Request* Create(ScriptState*, Request*, ExceptionState&);
   static Request* Create(ScriptState*,
                          Request*,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
   static Request* Create(ScriptState*, const WebServiceWorkerRequest&);
@@ -96,7 +96,7 @@ class CORE_EXPORT Request final : public Body {
   static Request* CreateRequestWithRequestOrString(ScriptState*,
                                                    Request*,
                                                    const String&,
-                                                   const RequestInit&,
+                                                   const RequestInit*,
                                                    ExceptionState&);
 
   String ContentType() const override;

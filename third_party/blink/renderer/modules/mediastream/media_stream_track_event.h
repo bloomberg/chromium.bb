@@ -42,7 +42,7 @@ class MediaStreamTrackEvent final : public Event {
   static MediaStreamTrackEvent* Create(const AtomicString& type,
                                        MediaStreamTrack*);
   static MediaStreamTrackEvent* Create(const AtomicString& type,
-                                       const MediaStreamTrackEventInit&);
+                                       const MediaStreamTrackEventInit*);
 
   MediaStreamTrack* track() const;
 
@@ -54,7 +54,7 @@ class MediaStreamTrackEvent final : public Event {
  private:
   MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack*);
   MediaStreamTrackEvent(const AtomicString& type,
-                        const MediaStreamTrackEventInit&);
+                        const MediaStreamTrackEventInit*);
 
   Member<MediaStreamTrack> track_;
 };

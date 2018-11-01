@@ -92,7 +92,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   CanvasColorParams ColorParams() const;
 
   ScriptPromise convertToBlob(ScriptState*,
-                              const ImageEncodeOptions&,
+                              const ImageEncodeOptions*,
                               ExceptionState&) const;
 
  protected:

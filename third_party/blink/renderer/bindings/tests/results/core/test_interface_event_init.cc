@@ -15,11 +15,7 @@ namespace blink {
 TestInterfaceEventInit::TestInterfaceEventInit() {
 }
 
-TestInterfaceEventInit::~TestInterfaceEventInit() {}
-
-TestInterfaceEventInit::TestInterfaceEventInit(const TestInterfaceEventInit&) = default;
-
-TestInterfaceEventInit& TestInterfaceEventInit::operator=(const TestInterfaceEventInit&) = default;
+TestInterfaceEventInit::~TestInterfaceEventInit() = default;
 
 void TestInterfaceEventInit::Trace(blink::Visitor* visitor) {
   EventInit::Trace(visitor);

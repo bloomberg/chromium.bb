@@ -205,56 +205,53 @@ RTCIceTransport::getRemoteCandidates() const {
   return remote_candidates_;
 }
 
-void RTCIceTransport::getSelectedCandidatePair(
-    base::Optional<RTCIceCandidatePair>& result) const {
-  result = selected_candidate_pair_;
+RTCIceCandidatePair* RTCIceTransport::getSelectedCandidatePair() const {
+  return selected_candidate_pair_;
 }
 
-void RTCIceTransport::getLocalParameters(
-    base::Optional<RTCIceParameters>& result) const {
-  result = local_parameters_;
+RTCIceParameters* RTCIceTransport::getLocalParameters() const {
+  return local_parameters_;
 }
 
-void RTCIceTransport::getRemoteParameters(
-    base::Optional<RTCIceParameters>& result) const {
-  result = remote_parameters_;
+RTCIceParameters* RTCIceTransport::getRemoteParameters() const {
+  return remote_parameters_;
 }
 
 static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
-    const RTCIceServer& ice_server) {
+    const RTCIceServer* ice_server) {
   webrtc::PeerConnectionInterface::IceServer converted_ice_server;
   // Prefer standardized 'urls' field over deprecated 'url' field.
   Vector<String> url_strings;
-  if (ice_server.hasURLs()) {
-    if (ice_server.urls().IsString()) {
-      url_strings.push_back(ice_server.urls().GetAsString());
-    } else if (ice_server.urls().IsStringSequence()) {
-      url_strings = ice_server.urls().GetAsStringSequence();
+  if (ice_server->hasURLs()) {
+    if (ice_server->urls().IsString()) {
+      url_strings.push_back(ice_server->urls().GetAsString());
+    } else if (ice_server->urls().IsStringSequence()) {
+      url_strings = ice_server->urls().GetAsStringSequence();
     }
-  } else if (ice_server.hasURL()) {
-    url_strings.push_back(ice_server.url());
+  } else if (ice_server->hasURL()) {
+    url_strings.push_back(ice_server->url());
   }
   for (const String& url_string : url_strings) {
     converted_ice_server.urls.push_back(WebString(url_string).Utf8());
   }
-  converted_ice_server.username = WebString(ice_server.username()).Utf8();
-  converted_ice_server.password = WebString(ice_server.credential()).Utf8();
+  converted_ice_server.username = WebString(ice_server->username()).Utf8();
+  converted_ice_server.password = WebString(ice_server->credential()).Utf8();
   return converted_ice_server;
 }
 
 static cricket::IceParameters ConvertIceParameters(
-    const RTCIceParameters& ice_parameters) {
+    const RTCIceParameters* ice_parameters) {
   cricket::IceParameters converted_ice_parameters;
   converted_ice_parameters.ufrag =
-      WebString(ice_parameters.usernameFragment()).Utf8();
-  converted_ice_parameters.pwd = WebString(ice_parameters.password()).Utf8();
+      WebString(ice_parameters->usernameFragment()).Utf8();
+  converted_ice_parameters.pwd = WebString(ice_parameters->password()).Utf8();
   return converted_ice_parameters;
 }
 
 static std::vector<webrtc::PeerConnectionInterface::IceServer>
-ConvertIceServers(const HeapVector<RTCIceServer>& ice_servers) {
+ConvertIceServers(const HeapVector<Member<RTCIceServer>>& ice_servers) {
   std::vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
-  for (const RTCIceServer& ice_server : ice_servers) {
+  for (const RTCIceServer* ice_server : ice_servers) {
     converted_ice_servers.push_back(ConvertIceServer(ice_server));
   }
   return converted_ice_servers;
@@ -271,7 +268,7 @@ static IceTransportPolicy IceTransportPolicyFromString(const String& str) {
   return IceTransportPolicy::kAll;
 }
 
-void RTCIceTransport::gather(const RTCIceGatherOptions& options,
+void RTCIceTransport::gather(RTCIceGatherOptions* options,
                              ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
@@ -284,8 +281,8 @@ void RTCIceTransport::gather(const RTCIceGatherOptions& options,
     return;
   }
   std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
-  if (options.hasIceServers()) {
-    ice_servers = ConvertIceServers(options.iceServers());
+  if (options->hasIceServers()) {
+    ice_servers = ConvertIceServers(options->iceServers());
   }
   cricket::ServerAddresses stun_servers;
   std::vector<cricket::RelayServerConfig> turn_servers;
@@ -300,7 +297,7 @@ void RTCIceTransport::gather(const RTCIceGatherOptions& options,
   gathering_state_ = cricket::kIceGatheringGathering;
   proxy_->StartGathering(ConvertIceParameters(local_parameters_), stun_servers,
                          turn_servers,
-                         IceTransportPolicyFromString(options.gatherPolicy()));
+                         IceTransportPolicyFromString(options->gatherPolicy()));
 }
 
 static cricket::IceRole IceRoleFromString(const String& role_string) {
@@ -314,20 +311,20 @@ static cricket::IceRole IceRoleFromString(const String& role_string) {
   return cricket::ICEROLE_UNKNOWN;
 }
 
-static bool RTCIceParametersAreEqual(const RTCIceParameters& a,
-                                     const RTCIceParameters& b) {
-  return a.usernameFragment() == b.usernameFragment() &&
-         a.password() == b.password();
+static bool RTCIceParametersAreEqual(const RTCIceParameters* a,
+                                     const RTCIceParameters* b) {
+  return a->usernameFragment() == b->usernameFragment() &&
+         a->password() == b->password();
 }
 
-void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
+void RTCIceTransport::start(RTCIceParameters* remote_parameters,
                             const String& role_string,
                             ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
   }
-  if (!remote_parameters.hasUsernameFragment() ||
-      !remote_parameters.hasPassword()) {
+  if (!remote_parameters->hasUsernameFragment() ||
+      !remote_parameters->hasPassword()) {
     exception_state.ThrowTypeError(
         "remoteParameters must have usernameFragment and password fields set.");
     return;
@@ -340,7 +337,7 @@ void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
     return;
   }
   if (remote_parameters_ &&
-      RTCIceParametersAreEqual(*remote_parameters_, remote_parameters)) {
+      RTCIceParametersAreEqual(remote_parameters_, remote_parameters)) {
     // No change to remote parameters: do nothing.
     return;
   }
@@ -367,6 +364,7 @@ void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
     state_ = RTCIceTransportState::kNew;
     proxy_->HandleRemoteRestart(ConvertIceParameters(remote_parameters));
   }
+
   remote_parameters_ = remote_parameters;
 }
 
@@ -380,7 +378,7 @@ void RTCIceTransport::stop() {
   // Stopping the consumer should cause it to disconnect.
   DCHECK(!HasConsumer());
   state_ = RTCIceTransportState::kClosed;
-  selected_candidate_pair_ = base::nullopt;
+  selected_candidate_pair_ = nullptr;
   proxy_.reset();
 }
 
@@ -404,9 +402,10 @@ void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
 }
 
 void RTCIceTransport::GenerateLocalParameters() {
-  local_parameters_.setUsernameFragment(
+  local_parameters_ = RTCIceParameters::Create();
+  local_parameters_->setUsernameFragment(
       WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)));
-  local_parameters_.setPassword(
+  local_parameters_->setPassword(
       WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)));
 }
 
@@ -427,8 +426,9 @@ void RTCIceTransport::OnCandidateGathered(
     const cricket::Candidate& parsed_candidate) {
   RTCIceCandidate* candidate = ConvertToRtcIceCandidate(parsed_candidate);
   local_candidates_.push_back(candidate);
-  RTCPeerConnectionIceEventInit event_init;
-  event_init.setCandidate(candidate);
+  RTCPeerConnectionIceEventInit* event_init =
+      RTCPeerConnectionIceEventInit::Create();
+  event_init->setCandidate(candidate);
   DispatchEvent(*RTCPeerConnectionIceEvent::Create(EventTypeNames::icecandidate,
                                                    event_init));
 }
@@ -457,7 +457,7 @@ void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
   }
   state_ = local_new_state;
   if (state_ == RTCIceTransportState::kFailed) {
-    selected_candidate_pair_ = base::nullopt;
+    selected_candidate_pair_ = nullptr;
   }
   DispatchEvent(*Event::Create(EventTypeNames::statechange));
 }
@@ -469,7 +469,7 @@ void RTCIceTransport::OnSelectedCandidatePairChanged(
       ConvertToRtcIceCandidate(selected_candidate_pair.first);
   RTCIceCandidate* remote =
       ConvertToRtcIceCandidate(selected_candidate_pair.second);
-  selected_candidate_pair_ = RTCIceCandidatePair();
+  selected_candidate_pair_ = RTCIceCandidatePair::Create();
   selected_candidate_pair_->setLocal(local);
   selected_candidate_pair_->setRemote(remote);
   DispatchEvent(*Event::Create(EventTypeNames::selectedcandidatepairchange));
@@ -507,6 +507,8 @@ bool RTCIceTransport::HasPendingActivity() const {
 void RTCIceTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_candidates_);
   visitor->Trace(remote_candidates_);
+  visitor->Trace(local_parameters_);
+  visitor->Trace(remote_parameters_);
   visitor->Trace(selected_candidate_pair_);
   visitor->Trace(consumer_);
   EventTargetWithInlineData::Trace(visitor);

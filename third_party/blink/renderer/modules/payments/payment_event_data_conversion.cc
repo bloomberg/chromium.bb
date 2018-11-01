@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/modules/payments/web_payment_method_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
@@ -17,33 +18,33 @@
 namespace blink {
 namespace {
 
-PaymentCurrencyAmount ToPaymentCurrencyAmount(
+PaymentCurrencyAmount* ToPaymentCurrencyAmount(
     const WebPaymentCurrencyAmount& web_amount) {
-  PaymentCurrencyAmount amount;
-  amount.setCurrency(web_amount.currency);
-  amount.setValue(web_amount.value);
+  PaymentCurrencyAmount* amount = PaymentCurrencyAmount::Create();
+  amount->setCurrency(web_amount.currency);
+  amount->setValue(web_amount.value);
   return amount;
 }
 
-PaymentItem ToPaymentItem(const WebPaymentItem& web_item) {
-  PaymentItem item;
-  item.setLabel(web_item.label);
-  item.setAmount(ToPaymentCurrencyAmount(web_item.amount));
-  item.setPending(web_item.pending);
+PaymentItem* ToPaymentItem(const WebPaymentItem& web_item) {
+  PaymentItem* item = PaymentItem::Create();
+  item->setLabel(web_item.label);
+  item->setAmount(ToPaymentCurrencyAmount(web_item.amount));
+  item->setPending(web_item.pending);
   return item;
 }
 
-PaymentDetailsModifier ToPaymentDetailsModifier(
+PaymentDetailsModifier* ToPaymentDetailsModifier(
     ScriptState* script_state,
     const WebPaymentDetailsModifier& web_modifier) {
-  PaymentDetailsModifier modifier;
-  modifier.setSupportedMethod(web_modifier.supported_method);
-  modifier.setTotal(ToPaymentItem(web_modifier.total));
-  HeapVector<PaymentItem> additional_display_items;
+  PaymentDetailsModifier* modifier = PaymentDetailsModifier::Create();
+  modifier->setSupportedMethod(web_modifier.supported_method);
+  modifier->setTotal(ToPaymentItem(web_modifier.total));
+  HeapVector<Member<PaymentItem>> additional_display_items;
   for (const auto& web_item : web_modifier.additional_display_items) {
     additional_display_items.push_back(ToPaymentItem(web_item));
   }
-  modifier.setAdditionalDisplayItems(additional_display_items);
+  modifier->setAdditionalDisplayItems(additional_display_items);
   return modifier;
 }
 
@@ -62,70 +63,70 @@ ScriptValue StringDataToScriptValue(ScriptState* script_state,
   return ScriptValue(script_state, v8_value);
 }
 
-PaymentMethodData ToPaymentMethodData(
+PaymentMethodData* ToPaymentMethodData(
     ScriptState* script_state,
     const WebPaymentMethodData& web_method_data) {
-  PaymentMethodData method_data;
-  method_data.setSupportedMethod(web_method_data.supported_method);
-  method_data.setData(
+  PaymentMethodData* method_data = PaymentMethodData::Create();
+  method_data->setSupportedMethod(web_method_data.supported_method);
+  method_data->setData(
       StringDataToScriptValue(script_state, web_method_data.stringified_data));
   return method_data;
 }
 
 }  // namespace
 
-PaymentRequestEventInit PaymentEventDataConversion::ToPaymentRequestEventInit(
+PaymentRequestEventInit* PaymentEventDataConversion::ToPaymentRequestEventInit(
     ScriptState* script_state,
     const WebPaymentRequestEventData& web_event_data) {
   DCHECK(script_state);
 
-  PaymentRequestEventInit event_data;
+  PaymentRequestEventInit* event_data = PaymentRequestEventInit::Create();
   if (!script_state->ContextIsValid())
     return event_data;
 
   ScriptState::Scope scope(script_state);
 
-  event_data.setTopOrigin(web_event_data.top_origin);
-  event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
-  event_data.setPaymentRequestId(web_event_data.payment_request_id);
-  HeapVector<PaymentMethodData> method_data;
+  event_data->setTopOrigin(web_event_data.top_origin);
+  event_data->setPaymentRequestOrigin(web_event_data.payment_request_origin);
+  event_data->setPaymentRequestId(web_event_data.payment_request_id);
+  HeapVector<Member<PaymentMethodData>> method_data;
   for (const auto& md : web_event_data.method_data) {
     method_data.push_back(ToPaymentMethodData(script_state, md));
   }
-  event_data.setMethodData(method_data);
-  event_data.setTotal(ToPaymentCurrencyAmount(web_event_data.total));
-  HeapVector<PaymentDetailsModifier> modifiers;
+  event_data->setMethodData(method_data);
+  event_data->setTotal(ToPaymentCurrencyAmount(web_event_data.total));
+  HeapVector<Member<PaymentDetailsModifier>> modifiers;
   for (const auto& modifier : web_event_data.modifiers) {
     modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
   }
-  event_data.setModifiers(modifiers);
-  event_data.setInstrumentKey(web_event_data.instrument_key);
+  event_data->setModifiers(modifiers);
+  event_data->setInstrumentKey(web_event_data.instrument_key);
   return event_data;
 }
 
-CanMakePaymentEventInit PaymentEventDataConversion::ToCanMakePaymentEventInit(
+CanMakePaymentEventInit* PaymentEventDataConversion::ToCanMakePaymentEventInit(
     ScriptState* script_state,
     const WebCanMakePaymentEventData& web_event_data) {
   DCHECK(script_state);
 
-  CanMakePaymentEventInit event_data;
+  CanMakePaymentEventInit* event_data = CanMakePaymentEventInit::Create();
   if (!script_state->ContextIsValid())
     return event_data;
 
   ScriptState::Scope scope(script_state);
 
-  event_data.setTopOrigin(web_event_data.top_origin);
-  event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
-  HeapVector<PaymentMethodData> method_data;
+  event_data->setTopOrigin(web_event_data.top_origin);
+  event_data->setPaymentRequestOrigin(web_event_data.payment_request_origin);
+  HeapVector<Member<PaymentMethodData>> method_data;
   for (const auto& md : web_event_data.method_data) {
     method_data.push_back(ToPaymentMethodData(script_state, md));
   }
-  event_data.setMethodData(method_data);
-  HeapVector<PaymentDetailsModifier> modifiers;
+  event_data->setMethodData(method_data);
+  HeapVector<Member<PaymentDetailsModifier>> modifiers;
   for (const auto& modifier : web_event_data.modifiers) {
     modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
   }
-  event_data.setModifiers(modifiers);
+  event_data->setModifiers(modifiers);
   return event_data;
 }
 

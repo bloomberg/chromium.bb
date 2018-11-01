@@ -56,15 +56,15 @@ void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
                                 Vector<ScriptValue>& transfer,
                                 ExceptionState& exception_state) {
-  PostMessageOptions options;
+  PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
 
 void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
-                                const PostMessageOptions& options,
+                                const PostMessageOptions* options,
                                 ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(

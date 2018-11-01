@@ -22,7 +22,7 @@ class SensorErrorEvent : public Event {
   }
 
   static SensorErrorEvent* Create(const AtomicString& event_type,
-                                  const SensorErrorEventInit& initializer) {
+                                  const SensorErrorEventInit* initializer) {
     return new SensorErrorEvent(event_type, initializer);
   }
 
@@ -37,7 +37,7 @@ class SensorErrorEvent : public Event {
  private:
   SensorErrorEvent(const AtomicString& event_type, DOMException* error);
   SensorErrorEvent(const AtomicString& event_type,
-                   const SensorErrorEventInit& initializer);
+                   const SensorErrorEventInit* initializer);
 
   Member<DOMException> error_;
 };

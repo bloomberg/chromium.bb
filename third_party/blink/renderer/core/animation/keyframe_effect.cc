@@ -76,7 +76,7 @@ KeyframeEffect* KeyframeEffect::Create(
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeEffectOptions()) {
     composite = EffectModel::StringToCompositeOperation(
-                    options.GetAsKeyframeEffectOptions().composite())
+                    options.GetAsKeyframeEffectOptions()->composite())
                     .value();
   }
 

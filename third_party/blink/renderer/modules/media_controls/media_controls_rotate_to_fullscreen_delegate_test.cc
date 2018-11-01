@@ -62,7 +62,7 @@ class MockChromeClient : public EmptyChromeClient {
         ->SetScreenOrientationAssociatedPtrForTests(
             std::move(screen_orientation));
   }
-  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions&) override {
+  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions*) override {
     Fullscreen::DidEnterFullscreen(*frame.GetDocument());
   }
   void ExitFullscreen(LocalFrame& frame) override {

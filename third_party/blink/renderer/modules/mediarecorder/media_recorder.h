@@ -39,7 +39,7 @@ class MODULES_EXPORT MediaRecorder final
                                ExceptionState& exception_state);
   static MediaRecorder* Create(ExecutionContext* context,
                                MediaStream* stream,
-                               const MediaRecorderOptions& options,
+                               const MediaRecorderOptions* options,
                                ExceptionState& exception_state);
 
   ~MediaRecorder() override;
@@ -90,7 +90,7 @@ class MODULES_EXPORT MediaRecorder final
  private:
   MediaRecorder(ExecutionContext* context,
                 MediaStream* stream,
-                const MediaRecorderOptions& options,
+                const MediaRecorderOptions* options,
                 ExceptionState& exception_state);
 
   void CreateBlobEvent(Blob* blob, double timecode);

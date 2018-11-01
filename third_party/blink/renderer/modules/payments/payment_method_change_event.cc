@@ -15,7 +15,7 @@ PaymentMethodChangeEvent::~PaymentMethodChangeEvent() = default;
 PaymentMethodChangeEvent* PaymentMethodChangeEvent::Create(
     ScriptState* script_state,
     const AtomicString& type,
-    const PaymentMethodChangeEventInit& init) {
+    const PaymentMethodChangeEventInit* init) {
   return new PaymentMethodChangeEvent(script_state, type, init);
 }
 
@@ -31,13 +31,13 @@ const ScriptValue PaymentMethodChangeEvent::methodDetails(
 PaymentMethodChangeEvent::PaymentMethodChangeEvent(
     ScriptState* script_state,
     const AtomicString& type,
-    const PaymentMethodChangeEventInit& init)
+    const PaymentMethodChangeEventInit* init)
     : PaymentRequestUpdateEvent(ExecutionContext::From(script_state),
                                 type,
                                 init),
-      method_name_(init.methodName()),
-      method_details_(init.hasMethodDetails()
-                          ? init.methodDetails()
+      method_name_(init->methodName()),
+      method_details_(init->hasMethodDetails()
+                          ? init->methodDetails()
                           : ScriptValue::CreateNull(script_state)) {}
 
 }  // namespace blink

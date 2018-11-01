@@ -37,7 +37,7 @@ Worklet::~Worklet() {
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise Worklet::addModule(ScriptState* script_state,
                                  const String& module_url,
-                                 const WorkletOptions& options) {
+                                 const WorkletOptions* options) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
@@ -78,7 +78,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
       ->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
-                           module_url_record, options.credentials(),
+                           module_url_record, options->credentials(),
                            WrapPersistent(pending_tasks)));
   return promise;
 }

@@ -335,7 +335,7 @@ void WebRemoteFrameImpl::WillEnterFullscreen() {
   // future, this should plumb in information about which request type
   // (prefixed or unprefixed) to use for firing fullscreen events.
   Fullscreen::RequestFullscreen(
-      *owner_element, FullscreenOptions(),
+      *owner_element, FullscreenOptions::Create(),
       Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 

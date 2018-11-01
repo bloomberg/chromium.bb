@@ -60,11 +60,11 @@ class CORE_EXPORT EventListenerMap final {
   void Clear();
   bool Add(const AtomicString& event_type,
            EventListener*,
-           const AddEventListenerOptionsResolved&,
+           const AddEventListenerOptionsResolved*,
            RegisteredEventListener* registered_listener);
   bool Remove(const AtomicString& event_type,
               const EventListener*,
-              const EventListenerOptions&,
+              const EventListenerOptions*,
               wtf_size_t* index_of_removed_listener,
               RegisteredEventListener* registered_listener);
   EventListenerVector* Find(const AtomicString& event_type);

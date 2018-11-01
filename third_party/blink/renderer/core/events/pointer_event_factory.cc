@@ -91,7 +91,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
       web_pointer_event.WebPointerEventInRootFrame();
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
-      web_pointer_event_in_root_frame, dom_window, *pointer_event_init);
+      web_pointer_event_in_root_frame, dom_window, pointer_event_init);
   // If width/height is unknown we let PointerEventInit set it to 1.
   // See https://w3c.github.io/pointerevents/#dom-pointerevent-width
   if (web_pointer_event_in_root_frame.HasWidth() &&
@@ -117,7 +117,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
 HeapVector<Member<PointerEvent>> CreateEventSequence(
     const WebPointerEvent& web_pointer_event,
-    const PointerEventInit& pointer_event_init,
+    const PointerEventInit* pointer_event_init,
     const Vector<WebPointerEvent>& event_list,
     LocalDOMWindow* view) {
   AtomicString type = PointerEventNameForEventType(web_pointer_event.GetType());
@@ -127,10 +127,23 @@ HeapVector<Member<PointerEvent>> CreateEventSequence(
     DCHECK_EQ(web_pointer_event.GetType(), event.GetType());
     DCHECK_EQ(web_pointer_event.pointer_type, event.pointer_type);
 
-    PointerEventInit new_event_init = pointer_event_init;
-    new_event_init.setCancelable(false);
-    new_event_init.setBubbles(false);
-    UpdateCommonPointerEventInit(event, view, &new_event_init);
+    PointerEventInit* new_event_init = PointerEventInit::Create();
+    if (pointer_event_init->hasButton())
+      new_event_init->setButton(pointer_event_init->button());
+    if (pointer_event_init->hasButtons())
+      new_event_init->setButtons(pointer_event_init->buttons());
+    if (pointer_event_init->hasIsPrimary())
+      new_event_init->setIsPrimary(pointer_event_init->isPrimary());
+    if (pointer_event_init->hasPointerId())
+      new_event_init->setPointerId(pointer_event_init->pointerId());
+    if (pointer_event_init->hasPointerType())
+      new_event_init->setPointerType(pointer_event_init->pointerType());
+    if (pointer_event_init->hasView())
+      new_event_init->setView(pointer_event_init->view());
+
+    new_event_init->setCancelable(false);
+    new_event_init->setBubbles(false);
+    UpdateCommonPointerEventInit(event, view, new_event_init);
     PointerEvent* pointer_event =
         PointerEvent::Create(type, new_event_init, event.TimeStamp());
     // Set the trusted flag for these events at the creation time as oppose to
@@ -150,8 +163,7 @@ const int PointerEventFactory::kInvalidId = 0;
 // Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
 const int PointerEventFactory::kMouseId = 1;
 
-void PointerEventFactory::SetIdTypeButtons(
-    PointerEventInit& pointer_event_init,
+PointerEventInit* PointerEventFactory::ConvertIdTypeButtonsEvent(
     const WebPointerEvent& web_pointer_event) {
   WebPointerProperties::PointerType pointer_type =
       web_pointer_event.pointer_type;
@@ -181,31 +193,34 @@ void PointerEventFactory::SetIdTypeButtons(
     }
     pointer_type = WebPointerProperties::PointerType::kPen;
   }
-  pointer_event_init.setButtons(buttons);
+  PointerEventInit* pointer_event_init = PointerEventInit::Create();
+  pointer_event_init->setButtons(buttons);
 
   const IncomingId incoming_id(pointer_type, web_pointer_event.id);
   int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0,
                                          web_pointer_event.hovering);
-  pointer_event_init.setPointerId(pointer_id);
-  pointer_event_init.setPointerType(
+  pointer_event_init->setPointerId(pointer_id);
+  pointer_event_init->setPointerType(
       PointerTypeNameForWebPointPointerType(pointer_type));
-  pointer_event_init.setIsPrimary(IsPrimary(pointer_id));
+  pointer_event_init->setIsPrimary(IsPrimary(pointer_id));
+
+  return pointer_event_init;
 }
 
 void PointerEventFactory::SetEventSpecificFields(
-    PointerEventInit& pointer_event_init,
+    PointerEventInit* pointer_event_init,
     const AtomicString& type) {
-  pointer_event_init.setBubbles(type != EventTypeNames::pointerenter &&
-                                type != EventTypeNames::pointerleave);
-  pointer_event_init.setCancelable(type != EventTypeNames::pointerenter &&
-                                   type != EventTypeNames::pointerleave &&
-                                   type != EventTypeNames::pointercancel &&
-                                   type != EventTypeNames::pointerrawmove &&
-                                   type != EventTypeNames::gotpointercapture &&
-                                   type != EventTypeNames::lostpointercapture);
+  pointer_event_init->setBubbles(type != EventTypeNames::pointerenter &&
+                                 type != EventTypeNames::pointerleave);
+  pointer_event_init->setCancelable(type != EventTypeNames::pointerenter &&
+                                    type != EventTypeNames::pointerleave &&
+                                    type != EventTypeNames::pointercancel &&
+                                    type != EventTypeNames::pointerrawmove &&
+                                    type != EventTypeNames::gotpointercapture &&
+                                    type != EventTypeNames::lostpointercapture);
 
-  pointer_event_init.setComposed(true);
-  pointer_event_init.setDetail(0);
+  pointer_event_init->setComposed(true);
+  pointer_event_init->setDetail(0);
 }
 
 PointerEvent* PointerEventFactory::Create(
@@ -220,9 +235,8 @@ PointerEvent* PointerEventFactory::Create(
          event_type == WebInputEvent::kPointerRawMove ||
          event_type == WebInputEvent::kPointerCancel);
 
-  PointerEventInit pointer_event_init;
-
-  SetIdTypeButtons(pointer_event_init, web_pointer_event);
+  PointerEventInit* pointer_event_init =
+      ConvertIdTypeButtonsEvent(web_pointer_event);
 
   AtomicString type = PointerEventNameForEventType(event_type);
   if (event_type == WebInputEvent::kPointerDown ||
@@ -233,22 +247,22 @@ PointerEvent* PointerEventFactory::Create(
             WebPointerProperties::PointerType::kEraser &&
         button == WebPointerProperties::Button::kLeft)
       button = WebPointerProperties::Button::kEraser;
-    pointer_event_init.setButton(static_cast<int>(button));
+    pointer_event_init->setButton(static_cast<int>(button));
 
     // Make sure chorded buttons fire pointermove instead of pointerup/down.
     if ((event_type == WebInputEvent::kPointerDown &&
-         (pointer_event_init.buttons() & ~ButtonToButtonsBitfield(button)) !=
+         (pointer_event_init->buttons() & ~ButtonToButtonsBitfield(button)) !=
              0) ||
         (event_type == WebInputEvent::kPointerUp &&
-         pointer_event_init.buttons() != 0))
+         pointer_event_init->buttons() != 0))
       type = EventTypeNames::pointermove;
   } else {
-    pointer_event_init.setButton(
+    pointer_event_init->setButton(
         static_cast<int>(WebPointerProperties::Button::kNoButton));
   }
 
-  pointer_event_init.setView(view);
-  UpdateCommonPointerEventInit(web_pointer_event, view, &pointer_event_init);
+  pointer_event_init->setView(view);
+  UpdateCommonPointerEventInit(web_pointer_event, view, pointer_event_init);
 
   UIEventWithKeyState::SetFromWebInputEventModifiers(
       pointer_event_init,
@@ -267,8 +281,8 @@ PointerEvent* PointerEventFactory::Create(
     predicted_pointer_events = CreateEventSequence(
         web_pointer_event, pointer_event_init, predicted_events, view);
   }
-  pointer_event_init.setCoalescedEvents(coalesced_pointer_events);
-  pointer_event_init.setPredictedEvents(predicted_pointer_events);
+  pointer_event_init->setCoalescedEvents(coalesced_pointer_events);
+  pointer_event_init->setPredictedEvents(predicted_pointer_events);
 
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
@@ -283,12 +297,12 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
       PointerAttributes(pointer_id_mapping_.at(pointer_id).incoming_id, false,
                         true));
 
-  PointerEventInit pointer_event_init;
+  PointerEventInit* pointer_event_init = PointerEventInit::Create();
 
-  pointer_event_init.setPointerId(pointer_id);
-  pointer_event_init.setPointerType(PointerTypeNameForWebPointPointerType(
+  pointer_event_init->setPointerId(pointer_id);
+  pointer_event_init->setPointerType(PointerTypeNameForWebPointPointerType(
       pointer_id_mapping_.at(pointer_id).incoming_id.GetPointerType()));
-  pointer_event_init.setIsPrimary(IsPrimary(pointer_id));
+  pointer_event_init->setIsPrimary(IsPrimary(pointer_id));
 
   SetEventSpecificFields(pointer_event_init, EventTypeNames::pointercancel);
 
@@ -300,30 +314,31 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
     PointerEvent* pointer_event,
     const AtomicString& type,
     EventTarget* related_target) {
-  PointerEventInit pointer_event_init;
+  PointerEventInit* pointer_event_init = PointerEventInit::Create();
 
-  pointer_event_init.setPointerId(pointer_event->pointerId());
-  pointer_event_init.setPointerType(pointer_event->pointerType());
-  pointer_event_init.setIsPrimary(pointer_event->isPrimary());
-  pointer_event_init.setWidth(pointer_event->width());
-  pointer_event_init.setHeight(pointer_event->height());
-  pointer_event_init.setScreenX(pointer_event->screenX());
-  pointer_event_init.setScreenY(pointer_event->screenY());
-  pointer_event_init.setClientX(pointer_event->clientX());
-  pointer_event_init.setClientY(pointer_event->clientY());
-  pointer_event_init.setButton(pointer_event->button());
-  pointer_event_init.setButtons(pointer_event->buttons());
-  pointer_event_init.setPressure(pointer_event->pressure());
-  pointer_event_init.setTiltX(pointer_event->tiltX());
-  pointer_event_init.setTiltY(pointer_event->tiltY());
-  pointer_event_init.setTangentialPressure(pointer_event->tangentialPressure());
-  pointer_event_init.setTwist(pointer_event->twist());
-  pointer_event_init.setView(pointer_event->view());
+  pointer_event_init->setPointerId(pointer_event->pointerId());
+  pointer_event_init->setPointerType(pointer_event->pointerType());
+  pointer_event_init->setIsPrimary(pointer_event->isPrimary());
+  pointer_event_init->setWidth(pointer_event->width());
+  pointer_event_init->setHeight(pointer_event->height());
+  pointer_event_init->setScreenX(pointer_event->screenX());
+  pointer_event_init->setScreenY(pointer_event->screenY());
+  pointer_event_init->setClientX(pointer_event->clientX());
+  pointer_event_init->setClientY(pointer_event->clientY());
+  pointer_event_init->setButton(pointer_event->button());
+  pointer_event_init->setButtons(pointer_event->buttons());
+  pointer_event_init->setPressure(pointer_event->pressure());
+  pointer_event_init->setTiltX(pointer_event->tiltX());
+  pointer_event_init->setTiltY(pointer_event->tiltY());
+  pointer_event_init->setTangentialPressure(
+      pointer_event->tangentialPressure());
+  pointer_event_init->setTwist(pointer_event->twist());
+  pointer_event_init->setView(pointer_event->view());
 
   SetEventSpecificFields(pointer_event_init, type);
 
   if (related_target)
-    pointer_event_init.setRelatedTarget(related_target);
+    pointer_event_init->setRelatedTarget(related_target);
 
   return PointerEvent::Create(type, pointer_event_init,
                               pointer_event->PlatformTimeStamp());

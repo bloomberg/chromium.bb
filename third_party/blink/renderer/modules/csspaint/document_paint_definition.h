@@ -38,7 +38,8 @@ class DocumentPaintDefinition final
   const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
     return paint_definition_->InputArgumentTypes();
   }
-  PaintRenderingContext2DSettings GetPaintRenderingContext2DSettings() const {
+  const PaintRenderingContext2DSettings* GetPaintRenderingContext2DSettings()
+      const {
     return paint_definition_->GetPaintRenderingContext2DSettings();
   }
 

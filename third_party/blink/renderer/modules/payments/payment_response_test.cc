@@ -39,7 +39,7 @@ class MockPaymentStateResolver final
   MOCK_METHOD2(Complete, ScriptPromise(ScriptState*, PaymentComplete result));
   MOCK_METHOD2(Retry,
                ScriptPromise(ScriptState*,
-                             const PaymentValidationErrors& errorFields));
+                             const PaymentValidationErrors* errorFields));
 
   void Trace(blink::Visitor* visitor) override {}
 

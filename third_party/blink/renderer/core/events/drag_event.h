@@ -20,7 +20,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   static DragEvent* Create() { return new DragEvent; }
 
   static DragEvent* Create(const AtomicString& type,
-                           const DragEventInit& initializer,
+                           const DragEventInit* initializer,
                            TimeTicks platform_time_stamp,
                            SyntheticEventType synthetic_event_type) {
     return new DragEvent(type, initializer, platform_time_stamp,
@@ -28,7 +28,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   }
 
   static DragEvent* Create(const AtomicString& type,
-                           const DragEventInit& initializer) {
+                           const DragEventInit* initializer) {
     return new DragEvent(type, initializer, CurrentTimeTicks(),
                          kRealOrIndistinguishable);
   }
@@ -47,7 +47,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
  private:
   DragEvent();
   DragEvent(const AtomicString& type,
-            const DragEventInit&,
+            const DragEventInit*,
             TimeTicks platform_time_stamp,
             SyntheticEventType);
 

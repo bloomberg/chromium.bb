@@ -30,8 +30,8 @@ ClipboardEvent::ClipboardEvent(const AtomicString& type,
       clipboard_data_(clipboard_data) {}
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
-                               const ClipboardEventInit& initializer)
-    : Event(type, initializer), clipboard_data_(initializer.clipboardData()) {}
+                               const ClipboardEventInit* initializer)
+    : Event(type, initializer), clipboard_data_(initializer->clipboardData()) {}
 
 ClipboardEvent::~ClipboardEvent() = default;
 

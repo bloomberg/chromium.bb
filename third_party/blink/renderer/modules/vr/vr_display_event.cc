@@ -45,13 +45,13 @@ VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
       reason_(reason) {}
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
-                               const VRDisplayEventInit& initializer)
+                               const VRDisplayEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasDisplay())
-    display_ = initializer.display();
+  if (initializer->hasDisplay())
+    display_ = initializer->display();
 
-  if (initializer.hasReason())
-    reason_ = initializer.reason();
+  if (initializer->hasReason())
+    reason_ = initializer->reason();
 }
 
 VRDisplayEvent::~VRDisplayEvent() = default;

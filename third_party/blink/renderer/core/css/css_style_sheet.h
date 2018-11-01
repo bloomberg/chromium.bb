@@ -54,7 +54,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
 
   static CSSStyleSheet* Create(Document&,
-                               const CSSStyleSheetInit&,
+                               const CSSStyleSheetInit*,
                                ExceptionState&);
 
   static CSSStyleSheet* Create(StyleSheetContents*,

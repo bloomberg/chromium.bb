@@ -29,7 +29,7 @@ class PresentationConnectionAvailableEvent final : public Event {
   }
   static PresentationConnectionAvailableEvent* Create(
       const AtomicString& event_type,
-      const PresentationConnectionAvailableEventInit& initializer) {
+      const PresentationConnectionAvailableEventInit* initializer) {
     return new PresentationConnectionAvailableEvent(event_type, initializer);
   }
 
@@ -44,7 +44,7 @@ class PresentationConnectionAvailableEvent final : public Event {
                                        PresentationConnection*);
   PresentationConnectionAvailableEvent(
       const AtomicString& event_type,
-      const PresentationConnectionAvailableEventInit& initializer);
+      const PresentationConnectionAvailableEventInit* initializer);
 
   Member<PresentationConnection> connection_;
 };

@@ -51,8 +51,8 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
   static NavigatorWebMIDI& From(Navigator&);
   static ScriptPromise requestMIDIAccess(ScriptState*,
                                          Navigator&,
-                                         const MIDIOptions&);
-  ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions&);
+                                         const MIDIOptions*);
+  ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions*);
 
   void Trace(blink::Visitor*) override;
 

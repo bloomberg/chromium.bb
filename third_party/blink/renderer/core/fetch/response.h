@@ -36,13 +36,13 @@ class CORE_EXPORT Response final : public Body {
   static Response* Create(ScriptState*, ExceptionState&);
   static Response* Create(ScriptState*,
                           ScriptValue body,
-                          const ResponseInit&,
+                          const ResponseInit*,
                           ExceptionState&);
 
   static Response* Create(ScriptState*,
                           BodyStreamBuffer*,
                           const String& content_type,
-                          const ResponseInit&,
+                          const ResponseInit*,
                           ExceptionState&);
   static Response* Create(ExecutionContext*, FetchResponseData*);
   static Response* Create(ScriptState*, mojom::blink::FetchAPIResponse&);

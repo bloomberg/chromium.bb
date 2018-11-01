@@ -20,7 +20,7 @@ class CORE_EXPORT PictureInPictureControlEvent final : public Event {
   static PictureInPictureControlEvent* Create(const AtomicString&, String);
   static PictureInPictureControlEvent* Create(
       const AtomicString&,
-      const PictureInPictureControlEventInit&);
+      const PictureInPictureControlEventInit*);
 
   String id() const;
   void setId(String id);
@@ -28,7 +28,7 @@ class CORE_EXPORT PictureInPictureControlEvent final : public Event {
  private:
   PictureInPictureControlEvent(AtomicString const&, String);
   PictureInPictureControlEvent(AtomicString const&,
-                               const PictureInPictureControlEventInit&);
+                               const PictureInPictureControlEventInit*);
 
   // id_ holds the id of a PictureIncPictureControlEvent, which is used to
   // convey which custom control fired the event by being clicked.

@@ -21,12 +21,12 @@ namespace blink {
 
 BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
     const AtomicString& type,
-    const BackgroundFetchEventInit& initializer)
+    const BackgroundFetchEventInit* initializer)
     : BackgroundFetchEvent(type, initializer, nullptr /* observer */) {}
 
 BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
     const AtomicString& type,
-    const BackgroundFetchEventInit& initializer,
+    const BackgroundFetchEventInit* initializer,
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchEvent(type, initializer, observer),
@@ -42,7 +42,7 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
-    const BackgroundFetchUIOptions& ui_options) {
+    const BackgroundFetchUIOptions* ui_options) {
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
     return ScriptPromise::Reject(
@@ -62,7 +62,7 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   }
   DCHECK(!registration_->unique_id().IsEmpty());
 
-  if (!ui_options.hasTitle() && ui_options.icons().IsEmpty()) {
+  if (!ui_options->hasTitle() && ui_options->icons().IsEmpty()) {
     // Nothing to update, just return a resolved promise.
     return ScriptPromise::CastUndefined(script_state);
   }
@@ -70,18 +70,18 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (ui_options.icons().IsEmpty()) {
-    DidGetIcon(resolver, ui_options.title(), SkBitmap(),
+  if (ui_options->icons().IsEmpty()) {
+    DidGetIcon(resolver, ui_options->title(), SkBitmap(),
                -1 /* ideal_to_chosen_icon_size */);
   } else {
     DCHECK(!loader_);
     loader_ = new BackgroundFetchIconLoader();
     DCHECK(loader_);
     loader_->Start(BackgroundFetchBridge::From(service_worker_registration_),
-                   ExecutionContext::From(script_state), ui_options.icons(),
+                   ExecutionContext::From(script_state), ui_options->icons(),
                    WTF::Bind(&BackgroundFetchUpdateUIEvent::DidGetIcon,
                              WrapPersistent(this), WrapPersistent(resolver),
-                             ui_options.title()));
+                             ui_options->title()));
   }
 
   return promise;

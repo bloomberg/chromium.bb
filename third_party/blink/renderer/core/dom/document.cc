@@ -1134,13 +1134,13 @@ Element* Document::CreateElement(const QualifiedName& q_name,
 ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
                                             const String& text,
                                             ExceptionState& exception_state) {
-  return Document::createCSSStyleSheet(script_state, text, CSSStyleSheetInit(),
-                                       exception_state);
+  return Document::createCSSStyleSheet(
+      script_state, text, CSSStyleSheetInit::Create(), exception_state);
 }
 
 ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
                                             const String& text,
-                                            const CSSStyleSheetInit& options,
+                                            const CSSStyleSheetInit* options,
                                             ExceptionState& exception_state) {
   // Even though this function returns a Promise, it actually does all the work
   // at once here because CSS parsing is done synchronously on the main thread.
@@ -1157,13 +1157,13 @@ CSSStyleSheet* Document::createCSSStyleSheetSync(
     const String& text,
     ExceptionState& exception_state) {
   return Document::createCSSStyleSheetSync(
-      script_state, text, CSSStyleSheetInit(), exception_state);
+      script_state, text, CSSStyleSheetInit::Create(), exception_state);
 }
 
 CSSStyleSheet* Document::createCSSStyleSheetSync(
     ScriptState* script_state,
     const String& text,
-    const CSSStyleSheetInit& options,
+    const CSSStyleSheetInit* options,
     ExceptionState& exception_state) {
   CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
   sheet->SetText(text, false /* allow_import_rules */, exception_state);
@@ -1175,7 +1175,7 @@ CSSStyleSheet* Document::createCSSStyleSheetSync(
 
 CSSStyleSheet* Document::createEmptyCSSStyleSheet(
     ScriptState* script_state,
-    const CSSStyleSheetInit& options,
+    const CSSStyleSheetInit* options,
     ExceptionState& exception_state) {
   CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
   sheet->SetAssociatedDocument(this);
@@ -1185,13 +1185,13 @@ CSSStyleSheet* Document::createEmptyCSSStyleSheet(
 CSSStyleSheet* Document::createEmptyCSSStyleSheet(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  return Document::createEmptyCSSStyleSheet(script_state, CSSStyleSheetInit(),
-                                            exception_state);
+  return Document::createEmptyCSSStyleSheet(
+      script_state, CSSStyleSheetInit::Create(), exception_state);
 }
 
 ScriptValue Document::registerElement(ScriptState* script_state,
                                       const AtomicString& name,
-                                      const ElementRegistrationOptions& options,
+                                      const ElementRegistrationOptions* options,
                                       ExceptionState& exception_state) {
   if (!RegistrationContext()) {
     exception_state.ThrowDOMException(
@@ -6910,7 +6910,7 @@ ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
 
 int Document::RequestIdleCallback(
     ScriptedIdleTaskController::IdleTask* idle_task,
-    const IdleRequestOptions& options) {
+    const IdleRequestOptions* options) {
   return EnsureScriptedIdleTaskController().RegisterCallback(idle_task,
                                                              options);
 }

@@ -90,7 +90,7 @@ class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
  public:
   static DynamicsCompressorNode* Create(BaseAudioContext&, ExceptionState&);
   static DynamicsCompressorNode* Create(BaseAudioContext*,
-                                        const DynamicsCompressorOptions&,
+                                        const DynamicsCompressorOptions*,
                                         ExceptionState&);
   void Trace(blink::Visitor*) override;
 

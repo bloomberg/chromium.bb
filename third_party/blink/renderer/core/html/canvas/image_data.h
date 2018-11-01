@@ -93,17 +93,15 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
 
   static ImageData* CreateImageData(unsigned width,
                                     unsigned height,
-                                    const ImageDataColorSettings&,
+                                    const ImageDataColorSettings*,
                                     ExceptionState&);
   static ImageData* CreateImageData(ImageDataArray&,
                                     unsigned width,
                                     unsigned height,
-                                    ImageDataColorSettings&,
+                                    ImageDataColorSettings*,
                                     ExceptionState&);
 
-  void getColorSettings(ImageDataColorSettings& result) {
-    result = color_settings_;
-  }
+  ImageDataColorSettings* getColorSettings() { return color_settings_; }
 
   static ImageData* CreateForTest(const IntSize&);
   static ImageData* CreateForTest(const IntSize&,
@@ -155,7 +153,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions&) override;
+                                  const ImageBitmapOptions*) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -179,7 +177,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
             const ImageDataColorSettings* = nullptr);
 
   IntSize size_;
-  ImageDataColorSettings color_settings_;
+  Member<ImageDataColorSettings> color_settings_;
   ImageDataArray data_union_;
   Member<DOMUint8ClampedArray> data_;
   Member<DOMUint16Array> data_u16_;

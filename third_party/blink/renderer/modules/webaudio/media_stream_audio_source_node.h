@@ -87,7 +87,7 @@ class MediaStreamAudioSourceNode final : public AudioNode,
                                             MediaStream&,
                                             ExceptionState&);
   static MediaStreamAudioSourceNode*
-  Create(AudioContext*, const MediaStreamAudioSourceOptions&, ExceptionState&);
+  Create(AudioContext*, const MediaStreamAudioSourceOptions*, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 

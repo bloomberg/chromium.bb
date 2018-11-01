@@ -80,10 +80,10 @@ class MODULES_EXPORT MediaStreamTrack
   // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
   void SetConstraints(const WebMediaConstraints&);
 
-  void getCapabilities(MediaTrackCapabilities&);
-  void getConstraints(MediaTrackConstraints&);
-  void getSettings(MediaTrackSettings&);
-  ScriptPromise applyConstraints(ScriptState*, const MediaTrackConstraints&);
+  MediaTrackCapabilities* getCapabilities() const;
+  MediaTrackConstraints* getConstraints() const;
+  MediaTrackSettings* getSettings() const;
+  ScriptPromise applyConstraints(ScriptState*, const MediaTrackConstraints*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
@@ -123,7 +123,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   void PropagateTrackEnded();
   void applyConstraintsImageCapture(ScriptPromiseResolver*,
-                                    const MediaTrackConstraints&);
+                                    const MediaTrackConstraints*);
 
   MediaStreamSource::ReadyState ready_state_;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;

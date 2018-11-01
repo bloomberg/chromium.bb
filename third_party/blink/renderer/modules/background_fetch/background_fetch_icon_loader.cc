@@ -47,10 +47,11 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
   DCHECK(stopped_ || icon_callback_.is_null());
 }
 
-void BackgroundFetchIconLoader::Start(BackgroundFetchBridge* bridge,
-                                      ExecutionContext* execution_context,
-                                      HeapVector<ManifestImageResource> icons,
-                                      IconCallback icon_callback) {
+void BackgroundFetchIconLoader::Start(
+    BackgroundFetchBridge* bridge,
+    ExecutionContext* execution_context,
+    HeapVector<Member<ManifestImageResource>> icons,
+    IconCallback icon_callback) {
   DCHECK(!stopped_);
   DCHECK_GE(icons.size(), 1u);
   DCHECK(bridge);
@@ -113,7 +114,7 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
   for (auto& icon : icons_) {
     // Update the src of |icon| to include the base URL in case relative paths
     // were used.
-    icon.setSrc(execution_context->CompleteURL(icon.src()));
+    icon->setSrc(execution_context->CompleteURL(icon->src()));
     Manifest::ImageResource candidate_icon =
         blink::ConvertManifestImageResource(icon);
     // Provide default values for 'purpose' and 'sizes' if they are missing.

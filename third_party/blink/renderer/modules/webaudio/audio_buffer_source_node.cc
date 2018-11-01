@@ -687,7 +687,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
 
 AudioBufferSourceNode* AudioBufferSourceNode::Create(
     BaseAudioContext* context,
-    AudioBufferSourceOptions& options,
+    AudioBufferSourceOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -696,13 +696,13 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
   if (!node)
     return nullptr;
 
-  if (options.hasBuffer())
-    node->setBuffer(options.buffer(), exception_state);
-  node->detune()->setValue(options.detune());
-  node->setLoop(options.loop());
-  node->setLoopEnd(options.loopEnd());
-  node->setLoopStart(options.loopStart());
-  node->playbackRate()->setValue(options.playbackRate());
+  if (options->hasBuffer())
+    node->setBuffer(options->buffer(), exception_state);
+  node->detune()->setValue(options->detune());
+  node->setLoop(options->loop());
+  node->setLoopEnd(options->loopEnd());
+  node->setLoopStart(options->loopStart());
+  node->playbackRate()->setValue(options->playbackRate());
 
   return node;
 }

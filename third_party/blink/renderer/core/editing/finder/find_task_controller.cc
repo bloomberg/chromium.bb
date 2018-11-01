@@ -68,8 +68,8 @@ class FindTaskController::IdleFindTask
     // that are always busy, resulting in bad experience in find-in-page
     // because the scoping tasks are not run.
     // See crbug.com/893465.
-    IdleRequestOptions request_options;
-    request_options.setTimeout(kFindingTimeoutMS);
+    IdleRequestOptions* request_options = IdleRequestOptions::Create();
+    request_options->setTimeout(kFindingTimeoutMS);
     callback_handle_ = document_->RequestIdleCallback(this, request_options);
   }
 

@@ -27,8 +27,8 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
   // method.
   static ExtendableCookieChangeEvent* Create(
       const AtomicString& type,
-      HeapVector<CookieListItem> changed,
-      HeapVector<CookieListItem> deleted,
+      HeapVector<Member<CookieListItem>> changed,
+      HeapVector<Member<CookieListItem>> deleted,
       WaitUntilObserver* wait_until_observer) {
     return new ExtendableCookieChangeEvent(
         type, std::move(changed), std::move(deleted), wait_until_observer);
@@ -37,14 +37,14 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
   // Used by JavaScript, via the V8 bindings.
   static ExtendableCookieChangeEvent* Create(
       const AtomicString& type,
-      const ExtendableCookieChangeEventInit& initializer) {
+      const ExtendableCookieChangeEventInit* initializer) {
     return new ExtendableCookieChangeEvent(type, initializer);
   }
 
   ~ExtendableCookieChangeEvent() override;
 
-  const HeapVector<CookieListItem>& changed() const { return changed_; }
-  const HeapVector<CookieListItem>& deleted() const { return deleted_; }
+  const HeapVector<Member<CookieListItem>>& changed() const { return changed_; }
+  const HeapVector<Member<CookieListItem>>& deleted() const { return deleted_; }
 
   // Event
   const AtomicString& InterfaceName() const override;
@@ -54,15 +54,15 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
 
  private:
   ExtendableCookieChangeEvent(const AtomicString& type,
-                              HeapVector<CookieListItem> changed,
-                              HeapVector<CookieListItem> deleted,
+                              HeapVector<Member<CookieListItem>> changed,
+                              HeapVector<Member<CookieListItem>> deleted,
                               WaitUntilObserver*);
   ExtendableCookieChangeEvent(
       const AtomicString& type,
-      const ExtendableCookieChangeEventInit& initializer);
+      const ExtendableCookieChangeEventInit* initializer);
 
-  HeapVector<CookieListItem> changed_;
-  HeapVector<CookieListItem> deleted_;
+  HeapVector<Member<CookieListItem>> changed_;
+  HeapVector<Member<CookieListItem>> deleted_;
 };
 
 }  // namespace blink

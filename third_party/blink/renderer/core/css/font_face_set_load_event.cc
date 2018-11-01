@@ -38,8 +38,8 @@ FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type,
 
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(
     const AtomicString& type,
-    const FontFaceSetLoadEventInit& initializer)
-    : Event(type, initializer), fontfaces_(initializer.fontfaces()) {}
+    const FontFaceSetLoadEventInit* initializer)
+    : Event(type, initializer), fontfaces_(initializer->fontfaces()) {}
 
 FontFaceSetLoadEvent::~FontFaceSetLoadEvent() = default;
 

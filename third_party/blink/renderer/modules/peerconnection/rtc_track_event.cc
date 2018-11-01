@@ -13,17 +13,17 @@
 namespace blink {
 
 RTCTrackEvent* RTCTrackEvent::Create(const AtomicString& type,
-                                     const RTCTrackEventInit& eventInitDict) {
+                                     const RTCTrackEventInit* eventInitDict) {
   return new RTCTrackEvent(type, eventInitDict);
 }
 
 RTCTrackEvent::RTCTrackEvent(const AtomicString& type,
-                             const RTCTrackEventInit& eventInitDict)
+                             const RTCTrackEventInit* eventInitDict)
     : Event(type, eventInitDict),
-      receiver_(eventInitDict.receiver()),
-      track_(eventInitDict.track()),
-      streams_(eventInitDict.streams()),
-      transceiver_(eventInitDict.transceiver()) {
+      receiver_(eventInitDict->receiver()),
+      track_(eventInitDict->track()),
+      streams_(eventInitDict->streams()),
+      transceiver_(eventInitDict->transceiver()) {
   DCHECK(receiver_);
   DCHECK(track_);
 }

@@ -80,7 +80,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   ScriptPromise registerServiceWorker(ScriptState*,
                                       const String& pattern,
-                                      const RegistrationOptions&);
+                                      const RegistrationOptions*);
   ScriptPromise getRegistration(ScriptState*, const String& document_url);
   ScriptPromise getRegistrations(ScriptState*);
 

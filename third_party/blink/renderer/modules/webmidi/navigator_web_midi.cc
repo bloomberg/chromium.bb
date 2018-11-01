@@ -76,13 +76,13 @@ NavigatorWebMIDI& NavigatorWebMIDI::From(Navigator& navigator) {
 
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                                                   Navigator& navigator,
-                                                  const MIDIOptions& options) {
+                                                  const MIDIOptions* options) {
   return NavigatorWebMIDI::From(navigator).requestMIDIAccess(script_state,
                                                              options);
 }
 
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
-                                                  const MIDIOptions& options) {
+                                                  const MIDIOptions* options) {
   if (!script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError,
@@ -90,7 +90,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
   }
 
   Document& document = *To<Document>(ExecutionContext::From(script_state));
-  if (options.hasSysex() && options.sysex()) {
+  if (options->hasSysex() && options->sysex()) {
     UseCounter::Count(
         document,
         WebFeature::kRequestMIDIAccessWithSysExOption_ObscuredByFootprinting);

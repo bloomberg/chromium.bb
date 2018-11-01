@@ -22,7 +22,7 @@ class NavigatorDisplayMedia {
  public:
   static ScriptPromise getDisplayMedia(ScriptState*,
                                        Navigator&,
-                                       const MediaStreamConstraints&,
+                                       const MediaStreamConstraints*,
                                        ExceptionState&);
 };
 

@@ -44,7 +44,7 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   static CustomEvent* Create(ScriptState* script_state,
                              const AtomicString& type,
-                             const CustomEventInit& initializer) {
+                             const CustomEventInit* initializer) {
     return new CustomEvent(script_state, type, initializer);
   }
 
@@ -64,7 +64,7 @@ class CORE_EXPORT CustomEvent final : public Event {
   CustomEvent();
   CustomEvent(ScriptState*,
               const AtomicString& type,
-              const CustomEventInit& initializer);
+              const CustomEventInit* initializer);
 
   scoped_refptr<DOMWrapperWorld> world_;
   TraceWrapperV8Reference<v8::Value> detail_;

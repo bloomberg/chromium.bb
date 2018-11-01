@@ -30,8 +30,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
                  MediaStreamTrack*,
                  MediaStreamVector);
 
-  static void getCapabilities(const String& kind,
-                              base::Optional<RTCRtpCapabilities>& result);
+  static RTCRtpCapabilities* getCapabilities(const String& kind);
 
   MediaStreamTrack* track() const;
   const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();

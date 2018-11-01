@@ -27,9 +27,9 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
 
  public:
   static AbortPaymentEvent* Create(const AtomicString& type,
-                                   const ExtendableEventInit&);
+                                   const ExtendableEventInit*);
   static AbortPaymentEvent* Create(const AtomicString& type,
-                                   const ExtendableEventInit&,
+                                   const ExtendableEventInit*,
                                    RespondWithObserver*,
                                    WaitUntilObserver*);
   ~AbortPaymentEvent() override;
@@ -42,7 +42,7 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
 
  private:
   AbortPaymentEvent(const AtomicString& type,
-                    const ExtendableEventInit&,
+                    const ExtendableEventInit*,
                     RespondWithObserver*,
                     WaitUntilObserver*);
 

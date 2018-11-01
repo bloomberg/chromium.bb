@@ -128,15 +128,15 @@ CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
     ToBlobFunctionType function_type,
     TimeTicks start_time,
     ExecutionContext* context) {
-  ImageEncodeOptions options;
-  options.setType(ImageEncodingMimeTypeName(mime_type));
+  ImageEncodeOptions* options = ImageEncodeOptions::Create();
+  options->setType(ImageEncodingMimeTypeName(mime_type));
   return new CanvasAsyncBlobCreator(image, options, function_type, callback,
                                     start_time, context, nullptr);
 }
 
 CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
     scoped_refptr<StaticBitmapImage> image,
-    const ImageEncodeOptions& options,
+    const ImageEncodeOptions* options,
     ToBlobFunctionType function_type,
     TimeTicks start_time,
     ExecutionContext* context,
@@ -147,7 +147,7 @@ CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     scoped_refptr<StaticBitmapImage> image,
-    const ImageEncodeOptions& options,
+    const ImageEncodeOptions* options,
     ToBlobFunctionType function_type,
     V8BlobCallback* callback,
     TimeTicks start_time,
@@ -166,7 +166,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   DCHECK(image);
 
   mime_type_ = ImageEncoderUtils::ToEncodingMimeType(
-      encode_options_.type(),
+      encode_options_->type(),
       ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
 
   // We use pixmap to access the image pixels. Make the image unaccelerated if
@@ -201,7 +201,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     DCHECK(!src_data_.colorSpace());
   } else {
     sk_sp<SkColorSpace> blob_color_space =
-        BlobColorSpaceToSkColorSpace(encode_options_.colorSpace());
+        BlobColorSpaceToSkColorSpace(encode_options_->colorSpace());
     bool needs_color_space_conversion = !ApproximatelyEqualSkColorSpaces(
         skia_image->refColorSpace(), blob_color_space);
     if (needs_color_space_conversion && !skia_image->colorSpace()) {
@@ -212,7 +212,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     }
 
     SkColorType target_color_type = kN32_SkColorType;
-    if (encode_options_.pixelFormat() == kRGBA16ImagePixelFormatName)
+    if (encode_options_->pixelFormat() == kRGBA16ImagePixelFormatName)
       target_color_type = kRGBA_F16_SkColorType;
     // We can do color space and color type conversion together.
     if (needs_color_space_conversion) {
@@ -268,10 +268,10 @@ void CanvasAsyncBlobCreator::Dispose() {
   image_ = nullptr;
 }
 
-ImageEncodeOptions CanvasAsyncBlobCreator::GetImageEncodeOptionsForMimeType(
+ImageEncodeOptions* CanvasAsyncBlobCreator::GetImageEncodeOptionsForMimeType(
     ImageEncodingMimeType mime_type) {
-  ImageEncodeOptions encode_options;
-  encode_options.setType(ImageEncodingMimeTypeName(mime_type));
+  ImageEncodeOptions* encode_options = ImageEncodeOptions::Create();
+  encode_options->setType(ImageEncodingMimeTypeName(mime_type));
   return encode_options;
 }
 
@@ -583,6 +583,7 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
 
 void CanvasAsyncBlobCreator::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  visitor->Trace(encode_options_);
   visitor->Trace(callback_);
   visitor->Trace(script_promise_resolver_);
 }
@@ -603,7 +604,7 @@ bool CanvasAsyncBlobCreator::EncodeImageForConvertToBlobTest() {
   std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(src_data_);
   if (!buffer)
     return false;
-  return buffer->EncodeImage(mime_type_, encode_options_.quality(),
+  return buffer->EncodeImage(mime_type_, encode_options_->quality(),
                              &encoded_image_);
 }
 

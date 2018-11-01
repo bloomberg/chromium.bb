@@ -18,7 +18,7 @@ class InputEvent final : public UIEvent {
 
  public:
   static InputEvent* Create(const AtomicString& type,
-                            const InputEventInit& initializer) {
+                            const InputEventInit* initializer) {
     return new InputEvent(type, initializer);
   }
 
@@ -112,7 +112,7 @@ class InputEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  InputEvent(const AtomicString&, const InputEventInit&);
+  InputEvent(const AtomicString&, const InputEventInit*);
 
   InputType input_type_;
   String data_;

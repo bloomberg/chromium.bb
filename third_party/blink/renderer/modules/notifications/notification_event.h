@@ -20,11 +20,11 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
 
  public:
   static NotificationEvent* Create(const AtomicString& type,
-                                   const NotificationEventInit& initializer) {
+                                   const NotificationEventInit* initializer) {
     return new NotificationEvent(type, initializer);
   }
   static NotificationEvent* Create(const AtomicString& type,
-                                   const NotificationEventInit& initializer,
+                                   const NotificationEventInit* initializer,
                                    WaitUntilObserver* observer) {
     return new NotificationEvent(type, initializer, observer);
   }
@@ -42,9 +42,9 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
 
  private:
   NotificationEvent(const AtomicString& type,
-                    const NotificationEventInit& initializer);
+                    const NotificationEventInit* initializer);
   NotificationEvent(const AtomicString& type,
-                    const NotificationEventInit& initializer,
+                    const NotificationEventInit* initializer,
                     WaitUntilObserver* observer);
 
   Member<Notification> notification_;

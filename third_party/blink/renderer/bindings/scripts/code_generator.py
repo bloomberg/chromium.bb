@@ -150,6 +150,7 @@ class CodeGeneratorBase(object):
         IdlType.set_callback_functions(self.info_provider.callback_functions)
         IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
         IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
+        IdlType.set_garbage_collected_types(interfaces_info['dictionaries'])
         set_component_dirs(interfaces_info['component_dirs'])
 
     def render_templates(self, include_paths, header_template, cpp_template,

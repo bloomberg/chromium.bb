@@ -1072,9 +1072,9 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
 
   // Adding a blocking window event handler should create a touch action region.
   auto* listener = new ScrollingCoordinatorMockEventListener();
-  AddEventListenerOptions options;
-  options.setPassive(false);
-  AddEventListenerOptionsResolved resolved_options(options);
+  AddEventListenerOptionsResolved* resolved_options =
+      AddEventListenerOptionsResolved::Create();
+  resolved_options->setPassive(false);
   GetFrame()->DomWindow()->addEventListener(EventTypeNames::touchstart,
                                             listener, resolved_options);
   ForceFullCompositingUpdate();

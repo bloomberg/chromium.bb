@@ -190,7 +190,7 @@ class CORE_EXPORT HTMLInputElement
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
-                                        const FocusOptions&) final;
+                                        const FocusOptions*) final;
 
   // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the
   // NVI-idiom here by making it private virtual in all classes and expose a

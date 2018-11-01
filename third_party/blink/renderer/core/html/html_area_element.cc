@@ -222,7 +222,7 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
 
 void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {
+    const FocusOptions* options) {
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   if (!IsFocusable())
     return;

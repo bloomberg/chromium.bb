@@ -54,7 +54,7 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                                             bool alt_key,
                                             bool meta_key);
 
-  static void SetFromWebInputEventModifiers(EventModifierInit&,
+  static void SetFromWebInputEventModifiers(EventModifierInit*,
                                             WebInputEvent::Modifiers);
 
   bool getModifierState(const String& key_identifier) const;
@@ -75,10 +75,10 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                       TimeTicks platform_time_stamp,
                       InputDeviceCapabilities* source_capabilities = nullptr);
   UIEventWithKeyState(const AtomicString& type,
-                      const EventModifierInit& initializer,
+                      const EventModifierInit* initializer,
                       TimeTicks platform_time_stamp);
   UIEventWithKeyState(const AtomicString& type,
-                      const EventModifierInit& initializer)
+                      const EventModifierInit* initializer)
       : UIEventWithKeyState(type, initializer, CurrentTimeTicks()) {}
   void InitModifiers(bool ctrl_key,
                      bool alt_key,

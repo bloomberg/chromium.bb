@@ -66,8 +66,9 @@ ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
   }
 
   if (!entries_.IsEmpty()) {
-    FileSystemDirectoryIteratorEntry result;
-    result.setValue(entries_.TakeFirst()->asFileSystemHandle());
+    FileSystemDirectoryIteratorEntry* result =
+        FileSystemDirectoryIteratorEntry::Create();
+    result->setValue(entries_.TakeFirst()->asFileSystemHandle());
     return ScriptPromise::Cast(script_state, ToV8(result, script_state));
   }
 
@@ -77,8 +78,9 @@ ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
     return pending_next_->Promise();
   }
 
-  FileSystemDirectoryIteratorEntry result;
-  result.setDone(true);
+  FileSystemDirectoryIteratorEntry* result =
+      FileSystemDirectoryIteratorEntry::Create();
+  result->setDone(true);
   return ScriptPromise::Cast(script_state, ToV8(result, script_state));
 }
 

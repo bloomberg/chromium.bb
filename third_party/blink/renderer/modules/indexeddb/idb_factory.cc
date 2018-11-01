@@ -108,11 +108,11 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     if (!promise_resolver_)
       return;
 
-    HeapVector<IDBDatabaseInfo> database_name_and_version_list;
+    HeapVector<Member<IDBDatabaseInfo>> database_name_and_version_list;
     for (size_t i = 0; i < web_database_name_and_version_list.size(); ++i) {
-      IDBDatabaseInfo idb_info;
-      idb_info.setName(web_database_name_and_version_list[i].name);
-      idb_info.setVersion(web_database_name_and_version_list[i].version);
+      IDBDatabaseInfo* idb_info = IDBDatabaseInfo::Create();
+      idb_info->setName(web_database_name_and_version_list[i].name);
+      idb_info->setVersion(web_database_name_and_version_list[i].version);
       database_name_and_version_list.push_back(idb_info);
     }
     probe::AsyncTask async_task(

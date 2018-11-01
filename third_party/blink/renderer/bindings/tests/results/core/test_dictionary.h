@@ -42,12 +42,10 @@ class TestInterfaceImplementation;
 class Element;
 
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
-  DISALLOW_NEW();
  public:
-  TestDictionary();
+  static TestDictionary* Create() { return new TestDictionary(); }
+
   virtual ~TestDictionary();
-  TestDictionary(const TestDictionary&);
-  TestDictionary& operator=(const TestDictionary&);
 
   bool hasAnyInRecordMember() const { return has_any_in_record_member_; }
   const Vector<std::pair<String, ScriptValue>>& anyInRecordMember() const {
@@ -203,11 +201,11 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setGarbageCollectedRecordMember(const HeapVector<std::pair<String, Member<TestObject>>>&);
 
   bool hasInternalDictionarySequenceMember() const { return has_internal_dictionary_sequence_member_; }
-  const HeapVector<InternalDictionary>& internalDictionarySequenceMember() const {
+  const HeapVector<Member<InternalDictionary>>& internalDictionarySequenceMember() const {
     DCHECK(has_internal_dictionary_sequence_member_);
     return internal_dictionary_sequence_member_;
   }
-  void setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>&);
+  void setInternalDictionarySequenceMember(const HeapVector<Member<InternalDictionary>>&);
 
   bool hasIsPublic() const { return has_is_public_; }
   bool isPublic() const {
@@ -451,6 +449,9 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   void Trace(blink::Visitor*) override;
 
+ protected:
+  TestDictionary();
+
  private:
   bool has_any_in_record_member_ = false;
   bool has_applicable_to_type_long_member_ = false;
@@ -510,7 +511,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Vector<String> enum_sequence_member_;
   Member<EventTarget> event_target_member_;
   HeapVector<std::pair<String, Member<TestObject>>> garbage_collected_record_member_;
-  HeapVector<InternalDictionary> internal_dictionary_sequence_member_;
+  HeapVector<Member<InternalDictionary>> internal_dictionary_sequence_member_;
   bool is_public_;
   int32_t long_member_;
   bool member_with_hyphen_in_name_;

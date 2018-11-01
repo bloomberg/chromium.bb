@@ -363,13 +363,13 @@ class RTCPeerConnectionTest : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(V8TestingScope& scope,
                               const String& sdpSemantics = String()) {
-    RTCConfiguration config;
-    config.setSdpSemantics(sdpSemantics);
-    RTCIceServer ice_server;
-    ice_server.setURL("stun:fake.stun.url");
-    HeapVector<RTCIceServer> ice_servers;
+    RTCConfiguration* config = RTCConfiguration::Create();
+    config->setSdpSemantics(sdpSemantics);
+    RTCIceServer* ice_server = RTCIceServer::Create();
+    ice_server->setURL("stun:fake.stun.url");
+    HeapVector<Member<RTCIceServer>> ice_servers;
     ice_servers.push_back(ice_server);
-    config.setIceServers(ice_servers);
+    config->setIceServers(ice_servers);
     return RTCPeerConnection::Create(scope.GetExecutionContext(), config,
                                      Dictionary(), scope.GetExceptionState());
   }
@@ -575,74 +575,74 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenPlanBSpecified) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "plan-b");
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
   // It doesn't matter the SDP, never show a warning if sdpSemantics was
   // specified at construction.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenUnifiedPlanSpecified) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "unified-plan");
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
   // It doesn't matter the SDP, never show a warning if sdpSemantics was
   // specified at construction.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenInvalidSdp) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp("invalid sdp");
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp("invalid sdp");
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForSingleTracks) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
   // Neither Unified Plan or Plan B SDP should result in a warning if only a
   // single track per m= section is used.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningShownForComplexPlanB) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
   ASSERT_TRUE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 
 TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForComplexUnifiedPlan) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
   ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
 }
 

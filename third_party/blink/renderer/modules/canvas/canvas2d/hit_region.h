@@ -16,7 +16,7 @@ namespace blink {
 
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
  public:
-  static HitRegion* Create(const Path& path, const HitRegionOptions& options) {
+  static HitRegion* Create(const Path& path, const HitRegionOptions* options) {
     return new HitRegion(path, options);
   }
 
@@ -33,7 +33,7 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
   void Trace(blink::Visitor*);
 
  private:
-  HitRegion(const Path&, const HitRegionOptions&);
+  HitRegion(const Path&, const HitRegionOptions*);
 
   String id_;
   Member<Element> control_;

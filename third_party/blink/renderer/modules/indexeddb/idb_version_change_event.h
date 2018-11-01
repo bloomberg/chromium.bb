@@ -53,7 +53,7 @@ class IDBVersionChangeEvent final : public Event {
   }
   static IDBVersionChangeEvent* Create(
       const AtomicString& event_type,
-      const IDBVersionChangeEventInit& initializer) {
+      const IDBVersionChangeEventInit* initializer) {
     return new IDBVersionChangeEvent(event_type, initializer);
   }
 
@@ -75,7 +75,7 @@ class IDBVersionChangeEvent final : public Event {
                         WebIDBDataLoss,
                         const String& data_loss);
   IDBVersionChangeEvent(const AtomicString& event_type,
-                        const IDBVersionChangeEventInit&);
+                        const IDBVersionChangeEventInit*);
 
   unsigned long long old_version_;
   base::Optional<unsigned long long> new_version_;

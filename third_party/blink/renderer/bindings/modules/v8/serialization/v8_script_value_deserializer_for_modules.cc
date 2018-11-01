@@ -70,10 +70,10 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       uint32_t corner_points_length;
       if (!ReadUint32(&corner_points_length))
         return nullptr;
-      HeapVector<Point2D> corner_points;
+      HeapVector<Member<Point2D>> corner_points;
       for (uint32_t i = 0; i < corner_points_length; i++) {
-        Point2D point;
-        if (!ReadPoint2D(&point))
+        Point2D* point = Point2D::Create();
+        if (!ReadPoint2D(point))
           return nullptr;
         corner_points.push_back(point);
       }
@@ -86,10 +86,10 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       uint32_t landmarks_length;
       if (!ReadUint32(&landmarks_length))
         return nullptr;
-      HeapVector<Landmark> landmarks;
+      HeapVector<Member<Landmark>> landmarks;
       for (uint32_t i = 0; i < landmarks_length; i++) {
-        Landmark landmark;
-        if (!ReadLandmark(&landmark))
+        Landmark* landmark = Landmark::Create();
+        if (!ReadLandmark(landmark))
           return nullptr;
         landmarks.push_back(landmark);
       }
@@ -105,10 +105,10 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       uint32_t corner_points_length;
       if (!ReadUint32(&corner_points_length))
         return nullptr;
-      HeapVector<Point2D> corner_points;
+      HeapVector<Member<Point2D>> corner_points;
       for (uint32_t i = 0; i < corner_points_length; i++) {
-        Point2D point;
-        if (!ReadPoint2D(&point))
+        Point2D* point = Point2D::Create();
+        if (!ReadPoint2D(point))
           return nullptr;
         corner_points.push_back(point);
       }
@@ -355,10 +355,10 @@ bool V8ScriptValueDeserializerForModules::ReadLandmark(Landmark* landmark) {
   uint32_t locations_length;
   if (!ReadUint32(&locations_length))
     return false;
-  HeapVector<Point2D> locations;
+  HeapVector<Member<Point2D>> locations;
   for (uint32_t i = 0; i < locations_length; i++) {
-    Point2D location;
-    if (!ReadPoint2D(&location))
+    Point2D* location = Point2D::Create();
+    if (!ReadPoint2D(location))
       return false;
     locations.push_back(location);
   }

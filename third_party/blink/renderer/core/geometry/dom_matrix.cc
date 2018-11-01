@@ -97,23 +97,23 @@ DOMMatrix::DOMMatrix(T sequence, int size)
 DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2d)
     : DOMMatrixReadOnly(matrix, is2d) {}
 
-DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit* other,
                                  ExceptionState& exception_state) {
   if (!ValidateAndFixup(other, exception_state)) {
     DCHECK(exception_state.HadException());
     return nullptr;
   }
-  if (other.is2D()) {
-    return new DOMMatrix({other.m11(), other.m12(), other.m21(), other.m22(),
-                          other.m41(), other.m42()},
-                         other.is2D());
+  if (other->is2D()) {
+    return new DOMMatrix({other->m11(), other->m12(), other->m21(),
+                          other->m22(), other->m41(), other->m42()},
+                         other->is2D());
   }
 
-  return new DOMMatrix({other.m11(), other.m12(), other.m13(), other.m14(),
-                        other.m21(), other.m22(), other.m23(), other.m24(),
-                        other.m31(), other.m32(), other.m33(), other.m34(),
-                        other.m41(), other.m42(), other.m43(), other.m44()},
-                       other.is2D());
+  return new DOMMatrix({other->m11(), other->m12(), other->m13(), other->m14(),
+                        other->m21(), other->m22(), other->m23(), other->m24(),
+                        other->m31(), other->m32(), other->m33(), other->m34(),
+                        other->m41(), other->m42(), other->m43(), other->m44()},
+                       other->is2D());
 }
 
 void DOMMatrix::SetIs2D(bool value) {
@@ -140,7 +140,7 @@ void DOMMatrix::SetNAN() {
   matrix_->SetM44(NAN);
 }
 
-DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit* other,
                                    ExceptionState& exception_state) {
   DOMMatrix* other_matrix = DOMMatrix::fromMatrix(other, exception_state);
   if (!other_matrix) {
@@ -159,7 +159,7 @@ DOMMatrix* DOMMatrix::multiplySelf(const DOMMatrix& other_matrix) {
   return this;
 }
 
-DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit* other,
                                       ExceptionState& exception_state) {
   DOMMatrix* other_matrix = DOMMatrix::fromMatrix(other, exception_state);
   if (!other_matrix) {

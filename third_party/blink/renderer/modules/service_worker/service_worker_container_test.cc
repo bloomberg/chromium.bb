@@ -181,8 +181,8 @@ class ServiceWorkerContainerTest : public PageTestBase {
             &GetDocument(),
             std::make_unique<NotReachedWebServiceWorkerProvider>());
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setScope(scope);
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setScope(scope);
     ScriptPromise promise =
         container->registerServiceWorker(GetScriptState(), script_url, options);
     ExpectRejected(GetScriptState(), promise, value_test);
@@ -329,8 +329,8 @@ TEST_F(ServiceWorkerContainerTest,
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setScope("y/");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setScope("y/");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 
@@ -376,8 +376,8 @@ TEST_F(ServiceWorkerContainerTest,
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setUpdateViaCache("none");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setUpdateViaCache("none");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 
@@ -402,8 +402,8 @@ TEST_F(ServiceWorkerContainerTest, Register_TypeOptionDelegatesToProvider) {
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setType("module");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setType("module");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_supported_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -101,8 +102,12 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
   return promise;
 }
 
+MediaTrackSupportedConstraints* MediaDevices::getSupportedConstraints() const {
+  return MediaTrackSupportedConstraints::Create();
+}
+
 ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
-                                         const MediaStreamConstraints& options,
+                                         const MediaStreamConstraints* options,
                                          ExceptionState& exception_state) {
   return SendUserMediaRequest(script_state,
                               WebUserMediaRequest::MediaType::kUserMedia,
@@ -112,7 +117,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
 ScriptPromise MediaDevices::SendUserMediaRequest(
     ScriptState* script_state,
     WebUserMediaRequest::MediaType media_type,
-    const MediaStreamConstraints& options,
+    const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   PromiseResolverCallbacks* callbacks =

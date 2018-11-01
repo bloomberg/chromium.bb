@@ -65,22 +65,22 @@ MessageEvent::V8GCAwareString& MessageEvent::V8GCAwareString::operator=(
 MessageEvent::MessageEvent() : data_type_(kDataTypeScriptValue) {}
 
 MessageEvent::MessageEvent(const AtomicString& type,
-                           const MessageEventInit& initializer)
+                           const MessageEventInit* initializer)
     : Event(type, initializer),
       data_type_(kDataTypeScriptValue),
       source_(nullptr) {
-  if (initializer.hasData())
-    data_as_script_value_ = initializer.data();
-  if (initializer.hasOrigin())
-    origin_ = initializer.origin();
-  if (initializer.hasLastEventId())
-    last_event_id_ = initializer.lastEventId();
-  if (initializer.hasSource() && IsValidSource(initializer.source()))
-    source_ = initializer.source();
-  if (initializer.hasPorts())
-    ports_ = MakeGarbageCollected<MessagePortArray>(initializer.ports());
-  if (initializer.hasUserActivation())
-    user_activation_ = initializer.userActivation();
+  if (initializer->hasData())
+    data_as_script_value_ = initializer->data();
+  if (initializer->hasOrigin())
+    origin_ = initializer->origin();
+  if (initializer->hasLastEventId())
+    last_event_id_ = initializer->lastEventId();
+  if (initializer->hasSource() && IsValidSource(initializer->source()))
+    source_ = initializer->source();
+  if (initializer->hasPorts())
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer->ports());
+  if (initializer->hasUserActivation())
+    user_activation_ = initializer->userActivation();
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -162,9 +162,9 @@ MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
 MessageEvent::~MessageEvent() = default;
 
 MessageEvent* MessageEvent::Create(const AtomicString& type,
-                                   const MessageEventInit& initializer,
+                                   const MessageEventInit* initializer,
                                    ExceptionState& exception_state) {
-  if (initializer.source() && !IsValidSource(initializer.source())) {
+  if (initializer->source() && !IsValidSource(initializer->source())) {
     exception_state.ThrowTypeError(
         "The optional 'source' property is neither a Window nor MessagePort.");
     return nullptr;

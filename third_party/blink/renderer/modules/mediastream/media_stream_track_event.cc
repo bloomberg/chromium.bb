@@ -41,14 +41,14 @@ MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type,
 
 MediaStreamTrackEvent* MediaStreamTrackEvent::Create(
     const AtomicString& type,
-    const MediaStreamTrackEventInit& initializer) {
+    const MediaStreamTrackEventInit* initializer) {
   return new MediaStreamTrackEvent(type, initializer);
 }
 
 MediaStreamTrackEvent::MediaStreamTrackEvent(
     const AtomicString& type,
-    const MediaStreamTrackEventInit& initializer)
-    : Event(type, initializer), track_(initializer.track()) {
+    const MediaStreamTrackEventInit* initializer)
+    : Event(type, initializer), track_(initializer->track()) {
   DCHECK(track_);
 }
 

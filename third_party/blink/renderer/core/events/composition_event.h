@@ -45,7 +45,7 @@ class CompositionEvent final : public UIEvent {
   }
 
   static CompositionEvent* Create(const AtomicString& type,
-                                  const CompositionEventInit& initializer) {
+                                  const CompositionEventInit* initializer) {
     return new CompositionEvent(type, initializer);
   }
 
@@ -68,7 +68,7 @@ class CompositionEvent final : public UIEvent {
  private:
   CompositionEvent();
   CompositionEvent(const AtomicString& type, AbstractView*, const String&);
-  CompositionEvent(const AtomicString& type, const CompositionEventInit&);
+  CompositionEvent(const AtomicString& type, const CompositionEventInit*);
 
   String data_;
 };

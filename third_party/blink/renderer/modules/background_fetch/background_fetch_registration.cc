@@ -148,7 +148,7 @@ ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
 ScriptPromise BackgroundFetchRegistration::match(
     ScriptState* script_state,
     const RequestOrUSVString& request,
-    const CacheQueryOptions& options,
+    const CacheQueryOptions* options,
     ExceptionState& exception_state) {
   return MatchImpl(
       script_state, base::make_optional<RequestOrUSVString>(request),
@@ -166,7 +166,7 @@ ScriptPromise BackgroundFetchRegistration::matchAll(
 ScriptPromise BackgroundFetchRegistration::matchAll(
     ScriptState* script_state,
     const RequestOrUSVString& request,
-    const CacheQueryOptions& options,
+    const CacheQueryOptions* options,
     ExceptionState& exception_state) {
   return MatchImpl(
       script_state, base::make_optional<RequestOrUSVString>(request),

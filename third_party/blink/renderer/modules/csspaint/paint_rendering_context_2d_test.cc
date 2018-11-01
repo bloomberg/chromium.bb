@@ -21,8 +21,9 @@ class PaintRenderingContext2DTest : public testing::Test {
 };
 
 void PaintRenderingContext2DTest::SetUp() {
-  PaintRenderingContext2DSettings context_settings;
-  context_settings.setAlpha(false);
+  PaintRenderingContext2DSettings* context_settings =
+      PaintRenderingContext2DSettings::Create();
+  context_settings->setAlpha(false);
   ctx_ = PaintRenderingContext2D::Create(
       IntSize(kWidth, kHeight), CanvasColorParams(), context_settings, kZoom);
 }

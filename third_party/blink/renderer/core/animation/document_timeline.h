@@ -74,7 +74,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
   // Web Animations API IDL constructor
   static DocumentTimeline* Create(ExecutionContext*,
-                                  const DocumentTimelineOptions&);
+                                  const DocumentTimelineOptions*);
 
   ~DocumentTimeline() override = default;
 

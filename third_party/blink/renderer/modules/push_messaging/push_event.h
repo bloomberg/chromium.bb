@@ -27,7 +27,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     return new PushEvent(type, data, observer);
   }
   static PushEvent* Create(const AtomicString& type,
-                           const PushEventInit& initializer) {
+                           const PushEventInit* initializer) {
     return new PushEvent(type, initializer);
   }
 
@@ -44,7 +44,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
   PushEvent(const AtomicString& type,
             PushMessageData* data,
             WaitUntilObserver* observer);
-  PushEvent(const AtomicString& type, const PushEventInit& initializer);
+  PushEvent(const AtomicString& type, const PushEventInit* initializer);
 
   Member<PushMessageData> data_;
 };

@@ -29,7 +29,7 @@ class GamepadHapticActuator final : public ScriptWrappable {
 
   ScriptPromise playEffect(ScriptState*,
                            const String&,
-                           const GamepadEffectParameters&);
+                           const GamepadEffectParameters*);
 
   ScriptPromise reset(ScriptState*);
 

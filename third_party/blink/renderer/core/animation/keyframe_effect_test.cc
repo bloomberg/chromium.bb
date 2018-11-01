@@ -43,10 +43,11 @@ class KeyframeEffectTest : public PageTestBase {
 
 class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
  protected:
-  static KeyframeEffect* CreateAnimation(ScriptState* script_state,
-                                         Element* element,
-                                         const ScriptValue& keyframe_object,
-                                         double timing_input) {
+  static KeyframeEffect* CreateAnimationFromTiming(
+      ScriptState* script_state,
+      Element* element,
+      const ScriptValue& keyframe_object,
+      double timing_input) {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         script_state, element, keyframe_object,
@@ -54,16 +55,16 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
             timing_input),
         exception_state);
   }
-  static KeyframeEffect* CreateAnimation(
+  static KeyframeEffect* CreateAnimationFromOption(
       ScriptState* script_state,
       Element* element,
       const ScriptValue& keyframe_object,
-      const KeyframeEffectOptions& timing_input) {
+      const KeyframeEffectOptions* timing_input) {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         script_state, element, keyframe_object,
         UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
-            timing_input),
+            const_cast<KeyframeEffectOptions*>(timing_input)),
         exception_state);
   }
   static KeyframeEffect* CreateAnimation(ScriptState* script_state,
@@ -97,7 +98,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   KeyframeEffect* animation =
-      CreateAnimation(script_state, element.Get(), js_keyframes, 0);
+      CreateAnimationFromTiming(script_state, element.Get(), js_keyframes, 0);
 
   Element* target = animation->target();
   EXPECT_EQ(*element.Get(), *target);
@@ -132,13 +133,14 @@ TEST_F(AnimationKeyframeEffectV8Test, SetAndRetrieveEffectComposite) {
   v8::Local<v8::Object> effect_options = v8::Object::New(scope.GetIsolate());
   SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
                               "add");
-  KeyframeEffectOptions effect_options_dictionary;
+  KeyframeEffectOptions* effect_options_dictionary =
+      KeyframeEffectOptions::Create();
   V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
                                   effect_options_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
-  KeyframeEffect* effect = CreateAnimation(
+  KeyframeEffect* effect = CreateAnimationFromOption(
       script_state, element.Get(), js_keyframes, effect_options_dictionary);
   EXPECT_EQ("add", effect->composite());
 
@@ -159,7 +161,8 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
   v8::Local<v8::Object> effect_options = v8::Object::New(scope.GetIsolate());
   SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
                               "add");
-  KeyframeEffectOptions effect_options_dictionary;
+  KeyframeEffectOptions* effect_options_dictionary =
+      KeyframeEffectOptions::Create();
   V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
                                   effect_options_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -175,7 +178,7 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
       script_state,
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
-  KeyframeEffect* effect = CreateAnimation(
+  KeyframeEffect* effect = CreateAnimationFromOption(
       script_state, element.Get(), js_keyframes, effect_options_dictionary);
   EXPECT_EQ("add", effect->composite());
 
@@ -193,8 +196,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
   ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
   double duration = 2000;
 
-  KeyframeEffect* animation =
-      CreateAnimation(script_state, element.Get(), js_keyframes, duration);
+  KeyframeEffect* animation = CreateAnimationFromTiming(
+      script_state, element.Get(), js_keyframes, duration);
 
   EXPECT_EQ(duration / 1000,
             animation->SpecifiedTiming().iteration_duration->InSecondsF());
@@ -228,24 +231,24 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
                               "reverse");
   SetV8ObjectPropertyAsString(scope.GetIsolate(), timing_input, "easing",
                               "ease-in-out");
-  KeyframeEffectOptions timing_input_dictionary;
+  KeyframeEffectOptions* timing_input_dictionary =
+      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
   V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
                                   timing_input_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  KeyframeEffect* animation = CreateAnimation(
+  KeyframeEffect* animation = CreateAnimationFromOption(
       script_state, element.Get(), js_keyframes, timing_input_dictionary);
 
-  EffectTiming timing;
-  animation->getTiming(timing);
-  EXPECT_EQ(2, timing.delay());
-  EXPECT_EQ(0.5, timing.endDelay());
-  EXPECT_EQ("backwards", timing.fill());
-  EXPECT_EQ(2, timing.iterationStart());
-  EXPECT_EQ(10, timing.iterations());
-  EXPECT_EQ("reverse", timing.direction());
-  EXPECT_EQ("ease-in-out", timing.easing());
+  EffectTiming* timing = animation->getTiming();
+  EXPECT_EQ(2, timing->delay());
+  EXPECT_EQ(0.5, timing->endDelay());
+  EXPECT_EQ("backwards", timing->fill());
+  EXPECT_EQ(2, timing->iterationStart());
+  EXPECT_EQ(10, timing->iterations());
+  EXPECT_EQ("reverse", timing->direction());
+  EXPECT_EQ("ease-in-out", timing->easing());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
@@ -257,7 +260,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
       v8::Object::New(scope.GetIsolate());
   SetV8ObjectPropertyAsNumber(scope.GetIsolate(), timing_input_with_duration,
                               "duration", 2.5);
-  KeyframeEffectOptions timing_input_dictionary_with_duration;
+  KeyframeEffectOptions* timing_input_dictionary_with_duration =
+      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
   V8KeyframeEffectOptions::ToImpl(
       scope.GetIsolate(), timing_input_with_duration,
@@ -265,31 +269,30 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
   EXPECT_FALSE(exception_state.HadException());
 
   KeyframeEffect* animation_with_duration =
-      CreateAnimation(script_state, element.Get(), js_keyframes,
-                      timing_input_dictionary_with_duration);
+      CreateAnimationFromOption(script_state, element.Get(), js_keyframes,
+                                timing_input_dictionary_with_duration);
 
-  EffectTiming specified_with_duration;
-  animation_with_duration->getTiming(specified_with_duration);
-  UnrestrictedDoubleOrString duration = specified_with_duration.duration();
+  EffectTiming* specified_with_duration = animation_with_duration->getTiming();
+  UnrestrictedDoubleOrString duration = specified_with_duration->duration();
   EXPECT_TRUE(duration.IsUnrestrictedDouble());
   EXPECT_EQ(2.5, duration.GetAsUnrestrictedDouble());
   EXPECT_FALSE(duration.IsString());
 
   v8::Local<v8::Object> timing_input_no_duration =
       v8::Object::New(scope.GetIsolate());
-  KeyframeEffectOptions timing_input_dictionary_no_duration;
+  KeyframeEffectOptions* timing_input_dictionary_no_duration =
+      KeyframeEffectOptions::Create();
   V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input_no_duration,
                                   timing_input_dictionary_no_duration,
                                   exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   KeyframeEffect* animation_no_duration =
-      CreateAnimation(script_state, element.Get(), js_keyframes,
-                      timing_input_dictionary_no_duration);
+      CreateAnimationFromOption(script_state, element.Get(), js_keyframes,
+                                timing_input_dictionary_no_duration);
 
-  EffectTiming specified_no_duration;
-  animation_no_duration->getTiming(specified_no_duration);
-  UnrestrictedDoubleOrString duration2 = specified_no_duration.duration();
+  EffectTiming* specified_no_duration = animation_no_duration->getTiming();
+  UnrestrictedDoubleOrString duration2 = specified_no_duration->duration();
   EXPECT_FALSE(duration2.IsUnrestrictedDouble());
   EXPECT_TRUE(duration2.IsString());
   EXPECT_EQ("auto", duration2.GetAsString());
@@ -301,7 +304,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
   ScriptState* script_state = scope.GetScriptState();
   ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
-  KeyframeEffectOptions timing_input_dictionary;
+  KeyframeEffectOptions* timing_input_dictionary =
+      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
   V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
                                   timing_input_dictionary, exception_state);
@@ -309,8 +313,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
 
   // Since there are no CSS-targeting keyframes, we can create a KeyframeEffect
   // with composite = 'add'.
-  timing_input_dictionary.setComposite("add");
-  KeyframeEffect* effect = CreateAnimation(
+  timing_input_dictionary->setComposite("add");
+  KeyframeEffect* effect = CreateAnimationFromOption(
       script_state, element.Get(), js_keyframes, timing_input_dictionary);
   EXPECT_EQ(effect->Model()->Composite(), EffectModel::kCompositeAdd);
 

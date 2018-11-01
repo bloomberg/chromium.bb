@@ -148,8 +148,8 @@ const HeapVector<Member<Node>> HTMLSlotElement::FlattenedAssignedNodes() {
 }
 
 const HeapVector<Member<Node>> HTMLSlotElement::AssignedNodesForBinding(
-    const AssignedNodesOptions& options) {
-  if (options.hasFlatten() && options.flatten())
+    const AssignedNodesOptions* options) {
+  if (options->hasFlatten() && options->flatten())
     return FlattenedAssignedNodes();
   return AssignedNodes();
 }
@@ -164,7 +164,7 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElements() {
 }
 
 const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
-    const AssignedNodesOptions& options) {
+    const AssignedNodesOptions* options) {
   HeapVector<Member<Element>> elements;
   for (auto& node : AssignedNodesForBinding(options)) {
     if (Element* element = ToElementOrNull(node))

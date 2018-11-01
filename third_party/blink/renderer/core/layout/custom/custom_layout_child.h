@@ -33,7 +33,7 @@ class CustomLayoutChild : public ScriptWrappable {
   PrepopulatedComputedStylePropertyMap* styleMap() const { return style_map_; }
   CustomLayoutFragmentRequest* layoutNextFragment(
       ScriptState*,
-      const CustomLayoutConstraintsOptions&,
+      const CustomLayoutConstraintsOptions*,
       ExceptionState&);
 
   LayoutBox* GetLayoutBox() const {

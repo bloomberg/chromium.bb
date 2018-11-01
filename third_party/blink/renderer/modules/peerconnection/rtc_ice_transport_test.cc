@@ -35,14 +35,13 @@ using testing::StrNe;
 
 constexpr char kRemoteUsernameFragment1[] = "usernameFragment";
 constexpr char kRemotePassword1[] = "password";
-
 constexpr char kRemoteUsernameFragment2[] = "secondUsernameFragment";
 constexpr char kRemotePassword2[] = "secondPassword";
 
-RTCIceParameters CreateRemoteRTCIceParameters2() {
-  RTCIceParameters ice_parameters;
-  ice_parameters.setUsernameFragment(kRemoteUsernameFragment2);
-  ice_parameters.setPassword(kRemotePassword2);
+RTCIceParameters* CreateRemoteRTCIceParameters2() {
+  RTCIceParameters* ice_parameters = RTCIceParameters::Create();
+  ice_parameters->setUsernameFragment(kRemoteUsernameFragment2);
+  ice_parameters->setPassword(kRemotePassword2);
   return ice_parameters;
 }
 
@@ -56,8 +55,8 @@ constexpr char kRemoteIceCandidateStr2[] =
 
 RTCIceCandidate* RTCIceCandidateFromString(V8TestingScope& scope,
                                            const String& candidate_str) {
-  RTCIceCandidateInit init;
-  init.setCandidate(candidate_str);
+  RTCIceCandidateInit* init = RTCIceCandidateInit::Create();
+  init->setCandidate(candidate_str);
   return RTCIceCandidate::Create(scope.GetExecutionContext(), init,
                                  ASSERT_NO_EXCEPTION);
 }
@@ -74,10 +73,10 @@ cricket::Candidate CricketCandidateFromString(
 }  // namespace
 
 // static
-RTCIceParameters RTCIceTransportTest::CreateRemoteRTCIceParameters1() {
-  RTCIceParameters ice_parameters;
-  ice_parameters.setUsernameFragment(kRemoteUsernameFragment1);
-  ice_parameters.setPassword(kRemotePassword1);
+RTCIceParameters* RTCIceTransportTest::CreateRemoteRTCIceParameters1() {
+  RTCIceParameters* ice_parameters = RTCIceParameters::Create();
+  ice_parameters->setUsernameFragment(kRemoteUsernameFragment1);
+  ice_parameters->setPassword(kRemotePassword1);
   return ice_parameters;
 }
 
@@ -154,8 +153,8 @@ TEST_F(RTCIceTransportTest, GatherStartsGatheringWithNonEmptyLocalParameters) {
 
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("all");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("all");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
 }
 
@@ -170,8 +169,8 @@ TEST_F(RTCIceTransportTest, GatherIceTransportPolicyAll) {
 
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("all");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("all");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
 }
 
@@ -186,8 +185,8 @@ TEST_F(RTCIceTransportTest, GatherIceTransportPolicyRelay) {
 
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("relay");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("relay");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
 }
 
@@ -201,8 +200,8 @@ TEST_F(RTCIceTransportTest, StopDeletesIceTransportAdapter) {
 
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("all");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("all");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
 
   ice_transport->stop();
@@ -221,8 +220,8 @@ TEST_F(RTCIceTransportTest, ContextDestroyedDeletesIceTransportAdapter) {
 
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("all");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("all");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
 
   ice_transport->ContextDestroyed(scope.GetExecutionContext());
@@ -239,8 +238,8 @@ TEST_F(RTCIceTransportTest, OnGatheringStateChangedCompleteFiresEvents) {
   IceTransportAdapter::Delegate* delegate = nullptr;
   Persistent<RTCIceTransport> ice_transport =
       CreateIceTransport(scope, &delegate);
-  RTCIceGatherOptions options;
-  options.setGatherPolicy("all");
+  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+  options->setGatherPolicy("all");
   ice_transport->gather(options, ASSERT_NO_EXCEPTION);
   RunUntilIdle();
   ASSERT_TRUE(delegate);
@@ -396,8 +395,8 @@ TEST_F(RTCIceTransportTest, InitialOnSelectedCandidatePairChangedFiresEvent) {
   Persistent<MockEventListener> event_listener = CreateMockEventListener();
   EXPECT_CALL(*event_listener, handleEvent(_, _))
       .WillOnce(InvokeWithoutArgs([ice_transport] {
-        base::Optional<RTCIceCandidatePair> selected_candidate_pair;
-        ice_transport->getSelectedCandidatePair(selected_candidate_pair);
+        RTCIceCandidatePair* selected_candidate_pair =
+            ice_transport->getSelectedCandidatePair();
         ASSERT_TRUE(selected_candidate_pair);
         EXPECT_EQ(ice_transport->getLocalCandidates()[0]->candidate(),
                   selected_candidate_pair->local()->candidate());
@@ -437,8 +436,8 @@ TEST_F(RTCIceTransportTest,
   EXPECT_CALL(*event_listener, handleEvent(_, _))
       .WillOnce(DoDefault())  // First event is already tested above.
       .WillOnce(InvokeWithoutArgs([ice_transport] {
-        base::Optional<RTCIceCandidatePair> selected_candidate_pair;
-        ice_transport->getSelectedCandidatePair(selected_candidate_pair);
+        RTCIceCandidatePair* selected_candidate_pair =
+            ice_transport->getSelectedCandidatePair();
         ASSERT_TRUE(selected_candidate_pair);
         EXPECT_EQ(ice_transport->getLocalCandidates()[0]->candidate(),
                   selected_candidate_pair->local()->candidate());
@@ -489,9 +488,9 @@ TEST_F(RTCIceTransportTest,
       .WillOnce(DoDefault())  // First event is for 'connected'.
       .WillOnce(InvokeWithoutArgs([ice_transport] {
         EXPECT_EQ("failed", ice_transport->state());
-        base::Optional<RTCIceCandidatePair> selected_candidate_pair;
-        ice_transport->getSelectedCandidatePair(selected_candidate_pair);
-        EXPECT_EQ(base::nullopt, selected_candidate_pair);
+        RTCIceCandidatePair* selected_candidate_pair =
+            ice_transport->getSelectedCandidatePair();
+        EXPECT_EQ(nullptr, selected_candidate_pair);
       }));
   ice_transport->addEventListener(EventTypeNames::statechange,
                                   state_change_event_listener);
@@ -538,8 +537,8 @@ TEST_F(RTCIceTransportTest,
   Persistent<MockEventListener> event_listener = CreateMockEventListener();
   EXPECT_CALL(*event_listener, handleEvent(_, _))
       .WillOnce(InvokeWithoutArgs([ice_transport] {
-        base::Optional<RTCIceCandidatePair> selected_candidate_pair;
-        ice_transport->getSelectedCandidatePair(selected_candidate_pair);
+        RTCIceCandidatePair* selected_candidate_pair =
+            ice_transport->getSelectedCandidatePair();
         ASSERT_TRUE(selected_candidate_pair);
         EXPECT_EQ(kLocalIceCandidateStr1,
                   selected_candidate_pair->local()->candidate());

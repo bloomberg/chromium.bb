@@ -36,12 +36,12 @@ namespace blink {
 TrackEvent::TrackEvent() = default;
 
 TrackEvent::TrackEvent(const AtomicString& type,
-                       const TrackEventInit& initializer)
+                       const TrackEventInit* initializer)
     : Event(type, initializer) {
-  if (!initializer.hasTrack())
+  if (!initializer->hasTrack())
     return;
 
-  const VideoTrackOrAudioTrackOrTextTrack& track = initializer.track();
+  const VideoTrackOrAudioTrackOrTextTrack& track = initializer->track();
   if (track.IsVideoTrack())
     track_ = track.GetAsVideoTrack();
   else if (track.IsAudioTrack())

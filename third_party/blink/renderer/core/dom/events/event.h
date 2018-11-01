@@ -102,7 +102,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
     return new Event(type, Bubbles::kYes, Cancelable::kYes);
   }
 
-  static Event* Create(const AtomicString& type, const EventInit& initializer) {
+  static Event* Create(const AtomicString& type, const EventInit* initializer) {
     return new Event(type, initializer);
   }
 
@@ -309,9 +309,9 @@ class CORE_EXPORT Event : public ScriptWrappable {
         Cancelable,
         ComposedMode = ComposedMode::kScoped);
   Event(const AtomicString& type,
-        const EventInit&,
+        const EventInit*,
         TimeTicks platform_time_stamp);
-  Event(const AtomicString& type, const EventInit& init)
+  Event(const AtomicString& type, const EventInit* init)
       : Event(type, init, CurrentTimeTicks()) {}
 
   virtual void ReceivedTarget();

@@ -43,12 +43,11 @@ class CORE_EXPORT TrackEvent final : public Event {
   static TrackEvent* Create() { return new TrackEvent; }
 
   static TrackEvent* Create(const AtomicString& type,
-                            const TrackEventInit& initializer) {
+                            const TrackEventInit* initializer) {
     return new TrackEvent(type, initializer);
   }
 
-  template <typename T>
-  static TrackEvent* Create(const AtomicString& type, T* track) {
+  static TrackEvent* Create(const AtomicString& type, TrackBase* track) {
     return new TrackEvent(type, track);
   }
 
@@ -60,9 +59,8 @@ class CORE_EXPORT TrackEvent final : public Event {
 
  private:
   TrackEvent();
-  TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
-  template <typename T>
-  TrackEvent(const AtomicString& type, T* track)
+  TrackEvent(const AtomicString& type, const TrackEventInit* initializer);
+  TrackEvent(const AtomicString& type, TrackBase* track)
       : Event(type, Bubbles::kNo, Cancelable::kNo), track_(track) {}
 
   Member<TrackBase> track_;

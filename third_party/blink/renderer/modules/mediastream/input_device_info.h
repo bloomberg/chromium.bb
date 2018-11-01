@@ -23,7 +23,7 @@ class InputDeviceInfo final : public MediaDeviceInfo {
 
   void SetVideoInputCapabilities(mojom::blink::VideoInputDeviceCapabilitiesPtr);
 
-  void getCapabilities(MediaTrackCapabilities&);
+  MediaTrackCapabilities* getCapabilities() const;
 
  private:
   InputDeviceInfo(const String& device_id,

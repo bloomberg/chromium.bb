@@ -1053,7 +1053,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   if (!node)
     return String();
 
-  ImageBitmapOptions options;
+  ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap = nullptr;
   Document* document = &node->GetDocument();
   if (auto* image = ToHTMLImageElementOrNull(node)) {

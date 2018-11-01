@@ -95,7 +95,7 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(data, origin);
   }
   static MessageEvent* Create(const AtomicString& type,
-                              const MessageEventInit& initializer,
+                              const MessageEventInit* initializer,
                               ExceptionState&);
   ~MessageEvent() override;
 
@@ -198,7 +198,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   };
 
   MessageEvent();
-  MessageEvent(const AtomicString&, const MessageEventInit&);
+  MessageEvent(const AtomicString&, const MessageEventInit*);
   MessageEvent(const String& origin,
                const String& last_event_id,
                EventTarget* source,

@@ -392,12 +392,12 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
 static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
                                    const unsigned char* init_data,
                                    unsigned init_data_length) {
-  MediaEncryptedEventInit initializer;
-  initializer.setInitDataType(
+  MediaEncryptedEventInit* initializer = MediaEncryptedEventInit::Create();
+  initializer->setInitDataType(
       EncryptedMediaUtils::ConvertFromInitDataType(init_data_type));
-  initializer.setInitData(DOMArrayBuffer::Create(init_data, init_data_length));
-  initializer.setBubbles(false);
-  initializer.setCancelable(false);
+  initializer->setInitData(DOMArrayBuffer::Create(init_data, init_data_length));
+  initializer->setBubbles(false);
+  initializer->setCancelable(false);
 
   return MediaEncryptedEvent::Create(EventTypeNames::encrypted, initializer);
 }

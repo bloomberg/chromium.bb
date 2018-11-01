@@ -29,9 +29,9 @@ namespace blink {
 
 SpeechSynthesisEvent* SpeechSynthesisEvent::Create(
     const AtomicString& type,
-    const SpeechSynthesisEventInit& init) {
-  return new SpeechSynthesisEvent(type, init.utterance(), init.charIndex(),
-                                  init.elapsedTime(), init.name());
+    const SpeechSynthesisEventInit* init) {
+  return new SpeechSynthesisEvent(type, init->utterance(), init->charIndex(),
+                                  init->elapsedTime(), init->name());
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type,

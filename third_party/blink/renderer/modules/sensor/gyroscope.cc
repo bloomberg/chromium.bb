@@ -9,7 +9,7 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 Gyroscope* Gyroscope::Create(ExecutionContext* execution_context,
-                             const SpatialSensorOptions& options,
+                             const SpatialSensorOptions* options,
                              ExceptionState& exception_state) {
   return new Gyroscope(execution_context, options, exception_state);
 }
@@ -17,11 +17,12 @@ Gyroscope* Gyroscope::Create(ExecutionContext* execution_context,
 // static
 Gyroscope* Gyroscope::Create(ExecutionContext* execution_context,
                              ExceptionState& exception_state) {
-  return Create(execution_context, SpatialSensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions::Create(),
+                exception_state);
 }
 
 Gyroscope::Gyroscope(ExecutionContext* execution_context,
-                     const SpatialSensorOptions& options,
+                     const SpatialSensorOptions* options,
                      ExceptionState& exception_state)
     : Sensor(execution_context,
              options,

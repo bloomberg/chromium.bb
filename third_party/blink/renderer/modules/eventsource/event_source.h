@@ -63,7 +63,7 @@ class MODULES_EXPORT EventSource final
  public:
   static EventSource* Create(ExecutionContext*,
                              const String& url,
-                             const EventSourceInit&,
+                             const EventSourceInit*,
                              ExceptionState&);
   ~EventSource() override;
 
@@ -100,7 +100,7 @@ class MODULES_EXPORT EventSource final
   void Trace(blink::Visitor*) override;
 
  private:
-  EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
+  EventSource(ExecutionContext*, const KURL&, const EventSourceInit*);
 
   void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,

@@ -105,7 +105,7 @@ class MODULES_EXPORT BaseAudioContext
 
   // Create an AudioContext for rendering to the audio hardware.
   static BaseAudioContext* Create(Document&,
-                                  const AudioContextOptions&,
+                                  const AudioContextOptions*,
                                   ExceptionState&);
 
   ~BaseAudioContext() override;
@@ -206,7 +206,7 @@ class MODULES_EXPORT BaseAudioContext
                                    ExceptionState&);
   PeriodicWave* createPeriodicWave(const Vector<float>& real,
                                    const Vector<float>& imag,
-                                   const PeriodicWaveConstraints&,
+                                   const PeriodicWaveConstraints*,
                                    ExceptionState&);
 
   // IIRFilter
@@ -322,7 +322,7 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  AudioIOPosition OutputPosition();
+  AudioIOPosition OutputPosition() const;
 
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;

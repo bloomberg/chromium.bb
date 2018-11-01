@@ -320,7 +320,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   void Trace(blink::Visitor*) override;
   AudioHandler& Handler() const;
 
-  void HandleChannelOptions(const AudioNodeOptions&, ExceptionState&);
+  void HandleChannelOptions(const AudioNodeOptions*, ExceptionState&);
 
   AudioNode* connect(AudioNode*,
                      unsigned output_index,

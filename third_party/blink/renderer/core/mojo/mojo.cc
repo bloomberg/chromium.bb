@@ -26,7 +26,9 @@
 namespace blink {
 
 // static
-void Mojo::createMessagePipe(MojoCreateMessagePipeResult& result_dict) {
+MojoCreateMessagePipeResult* Mojo::createMessagePipe() {
+  MojoCreateMessagePipeResult* result_dict =
+      MojoCreateMessagePipeResult::Create();
   MojoCreateMessagePipeOptions options = {0};
   options.struct_size = sizeof(::MojoCreateMessagePipeOptions);
   options.flags = MOJO_CREATE_MESSAGE_PIPE_FLAG_NONE;
@@ -34,54 +36,60 @@ void Mojo::createMessagePipe(MojoCreateMessagePipeResult& result_dict) {
   mojo::ScopedMessagePipeHandle handle0, handle1;
   MojoResult result = mojo::CreateMessagePipe(&options, &handle0, &handle1);
 
-  result_dict.setResult(result);
+  result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict.setHandle0(
+    result_dict->setHandle0(
         MojoHandle::Create(mojo::ScopedHandle::From(std::move(handle0))));
-    result_dict.setHandle1(
+    result_dict->setHandle1(
         MojoHandle::Create(mojo::ScopedHandle::From(std::move(handle1))));
   }
+  return result_dict;
 }
 
 // static
-void Mojo::createDataPipe(const MojoCreateDataPipeOptions& options_dict,
-                          MojoCreateDataPipeResult& result_dict) {
-  if (!options_dict.hasElementNumBytes() ||
-      !options_dict.hasCapacityNumBytes()) {
-    result_dict.setResult(MOJO_RESULT_INVALID_ARGUMENT);
-    return;
+MojoCreateDataPipeResult* Mojo::createDataPipe(
+    const MojoCreateDataPipeOptions* options_dict) {
+  MojoCreateDataPipeResult* result_dict = MojoCreateDataPipeResult::Create();
+
+  if (!options_dict->hasElementNumBytes() ||
+      !options_dict->hasCapacityNumBytes()) {
+    result_dict->setResult(MOJO_RESULT_INVALID_ARGUMENT);
+    return result_dict;
   }
 
   ::MojoCreateDataPipeOptions options = {0};
   options.struct_size = sizeof(options);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  options.element_num_bytes = options_dict.elementNumBytes();
-  options.capacity_num_bytes = options_dict.capacityNumBytes();
+  options.element_num_bytes = options_dict->elementNumBytes();
+  options.capacity_num_bytes = options_dict->capacityNumBytes();
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
   MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
-  result_dict.setResult(result);
+  result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict.setProducer(
+    result_dict->setProducer(
         MojoHandle::Create(mojo::ScopedHandle::From(std::move(producer))));
-    result_dict.setConsumer(
+    result_dict->setConsumer(
         MojoHandle::Create(mojo::ScopedHandle::From(std::move(consumer))));
   }
+  return result_dict;
 }
 
 // static
-void Mojo::createSharedBuffer(unsigned num_bytes,
-                              MojoCreateSharedBufferResult& result_dict) {
+MojoCreateSharedBufferResult* Mojo::createSharedBuffer(unsigned num_bytes) {
+  MojoCreateSharedBufferResult* result_dict =
+      MojoCreateSharedBufferResult::Create();
   MojoCreateSharedBufferOptions* options = nullptr;
   mojo::Handle handle;
   MojoResult result =
       MojoCreateSharedBuffer(num_bytes, options, handle.mutable_value());
 
-  result_dict.setResult(result);
+  result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict.setHandle(MojoHandle::Create(mojo::MakeScopedHandle(handle)));
+    result_dict->setHandle(MojoHandle::Create(mojo::MakeScopedHandle(handle)));
   }
+  return result_dict;
 }
 
 // static

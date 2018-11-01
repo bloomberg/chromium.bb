@@ -15,7 +15,7 @@ class Gyroscope final : public Sensor {
 
  public:
   static Gyroscope* Create(ExecutionContext*,
-                           const SpatialSensorOptions&,
+                           const SpatialSensorOptions*,
                            ExceptionState&);
   static Gyroscope* Create(ExecutionContext*, ExceptionState&);
 
@@ -26,7 +26,7 @@ class Gyroscope final : public Sensor {
   void Trace(blink::Visitor*) override;
 
  private:
-  Gyroscope(ExecutionContext*, const SpatialSensorOptions&, ExceptionState&);
+  Gyroscope(ExecutionContext*, const SpatialSensorOptions*, ExceptionState&);
 };
 
 }  // namespace blink

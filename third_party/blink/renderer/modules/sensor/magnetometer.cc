@@ -10,7 +10,7 @@ namespace blink {
 
 // static
 Magnetometer* Magnetometer::Create(ExecutionContext* execution_context,
-                                   const SpatialSensorOptions& options,
+                                   const SpatialSensorOptions* options,
                                    ExceptionState& exception_state) {
   return new Magnetometer(execution_context, options, exception_state);
 }
@@ -18,11 +18,12 @@ Magnetometer* Magnetometer::Create(ExecutionContext* execution_context,
 // static
 Magnetometer* Magnetometer::Create(ExecutionContext* execution_context,
                                    ExceptionState& exception_state) {
-  return Create(execution_context, SpatialSensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions::Create(),
+                exception_state);
 }
 
 Magnetometer::Magnetometer(ExecutionContext* execution_context,
-                           const SpatialSensorOptions& options,
+                           const SpatialSensorOptions* options,
                            ExceptionState& exception_state)
     : Sensor(execution_context,
              options,

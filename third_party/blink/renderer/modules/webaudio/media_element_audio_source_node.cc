@@ -250,9 +250,9 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
 
 MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
     AudioContext* context,
-    const MediaElementAudioSourceOptions& options,
+    const MediaElementAudioSourceOptions* options,
     ExceptionState& exception_state) {
-  return Create(*context, *options.mediaElement(), exception_state);
+  return Create(*context, *options->mediaElement(), exception_state);
 }
 
 void MediaElementAudioSourceNode::Trace(blink::Visitor* visitor) {

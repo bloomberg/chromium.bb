@@ -20,7 +20,7 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PasswordCredential* Create(const PasswordCredentialData&,
+  static PasswordCredential* Create(const PasswordCredentialData*,
                                     ExceptionState&);
   static PasswordCredential* Create(HTMLFormElement*, ExceptionState&);
   static PasswordCredential* Create(const String& id,

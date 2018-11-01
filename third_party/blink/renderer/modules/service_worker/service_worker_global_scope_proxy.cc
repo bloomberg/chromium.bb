@@ -218,8 +218,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   // BackgroundFetchEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
@@ -236,8 +236,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
@@ -261,8 +261,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
@@ -288,8 +288,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
@@ -304,8 +304,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kActivate, event_id);
-  Event* event = ExtendableEvent::Create(EventTypeNames::activate,
-                                         ExtendableEventInit(), observer);
+  Event* event = ExtendableEvent::Create(
+      EventTypeNames::activate, ExtendableEventInit::Create(), observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
@@ -317,8 +317,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchCookieChangeEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kCookieChange, event_id);
 
-  HeapVector<CookieListItem> changed;
-  HeapVector<CookieListItem> deleted;
+  HeapVector<Member<CookieListItem>> changed;
+  HeapVector<Member<CookieListItem>> deleted;
   CookieChangeEvent::ToEventInfo(cookie, change_cause, changed, deleted);
   Event* event = ExtendableCookieChangeEvent::Create(
       EventTypeNames::cookiechange, std::move(changed), std::move(deleted),
@@ -396,12 +396,12 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
   Request* request = Request::Create(
       WorkerGlobalScope()->ScriptController()->GetScriptState(), web_request);
   request->getHeaders()->SetGuard(Headers::kImmutableGuard);
-  FetchEventInit event_init;
-  event_init.setCancelable(true);
-  event_init.setRequest(request);
-  event_init.setClientId(
+  FetchEventInit* event_init = FetchEventInit::Create();
+  event_init->setCancelable(true);
+  event_init->setRequest(request);
+  event_init->setClientId(
       web_request.IsMainResourceLoad() ? WebString() : web_request.ClientId());
-  event_init.setIsReload(web_request.IsReload());
+  event_init->setIsReload(web_request.IsReload());
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
   FetchEvent* fetch_event = FetchEvent::Create(
@@ -471,8 +471,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kInstall, event_id);
-  Event* event = InstallEvent::Create(
-      EventTypeNames::install, ExtendableEventInit(), event_id, observer);
+  Event* event =
+      InstallEvent::Create(EventTypeNames::install,
+                           ExtendableEventInit::Create(), event_id, observer);
   WorkerGlobalScope()->SetIsInstalling(true);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -486,13 +487,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationClickEvent(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClick, event_id);
-  NotificationEventInit event_init;
-  event_init.setNotification(Notification::Create(
+  NotificationEventInit* event_init = NotificationEventInit::Create();
+  event_init->setNotification(Notification::Create(
       WorkerGlobalScope(), notification_id,
       mojom::blink::NotificationData::From(data), true /* showing */));
   if (0 <= action_index && action_index < static_cast<int>(data.actions.size()))
-    event_init.setAction(data.actions[action_index].action);
-  event_init.setReply(reply);
+    event_init->setAction(data.actions[action_index].action);
+  event_init->setReply(reply);
   Event* event = NotificationEvent::Create(EventTypeNames::notificationclick,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -505,9 +506,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClose, event_id);
-  NotificationEventInit event_init;
-  event_init.setAction(WTF::String());  // initialize as null.
-  event_init.setNotification(Notification::Create(
+  NotificationEventInit* event_init = NotificationEventInit::Create();
+  event_init->setAction(WTF::String());  // initialize as null.
+  event_init->setNotification(Notification::Create(
       WorkerGlobalScope(), notification_id,
       mojom::blink::NotificationData::From(data), false /* showing */));
   Event* event = NotificationEvent::Create(EventTypeNames::notificationclose,
@@ -545,7 +546,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
                                           wait_until_observer);
 
   Event* event = AbortPaymentEvent::Create(
-      EventTypeNames::abortpayment, ExtendableEventInit(),
+      EventTypeNames::abortpayment, ExtendableEventInit::Create(),
       respond_with_observer, wait_until_observer);
 
   WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(

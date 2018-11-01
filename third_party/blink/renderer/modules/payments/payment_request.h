@@ -50,13 +50,13 @@ class MODULES_EXPORT PaymentRequest final
 
  public:
   static PaymentRequest* Create(ExecutionContext*,
-                                const HeapVector<PaymentMethodData>&,
-                                const PaymentDetailsInit&,
+                                const HeapVector<Member<PaymentMethodData>>&,
+                                const PaymentDetailsInit*,
                                 ExceptionState&);
   static PaymentRequest* Create(ExecutionContext*,
-                                const HeapVector<PaymentMethodData>&,
-                                const PaymentDetailsInit&,
-                                const PaymentOptions&,
+                                const HeapVector<Member<PaymentMethodData>>&,
+                                const PaymentDetailsInit*,
+                                const PaymentOptions*,
                                 ExceptionState&);
 
   ~PaymentRequest() override;
@@ -84,7 +84,7 @@ class MODULES_EXPORT PaymentRequest final
 
   // PaymentStateResolver:
   ScriptPromise Complete(ScriptState*, PaymentComplete result) override;
-  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors&) override;
+  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors*) override;
 
   // PaymentUpdater:
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
@@ -105,9 +105,9 @@ class MODULES_EXPORT PaymentRequest final
 
  private:
   PaymentRequest(ExecutionContext*,
-                 const HeapVector<PaymentMethodData>&,
-                 const PaymentDetailsInit&,
-                 const PaymentOptions&,
+                 const HeapVector<Member<PaymentMethodData>>&,
+                 const PaymentDetailsInit*,
+                 const PaymentOptions*,
                  ExceptionState&);
 
   // LifecycleObserver:
@@ -137,7 +137,7 @@ class MODULES_EXPORT PaymentRequest final
   // spec.
   ScriptPromiseResolver* GetPendingAcceptPromiseResolver() const;
 
-  PaymentOptions options_;
+  Member<const PaymentOptions> options_;
   Member<PaymentAddress> shipping_address_;
   Member<PaymentResponse> payment_response_;
   String id_;

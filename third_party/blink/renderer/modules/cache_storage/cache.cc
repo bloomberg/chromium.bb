@@ -446,7 +446,7 @@ Cache* Cache::Create(
 
 ScriptPromise Cache::match(ScriptState* script_state,
                            const RequestInfo& request,
-                           const CacheQueryOptions& options,
+                           const CacheQueryOptions* options,
                            ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest())
@@ -460,12 +460,12 @@ ScriptPromise Cache::match(ScriptState* script_state,
 
 ScriptPromise Cache::matchAll(ScriptState* script_state,
                               ExceptionState& exception_state) {
-  return MatchAllImpl(script_state, nullptr, CacheQueryOptions());
+  return MatchAllImpl(script_state, nullptr, CacheQueryOptions::Create());
 }
 
 ScriptPromise Cache::matchAll(ScriptState* script_state,
                               const RequestInfo& request,
-                              const CacheQueryOptions& options,
+                              const CacheQueryOptions* options,
                               ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest())
@@ -514,7 +514,7 @@ ScriptPromise Cache::addAll(ScriptState* script_state,
 
 ScriptPromise Cache::Delete(ScriptState* script_state,
                             const RequestInfo& request,
-                            const CacheQueryOptions& options,
+                            const CacheQueryOptions* options,
                             ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest())
@@ -546,12 +546,12 @@ ScriptPromise Cache::put(ScriptState* script_state,
 }
 
 ScriptPromise Cache::keys(ScriptState* script_state, ExceptionState&) {
-  return KeysImpl(script_state, nullptr, CacheQueryOptions());
+  return KeysImpl(script_state, nullptr, CacheQueryOptions::Create());
 }
 
 ScriptPromise Cache::keys(ScriptState* script_state,
                           const RequestInfo& request,
-                          const CacheQueryOptions& options,
+                          const CacheQueryOptions* options,
                           ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest())
@@ -565,12 +565,12 @@ ScriptPromise Cache::keys(ScriptState* script_state,
 
 // static
 mojom::blink::QueryParamsPtr Cache::ToQueryParams(
-    const CacheQueryOptions& options) {
+    const CacheQueryOptions* options) {
   mojom::blink::QueryParamsPtr query_params = mojom::blink::QueryParams::New();
-  query_params->ignore_search = options.ignoreSearch();
-  query_params->ignore_method = options.ignoreMethod();
-  query_params->ignore_vary = options.ignoreVary();
-  query_params->cache_name = options.cacheName();
+  query_params->ignore_search = options->ignoreSearch();
+  query_params->ignore_method = options->ignoreMethod();
+  query_params->ignore_vary = options->ignoreVary();
+  query_params->cache_name = options->cacheName();
   return query_params;
 }
 
@@ -587,13 +587,13 @@ void Cache::Trace(blink::Visitor* visitor) {
 
 ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                                const Request* request,
-                               const CacheQueryOptions& options) {
+                               const CacheQueryOptions* options) {
   WebServiceWorkerRequest web_request;
   request->PopulateWebServiceWorkerRequest(web_request);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
-  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options->ignoreMethod()) {
     resolver->Resolve();
     return promise;
   }
@@ -602,7 +602,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
       web_request, ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions& options,
+             const CacheQueryOptions* options,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -621,7 +621,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
               TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Match2",
                                        elapsed);
-              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
                 UMA_HISTOGRAM_LONG_TIMES(
                     "ServiceWorkerCache.Cache.Match2.IgnoreSearchEnabled",
                     elapsed);
@@ -635,14 +635,14 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), options));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
 
   return promise;
 }
 
 ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
                                   const Request* request,
-                                  const CacheQueryOptions& options) {
+                                  const CacheQueryOptions* options) {
   base::Optional<WebServiceWorkerRequest> web_request;
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
@@ -650,7 +650,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
   if (request) {
     request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
-    if (request->method() != http_names::kGET && !options.ignoreMethod()) {
+    if (request->method() != http_names::kGET && !options->ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());
       return promise;
     }
@@ -660,7 +660,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
       web_request, ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions& options,
+             const CacheQueryOptions* options,
              mojom::blink::MatchAllResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -672,7 +672,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
               TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.MatchAll2",
                                        elapsed);
-              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
                 UMA_HISTOGRAM_LONG_TIMES(
                     "ServiceWorkerCache.Cache.MatchAll2.IgnoreSearchEnabled",
                     elapsed);
@@ -691,7 +691,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
               resolver->Resolve(responses);
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), options));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
   return promise;
 }
 
@@ -723,8 +723,8 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
     }
     request_infos[i].SetRequest(requests[i]);
 
-    promises[i] = scoped_fetcher_->Fetch(script_state, request_infos[i],
-                                         RequestInit(), exception_state);
+    promises[i] = scoped_fetcher_->Fetch(
+        script_state, request_infos[i], RequestInit::Create(), exception_state);
   }
 
   return ScriptPromise::All(script_state, promises)
@@ -734,10 +734,10 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
 
 ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                                 const Request* request,
-                                const CacheQueryOptions& options) {
+                                const CacheQueryOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
-  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options->ignoreMethod()) {
     resolver->Resolve(false);
     return promise;
   }
@@ -754,7 +754,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
       RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions& options,
+             const CacheQueryOptions* options,
              mojom::blink::CacheStorageVerboseErrorPtr error) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context || context->IsContextDestroyed())
@@ -780,7 +780,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
               TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Delete",
                                        elapsed);
-              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
                 UMA_HISTOGRAM_LONG_TIMES(
                     "ServiceWorkerCache.Cache.Delete.IgnoreSearchEnabled",
                     elapsed);
@@ -797,7 +797,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                   kJSMessageSource, kWarningMessageLevel, message));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), options));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
   return promise;
 }
 
@@ -892,7 +892,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 
 ScriptPromise Cache::KeysImpl(ScriptState* script_state,
                               const Request* request,
-                              const CacheQueryOptions& options) {
+                              const CacheQueryOptions* options) {
   base::Optional<WebServiceWorkerRequest> web_request;
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
@@ -900,7 +900,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
   if (request) {
     request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
-    if (request->method() != http_names::kGET && !options.ignoreMethod()) {
+    if (request->method() != http_names::kGET && !options->ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());
       return promise;
     }
@@ -910,7 +910,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
       web_request, ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions& options,
+             const CacheQueryOptions* options,
              mojom::blink::CacheKeysResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -922,7 +922,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Keys2",
                                        elapsed);
-              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+              if (options->hasIgnoreSearch() && options->ignoreSearch()) {
                 UMA_HISTOGRAM_TIMES(
                     "ServiceWorkerCache.Cache.Keys2.IgnoreSearchEnabled",
                     elapsed);
@@ -941,7 +941,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               resolver->Resolve(requests);
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), options));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
   return promise;
 }
 

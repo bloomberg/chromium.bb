@@ -46,13 +46,13 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(
     const AtomicString& event_type,
-    const IDBVersionChangeEventInit& initializer)
+    const IDBVersionChangeEventInit* initializer)
     : Event(event_type, Bubbles::kNo, Cancelable::kNo),
-      old_version_(initializer.oldVersion()),
+      old_version_(initializer->oldVersion()),
       data_loss_(kWebIDBDataLossNone) {
-  if (initializer.hasNewVersion())
-    new_version_ = initializer.newVersion();
-  if (initializer.dataLoss() == "total")
+  if (initializer->hasNewVersion())
+    new_version_ = initializer->newVersion();
+  if (initializer->dataLoss() == "total")
     data_loss_ = kWebIDBDataLossTotal;
 }
 

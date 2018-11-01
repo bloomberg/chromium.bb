@@ -23,7 +23,7 @@ class ServiceWorkerClients final : public ScriptWrappable {
 
   // Clients.idl
   ScriptPromise get(ScriptState*, const String& id);
-  ScriptPromise matchAll(ScriptState*, const ClientQueryOptions&);
+  ScriptPromise matchAll(ScriptState*, const ClientQueryOptions*);
   ScriptPromise openWindow(ScriptState*, const String& url);
   ScriptPromise claim(ScriptState*);
 

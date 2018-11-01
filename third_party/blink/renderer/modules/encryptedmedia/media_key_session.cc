@@ -876,27 +876,27 @@ void MediaKeySession::Message(MessageType message_type,
   //    -> messageType = the specified message type
   //    -> message = the specified message
 
-  MediaKeyMessageEventInit init;
+  MediaKeyMessageEventInit* init = MediaKeyMessageEventInit::Create();
   switch (message_type) {
     case WebContentDecryptionModuleSession::Client::MessageType::
         kLicenseRequest:
-      init.setMessageType("license-request");
+      init->setMessageType("license-request");
       break;
     case WebContentDecryptionModuleSession::Client::MessageType::
         kLicenseRenewal:
-      init.setMessageType("license-renewal");
+      init->setMessageType("license-renewal");
       break;
     case WebContentDecryptionModuleSession::Client::MessageType::
         kLicenseRelease:
-      init.setMessageType("license-release");
+      init->setMessageType("license-release");
       break;
     case WebContentDecryptionModuleSession::Client::MessageType::
         kIndividualizationRequest:
-      init.setMessageType("individualization-request");
+      init->setMessageType("individualization-request");
       break;
   }
-  init.setMessage(DOMArrayBuffer::Create(static_cast<const void*>(message),
-                                         SafeCast<uint32_t>(message_length)));
+  init->setMessage(DOMArrayBuffer::Create(static_cast<const void*>(message),
+                                          SafeCast<uint32_t>(message_length)));
 
   MediaKeyMessageEvent* event =
       MediaKeyMessageEvent::Create(EventTypeNames::message, init);

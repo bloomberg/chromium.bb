@@ -171,15 +171,16 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       return false;
     }
 
-    FragmentResultOptions fragment_result_options;
+    FragmentResultOptions* fragment_result_options =
+        FragmentResultOptions::Create();
     scoped_refptr<SerializedScriptValue> fragment_result_data;
-    if (!instance_->Layout(*this, &fragment_result_options,
+    if (!instance_->Layout(*this, fragment_result_options,
                            &fragment_result_data))
       return false;
 
     size_t index = 0;
     const HeapVector<Member<CustomLayoutFragment>>& child_fragments =
-        fragment_result_options.childFragments();
+        fragment_result_options->childFragments();
     for (LayoutBox* child = FirstChildBox(); child;
          child = child->NextSiblingBox()) {
       if (child->IsOutOfFlowPositioned()) {
@@ -256,7 +257,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     fragment_result_data_ = std::move(fragment_result_data);
 
     SetLogicalHeight(
-        LayoutUnit::FromDoubleRound(fragment_result_options.autoBlockSize()));
+        LayoutUnit::FromDoubleRound(fragment_result_options->autoBlockSize()));
 
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
     UpdateLogicalHeight();

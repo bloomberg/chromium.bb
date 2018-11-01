@@ -24,7 +24,7 @@ class XRInputSourceEvent final : public Event {
   }
 
   static XRInputSourceEvent* Create(const AtomicString& type,
-                                    const XRInputSourceEventInit& initializer) {
+                                    const XRInputSourceEventInit* initializer) {
     return new XRInputSourceEvent(type, initializer);
   }
 
@@ -40,7 +40,7 @@ class XRInputSourceEvent final : public Event {
  private:
   XRInputSourceEvent();
   XRInputSourceEvent(const AtomicString& type, XRFrame*, XRInputSource*);
-  XRInputSourceEvent(const AtomicString&, const XRInputSourceEventInit&);
+  XRInputSourceEvent(const AtomicString&, const XRInputSourceEventInit*);
 
   Member<XRFrame> frame_;
   Member<XRInputSource> input_source_;

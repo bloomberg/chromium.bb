@@ -1060,13 +1060,13 @@ double LocalDOMWindow::devicePixelRatio() const {
 }
 
 void LocalDOMWindow::scrollBy(double x, double y) const {
-  ScrollToOptions options;
-  options.setLeft(x);
-  options.setTop(y);
+  ScrollToOptions* options = ScrollToOptions::Create();
+  options->setLeft(x);
+  options->setTop(y);
   scrollBy(options);
 }
 
-void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
+void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1082,10 +1082,10 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
 
   double x = 0.0;
   double y = 0.0;
-  if (scroll_to_options.hasLeft())
-    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left());
-  if (scroll_to_options.hasTop())
-    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
+  if (scroll_to_options->hasLeft())
+    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left());
+  if (scroll_to_options->hasTop())
+    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top());
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   FloatPoint current_position = viewport->ScrollPosition();
@@ -1103,7 +1103,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
           .value_or(new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
@@ -1111,13 +1111,13 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
 }
 
 void LocalDOMWindow::scrollTo(double x, double y) const {
-  ScrollToOptions options;
-  options.setLeft(x);
-  options.setTop(y);
+  ScrollToOptions* options = ScrollToOptions::Create();
+  options->setLeft(x);
+  options->setTop(y);
   scrollTo(options);
 }
 
-void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
+void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1131,8 +1131,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
 
   // It is only necessary to have an up-to-date layout if the position may be
   // clamped, which is never the case for (0, 0).
-  if (!scroll_to_options.hasLeft() || !scroll_to_options.hasTop() ||
-      scroll_to_options.left() || scroll_to_options.top()) {
+  if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
+      scroll_to_options->left() || scroll_to_options->top()) {
     document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
@@ -1144,14 +1144,14 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();
 
-  if (scroll_to_options.hasLeft())
+  if (scroll_to_options->hasLeft())
     scaled_x =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
         GetFrame()->PageZoomFactor();
 
-  if (scroll_to_options.hasTop())
+  if (scroll_to_options->hasTop())
     scaled_y =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
         GetFrame()->PageZoomFactor();
 
   FloatPoint new_scaled_position =
@@ -1159,15 +1159,15 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
 
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(new_scaled_position), scroll_to_options.hasLeft(),
-          scroll_to_options.hasTop());
+          gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
+          scroll_to_options->hasTop());
   new_scaled_position =
       document()
           ->GetSnapCoordinator()
           ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
           .value_or(new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
@@ -1263,7 +1263,7 @@ void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
 }
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
-                                        const IdleRequestOptions& options) {
+                                        const IdleRequestOptions* options) {
   if (Document* document = this->document()) {
     return document->RequestIdleCallback(
         ScriptedIdleTaskController::V8IdleTask::Create(callback), options);

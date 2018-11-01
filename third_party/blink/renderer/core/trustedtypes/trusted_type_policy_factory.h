@@ -32,7 +32,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
 
   // TrustedTypePolicyFactory.idl
   TrustedTypePolicy* createPolicy(const String&,
-                                  const TrustedTypePolicyOptions&,
+                                  const TrustedTypePolicyOptions*,
                                   bool exposed,
                                   ExceptionState&);
 

@@ -130,7 +130,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     ScriptState* script_state,
     const String& id,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
-    const BackgroundFetchOptions& options,
+    const BackgroundFetchOptions* options,
     ExceptionState& exception_state) {
   if (!registration_->active()) {
     return ScriptPromise::Reject(
@@ -250,11 +250,11 @@ ScriptPromise BackgroundFetchManager::fetch(
   // Inability to load them should not be fatal to the fetch.
   mojom::blink::BackgroundFetchOptionsPtr options_ptr =
       mojom::blink::BackgroundFetchOptions::From(options);
-  if (options.icons().size()) {
+  if (options->icons().size()) {
     BackgroundFetchIconLoader* loader = new BackgroundFetchIconLoader();
     loaders_.push_back(loader);
     loader->Start(
-        bridge_.Get(), execution_context, options.icons(),
+        bridge_.Get(), execution_context, options->icons(),
         WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
                   id, WTF::Passed(std::move(web_requests)),
                   std::move(options_ptr), WrapPersistent(resolver),

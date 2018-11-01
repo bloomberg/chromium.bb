@@ -35,8 +35,8 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
   static NavigatorShare& From(Navigator&);
 
   // Navigator partial interface
-  ScriptPromise share(ScriptState*, const ShareData&);
-  static ScriptPromise share(ScriptState*, Navigator&, const ShareData&);
+  ScriptPromise share(ScriptState*, const ShareData*);
+  static ScriptPromise share(ScriptState*, Navigator&, const ShareData*);
 
   void Trace(blink::Visitor*) override;
 

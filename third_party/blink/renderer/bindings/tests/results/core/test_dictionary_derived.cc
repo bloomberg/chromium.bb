@@ -16,11 +16,7 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs() {
   setDerivedStringMemberWithDefault("default string value");
 }
 
-TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() {}
-
-TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&) = default;
-
-TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
+TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() = default;
 
 void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) {
   string_or_double_sequence_member_ = value;

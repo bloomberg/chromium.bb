@@ -171,10 +171,10 @@ ChannelSplitterNode* ChannelSplitterNode::Create(
 
 ChannelSplitterNode* ChannelSplitterNode::Create(
     BaseAudioContext* context,
-    const ChannelSplitterOptions& options,
+    const ChannelSplitterOptions* options,
     ExceptionState& exception_state) {
   ChannelSplitterNode* node =
-      Create(*context, options.numberOfOutputs(), exception_state);
+      Create(*context, options->numberOfOutputs(), exception_state);
 
   if (!node)
     return nullptr;

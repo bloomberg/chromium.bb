@@ -58,7 +58,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   }
 
   static TouchEvent* Create(const AtomicString& type,
-                            const TouchEventInit& initializer) {
+                            const TouchEventInit* initializer) {
     return new TouchEvent(type, initializer);
   }
 
@@ -99,7 +99,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
              const AtomicString& type,
              AbstractView*,
              TouchAction current_touch_action);
-  TouchEvent(const AtomicString&, const TouchEventInit&);
+  TouchEvent(const AtomicString&, const TouchEventInit*);
   bool IsTouchStartOrFirstTouchMove() const;
 
   Member<TouchList> touches_;

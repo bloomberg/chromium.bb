@@ -25,7 +25,7 @@ class MediaQueryListEvent final : public Event {
 
   static MediaQueryListEvent* Create(
       const AtomicString& event_type,
-      const MediaQueryListEventInit& initializer) {
+      const MediaQueryListEventInit* initializer) {
     return new MediaQueryListEvent(event_type, initializer);
   }
 
@@ -57,12 +57,12 @@ class MediaQueryListEvent final : public Event {
         matches_(false) {}
 
   MediaQueryListEvent(const AtomicString& event_type,
-                      const MediaQueryListEventInit& initializer)
+                      const MediaQueryListEventInit* initializer)
       : Event(event_type, initializer), matches_(false) {
-    if (initializer.hasMedia())
-      media_ = initializer.media();
-    if (initializer.hasMatches())
-      matches_ = initializer.matches();
+    if (initializer->hasMedia())
+      media_ = initializer->media();
+    if (initializer->hasMatches())
+      matches_ = initializer->matches();
   }
 
   // We have media_/matches_ for JS-created events; we use media_query_list_

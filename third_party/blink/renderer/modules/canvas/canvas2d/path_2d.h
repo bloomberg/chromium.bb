@@ -61,7 +61,7 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
   const Path& GetPath() const { return path_; }
 
   void addPath(Path2D* path,
-               DOMMatrix2DInit& transform,
+               DOMMatrix2DInit* transform,
                ExceptionState& exception_state) {
     DOMMatrixReadOnly* matrix =
         DOMMatrixReadOnly::fromMatrix2D(transform, exception_state);

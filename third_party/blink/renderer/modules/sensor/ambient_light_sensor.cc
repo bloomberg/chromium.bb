@@ -14,7 +14,7 @@ namespace blink {
 // static
 AmbientLightSensor* AmbientLightSensor::Create(
     ExecutionContext* execution_context,
-    const SensorOptions& options,
+    const SensorOptions* options,
     ExceptionState& exception_state) {
   return new AmbientLightSensor(execution_context, options, exception_state);
 }
@@ -23,11 +23,11 @@ AmbientLightSensor* AmbientLightSensor::Create(
 AmbientLightSensor* AmbientLightSensor::Create(
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  return Create(execution_context, SensorOptions(), exception_state);
+  return Create(execution_context, SensorOptions::Create(), exception_state);
 }
 
 AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
-                                       const SensorOptions& options,
+                                       const SensorOptions* options,
                                        ExceptionState& exception_state)
     : Sensor(execution_context,
              options,

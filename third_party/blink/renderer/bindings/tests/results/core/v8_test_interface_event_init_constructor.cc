@@ -92,7 +92,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   V8StringResource<> type;
-  TestInterfaceEventInit testInterfaceEventInit;
+  TestInterfaceEventInit* testInterfaceEventInit;
   type = info[0];
   if (!type.Prepare())
     return;
@@ -101,7 +101,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
     exceptionState.ThrowTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
     return;
   }
-  V8TestInterfaceEventInit::ToImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState);
+  testInterfaceEventInit = NativeValueTraits<TestInterfaceEventInit>::NativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.HadException())
     return;
 

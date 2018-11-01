@@ -47,7 +47,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
                                      ExceptionState&);
 
   static OfflineAudioContext* Create(ExecutionContext*,
-                                     const OfflineAudioContextOptions&,
+                                     const OfflineAudioContextOptions*,
                                      ExceptionState&);
 
   ~OfflineAudioContext() override;

@@ -28,7 +28,8 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
   static PaymentMethodChangeEvent* Create(
       ScriptState*,
       const AtomicString& type,
-      const PaymentMethodChangeEventInit& = PaymentMethodChangeEventInit());
+      const PaymentMethodChangeEventInit* =
+          PaymentMethodChangeEventInit::Create());
 
   const String& methodName() const;
   const ScriptValue methodDetails(ScriptState*) const;
@@ -36,7 +37,7 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
  private:
   PaymentMethodChangeEvent(ScriptState*,
                            const AtomicString& type,
-                           const PaymentMethodChangeEventInit&);
+                           const PaymentMethodChangeEventInit*);
 
   String method_name_;
   ScriptValue method_details_;

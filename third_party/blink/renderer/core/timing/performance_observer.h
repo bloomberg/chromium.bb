@@ -39,7 +39,7 @@ class CORE_EXPORT PerformanceObserver final
                                      V8PerformanceObserverCallback*);
   static void ResumeSuspendedObservers();
 
-  void observe(const PerformanceObserverInit&, ExceptionState&);
+  void observe(const PerformanceObserverInit*, ExceptionState&);
   void disconnect();
   PerformanceEntryVector takeRecords();
   void EnqueuePerformanceEntry(PerformanceEntry&);

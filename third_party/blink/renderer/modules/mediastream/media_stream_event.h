@@ -40,7 +40,7 @@ class MediaStreamEvent final : public Event {
 
   static MediaStreamEvent* Create(const AtomicString& type, MediaStream*);
   static MediaStreamEvent* Create(const AtomicString& type,
-                                  const MediaStreamEventInit& initializer);
+                                  const MediaStreamEventInit* initializer);
 
   MediaStream* stream() const;
   MediaStream* stream(bool&) const;
@@ -51,7 +51,7 @@ class MediaStreamEvent final : public Event {
 
  private:
   MediaStreamEvent(const AtomicString& type, MediaStream*);
-  MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
+  MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit*);
 
   Member<MediaStream> stream_;
 };

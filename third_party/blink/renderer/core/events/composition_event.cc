@@ -47,10 +47,10 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
       data_(data) {}
 
 CompositionEvent::CompositionEvent(const AtomicString& type,
-                                   const CompositionEventInit& initializer)
+                                   const CompositionEventInit* initializer)
     : UIEvent(type, initializer) {
-  if (initializer.hasData())
-    data_ = initializer.data();
+  if (initializer->hasData())
+    data_ = initializer->data();
 }
 
 CompositionEvent::~CompositionEvent() = default;

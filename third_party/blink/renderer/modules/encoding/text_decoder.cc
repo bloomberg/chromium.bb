@@ -40,7 +40,7 @@
 namespace blink {
 
 TextDecoder* TextDecoder::Create(const String& label,
-                                 const TextDecoderOptions& options,
+                                 const TextDecoderOptions* options,
                                  ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
       label.StripWhiteSpace(&encoding::IsASCIIWhiteSpace));
@@ -52,7 +52,7 @@ TextDecoder* TextDecoder::Create(const String& label,
     return nullptr;
   }
 
-  return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());
+  return new TextDecoder(encoding, options->fatal(), options->ignoreBOM());
 }
 
 TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
@@ -77,8 +77,9 @@ String TextDecoder::encoding() const {
 }
 
 String TextDecoder::decode(const BufferSource& input,
-                           const TextDecodeOptions& options,
+                           const TextDecodeOptions* options,
                            ExceptionState& exception_state) {
+  DCHECK(options);
   DCHECK(!input.IsNull());
   if (input.IsArrayBufferView()) {
     const char* start = static_cast<const char*>(
@@ -95,11 +96,11 @@ String TextDecoder::decode(const BufferSource& input,
 
 String TextDecoder::decode(const char* start,
                            uint32_t length,
-                           const TextDecodeOptions& options,
+                           const TextDecodeOptions* options,
                            ExceptionState& exception_state) {
-  WTF::FlushBehavior flush =
-      options.stream() ? WTF::FlushBehavior::kDoNotFlush
-                       : WTF::FlushBehavior::kDataEOF;
+  DCHECK(options);
+  WTF::FlushBehavior flush = options->stream() ? WTF::FlushBehavior::kDoNotFlush
+                                               : WTF::FlushBehavior::kDataEOF;
 
   bool saw_error = false;
   String s = codec_->Decode(start, length, flush, fatal_, saw_error);
@@ -124,7 +125,7 @@ String TextDecoder::decode(const char* start,
 }
 
 String TextDecoder::decode(ExceptionState& exception_state) {
-  TextDecodeOptions options;
+  TextDecodeOptions* options = TextDecodeOptions::Create();
   return decode(nullptr, 0, options, exception_state);
 }
 

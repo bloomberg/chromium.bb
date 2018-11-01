@@ -63,13 +63,14 @@ String BufferSourceToString(
 
 // static
 WebPushSubscriptionOptions PushSubscriptionOptions::ToWeb(
-    const PushSubscriptionOptionsInit& options,
+    const PushSubscriptionOptionsInit* options,
     ExceptionState& exception_state) {
   WebPushSubscriptionOptions web_options;
-  web_options.user_visible_only = options.userVisibleOnly();
-  if (options.hasApplicationServerKey())
+  web_options.user_visible_only = options->userVisibleOnly();
+  if (options->hasApplicationServerKey()) {
     web_options.application_server_key =
-        BufferSourceToString(options.applicationServerKey(), exception_state);
+        BufferSourceToString(options->applicationServerKey(), exception_state);
+  }
   return web_options;
 }
 

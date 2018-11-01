@@ -30,7 +30,7 @@ class PresentationConnectionCloseEvent final : public Event {
 
   static PresentationConnectionCloseEvent* Create(
       const AtomicString& event_type,
-      const PresentationConnectionCloseEventInit& initializer) {
+      const PresentationConnectionCloseEventInit* initializer) {
     return new PresentationConnectionCloseEvent(event_type, initializer);
   }
 
@@ -47,7 +47,7 @@ class PresentationConnectionCloseEvent final : public Event {
                                    const String& message);
   PresentationConnectionCloseEvent(
       const AtomicString& event_type,
-      const PresentationConnectionCloseEventInit& initializer);
+      const PresentationConnectionCloseEventInit* initializer);
 
   String reason_;
   String message_;

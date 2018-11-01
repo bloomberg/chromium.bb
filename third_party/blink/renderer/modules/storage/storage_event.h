@@ -46,7 +46,7 @@ class StorageEvent final : public Event {
                               const String& new_value,
                               const String& url,
                               StorageArea* storage_area);
-  static StorageEvent* Create(const AtomicString&, const StorageEventInit&);
+  static StorageEvent* Create(const AtomicString&, const StorageEventInit*);
   ~StorageEvent() override;
 
   const String& key() const { return key_; }
@@ -82,7 +82,7 @@ class StorageEvent final : public Event {
                const String& new_value,
                const String& url,
                StorageArea* storage_area);
-  StorageEvent(const AtomicString&, const StorageEventInit&);
+  StorageEvent(const AtomicString&, const StorageEventInit*);
 
   String key_;
   String old_value_;

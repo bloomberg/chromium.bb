@@ -45,9 +45,9 @@ class MODULES_EXPORT ExtendableEvent : public Event {
 
  public:
   static ExtendableEvent* Create(const AtomicString& type,
-                                 const ExtendableEventInit&);
+                                 const ExtendableEventInit*);
   static ExtendableEvent* Create(const AtomicString& type,
-                                 const ExtendableEventInit&,
+                                 const ExtendableEventInit*,
                                  WaitUntilObserver*);
 
   ~ExtendableEvent() override;
@@ -58,9 +58,9 @@ class MODULES_EXPORT ExtendableEvent : public Event {
   void Trace(blink::Visitor*) override;
 
  protected:
-  ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
+  ExtendableEvent(const AtomicString& type, const ExtendableEventInit*);
   ExtendableEvent(const AtomicString& type,
-                  const ExtendableEventInit&,
+                  const ExtendableEventInit*,
                   WaitUntilObserver*);
 
   Member<WaitUntilObserver> observer_;

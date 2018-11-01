@@ -29,13 +29,13 @@ class MODULES_EXPORT BackgroundFetchUpdateUIEvent final
  public:
   static BackgroundFetchUpdateUIEvent* Create(
       const AtomicString& type,
-      const BackgroundFetchEventInit& initializer) {
+      const BackgroundFetchEventInit* initializer) {
     return new BackgroundFetchUpdateUIEvent(type, initializer);
   }
 
   static BackgroundFetchUpdateUIEvent* Create(
       const AtomicString& type,
-      const BackgroundFetchEventInit& initializer,
+      const BackgroundFetchEventInit* initializer,
       WaitUntilObserver* observer,
       ServiceWorkerRegistration* registration) {
     return new BackgroundFetchUpdateUIEvent(type, initializer, observer,
@@ -46,16 +46,16 @@ class MODULES_EXPORT BackgroundFetchUpdateUIEvent final
 
   // Web Exposed method defined in the IDL file.
   ScriptPromise updateUI(ScriptState* script_state,
-                         const BackgroundFetchUIOptions& ui_options);
+                         const BackgroundFetchUIOptions* ui_options);
 
   void Trace(blink::Visitor* visitor) override;
 
  private:
   BackgroundFetchUpdateUIEvent(const AtomicString& type,
-                               const BackgroundFetchEventInit& initializer);
+                               const BackgroundFetchEventInit* initializer);
 
   BackgroundFetchUpdateUIEvent(const AtomicString& type,
-                               const BackgroundFetchEventInit& init,
+                               const BackgroundFetchEventInit* init,
                                WaitUntilObserver* observer,
                                ServiceWorkerRegistration* registration);
 

@@ -44,7 +44,7 @@ class FontFaceSetLoadEvent final : public Event {
  public:
   static FontFaceSetLoadEvent* Create(
       const AtomicString& type,
-      const FontFaceSetLoadEventInit& initializer) {
+      const FontFaceSetLoadEventInit* initializer) {
     return new FontFaceSetLoadEvent(type, initializer);
   }
 
@@ -64,7 +64,7 @@ class FontFaceSetLoadEvent final : public Event {
 
  private:
   FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
-  FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit&);
+  FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit*);
 
   FontFaceArray fontfaces_;
 };

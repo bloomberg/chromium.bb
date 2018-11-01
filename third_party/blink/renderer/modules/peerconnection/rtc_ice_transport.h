@@ -85,13 +85,11 @@ class MODULES_EXPORT RTCIceTransport final
   String gatheringState() const;
   const HeapVector<Member<RTCIceCandidate>>& getLocalCandidates() const;
   const HeapVector<Member<RTCIceCandidate>>& getRemoteCandidates() const;
-  void getSelectedCandidatePair(
-      base::Optional<RTCIceCandidatePair>& result) const;
-  void getLocalParameters(base::Optional<RTCIceParameters>& result) const;
-  void getRemoteParameters(base::Optional<RTCIceParameters>& result) const;
-  void gather(const RTCIceGatherOptions& options,
-              ExceptionState& exception_state);
-  void start(const RTCIceParameters& remote_parameters,
+  RTCIceCandidatePair* getSelectedCandidatePair() const;
+  RTCIceParameters* getLocalParameters() const;
+  RTCIceParameters* getRemoteParameters() const;
+  void gather(RTCIceGatherOptions* options, ExceptionState& exception_state);
+  void start(RTCIceParameters* remote_parameters,
              const String& role,
              ExceptionState& exception_state);
   void stop();
@@ -143,10 +141,9 @@ class MODULES_EXPORT RTCIceTransport final
   HeapVector<Member<RTCIceCandidate>> local_candidates_;
   HeapVector<Member<RTCIceCandidate>> remote_candidates_;
 
-  RTCIceParameters local_parameters_;
-  base::Optional<RTCIceParameters> remote_parameters_;
-
-  base::Optional<RTCIceCandidatePair> selected_candidate_pair_;
+  Member<RTCIceParameters> local_parameters_;
+  Member<RTCIceParameters> remote_parameters_;
+  Member<RTCIceCandidatePair> selected_candidate_pair_;
 
   Member<RTCQuicTransport> consumer_;
 

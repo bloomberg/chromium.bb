@@ -61,7 +61,7 @@ class PeriodicWave final : public ScriptWrappable {
                               ExceptionState&);
 
   static PeriodicWave* Create(BaseAudioContext*,
-                              const PeriodicWaveOptions&,
+                              const PeriodicWaveOptions*,
                               ExceptionState&);
 
   ~PeriodicWave() override;

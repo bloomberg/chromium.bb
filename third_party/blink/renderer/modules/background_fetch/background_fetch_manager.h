@@ -50,7 +50,7 @@ class MODULES_EXPORT BackgroundFetchManager final
       ScriptState* script_state,
       const String& id,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
-      const BackgroundFetchOptions& options,
+      const BackgroundFetchOptions* options,
       ExceptionState& exception_state);
   ScriptPromise get(ScriptState* script_state, const String& id);
   ScriptPromise getIds(ScriptState* script_state);

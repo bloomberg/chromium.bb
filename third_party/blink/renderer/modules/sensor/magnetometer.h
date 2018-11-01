@@ -15,7 +15,7 @@ class Magnetometer final : public Sensor {
 
  public:
   static Magnetometer* Create(ExecutionContext*,
-                              const SpatialSensorOptions&,
+                              const SpatialSensorOptions*,
                               ExceptionState&);
   static Magnetometer* Create(ExecutionContext*, ExceptionState&);
 
@@ -26,7 +26,7 @@ class Magnetometer final : public Sensor {
   void Trace(blink::Visitor*) override;
 
  private:
-  Magnetometer(ExecutionContext*, const SpatialSensorOptions&, ExceptionState&);
+  Magnetometer(ExecutionContext*, const SpatialSensorOptions*, ExceptionState&);
 };
 
 }  // namespace blink

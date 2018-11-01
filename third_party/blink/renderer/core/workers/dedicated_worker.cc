@@ -56,7 +56,7 @@ ConnectToWorkerInterfaceProvider(
 
 DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
                                          const String& url,
-                                         const WorkerOptions& options,
+                                         const WorkerOptions* options,
                                          ExceptionState& exception_state) {
   DCHECK(context->IsContextThread());
   UseCounter::Count(context, WebFeature::kWorkerStart);
@@ -76,7 +76,7 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
 
   // TODO(nhiroki): Remove this flag check once module loading for
   // DedicatedWorker is enabled by default (https://crbug.com/680046).
-  if (options.type() == "module" &&
+  if (options->type() == "module" &&
       !RuntimeEnabledFeatures::ModuleDedicatedWorkerEnabled()) {
     exception_state.ThrowTypeError(
         "Module scripts are not supported on DedicatedWorker yet. You can try "
@@ -96,7 +96,7 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
 
 DedicatedWorker::DedicatedWorker(ExecutionContext* context,
                                  const KURL& script_request_url,
-                                 const WorkerOptions& options)
+                                 const WorkerOptions* options)
     : AbstractWorker(context),
       script_request_url_(script_request_url),
       options_(options),
@@ -115,15 +115,15 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   const ScriptValue& message,
                                   Vector<ScriptValue>& transfer,
                                   ExceptionState& exception_state) {
-  PostMessageOptions options;
+  PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
 
 void DedicatedWorker::postMessage(ScriptState* script_state,
                                   const ScriptValue& message,
-                                  const PostMessageOptions& options,
+                                  const PostMessageOptions* options,
                                   ExceptionState& exception_state) {
   DCHECK(GetExecutionContext()->IsContextThread());
 
@@ -165,7 +165,7 @@ void DedicatedWorker::Start() {
 
   // Step 13: "Obtain script by switching on the value of options's type
   // member:"
-  if (options_.type() == "classic") {
+  if (options_->type() == "classic") {
     // "classic: Fetch a classic worker script given url, outside settings,
     // destination, and inside settings."
     network::mojom::FetchRequestMode fetch_request_mode =
@@ -183,7 +183,7 @@ void DedicatedWorker::Start() {
                   stack_id));
     return;
   }
-  if (options_.type() == "module") {
+  if (options_->type() == "module") {
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."
@@ -199,7 +199,7 @@ void DedicatedWorker::Start() {
         String() /* source_code */);
     return;
   }
-  NOTREACHED() << "Invalid type: " << options_.type();
+  NOTREACHED() << "Invalid type: " << options_->type();
 }
 
 void DedicatedWorker::terminate() {
@@ -245,7 +245,7 @@ bool DedicatedWorker::HasPendingActivity() const {
 }
 
 const String DedicatedWorker::Name() const {
-  return options_.name();
+  return options_->name();
 }
 
 WorkerClients* DedicatedWorker::CreateWorkerClients() {
@@ -326,8 +326,9 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
-  ScriptType script_type = (options_.type() == "classic") ? ScriptType::kClassic
-                                                          : ScriptType::kModule;
+  ScriptType script_type = (options_->type() == "classic")
+                               ? ScriptType::kClassic
+                               : ScriptType::kModule;
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, GetExecutionContext()->UserAgent(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
@@ -351,6 +352,7 @@ const AtomicString& DedicatedWorker::InterfaceName() const {
 
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_proxy_);
+  visitor->Trace(options_);
   AbstractWorker::Trace(visitor);
 }
 

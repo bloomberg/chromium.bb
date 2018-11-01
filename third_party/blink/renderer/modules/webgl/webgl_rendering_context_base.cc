@@ -1422,8 +1422,7 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
   if (buffers_needing_clearing == 0 || (mask && framebuffer_binding_))
     return kSkipped;
 
-  base::Optional<WebGLContextAttributes> context_attributes;
-  getContextAttributes(context_attributes);
+  WebGLContextAttributes* context_attributes = getContextAttributes();
   if (!context_attributes) {
     // Unlikely, but context was lost.
     return kSkipped;
@@ -2882,11 +2881,14 @@ ScriptValue WebGLRenderingContextBase::getBufferParameter(
   }
 }
 
-void WebGLRenderingContextBase::getContextAttributes(
-    base::Optional<WebGLContextAttributes>& result) {
+WebGLContextAttributes* WebGLRenderingContextBase::getContextAttributes()
+    const {
   if (isContextLost())
-    return;
-  result = ToWebGLContextAttributes(CreationAttributes());
+    return nullptr;
+
+  WebGLContextAttributes* result =
+      ToWebGLContextAttributes(CreationAttributes());
+
   // Some requested attributes may not be honored, so we need to query the
   // underlying context/drawing buffer and adjust accordingly.
   if (CreationAttributes().depth && !GetDrawingBuffer()->HasDepthBuffer())
@@ -2897,6 +2899,7 @@ void WebGLRenderingContextBase::getContextAttributes(
   if (compatible_xr_device_) {
     result->setCompatibleXRDevice(compatible_xr_device_);
   }
+  return result;
 }
 
 GLenum WebGLRenderingContextBase::getError() {
@@ -7873,8 +7876,7 @@ void WebGLRenderingContextBase::ApplyStencilTest() {
   if (framebuffer_binding_) {
     have_stencil_buffer = framebuffer_binding_->HasStencilBuffer();
   } else {
-    base::Optional<WebGLContextAttributes> attributes;
-    getContextAttributes(attributes);
+    WebGLContextAttributes* attributes = getContextAttributes();
     have_stencil_buffer = attributes && attributes->stencil();
   }
   EnableOrDisable(GL_STENCIL_TEST, stencil_enabled_ && have_stencil_buffer);
@@ -7993,8 +7995,7 @@ int WebGLRenderingContextBase::ExternallyAllocatedBufferCountPerPixel() {
   int buffer_count = 1;
   buffer_count *= 2;  // WebGL's front and back color buffers.
   int samples = GetDrawingBuffer() ? GetDrawingBuffer()->SampleCount() : 0;
-  base::Optional<WebGLContextAttributes> attribs;
-  getContextAttributes(attribs);
+  WebGLContextAttributes* attribs = getContextAttributes();
   if (attribs) {
     // Handle memory from WebGL multisample and depth/stencil buffers.
     // It is enabled only in case of explicit resolve assuming that there

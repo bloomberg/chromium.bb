@@ -107,7 +107,7 @@ bool CSSPaintImageGeneratorImpl::HasAlpha() const {
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return false;
-  return definition->GetPaintRenderingContext2DSettings().alpha();
+  return definition->GetPaintRenderingContext2DSettings()->alpha();
 }
 
 const Vector<CSSSyntaxDescriptor>&

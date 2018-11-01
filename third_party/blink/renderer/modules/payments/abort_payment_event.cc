@@ -18,13 +18,13 @@ namespace blink {
 
 AbortPaymentEvent* AbortPaymentEvent::Create(
     const AtomicString& type,
-    const ExtendableEventInit& initializer) {
+    const ExtendableEventInit* initializer) {
   return new AbortPaymentEvent(type, initializer, nullptr, nullptr);
 }
 
 AbortPaymentEvent* AbortPaymentEvent::Create(
     const AtomicString& type,
-    const ExtendableEventInit& initializer,
+    const ExtendableEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
   return new AbortPaymentEvent(type, initializer, respond_with_observer,
@@ -52,7 +52,7 @@ void AbortPaymentEvent::Trace(blink::Visitor* visitor) {
 }
 
 AbortPaymentEvent::AbortPaymentEvent(const AtomicString& type,
-                                     const ExtendableEventInit& initializer,
+                                     const ExtendableEventInit* initializer,
                                      RespondWithObserver* respond_with_observer,
                                      WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),

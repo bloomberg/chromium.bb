@@ -20,9 +20,9 @@ FileSystemDirectoryHandle::FileSystemDirectoryHandle(
 ScriptPromise FileSystemDirectoryHandle::getFile(
     ScriptState* script_state,
     const String& name,
-    const FileSystemGetFileOptions& options) {
-  FileSystemFlags flags;
-  flags.setCreateFlag(options.create());
+    const FileSystemGetFileOptions* options) {
+  FileSystemFlags* flags = FileSystemFlags::Create();
+  flags->setCreateFlag(options->create());
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   filesystem()->GetFile(this, name, flags,
@@ -34,9 +34,9 @@ ScriptPromise FileSystemDirectoryHandle::getFile(
 ScriptPromise FileSystemDirectoryHandle::getDirectory(
     ScriptState* script_state,
     const String& name,
-    const FileSystemGetDirectoryOptions& options) {
-  FileSystemFlags flags;
-  flags.setCreateFlag(options.create());
+    const FileSystemGetDirectoryOptions* options) {
+  FileSystemFlags* flags = FileSystemFlags::Create();
+  flags->setCreateFlag(options->create());
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   filesystem()->GetDirectory(
@@ -48,7 +48,7 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(
 // static
 ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
     ScriptState* script_state,
-    const GetSystemDirectoryOptions& options) {
+    const GetSystemDirectoryOptions* options) {
   auto* context = ExecutionContext::From(script_state);
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);

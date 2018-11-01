@@ -231,20 +231,20 @@ bool EventTarget::IsTopLevelNode() {
 void EventTarget::SetDefaultAddEventListenerOptions(
     const AtomicString& event_type,
     EventListener* event_listener,
-    AddEventListenerOptionsResolved& options) {
-  options.SetPassiveSpecified(options.hasPassive());
+    AddEventListenerOptionsResolved* options) {
+  options->SetPassiveSpecified(options->hasPassive());
 
   if (!IsScrollBlockingEvent(event_type)) {
-    if (!options.hasPassive())
-      options.setPassive(false);
+    if (!options->hasPassive())
+      options->setPassive(false);
     return;
   }
 
   LocalDOMWindow* executing_window = ExecutingWindow();
   if (executing_window) {
-    if (options.hasPassive()) {
+    if (options->hasPassive()) {
       UseCounter::Count(executing_window->document(),
-                        options.passive()
+                        options->passive()
                             ? WebFeature::kAddEventListenerPassiveTrue
                             : WebFeature::kAddEventListenerPassiveFalse);
     }
@@ -252,31 +252,31 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 
   if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
       IsTouchScrollBlockingEvent(event_type)) {
-    if (!options.hasPassive() && IsTopLevelNode()) {
-      options.setPassive(true);
-      options.SetPassiveForcedForDocumentTarget(true);
+    if (!options->hasPassive() && IsTopLevelNode()) {
+      options->setPassive(true);
+      options->SetPassiveForcedForDocumentTarget(true);
       return;
     }
   }
 
   if (IsWheelScrollBlockingEvent(event_type) && IsTopLevelNode()) {
-    if (options.hasPassive()) {
+    if (options->hasPassive()) {
       if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
-            options.passive()
+            options->passive()
                 ? WebFeature::kAddDocumentLevelPassiveTrueWheelEventListener
                 : WebFeature::kAddDocumentLevelPassiveFalseWheelEventListener);
       }
-    } else {  // !options.hasPassive()
+    } else {  // !options->hasPassive()
       if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
             WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
       }
       if (RuntimeEnabledFeatures::PassiveDocumentWheelEventListenersEnabled()) {
-        options.setPassive(true);
-        options.SetPassiveForcedForDocumentTarget(true);
+        options->setPassive(true);
+        options->SetPassiveForcedForDocumentTarget(true);
         return;
       }
     }
@@ -287,7 +287,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   // passive to true. See crbug.com/501568.
   if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
       event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
-      event_listener && !options.hasPassive()) {
+      event_listener && !options->hasPassive()) {
     JSBasedEventListener* v8_listener =
         JSBasedEventListener::Cast(event_listener);
     if (!v8_listener)
@@ -301,7 +301,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
                 v8::Isolate::GetCurrent(),
                 v8::Local<v8::Function>::Cast(callback_object)->GetName())) ==
             0) {
-      options.setPassive(true);
+      options->setPassive(true);
       if (executing_window) {
         UseCounter::Count(executing_window->document(),
                           WebFeature::kSmoothScrollJSInterventionActivated);
@@ -321,23 +321,23 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   if (Settings* settings = WindowSettings(ExecutingWindow())) {
     switch (settings->GetPassiveListenerDefault()) {
       case PassiveListenerDefault::kFalse:
-        if (!options.hasPassive())
-          options.setPassive(false);
+        if (!options->hasPassive())
+          options->setPassive(false);
         break;
       case PassiveListenerDefault::kTrue:
-        if (!options.hasPassive())
-          options.setPassive(true);
+        if (!options->hasPassive())
+          options->setPassive(true);
         break;
       case PassiveListenerDefault::kForceAllTrue:
-        options.setPassive(true);
+        options->setPassive(true);
         break;
     }
   } else {
-    if (!options.hasPassive())
-      options.setPassive(false);
+    if (!options->hasPassive())
+      options->setPassive(false);
   }
 
-  if (!options.passive() && !options.PassiveSpecified()) {
+  if (!options->passive() && !options->PassiveSpecified()) {
     String message_text = String::Format(
         "Added non-passive event listener to a scroll-blocking '%s' event. "
         "Consider marking event handler as 'passive' to make the page more "
@@ -354,8 +354,9 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
                                    bool use_capture) {
-  AddEventListenerOptionsResolved options;
-  options.setCapture(use_capture);
+  AddEventListenerOptionsResolved* options =
+      AddEventListenerOptionsResolved::Create();
+  options->setCapture(use_capture);
   SetDefaultAddEventListenerOptions(event_type, listener, options);
   return AddEventListenerInternal(event_type, listener, options);
 }
@@ -367,16 +368,24 @@ bool EventTarget::addEventListener(
   if (options_union.IsBoolean())
     return addEventListener(event_type, listener, options_union.GetAsBoolean());
   if (options_union.IsAddEventListenerOptions()) {
-    AddEventListenerOptionsResolved options =
+    AddEventListenerOptionsResolved* resolved_options =
+        AddEventListenerOptionsResolved::Create();
+    AddEventListenerOptions* options =
         options_union.GetAsAddEventListenerOptions();
-    return addEventListener(event_type, listener, options);
+    if (options->hasPassive())
+      resolved_options->setPassive(options->passive());
+    if (options->hasOnce())
+      resolved_options->setOnce(options->once());
+    if (options->hasCapture())
+      resolved_options->setCapture(options->capture());
+    return addEventListener(event_type, listener, resolved_options);
   }
   return addEventListener(event_type, listener);
 }
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
-                                   AddEventListenerOptionsResolved& options) {
+                                   AddEventListenerOptionsResolved* options) {
   SetDefaultAddEventListenerOptions(event_type, listener, options);
   return AddEventListenerInternal(event_type, listener, options);
 }
@@ -384,7 +393,7 @@ bool EventTarget::addEventListener(const AtomicString& event_type,
 bool EventTarget::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
-    const AddEventListenerOptionsResolved& options) {
+    const AddEventListenerOptionsResolved* options) {
   if (!listener)
     return false;
 
@@ -441,8 +450,8 @@ void EventTarget::AddedEventListener(
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
                                       bool use_capture) {
-  EventListenerOptions options;
-  options.setCapture(use_capture);
+  EventListenerOptions* options = EventListenerOptions::Create();
+  options->setCapture(use_capture);
   return RemoveEventListenerInternal(event_type, listener, options);
 }
 
@@ -455,7 +464,7 @@ bool EventTarget::removeEventListener(
                                options_union.GetAsBoolean());
   }
   if (options_union.IsEventListenerOptions()) {
-    EventListenerOptions options = options_union.GetAsEventListenerOptions();
+    EventListenerOptions* options = options_union.GetAsEventListenerOptions();
     return removeEventListener(event_type, listener, options);
   }
   return removeEventListener(event_type, listener);
@@ -463,14 +472,14 @@ bool EventTarget::removeEventListener(
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
-                                      EventListenerOptions& options) {
+                                      EventListenerOptions* options) {
   return RemoveEventListenerInternal(event_type, listener, options);
 }
 
 bool EventTarget::RemoveEventListenerInternal(
     const AtomicString& event_type,
     const EventListener* listener,
-    const EventListenerOptions& options) {
+    const EventListenerOptions* options) {
   if (!listener)
     return false;
 

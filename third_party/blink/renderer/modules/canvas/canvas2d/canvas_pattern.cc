@@ -59,7 +59,7 @@ CanvasPattern::CanvasPattern(scoped_refptr<Image> image,
     : pattern_(Pattern::CreateImagePattern(std::move(image), repeat)),
       origin_clean_(origin_clean) {}
 
-void CanvasPattern::setTransform(DOMMatrix2DInit& transform,
+void CanvasPattern::setTransform(DOMMatrix2DInit* transform,
                                  ExceptionState& exception_state) {
   DOMMatrixReadOnly* m =
       DOMMatrixReadOnly::fromMatrix2D(transform, exception_state);

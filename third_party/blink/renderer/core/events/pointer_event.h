@@ -15,12 +15,12 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
  public:
   static PointerEvent* Create(const AtomicString& type,
-                              const PointerEventInit& initializer,
+                              const PointerEventInit* initializer,
                               TimeTicks platform_time_stamp) {
     return new PointerEvent(type, initializer, platform_time_stamp);
   }
   static PointerEvent* Create(const AtomicString& type,
-                              const PointerEventInit& initializer) {
+                              const PointerEventInit* initializer) {
     return PointerEvent::Create(type, initializer, CurrentTimeTicks());
   }
 
@@ -68,7 +68,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
  private:
   PointerEvent(const AtomicString&,
-               const PointerEventInit&,
+               const PointerEventInit*,
                TimeTicks platform_time_stamp);
 
   int32_t pointer_id_;

@@ -33,7 +33,7 @@ RTCDataChannelEvent* RTCDataChannelEvent::Create(const AtomicString& type,
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(
     const AtomicString& type,
-    const RTCDataChannelEventInit& initializer) {
+    const RTCDataChannelEventInit* initializer) {
   return new RTCDataChannelEvent(type, initializer);
 }
 
@@ -43,8 +43,8 @@ RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
 
 RTCDataChannelEvent::RTCDataChannelEvent(
     const AtomicString& type,
-    const RTCDataChannelEventInit& initializer)
-    : Event(type, initializer), channel_(initializer.channel()) {}
+    const RTCDataChannelEventInit* initializer)
+    : Event(type, initializer), channel_(initializer->channel()) {}
 
 RTCDataChannelEvent::~RTCDataChannelEvent() = default;
 

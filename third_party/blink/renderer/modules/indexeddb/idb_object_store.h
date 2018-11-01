@@ -107,7 +107,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBIndex* createIndex(ScriptState* script_state,
                         const String& name,
                         const StringOrStringSequence& key_path,
-                        const IDBIndexParameters& options,
+                        const IDBIndexParameters* options,
                         ExceptionState& exception_state) {
     return createIndex(script_state, name, IDBKeyPath(key_path), options,
                        exception_state);
@@ -192,7 +192,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBIndex* createIndex(ScriptState*,
                         const String& name,
                         const IDBKeyPath&,
-                        const IDBIndexParameters&,
+                        const IDBIndexParameters*,
                         ExceptionState&);
   IDBRequest* DoPut(ScriptState*,
                     WebIDBPutMode,

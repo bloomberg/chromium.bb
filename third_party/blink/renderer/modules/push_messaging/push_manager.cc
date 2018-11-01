@@ -51,7 +51,7 @@ Vector<String> PushManager::supportedContentEncodings() {
 }
 
 ScriptPromise PushManager::subscribe(ScriptState* script_state,
-                                     const PushSubscriptionOptionsInit& options,
+                                     const PushSubscriptionOptionsInit* options,
                                      ExceptionState& exception_state) {
   if (!registration_->active())
     return ScriptPromise::RejectWithDOMException(
@@ -106,7 +106,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* script_state) {
 
 ScriptPromise PushManager::permissionState(
     ScriptState* script_state,
-    const PushSubscriptionOptionsInit& options,
+    const PushSubscriptionOptionsInit* options,
     ExceptionState& exception_state) {
   if (auto* document =
           DynamicTo<Document>(ExecutionContext::From(script_state))) {

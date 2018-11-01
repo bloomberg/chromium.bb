@@ -144,7 +144,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
 
 TextDecoderStream* TextDecoderStream::Create(ScriptState* script_state,
                                              const String& label,
-                                             const TextDecoderOptions& options,
+                                             const TextDecoderOptions* options,
                                              ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
       label.StripWhiteSpace(&encoding::IsASCIIWhiteSpace));
@@ -184,12 +184,12 @@ void TextDecoderStream::Trace(Visitor* visitor) {
 
 TextDecoderStream::TextDecoderStream(ScriptState* script_state,
                                      const WTF::TextEncoding& encoding,
-                                     const TextDecoderOptions& options,
+                                     const TextDecoderOptions* options,
                                      ExceptionState& exception_state)
     : transform_(new TransformStream()),
       encoding_(encoding),
-      fatal_(options.fatal()),
-      ignore_bom_(options.ignoreBOM()) {
+      fatal_(options->fatal()),
+      ignore_bom_(options->ignoreBOM()) {
   if (!RetainWrapperDuringConstruction(this, script_state)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot queue task to retain wrapper");

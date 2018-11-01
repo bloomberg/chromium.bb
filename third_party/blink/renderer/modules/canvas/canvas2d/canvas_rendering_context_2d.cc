@@ -927,11 +927,14 @@ cc::Layer* CanvasRenderingContext2D::CcLayer() const {
   return IsPaintable() ? canvas()->GetCanvas2DLayerBridge()->Layer() : nullptr;
 }
 
-void CanvasRenderingContext2D::getContextAttributes(
-    CanvasRenderingContext2DSettings& settings) const {
-  settings.setAlpha(CreationAttributes().alpha);
-  settings.setColorSpace(ColorSpaceAsString());
-  settings.setPixelFormat(PixelFormatAsString());
+CanvasRenderingContext2DSettings*
+CanvasRenderingContext2D::getContextAttributes() const {
+  CanvasRenderingContext2DSettings* settings =
+      CanvasRenderingContext2DSettings::Create();
+  settings->setAlpha(CreationAttributes().alpha);
+  settings->setColorSpace(ColorSpaceAsString());
+  settings->setPixelFormat(PixelFormatAsString());
+  return settings;
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element) {
@@ -1019,16 +1022,16 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
   ax_object_cache->SetCanvasObjectBounds(canvas(), element, element_rect);
 }
 
-void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
+void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
                                             ExceptionState& exception_state) {
-  if (options.id().IsEmpty() && !options.control()) {
+  if (options->id().IsEmpty() && !options->control()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Both id and control are null.");
     return;
   }
 
-  if (options.control() &&
-      !canvas()->IsSupportedInteractiveCanvasFallback(*options.control())) {
+  if (options->control() &&
+      !canvas()->IsSupportedInteractiveCanvasFallback(*options->control())) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The control is neither null nor a "
                                       "supported interactive canvas fallback "
@@ -1036,7 +1039,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
     return;
   }
 
-  Path hit_region_path = options.path() ? options.path()->GetPath() : path_;
+  Path hit_region_path = options->path() ? options->path()->GetPath() : path_;
 
   cc::PaintCanvas* c = DrawingCanvas();
 
@@ -1061,8 +1064,8 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
     hit_region_manager_ = HitRegionManager::Create();
 
   // Remove previous region (with id or control)
-  hit_region_manager_->RemoveHitRegionById(options.id());
-  hit_region_manager_->RemoveHitRegionByControl(options.control());
+  hit_region_manager_->RemoveHitRegionById(options->id());
+  hit_region_manager_->RemoveHitRegionByControl(options->control());
 
   HitRegion* hit_region = HitRegion::Create(hit_region_path, options);
   Element* element = hit_region->Control();

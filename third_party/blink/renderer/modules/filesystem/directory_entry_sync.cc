@@ -48,7 +48,7 @@ DirectoryReaderSync* DirectoryEntrySync::createReader() {
 }
 
 FileEntrySync* DirectoryEntrySync::getFile(const String& path,
-                                           const FileSystemFlags& options,
+                                           const FileSystemFlags* options,
                                            ExceptionState& exception_state) {
   EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
   file_system_->GetFile(this, path, options, sync_helper->GetSuccessCallback(),
@@ -60,7 +60,7 @@ FileEntrySync* DirectoryEntrySync::getFile(const String& path,
 
 DirectoryEntrySync* DirectoryEntrySync::getDirectory(
     const String& path,
-    const FileSystemFlags& options,
+    const FileSystemFlags* options,
     ExceptionState& exception_state) {
   EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
   file_system_->GetDirectory(

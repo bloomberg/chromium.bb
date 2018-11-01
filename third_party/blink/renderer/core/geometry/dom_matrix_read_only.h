@@ -36,8 +36,8 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
                                              ExceptionState&);
   static DOMMatrixReadOnly* fromFloat64Array(NotShared<DOMFloat64Array>,
                                              ExceptionState&);
-  static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
-  static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit&, ExceptionState&);
+  static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit*, ExceptionState&);
+  static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit*, ExceptionState&);
   static DOMMatrixReadOnly* CreateForSerialization(double[], int size);
   ~DOMMatrixReadOnly() override;
 
@@ -68,7 +68,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   bool is2D() const;
   bool isIdentity() const;
 
-  DOMMatrix* multiply(DOMMatrixInit&, ExceptionState&);
+  DOMMatrix* multiply(DOMMatrixInit*, ExceptionState&);
   DOMMatrix* translate(double tx = 0, double ty = 0, double tz = 0);
   DOMMatrix* scale(double sx = 1);
   DOMMatrix* scale(double sx,
@@ -95,7 +95,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   DOMMatrix* flipY();
   DOMMatrix* inverse();
 
-  DOMPoint* transformPoint(const DOMPointInit&);
+  DOMPoint* transformPoint(const DOMPointInit*);
 
   NotShared<DOMFloat32Array> toFloat32Array() const;
   NotShared<DOMFloat64Array> toFloat64Array() const;
@@ -140,8 +140,8 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
                                 const String&,
                                 ExceptionState&);
 
-  static bool ValidateAndFixup2D(DOMMatrix2DInit&);
-  static bool ValidateAndFixup(DOMMatrixInit&, ExceptionState&);
+  static bool ValidateAndFixup2D(DOMMatrix2DInit*);
+  static bool ValidateAndFixup(DOMMatrixInit*, ExceptionState&);
   // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
   // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
   // to allocate TransformationMatrix on PartitionAlloc.

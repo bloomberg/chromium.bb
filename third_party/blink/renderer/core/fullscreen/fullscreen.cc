@@ -544,13 +544,13 @@ void Fullscreen::ContextDestroyed(ExecutionContext*) {
 void Fullscreen::RequestFullscreen(Element& pending) {
   // TODO(foolip): Make RequestType::Unprefixed the default when the unprefixed
   // API is enabled. https://crbug.com/383813
-  FullscreenOptions options;
-  options.setNavigationUI("hide");
+  FullscreenOptions* options = FullscreenOptions::Create();
+  options->setNavigationUI("hide");
   RequestFullscreen(pending, options, RequestType::kPrefixed);
 }
 
 ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
-                                            const FullscreenOptions& options,
+                                            const FullscreenOptions* options,
                                             RequestType request_type,
                                             ScriptState* script_state) {
   RequestFullscreenScope scope;

@@ -24,7 +24,7 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
  public:
   CustomLayoutFragmentRequest(
       CustomLayoutChild*,
-      const CustomLayoutConstraintsOptions&,
+      const CustomLayoutConstraintsOptions*,
       scoped_refptr<SerializedScriptValue> constraint_data);
   ~CustomLayoutFragmentRequest() override = default;
 
@@ -40,7 +40,7 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
 
  private:
   Member<CustomLayoutChild> child_;
-  const CustomLayoutConstraintsOptions options_;
+  Member<const CustomLayoutConstraintsOptions> options_;
   scoped_refptr<SerializedScriptValue> constraint_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragmentRequest);

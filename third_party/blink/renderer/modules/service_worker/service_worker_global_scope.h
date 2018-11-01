@@ -100,7 +100,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   ScriptPromise fetch(ScriptState*,
                       const RequestInfo&,
-                      const RequestInit&,
+                      const RequestInit*,
                       ExceptionState&);
 
   ScriptPromise skipWaiting(ScriptState*);
@@ -146,7 +146,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool AddEventListenerInternal(
       const AtomicString& event_type,
       EventListener*,
-      const AddEventListenerOptionsResolved&) override;
+      const AddEventListenerOptionsResolved*) override;
 
  private:
   ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

@@ -42,7 +42,7 @@ class RTCDataChannelEvent final : public Event {
                                      RTCDataChannel*);
 
   static RTCDataChannelEvent* Create(const AtomicString& type,
-                                     const RTCDataChannelEventInit&);
+                                     const RTCDataChannelEventInit*);
 
   RTCDataChannel* channel() const;
 
@@ -54,7 +54,7 @@ class RTCDataChannelEvent final : public Event {
   RTCDataChannelEvent(const AtomicString& type,
                       RTCDataChannel*);
 
-  RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit&);
+  RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit*);
   Member<RTCDataChannel> channel_;
 };
 

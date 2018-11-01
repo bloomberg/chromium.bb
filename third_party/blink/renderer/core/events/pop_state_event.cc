@@ -38,11 +38,12 @@ PopStateEvent::PopStateEvent()
 
 PopStateEvent::PopStateEvent(ScriptState* script_state,
                              const AtomicString& type,
-                             const PopStateEventInit& initializer)
+                             const PopStateEventInit* initializer)
     : Event(type, initializer), history_(nullptr) {
-  if (initializer.hasState()) {
+  if (initializer->hasState()) {
     world_ = WrapRefCounted(&script_state->World());
-    state_.Set(initializer.state().GetIsolate(), initializer.state().V8Value());
+    state_.Set(initializer->state().GetIsolate(),
+               initializer->state().V8Value());
   }
 }
 
@@ -81,7 +82,7 @@ PopStateEvent* PopStateEvent::Create(
 
 PopStateEvent* PopStateEvent::Create(ScriptState* script_state,
                                      const AtomicString& type,
-                                     const PopStateEventInit& initializer) {
+                                     const PopStateEventInit* initializer) {
   return new PopStateEvent(script_state, type, initializer);
 }
 
