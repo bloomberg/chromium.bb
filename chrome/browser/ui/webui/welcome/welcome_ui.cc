@@ -206,6 +206,14 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
+
+    html_source->AddString(
+        "new_user_modules",
+        nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
+    html_source->AddString("returning_user_modules",
+                           nux::GetNuxOnboardingModules(profile)
+                               .FindKey("returning-user")
+                               ->GetString());
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
