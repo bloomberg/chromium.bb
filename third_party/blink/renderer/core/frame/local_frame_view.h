@@ -760,8 +760,6 @@ class CORE_EXPORT LocalFrameView final
   void PerformLayout(bool in_subtree_layout);
   void PerformPostLayoutTasks();
 
-  void RecordDeferredLoadingStats();
-
   DocumentLifecycle& Lifecycle() const;
 
   // Methods to do point conversion via layoutObjects, in order to take

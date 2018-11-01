@@ -337,9 +337,6 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
 
-  if (GetFrame()->IsCrossOriginSubframe())
-    document_->RecordDeferredLoadReason(WouldLoadReason::kCreated);
-
   return document_;
 }
 
