@@ -443,8 +443,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
-    self.Flaky('conformance2/textures/image_bitmap_from_video/' +
-        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+    self.Flaky('conformance2/textures/image_bitmap_from_video/*',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
