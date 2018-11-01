@@ -99,11 +99,11 @@ void ReportingService::SendNextLog() {
   DVLOG(1) << "SendNextLog";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  const base::TimeTicks now = base::TimeTicks::Now();
   LogActualUploadInterval(last_upload_finish_time_.is_null()
                               ? base::TimeDelta()
-                              : base::TimeTicks::Now() -
-                                    last_upload_finish_time_);
-  last_upload_finish_time_ = base::TimeTicks();
+                              : now - last_upload_finish_time_);
+  last_upload_finish_time_ = now;
 
   if (!reporting_active()) {
     upload_scheduler_->StopAndUploadCancelled();
