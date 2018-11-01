@@ -71,8 +71,7 @@ crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 crbug.com/891427 http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
-# Next 5 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
-crbug.com/891427 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Skip ]
+# Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
