@@ -63,7 +63,7 @@ class OmniboxInputs extends OmniboxElement {
       cursorPosition: this.$$('input-text').selectionEnd,
       preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
       preferKeyword: this.$$('prefer-keyword').checked,
-      pageClassification: this.$$('page-classification').checked,
+      pageClassification: this.$$('page-classification').value,
     };
     this.dispatchEvent(
         new CustomEvent('query-inputs-changed', {detail: queryInputs}));
