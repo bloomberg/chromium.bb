@@ -2431,10 +2431,10 @@ void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
 static String CreateMarkupInRect(LocalFrame* frame,
                                  const IntPoint& start_point,
                                  const IntPoint& end_point) {
-  VisiblePosition start_visible_position =
-      VisiblePositionForContentsPoint(start_point, frame);
-  VisiblePosition end_visible_position =
-      VisiblePositionForContentsPoint(end_point, frame);
+  VisiblePosition start_visible_position = CreateVisiblePosition(
+      PositionForContentsPointRespectingEditingBoundary(start_point, frame));
+  VisiblePosition end_visible_position = CreateVisiblePosition(
+      PositionForContentsPointRespectingEditingBoundary(end_point, frame));
 
   Position start_position = start_visible_position.DeepEquivalent();
   Position end_position = end_visible_position.DeepEquivalent();

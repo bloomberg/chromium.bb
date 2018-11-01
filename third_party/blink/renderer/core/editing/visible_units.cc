@@ -564,8 +564,9 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
   return false;
 }
 
-VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
-                                                LocalFrame* frame) {
+PositionWithAffinity PositionForContentsPointRespectingEditingBoundary(
+    const IntPoint& contents_point,
+    LocalFrame* frame) {
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
@@ -574,11 +575,11 @@ VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
   frame->GetDocument()->GetLayoutView()->HitTest(location, result);
 
   if (Node* node = result.InnerNode()) {
-    return CreateVisiblePosition(PositionRespectingEditingBoundary(
+    return PositionRespectingEditingBoundary(
         frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start(),
-        result.LocalPoint(), node));
+        result.LocalPoint(), node);
   }
-  return VisiblePosition();
+  return PositionWithAffinity();
 }
 
 // TODO(yosin): We should use |AssociatedLayoutObjectOf()| in "visible_units.cc"

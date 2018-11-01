@@ -245,10 +245,11 @@ CORE_EXPORT bool IsEndOfEditableOrNonEditableContent(
 
 bool HasRenderedNonAnonymousDescendantsWithHeight(const LayoutObject*);
 
-// Returns a hit-tested VisiblePosition for the given point in contents-space
-// coordinates.
-CORE_EXPORT VisiblePosition VisiblePositionForContentsPoint(const IntPoint&,
-                                                            LocalFrame*);
+// TODO(editing-dev): We should move this functions to somewhere else.
+// Returns a hit-tested PositionWithAffinity for the given point in
+// contents-space coordinates.
+CORE_EXPORT PositionWithAffinity
+PositionForContentsPointRespectingEditingBoundary(const IntPoint&, LocalFrame*);
 
 CORE_EXPORT bool RendersInDifferentPosition(const Position&, const Position&);
 

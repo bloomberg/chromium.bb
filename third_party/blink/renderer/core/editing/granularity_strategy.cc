@@ -72,8 +72,8 @@ void CharacterGranularityStrategy::Clear() {}
 SelectionInDOMTree CharacterGranularityStrategy::UpdateExtent(
     const IntPoint& extent_point,
     LocalFrame* frame) {
-  const VisiblePosition& extent_position =
-      VisiblePositionForContentsPoint(extent_point, frame);
+  const VisiblePosition& extent_position = CreateVisiblePosition(
+      PositionForContentsPointRespectingEditingBoundary(extent_point, frame));
   const VisibleSelection& selection =
       frame->Selection().ComputeVisibleSelectionInDOMTree();
   if (extent_position.IsNull() || selection.VisibleBase().DeepEquivalent() ==
@@ -133,7 +133,8 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
   }
 
   VisiblePosition new_offset_extent_position =
-      VisiblePositionForContentsPoint(new_offset_extent_point, frame);
+      CreateVisiblePosition(PositionForContentsPointRespectingEditingBoundary(
+          new_offset_extent_point, frame));
   if (new_offset_extent_position.IsNull())
     return selection.AsSelection();
   IntPoint new_offset_location = PositionLocation(new_offset_extent_position);
@@ -145,8 +146,8 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
     offset_ = 0;
     granularity_ = TextGranularity::kCharacter;
     new_offset_extent_point = extent_point;
-    new_offset_extent_position =
-        VisiblePositionForContentsPoint(extent_point, frame);
+    new_offset_extent_position = CreateVisiblePosition(
+        PositionForContentsPointRespectingEditingBoundary(extent_point, frame));
   }
 
   const VisiblePosition base = selection.VisibleBase();
