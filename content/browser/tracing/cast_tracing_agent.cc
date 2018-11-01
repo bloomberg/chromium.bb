@@ -92,7 +92,7 @@ void CastTracingAgent::GetCategories(Agent::GetCategoriesCallback callback) {
 void CastTracingAgent::StartTracingOnIO(
     scoped_refptr<base::TaskRunner> reply_task_runner,
     const std::string& categories) {
-  system_tracer_ = std::make_unique<chromecast::SystemTracer>();
+  system_tracer_ = chromecast::SystemTracer::Create();
 
   system_tracer_->StartTracing(
       categories, base::BindOnce(&CastTracingAgent::FinishStartOnIO,
