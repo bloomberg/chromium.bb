@@ -31,6 +31,10 @@ namespace chromeos {
 class FileSystemBackendDelegate;
 class FileAccessPermissions;
 
+constexpr char kSystemMountNameArchive[] = "archive";
+constexpr char kSystemMountNameOem[] = "oem";
+constexpr char kSystemMountNameRemovable[] = "removable";
+
 // FileSystemBackend is a Chrome OS specific implementation of
 // ExternalFileSystemBackend. This class is responsible for a
 // number of things, including:
