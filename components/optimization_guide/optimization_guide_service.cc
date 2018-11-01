@@ -54,35 +54,12 @@ void OptimizationGuideService::SetLatestProcessedVersionForTesting(
 
 void OptimizationGuideService::AddObserver(
     OptimizationGuideServiceObserver* observer) {
-  if (ui_thread_task_runner_->BelongsToCurrentThread()) {
-    AddObserverOnUIThread(observer);
-  } else {
-    ui_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::AddObserverOnUIThread,
-                       base::Unretained(this), observer));
-  }
-}
-
-void OptimizationGuideService::AddObserverOnUIThread(
-    OptimizationGuideServiceObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.AddObserver(observer);
 }
 
 void OptimizationGuideService::RemoveObserver(
-    OptimizationGuideServiceObserver* observer) {
-  if (ui_thread_task_runner_->BelongsToCurrentThread()) {
-    RemoveObserverOnUIThread(observer);
-  } else {
-    ui_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::RemoveObserverOnUIThread,
-                       base::Unretained(this), observer));
-  }
-}
-
-void OptimizationGuideService::RemoveObserverOnUIThread(
     OptimizationGuideServiceObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
