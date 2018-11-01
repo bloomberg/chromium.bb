@@ -91,55 +91,6 @@ public class HostBrowserUtils {
     }
 
     /**
-     * Returns the package name of the host browser to launch the WebAPK, or null if we did not find
-     * one.
-     */
-    private static String getHostBrowserPackageNameInternal(Context context) {
-        PackageManager packageManager = context.getPackageManager();
-
-        // Gets the package name of the host browser if it is stored in the SharedPreference.
-        String cachedHostBrowser = getHostBrowserFromSharedPreference(context);
-        if (!TextUtils.isEmpty(cachedHostBrowser)
-                && WebApkUtils.isInstalled(packageManager, cachedHostBrowser)) {
-            return cachedHostBrowser;
-        }
-
-        // Gets the package name of the host browser if it is specified in AndroidManifest.xml.
-        String hostBrowserFromManifest =
-                WebApkUtils.readMetaDataFromManifest(context, WebApkMetaDataKeys.RUNTIME_HOST);
-        if (!TextUtils.isEmpty(hostBrowserFromManifest)) {
-            if (WebApkUtils.isInstalled(packageManager, hostBrowserFromManifest)) {
-                return hostBrowserFromManifest;
-            }
-            return null;
-        }
-
-        // Gets the package name of the default browser on the Android device.
-        // TODO(hanxi): Investigate the best way to know which browser supports WebAPKs.
-        String defaultBrowser = getDefaultBrowserPackageName(context.getPackageManager());
-        if (!TextUtils.isEmpty(defaultBrowser) && sBrowsersSupportingWebApk.contains(defaultBrowser)
-                && WebApkUtils.isInstalled(packageManager, defaultBrowser)) {
-            return defaultBrowser;
-        }
-
-        // If there is only one browser supporting WebAPK, and we can't decide which browser to use
-        // by looking up cache, metadata and default browser, open with that browser.
-        int availableBrowserCounter = 0;
-        String lastSupportedBrowser = null;
-        for (String packageName : sBrowsersSupportingWebApk) {
-            if (availableBrowserCounter > 1) break;
-            if (WebApkUtils.isInstalled(packageManager, packageName)) {
-                availableBrowserCounter++;
-                lastSupportedBrowser = packageName;
-            }
-        }
-        if (availableBrowserCounter == 1) {
-            return lastSupportedBrowser;
-        }
-        return null;
-    }
-
-    /**
      * Returns the uid for the host browser that was specified when building the WebAPK.
      * @param context A context.
      * @return The application uid. Returns -1 on an error.
@@ -158,23 +109,6 @@ public class HostBrowserUtils {
             e.printStackTrace();
         }
         return -1;
-    }
-
-    /** Returns the package name of the host browser cached in the SharedPreferences. */
-    public static String getHostBrowserFromSharedPreference(Context context) {
-        SharedPreferences sharedPref =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        return sharedPref.getString(SHARED_PREF_RUNTIME_HOST, null);
-    }
-
-    /** Returns the package name of the default browser on the Android device. */
-    private static String getDefaultBrowserPackageName(PackageManager packageManager) {
-        Intent browserIntent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        ResolveInfo resolveInfo =
-                packageManager.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (resolveInfo == null || resolveInfo.activityInfo == null) return null;
-
-        return resolveInfo.activityInfo.packageName;
     }
 
     /**
@@ -225,5 +159,71 @@ public class HostBrowserUtils {
         }
 
         return hostBrowserChromiumMajorVersion < MINIMUM_REQUIRED_CHROME_VERSION;
+    }
+
+    /**
+     * Returns the package name of the host browser to launch the WebAPK, or null if we did not find
+     * one.
+     */
+    private static String getHostBrowserPackageNameInternal(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+
+        // Gets the package name of the host browser if it is stored in the SharedPreference.
+        String cachedHostBrowser = getHostBrowserFromSharedPreference(context);
+        if (!TextUtils.isEmpty(cachedHostBrowser)
+                && WebApkUtils.isInstalled(packageManager, cachedHostBrowser)) {
+            return cachedHostBrowser;
+        }
+
+        // Gets the package name of the host browser if it is specified in AndroidManifest.xml.
+        String hostBrowserFromManifest =
+                WebApkUtils.readMetaDataFromManifest(context, WebApkMetaDataKeys.RUNTIME_HOST);
+        if (!TextUtils.isEmpty(hostBrowserFromManifest)) {
+            if (WebApkUtils.isInstalled(packageManager, hostBrowserFromManifest)) {
+                return hostBrowserFromManifest;
+            }
+            return null;
+        }
+
+        // Gets the package name of the default browser on the Android device.
+        // TODO(hanxi): Investigate the best way to know which browser supports WebAPKs.
+        String defaultBrowser = getDefaultBrowserPackageName(context.getPackageManager());
+        if (!TextUtils.isEmpty(defaultBrowser) && sBrowsersSupportingWebApk.contains(defaultBrowser)
+                && WebApkUtils.isInstalled(packageManager, defaultBrowser)) {
+            return defaultBrowser;
+        }
+
+        // If there is only one browser supporting WebAPK, and we can't decide which browser to use
+        // by looking up cache, metadata and default browser, open with that browser.
+        int availableBrowserCounter = 0;
+        String lastSupportedBrowser = null;
+        for (String packageName : sBrowsersSupportingWebApk) {
+            if (availableBrowserCounter > 1) break;
+            if (WebApkUtils.isInstalled(packageManager, packageName)) {
+                availableBrowserCounter++;
+                lastSupportedBrowser = packageName;
+            }
+        }
+        if (availableBrowserCounter == 1) {
+            return lastSupportedBrowser;
+        }
+        return null;
+    }
+
+    /** Returns the package name of the host browser cached in the SharedPreferences. */
+    public static String getHostBrowserFromSharedPreference(Context context) {
+        SharedPreferences sharedPref =
+                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
+        return sharedPref.getString(SHARED_PREF_RUNTIME_HOST, null);
+    }
+
+    /** Returns the package name of the default browser on the Android device. */
+    private static String getDefaultBrowserPackageName(PackageManager packageManager) {
+        Intent browserIntent = WebApkUtils.getQueryInstalledBrowsersIntent();
+        ResolveInfo resolveInfo =
+                packageManager.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (resolveInfo == null || resolveInfo.activityInfo == null) return null;
+
+        return resolveInfo.activityInfo.packageName;
     }
 }
