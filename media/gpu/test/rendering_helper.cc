@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/gpu/test/texture_ref.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
