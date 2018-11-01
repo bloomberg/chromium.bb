@@ -109,8 +109,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void EmitArcBooted(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override;
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
-  void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
-                     VoidDBusMethodCallback callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
   void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason,
