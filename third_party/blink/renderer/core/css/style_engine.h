@@ -69,6 +69,7 @@ class DocumentStyleEnvironmentVariables;
 class StyleRuleFontFace;
 class StyleRuleUsageTracker;
 class StyleSheetContents;
+class StyleInitialData;
 class ViewportStyleResolver;
 
 enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
@@ -343,6 +344,8 @@ class CORE_EXPORT StyleEngine final
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
+  scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
+
   void RecalcStyle(StyleRecalcChange change);
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
@@ -420,6 +423,7 @@ class CORE_EXPORT StyleEngine final
       const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
       unsigned changed_rule_flags,
       InvalidationScope invalidation_scope);
+  void InvalidateInitialData();
 
   void UpdateViewport();
   void UpdateActiveUserStyleSheets();
@@ -517,6 +521,8 @@ class CORE_EXPORT StyleEngine final
   KeyframesRuleMap keyframes_rule_map_;
 
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
+
+  scoped_refptr<StyleInitialData> initial_data_;
 
   friend class StyleEngineTest;
 };

@@ -146,7 +146,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // take inherited values instead of falling back on initial.
   if (registration->Inherits() && !resolved_data) {
     resolved_data = state_.ParentStyle()->GetVariable(name, true);
-    resolved_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+    resolved_value =
+        state_.ParentStyle()->GetNonInitialRegisteredVariable(name, true);
   }
 
   DCHECK(!!resolved_data == !!resolved_value);

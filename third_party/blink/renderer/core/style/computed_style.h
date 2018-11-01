@@ -81,6 +81,7 @@ class StyleContentAlignmentData;
 class StyleDifference;
 class StyleImage;
 class StyleInheritedVariables;
+class StyleInitialData;
 class StylePath;
 class StyleResolver;
 class StyleSelfAlignmentData;
@@ -1136,6 +1137,12 @@ class ComputedStyle : public ComputedStyleBase,
                                         bool is_inherited_property) const;
 
   const CSSValue* GetRegisteredVariable(const AtomicString&) const;
+
+  // Like GetRegisteredVariable, but returns nullptr if the computed value
+  // for the specified variable is the initial value.
+  const CSSValue* GetNonInitialRegisteredVariable(
+      const AtomicString&,
+      bool is_inherited_property) const;
 
   // Animations.
   CSSAnimationData& AccessAnimations();
@@ -2527,6 +2534,8 @@ class ComputedStyle : public ComputedStyleBase,
 
   StyleInheritedVariables& MutableInheritedVariables();
   StyleNonInheritedVariables& MutableNonInheritedVariables();
+
+  void SetInitialData(scoped_refptr<StyleInitialData>);
 
   PhysicalToLogical<const Length&> PhysicalMarginToLogical(
       const ComputedStyle& other) const {

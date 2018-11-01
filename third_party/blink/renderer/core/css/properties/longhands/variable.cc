@@ -36,7 +36,7 @@ void ApplyInheritValue(StyleResolverState& state,
 
   if (registration) {
     const CSSValue* parent_css_value =
-        parent_value ? state.ParentStyle()->GetRegisteredVariable(
+        parent_value ? state.ParentStyle()->GetNonInitialRegisteredVariable(
                            name, is_inherited_property)
                      : nullptr;
     state.Style()->SetRegisteredVariable(name, parent_css_value,
