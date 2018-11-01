@@ -63,57 +63,12 @@ bool PointerEvent::IsPointerEvent() const {
   return true;
 }
 
-double PointerEvent::screenX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(screen_location_.X())
-             : screen_location_.X();
-}
-
-double PointerEvent::screenY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(screen_location_.Y())
-             : screen_location_.Y();
-}
-
-double PointerEvent::clientX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(client_location_.X())
-             : client_location_.X();
-}
-
-double PointerEvent::clientY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(client_location_.Y())
-             : client_location_.Y();
-}
-
-double PointerEvent::pageX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(page_location_.X())
-             : page_location_.X();
-}
-
-double PointerEvent::pageY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(page_location_.Y())
-             : page_location_.Y();
-}
-
 double PointerEvent::offsetX() {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? std::round(offset_location_.X())
-             : offset_location_.X();
+  return offset_location_.X();
 }
 
 double PointerEvent::offsetY() {
@@ -121,10 +76,7 @@ double PointerEvent::offsetY() {
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? std::round(offset_location_.Y())
-             : offset_location_.Y();
+  return offset_location_.Y();
 }
 
 void PointerEvent::ReceivedTarget() {

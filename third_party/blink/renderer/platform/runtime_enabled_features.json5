@@ -522,10 +522,6 @@
       name: "FractionalMouseEvent",
     },
     {
-      name: "FractionalMouseTypePointerEvent",
-      status: "stable",
-    },
-    {
       name: "FractionalScrollOffsets",
     },
     {
