@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -114,15 +113,19 @@ void FetchEvent::OnNavigationPreloadResponse(
   DCHECK(!preload_response_);
   ScriptState::Scope scope(script_state);
   preload_response_ = std::move(response);
+  DataPipeBytesConsumer* bytes_consumer = nullptr;
   if (data_pipe.is_valid()) {
-    data_pipe_consumer_ = new DataPipeBytesConsumer(
-        ExecutionContext::From(script_state), std::move(data_pipe));
+    DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
+    bytes_consumer =
+        new DataPipeBytesConsumer(ExecutionContext::From(script_state),
+                                  std::move(data_pipe), &completion_notifier);
+    body_completion_notifier_ = completion_notifier;
   }
   // TODO(ricea): Verify that this response can't be aborted from JS.
   FetchResponseData* response_data =
-      data_pipe_consumer_
+      bytes_consumer
           ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
-                script_state, data_pipe_consumer_,
+                script_state, bytes_consumer,
                 new AbortSignal(ExecutionContext::From(script_state))))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
@@ -150,9 +153,9 @@ void FetchEvent::OnNavigationPreloadError(
     std::unique_ptr<WebServiceWorkerError> error) {
   if (!script_state->ContextIsValid())
     return;
-  if (data_pipe_consumer_) {
-    data_pipe_consumer_->SignalError();
-    data_pipe_consumer_ = nullptr;
+  if (body_completion_notifier_) {
+    body_completion_notifier_->SignalError(BytesConsumer::Error());
+    body_completion_notifier_ = nullptr;
   }
   DCHECK(preload_response_property_);
   if (preload_response_property_->GetState() !=
@@ -170,9 +173,9 @@ void FetchEvent::OnNavigationPreloadComplete(
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
   DCHECK(preload_response_);
-  if (data_pipe_consumer_) {
-    data_pipe_consumer_->SignalComplete();
-    data_pipe_consumer_ = nullptr;
+  if (body_completion_notifier_) {
+    body_completion_notifier_->SignalComplete();
+    body_completion_notifier_ = nullptr;
   }
   std::unique_ptr<WebURLResponse> response = std::move(preload_response_);
   ResourceResponse resource_response = response->ToResourceResponse();
@@ -197,7 +200,7 @@ void FetchEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(request_);
   visitor->Trace(preload_response_property_);
-  visitor->Trace(data_pipe_consumer_);
+  visitor->Trace(body_completion_notifier_);
   ExtendableEvent::Trace(visitor);
   ContextClient::Trace(visitor);
 }
