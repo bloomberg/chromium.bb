@@ -367,6 +367,10 @@ class AutofillAssistantUiDelegate {
         mOverlay.setVisibility(View.GONE);
     }
 
+    public boolean isOverlayVisible() {
+        return mOverlay.getVisibility() == View.VISIBLE;
+    }
+
     public void hideDetails() {
         mDetails.setVisibility(View.GONE);
         setCarouselTopPadding();
