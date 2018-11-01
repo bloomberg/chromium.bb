@@ -1547,7 +1547,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
 
       ItemPosition position = flex_item.Alignment();
       if (position == ItemPosition::kStretch) {
-        ComputeStretchedSizeForChild(flex_item, line_cross_axis_extent);
+        flex_item.ComputeStretchedSize(line_cross_axis_extent);
         ApplyStretchAlignmentToChild(flex_item);
       }
       LayoutUnit available_space =
@@ -1584,29 +1584,6 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
           !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline)
         AdjustAlignmentForChild(*flex_item.box, min_margin_after_baseline);
     }
-  }
-}
-
-void LayoutFlexibleBox::ComputeStretchedSizeForChild(
-    FlexItem& flex_item,
-    LayoutUnit line_cross_axis_extent) {
-  DCHECK_EQ(flex_item.Alignment(), ItemPosition::kStretch);
-  LayoutBox& child = *flex_item.box;
-  if (!flex_item.HasOrthogonalFlow() &&
-      child.StyleRef().LogicalHeight().IsAuto()) {
-    LayoutUnit stretched_logical_height =
-        std::max(child.BorderAndPaddingLogicalHeight(),
-                 line_cross_axis_extent - flex_item.CrossAxisMarginExtent());
-    DCHECK(!child.NeedsLayout());
-    flex_item.cross_axis_size = child.ConstrainLogicalHeightByMinMax(
-        stretched_logical_height, child.IntrinsicContentLogicalHeight());
-  } else if (flex_item.HasOrthogonalFlow() &&
-             child.StyleRef().LogicalWidth().IsAuto()) {
-    LayoutUnit child_width =
-        (line_cross_axis_extent - flex_item.CrossAxisMarginExtent())
-            .ClampNegativeToZero();
-    flex_item.cross_axis_size = child.ConstrainLogicalWidthByMinMax(
-        child_width, CrossAxisContentExtent(), this);
   }
 }
 
