@@ -227,6 +227,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // have a kChildTreeId int attribute with that value.
   std::set<int32_t> GetNodeIdsForChildTreeId(AXTreeID child_tree_id) const;
 
+  // Get all of the child tree IDs referenced by any node in this tree.
+  const std::set<AXTreeID> GetAllChildTreeIds() const;
+
   // Map from a relation attribute to a map from a target id to source ids.
   const IntReverseRelationMap& int_reverse_relations() {
     return int_reverse_relations_;

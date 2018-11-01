@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/no_destructor.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_node.h"
@@ -9,6 +10,12 @@
 namespace extensions {
 
 namespace {
+
+std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& GetChildTreeIDReverseMap() {
+  static base::NoDestructor<std::map<ui::AXTreeID, AutomationAXTreeWrapper*>>
+      child_tree_id_reverse_map;
+  return *child_tree_id_reverse_map;
+}
 
 // Convert from ax::mojom::Event to api::automation::EventType.
 api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
@@ -204,9 +211,28 @@ AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   tree_.SetDelegate(nullptr);
 }
 
+// static
+AutomationAXTreeWrapper* AutomationAXTreeWrapper::GetParentOfTreeId(
+    ui::AXTreeID tree_id) {
+  std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
+      GetChildTreeIDReverseMap();
+  const auto& iter = child_tree_id_reverse_map.find(tree_id);
+  if (iter != child_tree_id_reverse_map.end())
+    return iter->second;
+
+  return nullptr;
+}
+
 bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
+  std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
+      GetChildTreeIDReverseMap();
+  for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
+    DCHECK_EQ(child_tree_id_reverse_map[tree_id], this);
+    child_tree_id_reverse_map.erase(tree_id);
+  }
+
   for (const auto& update : event_bundle.updates) {
     set_event_from(update.event_from);
     deleted_node_ids_.clear();
@@ -227,6 +253,11 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
         }
       }
     }
+  }
+
+  for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
+    DCHECK(!base::ContainsKey(child_tree_id_reverse_map, tree_id));
+    child_tree_id_reverse_map.insert(std::make_pair(tree_id, this));
   }
 
   // Exit early if this isn't the active profile.

@@ -1374,17 +1374,22 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
   if (node->parent())
     return node->parent();
 
+  AutomationAXTreeWrapper* parent_tree_wrapper = nullptr;
+
   ui::AXTreeID parent_tree_id =
       (*in_out_tree_wrapper)->tree()->data().parent_tree_id;
+  if (parent_tree_id != ui::AXTreeIDUnknown()) {
+    // If the tree specifies its parent tree ID, use that. That provides
+    // some additional security guarantees, so a tree can't be "claimed"
+    // by something else.
+    parent_tree_wrapper = GetAutomationAXTreeWrapperFromTreeID(parent_tree_id);
+  } else {
+    // Otherwise if it was unspecified, check to see if another tree listed
+    // this one as its child, and then we know the parent.
+    parent_tree_wrapper = AutomationAXTreeWrapper::GetParentOfTreeId(
+        (*in_out_tree_wrapper)->tree_id());
+  }
 
-  // Try the desktop tree if the parent is unknown. If this tree really is
-  // a child of the desktop tree, we'll find its parent, and if not, the
-  // search, below, will fail until the real parent tree loads.
-  if (parent_tree_id == ui::AXTreeIDUnknown())
-    parent_tree_id = ui::DesktopAXTreeID();
-
-  AutomationAXTreeWrapper* parent_tree_wrapper =
-      GetAutomationAXTreeWrapperFromTreeID(parent_tree_id);
   if (!parent_tree_wrapper)
     return nullptr;
 
