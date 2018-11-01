@@ -199,7 +199,7 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
         mFooterView = footerView;
         if (footerView != null) {
             footerView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
         mListPopupWindow.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
         mListPopupWindow.setPromptView(footerView);
