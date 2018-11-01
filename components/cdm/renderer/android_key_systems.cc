@@ -9,12 +9,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#if BUILDFLAG(ENABLE_WIDEVINE)
+#include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
 using media::EmeConfigRule;
 using media::EmeFeatureSupport;
@@ -22,7 +24,9 @@ using media::EmeInitDataType;
 using media::EmeSessionTypeSupport;
 using media::KeySystemProperties;
 using media::SupportedCodecs;
+#if BUILDFLAG(ENABLE_WIDEVINE)
 using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
 namespace cdm {
 
@@ -112,6 +116,7 @@ SupportedKeySystemResponse QueryKeySystemSupport(
   return response;
 }
 
+#if BUILDFLAG(ENABLE_WIDEVINE)
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
   auto response = QueryKeySystemSupport(kWidevineKeySystem);
@@ -155,6 +160,7 @@ void AddAndroidWidevine(
     DCHECK(hw_secure_codecs == media::EME_CODEC_NONE);
   }
 }
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
 void AddAndroidPlatformKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
