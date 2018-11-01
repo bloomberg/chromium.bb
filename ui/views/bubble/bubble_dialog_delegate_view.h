@@ -49,7 +49,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
   // DialogDelegateView:
-  void AddedToWidget() override;
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
@@ -121,11 +120,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // bubble. The bubble is automatically repositioned when the anchor view
   // bounds change as a result of the widget's bounds changing.
   void OnAnchorBoundsChanged();
-
-  // If this is called, enables focus to traverse from the anchor view
-  // to inside this dialog and back out. This may become the default in
-  // the future.
-  void EnableFocusTraversalFromAnchorView();
 
  protected:
   BubbleDialogDelegateView();
