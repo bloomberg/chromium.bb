@@ -387,4 +387,13 @@ Polymer({
   getArrowIcon_: function(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
+
+  /**
+   * @param {boolean} bool
+   * @return {string}
+   * @private
+   */
+  boolToString_: function(bool) {
+    return bool.toString();
+  },
 });

@@ -220,9 +220,8 @@
           inSearchMode, hasExpandedSection_)]]">
         <div id="toggleSpacer"></div>
         <h2 id="toggleContainer">
-          <paper-button id="advancedToggle"
-              aria-active-attribute="aria-expanded"
-              on-click="advancedToggleClicked_">
+          <paper-button id="advancedToggle" on-click="advancedToggleClicked_"
+              aria-expanded$="[[boolToString_(advancedToggleExpanded)]]">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[getArrowIcon_(advancedToggleExpanded)]]">
             </iron-icon>
