@@ -180,6 +180,7 @@ void TextControlElement::UpdatePlaceholderVisibility() {
   HTMLElement* placeholder = PlaceholderElement();
   if (!placeholder) {
     UpdatePlaceholderText();
+    SetPlaceholderVisibility(PlaceholderShouldBeVisible());
     return;
   }
 
