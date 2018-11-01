@@ -164,6 +164,8 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
   mixer_->SetVolume(AudioContentType::kMedia, 1);
 
   // Add fake postprocessor to override test configuration running on device.
+  const int kNumChannels = 2;
+  mixer_->SetNumOutputChannelsForTest(kNumChannels);
   mixer_->ResetPostProcessorsForTest(
       std::make_unique<MockPostProcessorFactory>(), "{}");
 
@@ -187,7 +189,6 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
     test_data[i] = i;
 
   // Set test data in AudioBus.
-  const int kNumChannels = 2;
   const auto kNumFrames = kSampleSize / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   const size_t kBytesPerSample = sizeof(test_data[0]);
