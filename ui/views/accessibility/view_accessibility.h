@@ -48,12 +48,21 @@ class VIEWS_EXPORT ViewAccessibility {
   // Note that string attributes are only used if non-empty, so you can't
   // override a string with the empty string.
   //
+
+  // Sets one of our virtual descendants as having the accessibility focus. This
+  // means that if this view has the system focus, it will set the accessibility
+  // focus to the provided descendant virtual view instead. Set this to nullptr
+  // if none of our virtual descendants should have the accessibility focus. It
+  // is illegal to set this to any virtual view that is currently not one of our
+  // descendants and this is enforced by a DCHECK.
+  void OverrideFocus(AXVirtualView* virtual_view);
   void OverrideRole(const ax::mojom::Role role);
   void OverrideName(const std::string& name);
   void OverrideName(const base::string16& name);
   void OverrideDescription(const std::string& description);
   void OverrideDescription(const base::string16& description);
-  void OverrideIsLeaf();  // Force this node to be treated as a leaf node.
+  void OverrideIsLeaf(bool value);
+  void OverrideIsIgnored(bool value);
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
@@ -63,10 +72,9 @@ class VIEWS_EXPORT ViewAccessibility {
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
 
-  bool IsLeaf() const;
-
-  bool is_ignored() const { return is_ignored_; }
-  void set_is_ignored(bool ignored) { is_ignored_ = ignored; }
+  View* view() const { return view_; }
+  bool IsLeaf() const { return is_leaf_; }
+  bool IsIgnored() const { return is_ignored_; }
 
   //
   // Methods for managing virtual views.
@@ -97,29 +105,44 @@ class VIEWS_EXPORT ViewAccessibility {
     return virtual_children_[index].get();
   }
 
+  // Returns true if |virtual_view| is contained within the hierarchy of this
+  // View, even as an indirect descendant.
+  bool Contains(const AXVirtualView* virtual_view) const;
+
   // Returns the index of |virtual_view|, or -1 if |virtual_view| is not a child
   // of this View.
   int GetIndexOf(const AXVirtualView* virtual_view) const;
 
+  // Returns the native accessibility object associated with the AXVirtualView
+  // descendant that is currently focused. If no virtual descendants are
+  // present, or no virtual descendant has been marked as focused, returns the
+  // native accessibility object associated with this view.
+  gfx::NativeViewAccessible GetFocusedDescendant();
+
  protected:
   explicit ViewAccessibility(View* view);
 
-  View* view() const { return owner_view_; }
-
  private:
   // Weak. Owns this.
-  View* const owner_view_;
+  View* const view_;
 
   // If there are any virtual children, they override any real children.
   // We own our virtual children.
   std::vector<std::unique_ptr<AXVirtualView>> virtual_children_;
 
+  // The virtual child that is currently focused.
+  // This is nullptr if no virtual child is focused.
+  // See also OverrideFocus() and GetFocusedDescendant().
+  AXVirtualView* focused_virtual_child_;
+
   const ui::AXUniqueId unique_id_;
 
-  // Contains data set explicitly via SetRole, SetName, etc. that overrides
-  // anything provided by GetAccessibleNodeData().
+  // Contains data set explicitly via OverrideRole, OverrideName, etc. that
+  // overrides anything provided by GetAccessibleNodeData().
   ui::AXNodeData custom_data_;
 
+  // If set to true, anything that is a descendant of this view will be hidden
+  // from accessibility.
   bool is_leaf_;
 
   // When true the view is ignored when generating the AX node hierarchy, but
@@ -128,7 +151,9 @@ class VIEWS_EXPORT ViewAccessibility {
   // "ignored" would mean that the digits 1 - 9 would appear as if they were
   // immediate children of the root. Likewise "internal" container views can be
   // ignored, like a Widget's RootView, ClientView, etc.
-  bool is_ignored_ = false;
+  // Similar to setting the role of an ARIA widget to "none" or
+  // "presentational".
+  bool is_ignored_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };

@@ -10,6 +10,10 @@
 
 namespace ui {
 
+AXPlatformNodeDelegateBase::AXPlatformNodeDelegateBase() = default;
+
+AXPlatformNodeDelegateBase::~AXPlatformNodeDelegateBase() = default;
+
 const AXNodeData& AXPlatformNodeDelegateBase::GetData() const {
   static base::NoDestructor<AXNodeData> empty_data;
   return *empty_data;

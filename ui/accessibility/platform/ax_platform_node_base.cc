@@ -23,6 +23,19 @@ namespace ui {
 
 const base::char16 AXPlatformNodeBase::kEmbeddedCharacter = L'\xfffc';
 
+#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
+// static
+AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
+  AXPlatformNodeBase* node = new AXPlatformNodeBase();
+  node->Init(delegate);
+  return node;
+}
+#endif
+
+AXPlatformNodeBase::AXPlatformNodeBase() = default;
+
+AXPlatformNodeBase::~AXPlatformNodeBase() = default;
+
 void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
   delegate_ = delegate;
 }
@@ -32,6 +45,12 @@ const AXNodeData& AXPlatformNodeBase::GetData() const {
   if (delegate_)
     return delegate_->GetData();
   return *empty_data;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeBase::GetFocus() {
+  if (delegate_)
+    return delegate_->GetFocus();
+  return nullptr;
 }
 
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
@@ -52,6 +71,10 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
+int AXPlatformNodeBase::GetIndexInParent() {
+  return -1;
+}
+
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {
@@ -67,6 +90,13 @@ void AXPlatformNodeBase::Dispose() {
 gfx::NativeViewAccessible AXPlatformNodeBase::GetNativeViewAccessible() {
   return nullptr;
 }
+
+void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+}
+
+#if defined(OS_MACOSX)
+void AXPlatformNodeBase::AnnounceText(base::string16& text) {}
+#endif
 
 AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {
   return delegate_;
@@ -239,12 +269,6 @@ bool AXPlatformNodeBase::GetIntListAttribute(
   if (!delegate_)
     return false;
   return GetData().GetIntListAttribute(attribute, value);
-}
-
-AXPlatformNodeBase::AXPlatformNodeBase() {
-}
-
-AXPlatformNodeBase::~AXPlatformNodeBase() {
 }
 
 // static
@@ -939,6 +963,11 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
   }
   result.hypertext = hypertext;
   return result;
+}
+
+void AXPlatformNodeBase::AddAttributeToList(const char* name,
+                                            const char* value,
+                                            PlatformAttributeList* attributes) {
 }
 
 // static

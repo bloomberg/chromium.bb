@@ -15,8 +15,8 @@ namespace ui {
 // behavior.
 class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
  public:
-  AXPlatformNodeDelegateBase() {}
-  ~AXPlatformNodeDelegateBase() override {}
+  AXPlatformNodeDelegateBase();
+  ~AXPlatformNodeDelegateBase() override;
 
   // Get the accessibility data that should be exposed for this node.
   // Virtually all of the information is obtained from this structure

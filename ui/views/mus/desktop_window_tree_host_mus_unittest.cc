@@ -473,10 +473,10 @@ TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
   // Widget frame views do not participate in accessibility node hierarchy
   // because the frame is provided by the window manager.
   views::NonClientView* non_client_view = widget->non_client_view();
-  EXPECT_TRUE(non_client_view->GetViewAccessibility().is_ignored());
+  EXPECT_TRUE(non_client_view->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(
-      non_client_view->frame_view()->GetViewAccessibility().is_ignored());
-  EXPECT_TRUE(widget->client_view()->GetViewAccessibility().is_ignored());
+      non_client_view->frame_view()->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(widget->client_view()->GetViewAccessibility().IsIgnored());
 }
 
 // Used to ensure the visibility of the root window is changed before that of
