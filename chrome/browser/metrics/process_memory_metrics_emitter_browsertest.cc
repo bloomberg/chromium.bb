@@ -145,7 +145,7 @@ void CheckMemoryMetric(const std::string& name,
     EXPECT_EQ(samples->TotalCount(), count * number_of_processes) << name;
   }
 
-  if (value_restriction == ValueRestriction::ABOVE_ZERO)
+  if (count != 0 && value_restriction == ValueRestriction::ABOVE_ZERO)
     EXPECT_GT(samples->sum(), 0u) << name;
 
   // As a sanity check, no memory stat should exceed 4 GB.
@@ -153,10 +153,11 @@ void CheckMemoryMetric(const std::string& name,
   EXPECT_LT(samples->sum(), maximum_expected_size) << name;
 }
 
-void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
-                           int count,
-                           int number_of_renderer_processes = 1u,
-                           int number_of_extenstion_processes = 0u) {
+void CheckExperimentalMemoryMetrics(
+    const base::HistogramTester& histogram_tester,
+    int count,
+    int number_of_renderer_processes,
+    int number_of_extension_processes) {
 #if !defined(OS_WIN)
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
                     count, ValueRestriction::ABOVE_ZERO);
@@ -177,24 +178,96 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                       count, ValueRestriction::ABOVE_ZERO,
                       number_of_renderer_processes);
   }
-  if (number_of_extenstion_processes) {
+  if (number_of_extension_processes) {
 #if !defined(OS_WIN)
     CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
                       count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extenstion_processes);
+                      number_of_extension_processes);
 #endif
     CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
                       histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extenstion_processes);
+                      number_of_extension_processes);
     CheckMemoryMetric("Memory.Experimental.Extension2.PartitionAlloc",
                       histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extenstion_processes);
+                      number_of_extension_processes);
     CheckMemoryMetric("Memory.Experimental.Extension2.V8", histogram_tester,
                       count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extenstion_processes);
+                      number_of_extension_processes);
   }
   CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
                     histogram_tester, count, ValueRestriction::ABOVE_ZERO);
+}
+
+void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
+                              int count,
+                              int number_of_renderer_processes,
+                              int number_of_extension_processes) {
+  const int count_for_resident_set =
+#if defined(OS_MACOSX)
+      0;
+#else
+      count;
+#endif
+  const int count_for_private_swap_footprint =
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+      count;
+#else
+      0;
+#endif
+
+  if (number_of_renderer_processes) {
+    CheckMemoryMetric("Memory.Renderer.ResidentSet", histogram_tester,
+                      count_for_resident_set, ValueRestriction::ABOVE_ZERO,
+                      number_of_renderer_processes);
+    CheckMemoryMetric("Memory.Renderer.PrivateMemoryFootprint",
+                      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+                      number_of_renderer_processes);
+    // Shared memory footprint can be below 1 MB, which is reported as zero.
+    CheckMemoryMetric("Memory.Renderer.SharedMemoryFootprint", histogram_tester,
+                      count, ValueRestriction::NONE,
+                      number_of_renderer_processes);
+    CheckMemoryMetric("Memory.Renderer.PrivateSwapFootprint", histogram_tester,
+                      count_for_private_swap_footprint, ValueRestriction::NONE,
+                      number_of_renderer_processes);
+  }
+
+  if (number_of_extension_processes) {
+    CheckMemoryMetric("Memory.Extension.ResidentSet", histogram_tester,
+                      count_for_resident_set, ValueRestriction::ABOVE_ZERO,
+                      number_of_extension_processes);
+    CheckMemoryMetric("Memory.Extension.PrivateMemoryFootprint",
+                      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+                      number_of_extension_processes);
+    // Shared memory footprint can be below 1 MB, which is reported as zero.
+    CheckMemoryMetric("Memory.Extension.SharedMemoryFootprint",
+                      histogram_tester, count, ValueRestriction::NONE,
+                      number_of_extension_processes);
+    CheckMemoryMetric("Memory.Extension.PrivateSwapFootprint", histogram_tester,
+                      count_for_private_swap_footprint, ValueRestriction::NONE,
+                      number_of_extension_processes);
+  }
+
+  CheckMemoryMetric("Memory.Total.ResidentSet", histogram_tester,
+                    count_for_resident_set, ValueRestriction::ABOVE_ZERO);
+  CheckMemoryMetric("Memory.Total.PrivateMemoryFootprint", histogram_tester,
+                    count, ValueRestriction::ABOVE_ZERO);
+  CheckMemoryMetric("Memory.Total.RendererPrivateMemoryFootprint",
+                    histogram_tester, count, ValueRestriction::ABOVE_ZERO);
+  // Shared memory footprint can be below 1 MB, which is reported as zero.
+  CheckMemoryMetric("Memory.Total.SharedMemoryFootprint", histogram_tester,
+                    count, ValueRestriction::NONE);
+}
+
+void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
+                           int count,
+                           int number_of_renderer_processes = 1u,
+                           int number_of_extension_processes = 0u) {
+  CheckExperimentalMemoryMetrics(histogram_tester, count,
+                                 number_of_renderer_processes,
+                                 number_of_extension_processes);
+  CheckStableMemoryMetrics(histogram_tester, count,
+                           number_of_renderer_processes,
+                           number_of_extension_processes);
 }
 
 }  // namespace
