@@ -44,6 +44,7 @@ OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
     return super.extraLibraries.concat([
       'email_chooser_test.js',
       'test_nux_email_proxy.js',
+      'test_bookmark_proxy.js',
     ]);
   }
 };
