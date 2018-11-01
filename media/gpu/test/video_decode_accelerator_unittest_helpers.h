@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,41 +53,6 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
-};
-
-// A helper class used to manage the lifetime of a Texture. Can be backed by
-// either a buffer allocated by the VDA, or by a preallocated pixmap.
-class TextureRef : public base::RefCounted<TextureRef> {
- public:
-  static scoped_refptr<TextureRef> Create(
-      uint32_t texture_id,
-      base::OnceClosure no_longer_needed_cb);
-
-  static scoped_refptr<TextureRef> CreatePreallocated(
-      uint32_t texture_id,
-      base::OnceClosure no_longer_needed_cb,
-      VideoPixelFormat pixel_format,
-      const gfx::Size& size);
-
-  gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
-  scoped_refptr<VideoFrame> CreateVideoFrame(
-      const gfx::Rect& visible_rect) const;
-
-  int32_t texture_id() const { return texture_id_; }
-
- private:
-  friend class base::RefCounted<TextureRef>;
-
-  TextureRef(uint32_t texture_id, base::OnceClosure no_longer_needed_cb);
-  ~TextureRef();
-
-  uint32_t texture_id_;
-  base::OnceClosure no_longer_needed_cb_;
-#if defined(OS_CHROMEOS)
-  scoped_refptr<gfx::NativePixmap> pixmap_;
-  gfx::Size coded_size_;
-#endif
-  THREAD_CHECKER(thread_checker_);
 };
 
 class EncodedDataHelper {
