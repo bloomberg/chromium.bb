@@ -2908,18 +2908,6 @@
       ]
     },
     {
-      "id":276,
-      "cr_bugs": [835353],
-      "description": "Adreno 3xx requires a high-priority WebGL context to avoid MSAA and performance issues",
-      "os": {
-        "type": "android"
-      },
-      "gl_renderer": "Adreno \\(TM\\) 3.*",
-      "features": [
-        "use_high_priority_for_webgl"
-      ]
-    },
-    {
       "id": 279,
       "description": "WindowServer crashes on VMWare bots using CA renderer",
       "cr_bugs": [828031],
