@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -677,6 +676,20 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = kDefaultAllocationSize;
+  MojoResult result =
+      mojo::CreateDataPipe(&options, &response_body_stream_, &consumer_handle_);
+  if (result != MOJO_RESULT_OK) {
+    NotifyCompleted(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
+  DCHECK(response_body_stream_.is_valid());
+  DCHECK(consumer_handle_.is_valid());
+
   // Do not account header bytes when reporting received body bytes to client.
   reported_total_encoded_bytes_ = url_request_->GetTotalReceivedBytes();
 
@@ -696,17 +709,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     raw_response_headers_ = nullptr;
   }
 
-  // Save some info for debugging. Temporary for https://crbug.com/893971
-  int32_t annotation_hash =
-      url_request_->traffic_annotation().unique_id_hash_code;
-  size_t num_running_requests = url_request_context_->url_requests()->size();
-  base::debug::Alias(&annotation_hash);
-  base::debug::Alias(&num_running_requests);
-  DEBUG_ALIAS_FOR_GURL(url_buf, url_request_->url());
-
-  mojo::DataPipe data_pipe(kDefaultAllocationSize);
-  response_body_stream_ = std::move(data_pipe.producer_handle);
-  consumer_handle_ = std::move(data_pipe.consumer_handle);
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::Bind(&URLLoader::OnResponseBodyStreamConsumerClosed,
