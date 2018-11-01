@@ -1939,6 +1939,18 @@
         },
         {
           "board_name": "grunt",
+          "name": "kasumi",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "grunt",
+          "name": "kasumi360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "grunt",
           "name": "liara",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
