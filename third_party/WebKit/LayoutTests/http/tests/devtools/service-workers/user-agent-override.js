@@ -15,7 +15,7 @@
     return new Promise(function(resolve) {
       var sniffer = {
         targetAdded: function(target) {
-          if (TestRunner.isServiceWorker(target)) {
+          if (target.type() === SDK.Target.Type.ServiceWorker) {
             resolve();
             SDK.targetManager.unobserveTargets(sniffer);
           }

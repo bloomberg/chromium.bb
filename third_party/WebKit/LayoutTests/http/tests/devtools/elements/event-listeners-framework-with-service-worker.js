@@ -31,7 +31,7 @@
 
   function isDedicatedWorker() {
     var target = UI.context.flavor(SDK.ExecutionContext).target();
-    return TestRunner.isDedicatedWorker(target);
+    return target.type() === SDK.Target.Type.Worker;
   }
 
   function step1(target) {

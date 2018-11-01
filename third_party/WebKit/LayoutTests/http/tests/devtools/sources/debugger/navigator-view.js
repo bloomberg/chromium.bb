@@ -14,7 +14,7 @@
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
   var pageMock = new SDKTestRunner.PageMock('mock-url.com/frame.html');
-  pageMock.disableDOMCapability();
+  pageMock.turnIntoWorker();
   var target2 = SDKTestRunner.connectToPage('mock-target-100', pageMock);
   var subframe = TestRunner.mainFrame().childFrames[0];
 

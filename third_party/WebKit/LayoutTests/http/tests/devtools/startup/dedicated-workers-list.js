@@ -10,7 +10,7 @@
   var workerCount = 0;
   var observer = {
     targetAdded(target) {
-      if (!TestRunner.isDedicatedWorker(target))
+      if (target.type() !== SDK.Target.Type.Worker)
         return;
       workerCount++;
       TestRunner.addResult('Added worker: ' + workerCount);

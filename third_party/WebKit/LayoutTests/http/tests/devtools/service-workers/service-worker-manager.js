@@ -16,8 +16,8 @@
 
   SDK.targetManager.observeTargets({
     targetAdded: function(target) {
-      TestRunner.addResult('Target added: ' + target.name() + '; type: ' + TestRunner.describeTargetType(target));
-      if (TestRunner.isDedicatedWorker(target)) {
+      TestRunner.addResult('Target added: ' + target.name() + '; type: ' + target.type());
+      if (target.type() === SDK.Target.Type.Worker) {
         var serviceWorkerManager = SDK.targetManager.mainTarget().model(SDK.ServiceWorkerManager);
         // Allow agents to do rountrips.
         TestRunner.deprecatedRunAfterPendingDispatches(function() {
@@ -31,8 +31,8 @@
     },
 
     targetRemoved: function(target) {
-      TestRunner.addResult('Target removed: ' + target.name() + '; type: ' + TestRunner.describeTargetType(target));
-      if (TestRunner.isServiceWorker(target))
+      TestRunner.addResult('Target removed: ' + target.name() + '; type: ' + target.type());
+      if (target.type() === SDK.Target.Type.ServiceWorker)
         setTimeout(TestRunner.completeTest);
     }
   });
