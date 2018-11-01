@@ -49,12 +49,7 @@ EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
   return new EasyUnlockSettingsHandler(profile);
 }
 
-void EasyUnlockSettingsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "easyUnlockGetEnabledStatus",
-      base::BindRepeating(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
-                          base::Unretained(this)));
-}
+void EasyUnlockSettingsHandler::RegisterMessages() {}
 
 void EasyUnlockSettingsHandler::OnJavascriptAllowed() {
   profile_pref_registrar_.Add(
@@ -71,17 +66,6 @@ void EasyUnlockSettingsHandler::SendEnabledStatus() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("easy-unlock-enabled-status"),
       base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
-}
-
-void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
-    const base::ListValue* args) {
-  AllowJavascript();
-
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  ResolveJavascriptCallback(
-      *callback_id, base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
 }  // namespace settings

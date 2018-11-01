@@ -220,9 +220,6 @@ Polymer({
     showSetupPinDialog_: Boolean,
   },
 
-  /** @private {?settings.EasyUnlockBrowserProxy} */
-  easyUnlockBrowserProxy_: null,
-
   /** @private {?settings.FingerprintBrowserProxy} */
   fingerprintBrowserProxy_: null,
 
@@ -234,8 +231,6 @@ Polymer({
     if (this.shouldAskForPassword_(settings.getCurrentRoute()))
       this.openPasswordPromptDialog_();
 
-    this.easyUnlockBrowserProxy_ =
-        settings.EasyUnlockBrowserProxyImpl.getInstance();
     this.fingerprintBrowserProxy_ =
         settings.FingerprintBrowserProxyImpl.getInstance();
     this.updateNumFingerprints_();
@@ -243,8 +238,6 @@ Polymer({
     if (this.easyUnlockAllowed_) {
       this.addWebUIListener(
           'easy-unlock-enabled-status',
-          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
-      this.easyUnlockBrowserProxy_.getEnabledStatus().then(
           this.handleEasyUnlockEnabledStatusChanged_.bind(this));
     }
   },
