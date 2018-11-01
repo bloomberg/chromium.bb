@@ -1,0 +1,48 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.content {
+  padding-right: 8px;
+}
+
+#title-recording,
+#title-completed {
+  padding-bottom: 36px;
+}
+
+#footer-text {
+  color: #757575;
+  padding-top: 48px;
+}
+
+#voice-match-img {
+  padding: 48px 0 0 48px;
+}
+
+#done-button-text {
+  padding: 0 8px 0 8px;
+}
+
+.intro #recording-container,
+.recording #intro-container,
+.completed #intro-container {
+  position: absolute;
+  visibility: hidden;
+}
+
+.recording #title-completed,
+.completed #title-recording {
+  display: none;
+}
+
+.intro #skip-button,
+.intro #next-button,
+.recording #later-button,
+.completed #done-button {
+  display: block;
+}
+
+oobe-text-button {
+  display: none;
+}
