@@ -5,6 +5,6 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_LOOP_FORWARD_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_FORWARD_H_
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_FORWARD_H_
