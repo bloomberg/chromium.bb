@@ -69,6 +69,81 @@ std::string GetUnsupportedSchemeName(const GURL& download_url) {
   return "OtherUnsupportedScheme";
 }
 
+bool CheckUrlAgainstWhitelist(
+    const GURL& url,
+    scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!database_manager.get()) {
+    return false;
+  }
+
+  return (url.is_valid() && database_manager->MatchDownloadWhitelistUrl(url));
+}
+
+bool IsCertificateChainWhitelisted(
+    const ClientDownloadRequest_CertificateChain& chain,
+    scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (chain.element_size() < 2) {
+    // We need to have both a signing certificate and its issuer certificate
+    // present to construct a whitelist entry.
+    return false;
+  }
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytes(
+          chain.element(0).certificate().data(),
+          chain.element(0).certificate().size());
+  if (!cert.get()) {
+    return false;
+  }
+
+  for (int i = 1; i < chain.element_size(); ++i) {
+    scoped_refptr<net::X509Certificate> issuer =
+        net::X509Certificate::CreateFromBytes(
+            chain.element(i).certificate().data(),
+            chain.element(i).certificate().size());
+    if (!issuer.get()) {
+      return false;
+    }
+    std::vector<std::string> whitelist_strings;
+    GetCertificateWhitelistStrings(*cert.get(), *issuer.get(),
+                                   &whitelist_strings);
+    for (size_t j = 0; j < whitelist_strings.size(); ++j) {
+      if (database_manager->MatchDownloadWhitelistString(
+              whitelist_strings[j])) {
+        DVLOG(2) << "Certificate matched whitelist, cert="
+                 << cert->subject().GetDisplayName()
+                 << " issuer=" << issuer->subject().GetDisplayName();
+        return true;
+      }
+    }
+    cert = issuer;
+  }
+  return false;
+}
+
+bool CheckCertificateChainAgainstWhitelist(
+    const ClientDownloadRequest_SignatureInfo& signature_info,
+    scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!database_manager.get()) {
+    return false;
+  }
+
+  if (signature_info.trusted()) {
+    for (int i = 0; i < signature_info.certificate_chain_size(); ++i) {
+      if (IsCertificateChainWhitelisted(signature_info.certificate_chain(i),
+                                        database_manager)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 CheckClientDownloadRequest::CheckClientDownloadRequest(
@@ -93,7 +168,6 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       database_manager_(database_manager),
       pingback_enabled_(service_->enabled()),
       file_analyzer_(new FileAnalyzer(binary_feature_extractor_)),
-      finished_(false),
       type_(ClientDownloadRequest::WIN_EXECUTABLE),
       start_time_(base::TimeTicks::Now()),
       skipped_url_whitelist_(false),
@@ -135,61 +209,35 @@ void CheckClientDownloadRequest::Start() {
         AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile);
   }
 
-  // If whitelist check passes, PostFinishTask() will be called to avoid
+  // If whitelist check passes, FinishRequest() will be called to avoid
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.
-  auto io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
-  cancelable_task_tracker_.PostTask(
-      io_task_runner.get(), FROM_HERE,
-      base::BindOnce(&CheckClientDownloadRequest::CheckUrlAgainstWhitelist,
-                     this));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&CheckUrlAgainstWhitelist, url_chain_.back(),
+                     database_manager_),
+      base::BindOnce(&CheckClientDownloadRequest::OnUrlWhitelistCheckDone,
+                     weakptr_factory_.GetWeakPtr()));
 }
 
 // Start a timeout to cancel the request if it takes too long.
 // This should only be called after we have finished accessing the file.
 void CheckClientDownloadRequest::StartTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service_) {
-    // Request has already been cancelled.
-    return;
-  }
   timeout_start_time_ = base::TimeTicks::Now();
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::Cancel,
-                     weakptr_factory_.GetWeakPtr(), false),
+      base::BindOnce(&CheckClientDownloadRequest::FinishRequest,
+                     weakptr_factory_.GetWeakPtr(),
+                     DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED),
       base::TimeDelta::FromMilliseconds(
           service_->download_request_timeout_ms()));
-}
-
-// Canceling a request will cause us to always report the result as
-// DownloadCheckResult::UNKNOWN unless a pending request is about to call
-// FinishRequest.
-void CheckClientDownloadRequest::Cancel(bool download_destroyed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cancelable_task_tracker_.TryCancelAll();
-  if (loader_.get()) {
-    // The DownloadProtectionService is going to release its reference, so we
-    // might be destroyed before the URLLoader completes.  Cancel the
-    // loader so it does not try to invoke OnURLFetchComplete.
-    loader_.reset();
-  }
-  // Note: If there is no loader, then some callback is still holding a
-  // reference to this object.  We'll eventually wind up in some method on
-  // the UI thread that will call FinishRequest() again.  If FinishRequest()
-  // is called a second time, it will be a no-op.
-  FinishRequest(DownloadCheckResult::UNKNOWN, download_destroyed
-                                                  ? REASON_DOWNLOAD_DESTROYED
-                                                  : REASON_REQUEST_CANCELED);
-  // Calling FinishRequest might delete this object, we may be deleted by
-  // this point.
 }
 
 // download::DownloadItem::Observer implementation.
 void CheckClientDownloadRequest::OnDownloadDestroyed(
     download::DownloadItem* download) {
-  Cancel(/*download_destroyed=*/true);
+  FinishRequest(DownloadCheckResult::UNKNOWN, REASON_DOWNLOAD_DESTROYED);
 }
 
 // TODO: this method puts "DownloadProtectionService::" in front of a lot of
@@ -321,15 +369,11 @@ bool CheckClientDownloadRequest::IsSupportedDownload(
 
 CheckClientDownloadRequest::~CheckClientDownloadRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(item_ == NULL);
+  weakptr_factory_.InvalidateWeakPtrs();
 }
 
 void CheckClientDownloadRequest::AnalyzeFile() {
-  // Returns if DownloadItem is destroyed during whitelist check.
-  if (item_ == nullptr) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DownloadCheckResultReason reason = REASON_MAX;
   if (!IsSupportedDownload(*item_, item_->GetTargetFilePath(), &reason,
@@ -339,7 +383,7 @@ void CheckClientDownloadRequest::AnalyzeFile() {
       case REASON_INVALID_URL:
       case REASON_LOCAL_FILE:
       case REASON_REMOTE_FILE:
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_UNSUPPORTED_URL_SCHEME:
         RecordFileExtensionType(
@@ -347,7 +391,7 @@ void CheckClientDownloadRequest::AnalyzeFile() {
                 "%s.%s", kUnsupportedSchemeUmaPrefix,
                 GetUnsupportedSchemeName(item_->GetUrlChain().back()).c_str()),
             item_->GetTargetFilePath());
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_NOT_BINARY_FILE:
         if (ShouldSampleUnsupportedFile(item_->GetTargetFilePath())) {
@@ -357,7 +401,7 @@ void CheckClientDownloadRequest::AnalyzeFile() {
         }
         RecordFileExtensionType(kDownloadExtensionUmaName,
                                 item_->GetTargetFilePath());
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
 
       default:
@@ -378,19 +422,14 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
     FileAnalyzer::Results results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // This can run in any thread, since it just posts more messages.
-  if (item_ == nullptr) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
-    return;
-  }
-
   // If it's an archive with no archives or executables, finish early.
   if ((type_ == ClientDownloadRequest::ZIPPED_EXECUTABLE ||
        type_ == ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE) &&
       !results.archived_executable && !results.archived_archive &&
       results.archive_is_valid == FileAnalyzer::ArchiveValid::VALID) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN,
-                   REASON_ARCHIVE_WITHOUT_BINARIES);
+    FinishRequest(DownloadCheckResult::UNKNOWN,
+                  REASON_ARCHIVE_WITHOUT_BINARIES);
+    return;
   }
 
   // The content checks cannot determine that we decided to sample this file, so
@@ -413,21 +452,21 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
   detached_code_signatures_.CopyFrom(results.detached_code_signatures);
 #endif
 
-  // TODO(noelutz): DownloadInfo should also contain the IP address of
-  // every URL in the redirect chain.  We also should check whether the
-  // download URL is hosted on the internal network.
-  base::PostTaskWithTraits(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&CheckCertificateChainAgainstWhitelist, signature_info_,
+                     database_manager_),
       base::BindOnce(
-          &CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist,
-          this));
+          &CheckClientDownloadRequest::OnCertificateWhitelistCheckDone,
+          weakptr_factory_.GetWeakPtr()));
 
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
   // checking the file signature and we tried to complete the download.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::StartTimeout, this));
+      base::BindOnce(&CheckClientDownloadRequest::StartTimeout,
+                     weakptr_factory_.GetWeakPtr()));
 }
 
 bool CheckClientDownloadRequest::ShouldSampleWhitelistedDownload() {
@@ -437,17 +476,13 @@ bool CheckClientDownloadRequest::ShouldSampleWhitelistedDownload() {
          base::RandDouble() < service_->whitelist_sample_rate();
 }
 
-void CheckClientDownloadRequest::CheckUrlAgainstWhitelist() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void CheckClientDownloadRequest::OnUrlWhitelistCheckDone(bool is_whitelisted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!database_manager_.get()) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_SB_DISABLED);
-    return;
-  }
-
-  const GURL& url = url_chain_.back();
-  if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
-    DVLOG(2) << url << " is on the download whitelist.";
+  // If the download URL is whitelisted on the whitelist, file feature
+  // extraction and download ping are skipped.
+  if (is_whitelisted) {
+    DVLOG(2) << url_chain_.back() << " is on the download whitelist.";
     RecordCountOfWhitelistedDownload(URL_WHITELIST);
     if (ShouldSampleWhitelistedDownload()) {
       skipped_url_whitelist_ = true;
@@ -455,62 +490,44 @@ void CheckClientDownloadRequest::CheckUrlAgainstWhitelist() {
       // TODO(grt): Continue processing without uploading so that
       // ClientDownloadRequest callbacks can be run even for this type of safe
       // download.
-      PostFinishTask(DownloadCheckResult::SAFE, REASON_WHITELISTED_URL);
+      FinishRequest(DownloadCheckResult::SAFE, REASON_WHITELISTED_URL);
       return;
     }
   }
 
-  // Posts task to continue with analysis.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::AnalyzeFile, this));
+  // Continue with file analysis.
+  AnalyzeFile();
 }
 
-void CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void CheckClientDownloadRequest::OnCertificateWhitelistCheckDone(
+    bool is_whitelisted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!database_manager_.get()) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_SB_DISABLED);
-    return;
-  }
-
-  if (!skipped_url_whitelist_ && signature_info_.trusted()) {
-    for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
-      if (CertificateChainIsWhitelisted(signature_info_.certificate_chain(i))) {
-        RecordCountOfWhitelistedDownload(SIGNATURE_WHITELIST);
-        if (ShouldSampleWhitelistedDownload()) {
-          skipped_certificate_whitelist_ = true;
-          break;
-        } else {
-          // TODO(grt): Continue processing without uploading so that
-          // ClientDownloadRequest callbacks can be run even for this type of
-          // safe download.
-          PostFinishTask(DownloadCheckResult::SAFE, REASON_TRUSTED_EXECUTABLE);
-          return;
-        }
-      }
+  if (!skipped_url_whitelist_ && is_whitelisted) {
+    RecordCountOfWhitelistedDownload(SIGNATURE_WHITELIST);
+    if (ShouldSampleWhitelistedDownload()) {
+      skipped_certificate_whitelist_ = true;
+    } else {
+      // TODO(grt): Continue processing without uploading so that
+      // ClientDownloadRequest callbacks can be run even for this type of
+      // safe download.
+      FinishRequest(DownloadCheckResult::SAFE, REASON_TRUSTED_EXECUTABLE);
+      return;
     }
   }
 
   RecordCountOfWhitelistedDownload(NO_WHITELIST_MATCH);
 
   if (!pingback_enabled_) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_PING_DISABLED);
+    FinishRequest(DownloadCheckResult::UNKNOWN, REASON_PING_DISABLED);
     return;
   }
 
-  // The URLLoader is owned by the UI thread, so post a message to
-  // start the pingback.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::GetTabRedirects, this));
+  GetTabRedirects();
 }
 
 void CheckClientDownloadRequest::GetTabRedirects() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service_)
-    return;
-
   if (!tab_url_.is_valid()) {
     SendRequest();
     return;
@@ -528,7 +545,7 @@ void CheckClientDownloadRequest::GetTabRedirects() {
   history->QueryRedirectsTo(
       tab_url_,
       base::Bind(&CheckClientDownloadRequest::OnGotTabRedirects,
-                 base::Unretained(this), tab_url_),
+                 weakptr_factory_.GetWeakPtr(), tab_url_),
       &request_tracker_);
 }
 
@@ -537,8 +554,6 @@ void CheckClientDownloadRequest::OnGotTabRedirects(
     const history::RedirectList* redirect_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(url, tab_url_);
-  if (!service_)
-    return;
 
   if (!redirect_list->empty()) {
     tab_redirects_.insert(tab_redirects_.end(), redirect_list->rbegin(),
@@ -575,11 +590,6 @@ std::string CheckClientDownloadRequest::SanitizeUrl(const GURL& url) const {
 void CheckClientDownloadRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // This is our last chance to check whether the request has been canceled
-  // before sending it.
-  if (!service_)
-    return;
-
   auto request = std::make_unique<ClientDownloadRequest>();
   auto population = is_extended_reporting_
                         ? ChromeUserPopulation::EXTENDED_REPORTING
@@ -614,7 +624,6 @@ void CheckClientDownloadRequest::SendRequest() {
       DVLOG(2) << "dl redirect " << i << " " << resource->url();
       resource->set_type(ClientDownloadRequest::DOWNLOAD_REDIRECT);
     }
-    // TODO(noelutz): fill out the remote IP addresses.
   }
   // TODO(mattm): fill out the remote IP addresses for tab resources.
   for (size_t i = 0; i < tab_redirects_.size(); ++i) {
@@ -694,7 +703,7 @@ void CheckClientDownloadRequest::SendRequest() {
   // verdict as closely as possible.
   if (IsDownloadManuallyBlacklisted(*request)) {
     DVLOG(1) << "Download verdict overridden to DANGEROUS by flag.";
-    PostFinishTask(DownloadCheckResult::DANGEROUS, REASON_MANUAL_BLACKLIST);
+    FinishRequest(DownloadCheckResult::DANGEROUS, REASON_MANUAL_BLACKLIST);
     return;
   }
 
@@ -756,7 +765,7 @@ void CheckClientDownloadRequest::SendRequest() {
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       service_->url_loader_factory_.get(),
       base::BindOnce(&CheckClientDownloadRequest::OnURLLoaderComplete,
-                     base::Unretained(this)));
+                     weakptr_factory_.GetWeakPtr()));
   request_start_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DownloadRequestPayloadSize",
                           client_download_request_data_.size());
@@ -771,27 +780,12 @@ void CheckClientDownloadRequest::SendRequest() {
                      std::move(request)));
 }
 
-void CheckClientDownloadRequest::PostFinishTask(
-    DownloadCheckResult result,
-    DownloadCheckResultReason reason) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::FinishRequest, this, result,
-                     reason));
-}
-
 void CheckClientDownloadRequest::FinishRequest(
     DownloadCheckResult result,
     DownloadCheckResultReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (finished_) {
-    return;
-  }
-  finished_ = true;
-
-  // Ensure the timeout task is cancelled while we still have a non-zero
-  // refcount. (crbug.com/240449)
   weakptr_factory_.InvalidateWeakPtrs();
+
   if (!request_start_time_.is_null()) {
     UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadRequestNetworkStats",
                               reason, REASON_MAX);
@@ -804,66 +798,16 @@ void CheckClientDownloadRequest::FinishRequest(
                           base::TimeTicks::Now() - timeout_start_time_);
     }
   }
-  if (service_) {
-    DVLOG(2) << "SafeBrowsing download verdict for: "
-             << item_->DebugString(true) << " verdict:" << reason
-             << " result:" << static_cast<int>(result);
-    UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
-                              REASON_MAX);
-    if (reason != REASON_DOWNLOAD_DESTROYED)
-      callback_.Run(result);
-    item_->RemoveObserver(this);
-    item_ = NULL;
-    DownloadProtectionService* service = service_;
-    service_ = NULL;
-    service->RequestFinished(this);
-    // DownloadProtectionService::RequestFinished will decrement our refcount,
-    // so we may be deleted now.
-  } else {
-    callback_.Run(DownloadCheckResult::UNKNOWN);
-    item_ = NULL;
-  }
-}
 
-bool CheckClientDownloadRequest::CertificateChainIsWhitelisted(
-    const ClientDownloadRequest_CertificateChain& chain) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (chain.element_size() < 2) {
-    // We need to have both a signing certificate and its issuer certificate
-    // present to construct a whitelist entry.
-    return false;
-  }
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBytes(
-          chain.element(0).certificate().data(),
-          chain.element(0).certificate().size());
-  if (!cert.get()) {
-    return false;
-  }
-
-  for (int i = 1; i < chain.element_size(); ++i) {
-    scoped_refptr<net::X509Certificate> issuer =
-        net::X509Certificate::CreateFromBytes(
-            chain.element(i).certificate().data(),
-            chain.element(i).certificate().size());
-    if (!issuer.get()) {
-      return false;
-    }
-    std::vector<std::string> whitelist_strings;
-    DownloadProtectionService::GetCertificateWhitelistStrings(
-        *cert.get(), *issuer.get(), &whitelist_strings);
-    for (size_t j = 0; j < whitelist_strings.size(); ++j) {
-      if (database_manager_->MatchDownloadWhitelistString(
-              whitelist_strings[j])) {
-        DVLOG(2) << "Certificate matched whitelist, cert="
-                 << cert->subject().GetDisplayName()
-                 << " issuer=" << issuer->subject().GetDisplayName();
-        return true;
-      }
-    }
-    cert = issuer;
-  }
-  return false;
+  DVLOG(2) << "SafeBrowsing download verdict for: " << item_->DebugString(true)
+           << " verdict:" << reason << " result:" << static_cast<int>(result);
+  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
+                            REASON_MAX);
+  if (reason != REASON_DOWNLOAD_DESTROYED)
+    callback_.Run(result);
+  item_->RemoveObserver(this);
+  service_->RequestFinished(this);
+  // DownloadProtectionService::RequestFinished may delete us.
 }
 
 }  // namespace safe_browsing

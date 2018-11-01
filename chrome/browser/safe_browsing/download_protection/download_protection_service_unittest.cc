@@ -344,15 +344,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     RunLoop().RunUntilIdle();
   }
 
-  // Proxy for private method.
-  static void GetCertificateWhitelistStrings(
-      const net::X509Certificate& certificate,
-      const net::X509Certificate& issuer,
-      std::vector<std::string>* whitelist_strings) {
-    DownloadProtectionService::GetCertificateWhitelistStrings(
-        certificate, issuer, whitelist_strings);
-  }
-
   // Reads a single PEM-encoded certificate from the testdata directory.
   // Returns NULL on failure.
   scoped_refptr<net::X509Certificate> ReadTestCertificate(
@@ -2233,87 +2224,6 @@ TEST_F(DownloadProtectionServiceTest,
 
   EXPECT_FALSE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
-}
-
-TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {
-  // We'll pass this cert in as the "issuer", even though it isn't really
-  // used to sign the certs below.  GetCertificateWhitelistStirngs doesn't care
-  // about this.
-  scoped_refptr<net::X509Certificate> issuer_cert(
-      ReadTestCertificate("issuer.pem"));
-  ASSERT_TRUE(issuer_cert.get());
-  std::string hashed = base::SHA1HashString(std::string(
-      net::x509_util::CryptoBufferAsStringPiece(issuer_cert->cert_buffer())));
-  std::string cert_base =
-      "cert/" + base::HexEncode(hashed.data(), hashed.size());
-
-  scoped_refptr<net::X509Certificate> cert(ReadTestCertificate("test_cn.pem"));
-  ASSERT_TRUE(cert.get());
-  std::vector<std::string> whitelist_strings;
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  // This also tests escaping of characters in the certificate attributes.
-  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/CN=subject%2F%251"));
-
-  cert = ReadTestCertificate("test_cn_o.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/CN=subject",
-                                             cert_base + "/CN=subject/O=org",
-                                             cert_base + "/O=org"));
-
-  cert = ReadTestCertificate("test_cn_o_ou.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(
-      whitelist_strings,
-      ElementsAre(cert_base + "/CN=subject", cert_base + "/CN=subject/O=org",
-                  cert_base + "/CN=subject/O=org/OU=unit",
-                  cert_base + "/CN=subject/OU=unit", cert_base + "/O=org",
-                  cert_base + "/O=org/OU=unit", cert_base + "/OU=unit"));
-
-  cert = ReadTestCertificate("test_cn_ou.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/CN=subject",
-                                             cert_base + "/CN=subject/OU=unit",
-                                             cert_base + "/OU=unit"));
-
-  cert = ReadTestCertificate("test_o.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/O=org"));
-
-  cert = ReadTestCertificate("test_o_ou.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings,
-              ElementsAre(cert_base + "/O=org", cert_base + "/O=org/OU=unit",
-                          cert_base + "/OU=unit"));
-
-  cert = ReadTestCertificate("test_ou.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings, ElementsAre(cert_base + "/OU=unit"));
-
-  cert = ReadTestCertificate("test_c.pem");
-  ASSERT_TRUE(cert.get());
-  whitelist_strings.clear();
-  GetCertificateWhitelistStrings(*cert.get(), *issuer_cert.get(),
-                                 &whitelist_strings);
-  EXPECT_THAT(whitelist_strings, ElementsAre());
 }
 
 namespace {

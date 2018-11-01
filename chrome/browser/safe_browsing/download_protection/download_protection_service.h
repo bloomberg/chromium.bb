@@ -39,10 +39,6 @@ namespace download {
 class DownloadItem;
 }
 
-namespace net {
-class X509Certificate;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -204,14 +200,6 @@ class DownloadProtectionService {
 
   void PPAPIDownloadCheckRequestFinished(PPAPIDownloadRequest* request);
 
-  // Given a certificate and its immediate issuer certificate, generates the
-  // list of strings that need to be checked against the download whitelist to
-  // determine whether the certificate is whitelisted.
-  static void GetCertificateWhitelistStrings(
-      const net::X509Certificate& certificate,
-      const net::X509Certificate& issuer,
-      std::vector<std::string>* whitelist_strings);
-
   // Identify referrer chain info of a download. This function also records UMA
   // stats of download attribution result.
   std::unique_ptr<ReferrerChainData> IdentifyReferrerChain(
@@ -242,7 +230,9 @@ class DownloadProtectionService {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Set of pending server requests for DownloadManager mediated downloads.
-  std::set<scoped_refptr<CheckClientDownloadRequest>> download_requests_;
+  std::unordered_map<CheckClientDownloadRequest*,
+                     std::unique_ptr<CheckClientDownloadRequest>>
+      download_requests_;
 
   // Set of pending server requests for PPAPI mediated downloads. Using a map
   // because heterogeneous lookups aren't available yet in std::unordered_map.

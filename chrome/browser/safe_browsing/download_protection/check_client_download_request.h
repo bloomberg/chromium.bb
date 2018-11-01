@@ -16,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
@@ -44,10 +43,7 @@ class SimpleURLLoader;
 
 namespace safe_browsing {
 
-class CheckClientDownloadRequest
-    : public base::RefCountedThreadSafe<CheckClientDownloadRequest,
-                                        BrowserThread::DeleteOnUIThread>,
-      public download::DownloadItem::Observer {
+class CheckClientDownloadRequest : public download::DownloadItem::Observer {
  public:
   CheckClientDownloadRequest(
       download::DownloadItem* item,
@@ -55,13 +51,12 @@ class CheckClientDownloadRequest
       DownloadProtectionService* service,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       BinaryFeatureExtractor* binary_feature_extractor);
+  ~CheckClientDownloadRequest() override;
+
   bool ShouldSampleUnsupportedFile(const base::FilePath& filename);
   void Start();
   void StartTimeout();
 
-  // |download_destroyed| indicates if cancellation is due to the destruction of
-  // the download item.
-  void Cancel(bool download_destroyed);
   void OnDownloadDestroyed(download::DownloadItem* download) override;
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
   static bool IsSupportedDownload(const download::DownloadItem& item,
@@ -76,40 +71,20 @@ class CheckClientDownloadRequest
   using ArchivedBinaries =
       google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>;
 
-  ~CheckClientDownloadRequest() override;
   // Performs file feature extraction and SafeBrowsing ping for downloads that
   // don't match the URL whitelist.
   void AnalyzeFile();
   void OnFileFeatureExtractionDone(FileAnalyzer::Results results);
-  void StartExtractFileFeatures();
-  void ExtractFileFeatures(const base::FilePath& file_path);
-  void StartExtractRarFeatures();
-  void OnRarAnalysisFinished(const ArchiveAnalyzerResults& results);
-  void StartExtractZipFeatures();
-  void OnZipAnalysisFinished(const ArchiveAnalyzerResults& results);
-
-  static void CopyArchivedBinaries(const ArchivedBinaries& src_binaries,
-                                   ArchivedBinaries* dest_binaries);
-
-#if defined(OS_MACOSX)
-  void StartExtractDmgFeatures();
-  void ExtractFileOrDmgFeatures(bool download_file_has_koly_signature);
-  void OnDmgAnalysisFinished(const ArchiveAnalyzerResults& results);
-#endif  // defined(OS_MACOSX)
 
   bool ShouldSampleWhitelistedDownload();
-  // Checks the download URL against SafeBrowsing whitelist. If download URL is
-  // on whitelist, file feature extraction and download ping are skipped.
-  void CheckUrlAgainstWhitelist();
-  void CheckCertificateChainAgainstWhitelist();
+  void OnUrlWhitelistCheckDone(bool is_whitelisted);
+  void OnCertificateWhitelistCheckDone(bool is_whitelisted);
   void GetTabRedirects();
   void OnGotTabRedirects(const GURL& url,
                          const history::RedirectList* redirect_list);
   bool IsDownloadManuallyBlacklisted(const ClientDownloadRequest& request);
   std::string SanitizeUrl(const GURL& url) const;
   void SendRequest();
-  void PostFinishTask(DownloadCheckResult result,
-                      DownloadCheckResultReason reason);
   void FinishRequest(DownloadCheckResult result,
                      DownloadCheckResultReason reason);
   bool CertificateChainIsWhitelisted(
@@ -148,7 +123,6 @@ class CheckClientDownloadRequest
   const bool pingback_enabled_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   std::unique_ptr<FileAnalyzer> file_analyzer_;
-  bool finished_;
   ClientDownloadRequest::DownloadType type_;
   std::string client_download_request_data_;
   base::CancelableTaskTracker request_tracker_;  // For HistoryService lookup.
@@ -160,9 +134,7 @@ class CheckClientDownloadRequest
   bool is_extended_reporting_;
   bool is_incognito_;
   bool is_under_advanced_protection_;
-  // This task tracker is used for posting the URL whitelist check to the IO
-  // thread. The posted task will be cancelled if DownloadItem gets destroyed.
-  base::CancelableTaskTracker cancelable_task_tracker_;
+
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(CheckClientDownloadRequestTest,
