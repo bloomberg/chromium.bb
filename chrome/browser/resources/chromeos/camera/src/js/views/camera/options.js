@@ -189,7 +189,7 @@ camera.views.camera.Options.prototype.prepare = function() {
     toggleMic: true,
     toggleTimer: false,
     toggleGrid: false,
-    mirroringToggles: {},  // Manually mirroring states per video device.
+    mirroringToggles: {}, // Manually mirroring states per video device.
   }, values => {
     this.changeToggle_(this.toggleMic_, values.toggleMic);
     this.changeToggle_(this.toggleTimer_, values.toggleTimer);

@@ -53,7 +53,7 @@ camera.bg.create = function() {
     chrome.app.window.create('views/main.html', {
       id: 'main',
       frame: {color: camera.bg.TOPBAR_COLOR},
-      hidden: true,  // Will be shown from main.js once loaded.
+      hidden: true, // Will be shown from main.js once loaded.
       innerBounds: {
         width: camera.bg.MIN_WIDTH,
         height: initialHeight,

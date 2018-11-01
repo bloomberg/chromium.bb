@@ -307,11 +307,11 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
       this.router.back();
       event.preventDefault();
       break;
-    case 'Ctrl-S':  // Ctrl+S for saving.
+    case 'Ctrl-S': // Ctrl+S for saving.
       this.exportSelection();
       event.preventDefault();
       break;
-    case 'Ctrl-P':  // Ctrl+P for printing.
+    case 'Ctrl-P': // Ctrl+P for printing.
       window.print();
       event.preventDefault();
       break;
