@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
-#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
+#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_ETHI_H_
+#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_ETHI_H_
 
-namespace deva_phone {
+namespace ethi {
 
 // The id of this IME/keyboard.
 extern const char* kId;
+
+// Whether this keyboard layout is a 102 or 101 keyboard.
+extern bool kIs102;
+
+// The key mapping definitions under various modifier states.
+extern const char** kKeyMap[8];
 
 // The transform rules definition. The string items in the even indexes are
 // the regular expressions represent what needs to be transformed, and the
@@ -21,6 +27,6 @@ extern const unsigned int kTransformsLen;
 // The history prune regexp.
 extern const char* kHistoryPrune;
 
-}  // namespace deva_phone
+}  // namespace ethi
 
-#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_DEVA_PHONE_H_
+#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_ETHI_H_

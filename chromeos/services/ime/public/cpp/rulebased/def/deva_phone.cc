@@ -8,6 +8,8 @@
 
 namespace deva_phone {
 
+const char* kId = "deva_phone";
+bool kIs102 = false;
 const char* kTransforms[] = {
     u8"0",
     u8"\u0966",
@@ -191,9 +193,9 @@ const char* kTransforms[] = {
     u8"\u0935",
     u8"w",
     u8"\u0935",
-    u8"u8",
+    u8"L",
     u8"\u0933",
-    u8"\\.u8",
+    u8"\\.L",
     u8"\u0934",
     u8"l",
     u8"\u0932",
@@ -309,9 +311,9 @@ const char* kTransforms[] = {
     u8"\\1\u094d\u0935",
     u8"([\u0915-\u0939\u0958-\u095f])\u001d?w",
     u8"\\1\u094d\u0935",
-    u8"([\u0915-\u0939\u0958-\u095f])\u001d?u8",
+    u8"([\u0915-\u0939\u0958-\u095f])\u001d?L",
     u8"\\1\u094d\u0933",
-    u8"([\u0915-\u0939\u0958-\u095f])\u001d?\\.u8",
+    u8"([\u0915-\u0939\u0958-\u095f])\u001d?\\.L",
     u8"\\1\u094d\u0934",
     u8"([\u0915-\u0939\u0958-\u095f])\u001d?l",
     u8"\\1\u094d\u0932",
@@ -439,9 +441,9 @@ const char* kTransforms[] = {
     u8"\\1\u0935",
     u8"([\u0915-\u0939\u0958-\u095f])\u001d?aw",
     u8"\\1\u0935",
-    u8"([\u0915-\u0939\u0958-\u095f])\u001d?au8",
+    u8"([\u0915-\u0939\u0958-\u095f])\u001d?aL",
     u8"\\1\u0933",
-    u8"([\u0915-\u0939\u0958-\u095f])\u001d?a\\.u8",
+    u8"([\u0915-\u0939\u0958-\u095f])\u001d?a\\.L",
     u8"\\1\u0934",
     u8"([\u0915-\u0939\u0958-\u095f])\u001d?al",
     u8"\\1\u0932",
@@ -531,11 +533,7 @@ const char* kTransforms[] = {
     u8"\u0965",
     u8"\u0964\u001d?\\.",
     u8"\u2026"};
-
 const unsigned int kTransformsLen = base::size(kTransforms);
-
 const char* kHistoryPrune = "n(\\.)?|c|ch|C|nc|nC|nch|\\.|a";
-
-const char* kId = "deva_phone";
 
 }  // namespace deva_phone
