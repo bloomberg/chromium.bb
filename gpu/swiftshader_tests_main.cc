@@ -8,7 +8,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/swiftshader/tests/unittests/SwiftShaderTest.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/swiftshader/tests/GLESUnitTests/SwiftShaderTest.h"
 
 namespace {
 
