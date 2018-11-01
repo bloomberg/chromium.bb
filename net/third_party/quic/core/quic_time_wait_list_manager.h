@@ -131,6 +131,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                                QuicConnectionId connection_id,
                                bool ietf_quic);
 
+  virtual void GetEndpointId(QuicString* endpoint_id) {}
+
   // Returns a stateless reset token which will be included in the public reset
   // packet.
   virtual QuicUint128 GetStatelessResetToken(

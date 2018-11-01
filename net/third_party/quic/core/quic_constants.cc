@@ -8,4 +8,7 @@ namespace quic {
 
 const char* const kFinalOffsetHeaderKey = ":final-offset";
 
+const char* const kEPIDGoogleFrontEnd = "GFE";
+const char* const kEPIDGoogleFrontEnd0 = "GFE0";
+
 }  // namespace quic

@@ -8323,6 +8323,10 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
   QuicPublicResetPacket reset_packet;
   reset_packet.connection_id = kConnectionId;
   reset_packet.nonce_proof = kNonceProof;
+  if (!GetQuicReloadableFlag(quic_enable_server_epid_in_public_reset)) {
+    // If the flag is off, EPID shouldn't be serialized even if it's set.
+    reset_packet.endpoint_id = "FakeServerId";
+  }
 
   // clang-format off
   unsigned char packet[] = {
@@ -8403,6 +8407,88 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
                                       QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildPublicResetPacketWithEndpointId) {
+  if (!GetQuicReloadableFlag(quic_enable_server_epid_in_public_reset)) {
+    return;
+  }
+  QuicPublicResetPacket reset_packet;
+  reset_packet.connection_id = kConnectionId;
+  reset_packet.nonce_proof = kNonceProof;
+  reset_packet.endpoint_id = "FakeServerId";
+
+  // The tag value map in CryptoHandshakeMessage is a std::map, so the two tags
+  // in the packet, kRNON and kEPID, have unspecified ordering w.r.t each other.
+  // clang-format off
+  unsigned char packet_variant1[] = {
+      // public flags (public reset, 8 byte ConnectionId)
+      0x0E,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98,
+      0x76, 0x54, 0x32, 0x10,
+      // message tag (kPRST)
+      'P', 'R', 'S', 'T',
+      // num_entries (2) + padding
+      0x02, 0x00, 0x00, 0x00,
+      // tag kRNON
+      'R', 'N', 'O', 'N',
+      // end offset 8
+      0x08, 0x00, 0x00, 0x00,
+      // tag kEPID
+      'E', 'P', 'I', 'D',
+      // end offset 20
+      0x14, 0x00, 0x00, 0x00,
+      // nonce proof
+      0x89, 0x67, 0x45, 0x23,
+      0x01, 0xEF, 0xCD, 0xAB,
+      // Endpoint ID
+      'F', 'a', 'k', 'e', 'S', 'e', 'r', 'v', 'e', 'r', 'I', 'd',
+  };
+  unsigned char packet_variant2[] = {
+      // public flags (public reset, 8 byte ConnectionId)
+      0x0E,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98,
+      0x76, 0x54, 0x32, 0x10,
+      // message tag (kPRST)
+      'P', 'R', 'S', 'T',
+      // num_entries (2) + padding
+      0x02, 0x00, 0x00, 0x00,
+      // tag kEPID
+      'E', 'P', 'I', 'D',
+      // end offset 12
+      0x0C, 0x00, 0x00, 0x00,
+      // tag kRNON
+      'R', 'N', 'O', 'N',
+      // end offset 20
+      0x14, 0x00, 0x00, 0x00,
+      // Endpoint ID
+      'F', 'a', 'k', 'e', 'S', 'e', 'r', 'v', 'e', 'r', 'I', 'd',
+      // nonce proof
+      0x89, 0x67, 0x45, 0x23,
+      0x01, 0xEF, 0xCD, 0xAB,
+  };
+  // clang-format on
+
+  if (framer_.transport_version() > QUIC_VERSION_43) {
+    return;
+  }
+
+  std::unique_ptr<QuicEncryptedPacket> data(
+      framer_.BuildPublicResetPacket(reset_packet));
+  ASSERT_TRUE(data != nullptr);
+
+  // Variant 1 ends with char 'd'. Variant 1 ends with char 0xAB.
+  if ('d' == data->data()[data->length() - 1]) {
+    test::CompareCharArraysWithHexError(
+        "constructed packet", data->data(), data->length(),
+        AsChars(packet_variant1), QUIC_ARRAYSIZE(packet_variant1));
+  } else {
+    test::CompareCharArraysWithHexError(
+        "constructed packet", data->data(), data->length(),
+        AsChars(packet_variant2), QUIC_ARRAYSIZE(packet_variant2));
+  }
 }
 
 TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {

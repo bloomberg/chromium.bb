@@ -1112,6 +1112,12 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
     }
     reset.SetStringPiece(kCADR, serialized_address);
   }
+  if (GetQuicReloadableFlag(quic_enable_server_epid_in_public_reset) &&
+      !packet.endpoint_id.empty()) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_enable_server_epid_in_public_reset);
+    reset.SetStringPiece(kEPID, packet.endpoint_id);
+  }
   const QuicData& reset_serialized = reset.GetSerialized();
 
   size_t len =
@@ -1583,6 +1589,13 @@ bool QuicFramer::ProcessPublicResetPacket(QuicDataReader* reader,
       packet.client_address =
           QuicSocketAddress(address_coder.ip(), address_coder.port());
     }
+  }
+
+  QuicStringPiece endpoint_id;
+  if (perspective_ == Perspective::IS_CLIENT &&
+      reset->GetStringPiece(kEPID, &endpoint_id)) {
+    packet.endpoint_id = QuicString(endpoint_id);
+    packet.endpoint_id += '\0';
   }
 
   visitor_->OnPublicResetPacket(packet);

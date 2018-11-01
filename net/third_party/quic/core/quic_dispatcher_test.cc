@@ -520,26 +520,11 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(1, _));
   ProcessPacket(client_address, connection_id, true, SerializeCHLO());
 
-  // Close the connection by sending public reset packet.
-  QuicPublicResetPacket packet;
-  packet.connection_id = connection_id;
-  packet.nonce_proof = 132232;
-  std::unique_ptr<QuicEncryptedPacket> encrypted(
-      QuicFramer::BuildPublicResetPacket(packet));
-  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
-      *encrypted, session1_->connection()->clock()->Now()));
-  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET, _,
-                                             ConnectionCloseSource::FROM_PEER))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke(
-          reinterpret_cast<MockServerConnection*>(session1_->connection()),
-          &MockServerConnection::UnregisterOnConnectionClosed)));
-  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
-              ProcessUdpPacket(_, _, _))
-      .WillOnce(
-          Invoke(reinterpret_cast<MockQuicConnection*>(session1_->connection()),
-                 &MockQuicConnection::ReallyProcessUdpPacket));
-  dispatcher_->ProcessPacket(QuicSocketAddress(), client_address, *received);
+  // Now close the connection, which should add it to the time wait list.
+  session1_->connection()->CloseConnection(
+      QUIC_INVALID_VERSION,
+      "Server: Packet 2 without version flag before version negotiated.",
+      ConnectionCloseBehavior::SILENT_CLOSE);
   EXPECT_TRUE(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
 
   // Dispatcher forwards subsequent packets for this connection_id to the time

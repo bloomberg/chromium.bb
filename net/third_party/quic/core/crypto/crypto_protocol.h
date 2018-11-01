@@ -257,6 +257,9 @@ const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding
 // Server push tags
 const QuicTag kSPSH = TAG('S', 'P', 'S', 'H');  // Support server push.
 
+// Stats collection tags
+const QuicTag kEPID = TAG('E', 'P', 'I', 'D');  // Endpoint identifier.
+
 // clang-format on
 
 // These tags have a special form so that they appear either at the beginning

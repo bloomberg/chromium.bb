@@ -226,6 +226,10 @@ const size_t kMaxNewTokenTokenLength = 0xffff;
 // Used to represent an invalid packet number.
 const QuicPacketNumber kInvalidPacketNumber = 0;
 
+// Used by clients to tell if a public reset is sent from a Google frontend.
+QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
+QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_
