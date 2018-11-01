@@ -51,7 +51,7 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   }
   /** @override */
   recordProviderSelected() {
-    this.methodCalled('recordProviderSelected');
+    this.methodCalled('recordProviderSelected', arguments);
   }
   /** @override */
   recordNoThanks() {
