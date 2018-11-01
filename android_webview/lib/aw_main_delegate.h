@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -51,6 +52,10 @@ class AwMainDelegate : public content::ContentMainDelegate {
   content::ContentRendererClient* CreateContentRendererClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
 
+  // Responsible for creating a feature list from the seed. This object must
+  // exist for the lifetime of the process as it contains the FieldTrialList
+  // that can be queried for the state of experiments.
+  std::unique_ptr<AwFeatureListCreator> aw_feature_list_creator_;
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;
   std::unique_ptr<AwContentBrowserClient> content_browser_client_;

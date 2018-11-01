@@ -15,6 +15,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
+#include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_proxying_url_loader_factory.h"
@@ -50,6 +51,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/features.h"
@@ -208,7 +210,15 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
   return AwBrowserContext::GetDefault();
 }
 
-AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
+AwContentBrowserClient::AwContentBrowserClient(
+    AwFeatureListCreator* aw_feature_list_creator)
+    : net_log_(new net::NetLog()),
+      aw_feature_list_creator_(aw_feature_list_creator) {
+  // |aw_feature_list_creator| should not be null. The AwBrowserContext will
+  // take the PrefService owned by the creator as the Local State instead
+  // of loading the JSON file from disk.
+  DCHECK(aw_feature_list_creator_);
+
   // Although WebView does not support password manager feature, renderer code
   // could still request this interface, so we register a dummy binder which
   // just drops the incoming request, to avoid the 'Failed to locate a binder
@@ -220,15 +230,15 @@ AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
 
-AwBrowserContext* AwContentBrowserClient::InitBrowserContext(
-    std::unique_ptr<PrefService> pref_service,
-    std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector) {
+AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   base::FilePath user_data_dir;
   if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
+
   browser_context_ = std::make_unique<AwBrowserContext>(
-      user_data_dir, std::move(pref_service), std::move(policy_connector));
+      user_data_dir, aw_feature_list_creator_->TakePrefService(),
+      aw_feature_list_creator_->TakeBrowserPolicyConnector());
   return browser_context_.get();
 }
 

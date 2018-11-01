@@ -7,17 +7,12 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_field_trial_creator.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace base {
 class MessageLoop;
-}
-
-namespace policy {
-class BrowserPolicyConnectorBase;
 }
 
 namespace android_webview {
@@ -41,17 +36,7 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   // Android specific UI MessageLoop.
   std::unique_ptr<base::MessageLoop> main_message_loop_;
 
-  // Created and temporarily owned by AwBrowserMainParts
-  // until ownership is transferred to AwBrowserContext.
-  std::unique_ptr<PrefService> pref_service_;
-  std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
-
   AwContentBrowserClient* browser_client_;
-
-  // Responsible for creating a feature list from the seed. This object must
-  // exist for the lifetime of the process as it contains the FieldTrialList
-  // that can be queried for the state of experiments.
-  AwFieldTrialCreator aw_field_trial_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserMainParts);
 };

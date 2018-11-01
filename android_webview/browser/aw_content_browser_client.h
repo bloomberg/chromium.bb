@@ -17,18 +17,12 @@
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-class PrefService;
-
 namespace content {
 class RenderFrameHost;
 }
 
 namespace net {
 class NetLog;
-}
-
-namespace policy {
-class BrowserPolicyConnectorBase;
 }
 
 namespace safe_browsing {
@@ -38,6 +32,7 @@ class UrlCheckerDelegate;
 namespace android_webview {
 
 class AwBrowserContext;
+class AwFeatureListCreator;
 
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -47,14 +42,14 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // Deprecated: use AwBrowserContext::GetDefault() instead.
   static AwBrowserContext* GetAwBrowserContext();
 
-  AwContentBrowserClient();
+  // |aw_feature_list_creator| should not be null.
+  explicit AwContentBrowserClient(
+      AwFeatureListCreator* aw_feature_list_creator);
   ~AwContentBrowserClient() override;
 
   // Allows AwBrowserMainParts to initialize a BrowserContext at the right
   // moment during startup. AwContentBrowserClient owns the result.
-  AwBrowserContext* InitBrowserContext(
-      std::unique_ptr<PrefService> pref_service,
-      std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector);
+  AwBrowserContext* InitBrowserContext();
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
@@ -212,6 +207,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryRequest* factory_request,
       bool* bypass_redirect_checks) override;
 
+  AwFeatureListCreator* aw_feature_list_creator() {
+    return aw_feature_list_creator_;
+  }
+
   static void DisableCreatingTaskScheduler();
 
  private:
@@ -230,6 +229,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       safe_browsing_url_checker_delegate_;
 
   bool sniff_file_urls_;
+
+  // The AwFeatureListCreator is owned by AwMainDelegate.
+  AwFeatureListCreator* const aw_feature_list_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };
