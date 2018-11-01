@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -95,7 +94,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         // Also, notifyDataSetChanged takes no effect if called within an update, so moving this
         // after pushing the state results in cached icons not showing up.
         maybeFetchAnswerIcon(item);
-        updateView(suggestionView, item, position);
+        updateView(getModel(suggestionView), item, position);
         // TODO(tedchoc): Investigate whether this is still needed.
         suggestionView.jumpDrawablesToCurrentState();
 
@@ -113,10 +112,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         return model;
     }
 
-    private void updateView(SuggestionView view, OmniboxResultItem item, int position) {
-        PropertyModel model = getModel(view);
-        Paint textLine1Paint = view.getTextLine1().getPaint();
-        Paint textLine2Paint = view.getTextLine2().getPaint();
+    private void updateView(PropertyModel model, OmniboxResultItem item, int position) {
         model.set(SuggestionViewProperties.DELEGATE,
                 createSuggestionViewDelegate(item.getSuggestion(), position));
         model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
