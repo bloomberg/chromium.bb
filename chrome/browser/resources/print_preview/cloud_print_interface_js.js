@@ -2,31 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('cloudprint');
-
-/**
- * Event types dispatched by the cloudprint interface.
- * @enum {string}
- */
-cloudprint.CloudPrintInterfaceEventType = {
-  INVITES_DONE: 'cloudprint.CloudPrintInterface.INVITES_DONE',
-  INVITES_FAILED: 'cloudprint.CloudPrintInterface.INVITES_FAILED',
-  PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
-  PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
-  PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
-  PROCESS_INVITE_FAILED: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_FAILED',
-  SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
-  SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
-  SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
-  SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
-};
-
 cr.define('cloudprint', function() {
   'use strict';
 
   const CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
 
-  class CloudPrintInterfaceJS extends cr.EventTarget {
+  /** @implements {cloudprint.CloudPrintInterface} */
+  class CloudPrintInterfaceJS {
     /**
      * API to the Google Cloud Print service.
      * @param {string} baseUrl Base part of the Google Cloud Print service URL
@@ -39,8 +21,6 @@ cr.define('cloudprint', function() {
      *     Kiosk mode.
      */
     constructor(baseUrl, nativeLayer, userInfo, isInAppKioskMode) {
-      super();
-
       /**
        * The base URL of the Google Cloud Print API.
        * @private {string}
@@ -93,28 +73,22 @@ cr.define('cloudprint', function() {
        * @private {?Promise<string>}
        */
       this.accessTokenRequestPromise_ = null;
+
+      /** @private {!cr.EventTarget} */
+      this.eventTarget_ = new cr.EventTarget();
     }
 
-    /** @return {string} Base URL of the Google Cloud Print service. */
-    get baseUrl() {
-      return this.baseUrl_;
+    /** @override */
+    getEventTarget() {
+      return this.eventTarget_;
     }
 
-    /**
-     * @return {boolean} Whether a search for cloud destinations is in progress.
-     */
-    get isCloudDestinationSearchInProgress() {
+    /** @override */
+    isCloudDestinationSearchInProgress() {
       return this.outstandingCloudSearchRequests_.length > 0;
     }
 
-    /**
-     * Sends Google Cloud Print search API request.
-     * @param {?string=} opt_account Account the search is sent for. When
-     *      null or omitted, the search is done on behalf of the primary user.
-     * @param {print_preview.DestinationOrigin=} opt_origin When specified,
-     *     searches destinations for {@code opt_origin} only, otherwise starts
-     *     searches for all origins.
-     */
+    /** @override */
     search(opt_account, opt_origin) {
       const account = opt_account || '';
       let origins = opt_origin && [opt_origin] || CLOUD_ORIGINS_;
@@ -156,10 +130,7 @@ cr.define('cloudprint', function() {
       }, this);
     }
 
-    /**
-     * Sends Google Cloud Print printer sharing invitations API requests.
-     * @param {string} account Account the request is sent for.
-     */
+    /** @override */
     invites(account) {
       const params = [
         new HttpParam('client', 'chrome'),
@@ -169,11 +140,7 @@ cr.define('cloudprint', function() {
           account, this.onInvitesDone_.bind(this)));
     }
 
-    /**
-     * Accepts or rejects printer sharing invitation.
-     * @param {!print_preview.Invitation} invitation Invitation to process.
-     * @param {boolean} accept Whether to accept this invitation.
-     */
+    /** @override */
     processInvite(invitation, accept) {
       const params = [
         new HttpParam('printerid', invitation.destination.id),
@@ -187,14 +154,7 @@ cr.define('cloudprint', function() {
           this.onProcessInviteDone_.bind(this, invitation, accept)));
     }
 
-    /**
-     * Sends a Google Cloud Print submit API request.
-     * @param {!print_preview.Destination} destination Cloud destination to
-     *     print to.
-     * @param {string} printTicket The print ticket to print.
-     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-     * @param {string} data Base64 encoded data of the document.
-     */
+    /** @override */
     submit(destination, printTicket, documentInfo, data) {
       const result = VERSION_REGEXP_.exec(navigator.userAgent);
       let chromeVersion = 'unknown';
@@ -216,16 +176,7 @@ cr.define('cloudprint', function() {
       this.sendOrQueueRequest_(cpRequest);
     }
 
-    /**
-     * Sends a Google Cloud Print printer API request.
-     * @param {string} printerId ID of the printer to lookup.
-     * @param {!print_preview.DestinationOrigin} origin Origin of the printer.
-     * @param {string=} account Account this printer is registered for. When
-     *     provided for COOKIES {@code origin}, and users sessions are still not
-     *     known, will be checked against the response (both success and failure
-     *     to get printer) and, if the active user account is not the one
-     *     requested, {@code account} is activated and printer request reissued.
-     */
+    /** @override */
     printer(printerId, origin, account) {
       const params = [
         new HttpParam('printerid', printerId), new HttpParam('use_cdd', 'true'),
@@ -482,7 +433,7 @@ cr.define('cloudprint', function() {
       }
       event.user = activeUser;
       event.searchDone = lastRequestForThisOrigin;
-      this.dispatchEvent(event);
+      this.eventTarget_.dispatchEvent(event);
     }
 
     /**
@@ -516,7 +467,7 @@ cr.define('cloudprint', function() {
             CloudPrintInterfaceEventType.INVITES_FAILED, request);
       }
       event.user = activeUser;
-      this.dispatchEvent(event);
+      this.eventTarget_.dispatchEvent(event);
     }
 
     /**
@@ -549,7 +500,7 @@ cr.define('cloudprint', function() {
       event.invitation = invitation;
       event.accept = accept;
       event.user = activeUser;
-      this.dispatchEvent(event);
+      this.eventTarget_.dispatchEvent(event);
     }
 
     /**
@@ -563,11 +514,11 @@ cr.define('cloudprint', function() {
         const submitDoneEvent =
             new Event(CloudPrintInterfaceEventType.SUBMIT_DONE);
         submitDoneEvent.jobId = request.result['job']['id'];
-        this.dispatchEvent(submitDoneEvent);
+        this.eventTarget_.dispatchEvent(submitDoneEvent);
       } else {
         const errorEvent = this.createErrorEvent_(
             CloudPrintInterfaceEventType.SUBMIT_FAILED, request);
-        this.dispatchEvent(errorEvent);
+        this.eventTarget_.dispatchEvent(errorEvent);
       }
     }
 
@@ -619,13 +570,13 @@ cr.define('cloudprint', function() {
         const printerDoneEvent =
             new Event(CloudPrintInterfaceEventType.PRINTER_DONE);
         printerDoneEvent.printer = printer;
-        this.dispatchEvent(printerDoneEvent);
+        this.eventTarget_.dispatchEvent(printerDoneEvent);
       } else {
         const errorEvent = this.createErrorEvent_(
             CloudPrintInterfaceEventType.PRINTER_FAILED, request);
         errorEvent.destinationId = destinationId;
         errorEvent.destinationOrigin = request.origin;
-        this.dispatchEvent(errorEvent);
+        this.eventTarget_.dispatchEvent(errorEvent);
       }
     }
   }

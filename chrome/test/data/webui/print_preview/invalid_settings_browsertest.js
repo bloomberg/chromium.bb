@@ -19,6 +19,9 @@ cr.define('invalid_settings_browsertest', function() {
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
 
+    /** @type {?cloudprint.CloudPrintInterface} */
+    let cloudPrintInterface = null;
+
     /** @type {!print_preview.NativeInitialSettings} */
     const initialSettings = {
       isInKioskAutoPrintMode: false,
@@ -43,9 +46,10 @@ cr.define('invalid_settings_browsertest', function() {
 
     /** @override */
     setup(function() {
-      cloudprint.CloudPrintInterfaceJS = print_preview.CloudPrintInterfaceStub;
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
+      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
       PolymerTest.clearBody();
     });
 
@@ -98,7 +102,7 @@ cr.define('invalid_settings_browsertest', function() {
       page.userInfo_.setUsers('foo@chromium.org', ['foo@chromium.org']);
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => {
-        page.cloudPrintInterface_.setPrinter(printer.id, printer);
+        cloudPrintInterface.setPrinter(printer.id, printer);
       });
     }
 

@@ -196,7 +196,7 @@ cr.define('print_preview', function() {
 
       /**
        * Used to fetch cloud-based print destinations.
-       * @private {cloudprint.CloudPrintInterfaceJS}
+       * @private {cloudprint.CloudPrintInterface}
        */
       this.cloudPrintInterface_ = null;
 
@@ -331,7 +331,7 @@ cr.define('print_preview', function() {
         return true;
 
       let isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
-          this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
+          this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
       return isCloudDestinationSearchInProgress;
     }
 
@@ -643,30 +643,30 @@ cr.define('print_preview', function() {
 
     /**
      * Sets the destination store's Google Cloud Print interface.
-     * @param {!cloudprint.CloudPrintInterfaceJS} cloudPrintInterface Interface
+     * @param {!cloudprint.CloudPrintInterface} cloudPrintInterface Interface
      *     to set.
      */
     setCloudPrintInterface(cloudPrintInterface) {
       assert(this.cloudPrintInterface_ == null);
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PRINTER_DONE,
           this.onCloudPrintPrinterDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
           this.onCloudPrintPrinterFailed_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
     }
@@ -1226,7 +1226,8 @@ cr.define('print_preview', function() {
     /**
      * Called when the /search call completes, either successfully or not.
      * In case of success, stores fetched destinations.
-     * @param {Event} event Contains the request result.
+     * @param {!cloudprint.CloudPrintInterfaceSearchDoneEvent} event Contains
+     *     the request result.
      * @private
      */
     onCloudPrintSearchDone_(event) {
@@ -1246,8 +1247,8 @@ cr.define('print_preview', function() {
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {Event} event Contains detailed information about the
-     *     destination.
+     * @param {!cloudprint.CloudPrintInterfacePrinterDoneEvent} event Contains
+     *     detailed information about the destination.
      * @private
      */
     onCloudPrintPrinterDone_(event) {
@@ -1258,8 +1259,8 @@ cr.define('print_preview', function() {
      * Called when the Google Cloud Print interface fails to lookup a
      * destination. Selects another destination if the failed destination was
      * the initial destination.
-     * @param {Object} event Contains the ID of the destination that was failed
-     *     to be looked up.
+     * @param {!cloudprint.CloudPrintInterfacePrinterFailedEvent} event
+     *     Contains the ID of the destination that was failed to be looked up.
      * @private
      */
     onCloudPrintPrinterFailed_(event) {

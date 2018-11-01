@@ -29,7 +29,7 @@ js_library("destination_store") {
     ":destination_match",
     ":local_parsers",
     ":user_info",
-    "..:cloud_print_interface_js",
+    "..:cloud_print_interface",
     "..:metrics",
     "..:native_layer",
     "//ui/webui/resources/js:cr",
@@ -43,7 +43,7 @@ js_library("invitation_store") {
   deps = [
     ":invitation",
     ":user_info",
-    "..:cloud_print_interface_js",
+    "..:cloud_print_interface",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js/cr:event_target",
   ]

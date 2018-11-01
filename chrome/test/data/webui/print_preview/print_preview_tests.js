@@ -279,7 +279,6 @@ cr.define('print_preview_test', function() {
 
   suite(suiteName, function() {
     suiteSetup(function() {
-      cloudprint.CloudPrintInterfaceJS = print_preview.CloudPrintInterfaceStub;
       print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
           function() {
         return true;
@@ -300,6 +299,8 @@ cr.define('print_preview_test', function() {
       previewArea.plugin_ = new print_preview.PDFPluginStub();
       previewArea.plugin_.setLoadCallback(
           previewArea.onPluginLoad_.bind(previewArea));
+      cloudprint.setCloudPrintInterfaceForTesting(
+          new print_preview.CloudPrintInterfaceStub());
     });
 
     // Test some basic assumptions about the print preview WebUI.
