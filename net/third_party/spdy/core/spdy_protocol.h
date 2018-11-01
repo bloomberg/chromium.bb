@@ -896,7 +896,7 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
   SpdyUnknownIR& operator=(const SpdyUnknownIR&) = delete;
   uint8_t type() const { return type_; }
   uint8_t flags() const { return flags_; }
-  int length() const { return length_; }
+  size_t length() const { return length_; }
   const SpdyString& payload() const { return payload_; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
@@ -908,13 +908,13 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
   size_t size() const override;
 
  protected:
-  // Allows subclasses to overwrite the default length.
-  void set_length(int length) { length_ = length; }
+  // Allows subclasses to overwrite the default payload length.
+  void set_length(size_t length) { length_ = length; }
 
  private:
   uint8_t type_;
   uint8_t flags_;
-  int length_;
+  size_t length_;
   const SpdyString payload_;
 };
 
