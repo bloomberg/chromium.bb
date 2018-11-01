@@ -25,6 +25,7 @@ import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 import android.view.ActionMode;
+import android.view.HapticFeedbackConstants;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ import android.view.WindowManager;
 import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
@@ -1239,6 +1241,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 invalidateContentRect();
+                performHapticFeedback();
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
@@ -1275,6 +1278,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 } else {
                     destroyPastePopup();
                 }
+                performHapticFeedback();
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_TAPPED:
@@ -1350,6 +1354,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             mPopupController = PopupController.fromWebContents(mWebContents);
         }
         return mPopupController;
+    }
+
+    private void performHapticFeedback() {
+        if (BuildInfo.isAtLeastQ()) {
+            mView.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
+        }
     }
 
     /**
