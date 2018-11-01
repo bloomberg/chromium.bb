@@ -10,7 +10,6 @@ js_type_check("closure_compile") {
     ":account_manager_browser_proxy",
     ":change_picture",
     ":change_picture_browser_proxy",
-    ":easy_unlock_browser_proxy",
     ":fingerprint_browser_proxy",
     ":fingerprint_list",
     ":import_data_browser_proxy",
@@ -71,12 +70,6 @@ js_library("change_picture_browser_proxy") {
   ]
 }
 
-js_library("easy_unlock_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
 js_library("fingerprint_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
@@ -106,7 +99,6 @@ js_library("import_data_browser_proxy") {
 
 js_library("lock_screen") {
   deps = [
-    ":easy_unlock_browser_proxy",
     ":fingerprint_browser_proxy",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",

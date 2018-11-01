@@ -151,37 +151,5 @@ TEST_F(EasyUnlockSettingsHandlerTest, NotCreatedWhenEasyUnlockServiceNull) {
   EXPECT_FALSE(handler.get());
 }
 
-TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
-  std::unique_ptr<EasyUnlockSettingsHandler> handler;
-  handler.reset(new TestEasyUnlockSettingsHandler(profile()));
-  handler->set_web_ui(web_ui());
-
-  // Test the JS -> C++ -> JS callback path.
-  base::ListValue list_args;
-  list_args.AppendString("test-callback-id");
-  handler->HandleGetEnabledStatus(&list_args);
-
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-
-  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIResponse", data.function_name());
-
-  std::string callback_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-  EXPECT_EQ("test-callback-id", callback_id);
-
-  bool enabled_status = false;
-  ASSERT_TRUE(data.arg3()->GetAsBoolean(&enabled_status));
-  EXPECT_FALSE(enabled_status);
-
-  // Test the C++ -> JS push path.
-  handler->SendEnabledStatus();
-  VerifyEnabledStatusCallback(2U, false);
-
-  fake_easy_unlock_service()->set_is_enabled(true);
-  handler->SendEnabledStatus();
-  VerifyEnabledStatusCallback(3U, true);
-}
-
 }  // namespace settings
 }  // namespace chromeos

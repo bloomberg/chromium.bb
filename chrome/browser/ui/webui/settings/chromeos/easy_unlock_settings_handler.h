@@ -40,9 +40,6 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler {
 
   void SendEnabledStatus();
 
-  // JS callbacks.
-  void HandleGetEnabledStatus(const base::ListValue* args);
-
   Profile* const profile_;
 
   PrefChangeRegistrar profile_pref_registrar_;
