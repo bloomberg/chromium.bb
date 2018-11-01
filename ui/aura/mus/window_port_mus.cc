@@ -791,7 +791,8 @@ void WindowPortMus::UpdateOcclusionState(Window::OcclusionState new_state) {
     occlusion_state_before_hidden_.reset();
   }
 
-  window_->SetOcclusionState(new_state);
+  // TODO: Support occlusion region tracking. See crbug.com/900568.
+  window_->SetOcclusionInfo(new_state, SkRegion());
 }
 
 void WindowPortMus::UpdateOcclusionStateAfterVisiblityChange(bool visible) {

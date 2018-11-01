@@ -88,8 +88,10 @@ void WindowDelegateImpl::OnWindowDestroyed(aura::Window* window) {
 void WindowDelegateImpl::OnWindowTargetVisibilityChanged(bool visible) {}
 
 void WindowDelegateImpl::OnWindowOcclusionChanged(
-    aura::Window::OcclusionState occlusion_state) {
+    aura::Window::OcclusionState occlusion_state,
+    const SkRegion&) {
   ServerWindow* const server_window = ServerWindow::GetMayBeNull(window_);
+  // TODO: Send occluded region.
   if (server_window)
     server_window->owning_window_tree()->SendOcclusionState(window_);
 }
