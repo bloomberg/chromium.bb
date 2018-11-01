@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="2705137772291741111">A webhely mentett (gyorsítótárazott) példánya nem olvasható.</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
-<translation id="2710942282213947212">A számítógépen található valamelyik szoftver megakadályozza a Chromiumot abban, hogy biztonságosan csatlakozzon az internethez</translation>
 <translation id="2712173769900027643">Engedély kérése</translation>
 <translation id="2720342946869265578">A közelben</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
@@ -632,16 +631,6 @@
 <translation id="5230733896359313003">Szállítási cím</translation>
 <translation id="5250209940322997802">„Csatlakozás a hálózathoz”</translation>
 <translation id="5251803541071282808">Felhő</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Kövesse ezeket a lépéseket, ha szeretné átmenetileg letiltani a szoftvert, hogy hozzáférhessen az internethez. Rendszergazdai jogosultságokra lesz szüksége.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Kattintson a <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> menüre, majd keresse meg, és válassza ki a <ph name="BEGIN_BOLD" />„Helyi szolgáltatások megjelenítése”<ph name="END_BOLD" /> lehetőséget.
-    <ph name="LIST_ITEM" />Válassza a következőt: <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Kezdési típus<ph name="END_BOLD" /> részben válassza a <ph name="BEGIN_BOLD" />Letiltva<ph name="END_BOLD" /> lehetőséget.
-    <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Szolgáltatás állapota<ph name="END_BOLD" /> részben kattintson a <ph name="BEGIN_BOLD" />Leállítás<ph name="END_BOLD" /> gombra.
-    <ph name="LIST_ITEM" />Kattintson az <ph name="BEGIN_BOLD" />Alkalmaz<ph name="END_BOLD" />, majd az <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" /> gombra.
-    <ph name="LIST_ITEM" />Keresse fel a <ph name="BEGIN_LEARN_MORE_LINK" />Chrome súgóját<ph name="END_LEARN_MORE_LINK" />, ahol további információt talál a szoftver számítógépről történő végleges eltávolításáról.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Az összes mentett jelszó megjelenítése</translation>
 <translation id="5287240709317226393">Cookie-k megjelenítése</translation>
 <translation id="5288108484102287882">A házirendértékek ellenőrzése során figyelmeztetések merültek fel</translation>
@@ -759,7 +748,6 @@
 <translation id="6059925163896151826">USB-eszközök</translation>
 <translation id="6071091556643036997">A házirend típusa érvénytelen.</translation>
 <translation id="6080696365213338172">A tartalmat egy rendszergazda által biztosított tanúsítványon keresztül érte el. A(z) <ph name="DOMAIN" /> számára megadott adatok a rendszergazda számára is elérhetők.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> betöltése…</translation>
 <translation id="6096619198407627433">A rendszer a legtöbb webhelyről kijelentkezteti Önt, de Google-fiókjából nem. Elveszítheti hozzáférését a(z) <ph name="SITE" /> és más webhelyek védett tartalmaihoz.</translation>
 <translation id="610911394827799129">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nincs}=1{1 jelszó (szinkronizálva)}other{# jelszó (szinkronizálva)}}</translation>
@@ -797,7 +785,6 @@
 <translation id="6383221683286411806">Itt fizetésre próbálhatják rávenni.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
 <translation id="6387754724289022810">A következő alkalommal gyorsabban fizethet, ha kártyáját és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
-<translation id="6397451950548600259">A számítógépen található valamelyik szoftver megakadályozza a Chrome-ot abban, hogy biztonságosan csatlakozzon az internetre</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6410264514553301377">Írja be a(z) <ph name="CREDIT_CARD" /> kártyán szereplő lejárati dátumot és CVC-t</translation>
 <translation id="6414888972213066896">Megkérdezted a szülőt, hogy meg szabad-e látogatnod ezt a webhelyet</translation>

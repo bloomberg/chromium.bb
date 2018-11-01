@@ -587,6 +587,7 @@
 <translation id="2529880111512635313">Állítsa be a kényszerített telepítésű alkalmazások és bővítmények listáját</translation>
 <translation id="253135976343875019">Tétlenségi figyelmeztetés késleltetése hálózati áramról való működés során</translation>
 <translation id="2536525645274582300">A felhasználó döntése arról, hogy engedélyezi-e a Google-helyszolgáltatásokat</translation>
+<translation id="254653220329944566">Engedélyezi a <ph name="PRODUCT_NAME" /> felhőalapú jelentéskészítést</translation>
 <translation id="2550593661567988768">Csak egyoldalas nyomtatás</translation>
 <translation id="2552966063069741410">Időzóna</translation>
 <translation id="2562339630163277285">Megadja az azonnali eredményekhez használt keresőmotor URL-jét. Az URL-nek tartalmaznia kell a <ph name="SEARCH_TERM_MARKER" /> karakterláncot, amelynek helyébe a lekérdezés időpontjában a felhasználó által addig megadott szöveg lép.
@@ -1882,6 +1883,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6133088669883929098">Kulcsgenerálás használatának engedélyezése minden webhelyen</translation>
 <translation id="6145799962557135888">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak JavaScriptet. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="614662973812186053">Ez a házirend szabályozza az Android használati és diagnosztikai adatainak gyűjtését is.</translation>
+<translation id="6153048425064249648">Ez a házirend vezérli a <ph name="PRODUCT_NAME" /> felhőalapú jelentéskészítést, amely információt tölt fel a böngésző használatáról a Google Felügyeleti konzolba.
+
+      Ha a házirend beállítatlanul marad, vagy Hamis értékre van állítva, a rendszer nem gyűjt és nem tölt fel adatokat.
+      Ha a házirend Igaz értékre van állítva, a rendszer adatokat gyűjt és tölt fel a Google Felügyeleti konzolba.
+      A feltöltött adatok szabályozásához használja a Chrome Reporting Extension csoport házirendjeit.
+
+      Ez a házirend csak a(z) <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.
+
+      A házirend kényszeríti a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> telepítését a jelentéskészítéshez, és felülírja az említett bővítményhez kapcsolódó összes házirendet.</translation>
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="6157537876488211233">Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája</translation>
 <translation id="6158324314836466367">Vállalati internetes áruház neve (megszűnt)</translation>

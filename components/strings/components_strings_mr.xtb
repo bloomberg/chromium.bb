@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
 <translation id="2705137772291741111">या साइटची सेव्ह (कॅश   केलेली) केलेली प्रत वाचण्याजोगी नव्हती.</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
-<translation id="2710942282213947212">तुमच्या काँप्युटरवरील सॉफ्टवेअर Chromium ला वेबशी सुरक्षितपणे कनेक्ट होण्यापासून थांबवत आहे</translation>
 <translation id="2712173769900027643">परवानगी मागा</translation>
 <translation id="2720342946869265578">जवळपास</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">पाठविण्याचा पत्ता</translation>
 <translation id="5250209940322997802">"नेटवर्कशी कनेक्ट करा"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />सॉफ्टवेअर तात्पुरते बंद करून ठेवण्यासाठी खालील पायर्‍यांना फॉलो करा, ज्यामुळे तुम्ही वेबशी कनेक्ट होऊ शकाल. तुम्हाला अॅडमिनिस्ट्रेटर हक्क असणे आवश्यक असेल.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />सुरुवात<ph name="BEGIN_BOLD" /> करा<ph name="END_BOLD" /> वर क्लिक करा, त्यानंतर<ph name="BEGIN_BOLD" />"स्थानिक सेवा पहा"<ph name="END_BOLD" /> शोधा आणि निवडा
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />दृश्यशोध<ph name="END_BOLD" /> निवडा
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />सुरू होण्याचा प्रकार<ph name="END_BOLD" /> यामध्ये, <ph name="BEGIN_BOLD" />बंद केले<ph name="END_BOLD" /> निवडा
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />सेवा स्थिती<ph name="END_BOLD" /> मध्ये, <ph name="BEGIN_BOLD" />थांबवा<ph name="END_BOLD" /> वर क्लिक करा
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />लागू करा<ph name="END_BOLD" /> वर क्लिक करा, त्यानंतर <ph name="BEGIN_BOLD" />ठीक आहे<ph name="END_BOLD" /> वर क्लिक करा
-    <ph name="LIST_ITEM" /> सॉफ्टवेअर तुम्हाला काँप्युटरवरून काढून कसे टाकावे हे माहीत करण्यासाठी <ph name="BEGIN_LEARN_MORE_LINK" />Chrome मदत केंद्र<ph name="END_LEARN_MORE_LINK" /> वर जा
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">सर्व सेव्ह केलेले पासवर्ड दाखवा</translation>
 <translation id="5287240709317226393">कुकीज दाखवा</translation>
 <translation id="5288108484102287882">धोरण मूल्यांच्या वैधतेमुळे चेतावण्या वाढल्या आहेत</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB डिव्हाइसेस</translation>
 <translation id="6071091556643036997">धोरणाचा प्रकार चुकीचा आहे.</translation>
 <translation id="6080696365213338172">तुम्ही अॅडमिनिस्ट्रेटरने दिलेले सर्टिफिकेट वापरून आशय अॅक्सेस केला. तुम्ही <ph name="DOMAIN" /> वर प्रदान करता तो डेटा तुमच्या अॅडमिनिस्ट्रेटरद्वारे इंटरसेप्ट केला जाऊ शकतो.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> लोड करत आहे…</translation>
 <translation id="6096619198407627433">तुम्हाला बहुतांश सायटींवरून साइन आउट करते. तुम्हाला तुमच्या Google खात्यामधून साइन आउट केले जाणार नाही. तुम्ही <ph name="SITE" /> आणि काही इतर सायटींमधील संरक्षित आशयाचा अॅक्सेस कदाचित गमवाल.</translation>
 <translation id="610911394827799129">तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{काहीही नाही}=1{1 पासवर्ड (सिंक केलेला)}one{# पासवर्ड (सिंक केलेला)}other{# पासवर्ड (सिंक केलेले)}}</translation>
@@ -800,7 +788,6 @@
 <translation id="6383221683286411806">पुढे संभाव्य शुल्क आहे.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्य सूचना}one{# अन्य सूचना}other{# अन्य सूचना}}</translation>
 <translation id="6387754724289022810">पुढील वेळी जलद पेमेंट देण्यासाठी, तुमच्या Google खात्यावर आणि या डिव्हाइसवर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
-<translation id="6397451950548600259">तुमच्या काँप्युटरवरील सॉफ्टवेअर Chrome ला वेबशी सुरक्षितपणे कनेक्ट होण्यापासून थांबवत आहे</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> साठी कालबाह्यता तारीख आणि CVC प्रविष्‍ट करा</translation>
 <translation id="6414888972213066896">या साइटला भेट देणे ठीक आहे का ते तुम्ही आपल्‍या पालकास विचारले</translation>

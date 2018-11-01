@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="2705137772291741111">Запазеното (кеширано) копие на този сайт не можа да се прочете.</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
-<translation id="2710942282213947212">Софтуер на компютъра ви пречи на Chromium да се свърже безопасно с мрежата</translation>
 <translation id="2712173769900027643">Искане на разрешение</translation>
 <translation id="2720342946869265578">В близост</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Адрес за доставка</translation>
 <translation id="5250209940322997802">„Свързване с мрежа“</translation>
 <translation id="5251803541071282808">Облак</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Изпълнете следните стъпки, за да деактивирате временно софтуера, така че да можете да се свържете с мрежата. Ще са ви необходими администраторски права.<ph name="END_PARAGRAPH" />
-
-<ph name="BEGIN_LIST" />
-<ph name="LIST_ITEM" />Кликнете върху <ph name="BEGIN_BOLD" />Старт<ph name="END_BOLD" />, след което потърсете и изберете <ph name="BEGIN_BOLD" />Преглед на локални услуги<ph name="END_BOLD" />.
-<ph name="LIST_ITEM" />Изберете <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-<ph name="LIST_ITEM" />За <ph name="BEGIN_BOLD" />Startup type<ph name="END_BOLD" /> изберете <ph name="BEGIN_BOLD" />Disabled<ph name="END_BOLD" />.
-<ph name="LIST_ITEM" />Под <ph name="BEGIN_BOLD" />Service status<ph name="END_BOLD" /> кликнете върху <ph name="BEGIN_BOLD" />Stop<ph name="END_BOLD" />.
-<ph name="LIST_ITEM" />Кликнете върху <ph name="BEGIN_BOLD" />Приложи<ph name="END_BOLD" /> и след това – върху <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.
-<ph name="LIST_ITEM" />Посетете <ph name="BEGIN_LEARN_MORE_LINK" />Помощния център на Chrome<ph name="END_LEARN_MORE_LINK" />, за да научите как да премахнете за постоянно софтуера от компютъра си.
-<ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Показване на всички запазени пароли</translation>
 <translation id="5287240709317226393">Показване на „бисквитките“</translation>
 <translation id="5288108484102287882">При проверката на стойностите на правилата възникнаха предупреждения</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB устройства</translation>
 <translation id="6071091556643036997">Типът на правилата е невалиден.</translation>
 <translation id="6080696365213338172">Осъществихте достъп до съдържанието посредством осигурен от администратора сертификат. Данните, които предоставите на <ph name="DOMAIN" />, могат да бъдат прихванати от администратора ви.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> се зарежда…</translation>
 <translation id="6096619198407627433">Ще излезете от повечето сайтове, но не и от профила си в Google. Може да загубите достъп до защитено съдържание от <ph name="SITE" /> и някои други сайтове.</translation>
 <translation id="610911394827799129">В профила ви в Google може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Няма}=1{1 парола (синхронизирана)}other{# пароли (синхронизирани)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Възможно е таксуване.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
 <translation id="6387754724289022810">За да платите по-бързо следващия път, запазете картата и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
-<translation id="6397451950548600259">Софтуер на компютъра ви пречи на Chrome да се свърже безопасно с мрежата</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6410264514553301377">Въвеждане на датата на валидност и кода за проверка за <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Попитахте родителя си дали може да посетите този сайт</translation>

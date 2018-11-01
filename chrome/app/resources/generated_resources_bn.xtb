@@ -949,7 +949,7 @@
 <translation id="2422426094670600218">&lt;নামবিহীন&gt;</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="2425665904502185219">ফাইলের মোট আকার</translation>
-<translation id="2427507373259914951">বাঁদিকের বোতাম ক্লিক করুন</translation>
+<translation id="2427507373259914951">বাঁদিকের বোতামে ক্লিক করুন</translation>
 <translation id="2428510569851653187">ট্যাবটি ক্র্যাশ হওয়ার সময় আপনি কি করছিলেন তা বর্ণনা করুন</translation>
 <translation id="2431027948063157455">Google সহায়ক লোড করা যায়নি, আপনার ইন্টারনেট সংযোগ দেখে নিয়ে আবার চেষ্টা করুন।</translation>
 <translation id="2432753757290432042">Linux (বিটা) আপডেট প্রয়োজন</translation>
@@ -2686,6 +2686,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">আপনার হার্ড ডিস্ক পূর্ণ৷ দয়া করে অন্য কোনো স্থানে সেভ করুন অথবা হার্ড ডিস্কে আরও জায়গা তৈরী করুন৷</translation>
 <translation id="5125751979347152379">অকার্যকর URL৷</translation>
+<translation id="5127805178023152808">সিঙ্ক বন্ধ রয়েছে</translation>
 <translation id="5127881134400491887">নেটওয়ার্ক সংযোগগুলি পরিচালনা করুন</translation>
 <translation id="512903556749061217">সংযুক্ত</translation>
 <translation id="5133483819862530305">সূর্যাস্ত থেকে সূর্যোদয়</translation>
@@ -4731,7 +4732,7 @@
 <translation id="8200772114523450471">পুনঃসূচনা</translation>
 <translation id="8202160505685531999">অাপনার <ph name="DEVICE_TYPE" /> প্রোফাইল আপডেট করার জন্য দয়া করে পুনরায় আপনার পাসওয়ার্ড লিখুন।</translation>
 <translation id="8203732864715032075">আপনাকে বিজ্ঞপ্তি পাঠায় এবং মেসেজের জন্য এই কম্পিউটারকে ডিফল্ট হিসেবে মনে রাখে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
-<translation id="8203795194971602413">ডানদিকের বোতাম ক্লিক করুন</translation>
+<translation id="8203795194971602413">ডানদিকের বোতামে ক্লিক করুন</translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
 <translation id="8206745257863499010">ব্লুজস</translation>
 <translation id="8209677645716428427">একজন তত্ত্বাবধানে থাকা ব্যবহারকারী আপনার নির্দেশিকার সাহায্যে ওয়েব এক্সপ্লোর করতে পারে৷ Chrome এ একজন তত্ত্বাবধানে থাকা ব্যবহারকারীর পরিচালক হিসাবে, আপনি এসব করতে পারেন:</translation>
@@ -4972,7 +4973,6 @@
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8610103157987623234">ফর্ম্যাটটি ভুল হয়েছে, আবার চেষ্টা করুন</translation>
 <translation id="8615618338313291042">ছদ্মবেশী অ্যাপ্লিকেশান: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">সিঙ্ক করা হচ্ছে না</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">রোমিং স্থিতি</translation>
 <translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>

@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
-<translation id="2710942282213947212">L'ordinador conté programari que impedeix que Chromium es connecti de manera segura al web</translation>
 <translation id="2712173769900027643">Demana permís</translation>
 <translation id="2720342946869265578">A prop</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5250209940322997802">"Connecteu-vos a la xarxa"</translation>
 <translation id="5251803541071282808">Núvol</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Segueix aquests passos per desactivar temporalment el programari perquè puguis accedir al web. Per fer-ho, necessitaràs privilegis d'administrador.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Fes clic a <ph name="BEGIN_BOLD" />Inicia<ph name="END_BOLD" /> i, a continuació, cerca i selecciona <ph name="BEGIN_BOLD" />Mostra serveis locals<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Selecciona <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Tipus d'inici<ph name="END_BOLD" />, selecciona <ph name="BEGIN_BOLD" />Desactivat<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Estat del servei<ph name="END_BOLD" />, fes clic a <ph name="BEGIN_BOLD" />Atura<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Fes clic a <ph name="BEGIN_BOLD" />Aplica<ph name="END_BOLD" /> i, a continuació, a <ph name="BEGIN_BOLD" />D'acord<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Visita el <ph name="BEGIN_LEARN_MORE_LINK" />Centre d'ajuda de Chrome<ph name="END_LEARN_MORE_LINK" /> per obtenir informació sobre com suprimir permanentment el programari de l'ordinador.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Mostra totes les contrasenyes desades</translation>
 <translation id="5287240709317226393">Mostra les galetes</translation>
 <translation id="5288108484102287882">La validació dels valors de la política ha generat advertiments</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Dispositius USB</translation>
 <translation id="6071091556643036997">El tipus de política no és vàlid.</translation>
 <translation id="6080696365213338172">Heu accedit a contingut mitjançant un certificat proporcionat per l'administrador. Per tant, l'administrador por interceptar les dades que proporcioneu a <ph name="DOMAIN" />.</translation>
-<translation id="6096226585778084111">S'està carregant <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Et tanca la sessió de la majoria de llocs web, però no la del Compte de Google. Pot ser que deixis de tenir accés al contingut protegit del lloc web <ph name="SITE" /> i d'altres llocs web.</translation>
 <translation id="610911394827799129">A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Cap}=1{1 contrasenya (sincronitzada)}other{# contrasenyes (sincronitzades)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Aquest lloc web et pot fer càrrecs.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
 <translation id="6387754724289022810">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta i l'adreça de facturació al compte de Google i en aquest dispositiu.</translation>
-<translation id="6397451950548600259">L'ordinador conté programari que impedeix que Chrome es connecti de manera segura al web</translation>
 <translation id="6404511346730675251">Edita l'adreça d'interès</translation>
 <translation id="6410264514553301377">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Has demanat permís als teus pares per visitar aquest lloc</translation>

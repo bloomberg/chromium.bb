@@ -613,6 +613,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2529880111512635313">Configurer la liste des applications et des extensions dont l'installation est forcée</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2536525645274582300">L'utilisateur décide d'activer ou non les services de localisation Google</translation>
+<translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Impression recto seulement</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
@@ -1970,6 +1971,15 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="614662973812186053">Cette règle permet également de contrôler la collecte des données d'utilisation et de diagnostic sur les appareils Android.</translation>
+<translation id="6153048425064249648">Cette règle permet de contrôler la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" />, qui transmet des informations sur le fonctionnement du navigateur à la console d'administration Google.
+
+      Si cette règle n'est pas définie ou est définie sur "False", aucune donnée n'est collectée ni transmise.
+      Si cette règle est définie sur "True", les données sont collectées et transmises à la console d'administration Google.
+      Pour contrôler les données transmises, veuillez utiliser les règles du groupe Chrome Reporting Extension.
+
+      Cette règle ne fonctionne que si l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Cette règle active l'installation d'office de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> pour la création de rapports et ignore toutes les autres règles relatives à cette extension.</translation>
 <translation id="6155936611791017817">Définir l'état par défaut du grand curseur sur l'écran de connexion</translation>
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
 <translation id="6158324314836466367">Nom de boutique en ligne d'entreprise (abandonné)</translation>

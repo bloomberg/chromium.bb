@@ -605,6 +605,7 @@
 <translation id="2529880111512635313">Konfigurera listan med appar och tillägg som måste installeras</translation>
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2536525645274582300">Användaren bestämmer om Googles platstjänster ska aktiveras</translation>
+<translation id="254653220329944566">Aktivera rapportering via molnet för <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Endast enkelsidig utskrift</translation>
 <translation id="2552966063069741410">Tidszon</translation>
 <translation id="2562339630163277285">Principen anger webbadressen till sökmotorn som används för att visa direktresultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av den text användaren skrivit hittills när sökningen körs.
@@ -1961,6 +1962,15 @@
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="614662973812186053">Den här principen styr även insamlingen av användnings- och diagnostikinformation i Android.</translation>
+<translation id="6153048425064249648">Den här principen styr rapportering via molnet för <ph name="PRODUCT_NAME" />, som laddar upp uppgifter om webbläsaranvändning till Google Administratörskonsol.
+
+      När principen har lämnats utan inställning eller är inställd på falskt samlas inga uppgifter in eller laddas upp.
+      När principen är inställd på sant samlas uppgifter in och laddas upp till Google Administratörskonsol.
+      Styr vilken data som laddas upp med hjälp av principer som gäller tillägget Chrome Reporting Extension.
+
+      Principen träder bara i kraft när enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Med principen tvångsinstalleras <ph name="CHROME_REPORTING_EXTENSION_NAME" /> för rapportering och eventuella principer för det tillägget åsidosätts.</translation>
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>

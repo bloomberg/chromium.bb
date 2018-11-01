@@ -117,6 +117,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1832521218263067499">Incidenter som rör säkerheten</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
+<translation id="187628348035757895">Utvecklaralternativ</translation>
 <translation id="1878302395768190018">Du kan när som helst ändra detta i Chrome-inställningarna</translation>
 <translation id="1880072593381090678">Populära sidor från Chrome</translation>
 <translation id="1883903952484604915">Mina filer</translation>
@@ -937,6 +938,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8084114998886531721">Sparat lösenord</translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
+<translation id="8087980556724996220">Autofyll-assistenten avbryts om <ph name="DURATION_SECONDS" /> sek …</translation>
 <translation id="8103578431304235997">Inkognitoflik</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Föreslå relaterade sidor</translation>

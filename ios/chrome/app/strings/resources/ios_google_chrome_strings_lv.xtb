@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Pārlūkprogramma Chrome ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="257708665678654955">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2943166482989655199">Uzlabojiet pārlūku Chrome un tā drošību, nosūtot sistēmas un lietojuma datus Google serveriem</translation>
+<translation id="3030414234702425231">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />, tādēļ jūsu Chrome dati tiks dzēsti no šīs ierīces. Dati joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="3148434565183091099">Pierakstieties pārlūkā Chrome, lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="3148688391461398285">Uzlabojiet savu pieredzi pārlūkā Chrome, sūtot informāciju par savu atrašanās vietu.</translation>
 <translation id="3167189358072330585">Jūsu konts nedarbojas pārlūkā Google Chrome. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6648150602980899529">Jūs pierakstāties kontā, kas tiek pārvaldīts domēnā <ph name="DOMAIN" />, un sniedzat tā administratoram kontroli pār saviem Chrome datiem. Jūsu dati tiks neatgriezeniski saistīti ar šo kontu. Izrakstoties no pārlūka Chrome, jūsu dati tiks dzēsti no šīs ierīces, taču tie tiks saglabāti jūsu Google kontā.</translation>
+<translation id="6676840375528380067">Vai dzēst jūsu Chrome datus no šīs ierīces?</translation>
 <translation id="690638524486313356">Google Chrome pakalpojumu sniegšanas noteikumi</translation>
 <translation id="7165736900384873061">Darba sākšana ar Google Chrome QR skeneri</translation>
 <translation id="7172660552945675509">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chrome uz savu doku<ph name="END_LINK" />.</translation>

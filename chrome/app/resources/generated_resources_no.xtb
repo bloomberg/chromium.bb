@@ -1364,7 +1364,7 @@
 <translation id="3037754279345160234">Kan ikke parse konfigurasjonen for å tilknytte domene. Kontakt administratoren din.</translation>
 <translation id="3038612606416062604">Legg til en skriver manuelt</translation>
 <translation id="3038675903128704560">Ikke la noen nettsteder bruke programtillegg for å få tilgang til datamaskinen din</translation>
-<translation id="3039491566278747710">Kunne ikke installere regelen uten nett på enheten.</translation>
+<translation id="3039491566278747710">Kunne ikke installere regelen for bruk uten nett på enheten.</translation>
 <translation id="3039828483675273919">Flytter $1 elementer ...</translation>
 <translation id="3045447014237878114">Dette nettstedet har lastet ned flere filer automatisk</translation>
 <translation id="3046910703532196514">Nettside, fullstendig</translation>
@@ -2373,7 +2373,7 @@
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="4648491805942548247">Utilstrekkelige tillatelser</translation>
 <translation id="4648499713050786492">Du må låse opp profilen din før du kan legge til en person.</translation>
-<translation id="4651484272688821107">Kunne ikke laste inn nettbasert komponent med ressurser i demomodus.</translation>
+<translation id="4651484272688821107">Kunne ikke laste inn nettbasert komponent med ressurser for demomodus.</translation>
 <translation id="4656293982926141856">Denne datamaskinen</translation>
 <translation id="4660476621274971848">Den forventede versjonen var «<ph name="EXPECTED_VERSION" />», men den faktiske versjonen var «<ph name="NEW_ID" />»</translation>
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
@@ -2683,6 +2683,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Harddisken din er full. Lagre på et annet sted, eller frigjør plass på harddisken.</translation>
 <translation id="5125751979347152379">Ugyldig nettadresse.</translation>
+<translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5127881134400491887">administrere nettverkstilkoblinger</translation>
 <translation id="512903556749061217">vedlagt</translation>
 <translation id="5133483819862530305">Solnedgang til soloppgang</translation>
@@ -2724,7 +2725,7 @@
 <translation id="5186650237607254032">Oppdater skjermlåsen på telefonen din, slik at den slås av når du er i nærheten. Da kan du låse opp telefonen raskere og få en bedre Smart Lock-erfaring på <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Du er nå pålogget <ph name="SHORT_PRODUCT_NAME" />. Bokmerkene, loggen og de andre innstillingene dine blir synkronisert med Google-kontoen din.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5204673965307125349">Start Powerwash på enheten, og prøv på nytt.</translation>
+<translation id="5204673965307125349">Utfør Powerwash på enheten, og prøv på nytt.</translation>
 <translation id="5204967432542742771">Skriv inn passordet</translation>
 <translation id="5206215183583316675">Vil du slette «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="520621735928254154">Feil ved sertifikatimport</translation>
@@ -2996,7 +2997,7 @@
 <translation id="5569544776448152862">Registrerer for <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> …</translation>
 <translation id="5573248369095789351">Holdehandling</translation>
 <translation id="5575473780076478375">Inkognitoutvidelse: <ph name="EXTENSION_NAME" /></translation>
-<translation id="5575528586625653441">Det oppsto et problem med registreringsforespørsler for demoer.</translation>
+<translation id="5575528586625653441">Det oppsto et problem med en forespørsel om demoregistrering.</translation>
 <translation id="557722062034137776">Tilbakestilling av enheten påvirker ikke Google-kontoene dine eller andre data som er synkronisert til disse kontoene. Derimot slettes alle filer som er lagret lokalt på enheten.</translation>
 <translation id="5578059481725149024">Automatisk pålogging</translation>
 <translation id="5581700288664681403">Laster inn <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -3330,7 +3331,7 @@
 <translation id="6068338049763724728">Slå på ekstern registrering</translation>
 <translation id="6069671174561668781">Angi bakgrunnsbilde</translation>
 <translation id="6071181508177083058">bekreft passordet</translation>
-<translation id="6071576563962215370">Systemet kunne ikke opprette enhetens attributtlås for installasjonstid.</translation>
+<translation id="6071576563962215370">Systemet kunne ikke opprette enhetens attributtlås under installasjonen.</translation>
 <translation id="6073903501322152803">Legg til tilgjengelighetsfunksjoner</translation>
 <translation id="6074825444536523002">Google-skjema</translation>
 <translation id="6075731018162044558">Beklager. Systemet kunne ikke hente noe langvarig API-tilgangstoken for denne enheten.</translation>
@@ -4967,7 +4968,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8609465669617005112">Flytt opp</translation>
 <translation id="8610103157987623234">Feil format. Prøv på nytt</translation>
 <translation id="8615618338313291042">Inkognitoprogram: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Ingen synkronisering</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status for roaming</translation>
 <translation id="8620765578342452535">Konfigurering av nettverkstilkoblinger</translation>
@@ -5047,7 +5047,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8715480913140015283">En fane i bakgrunnen bruker kameraet ditt</translation>
 <translation id="8716931980467311658">Vil du slette alle Linux-programmer og -data i Linux-filmappen din fra denne <ph name="DEVICE_TYPE" />-enheten?</translation>
 <translation id="8719653885894320876">Nedlastingen av <ph name="PLUGIN_NAME" /> mislyktes</translation>
-<translation id="8720816553731218127">Oppstarten av attributtene for installasjonstid er tidsavbrutt.</translation>
+<translation id="8720816553731218127">Initialiseringen av installsjonsattributtene er tidsavbrutt.</translation>
 <translation id="8724405322205516354">Når du ser dette ikonet, kan du bruke fingeravtrykket ditt for å identifisere deg eller godkjenne kjøp.</translation>
 <translation id="8724409975248965964">Fingeravtrykk lagt til</translation>
 <translation id="8724859055372736596">&amp;Vis i mappe</translation>

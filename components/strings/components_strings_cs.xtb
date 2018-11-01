@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
 <translation id="2705137772291741111">Kopii tohoto webu uloženou v mezipaměti se nepodařilo přečíst.</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
-<translation id="2710942282213947212">Software na počítači brání prohlížeči Chromium v bezpečném připojení k webu</translation>
 <translation id="2712173769900027643">Požádat o oprávnění</translation>
 <translation id="2720342946869265578">Nablízku</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
@@ -630,16 +629,6 @@
 <translation id="5230733896359313003">Dodací adresa</translation>
 <translation id="5250209940322997802">Připojit k síti</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Abyste se mohli dostat na web, podle těchto pokynů software dočasně zakažte. Budete potřebovat administrátorská práva.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Klikněte na <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, vyhledejte položku <ph name="BEGIN_BOLD" />Zobrazit místní služby<ph name="END_BOLD" /> a klikněte na ni.
-    <ph name="LIST_ITEM" />Vyberte službu <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />V rozbalovací nabídce <ph name="BEGIN_BOLD" />Typ spouštění<ph name="END_BOLD" /> vyberte <ph name="BEGIN_BOLD" />Zakázáno<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />V sekci <ph name="BEGIN_BOLD" />Stav služby<ph name="END_BOLD" /> klikněte na <ph name="BEGIN_BOLD" />Zastavit<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Klikněte na <ph name="BEGIN_BOLD" />Použít<ph name="END_BOLD" /> a poté na <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Informace o tom, jak tento software trvale odstranit z počítače, naleznete v <ph name="BEGIN_LEARN_MORE_LINK" />centru nápovědy prohlížeče Chrome<ph name="END_LEARN_MORE_LINK" />.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Zobrazit všechna uložená hesla</translation>
 <translation id="5287240709317226393">Zobrazit soubory cookie</translation>
 <translation id="5288108484102287882">Ověření hodnot zásad vygenerovalo upozornění</translation>
@@ -757,7 +746,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6059925163896151826">Zařízení USB</translation>
 <translation id="6071091556643036997">Typ zásady je neplatný.</translation>
 <translation id="6080696365213338172">Získali jste přístup k obsahu pomocí certifikátu poskytnutého správcem. Údaje poskytovaná doméně <ph name="DOMAIN" /> bude správce moci zachytit.</translation>
-<translation id="6096226585778084111">Načítání webu <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Odhlásí vás z většiny webů. Nebudete odhlášeni od účtu Google. Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="610911394827799129">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Žádné}=1{1 heslo (synchronizováno)}few{# hesla (synchronizováno)}many{# hesla (synchronizováno)}other{# hesel (synchronizováno)}}</translation>
@@ -794,7 +782,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6383221683286411806">Pozor na možné poplatky na webu, který se chystáte navštívit</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387754724289022810">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
-<translation id="6397451950548600259">Software na počítači Chromu brání v bezpečném připojení k webu.</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6410264514553301377">Zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="6414888972213066896">Zeptal(a) ses rodiče, zda můžeš navštívit tento web.</translation>

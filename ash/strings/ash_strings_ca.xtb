@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Prestatge</translation>
 <translation id="2844169650293029770">Dispositiu USB-C (port frontal esquerre)</translation>
 <translation id="2865888419503095837">Informació de la xarxa</translation>
+<translation id="287224423103674444">Has premut la drecera del gir de la pantalla. Vols girar la pantalla?</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2878884018241093801">No hi ha cap element recent</translation>
 <translation id="2903844815300039659">Estàs connectat a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">S'està activant</translation>
 <translation id="5673434351075758678">Després de sincronitzar la configuració, canvia <ph name="FROM_LOCALE" /> per <ph name="TO_LOCALE" />.</translation>
 <translation id="5691772641933328258">L'empremta digital no s'ha reconegut</translation>
+<translation id="5710450975648804523">Mode No molestis activat</translation>
 <translation id="574392208103952083">Mitjà</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5750765938512549687">El Bluetooth està desactivat</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Mantén premudes les dues tecles de volum durant cinc segons per desactivar els comentaris de veu.</translation>
 <translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificació}other{# notificacions}}</translation>
 <translation id="776344839111254542">Fes clic per veure els detalls de l'actualització</translation>
+<translation id="7780159184141939021">Gira la pantalla</translation>
 <translation id="7796353162336583443">Toca el botó del llapis òptic al prestatge per escriure una nota, fer una captura de pantalla, utilitzar l'Assistent de Google o fer-lo servir com a punter làser o lupa.</translation>
 <translation id="7798302898096527229">Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>

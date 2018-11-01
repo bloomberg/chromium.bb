@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
 <translation id="2705137772291741111">העותק השמור (בקובץ השמור) של האתר הזה היה בלתי קריא.</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
-<translation id="2710942282213947212">‏תוכנה במחשב שלך מונעת מ-Chromium להתחבר באופן מאובטח לאינטרנט</translation>
 <translation id="2712173769900027643">בקש רשות</translation>
 <translation id="2720342946869265578">קרוב</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
@@ -638,16 +637,6 @@ Del</translation>
 <translation id="5230733896359313003">כתובת למשלוח</translation>
 <translation id="5250209940322997802">"יש להתחבר לרשת"</translation>
 <translation id="5251803541071282808">ענן</translation>
-<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />בצע את השלבים הבאים על מנת להשבית את התוכנה באופן זמני, כדי שתוכל להתחבר לאינטרנט. יש צורך בהרשאות מנהל מערכת.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />לחץ על <ph name="BEGIN_BOLD" />התחל<ph name="END_BOLD" />, ולאחר מכן חפש ובחר את האפשרות <ph name="BEGIN_BOLD" />הצג שירותים מקומיים<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />בחר באפשרות <ph name="BEGIN_BOLD" />גילוי חזותי<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />בקטע <ph name="BEGIN_BOLD" />סוג אתחול<ph name="END_BOLD" />, בחר באפשרות <ph name="BEGIN_BOLD" />מושבת<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />בקטע <ph name="BEGIN_BOLD" />סטטוס שירות<ph name="END_BOLD" />, לחץ על <ph name="BEGIN_BOLD" />הפסק<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />לחץ על <ph name="BEGIN_BOLD" />החל<ph name="END_BOLD" />, ולאחר מכן על <ph name="BEGIN_BOLD" />אישור<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />היכנס אל <ph name="BEGIN_LEARN_MORE_LINK" />מרכז העזרה של Chrome<ph name="END_LEARN_MORE_LINK" /> כדי ללמוד איך להסיר לצמיתות את התוכנה מהמחשב
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">הצגת כל הסיסמאות השמורות</translation>
 <translation id="5287240709317226393">‏הצגת קובצי Cookie</translation>
 <translation id="5288108484102287882">בעקבות אימות ערכי המדיניות הופיעו אזהרות</translation>
@@ -766,7 +755,6 @@ Del</translation>
 <translation id="6059925163896151826">‏מכשירי USB</translation>
 <translation id="6071091556643036997">סוג המדיניות אינו חוקי.</translation>
 <translation id="6080696365213338172">ניגשת לתוכן באמצעות אישור שהוענק על ידי מנהל מערכת. מנהל המערכת שלך עשוי ליירט נתונים שתספק ל-<ph name="DOMAIN" />.</translation>
-<translation id="6096226585778084111">טוען את <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">‏הפעולה תגרום ליציאה מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="610911394827799129">‏ייתכן שלחשבון Google שלך משויכים סוגים אחרים של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ללא}=1{סיסמה אחת (מסונכרנת)}two{שתי סיסמאות (מסונכרנות)}many{# סיסמאות (מסונכרנות)}other{# סיסמאות (מסונכרנות)}}</translation>
@@ -804,7 +792,6 @@ Del</translation>
 <translation id="6383221683286411806">ייתכנו חיובים באתר.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387754724289022810">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס ואת הכתובת לחיוב.</translation>
-<translation id="6397451950548600259">‏יש תוכנה במחשב שלך שמונעת מ-Chrome להתחבר באופן מאובטח אל האינטרנט</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6410264514553301377">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">שאלת אחד מהוריך אם אתה יכול לבקר באתר הזה</translation>
@@ -1198,7 +1185,7 @@ Del</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
 <translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>
-<translation id="9117895703580314323">השירות לא זמין. צריך לנסות שוב מאוחר יותר.</translation>
+<translation id="9117895703580314323">השירות לא זמין. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9137248913990643158">‏היכנס לחשבונך ב-Chrome לפני שתשתמש באפליקציה הזו.</translation>

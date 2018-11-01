@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Полиця</translation>
 <translation id="2844169650293029770">Пристрій, під’єднаний до порту USB-C (ліворуч на передній панелі)</translation>
 <translation id="2865888419503095837">Інформація про мережу</translation>
+<translation id="287224423103674444">Ви натиснули комбінацію клавіш для обертання екрана. Обертати?</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="2878884018241093801">Нічого немає</translation>
 <translation id="2903844815300039659">Під’єдано до мережі "<ph name="NAME" />", <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5673434351075758678">Після синхронізації налаштувань мову змінено. Попередня мова: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="5691772641933328258">Відбиток не розпізнано</translation>
+<translation id="5710450975648804523">Режим "Не турбувати" ввімкнено</translation>
 <translation id="574392208103952083">Середній</translation>
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5750765938512549687">Bluetooth вимкнено</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Утримуйте обидві клавіші гучності впродовж п’яти секунд, щоб вимкнути голосові підказки.</translation>
 <translation id="7692480393933218409">Заряджає пристрої, під’єднанї до порту USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 cповіщення}one{# сповіщення}few{# сповіщення}many{# сповіщень}other{# сповіщення}}</translation>
 <translation id="776344839111254542">Натисніть, щоб переглянути деталі оновлення</translation>
+<translation id="7780159184141939021">Обертати екран</translation>
 <translation id="7796353162336583443">Щоб додавати примітки та знімки екрана, користуватися Google Асистентом або використовувати стилус як лазерний вказівник чи лупу, торкніться кнопки стилуса на полиці.</translation>
 <translation id="7798302898096527229">Щоб скасувати, натисніть клавішу Search або Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> і <ph name="MINUTE" /></translation>

@@ -575,6 +575,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2529880111512635313">Konfigurer listen over udvidelser og apps med tvungen installation</translation>
 <translation id="253135976343875019">Advarsel om inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2536525645274582300">Brugeren beslutter, om Googles placeringstjenester skal aktiveres</translation>
+<translation id="254653220329944566">Aktiverer <ph name="PRODUCT_NAME" />-rapportering i skyen</translation>
 <translation id="2550593661567988768">Kun simplex-udskrivning</translation>
 <translation id="2552966063069741410">Tidszone</translation>
 <translation id="2562339630163277285">Angiver webadressen for den søgemaskine, der bruges til at give direkte resultater. Webadressen skal indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som på forespørgselstidspunktet erstattes af den tekst, som brugeren har indtastet hidtil.
@@ -1873,6 +1874,15 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6133088669883929098">Tillad alle websites at anvende nøglegenerering</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="614662973812186053">Denne politik styrer også indsamling af brugs- og diagnosticeringsdata i Android.</translation>
+<translation id="6153048425064249648">Denne politik styrer <ph name="PRODUCT_NAME" />-rapportering i skyen, som uploader oplysninger om browseranvendelse til Google Administrationskonsol.
+
+      Når politikken er angivet som Falsk eller ikke er konfigureret, indsamles og uploades der ikke nogen data.
+      Når politikken er angivet som Sand, indsamles og uploades der data til Google Administrationskonsol.
+      Du kan bestemme, hvilke data der uploades, ved at bruge politikkerne i gruppen Chrome Reporting Extension.
+
+      Politikken anvendes kun, når maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Politikken gennemtvinger installation af <ph name="CHROME_REPORTING_EXTENSION_NAME" /> til rapportering og tilsidesætter alle udvidelsespolitikker, der er relateret til den pågældende udvidelse.</translation>
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>

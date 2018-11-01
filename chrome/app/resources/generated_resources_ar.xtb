@@ -1261,7 +1261,7 @@
 <translation id="2881966438216424900">تاريخ آخر دخول:</translation>
 <translation id="2882943222317434580">ستتم إعادة تشغيل <ph name="IDS_SHORT_PRODUCT_NAME" /> وإعادة تعيينه بعد وهلة.</translation>
 <translation id="2885378588091291677">إدارة المهام</translation>
-<translation id="2885729872133513017">حدثت مشكلة في فك شفرة استجابة الخادم.</translation>
+<translation id="2885729872133513017">حدثت مشكلة في فك رمز استجابة الخادم.</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
 <translation id="2887525882758501333">‏مستند PDF</translation>
 <translation id="2888807692577297075">‏لا توجد عناصر متطابقة مع  &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
@@ -1990,7 +1990,7 @@
 <translation id="3979395879372752341">تمت إضافة إحدى الإضافات الجديدة (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">تفعيل <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">نوع الحفظ الذي تم إدخاله غير صالح.</translation>
-<translation id="3982375475032951137">يمكنك إعداد المتصفَّح باتِّباع بضع خطوات بسيطة</translation>
+<translation id="3982375475032951137">يمكنك إعداد المتصفِّح باتِّباع بضع خطوات بسيطة.</translation>
 <translation id="3983586614702900908">أجهزة من مورد غير معروف</translation>
 <translation id="3984159763196946143">تعذَّر بدء الوضع التجريبي</translation>
 <translation id="3985261842049607969">‏يمكنك الاحتفاظ بنسخة احتياطية في Google Drive. ويمكنك استعادة بياناتك أو تبديل الجهاز بسهولة متى شئت. وتتضمَّن النسخة الاحتياطية بيانات التطبيقات. <ph name="BEGIN_LINK1" />مزيد من المعلومات<ph name="END_LINK1" /></translation>
@@ -2500,7 +2500,7 @@
 <translation id="4850669014075537160">التمرير</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4853020600495124913">فتح في &amp;نافذة جديدة</translation>
-<translation id="485592688953820832">لا يلزم اتخاذ أي إجراء (إيقاف مؤقَّت)</translation>
+<translation id="485592688953820832">عدم اتخاذ أي إجراء (إيقاف مؤقَّت)</translation>
 <translation id="4856478137399998590">تم تفعيل خدمة بيانات الجوال وهي جاهزة للاستخدام.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{فتح الكل في &amp;نافذة التصفح المتخفي}=1{فتح في &amp;نافذة التصفح المتخفي}two{فتح كلا العنوانين (#) في &amp;نافذة التصفح المتخفي}few{فتح كل الـ (#) عناوين في &amp;نافذة التصفح المتخفي}many{فتح كل الـ (#) عنوانًا في &amp;نافذة التصفح المتخفي}other{فتح كل الـ (#) عنوان في &amp;نافذة التصفح المتخفي}}</translation>
 <translation id="4858913220355269194">فريتز</translation>
@@ -2685,6 +2685,7 @@
 <translation id="5119173345047096771">موزيلا فايرفوكس</translation>
 <translation id="5121130586824819730">القرص الصلب ممتلئ. يُرجى الحفظ في مكان آخر أو توفير مساحة أكبر على القرص الصلب.</translation>
 <translation id="5125751979347152379">‏عنوان URL غير صالح.</translation>
+<translation id="5127805178023152808">المزامنة غير مفعّلة</translation>
 <translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
 <translation id="512903556749061217">متصل</translation>
 <translation id="5133483819862530305">من غروب الشمس إلى شروقها</translation>
@@ -3091,7 +3092,7 @@
 <translation id="5704875434923668958">المزامنة مع</translation>
 <translation id="5707185214361380026">فشل تحميل الإضافة من:</translation>
 <translation id="5708171344853220004">‏الاسم الأساسي في Microsoft</translation>
-<translation id="5709557627224531708">‏تحديد Chrome كمتصفِّح تلقائي</translation>
+<translation id="5709557627224531708">‏اختيار Chrome كمتصفِّح تلقائي</translation>
 <translation id="5711983031544731014">يتعذر إلغاء القفل. أدخل كلمة المرور.</translation>
 <translation id="5715711091495208045">وسيط المكوّن الإضافي: <ph name="PLUGIN_NAME" /></translation>
 <translation id="5719603411793408026">محرّكات البحث التلقائية</translation>
@@ -4456,7 +4457,7 @@
     <ph name="LINE_BREAK2" />
     حاول تحديد عدد صور أقل.</translation>
 <translation id="782590969421016895">استخدام الصفحات الحالية</translation>
-<translation id="7826254698725248775">معرَّف جهاز متضارب.</translation>
+<translation id="7826254698725248775">معرِّف جهاز متضارب.</translation>
 <translation id="7826346148677309647">‏يمكنك العثور على المزيد من التطبيقات لجهازك في "متجر Play".</translation>
 <translation id="7826790948326204519">‏<ph name="BEGIN_H3" />ميزات تصحيح الأخطاء<ph name="END_H3" />
     <ph name="BR" />
@@ -4973,7 +4974,6 @@
 <translation id="8609465669617005112">التحريك إلى أعلى</translation>
 <translation id="8610103157987623234">تنسيق غير صحيح، يُرجى إعادة المحاولة</translation>
 <translation id="8615618338313291042">تطبيق وضع التصفح المتخفي: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">لا تتم المزامنة</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">حالة التجوال</translation>
 <translation id="8620765578342452535">تهيئة اتصالات الشبكة</translation>

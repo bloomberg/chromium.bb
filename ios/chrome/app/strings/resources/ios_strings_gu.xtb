@@ -10,7 +10,7 @@
 <translation id="1104948393051856124">સ્વીકારો અને ચાલુ રાખો</translation>
 <translation id="1112015203684611006">છાપવાનું નિષ્ફળ થયું.</translation>
 <translation id="1125564390852150847">નવું ટૅબ બનાવો.</translation>
-<translation id="1145536944570833626">અસ્તિત્વમાંના ડેટાને કાઢી નાખો.</translation>
+<translation id="1145536944570833626">અસ્તિત્વમાંના ડેટાને ડિલીટ કરો.</translation>
 <translation id="1157102636231978136">તમારા બ્રાઉઝિંગ ડેટા અને પ્રવૃત્તિને તમારા Google એકાઉન્ટ સાથે સિંક કરેલા છે</translation>
 <translation id="1165039591588034296">ભૂલ</translation>
 <translation id="1172898394251786223">આગલું ફીલ્ડ</translation>
@@ -24,7 +24,7 @@
 <translation id="1265739287306757398">જાણો કેવી રીતે</translation>
 <translation id="127138278192656016">સિંક અને બધી સેવાઓનો ઉપયોગ કરો</translation>
 <translation id="1272079795634619415">રોકો</translation>
-<translation id="1323735185997015385">કાઢી નાખો</translation>
+<translation id="1323735185997015385">ડિલીટ કરો</translation>
 <translation id="132683371494960526">મૂળ ફોલ્ડર બદલવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="1340643665687018190">મેનૂ બંધ કરો</translation>
 <translation id="1360432990279830238">સાઇન આઉટ કરી સિંકનો વિકલ્પ બંધ કરવો છે?</translation>
@@ -35,7 +35,7 @@
 <translation id="1389974829397082527">અહીં કોઈ બુકમાર્ક્સ નથી</translation>
 <translation id="1400642268715879018">છેલ્લા 4 અઠવાડિયા</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
-<translation id="1430915738399379752">છાપો</translation>
+<translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> આઇટમ્સ</translation>
 <translation id="1491277525950327607">સેટિંગ ટૉગલ કરવા માટે બે વાર ટૅપ કરો</translation>
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
@@ -59,7 +59,7 @@
 <translation id="17513872634828108">ટેબ્સ ખોલો</translation>
 <translation id="1752547299766512813">પાસવર્ડ સાચવો</translation>
 <translation id="1753905327828125965">સૌથી વધુ જોવાયેલ</translation>
-<translation id="1809939268435598390">ફોલ્ડર કાઢી નાખો</translation>
+<translation id="1809939268435598390">ફોલ્ડર ડિલીટ કરો</translation>
 <translation id="1813414402673211292">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="1820259098641718022">વાંચન સૂચિમાં ઉમેર્યું</translation>
 <translation id="1821253160463689938">તમારી પસંદગીઓ યાદ રાખવા માટે કુકીનો ઉપયોગ કરે છે, પછી ભલે તમે તે પેજની મુલાકાત ન પણ લો</translation>
@@ -101,7 +101,7 @@
 <translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટોની ઍક્સેસને અવરોધિત કરી</translation>
 <translation id="2584132361465095047">એકાઉન્ટ ઉમેરો…</translation>
 <translation id="2625189173221582860">પાસવર્ડ કૉપિ કર્યો</translation>
-<translation id="2648803196158606475">વાંચેલ કાઢી નાખો</translation>
+<translation id="2648803196158606475">વાંચેલું ડિલીટ કરો</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2684815431982545828">નવું ટૅબ</translation>
 <translation id="2690858294534178585">કૅમેરો ઉપયોગમાં છે</translation>
@@ -225,7 +225,7 @@
 <translation id="4659667755519643272">ટેબ સ્વિચરમાં દાખલ થાઓ</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> તરીકે સાઇન ઇન થયાં.
 
-તમારો ડેટા તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. સમન્વયન શરૂ કરવા માટે તે દાખલ કરો.</translation>
+તમારો ડેટા તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="4747097190499141774">પાસફ્રેઝ એન્ક્રિપ્શનમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી. માત્ર તમારા પાસફ્રેઝ ધરાવતી કોઈ વ્યક્તિ જ તમારા એન્ક્રિપ્ટ કરેલા ડેટાને વાંચી શકે છે. Googleને પાસફ્રેઝ મોકલવામાં આવતો નથી કે તેના દ્વારા સંગ્રહિત કરવામાં આવતો નથી. જો તમે તમારો પાસફ્રેઝ ભૂલી જાઓ અથવા આ સેટિંગ બદલવા માંગતા હો, તો તમારે સિંકને રીસેટ કરવું પડશે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">પેજમાં શોધો...</translation>
@@ -240,7 +240,7 @@
 <translation id="4881695831933465202">ખોલો</translation>
 <translation id="4882831918239250449">તમારા બ્રાઉઝિંગ ઇતિહાસને શોધ, જાહેરાતો અને વધુ સુવિધાને વ્યક્તિગત કરવા માટે કેવી રીતે ઉપયોગમાં લેવાય તેને નિયંત્રિત કરો</translation>
 <translation id="4904877109095351937">વાંચેલ તરીકે ચિહ્નિત કરો</translation>
-<translation id="4930268273022498155">હાલનો ડેટા ડિલીટ કરો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને તેને ફરી મેળવી શકો છો.</translation>
+<translation id="4930268273022498155">અસ્તિત્વમાંનો ડેટા ડિલીટ કરો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને એને પાછું મેળવી શકો છો.</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
 <translation id="4979397965658815378">તમારા બુકમાર્ક, પાસવર્ડ, ઇતિહાસ અને બીજા સેટિંગને તમારા બધા ડિવાઇસ પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
 <translation id="5004416275253351869">Google પ્રવૃત્તિ નિયંત્રણો</translation>
@@ -287,7 +287,7 @@
 <translation id="5857090052475505287">નવું ફોલ્ડર</translation>
 <translation id="5857770089550859117">સમન્વયનને પ્રારંભ કરવા માટે પાસફ્રેઝ આવશ્યક.</translation>
 <translation id="5860033963881614850">બંધ</translation>
-<translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ આપમેળે મોકલે છે</translation>
+<translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે</translation>
 <translation id="5869029295770560994">બરાબર, સમજાઈ ગયું</translation>
 <translation id="5871497086027727873">1 આઇટમ ખસેડી</translation>
 <translation id="5911030830365207728">Google અનુવાદ</translation>
@@ -335,7 +335,7 @@
 <translation id="6417838470969808600">તમારી પાસે <ph name="USER_EMAIL1" /> ના બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ છે.</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> તરીકે સાઇન ઇન થયાં.
 
-તમારો ડેટા <ph name="TIME" /> ના રોજ તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સમન્વયન શરૂ કરવા માટે તે દાખલ કરો.</translation>
+તમારો ડેટા <ph name="TIME" />ના રોજ તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
 <translation id="6418346271604475326">PDF તૈયાર કરી રહ્યાં છે</translation>
 <translation id="6434591244308415567">એક ભૂલ આવી છે. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="6445051938772793705">દેશ</translation>
@@ -351,7 +351,7 @@
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">બધા પાસવર્ડ નિકાસ કરી શકાતાં નથી</translation>
 <translation id="6780034285637185932">પિન કોડ</translation>
-<translation id="6785453220513215166">ક્રેશ રિપોર્ટ મોકલી રહ્યું છે...</translation>
+<translation id="6785453220513215166">ક્રૅશ રિપોર્ટ મોકલી રહ્યું છે...</translation>
 <translation id="679325081238418596">તમારા તમામ ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ મેળવો</translation>
 <translation id="6797885426782475225">વૉઇસ શોધ</translation>
 <translation id="6807889908376551050">બધું બતાવો...</translation>
@@ -435,7 +435,7 @@
 <translation id="8160722851663543621">ઍડ્રેસ બાર અને શોધ બૉક્સમાંથી શોધ અને અમુક કુકીને તમારા ડિફૉલ્ટ શોધ એંજિન પર મોકલે છે</translation>
 <translation id="8205564605687841303">રદ કરો</translation>
 <translation id="8225985093977202398">કૅશ કરેલ છબીઓ અને ફાઇલો</translation>
-<translation id="8261506727792406068">કાઢી નાખો</translation>
+<translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8281781826761538115">ડિફૉલ્ટ - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">બધું બંધ કરો</translation>
 <translation id="8381750437846184350">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે Google, તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કેવી રીતે કરે છે તે નિયંત્રિત કરો</translation>
@@ -487,7 +487,7 @@
 <translation id="9157836665414082580">સંવાદો નાબૂદ કરો</translation>
 <translation id="9188680907066685419">સંચાલિત એકાઉન્ટમાંથી સાઇન આઉટ કરો</translation>
 <translation id="9203116392574189331">હેન્ડઓફ</translation>
-<translation id="9223358826628549784">ક્રેશ રિપોર્ટ મોકલ્યો.</translation>
+<translation id="9223358826628549784">ક્રૅશ રિપોર્ટ મોકલ્યો.</translation>
 <translation id="935490618240037774">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ સિંક કરવામાં આવશે જેથી કરીને તમે તમારા બધા ડિવાઇસ પર એનો ઉપયોગ કરી શકો</translation>
 <translation id="976982866697960176">સમન્વયિત ડેટા સંચાલિત કરો…</translation>
 <translation id="988141524645182168">અન્ય ઉપકરણો</translation>

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Ielādēt attēlu</translation>
 <translation id="1029317248976101138">Tālummaiņa</translation>
 <translation id="1030706264415084469">Vietnē <ph name="URL" /> tika pieprasīta atļauja pastāvīgi glabāt jūsu ierīcē lielu datu apjomu.</translation>
+<translation id="1030889518049751641">Skatīt darbību žurnālu</translation>
 <translation id="1031362278801463162">Notiek priekšskatījuma ielāde</translation>
 <translation id="103279545524624934">Atbrīvojiet vietu diskā, lai varētu palaist Android lietotnes.</translation>
 <translation id="1033780634303702874">Piekļūt jūsu seriālajām ierīcēm</translation>
@@ -163,6 +164,7 @@
     Jums būs vēlreiz jāizveido profils.<ph name="BR" />
     <ph name="BR" />
     Nākamajā ekrānā, lūdzu, nosūtiet atsauksmes, lai mēs varētu novērst problēmu.</translation>
+<translation id="1217668622537098248">Pēc darbības atjaunot peles kreisās pogas klikšķa funkciju</translation>
 <translation id="121783623783282548">Paroles neatbilst.</translation>
 <translation id="1218860753635451122">Noklikšķinot uz pogas “Piekrītu”, jūs piekrītat iepriekš redzamajiem pakalpojumu sniegšanas noteikumiem.</translation>
 <translation id="122082903575839559">Sertifikāta paraksta algoritms</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Ja jūsu drošības atslēga nav norādīta, nospiediet un turiet atslēgas pogu vismaz 5 sekundes.</translation>
 <translation id="275662540872599901">ekrāns izslēgts</translation>
 <translation id="2761898608071930085">Izmantot citu kontu</translation>
+<translation id="276233135255363312">{0,plural, =1{Jūs esat atvēris vienu inkognito režīma logu.}zero{Jūs esat atvēris # inkognito režīma logus.}one{Jūs esat atvēris # inkognito režīma logu.}other{Jūs esat atvēris # inkognito režīma logus.}}</translation>
 <translation id="2762441749940182211">Kameras lietošana ir bloķēta</translation>
 <translation id="2765217105034171413">Mazs</translation>
 <translation id="2766006623206032690">Ielīmēt un doties</translation>
@@ -2186,6 +2189,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4312866146174492540">Bloķēt (pēc noklusējuma)</translation>
 <translation id="4316850752623536204">Izstrādātāja vietne</translation>
 <translation id="4320177379694898372">Nav interneta savienojuma.</translation>
+<translation id="4320948194796820126">Pievienojiet grāmatzīmi savam e-pastam</translation>
 <translation id="4322394346347055525">Aizvērt citas cilnes</translation>
 <translation id="4324577459193912240">Fails nav pilnībā lejupielādēts</translation>
 <translation id="4330387663455830245">Nekad netulkot šo valodu: <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4364567974334641491">Lietotne <ph name="APP_NAME" /> koplieto logu.</translation>
 <translation id="4364830672918311045">Parādīt paziņojumus</translation>
 <translation id="4365673000813822030">Hmm! Sinhronizācija ir pārtraukusi darboties.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Ievadītā e-pasta adrese un parole neatbilst.</translation>
 <translation id="437184764829821926">Uzlaboti fonta iestatījumi</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2690,6 +2695,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Cietais disks ir pilns. Saglabājiet citā atrašanās vietā vai atbrīvojiet vietu cietajā diskā.</translation>
 <translation id="5125751979347152379">Nederīgs URL.</translation>
+<translation id="5127805178023152808">Sinhronizācija izslēgta</translation>
 <translation id="5127881134400491887">Pārvaldīt tīkla savienojumus</translation>
 <translation id="512903556749061217">pievienota</translation>
 <translation id="5133483819862530305">No saulrieta līdz saullēktam</translation>
@@ -3069,6 +3075,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5669267381087807207">Notiek aktivizācija</translation>
 <translation id="5669691691057771421">Ievadiet jauno PIN.</translation>
 <translation id="5671641761787789573">Attēli bloķēti</translation>
+<translation id="567643736130151854">Pierakstieties un ieslēdziet sinhronizāciju, lai iegūtu savas grāmatzīmes, paroles un citus iestatījumus visās ierīcēs</translation>
 <translation id="5677503058916217575">Lapas valoda:</translation>
 <translation id="5677928146339483299">Bloķēts</translation>
 <translation id="5678550637669481956">Tika piešķirta lasīšanas un rakstīšanas piekļuve krātuvei <ph name="VOLUME_NAME" />.</translation>
@@ -4957,6 +4964,7 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8571213806525832805">Pēdējās 4 nedēļas</translation>
 <translation id="8574990355410201600">Vienmēr atļaut ieslēgt skaņu vietnē <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Turiet nospiestu <ph name="KEY_EQUIVALENT" />, lai beigtu darbu.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Aizvērt šo logu}zero{Aizvērt visus inkognito režīma logus}one{Aizvērt visus inkognito režīma logus}other{Aizvērt visus inkognito režīma logus}}</translation>
 <translation id="8578639784464423491">Nedrīkst būt vairāk par 99 burtiem.</translation>
 <translation id="8579285237314169903">Notiek <ph name="NUMBER_OF_FILES" /> vienumu sinhronizēšana...</translation>
 <translation id="857943718398505171">Atļauta (ieteicams)</translation>
@@ -4976,7 +4984,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8609465669617005112">Virziet uz augšu</translation>
 <translation id="8610103157987623234">Nepareizs formāts, lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="8615618338313291042">Inkognito lietojumprogramma: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Sinhronizācija netiek veikta</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Viesabonēšanas statuss</translation>
 <translation id="8620765578342452535">Konfigurēt tīkla savienojumus</translation>

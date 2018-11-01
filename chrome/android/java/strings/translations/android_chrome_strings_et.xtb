@@ -117,6 +117,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="1832521218263067499">Turvaintsidendid</translation>
 <translation id="1853692000353488670">Uus inkognito vaheleht</translation>
 <translation id="1868024384445905608">Chrome laadib nüüd faile kiiremini alla</translation>
+<translation id="187628348035757895">Arendaja valikud</translation>
 <translation id="1878302395768190018">Seda saate Chrome'i seadetes igal ajal kohandada</translation>
 <translation id="1880072593381090678">Populaarsed lehed Chrome'ist</translation>
 <translation id="1883903952484604915">Minu failid</translation>
@@ -937,6 +938,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8073388330009372546">Ava pilt uuel vahelehel</translation>
 <translation id="8084114998886531721">Salvestatud parool</translation>
 <translation id="8087000398470557479">See sisu pärineb domeenilt <ph name="DOMAIN_NAME" /> ja seda pakub Google.</translation>
+<translation id="8087980556724996220">Assistendi automaatne täitmine lõpeb <ph name="DURATION_SECONDS" /> s pärast …</translation>
 <translation id="8103578431304235997">Inkognito vaheleht</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Seotud lehtede soovitamine</translation>

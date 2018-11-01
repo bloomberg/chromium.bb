@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Charger l'image</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> souhaite stocker de façon permanente des données volumineuses sur votre appareil</translation>
+<translation id="1030889518049751641">Afficher le journal d'activité</translation>
 <translation id="1031362278801463162">Chargement de l'aperçu...</translation>
 <translation id="103279545524624934">Libérez de l'espace disque pour lancer des applications Android.</translation>
 <translation id="1033780634303702874">Accéder à vos appareils reliés via le port série</translation>
@@ -163,6 +164,7 @@
     Vous devrez configurer votre profil de nouveau.<ph name="BR" />
     <ph name="BR" />
     Veuillez nous envoyer vos commentaires depuis l'écran suivant pour nous aider à résoudre le problème.</translation>
+<translation id="1217668622537098248">Réactiver le clic gauche après l'action</translation>
 <translation id="121783623783282548">Les mots de passe ne correspondent pas.</translation>
 <translation id="1218860753635451122">En cliquant sur le bouton "J'accepte", vous acceptez le processus décrit ci-dessus pour ces services Google.</translation>
 <translation id="122082903575839559">Algorithme de signature du certificat</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Si votre clé de sécurité ne figure pas dans la liste, appuyez sur le bouton de la clé pendant au moins cinq secondes.</translation>
 <translation id="275662540872599901">écran désactivé</translation>
 <translation id="2761898608071930085">Utiliser un autre compte</translation>
+<translation id="276233135255363312">{0,plural, =1{Vous avez une fenêtre de navigation privée.}one{Vous avez # fenêtre de navigation privée.}other{Vous avez # fenêtres de navigation privée.}}</translation>
 <translation id="2762441749940182211">Caméra bloquée</translation>
 <translation id="2765217105034171413">Petite</translation>
 <translation id="2766006623206032690">Coller l'URL et y a&amp;ccéder</translation>
@@ -2186,6 +2189,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4312866146174492540">Bloquer (par défaut)</translation>
 <translation id="4316850752623536204">Site Web du développeur</translation>
 <translation id="4320177379694898372">Aucune connexion Internet.</translation>
+<translation id="4320948194796820126">Ajouter un favori à votre e-mail</translation>
 <translation id="4322394346347055525">Fermer les autres onglets</translation>
 <translation id="4324577459193912240">Fichier incomplet</translation>
 <translation id="4330387663455830245">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
 <translation id="4365673000813822030">Petit problème… La synchronisation s'est arrêtée.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> avec <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">L'adresse e-mail et le mot de passe saisis ne correspondent pas.</translation>
 <translation id="437184764829821926">Paramètres de police avancés</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2296,7 +2301,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="452039078290142656">appareils inconnus de <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="4522600456902129422">Continuer à autoriser ce site à voir le contenu du presse-papiers</translation>
-<translation id="4524832533047962394">Le mode d'enregistrement proposé n'est pas compatible avec cette version du système d'exploitation. Vérifiez que vous utilisez bien la dernière version.</translation>
+<translation id="4524832533047962394">Le mode d'enregistrement proposé n'est pas compatible avec cette version du système d'exploitation. Vérifiez que vous utilisez bien la version la plus récente.</translation>
 <translation id="4525382759303819021">Obtenir les dernières actualités et recommandations concernant les applications Play Store</translation>
 <translation id="4530494379350999373">Origine</translation>
 <translation id="4533985347672295764">Temps CPU</translation>
@@ -2690,6 +2695,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Votre disque dur est saturé. Veuillez enregistrer à un autre emplacement ou libérer de l'espace sur le disque dur.</translation>
 <translation id="5125751979347152379">URL incorrecte</translation>
+<translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5127881134400491887">Gérer les connexions réseau</translation>
 <translation id="512903556749061217">connecté</translation>
 <translation id="5133483819862530305">Du coucher au lever du soleil</translation>
@@ -3001,7 +3007,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5568069709869097550">Impossible de se connecter</translation>
 <translation id="5568144734023334204">Taille de stockage Android</translation>
 <translation id="5569544776448152862">Inscription au domaine <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> en cours…</translation>
-<translation id="5573248369095789351">Action d'interaction</translation>
+<translation id="5573248369095789351">Action d'attente</translation>
 <translation id="5575473780076478375">Extension en mode navigation privée :<ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Un problème est survenu avec la demande d'enregistrement en mode de démonstration.</translation>
 <translation id="557722062034137776">La réinitialisation de votre appareil n'a aucune incidence sur vos comptes Google ni sur leurs données synchronisées. Toutefois, tous les fichiers enregistrés en local sur votre appareil vont être supprimés.</translation>
@@ -3070,6 +3076,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5669691691057771421">Saisir le nouveau code</translation>
 <translation id="5671641761787789573">Images bloquées</translation>
+<translation id="567643736130151854">Connectez-vous et activez la synchronisation pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils</translation>
 <translation id="5677503058916217575">Langue de la page :</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5678550637669481956">L'accès en lecture et en écriture à "<ph name="VOLUME_NAME" />" a été accordé.</translation>
@@ -4958,6 +4965,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8571213806525832805">Les 4 dernières semaines</translation>
 <translation id="8574990355410201600">Toujours activer le son sur <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Maintenez la touche <ph name="KEY_EQUIVALENT" /> enfoncée pour quitter</translation>
+<translation id="8578421807258988326">{0,plural, =1{Fermer cette fenêtre}one{Fermer la fenêtre de navigation privée}other{Fermer toutes les fenêtres de navigation privée}}</translation>
 <translation id="8578639784464423491">Le mot ne peut pas comporter plus de 99 lettres</translation>
 <translation id="8579285237314169903">Synchronisation de <ph name="NUMBER_OF_FILES" /> éléments en cours…</translation>
 <translation id="857943718398505171">Autorisé (recommandé)</translation>
@@ -4977,7 +4985,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8609465669617005112">Monter</translation>
 <translation id="8610103157987623234">Format incorrect, veuillez réessayer</translation>
 <translation id="8615618338313291042">Application en mode navigation privée : <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Aucune synchronisation</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" /> : <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">État d'itinérance</translation>
 <translation id="8620765578342452535">Configurer les connexions réseau</translation>

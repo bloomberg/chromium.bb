@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Lataa kuva</translation>
 <translation id="1029317248976101138">Lähennä</translation>
 <translation id="1030706264415084469"><ph name="URL" /> haluaa tallentaa suuria tietomääriä pysyvästi laitteellesi.</translation>
+<translation id="1030889518049751641">Näytä tapahtumaloki</translation>
 <translation id="1031362278801463162">Ladataan esikatselua</translation>
 <translation id="103279545524624934">Vapauta levytilaa, jotta voit käynnistää Android-sovelluksia.</translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
@@ -163,6 +164,7 @@
     Sinun on asetettava profiilisi uudelleen.<ph name="BR" />
     <ph name="BR" />
     Lähetä meille palautetta seuraavalla ruudulla, jotta voimme korjata ongelman.</translation>
+<translation id="1217668622537098248">Palaa ykkösklikkaukseen toiminnon jälkeen</translation>
 <translation id="121783623783282548">Salasanat eivät täsmää.</translation>
 <translation id="1218860753635451122">Kun klikkaat Hyväksyn-painiketta, hyväksyt tietojen käsittelyn Google-palveluissa edellä kuvatuilla tavoilla.</translation>
 <translation id="122082903575839559">Varmenteen allekirjoitusalgoritmi</translation>
@@ -1181,6 +1183,7 @@
 <translation id="2755628026949580719">Jos suojausavain ei ole luettelossa, paina avaimen painiketta vähintään 5 sekuntia.</translation>
 <translation id="275662540872599901">näyttö sammutettu</translation>
 <translation id="2761898608071930085">Käytä toista tiliä</translation>
+<translation id="276233135255363312">{0,plural, =1{Sinulla on yksi incognito-ikkuna.}other{Sinulla on # incognito-ikkunaa.}}</translation>
 <translation id="2762441749940182211">Kamera estetty</translation>
 <translation id="2765217105034171413">Pieni</translation>
 <translation id="2766006623206032690">&amp;Liitä ja avaa</translation>
@@ -2184,6 +2187,7 @@
 <translation id="4312866146174492540">Estä (oletus)</translation>
 <translation id="4316850752623536204">Kehittäjän verkkosivusto</translation>
 <translation id="4320177379694898372">Ei internetyhteyttä</translation>
+<translation id="4320948194796820126">Lisää sähköpostiin kirjanmerkki</translation>
 <translation id="4322394346347055525">Sulje muut välilehdet</translation>
 <translation id="4324577459193912240">Tiedoston osia puuttuu</translation>
 <translation id="4330387663455830245">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
@@ -2204,6 +2208,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> jakaa ikkunan.</translation>
 <translation id="4364830672918311045">Näytä ilmoitukset</translation>
 <translation id="4365673000813822030">Hups, synkronointi on lakannut toimimasta.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> (<ph name="APP_NAME" />)</translation>
 <translation id="4370975561335139969">Antamasi sähköpostiosoite ja salasana eivät vastaa toisiaan.</translation>
 <translation id="437184764829821926">Kirjasimen lisäasetukset</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2688,6 +2693,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Kiintolevy on täynnä. Tallenna muuhun sijaintiin tai vapauta levytilaa.</translation>
 <translation id="5125751979347152379">Virheellinen URL-osoite.</translation>
+<translation id="5127805178023152808">Synkronointi ei ole käytössä</translation>
 <translation id="5127881134400491887">hallinnoida verkkoyhteyksiä</translation>
 <translation id="512903556749061217">liitetty</translation>
 <translation id="5133483819862530305">Auringonlaskusta sen nousuun</translation>
@@ -3067,6 +3073,7 @@
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5669691691057771421">Anna uusi PIN-koodi</translation>
 <translation id="5671641761787789573">Kuvat estetty</translation>
+<translation id="567643736130151854">Kirjaudu sisään ja ota synkronoi käyttöön, niin voit käyttää kirjanmerkkejä, salasanoja ja muita asetuksiasi kaikilla laitteilla</translation>
 <translation id="5677503058916217575">Sivun kieli:</translation>
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5678550637669481956">Laajennukselle myönnettiin luku- ja kirjoitusoikeus tallennusvälineeseen <ph name="VOLUME_NAME" />.</translation>
@@ -4956,6 +4963,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8571213806525832805">Viimeiset neljä viikkoa</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> saa aina toistaa ääntä</translation>
 <translation id="8575286410928791436">Lopeta painamalla pitkään <ph name="KEY_EQUIVALENT" />.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Sulje tämä ikkuna}other{Sulje kaikki incognito-ikkunat}}</translation>
 <translation id="8578639784464423491">Enimmäispituus 99 kirjainta</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES" /> kohdetta…</translation>
 <translation id="857943718398505171">Sallittu (suositus)</translation>
@@ -4975,7 +4983,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8609465669617005112">Siirrä ylös</translation>
 <translation id="8610103157987623234">Väärä muoto, yritä uudelleen</translation>
 <translation id="8615618338313291042">Incognito-sovellus: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Ei synkronointia</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Roaming-tila</translation>
 <translation id="8620765578342452535">Määrittää verkkoyhteydet</translation>

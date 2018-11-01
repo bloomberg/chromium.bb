@@ -581,7 +581,7 @@
 <translation id="1838709767668011582">Google 网站</translation>
 <translation id="1839704667838141620">更改此文件的分享方式</translation>
 <translation id="1841545962859478868">此设备的管理员可能会监控以下各项：</translation>
-<translation id="1841616161104323629">找不到此设备。</translation>
+<translation id="1841616161104323629">找不到设备记录。</translation>
 <translation id="1841705068325380214"><ph name="EXTENSION_NAME" /> 已被禁用</translation>
 <translation id="1842766183094193446">确定要启用演示模式吗？</translation>
 <translation id="1844692022597038441">此文件无法在离线模式下播放。</translation>
@@ -848,7 +848,7 @@
 <translation id="2251218783371366160">使用系统查看器打开</translation>
 <translation id="225163402930830576">刷新网络</translation>
 <translation id="225240747099314620">允许将标识符用于受保护内容（可能需要重新启动计算机）</translation>
-<translation id="2255077166240162850">此设备已被锁定为其他网域或模式。</translation>
+<translation id="2255077166240162850">此设备已锁定到其他网域或模式。</translation>
 <translation id="2255317897038918278">Microsoft 时间戳</translation>
 <translation id="2256115617011615191">立即重新启动</translation>
 <translation id="225614027745146050">欢迎</translation>
@@ -2615,7 +2615,7 @@
 <translation id="5000922062037820727">已阻止（推荐）</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 张新照片</translation>
 <translation id="5010043101506446253">证书授权中心</translation>
-<translation id="5010406651457630570">桌面设备</translation>
+<translation id="5010406651457630570">计算机</translation>
 <translation id="5015344424288992913">正在解析代理...</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">保存</translation>
@@ -2682,6 +2682,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">您的硬盘已满。请保存到其他位置或在硬盘上腾出更多空间。</translation>
 <translation id="5125751979347152379">网址无效。</translation>
+<translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5127881134400491887">管理网络连接</translation>
 <translation id="512903556749061217">已连接</translation>
 <translation id="5133483819862530305">日落到日出</translation>
@@ -4771,7 +4772,7 @@
 <translation id="8275038454117074363">导入</translation>
 <translation id="8276560076771292512">清空缓存并硬性重新加载</translation>
 <translation id="8281886186245836920">跳过</translation>
-<translation id="8282356762694872144">前往您的电子邮件地址？</translation>
+<translation id="8282356762694872144">前往您的电子邮件？</translation>
 <translation id="8282947398454257691">获取您的唯一设备标识符</translation>
 <translation id="8283475148136688298">连接到“<ph name="DEVICE_NAME" />”时身份验证码遭拒。</translation>
 <translation id="8284279544186306258">所有<ph name="WEBSITE_1" />网站</translation>
@@ -4960,7 +4961,6 @@
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610103157987623234">格式不正确，请重试</translation>
 <translation id="8615618338313291042">隐身模式下使用的应用...<ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">未同步</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫游状态</translation>
 <translation id="8620765578342452535">配置网络连接</translation>

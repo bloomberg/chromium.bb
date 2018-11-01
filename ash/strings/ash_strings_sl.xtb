@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
 <translation id="2865888419503095837">Podatki o omrežju</translation>
+<translation id="287224423103674444">Pritisnili ste bližnjico za sukanje zaslona. Ali želite zasukati zaslon?</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2878884018241093801">Ni nedavnih elementov</translation>
 <translation id="2903844815300039659">Vzpostavljena povezava z omrežjem <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Aktiviranje</translation>
 <translation id="5673434351075758678">Iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />« po sinhronizaciji nastavitev.</translation>
 <translation id="5691772641933328258">Prstni odtis ni prepoznan</translation>
+<translation id="5710450975648804523">Način »ne moti« je vklopljen</translation>
 <translation id="574392208103952083">Srednja</translation>
 <translation id="5744083938413354016">Vlečenje z dotikom</translation>
 <translation id="5750765938512549687">Bluetooth je izklopljen</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Če želite onemogočiti glasovni odziv, pridržite obe tipki za glasnost za pet sekund.</translation>
 <translation id="7692480393933218409">Polnjenje povezanih naprav USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 obvestilo}one{# obvestilo}two{# obvestili}few{# obvestila}other{# obvestil}}</translation>
 <translation id="776344839111254542">Kliknite, če si želite ogledati podrobnosti o posodobitvi</translation>
+<translation id="7780159184141939021">Zasuk zaslona</translation>
 <translation id="7796353162336583443">Dotaknite se gumba pisala na polici, če želite ustvariti zapisek, posneti posnetek zaslona ali uporabiti Pomočnika Google, laserski kazalnik ali povečevalno steklo.</translation>
 <translation id="7798302898096527229">Za preklic pritisnite tipko za iskanje ali Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> in <ph name="MINUTE" /></translation>

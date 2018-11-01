@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Učitaj sliku</translation>
 <translation id="1029317248976101138">Zumiranje</translation>
 <translation id="1030706264415084469"><ph name="URL" /> želi trajno pohraniti veliku količinu podataka na vaš uređaj</translation>
+<translation id="1030889518049751641">Pregledajte zapisnik aktivnosti</translation>
 <translation id="1031362278801463162">Učitavanje pregleda</translation>
 <translation id="103279545524624934">Oslobodite prostor na disku da biste pokrenuli Android aplikacije.</translation>
 <translation id="1033780634303702874">pristupiti vašim serijski spojenim uređajima</translation>
@@ -163,6 +164,7 @@
     Morate ponovo postaviti profil.<ph name="BR" />
     <ph name="BR" />
     Na sljedećem zaslonu pošaljite povratne informacije kako biste nam pomogli riješiti poteškoću.</translation>
+<translation id="1217668622537098248">Vrati na lijevi klik nakon radnje</translation>
 <translation id="121783623783282548">Zaporke se ne podudaraju.</translation>
 <translation id="1218860753635451122">Klikom na gumb "Prihvaćam" prihvaćate prethodno opisanu obradu za ove Googleove usluge.</translation>
 <translation id="122082903575839559">Algoritam potpisa certifikata</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Ako vaš sigurnosni ključ nije naveden, pritisnite tipku na ključu barem pet sekundi.</translation>
 <translation id="275662540872599901">zaslon isključen</translation>
 <translation id="2761898608071930085">Upotrijebi neki drugi račun</translation>
+<translation id="276233135255363312">{0,plural, =1{Imate jedan anoniman prozor.}one{Imate # anoniman prozor.}few{Imate # anonimna prozora.}other{Imate # anonimnih prozora.}}</translation>
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2765217105034171413">Mali</translation>
 <translation id="2766006623206032690">Za&amp;lijepi i idi</translation>
@@ -2186,6 +2189,7 @@
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
 <translation id="4316850752623536204">Web-lokacija razvojnog programera</translation>
 <translation id="4320177379694898372">Nema internetske veze</translation>
+<translation id="4320948194796820126">Dodajte oznaku svojoj e-pošti</translation>
 <translation id="4322394346347055525">Zatvori ostale kartice</translation>
 <translation id="4324577459193912240">Nepotpuna datoteka</translation>
 <translation id="4330387663455830245">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> dijeli prozor.</translation>
 <translation id="4364830672918311045">Prikaži obavijesti</translation>
 <translation id="4365673000813822030">Ups, sinkronizacija je prekinuta.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> pomoću aplikacije <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Unijeli ste e-adresu i zaporku koje se ne podudaraju</translation>
 <translation id="437184764829821926">Napredne postavke fonta</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2690,6 +2695,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Vaš je tvrdi disk pun. Spremite na neku drugu lokaciju ili oslobodite prostor na tvrdom disku.</translation>
 <translation id="5125751979347152379">Nevažeći URL.</translation>
+<translation id="5127805178023152808">Sinkronizacija je isključena</translation>
 <translation id="5127881134400491887">upravljati mrežnim vezama</translation>
 <translation id="512903556749061217">povezano</translation>
 <translation id="5133483819862530305">Od zalaska do izlaska Sunca</translation>
@@ -3069,6 +3075,7 @@
 <translation id="5669267381087807207">Aktivacija</translation>
 <translation id="5669691691057771421">Unesite novi PIN</translation>
 <translation id="5671641761787789573">Slike su blokirane</translation>
+<translation id="567643736130151854">Prijavite se i uključite sinkronizaciju kako biste mogli pristupati svojim oznakama, zaporkama i ostalom na svim uređajima</translation>
 <translation id="5677503058916217575">Jezik stranice:</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5678550637669481956">Odobren je pristup za čitanje jedinice <ph name="VOLUME_NAME" /> i zapisivanje na nju.</translation>
@@ -4958,6 +4965,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8571213806525832805">Protekla 4 tjedna</translation>
 <translation id="8574990355410201600">Uvijek dopusti zvuk na web-lokaciji <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Pritisnite <ph name="KEY_EQUIVALENT" /> za zatvaranje</translation>
+<translation id="8578421807258988326">{0,plural, =1{Zatvori ovaj prozor}one{Zatvori sve anonimne prozore}few{Zatvori sve anonimne prozore}other{Zatvori sve anonimne prozore}}</translation>
 <translation id="8578639784464423491">Dopušteno je najviše 99 slova</translation>
 <translation id="8579285237314169903">Sinkronizacija ovoliko stavki: <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="857943718398505171">Dopušteno (preporučeno)</translation>
@@ -4977,7 +4985,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8609465669617005112">Premjesti gore</translation>
 <translation id="8610103157987623234">Format nije točan. Pokušajte ponovo.</translation>
 <translation id="8615618338313291042">Anonimna aplikacija: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Ne sinkronizira se</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status roaminga</translation>
 <translation id="8620765578342452535">Konfiguracija mrežnih veza</translation>

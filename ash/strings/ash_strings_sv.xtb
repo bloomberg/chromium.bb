@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Hylla</translation>
 <translation id="2844169650293029770">USB-C-enhet (främre porten på vänster sida)</translation>
 <translation id="2865888419503095837">Nätverksinformation</translation>
+<translation id="287224423103674444">Du tryckte på kortkommandot för skärmrotation. Vill du rotera skärmen?</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2878884018241093801">Listan med de senaste åtgärderna är tom</translation>
 <translation id="2903844815300039659">Ansluten till <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5673434351075758678">Från <ph name="FROM_LOCALE" /> till <ph name="TO_LOCALE" /> efter synkronisering av inställningarna.</translation>
 <translation id="5691772641933328258">Fingeravtrycket känns inte igen</translation>
+<translation id="5710450975648804523">Stör ej har aktiverats</translation>
 <translation id="574392208103952083">Medium</translation>
 <translation id="5744083938413354016">Tryck snabbt två gånger och dra</translation>
 <translation id="5750765938512549687">Bluetooth är inaktiverat</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Inaktivera talad feedback genom att hålla båda volymknapparna nedtryckta i fem sekunder.</translation>
 <translation id="7692480393933218409">Laddar anslutna USB-C-enheter</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 avisering}other{# aviseringar}}</translation>
 <translation id="776344839111254542">Klicka här om du vill se mer information om uppdateringen</translation>
+<translation id="7780159184141939021">Rotera skärmen</translation>
 <translation id="7796353162336583443">När du har tryckt på e-pennan på hyllan kan du anteckna, ta en skärmdump eller använda Google Assistent, laserpekaren eller förstoringsglaset.</translation>
 <translation id="7798302898096527229">Avbryt genom att trycka på söktangenten eller Skift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> och <ph name="MINUTE" /></translation>

@@ -2690,6 +2690,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Dysk twardy jest pełny. Zapisz w innej lokalizacji lub zwolnij miejsce na dysku.</translation>
 <translation id="5125751979347152379">Nieprawidłowy adres URL.</translation>
+<translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5127881134400491887">Zarządzanie połączeniami sieciowymi</translation>
 <translation id="512903556749061217">podłączone</translation>
 <translation id="5133483819862530305">Od zachodu do wschodu słońca</translation>
@@ -4977,7 +4978,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8609465669617005112">W górę</translation>
 <translation id="8610103157987623234">Nieprawidłowy format – spróbuj ponownie</translation>
 <translation id="8615618338313291042">Aplikacja w trybie incognito: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Niezsynchronizowane</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stan roamingu</translation>
 <translation id="8620765578342452535">Konfigurowanie połączenia sieciowego</translation>

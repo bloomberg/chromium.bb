@@ -2688,6 +2688,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">하드 디스크가 가득 찼습니다. 다른 위치에 저장하거나 하드 디스크에 더 많은 공간을 확보하시기 바랍니다.</translation>
 <translation id="5125751979347152379">잘못된 URL입니다.</translation>
+<translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5127881134400491887">네트워크 연결 관리</translation>
 <translation id="512903556749061217">첨부됨</translation>
 <translation id="5133483819862530305">일몰에서 일출까지</translation>
@@ -4974,7 +4975,6 @@
 <translation id="8609465669617005112">위로 이동</translation>
 <translation id="8610103157987623234">잘못된 형식입니다. 다시 시도하세요.</translation>
 <translation id="8615618338313291042">시크릿 모드 애플리케이션:<ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">동기화되지 않음</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">로밍 상태</translation>
 <translation id="8620765578342452535">네트워크 연결 구성</translation>

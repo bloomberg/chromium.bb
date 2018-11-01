@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">A Chrome most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="257708665678654955">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE_NAME" /> nyelvű oldalainak fordítását?</translation>
 <translation id="2943166482989655199">Ha elküldi a rendszer- és használati adatokat a Google-nak, hozzájárulhat a Chrome fejlesztéséhez és a szolgáltatás biztonságának javításához</translation>
+<translation id="3030414234702425231">Mivel kijelentkezik a(z) <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból, törli az eszközön található Chrome-adatokat. Ezek az adatok Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="3148434565183091099">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba.</translation>
 <translation id="3148688391461398285">A helyadatokkal jobb felhasználói élményben lehet része a Chrome használatakor.</translation>
 <translation id="3167189358072330585">Fiókja nem működik a Google Chrome-on. Lépjen kapcsolatba domainrendszergazdájával, vagy használjon normál Google-fiókot a bejelentkezéshez.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="6600954340915313787">A Chrome-ba másolva</translation>
 <translation id="6648150602980899529">Egy <ph name="DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de azok továbbra is megmaradnak Google-fiókjában.</translation>
+<translation id="6676840375528380067">Törli Chrome-adatait az eszközről?</translation>
 <translation id="690638524486313356">Google Chrome – ÁSZF</translation>
 <translation id="7165736900384873061">A Google Chrome QR-olvasójának használata</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Helyezze át a Chrome-ot a Dockra<ph name="END_LINK" /></translation>

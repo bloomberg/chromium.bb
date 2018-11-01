@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="2705137772291741111">La copie enregistrée (en cache) de ce site est illisible.</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
-<translation id="2710942282213947212">Un logiciel installé sur votre ordinateur empêche Chromium de se connecter au Web de manière sécurisée</translation>
 <translation id="2712173769900027643">Demander l'autorisation</translation>
 <translation id="2720342946869265578">À proximité</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Adresse de livraison</translation>
 <translation id="5250209940322997802">"Se connecter au réseau"</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Suivez ces étapes pour désactiver temporairement le logiciel afin d'accéder au Web. Vous devez disposer des droits d'administrateur.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Cliquez sur <ph name="BEGIN_BOLD" />Démarrer<ph name="END_BOLD" />, puis recherchez et sélectionnez l'option <ph name="BEGIN_BOLD" />Afficher les services locaux<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Sélectionnez <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Sous <ph name="BEGIN_BOLD" />Type de démarrage<ph name="END_BOLD" />, sélectionnez <ph name="BEGIN_BOLD" />Désactivé<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Sous <ph name="BEGIN_BOLD" />État du service<ph name="END_BOLD" />, cliquez sur <ph name="BEGIN_BOLD" />Arrêter<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Cliquez sur <ph name="BEGIN_BOLD" />Appliquer<ph name="END_BOLD" />, puis sur <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.
-    <ph name="LIST_ITEM" />Accédez au <ph name="BEGIN_LEARN_MORE_LINK" />Centre d'aide Chrome<ph name="END_LEARN_MORE_LINK" /> pour découvrir comment supprimer définitivement le logiciel de votre ordinateur.
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Afficher tous les mots de passe enregistrés</translation>
 <translation id="5287240709317226393">Afficher les cookies</translation>
 <translation id="5288108484102287882">La validation des valeurs de règle a renvoyé des avertissements</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Appareils USB</translation>
 <translation id="6071091556643036997">Ce type de règle n'est pas valide.</translation>
 <translation id="6080696365213338172">Vous avez accédé à du contenu à l'aide d'un certificat fourni par l'administrateur. Les données que vous fournissez à <ph name="DOMAIN" /> peuvent être interceptées par votre administrateur.</translation>
-<translation id="6096226585778084111">Chargement de <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google. Vous risquez de ne plus avoir accès au contenu protégé de <ph name="SITE" /> et de certains autres sites.</translation>
 <translation id="610911394827799129">Votre compte Google conserve peut-être d'autres contenus d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Aucun}=1{1 mot de passe (synchronisé)}one{# mot de passe (synchronisé)}other{# mots de passe (synchronisés)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Des frais peuvent vous être facturés</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
 <translation id="6387754724289022810">Pour régler plus rapidement vos achats la prochaine fois, enregistrez votre carte et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
-<translation id="6397451950548600259">Un logiciel installé sur votre ordinateur empêche Chrome de se connecter au Web de manière sécurisée</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6410264514553301377">Saisissez la date d'expiration et le code CVC pour <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Une demande d'autorisation a été envoyée à tes parents pour la consultation de ce site</translation>

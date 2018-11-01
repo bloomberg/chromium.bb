@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">मान का प्रारूप से मिलान नहीं होता.</translation>
 <translation id="2705137772291741111">इस साइट की सहेजी गई (संचित) कॉपी पढ़ने योग्य नहीं थी.</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
-<translation id="2710942282213947212">आपके कंप्यूटर पर मौजूद सॉफ़्टवेयर क्रोमियम को सुरक्षित तरीके से वेब से जुड़ने से रोक रहा है</translation>
 <translation id="2712173769900027643">अनुमति मांगें</translation>
 <translation id="2720342946869265578">आस-पास</translation>
 <translation id="2721148159707890343">अनुरोध कामयाब रहा</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5250209940322997802">"नेटवर्क से कनेक्ट करें"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />नीचे दिए गए तरीके से सॉफ़्टवेयर को कुछ समय के लिए बंद करें ताकि आप वेब पर जा सकें. इसके लिए आपको एडमिन को मिलने वाले खास अधिकार चाहिए होंगे.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />शुरू करें<ph name="END_BOLD" /> पर क्लिक करें, इसके बाद <ph name="BEGIN_BOLD" />"स्थानीय सेवाएं देखें"<ph name="END_BOLD" /> को खोजें और चुनें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />चुनें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />स्टार्टअप प्रकार<ph name="END_BOLD" /> में <ph name="BEGIN_BOLD" />बंद किया गया<ph name="END_BOLD" />चुनें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />सेवा स्थिति<ph name="END_BOLD" /> में <ph name="BEGIN_BOLD" />रोकें<ph name="END_BOLD" /> पर क्लिक करें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />लागू करें<ph name="END_BOLD" /> पर क्लिक करें, फिर <ph name="BEGIN_BOLD" />ठीक है<ph name="END_BOLD" /> पर क्लिक करें
-    <ph name="LIST_ITEM" />अपने कंप्यूटर से सॉफ़्टवेयर को हमेशा के लिए हटाने का तरीका जानने के लिए <ph name="BEGIN_LEARN_MORE_LINK" />सहायता केंद्र<ph name="END_LEARN_MORE_LINK" />पर जाएं
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">सेव किए गए सभी पासवर्ड दिखाएं</translation>
 <translation id="5287240709317226393">कुकी दिखाएं</translation>
 <translation id="5288108484102287882">नीति मानों की पुष्टि से चेतावनियां मिली हैं</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB डिवाइस</translation>
 <translation id="6071091556643036997">नीति का प्रकार गलत है.</translation>
 <translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है. आपके द्वारा <ph name="DOMAIN" /> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> लोड हो रहा है…</translation>
 <translation id="6096619198407627433">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे. आप <ph name="SITE" /> से और कुछ दूसरी साइटों से सुरक्षित सामग्री का एक्सेस खो सकते हैं.</translation>
 <translation id="610911394827799129">आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर दूसरी तरह के ब्राउज़िंग इतिहास हो सकते हैं</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{कुछ नहीं}=1{1 पासवर्ड (सिंक किया हुआ)}one{# पासवर्ड (सिंक किए हुए)}other{# पासवर्ड (सिंक किए हुए)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">आगे शुल्क लग सकते हैं.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्‍य सुझाव}one{# अन्‍य सुझाव}other{# अन्‍य सुझाव}}</translation>
 <translation id="6387754724289022810">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग पते को अपने Google खाते में और इस डिवाइस में सेव करें.</translation>
-<translation id="6397451950548600259">आपके कंप्यूटर पर मौजूद सॉफ़्टवेयर Chrome को सुरक्षित रूप से वेब से कनेक्ट होने से रोक रहा है</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करें</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> का समाप्ति दिनांक और CVC डालें</translation>
 <translation id="6414888972213066896">आपने अपने अभिभावक से पूछा है कि इस साइट पर जाना ठीक है या नहीं</translation>

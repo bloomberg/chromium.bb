@@ -49,7 +49,7 @@
 <translation id="2718390899429598676">অতিরিক্ত নিরাপত্তার জন্য Chromium আপনার ডেটা এনক্রিপ্ট করবে।</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
 <translation id="2799223571221894425">পুনঃশুরু</translation>
-<translation id="2818397554133737874">এই ব্যক্তির ব্রাউজিং ডেটা এই ডিভাইস থেকে মুছে দেওয়া হবে। এই ডেটা ফিরিয়ে আনতে, Chromium-এ $2 হিসেবে সাইন-ইন করুন।</translation>
+<translation id="2818397554133737874">এই ব্যক্তির ব্রাউজিং ডেটা ডিভাইসটি থেকে মুছে দেওয়া হবে। এই ডেটা ফিরিয়ে আনতে, Chromium-এ $2 হিসেবে সাইন-ইন করুন।</translation>
 <translation id="2847479871509788944">Chromium থেকে সরান...</translation>
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরও ভালো করতে সহায়তা করুন৷</translation>
 <translation id="2898082584336937987">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।: <ph name="PHONE_NUMBER" /></translation>
@@ -145,7 +145,7 @@
 <translation id="5902536751647951209">প্রমাণীকরণের শংসাপত্রটি কাজ করেনি। অনুগ্রহ করে আবার Google Chrome এ সাইন-ইন করুন বা আরও তথ্যের জন্য আপনার প্রশাসকের সাথে যোগাযোগ করুন। <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে আপনার ডিভাইস আবার চালু করুন।</translation>
 <translation id="5987687638152509985">সিঙ্ক শুরু করতে Chromium আপডেট করুন</translation>
-<translation id="6013050204643758987"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />-এর মতো অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" />ব্যবহার করে Chromium OS তৈরি করা সম্ভব হয়েছে।</translation>
+<translation id="6013050204643758987"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (বিটা)<ph name="END_LINK_LINUX_OSS" />-এর মতো অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> ব্যবহার করে Chromium OS তৈরি করা সম্ভব হয়েছে।</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6055895534982063517">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷ এবং এটি আগের তুলনায় আরও দ্রুত৷</translation>
 <translation id="6063093106622310249">Chromium এ খুলুন</translation>

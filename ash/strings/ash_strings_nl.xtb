@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Plank</translation>
 <translation id="2844169650293029770">USB-C-apparaat (poort links aan de voorkant)</translation>
 <translation id="2865888419503095837">Netwerkinfo</translation>
+<translation id="287224423103674444">Je hebt op de sneltoets voor schermrotatie gedrukt. Wil je het scherm draaien?</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2878884018241093801">Geen recente items</translation>
 <translation id="2903844815300039659">Verbonden met <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Wordt geactiveerd</translation>
 <translation id="5673434351075758678">Van '<ph name="FROM_LOCALE" />' naar '<ph name="TO_LOCALE" />' na synchronisatie van je instellingen.</translation>
 <translation id="5691772641933328258">Vingerafdruk niet herkend</translation>
+<translation id="5710450975648804523">'Niet storen' is ingeschakeld</translation>
 <translation id="574392208103952083">Gemiddeld</translation>
 <translation id="5744083938413354016">Tikken en slepen</translation>
 <translation id="5750765938512549687">Bluetooth is uitgeschakeld</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Houd beide volumetoetsen gedurende vijf seconden ingedrukt om gesproken feedback uit te schakelen.</translation>
 <translation id="7692480393933218409">De aangesloten USB-C-apparaten worden opgeladen</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{Eén melding}other{# meldingen}}</translation>
 <translation id="776344839111254542">Klik om updategegevens te bekijken</translation>
+<translation id="7780159184141939021">Scherm draaien</translation>
 <translation id="7796353162336583443">Tik op de stylusknop op de plank om een notitie of screenshot te maken of de Google Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="7798302898096527229">Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> en <ph name="MINUTE" /></translation>

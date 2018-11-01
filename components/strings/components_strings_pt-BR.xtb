@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="2705137772291741111">Não foi possível ler a cópia armazenada em cache deste site.</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
-<translation id="2710942282213947212">Algum software no seu computador está impedindo o Chromium de se conectar com segurança à Web</translation>
 <translation id="2712173769900027643">Pedir permissão</translation>
 <translation id="2720342946869265578">Por perto</translation>
 <translation id="2721148159707890343">Solicitação bem-sucedida</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Endereço de entrega</translation>
 <translation id="5250209940322997802">"Conectar-se à rede"</translation>
 <translation id="5251803541071282808">Nuvem</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Siga estas etapas para desativar temporariamente o software e entrar na Web. Para isso, você precisará de privilégios de administrador.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Clique em <ph name="BEGIN_BOLD" />Iniciar<ph name="END_BOLD" /> e selecione <ph name="BEGIN_BOLD" />Ver serviços locais<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Selecione <ph name="BEGIN_BOLD" />Descoberta Visual<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Em <ph name="BEGIN_BOLD" />Tipo de inicialização<ph name="END_BOLD" />, selecione <ph name="BEGIN_BOLD" />Desativado<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Em <ph name="BEGIN_BOLD" />Status do serviço<ph name="END_BOLD" />, clique em <ph name="BEGIN_BOLD" />Parar<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Clique em <ph name="BEGIN_BOLD" />Aplicar<ph name="END_BOLD" /> e depois em <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Visite a <ph name="BEGIN_LEARN_MORE_LINK" />Central de ajuda do Google Chrome<ph name="END_LEARN_MORE_LINK" /> para saber mais sobre como remover software permanentemente do seu computador
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Mostrar todas as senhas salvas</translation>
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5288108484102287882">A validação dos valores da política gerou alguns avisos</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6071091556643036997">O tipo de política é inválido.</translation>
 <translation id="6080696365213338172">Você acessou conteúdo usando um certificado fornecido pelo administrador. Os dados fornecidos a <ph name="DOMAIN" /> podem ser interceptados por seu administrador.</translation>
-<translation id="6096226585778084111">Carregando <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Desconecta você da maioria dos sites, mas não da sua Conta do Google. É possível que você perca o acesso a conteúdos protegidos de <ph name="SITE" /> e de alguns outros sites.</translation>
 <translation id="610911394827799129">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nenhuma}=1{1 senha (sincronizada)}one{# senha (sincronizada)}other{# senhas (sincronizadas)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Acesso sujeito a cobranças.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}one{# outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para agilizar o pagamento na próxima vez, salve o cartão e o endereço de faturamento na sua Conta do Google e neste dispositivo.</translation>
-<translation id="6397451950548600259">Algum software no seu computador está impedindo o Google Chrome de se conectar com segurança à Web</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
 <translation id="6410264514553301377">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Você perguntou ao seu responsável se pode visitar este site</translation>

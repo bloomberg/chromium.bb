@@ -235,10 +235,12 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Jedan nepročitani članak na popisu za čitanje.</translation>
 <translation id="481968316161811770">Kolačići, podaci web-lokacije</translation>
+<translation id="4840495572919996524">Vaše oznake, povijest, zaporke i druge stavke više se neće sinkronizirati s vašim Google računom.</translation>
 <translation id="4854345657858711387">Postavite šifru zaporke</translation>
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4882831918239250449">Odredite na koji će se način vaša povijest pregledavanja upotrebljavati za prilagodbu Pretraživanja, oglasa i drugog</translation>
+<translation id="4895709476292058519">Promijenite račun</translation>
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
@@ -482,6 +484,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9079935439869366234">Označi sve kao nepročitano</translation>
 <translation id="9081058212938299310">Želite li ažurirati zaporku za <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 stavka</translation>
+<translation id="9083838294503912307">Da biste sinkronizirali i prilagodili više uređaja, uključite sinkronizaciju.</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
 <translation id="9157836665414082580">Izostavi dijaloge</translation>

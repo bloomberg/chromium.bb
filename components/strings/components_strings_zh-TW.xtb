@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">政策值格式不符。</translation>
 <translation id="2705137772291741111">已儲存 (快取) 這個網站的複本，但無法讀取。</translation>
 <translation id="2709516037105925701">自動填入</translation>
-<translation id="2710942282213947212">你的電腦上有軟體在阻止 Chromium 建立安全的網路連線</translation>
 <translation id="2712173769900027643">要求權限</translation>
 <translation id="2720342946869265578">鄰近網頁</translation>
 <translation id="2721148159707890343">要求成功</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">運送地址</translation>
 <translation id="5250209940322997802">「連線至網路」</translation>
 <translation id="5251803541071282808">雲端</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />請按照以下步驟暫時停用該軟體，以便順利連上網路。你需要管理員權限。<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />按一下 [開始]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />，然後搜尋並選取「檢視本機服務」<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />選取 [VisualDiscovery]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />在「啟動類型」<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />之下，選取 [已停用]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />在「服務狀態」<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />之下，按一下 [停止]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />依序按一下 [套用]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /> 和 [確定]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />前往 <ph name="BEGIN_LEARN_MORE_LINK" />Chrome 說明中心<ph name="END_LEARN_MORE_LINK" />瞭解如何將該軟體從你的電腦上永久移除
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">顯示所有已儲存的密碼</translation>
 <translation id="5287240709317226393">顯示 Cookie</translation>
 <translation id="5288108484102287882">政策值驗證作業出現警告訊息</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB 裝置</translation>
 <translation id="6071091556643036997">政策類型無效。</translation>
 <translation id="6080696365213338172">你使用了管理員提供的憑證存取內容，因此管理員可攔截你傳送至「<ph name="DOMAIN" />」的資料。</translation>
-<translation id="6096226585778084111">正在載入 <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">你會從大多數網站登出，但不會因此登出 Google 帳戶。你可能無法再存取 <ph name="SITE" /> 和其他網站上的受保護內容。</translation>
 <translation id="610911394827799129">你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{無}=1{1 組密碼 (保持同步)}other{# 組密碼 (保持同步)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">你要造訪的網站可能會誘導使用者支付額外額外費用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387754724289022810">只要將卡片資訊與帳單地址儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
-<translation id="6397451950548600259">你的電腦上有軟體阻止 Chrome 建立安全的網路連線</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>
 <translation id="6414888972213066896">你已詢問家長是否同意你造訪這個網站</translation>

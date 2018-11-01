@@ -605,6 +605,7 @@
 <translation id="2529880111512635313">Sunniviisiliselt installitud rakenduste ja laienduste loendi seadistamine</translation>
 <translation id="253135976343875019">Tegevusetuse hoiatuse viivitus vahelduvvoolutoite kasutamisel</translation>
 <translation id="2536525645274582300">Kasutaja otsustab, kas lubada Google'i asukohateenused</translation>
+<translation id="254653220329944566">Lubab teenuse <ph name="PRODUCT_NAME" /> pilvearuandluse</translation>
 <translation id="2550593661567988768">Ainult simpleksprintimine</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
 <translation id="2562339630163277285">Määrab otsingumootori URL-i, mida kasutatakse vahetute otsingutulemuste esitamiseks. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mis asendatakse päringu tegemisel kasutaja sisestatud tekstiga.
@@ -1955,6 +1956,15 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="614662973812186053">See reegel juhib ka Androidi kasutus- ja diagnostikaandmete kogumist.</translation>
+<translation id="6153048425064249648">Need reeglid juhivad teenuse <ph name="PRODUCT_NAME" /> pilvearuandlust, mis laadib teabe brauseritoimingute kohta üles Google'i administraatorikonsoolile.
+
+      Kui reegel on määramata või seatud väärtusele Väär, ei koguta ega laadita üles mingeid andmeid.
+      Kui reegel on seatud väärtusele Tõene, kogutakse andmeid ja laaditakse need üles Google'i administraatorikonsoolile.
+      Kui soovite juhtida, millised andmed üles laaditakse, kasutage grupi laienduse Chrome Reporting Extension reegleid.
+
+      See reegel kehtib vaid siis, kui seade on registreeritud reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      See reegel sundinstallib aruandluseks laienduse <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ja alistab kõik selle laiendusega seotud laiendusereeglid.</translation>
 <translation id="6155936611791017817">Sisselogimisekraanil suure kursori vaikeoleku määramine</translation>
 <translation id="6157537876488211233">Puhverserveri möödumisreeglite komadega eraldatud loend</translation>
 <translation id="6158324314836466367">Ettevõtte veebipoe nimi (tugi on katkestatud)</translation>

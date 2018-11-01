@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="257708665678654955">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE_NAME" /> deste site da próxima vez?</translation>
 <translation id="2943166482989655199">Melhore o Chrome e a respetiva segurança ao enviar dados do sistema e de utilização para a Google.</translation>
+<translation id="3030414234702425231">Uma vez que está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os seus dados do Chrome serão eliminados deste dispositivo. Contudo, permanecem na sua Conta Google.</translation>
 <translation id="3148434565183091099">Para obter os seus marcadores em todos os dispositivos, inicie sessão no Chrome.</translation>
 <translation id="3148688391461398285">Obtenha uma melhor experiência no Chrome com base na sua localização.</translation>
 <translation id="3167189358072330585">A sua conta não funciona no Google Chrome. Contacte o gestor do domínio ou utilize uma Conta Google normal para iniciar sessão.</translation>
@@ -42,6 +43,7 @@
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="6648150602980899529">Está a iniciar sessão com uma conta gerida por <ph name="DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chrome. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chrome elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
+<translation id="6676840375528380067">Pretende limpar os dados do Chrome deste dispositivo?</translation>
 <translation id="690638524486313356">Termos de Utilização do Google Chrome</translation>
 <translation id="7165736900384873061">Começar a utilizar o leitor de QR do Google Chrome</translation>
 <translation id="7172660552945675509">Sugestão: <ph name="BEGIN_LINK" />mova o Chrome para a Dock<ph name="END_LINK" /></translation>

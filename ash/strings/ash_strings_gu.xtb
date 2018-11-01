@@ -84,7 +84,7 @@
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
 <translation id="2339073806695260576">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, લેઝર પૉઇન્ટર અથવા મૅગ્નિફાયિંગ ગ્લાસનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટન પર ટૅપ કરો.</translation>
 <translation id="2341729377289034582">ઊભી સ્થિતિ પર લૉક કરેલું છે</translation>
-<translation id="2352467521400612932">કલમની સેટિંગ્સ</translation>
+<translation id="2352467521400612932">સ્ટાઇલસની સેટિંગ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા સક્ષમ કરવાથી બ્લૂટૂથ સક્ષમ થશે.</translation>
@@ -146,7 +146,7 @@
 <translation id="3294437725009624529">અતિથિ</translation>
 <translation id="332587331255250389">કૃપા કરીને બૅટરી બદલો</translation>
 <translation id="3351879221545518001">તમે હાલમાં સ્ક્રીનને કાસ્ટ કરી રહ્યા છો.</translation>
-<translation id="3364721542077212959">કલમના સાધનો</translation>
+<translation id="3364721542077212959">સ્ટાઇલસનાં સાધનો</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3371140690572404006">USB-C ઉપકરણ (જમણી બાજુનું આગળનું પોર્ટ)</translation>
 <translation id="3400357268283240774">વધારાની સેટિંગ્સ</translation>
@@ -201,7 +201,7 @@
 <translation id="4351433414020964307">સહાયક લોડ થઈ રહ્યું છે…</translation>
 <translation id="435527878592612277">તમારો ફોટો પસંદ કરો</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
-<translation id="4379531060876907730">આ છે તમારા સ્ટાઇલસના સાધનો</translation>
+<translation id="4379531060876907730">આ છે તમારા સ્ટાઇલસનાં સાધનો</translation>
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="4450893287417543264">ફરી બતાવશો નહીં</translation>
@@ -296,7 +296,7 @@
 <translation id="6259254695169772643">પસંદ કરવા માટે તમારા સ્ટાઇલસનો ઉપયોગ કરો</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: સક્રિય કરી રહ્યું છે...</translation>
 <translation id="6284232397434400372">રિઝોલ્યુશન બદલાયું</translation>
-<translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે કલમનો ઉપયોગ કરો</translation>
+<translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે સ્ટાઇલસનો ઉપયોગ કરો</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="6344698853700675736">રાત્રિ પ્રકાશને ટૉગલ કરો</translation>
 <translation id="6376931439017688372">બ્લૂટૂથ ચાલુ છે</translation>
@@ -410,7 +410,7 @@
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>
 <translation id="8236042855478648955">વિરામ લેવાનો સમય</translation>
-<translation id="8261506727792406068">કાઢી નાખો</translation>
+<translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8297006494302853456">નબળું</translation>
 <translation id="8308637677604853869">પાછલું મેનૂ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

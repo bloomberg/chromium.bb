@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="257708665678654955">La propera vegada, voleu que Google Chrome s'ofereixi per traduir les pàgines d'aquest lloc escrites en <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2943166482989655199">Envia a Google dades d'ús i del sistema per millorar Chrome i la seva seguretat</translation>
+<translation id="3030414234702425231">Com que estàs tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />, se suprimiran les teves dades de Chromium d'aquest dispositiu, però continuaran emmagatzemades al teu Compte de Google.</translation>
 <translation id="3148434565183091099">Inicieu la sessió a Chrome per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3148688391461398285">Si compartiu la vostra ubicació, millorareu l'experiència a Chrome.</translation>
 <translation id="3167189358072330585">El vostre compte no funciona a Google Chrome. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
 <translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6648150602980899529">Esteu iniciant la sessió amb un compte gestionat per <ph name="DOMAIN" /> i esteu proporcionant a l'administrador el control de les vostres dades de Chrome. Les dades estaran permanentment lligades a aquest compte. Si tanqueu la sessió de Chrome, se suprimiran les vostres dades d'aquest dispositiu, però continuaran emmagatzemades al compte de Google.</translation>
+<translation id="6676840375528380067">Vols esborrar les dades de Chrome del dispositiu?</translation>
 <translation id="690638524486313356">Condicions del servei de Google Chrome</translation>
 <translation id="7165736900384873061">Comença a utilitzar l'escàner QR de Google Chrome</translation>
 <translation id="7172660552945675509">Consell: <ph name="BEGIN_LINK" />moveu Chrome al Dock<ph name="END_LINK" /></translation>

@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
 <translation id="2865888419503095837">Informations réseau</translation>
+<translation id="287224423103674444">Vous avez utilisé le raccourci de rotation d'écran. Voulez-vous faire pivoter l'écran ?</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2878884018241093801">Aucun élément récent</translation>
 <translation id="2903844815300039659">Connecté à <ph name="NAME" /> – <ph name="STRENGTH" /></translation>
@@ -260,6 +261,7 @@
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
+<translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="574392208103952083">Moyenne</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5750765938512549687">Bluetooth désactivé</translation>
@@ -378,7 +380,9 @@
 <translation id="7654687942625752712">Appuyez pendant cinq secondes sur les deux touches de volume pour désactiver les commentaires audio.</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notification}one{# notification}other{# notifications}}</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
+<translation id="7780159184141939021">Rotation d'écran</translation>
 <translation id="7796353162336583443">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran et utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
 <translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>

@@ -606,6 +606,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2536525645274582300">Uporabnik se odloči, ali bodo omogočene Googlove lokacijske storitve</translation>
+<translation id="254653220329944566">Omogoča poročanje v oblaku brskalnika <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Samo enostransko tiskanje</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
 <translation id="2562339630163277285">Določa URL iskalnika, ki se uporablja za prikaz rezultatov dinamičnega iskanja. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bo ob času poizvedbe nadomestilo besedilo, ki ga je uporabnik vnesel do takrat.
@@ -1963,6 +1964,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="614662973812186053">Ta pravilnik prav tako nadzira zbiranje podatkov o uporabi sistema Android in diagnostičnih podatkov zanj.</translation>
+<translation id="6153048425064249648">Ta pravilnik nadzira poročanje v oblaku brskalnika <ph name="PRODUCT_NAME" />, ki podatke o delovanju brskalnika nalaga v konzolo Google Admin console.
+
+      Če ta pravilnik ni nastavljen ali je onemogočen, se podatki ne zbirajo ali nalagajo.
+      Če je ta pravilnik omogočen, se podatki zbirajo in nalagajo v konzolo Google Admin console.
+      Če želite nadzirati, kateri podatki se nalagajo, uporabite pravilnike v razširitvi Poročanje za Chrome za skupine.
+
+      Ta pravilnik se uporablja samo, če je računalnik včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Ta pravilnik vsili nastavitev razširitve <ph name="CHROME_REPORTING_EXTENSION_NAME" /> za poročanje in preglasi vse pravilnike za razširitve, ki se nanašajo na to razširitev.</translation>
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>

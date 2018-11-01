@@ -581,6 +581,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2529880111512635313">Liste der Apps und Erweiterungen konfigurieren, deren Installation erzwungen wurde</translation>
 <translation id="253135976343875019">Inaktivitätsspanne bis zur Warnung im Netzbetrieb</translation>
 <translation id="2536525645274582300">Der Nutzer entscheidet, ob die Standortdienste von Google aktiviert werden sollen</translation>
+<translation id="254653220329944566">Cloud-Berichte für <ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="2550593661567988768">Nur Simplexdruck</translation>
 <translation id="2552966063069741410">Zeitzone</translation>
 <translation id="2562339630163277285">Gibt die URL an, die die Suchmaschine für die Bereitstellung von Instant-Ergebnissen verwendet. Die URL sollte den String "<ph name="SEARCH_TERM_MARKER" />" enthalten, der bei der Abfrage durch den Text ersetzt wird, den der Nutzer bisher eingegeben hat.
@@ -1699,7 +1700,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5728154254076636808">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren</translation>
 <translation id="5732972008943405952">AutoFill-Formulardaten bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
-<translation id="5770738360657678870">Entwicklerkanal (möglicherweise nicht stabil)</translation>
+<translation id="5770738360657678870">Entwicklerversion (möglicherweise nicht stabil)</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
 <translation id="5776485039795852974">Nachfragen, wenn eine Website Desktop-Benachrichtigungen anzeigen will</translation>
 <translation id="5781412041848781654">Gibt an, welche GSSAPI-Bibliothek für die HTTP-Authentifizierung verwendet werden soll. Sie können entweder nur den Namen einer Bibliothek oder einen vollständigen Pfad angeben.
@@ -1874,6 +1875,15 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="614662973812186053">Diese Richtlinie steuert zudem die Erfassung von Nutzungs- und Diagnosedaten in Android.</translation>
+<translation id="6153048425064249648">Mit dieser Richtlinie wird festgelegt, ob Cloud-Berichte für <ph name="PRODUCT_NAME" /> erstellt werden. Dabei werden Daten zum Betrieb des Browsers an die Google Admin-Konsole gesendet.
+
+Wenn die Richtlinie auf "false" gesetzt oder gar nicht festgelegt ist, werden keine Daten erhoben oder hochgeladen.
+Wenn die Richtlinie auf "true" gesetzt ist, werden die Daten erhoben und in die Google Admin-Konsole hochgeladen.
+Über die Richtlinien für die Chrome Reporting Extension können Sie steuern, welche Daten hochgeladen werden.
+
+Die Richtlinie wird nur angewendet, wenn das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.
+
+Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTENSION_NAME" /> zur Berichterstellung erzwungen. Alle Richtlinien für diese Erweiterung werden überschrieben.</translation>
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>

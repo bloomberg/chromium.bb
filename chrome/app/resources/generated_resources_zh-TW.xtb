@@ -2688,6 +2688,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">你的硬碟已滿。請選擇其他儲存位置，或清出足夠的硬碟空間。</translation>
 <translation id="5125751979347152379">網址無效。</translation>
+<translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5127881134400491887">管理網路連線</translation>
 <translation id="512903556749061217">已附加</translation>
 <translation id="5133483819862530305">日落到日出</translation>
@@ -4972,7 +4973,6 @@
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610103157987623234">格式不正確，請再試一次</translation>
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">未同步處理</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
 <translation id="8620765578342452535">設定網路連線</translation>

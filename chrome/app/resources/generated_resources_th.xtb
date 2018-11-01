@@ -2690,6 +2690,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ฮาร์ดดิสก์ของคุณเต็ม โปรดบันทึกลงในตำแหน่งอื่นหรือเพิ่มเนื้อที่ว่างในฮาร์ดดิสก์</translation>
 <translation id="5125751979347152379">URL ไม่ถูกต้อง</translation>
+<translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
 <translation id="5127881134400491887">จัดการการเชื่อมต่อเครือข่าย</translation>
 <translation id="512903556749061217">ที่แนบมา</translation>
 <translation id="5133483819862530305">อาทิตย์ตกจนอาทิตย์ขึ้น</translation>
@@ -4976,7 +4977,6 @@
 <translation id="8609465669617005112">เลื่อนขึ้น</translation>
 <translation id="8610103157987623234">รูปแบบไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
 <translation id="8615618338313291042">แอปพลิเคชันที่ไม่ระบุตัวตน: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">ไม่ได้ซิงค์</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">สถานะการโรมมิ่ง</translation>
 <translation id="8620765578342452535">กำหนดค่าการเชื่อมต่อเครือข่าย</translation>

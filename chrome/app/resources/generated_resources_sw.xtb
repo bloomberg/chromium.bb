@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Pakia Picha</translation>
 <translation id="1029317248976101138">Kuza</translation>
 <translation id="1030706264415084469"><ph name="URL" /> inataka kuhifadhi data nyingi kwenye kifaa chako kwa muda mrefu</translation>
+<translation id="1030889518049751641">Angalia Kumbukumbu ya Shughuli</translation>
 <translation id="1031362278801463162">Inapakia nakala ya kuchungulia</translation>
 <translation id="103279545524624934">Futa maudhui katika hifadhi ya diski ili ufungue programu za Android.</translation>
 <translation id="1033780634303702874">Fikia vifaa vyako tambulishi</translation>
@@ -163,6 +164,7 @@
     Itabidi uweke mipangilio ya wasifu wako tena.<ph name="BR" />
     <ph name="BR" />
     Kwenye skrini inayofuata, tafadhali tuma maoni ili utusaidie kutatua tatizo.</translation>
+<translation id="1217668622537098248">Rudi kwenye hali ya kubofya kushoto baada ya kitendo hiki</translation>
 <translation id="121783623783282548">Manenosiri hayalingani.</translation>
 <translation id="1218860753635451122">Kwa kubofya kitufe cha "Ninakubali", unakubali mchakato uliotajwa hapo juu kwa huduma hizi za Google.</translation>
 <translation id="122082903575839559">Kanuni ya Sahihi ya Cheti</translation>
@@ -1176,6 +1178,7 @@
 <translation id="2755628026949580719">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza kitufe cha ufunguo kwa angalau sekunde 5.</translation>
 <translation id="275662540872599901">skrini imezimwa</translation>
 <translation id="2761898608071930085">Tumia Akaunti Nyingine</translation>
+<translation id="276233135255363312">{0,plural, =1{Una dirisha moja fiche.}other{Una madirisha # fiche.}}</translation>
 <translation id="2762441749940182211">Kamera imezuiwa</translation>
 <translation id="2765217105034171413">Ndogo</translation>
 <translation id="2766006623206032690">&amp;Bandika na uende</translation>
@@ -2177,6 +2180,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4312866146174492540">Zuia (chaguomsingi)</translation>
 <translation id="4316850752623536204">Tovuti ya Wasanidi Programu</translation>
 <translation id="4320177379694898372">Hakuna muunganisho wa intaneti</translation>
+<translation id="4320948194796820126">Ongeza alamisho kwenye barua pepe yako</translation>
 <translation id="4322394346347055525">Funga Vichupo Vingine</translation>
 <translation id="4324577459193912240">Faili haijakamilika</translation>
 <translation id="4330387663455830245">Usitafsiri <ph name="LANGUAGE" /> Kamwe</translation>
@@ -2197,6 +2201,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> inashiriki dirisha.</translation>
 <translation id="4364830672918311045">Onyesha arifa</translation>
 <translation id="4365673000813822030">Lo, Usawazishaji umekatizwa.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> ukitumia <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Anwani ya barua pepe na nenosiri uliloweka havilingani</translation>
 <translation id="437184764829821926">Mipangilio ya kina ya fonti</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -2681,6 +2686,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Diski yako kuu imejaa. Tafadhali hifadhi kwenye eneo jingine au utafute nafasi zaidi kwenye diski kuu.</translation>
 <translation id="5125751979347152379">URL hiyo si sahihi.</translation>
+<translation id="5127805178023152808">Usawazishaji umezimwa</translation>
 <translation id="5127881134400491887">Dhibiti miunganisho ya mtandao</translation>
 <translation id="512903556749061217">kimeambatishwa</translation>
 <translation id="5133483819862530305">Machweo hadi Macheo</translation>
@@ -3060,6 +3066,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5669267381087807207">Inaamilisha</translation>
 <translation id="5669691691057771421">Weka PIN mpya</translation>
 <translation id="5671641761787789573">Picha zimezuiwa</translation>
+<translation id="567643736130151854">Ingia katika akaunti na uwashe kipengele cha kusawazisha ili upate alamisho, manenosiri na vipengee vyako vingine kwenye vifaa vyote</translation>
 <translation id="5677503058916217575">Lugha ya ukurasa:</translation>
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
 <translation id="5678550637669481956">Idhini ya kufikia kusoma na kuandika kwenye <ph name="VOLUME_NAME" /> imeruhusiwa.</translation>
@@ -4950,6 +4957,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8571213806525832805">Wiki 4 zilizopita</translation>
 <translation id="8574990355410201600">Ruhusu sauti kwenye <ph name="HOST" /> wakati wote</translation>
 <translation id="8575286410928791436">Shikilia <ph name="KEY_EQUIVALENT" /> ili Ufunge.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Funga dirisha hili}other{Funga madirisha yote fiche}}</translation>
 <translation id="8578639784464423491">Haipaswi kupita herufi 99</translation>
 <translation id="8579285237314169903">Inasasisha vipengee <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="857943718398505171">Imeruhusiwa (inapendekezwa)</translation>
@@ -4969,7 +4977,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8609465669617005112">Songa juu</translation>
 <translation id="8610103157987623234">Muundo si sahihi, tafadhali jaribu tena</translation>
 <translation id="8615618338313291042">Programu iliyo katika hali fiche: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Haisawazishi</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Hali ya kutumia mtandao usio wako wa kawaida</translation>
 <translation id="8620765578342452535">Sanidi miunganisho ya mtandao</translation>

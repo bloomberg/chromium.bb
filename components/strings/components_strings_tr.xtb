@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Değer, biçimle eşleşmiyor.</translation>
 <translation id="2705137772291741111">Bu sitenin kaydedilen (önbelleğe alınan) kopyası okunamadı.</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
-<translation id="2710942282213947212">Bilgisayarınızdaki yazılım, Chromium'un web'e güvenli bir şekilde bağlanmasını engelliyor</translation>
 <translation id="2712173769900027643">İzin iste</translation>
 <translation id="2720342946869265578">Etrafımda</translation>
 <translation id="2721148159707890343">İstek başarılı oldu</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Gönderim Adresi</translation>
 <translation id="5250209940322997802">"Ağa bağlanın"</translation>
 <translation id="5251803541071282808">Bulut</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Web'e ulaşabilmeniz amacıyla yazılımı geçici olarak devre dışı bırakmak için bu adımları uygulayın. Bu adımları gerçekleştirmek için yönetici ayrıcalıklarınızın olması gerekir.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />Başlat<ph name="END_BOLD" />'ı tıklayın, ardından <ph name="BEGIN_BOLD" />"Yerel hizmetleri görüntüle"<ph name="END_BOLD" />yi arayın ve seçin
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />'yi seçin
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />Başlatma türü<ph name="END_BOLD" />'nün altında <ph name="BEGIN_BOLD" />Devre dışı<ph name="END_BOLD" />'nı seçin
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />Hizmet durumu<ph name="END_BOLD" />'nun altında <ph name="BEGIN_BOLD" />Durdur<ph name="END_BOLD" />'u seçin
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />Uygula<ph name="END_BOLD" />'yı, ardından <ph name="BEGIN_BOLD" />Tamam<ph name="END_BOLD" />'ı tıklayın
-    <ph name="LIST_ITEM" />Yazılımı bilgisayarınızdan kalıcı olarak nasıl kaldıracağınızı öğrenmek için <ph name="BEGIN_LEARN_MORE_LINK" />Chrome yardım merkezini<ph name="END_LEARN_MORE_LINK" /> ziyaret edin
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Tüm kayıtlı şifreleri göster</translation>
 <translation id="5287240709317226393">Çerezleri göster</translation>
 <translation id="5288108484102287882">Politika değerlerini doğrulama işlemi uyarılarla sonuçlandı</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">USB cihazları</translation>
 <translation id="6071091556643036997">Politika türü geçersiz.</translation>
 <translation id="6080696365213338172">Yönetici tarafından sağlanmış bir sertifika kullanan içeriğe eriştiniz. <ph name="DOMAIN" /> alan adına sağladığınız verileri yöneticiniz görebilir ve bunlara müdahale edebilir.</translation>
-<translation id="6096226585778084111"><ph name="SITE_NAME" /> yükleniyor…</translation>
 <translation id="6096619198407627433">Çoğu sitedeki oturumunuzu kapatır. Google Hesabınızdaki oturumunuz kapatılmaz. <ph name="SITE" /> ve diğer bazı sitelerden alınan korunan içeriğe erişiminizi kaybedebilirsiniz.</translation>
 <translation id="610911394827799129">Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Yok}=1{1 şifre (senkronize edildi)}other{# şifre (senkronize edildi)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Devam etmeniz halinde ödeme yapmanız gerekebilir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
 <translation id="6387754724289022810">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
-<translation id="6397451950548600259">Bilgisayarınızdaki yazılım, Chrome'un web'e güvenli bir şekilde bağlanmasını engelliyor</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> numaralı kartın son kullanma tarihini ve CVC kodunu girin</translation>
 <translation id="6414888972213066896">Ebeveyninize bu siteyi ziyaret etmenizin uygun olup olmadığını sordunuz</translation>

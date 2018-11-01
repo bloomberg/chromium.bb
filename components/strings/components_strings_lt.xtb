@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
 <translation id="2705137772291741111">Išsaugotos (talpykloje esančios) šios svetainės kopijos negalima skaityti.</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
-<translation id="2710942282213947212">Programinė įranga jūsų kompiuteryje neleidžia „Chromium“ saugiai prisijungti prie žiniatinklio</translation>
 <translation id="2712173769900027643">Prašyti leidimo</translation>
 <translation id="2720342946869265578">Netoliese</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
@@ -635,16 +634,6 @@
 <translation id="5230733896359313003">Pristatymo adresas</translation>
 <translation id="5250209940322997802">„Prisijungimas prie tinklo“</translation>
 <translation id="5251803541071282808">Debesis</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Jei norite laikinai išjungti programinę įrangą, kad galėtumėte pasiekti žiniatinklį, atlikite nurodytus veiksmus. Jums reikės administratoriaus teisių.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Spustelėkite <ph name="BEGIN_BOLD" />Pradėti<ph name="END_BOLD" />, tada suraskite ir pasirinkite <ph name="BEGIN_BOLD" />Peržiūrėti vietines paslaugas<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Pasirinkite <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Skiltyje <ph name="BEGIN_BOLD" />Paleisties tipas<ph name="END_BOLD" /> pasirinkite <ph name="BEGIN_BOLD" />Išjungta<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Skiltyje <ph name="BEGIN_BOLD" />Paslaugos būsena<ph name="END_BOLD" /> spustelėkite <ph name="BEGIN_BOLD" />Stabdyti<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Spustelėkite <ph name="BEGIN_BOLD" />Taikyti<ph name="END_BOLD" />, tada – <ph name="BEGIN_BOLD" />Gerai<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Apsilankykite <ph name="BEGIN_LEARN_MORE_LINK" />„Chrome“ pagalbos centre<ph name="END_LEARN_MORE_LINK" />, kad sužinotumėte, kaip visam laikui pašalinti programinę įrangą iš kompiuterio
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Rodyti visus išsaugotus slaptažodžius</translation>
 <translation id="5287240709317226393">Rodyti slapukus</translation>
 <translation id="5288108484102287882">Patvirtinant politikos vertes pateikta įspėjimų</translation>
@@ -762,7 +751,6 @@
 <translation id="6059925163896151826">USB įrenginiai</translation>
 <translation id="6071091556643036997">Politikos tipas netinkamas.</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
-<translation id="6096226585778084111">Įkeliama svetainė <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros. Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="610911394827799129">„Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (sinchronizuotas)}one{# slaptažodis (sinchronizuotas)}few{# slaptažodžiai (sinchronizuoti)}many{# slaptažodžio (sinchronizuota)}other{# slaptažodžių (sinchronizuota)}}</translation>
@@ -800,7 +788,6 @@
 <translation id="6383221683286411806">Galimi apmokestinimai.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Dar 1 pasiūlymas}one{Dar # pasiūlymas}few{Dar # pasiūlymai}many{Dar # pasiūlymo}other{Dar # pasiūlymų}}</translation>
 <translation id="6387754724289022810">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>
-<translation id="6397451950548600259">Programinė įranga jūsų kompiuteryje neleidžia „Chrome“ saugiai prisijungti prie žiniatinklio</translation>
 <translation id="6404511346730675251">Redaguoti žymę</translation>
 <translation id="6410264514553301377">įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC)</translation>
 <translation id="6414888972213066896">Paprašėte vieno iš tėvų leidimo apsilankyti šiame puslapyje</translation>

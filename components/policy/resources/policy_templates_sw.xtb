@@ -575,6 +575,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="2529880111512635313">Sanidi orodha ya programu na viendelezi vilivyosakinishwa kwa nguvu</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="2536525645274582300">Mtumiaji anaamua iwapo atawasha Huduma za Mahali za Google</translation>
+<translation id="254653220329944566">Inawasha huduma ya <ph name="PRODUCT_NAME" /> ya kuripoti kwenye wingu</translation>
 <translation id="2550593661567988768">Uchapishaji kwenye upande mmoja pekee</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
 <translation id="2562339630163277285">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL inapaswa kuwa na mfuatano wa <ph name="SEARCH_TERM_MARKER" />, ambao nafasi yake itachukuliwa wakati wa kuandika hoja ya maandishi ambayo mtumiaji atakuwa ameweka.
@@ -1919,6 +1920,15 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 
           Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultJavaScriptSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
 <translation id="614662973812186053">Sera hii pia inadhibiti matumizi ya Android na ukusanyaji data ya utatuzi.</translation>
+<translation id="6153048425064249648">Sera hii inadhibiti huduma ya <ph name="PRODUCT_NAME" /> ya kuripoti kwenye wingu ambayo hupakia maelezo kuhusu shughuli za kivinjari kwenye dashibodi ya Udhibiti wa Google.
+
+      Sera hii isipowekwa au ikiwekwa kuwa Sivyo, hakuna data inayokusanya au kupakiwa.
+      Sera hii ikiwekwa kuwa Ndivyo, data inakusanywa na kupakiwa kwenye dashibodi ya Udhibiti wa Google.
+      Ili udhibiti data inayopakiwa, tafadhali tumia sera katika kikundi cha Kiendelezi cha Kuripoti cha Chrome.
+
+      Sera hii inaweza kutumika tu wakati mashine imejumuishwa katika <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Sera hii inalazimisha usakinishaji wa <ph name="CHROME_REPORTING_EXTENSION_NAME" /> kwa ajili ya kuripoti na hufuta sera zingine zozote za viendelezi zinazohusiana na kiendelezi hicho.</translation>
 <translation id="6155936611791017817">Weka hali chaguomsingi ya kiteuzi kikubwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="6157537876488211233">Orodha iliyotenganishwa kwa koma ya kanuni za ukwepaji wa proksi</translation>
 <translation id="6158324314836466367">Jina la biashara la duka la wavuti (limeacha kuendesha huduma)</translation>

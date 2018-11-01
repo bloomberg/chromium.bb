@@ -599,6 +599,7 @@
 <translation id="2529880111512635313">Configurar a lista de aplicações e extensões de instalação forçada</translation>
 <translation id="253135976343875019">Atraso do aviso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2536525645274582300">O utilizador decide se os serviços de localização da Google devem ser ativados.</translation>
+<translation id="254653220329944566">Ativa os relatórios da nuvem do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2550593661567988768">Apenas impressão simples</translation>
 <translation id="2552966063069741410">Fuso Horário</translation>
 <translation id="2562339630163277285">Especifica o URL do motor de pesquisa utilizado para apresentar resultados instantâneos. O URL deve incluir a string <ph name="SEARCH_TERM_MARKER" />, que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido.
@@ -1897,6 +1898,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>
 <translation id="6145799962557135888">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="614662973812186053">Esta política também controla a recolha de dados de utilização e de diagnóstico do Android.</translation>
+<translation id="6153048425064249648">Esta política controla os relatórios da nuvem do <ph name="PRODUCT_NAME" /> que carregam informações acerca da utilização do navegador para a Consola do administrador do Google.
+
+      Quando esta política não está definida ou está definida como falsa, os dados não são recolhidos nem carregados.
+      Quando esta política está definida com verdadeira, os dados são recolhidos e carregados para a Consola do administrador do Google.
+      Para controlar os dados que são carregados, utilize políticas no grupo Chrome Reporting Extension.
+
+      Esta política apenas entra em vigor quando a máquina é inscrita com <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Esta política força a instalação da <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para os relatórios e substitui quaisquer políticas de extensão relacionadas com essa extensão.</translation>
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras para ignorar o proxy</translation>
 <translation id="6158324314836466367">Nome da Web store da empresa (descontinuado)</translation>

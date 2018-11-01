@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Загрузить изображение</translation>
 <translation id="1029317248976101138">Масштаб</translation>
 <translation id="1030706264415084469">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение большого объема данных на вашем устройстве.</translation>
+<translation id="1030889518049751641">Показать журнал активности</translation>
 <translation id="1031362278801463162">Загрузка данных для предварительного просмотра</translation>
 <translation id="103279545524624934">Чтобы запускать Android-приложения, освободите пространство на диске.</translation>
 <translation id="1033780634303702874">Доступ к последовательным устройствам</translation>
@@ -163,6 +164,7 @@
     Вам потребуется создать профиль заново.<ph name="BR" />
     <ph name="BR" />
     Оставьте отзыв на следующем экране, чтобы помочь нам исправить ошибку.</translation>
+<translation id="1217668622537098248">Переключаться обратно на нажатие левой кнопки мыши после завершения действия</translation>
 <translation id="121783623783282548">Пароли не совпадают.</translation>
 <translation id="1218860753635451122">Нажимая кнопку "Принимаю", вы соглашаетесь с Условиями использования, описанными выше.</translation>
 <translation id="122082903575839559">Алгоритм подписи сертификатов</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Если электронного ключа нет в списке, нажмите и удерживайте кнопку на ключе в течение пяти секунд.</translation>
 <translation id="275662540872599901">экран выключен</translation>
 <translation id="2761898608071930085">Использовать другой аккаунт</translation>
+<translation id="276233135255363312">{0,plural, =1{В режиме инкогнито открыто 1 окно.}one{В режиме инкогнито открыто # окно.}few{В режиме инкогнито открыто # окна.}many{В режиме инкогнито открыто # окон.}other{В режиме инкогнито открыто # окна.}}</translation>
 <translation id="2762441749940182211">Доступ к камере запрещен</translation>
 <translation id="2765217105034171413">Мелкий</translation>
 <translation id="2766006623206032690">Вс&amp;тавить из буфера и перейти</translation>
@@ -2186,6 +2189,7 @@
 <translation id="4312866146174492540">Блокировать (по умолчанию)</translation>
 <translation id="4316850752623536204">Сайт разработчика</translation>
 <translation id="4320177379694898372">Нет подключения к Интернету</translation>
+<translation id="4320948194796820126">Добавьте закладку в электронное письмо</translation>
 <translation id="4322394346347055525">Закрыть другие вкладки</translation>
 <translation id="4324577459193912240">Файл скачан не полностью</translation>
 <translation id="4330387663455830245">Никогда не переводить <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2210,7 @@
 <translation id="4364567974334641491">Приложение "<ph name="APP_NAME" />" предоставило доступ к окну.</translation>
 <translation id="4364830672918311045">Показывать уведомления</translation>
 <translation id="4365673000813822030">К сожалению, выполнить синхронизацию не удалось.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> в приложении "<ph name="APP_NAME" />".</translation>
 <translation id="4370975561335139969">Указан неправильный адрес или пароль</translation>
 <translation id="437184764829821926">Расширенные настройки шрифтов</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -2690,6 +2695,7 @@
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Недостаточно места на диске. Выберите другой каталог или освободите место на диске.</translation>
 <translation id="5125751979347152379">Недопустимый URL.</translation>
+<translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5127881134400491887">Управление сетевыми подключениями</translation>
 <translation id="512903556749061217">подключено</translation>
 <translation id="5133483819862530305">От заката до рассвета</translation>
@@ -3069,6 +3075,7 @@
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5669691691057771421">Введите новый PIN-код</translation>
 <translation id="5671641761787789573">Показ изображений запрещен</translation>
+<translation id="567643736130151854">Чтобы закладки, пароли и другие данные стали доступны на всех ваших устройствах, войдите в Chrome и включите синхронизацию.</translation>
 <translation id="5677503058916217575">Язык страницы:</translation>
 <translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5678550637669481956">Предоставлен доступ к тому <ph name="VOLUME_NAME" /> (чтение и запись данных).</translation>
@@ -4956,6 +4963,7 @@
 <translation id="8571213806525832805">Последние 4 недели</translation>
 <translation id="8574990355410201600">Всегда включать звук на сайте <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Чтобы выйти, нажмите и удерживайте клавишу <ph name="KEY_EQUIVALENT" />.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Закрыть окно в режиме инкогнито}one{Закрыть все окна в режиме инкогнито}few{Закрыть все окна в режиме инкогнито}many{Закрыть все окна в режиме инкогнито}other{Закрыть все окна в режиме инкогнито}}</translation>
 <translation id="8578639784464423491">В слове должно быть не больше 99 букв.</translation>
 <translation id="8579285237314169903">Синхронизация файлов (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>
@@ -4975,7 +4983,6 @@
 <translation id="8609465669617005112">Переместить вверх</translation>
 <translation id="8610103157987623234">Неверный формат. Повторите попытку.</translation>
 <translation id="8615618338313291042">Приложение в режиме инкогнито: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Синхронизация отключена</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Статус роуминга</translation>
 <translation id="8620765578342452535">Настройка сетевых подключений</translation>

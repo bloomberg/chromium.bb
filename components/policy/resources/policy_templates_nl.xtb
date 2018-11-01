@@ -602,6 +602,7 @@
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2536525645274582300">De gebruiker beslist of Locatieservices van Google moeten worden ingeschakeld</translation>
+<translation id="254653220329944566">Schakelt cloudrapportage voor <ph name="PRODUCT_NAME" /> in</translation>
 <translation id="2550593661567988768">Alleen enkelzijdig afdrukken</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
@@ -1954,6 +1955,15 @@
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultJavaScriptSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="614662973812186053">Met dit beleid wordt ook het gebruik van Android en het verzamelen van diagnostische gegevens bepaald.</translation>
+<translation id="6153048425064249648">Met dit beleid wordt cloudrapportage voor <ph name="PRODUCT_NAME" /> beheerd, waarmee informatie over de werking van de browser naar Google Beheerdersconsole wordt geüpload.
+
+      Wanneer dit beleid niet is ingesteld of is ingesteld op 'False', worden er geen gegevens verzameld of geüpload.
+      Wanneer dit beleid wordt ingesteld op 'True', worden er gegevens verzameld en naar Google Beheerdersconsole geüpload.
+      Als je wilt beheren welke gegevens er worden geüpload, gebruik je het beleid in de groep 'Chrome Reporting Extension'.
+
+      Dit beleid werkt alleen wanneer het apparaat is ingeschreven voor <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Dit beleid zorgt ervoor dat <ph name="CHROME_REPORTING_EXTENSION_NAME" /> gedwongen wordt geïnstalleerd voor de rapportage en overschrijft eventueel ander extensiebeleid voor die extensie.</translation>
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>

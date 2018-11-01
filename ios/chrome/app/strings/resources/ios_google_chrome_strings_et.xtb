@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="257708665678654955">Kas soovite, et Google Chrome pakuks järgmisel korral sellel saidil <ph name="LANGUAGE_NAME" /> keeles olevate lehtede tõlkimise võimalust?</translation>
 <translation id="2943166482989655199">Täiustage Chrome'i ja selle turvalisust, saates Google'ile süsteemi- ja kasutusteavet</translation>
+<translation id="3030414234702425231">Kuna logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />, kustutatakse selles seadmes teie Chrome'i andmed. Google'i kontole jäävad teie andmed alles.</translation>
 <translation id="3148434565183091099">Järjehoidjate hankimiseks kõikidesse seadmetesse logige Chrome'i sisse.</translation>
 <translation id="3148688391461398285">Hankige Chrome’i parem kasutuskogemus teie asukoha põhjal.</translation>
 <translation id="3167189358072330585">Teie konto ei tööta Google Chrome'is. Võtke ühendust domeeni administraatoriga või kasutage sisselogimiseks tavalist Google'i kontot.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">Siin kuvatakse teie teistes seadmetes Chrome'is avatud vahelehed.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
 <translation id="6648150602980899529">Logite sisse kontoga, mida haldab <ph name="DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
+<translation id="6676840375528380067">Kas kustutada sellest seadmest Chrome'i andmed?</translation>
 <translation id="690638524486313356">Google Chrome'i teenusetingimused</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
 <translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>

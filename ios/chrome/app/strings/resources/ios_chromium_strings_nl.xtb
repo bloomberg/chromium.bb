@@ -31,6 +31,7 @@
 <translation id="4555020257205549924">Als deze functie is ingeschakeld, biedt Chromium aan pagina's die zijn geschreven in andere talen te vertalen met Google Translate. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Tabbladen die je op andere apparaten in Chromium hebt geopend, worden hier weergegeven.</translation>
 <translation id="495292094137889840">QR-scanner van Chromium gebruiken</translation>
+<translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
 <translation id="5231355151045086930">Uitloggen bij Chromium</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5945387852661427312">Je logt in met een account dat wordt beheerd door <ph name="DOMAIN" />, waarmee je de eigenaar beheer geeft over je Chromium-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chromium, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
@@ -50,6 +51,7 @@
 <translation id="7674213385180944843">Open Instellingen &gt; Privacy &gt; Camera &gt; Chromium en zet de camera aan.</translation>
 <translation id="7746854981345936341">Chromium-tip. Sommige knoppen zoals Terug, Vooruit en Zoeken worden nu onderaan het scherm weergegeven.</translation>
 <translation id="786327964234957808">Je wijzigt het synchronisatieaccount van <ph name="USER_EMAIL1" /> in <ph name="USER_EMAIL2" />. Je bestaande Chromium-gegevens worden beheerd door <ph name="DOMAIN" />. Hierdoor worden je gegevens van dit apparaat verwijderd. Je gegevens blijven echter opgeslagen in <ph name="USER_EMAIL1" />.</translation>
+<translation id="8073677936375100957">Je Chromium-gegevens van dit apparaat wissen?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Verplaats Chromium naar je dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Gebruik Google in Chromium beter en efficiënter op basis van je locatie.</translation>
 <translation id="8508544542427105412">De <ph name="BEGIN_LINK" />instellingen<ph name="END_LINK" /> kunnen op elk gewenst moment worden aangepast. Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om Chromium en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren.</translation>

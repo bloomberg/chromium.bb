@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Indlæs billede</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> anmoder om at gemme store datamængder permanent på din enhed</translation>
+<translation id="1030889518049751641">Se Aktivitetshistorik</translation>
 <translation id="1031362278801463162">Indlæser eksempel</translation>
 <translation id="103279545524624934">Frigør diskplads for at starte Android-apps.</translation>
 <translation id="1033780634303702874">Få adgang til dine serieenheder</translation>
@@ -163,6 +164,7 @@
     Du er nødt til at oprette din profil igen.<ph name="BR" />
     <ph name="BR" />
     På næste skærm kan du sende feedback og hjælpe os med at løse problemet.</translation>
+<translation id="1217668622537098248">Vend tilbage til venstre klik efter handling</translation>
 <translation id="121783623783282548">Adgangskoderne stemmer ikke overens.</translation>
 <translation id="1218860753635451122">Når du klikker på knappen "Jeg accepterer", accepterer du den behandling, der er beskrevet ovenfor, for disse Google-tjenester.</translation>
 <translation id="122082903575839559">Algoritme for certifikatsignatur</translation>
@@ -191,7 +193,7 @@
 <translation id="1254593899333212300">Direkte internetforbindelse</translation>
 <translation id="1260240842868558614">Vis:</translation>
 <translation id="1260451001046713751">Tillad altid pop op-vinduer og omdirigeringer fra <ph name="HOST" /></translation>
-<translation id="126156426083987769">Der opstod et problem med licenser på enhed i demotilstand.</translation>
+<translation id="126156426083987769">Der opstod et problem med enhedslicenser i demotilstand.</translation>
 <translation id="126710816202626562">Sprog, der skal oversættes til:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Brug synkronisering og alle tjenester</translation>
@@ -1178,6 +1180,7 @@
 <translation id="2755628026949580719">Hvis din sikkerhedsnøgle ikke er angivet, skal du trykke på knappen på nøglen i mindst 5 sekunder.</translation>
 <translation id="275662540872599901">skærmen er slukket</translation>
 <translation id="2761898608071930085">Brug en anden konto</translation>
+<translation id="276233135255363312">{0,plural, =1{Du har ét inkognitovindue.}one{Du har # inkognitovindue.}other{Du har # inkognitovinduer.}}</translation>
 <translation id="2762441749940182211">Der er blokeret for adgang til kameraet</translation>
 <translation id="2765217105034171413">Lille</translation>
 <translation id="2766006623206032690">Indsæt og fortsæt</translation>
@@ -2184,6 +2187,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4312866146174492540">Bloker (standardindstilling)</translation>
 <translation id="4316850752623536204">Udviklers website</translation>
 <translation id="4320177379694898372">Ingen internetforbindelse</translation>
+<translation id="4320948194796820126">Føj et bogmærke til din mail</translation>
 <translation id="4322394346347055525">Luk alle andre faner</translation>
 <translation id="4324577459193912240">Filen er ufuldstændig</translation>
 <translation id="4330387663455830245">Oversæt aldrig <ph name="LANGUAGE" /></translation>
@@ -2204,6 +2208,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindue.</translation>
 <translation id="4364830672918311045">Vis underretninger</translation>
 <translation id="4365673000813822030">Ups, synkroniseringen fungerer ikke.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> med <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Den mail og adgangskode, du indtastede, stemmer ikke overens</translation>
 <translation id="437184764829821926">Avancerede indstillinger for skrifttype</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2378,7 +2383,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4647697156028544508">Angiv pinkoden for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Utilstrækkelige tilladelser</translation>
 <translation id="4648499713050786492">Lås din profil op, før du kan tilføje en person.</translation>
-<translation id="4651484272688821107">Onlinekomponent med ressourcer for demotilstand kunne ikke indlæses.</translation>
+<translation id="4651484272688821107">Onlinekomponenten med ressourcer til demotilstand kunne ikke indlæses.</translation>
 <translation id="4656293982926141856">Denne computer</translation>
 <translation id="4660476621274971848">Den forventede version var "<ph name="EXPECTED_VERSION" />", men versionen viste sig at være "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Del dette bogmærke med din iPhone</translation>
@@ -2688,6 +2693,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Din harddisk er fuld. Gem på en anden placering, eller frigør mere plads på harddisken.</translation>
 <translation id="5125751979347152379">Ugyldig webadresse.</translation>
+<translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5127881134400491887">Administrere netværksforbindelser</translation>
 <translation id="512903556749061217">tilknyttet</translation>
 <translation id="5133483819862530305">Fra solnedgang til solopgang</translation>
@@ -3067,6 +3073,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5669691691057771421">Angiv ny pinkode</translation>
 <translation id="5671641761787789573">Billeder er blokeret</translation>
+<translation id="567643736130151854">Log ind, og aktivér synkronisering for at få dine bogmærker, adgangskoder og meget mere på alle enheder</translation>
 <translation id="5677503058916217575">Sidens sprog:</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5678550637669481956">Læse- og skriveadgang til <ph name="VOLUME_NAME" /> er blevet tildelt.</translation>
@@ -3088,7 +3095,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5700087501958648444">Lydoplysninger</translation>
 <translation id="570043786759263127">Google Play-apps og -tjenester</translation>
 <translation id="5700836101007545240">Tilføjelse af forbindelser er deaktiveret af din administrator</translation>
-<translation id="5701080607174488915">Fejl ved hentning af politik fra serveren.</translation>
+<translation id="5701080607174488915">Politikken kunne ikke hentes fra serveren.</translation>
 <translation id="5701381305118179107">Centrér</translation>
 <translation id="5702898740348134351">&amp;Rediger søgemaskiner...</translation>
 <translation id="5704875434923668958">Der synkroniseres med</translation>
@@ -4955,6 +4962,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8571213806525832805">Seneste 4 uger</translation>
 <translation id="8574990355410201600">Tillad altid lyd på <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Hold <ph name="KEY_EQUIVALENT" /> nede for at afslutte</translation>
+<translation id="8578421807258988326">{0,plural, =1{Luk dette vindue}one{Luk alle inkognitovinduer}other{Luk alle inkognitovinduer}}</translation>
 <translation id="8578639784464423491">Må højst indeholde 99 bogstaver</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elementer synkroniseres...</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
@@ -4974,7 +4982,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8609465669617005112">Flyt op</translation>
 <translation id="8610103157987623234">Formatet er forkert. Prøv igen.</translation>
 <translation id="8615618338313291042">Inkognitoprogram: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Der synkroniseres ikke</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8620765578342452535">Konfigurere netværksforbindelser</translation>

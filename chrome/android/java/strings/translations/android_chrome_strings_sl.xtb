@@ -117,6 +117,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1832521218263067499">Varnostni dogodki</translation>
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="1868024384445905608">Chrome zdaj hitreje prenaša datoteke</translation>
+<translation id="187628348035757895">Možnosti za razvijalce</translation>
 <translation id="1878302395768190018">To je mogoče kadar koli prilagoditi v Chromovih nastavitvah</translation>
 <translation id="1880072593381090678">Strani, priljubljene med uporabniki Chroma</translation>
 <translation id="1883903952484604915">Moje datoteke</translation>
@@ -936,6 +937,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="8084114998886531721">Shranjeno geslo</translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
+<translation id="8087980556724996220">Pomočnik za samodejno izpolnjevanje se bo ustavil čez <ph name="DURATION_SECONDS" /> s …</translation>
 <translation id="8103578431304235997">Zavihek brez beleženja zgodovine</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /><ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Predlaganje sorodnih strani</translation>

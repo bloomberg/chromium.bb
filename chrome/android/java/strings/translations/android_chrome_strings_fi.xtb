@@ -117,6 +117,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1832521218263067499">Tietoturvatapaukset</translation>
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="1868024384445905608">Chrome lataa tiedostot nyt nopeammin</translation>
+<translation id="187628348035757895">Kehittäjäasetukset</translation>
 <translation id="1878302395768190018">Voit muokata tätä koska tahansa Chromen asetuksissa</translation>
 <translation id="1880072593381090678">Suosittuja Chromen sivuja</translation>
 <translation id="1883903952484604915">Omat tiedostot</translation>
@@ -937,6 +938,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="8084114998886531721">Salasana tallennettu</translation>
 <translation id="8087000398470557479">Google on toimittanut tämän sisällön osoitteesta <ph name="DOMAIN_NAME" />.</translation>
+<translation id="8087980556724996220">Automaattisen täytön apuri toimii vielä <ph name="DURATION_SECONDS" /> s…</translation>
 <translation id="8103578431304235997">Incognito-välilehti</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Ehdota aiheeseen liittyviä sivuja</translation>

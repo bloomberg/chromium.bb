@@ -268,7 +268,6 @@
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ đệm) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
-<translation id="2710942282213947212">Phần mềm trên máy tính của bạn hiện không cho Chromium kết nối an toàn với web</translation>
 <translation id="2712173769900027643">Xin phép</translation>
 <translation id="2720342946869265578">Lân cận</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
@@ -634,16 +633,6 @@
 <translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5250209940322997802">"Kết nối với mạng"</translation>
 <translation id="5251803541071282808">Đám mây</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Hãy làm theo các bước sau để tạm thời vô hiệu hóa phần mềm nhằm giúp bạn có thể truy cập vào web. Bạn cần phải có đặc quyền của quản trị viên.<ph name="END_PARAGRAPH" />
-
-    <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" />Nhấp vào <ph name="BEGIN_BOLD" />Bắt đầu<ph name="END_BOLD" />, sau đó tìm kiếm và chọn <ph name="BEGIN_BOLD" />"Xem dịch vụ cục bộ"<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Chọn <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Trong phần <ph name="BEGIN_BOLD" />Loại khởi động<ph name="END_BOLD" />, chọn <ph name="BEGIN_BOLD" />Đã tắt<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Trong phần <ph name="BEGIN_BOLD" />Trạng thái dịch vụ<ph name="END_BOLD" />, nhấp vào <ph name="BEGIN_BOLD" />Dừng<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Nhấp vào <ph name="BEGIN_BOLD" />Áp dụng<ph name="END_BOLD" />, sau đó nhấp vào <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Truy cập vào <ph name="BEGIN_LEARN_MORE_LINK" />Trung tâm trợ giúp Chrome<ph name="END_LEARN_MORE_LINK" /> để tìm hiểu cách xóa vĩnh viễn phần mềm khỏi máy tính của bạn
-    <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Hiển thị tất cả mật khẩu đã lưu</translation>
 <translation id="5287240709317226393">Hiển thị cookie</translation>
 <translation id="5288108484102287882">Xuất hiện cảnh báo khi xác thực các giá trị của chính sách</translation>
@@ -761,7 +750,6 @@
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
-<translation id="6096226585778084111">Đang tải <ph name="SITE_NAME" />…</translation>
 <translation id="6096619198407627433">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web, trừ Tài khoản Google của mình. Bạn có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="610911394827799129">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Không có}=1{1 mật khẩu (đã đồng bộ hóa)}other{# mật khẩu (đã đồng bộ hóa)}}</translation>
@@ -799,7 +787,6 @@
 <translation id="6383221683286411806">Nếu tiếp tục, bạn có thể bị tính phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387754724289022810">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn và thiết bị này.</translation>
-<translation id="6397451950548600259">Phần mềm trên máy tính của bạn đang ngăn Chrome kết nối an toàn với web</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6410264514553301377">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>

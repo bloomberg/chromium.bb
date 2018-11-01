@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Carica immagine</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> vuole memorizzare in modo definitivo grandi quantità di dati sul dispositivo</translation>
+<translation id="1030889518049751641">Visualizza Log delle attività</translation>
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="103279545524624934">Libera spazio sul disco per avviare le app Android.</translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
@@ -163,6 +164,7 @@
     Devi configurare nuovamente il profilo.<ph name="BR" />
     <ph name="BR" />
     Nella seguente schermata, invia un feedback per aiutarci a risolvere il problema.</translation>
+<translation id="1217668622537098248">Ripristina il clic con il pulsante sinistro dopo l'azione</translation>
 <translation id="121783623783282548">Le password non coincidono.</translation>
 <translation id="1218860753635451122">Se fai clic sul pulsante "Accetto", accetti l'elaborazione descritta in precedenza per questi servizi Google.</translation>
 <translation id="122082903575839559">Algoritmo di firma certificato</translation>
@@ -1178,6 +1180,7 @@
 <translation id="2755628026949580719">Se non vedi il token di sicurezza, tieni premuto il pulsante del token di sicurezza per almeno cinque secondi.</translation>
 <translation id="275662540872599901">schermo spento</translation>
 <translation id="2761898608071930085">Usa un altro account</translation>
+<translation id="276233135255363312">{0,plural, =1{È aperta una finestra di navigazione in incognito.}other{Sono aperte # finestre di navigazione in incognito.}}</translation>
 <translation id="2762441749940182211">Videocamera bloccata</translation>
 <translation id="2765217105034171413">Piccole</translation>
 <translation id="2766006623206032690">In&amp;colla e vai</translation>
@@ -2182,6 +2185,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
 <translation id="4316850752623536204">Sito web dello sviluppatore</translation>
 <translation id="4320177379694898372">Nessuna connessione Internet</translation>
+<translation id="4320948194796820126">Aggiungi il servizio email ai Preferiti</translation>
 <translation id="4322394346347055525">Chiudi le altre schede</translation>
 <translation id="4324577459193912240">File incompleto</translation>
 <translation id="4330387663455830245">Non tradurre mai <ph name="LANGUAGE" /></translation>
@@ -2202,6 +2206,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4364567974334641491"><ph name="APP_NAME" /> condivide una finestra.</translation>
 <translation id="4364830672918311045">Mostra notifiche</translation>
 <translation id="4365673000813822030">Spiacenti, la sincronizzazione si è interrotta.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> con <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">L'indirizzo email e la password non corrispondono</translation>
 <translation id="437184764829821926">Impostazioni avanzate carattere</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -2686,6 +2691,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Il disco rigido è pieno. Salva in un'altra posizione o libera spazio sul disco rigido.</translation>
 <translation id="5125751979347152379">URL non valido.</translation>
+<translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5127881134400491887">Gestione di connessioni di rete</translation>
 <translation id="512903556749061217">collegato</translation>
 <translation id="5133483819862530305">Dal tramonto all'alba</translation>
@@ -3064,6 +3070,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5669267381087807207">In fase di attivazione</translation>
 <translation id="5669691691057771421">Inserisci il nuovo PIN</translation>
 <translation id="5671641761787789573">Immagini bloccate</translation>
+<translation id="567643736130151854">Accedi e attiva la sincronizzazione per trovare i tuoi preferiti, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="5677503058916217575">Lingua della pagina:</translation>
 <translation id="5677928146339483299">Bloccati</translation>
 <translation id="5678550637669481956">È stato concesso l'accesso in lettura e scrittura a <ph name="VOLUME_NAME" />.</translation>
@@ -4949,6 +4956,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8571213806525832805">Ultime 4 settimane</translation>
 <translation id="8574990355410201600">Consenti sempre l'audio su <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Tieni premuto <ph name="KEY_EQUIVALENT" /> per uscire</translation>
+<translation id="8578421807258988326">{0,plural, =1{Chiudi questa finestra}other{Chiudi tutte le finestre di navigazione in incognito}}</translation>
 <translation id="8578639784464423491">Non può superare le 99 lettere</translation>
 <translation id="8579285237314169903">Sincronizzazione di <ph name="NUMBER_OF_FILES" /> elementi...</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>
@@ -4968,7 +4976,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8609465669617005112">Sposta su</translation>
 <translation id="8610103157987623234">Formato errato, riprova</translation>
 <translation id="8615618338313291042">Applicazione in incognito: <ph name="APP_NAME" /></translation>
-<translation id="8618141719844947886">Sincronizzazione non attiva</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stato roaming</translation>
 <translation id="8620765578342452535">Configura connessioni di rete</translation>
