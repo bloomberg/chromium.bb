@@ -249,17 +249,20 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mAutofillAssistantPaymentRequest = new AutofillAssistantPaymentRequest(
                 mWebContents, paymentOtions, title, supportedBasicCardNetworks);
 
-        mUiDelegateHolder.performUiOperation(
-                uiDelegate -> mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {
-                    nativeOnGetPaymentInformation(mUiControllerAndroid,
-                            selectedPaymentInformation.succeed, selectedPaymentInformation.card,
-                            selectedPaymentInformation.address,
-                            selectedPaymentInformation.payerName,
-                            selectedPaymentInformation.payerPhone,
-                            selectedPaymentInformation.payerEmail);
-                    mAutofillAssistantPaymentRequest.close();
-                    mAutofillAssistantPaymentRequest = null;
-                }));
+        mUiDelegateHolder.performUiOperation(uiDelegate -> {
+            boolean overlayVisible = uiDelegate.isOverlayVisible();
+            if (overlayVisible) uiDelegate.hideOverlay();
+            mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {
+                if (overlayVisible) uiDelegate.showOverlay();
+                nativeOnGetPaymentInformation(mUiControllerAndroid,
+                        selectedPaymentInformation.succeed, selectedPaymentInformation.card,
+                        selectedPaymentInformation.address, selectedPaymentInformation.payerName,
+                        selectedPaymentInformation.payerPhone,
+                        selectedPaymentInformation.payerEmail);
+                mAutofillAssistantPaymentRequest.close();
+                mAutofillAssistantPaymentRequest = null;
+            });
+        });
     }
 
     @CalledByNative
