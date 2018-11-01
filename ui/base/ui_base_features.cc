@@ -12,6 +12,11 @@
 
 namespace features {
 
+#if defined(OS_WIN)
+// If enabled, calculate native window occlusion - Windows-only.
+const base::Feature kCalculateNativeWinOcclusion{
+    "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OW_WIN
 // If enabled, the emoji picker context menu item may be shown for editable
 // text areas.
 const base::Feature kEnableEmojiContextMenu {
