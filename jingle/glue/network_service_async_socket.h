@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An implementation of buzz::AsyncSocket that uses Chrome sockets.
+// An implementation of buzz::AsyncSocket that uses Chrome Network Service
+// sockets.
 
-#ifndef JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
-#define JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
+#ifndef JINGLE_GLUE_NETWORK_SERVICE_ASYNC_SOCKET_H_
+#define JINGLE_GLUE_NETWORK_SERVICE_ASYNC_SOCKET_H_
 
 #include <stddef.h>
 
@@ -13,35 +14,32 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
-#include "net/base/net_errors.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
-
-namespace net {
-class IOBufferWithSize;
-class StreamSocket;
-}  // namespace net
 
 namespace jingle_glue {
 
-class ResolvingClientSocketFactory;
+using GetProxyResolvingFactoryCallback = base::RepeatingCallback<void(
+    network::mojom::ProxyResolvingSocketFactoryRequest)>;
 
-class ChromeAsyncSocket : public buzz::AsyncSocket {
+class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
+                                  public network::mojom::SocketObserver {
  public:
-  // Takes ownership of |resolving_client_socket_factory|.
-  ChromeAsyncSocket(std::unique_ptr<ResolvingClientSocketFactory>
-                        resolving_client_socket_factory,
-                    size_t read_buf_size,
-                    size_t write_buf_size,
-                    const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  NetworkServiceAsyncSocket(
+      GetProxyResolvingFactoryCallback get_socket_factory_callback,
+      size_t read_buf_size,
+      size_t write_buf_size,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Does not raise any signals.
-  ~ChromeAsyncSocket() override;
+  ~NetworkServiceAsyncSocket() override;
 
   // buzz::AsyncSocket implementation.
 
@@ -65,9 +63,8 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   //
   // If |address| has an empty hostname or a zero port, sets error to
   // ERROR_DNS and returns false.  (We don't use the IP address even
-  // if it's present, as DNS resolution is done by
-  // |resolving_client_socket_factory_|.  But it's perfectly fine if
-  // the hostname is a stringified IP address.)
+  // if it's present, as DNS resolution is done by the network service).
+  // But it's perfectly fine if the hostname is a stringified IP address.)
   //
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
@@ -146,12 +143,11 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
 
  private:
   enum AsyncIOState {
-    // An I/O op is not in progress.
+    // An I/O op is not in progress or has been handed over to the network
+    // service.
     IDLE,
-    // A function has been posted to do the I/O.
-    POSTED,
-    // An async I/O operation is pending.
-    PENDING,
+    // Waiting for network service to be ready to handle an operation.
+    WAITING,
   };
 
   bool IsOpen() const;
@@ -160,61 +156,108 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   void DoNonNetError(Error error);
   void DoNetError(net::Error net_error);
   void DoNetErrorFromStatus(int status);
+  void ProcessSocketObserverError();
+
+  // SocketObserver implementation
+  void OnReadError(int32_t net_error) override;
+  void OnWriteError(int32_t net_error) override;
 
   // Connection functions.
-  void ProcessConnectDone(int status);
+  void ProcessConnectDone(
+      network::mojom::SocketObserverRequest socket_observer_request,
+      int status,
+      const base::Optional<net::IPEndPoint>& local_addr,
+      const base::Optional<net::IPEndPoint>& peer_addr,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream);
 
   // Read loop functions.
-  void PostDoRead();
-  void DoRead();
-  void ProcessReadDone(int status);
+  void WatchForReadReady();
+  void ProcessReadReady(MojoResult result,
+                        const mojo::HandleSignalsState& state);
+  void ReportReadError(int net_error);
 
   // Write loop functions.
-  void PostDoWrite();
-  void DoWrite();
-  void ProcessWriteDone(int status);
+  void WatchForWriteReady();
+  void ProcessWriteReady(MojoResult result,
+                         const mojo::HandleSignalsState& state);
+  void ProcessWriteClosed(MojoResult result,
+                          const mojo::HandleSignalsState& state);
 
   // SSL/TLS connection functions.
-  void ProcessSSLConnectDone(int status);
+  void ProcessSSLConnectDone(
+      network::mojom::SocketObserverRequest socket_observer_request,
+      int status,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream);
 
   // Close functions.
   void DoClose();
 
-  std::unique_ptr<ResolvingClientSocketFactory>
-      resolving_client_socket_factory_;
+  void ConnectPipes(mojo::ScopedDataPipeConsumerHandle receive_stream,
+                    mojo::ScopedDataPipeProducerHandle send_stream);
+  void BindSocketObserver(
+      network::mojom::SocketObserverRequest socket_observer_request);
+
+  // |socket_factory_| is recreated every time via |get_socket_factory_callback|
+  // to handle network service restarts after crashes.
+  GetProxyResolvingFactoryCallback get_socket_factory_callback_;
+  network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
+  // The handle to the proxy resolving socket for the current connection, if one
+  // exists.
+  network::mojom::ProxyResolvingSocketPtr socket_;
+  // TLS socket, if StartTls has been called.
+  network::mojom::TLSClientSocketPtr tls_socket_;
+
+  // Used to route error notifications here.
+  mojo::Binding<network::mojom::SocketObserver> socket_observer_binding_;
 
   // buzz::AsyncSocket state.
   buzz::AsyncSocket::State state_;
   buzz::AsyncSocket::Error error_;
   net::Error net_error_;
 
-  // NULL iff state() == STATE_CLOSED.
-  std::unique_ptr<net::StreamSocket> transport_socket_;
-
   // State for the read loop.  |read_start_| <= |read_end_| <=
   // |read_buf_->size()|.  There's a read in flight (i.e.,
   // |read_state_| != IDLE) iff |read_end_| == 0.
   AsyncIOState read_state_;
-  scoped_refptr<net::IOBufferWithSize> read_buf_;
+  std::vector<char> read_buf_;
   size_t read_start_, read_end_;
+  mojo::ScopedDataPipeConsumerHandle read_pipe_;
+  std::unique_ptr<mojo::SimpleWatcher> read_watcher_;
+
+  // Handling read errors is a bit tricky since the status is reported via
+  // |socket_observer_binding_|, which is unordered compared to |read_pipe_|,
+  // so it's possible to see an end of file (or an error) there while there is
+  // still useful data pending.  As a result, the code waits to see both happen
+  // before reporting error statuses (including EOF). Likewise for write pipes.
+  //
+  bool saw_error_on_read_pipe_;
+  bool saw_error_on_write_pipe_;
+
+  // This is != net::ERR_IO_PENDING (including possibly net::OK for end-of-file)
+  // if a read error was reported via socket observer interface.
+  int saw_read_error_on_socket_observer_pipe_;
+  int saw_write_error_on_socket_observer_pipe_;
 
   // State for the write loop.  |write_end_| <= |write_buf_->size()|.
   // There's a write in flight (i.e., |write_state_| != IDLE) iff
   // |write_end_| > 0.
   AsyncIOState write_state_;
-  scoped_refptr<net::IOBufferWithSize> write_buf_;
+  std::vector<char> write_buf_;
   size_t write_end_;
+  mojo::ScopedDataPipeProducerHandle write_pipe_;
+  std::unique_ptr<mojo::SimpleWatcher> write_watcher_;
+  std::unique_ptr<mojo::SimpleWatcher> write_close_watcher_;
 
-  // Network traffic annotation for downstream socket write. ChromeAsyncSocket
-  // is not reused, hence annotation can be added in constructor and used in all
-  // subsequent writes.
+  // Network traffic annotation for downstream socket write.
+  // NetworkServiceAsyncSocket is not reused, hence annotation can be added in
+  // constructor and used in all subsequent writes.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<ChromeAsyncSocket> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAsyncSocket);
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncSocket);
 };
 
 }  // namespace jingle_glue
 
-#endif  // JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
+#endif  // JINGLE_GLUE_NETWORK_SERVICE_ASYNC_SOCKET_H_
