@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -100,7 +101,8 @@ class WorkerThreadForTest : public WorkerThread {
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),
-          WorkerBackingThreadStartupData::CreateDefault(), nullptr,
+          WorkerBackingThreadStartupData::CreateDefault(),
+          std::make_unique<WorkerDevToolsParams>(),
           parent_execution_context_task_runners);
     EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());

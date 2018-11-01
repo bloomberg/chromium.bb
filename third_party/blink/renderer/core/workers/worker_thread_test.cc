@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -397,11 +398,15 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           std::make_unique<WorkerSettings>(Settings::Create().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
-  // Specify PauseOnWorkerStart::kPause so that the worker thread can pause
+  // Set wait_for_debugger so that the worker thread can pause
   // on initialization to run debugger tasks.
+  auto devtools_params = std::make_unique<WorkerDevToolsParams>();
+  devtools_params->wait_for_debugger = true;
+
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        nullptr, ParentExecutionContextTaskRunners::Create());
+                        std::move(devtools_params),
+                        ParentExecutionContextTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.
