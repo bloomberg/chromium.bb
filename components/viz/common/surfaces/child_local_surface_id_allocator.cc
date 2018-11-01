@@ -7,36 +7,59 @@
 #include <stdint.h>
 
 #include "base/rand_util.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 
 namespace viz {
 
-ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
+ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator(
+    const base::TickClock* tick_clock)
     : current_local_surface_id_allocation_(
           LocalSurfaceId(kInvalidParentSequenceNumber,
                          kInitialChildSequenceNumber,
                          base::UnguessableToken()),
-          base::TimeTicks()) {}
+          base::TimeTicks()),
+      tick_clock_(tick_clock) {}
+
+ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
+    : ChildLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
 
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id,
     base::TimeTicks parent_local_surface_id_allocation_time) {
-  if ((parent_allocated_local_surface_id.parent_sequence_number() >
-       current_local_surface_id_allocation_.local_surface_id_
-           .parent_sequence_number()) ||
-      parent_allocated_local_surface_id.embed_token() !=
-          current_local_surface_id_allocation_.local_surface_id_
-              .embed_token()) {
-    current_local_surface_id_allocation_.local_surface_id_
-        .parent_sequence_number_ =
-        parent_allocated_local_surface_id.parent_sequence_number_;
-    current_local_surface_id_allocation_.local_surface_id_.embed_token_ =
-        parent_allocated_local_surface_id.embed_token_;
+  const LocalSurfaceId& current_local_surface_id =
+      current_local_surface_id_allocation_.local_surface_id_;
+
+  // If the parent has not incremented its parent sequence number or updated its
+  // embed token then there is nothing to do here. This allocator already has
+  // the latest LocalSurfaceId.
+  if (current_local_surface_id.parent_sequence_number() >=
+          parent_allocated_local_surface_id.parent_sequence_number() &&
+      current_local_surface_id.embed_token() ==
+          parent_allocated_local_surface_id.embed_token()) {
+    return false;
+  }
+
+  if (current_local_surface_id.child_sequence_number() >
+      parent_allocated_local_surface_id.child_sequence_number()) {
+    // If the current LocalSurfaceId has a newer child sequence number
+    // than the one provided by the parent, then the merged LocalSurfaceId
+    // is actually a new LocalSurfaceId and so we report its allocation time
+    // as now.
+    current_local_surface_id_allocation_.allocation_time_ =
+        tick_clock_->NowTicks();
+  } else {
     current_local_surface_id_allocation_.allocation_time_ =
         parent_local_surface_id_allocation_time;
-    return true;
   }
-  return false;
+
+  current_local_surface_id_allocation_.local_surface_id_
+      .parent_sequence_number_ =
+      parent_allocated_local_surface_id.parent_sequence_number_;
+  current_local_surface_id_allocation_.local_surface_id_.embed_token_ =
+      parent_allocated_local_surface_id.embed_token_;
+
+  return true;
 }
 
 void ChildLocalSurfaceIdAllocator::GenerateId() {
@@ -48,7 +71,7 @@ void ChildLocalSurfaceIdAllocator::GenerateId() {
   ++current_local_surface_id_allocation_.local_surface_id_
         .child_sequence_number_;
   current_local_surface_id_allocation_.allocation_time_ =
-      base::TimeTicks::Now();
+      tick_clock_->NowTicks();
 
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),

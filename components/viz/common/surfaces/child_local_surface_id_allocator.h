@@ -14,6 +14,10 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace viz {
 
 // This is a helper class for generating local surface IDs for a single
@@ -24,10 +28,10 @@ namespace viz {
 // This is that child allocator.
 class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
  public:
+  explicit ChildLocalSurfaceIdAllocator(const base::TickClock* tick_clock);
+
   ChildLocalSurfaceIdAllocator();
-  ChildLocalSurfaceIdAllocator(ChildLocalSurfaceIdAllocator&& other) = default;
-  ChildLocalSurfaceIdAllocator& operator=(
-      ChildLocalSurfaceIdAllocator&& other) = default;
+
   ~ChildLocalSurfaceIdAllocator() = default;
 
   // When a parent-allocated LocalSurfaceId arrives in the child, the child
@@ -50,6 +54,7 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
 
  private:
   LocalSurfaceIdAllocation current_local_surface_id_allocation_;
+  const base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildLocalSurfaceIdAllocator);
 };
