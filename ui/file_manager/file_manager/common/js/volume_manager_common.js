@@ -281,6 +281,7 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
     case VolumeManagerCommon.RootType.DRIVE_RECENT:
     case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:
     case VolumeManagerCommon.RootType.COMPUTER:
+    case VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT:
       return VolumeManagerCommon.VolumeType.DRIVE;
     case VolumeManagerCommon.RootType.MTP:
       return VolumeManagerCommon.VolumeType.MTP;

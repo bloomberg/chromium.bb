@@ -1153,3 +1153,18 @@ DirectoryContents.createForCrostiniMounter = function(
     return new CrostiniMounter();
   });
 };
+
+/**
+ * Creates an empty DirectoryContents instance to show the Google Drive
+ * placeholder that never completes loading.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {!FakeEntry} rootEntry Fake directory entry representing the fake root
+ *     of Google Drive.
+ * @return {DirectoryContents} Created DirectoryContents instance.
+ */
+DirectoryContents.createForFakeDrive = function(context, rootEntry) {
+  return new DirectoryContents(context, true, rootEntry, function() {
+    return new ContentScanner();
+  });
+};

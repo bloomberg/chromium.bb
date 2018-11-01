@@ -11,6 +11,7 @@ var NavigationModelItemType = {
   RECENT: 'recent',
   CROSTINI: 'crostini',
   ENTRY_LIST: 'entry-list',
+  DRIVE: 'drive',
 };
 
 /**
@@ -374,6 +375,15 @@ NavigationListModel.prototype = {
     this.linuxFilesItem_ = item;
     this.reorderNavigationItems_();
   },
+
+  /**
+   * Set the fake Drive root and reorder items.
+   * @param {NavigationModelFakeItem} item Fake Drive root.
+   */
+  set fakeDriveItem(item) {
+    this.fakeDriveItem_ = item;
+    this.reorderNavigationItems_();
+  },
 };
 
 /**
@@ -546,9 +556,15 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   }
 
   // Add Drive.
+  let hasDrive = false;
   for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
     this.navigationItems_.push(driveItem);
     driveItem.section = NavigationSection.CLOUD;
+    hasDrive = true;
+  }
+  if (!hasDrive && this.fakeDriveItem_) {
+    this.navigationItems_.push(this.fakeDriveItem_);
+    this.fakeDriveItem_.section = NavigationSection.CLOUD;
   }
 
   // Add FSP.
