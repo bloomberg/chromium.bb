@@ -39,14 +39,12 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool IsMouseEvent() const override;
   bool IsPointerEvent() const override;
 
-  // TODO(eirage): Remove these override of coordinates getters when
-  // fractional mouseevent flag is removed.
-  double screenX() const override;
-  double screenY() const override;
-  double clientX() const override;
-  double clientY() const override;
-  double pageX() const override;
-  double pageY() const override;
+  double screenX() const override { return screen_location_.X(); }
+  double screenY() const override { return screen_location_.Y(); }
+  double clientX() const override { return client_location_.X(); }
+  double clientY() const override { return client_location_.Y(); }
+  double pageX() const override { return page_location_.X(); }
+  double pageY() const override { return page_location_.Y(); }
 
   double offsetX() override;
   double offsetY() override;
