@@ -78,6 +78,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                            OnPropertiesChangedCallback callback) override;
 
   // fuchsia::ui::input::InputListener interface.
+  // TODO(crbug.com/881591): Remove this when ViewsV1 deprecation is complete.
   void OnEvent(fuchsia::ui::input::InputEvent event,
                OnEventCallback callback) override;
 

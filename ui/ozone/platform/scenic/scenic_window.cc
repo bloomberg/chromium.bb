@@ -65,9 +65,8 @@ ScenicWindow::ScenicWindow(
   view_listener_binding_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnViewError));
 
-  // Setup input event listener.
-  // TODO(crbug.com/881591): Migrate off InputConnection and use IMEService
-  // for receiving keyboard input instead.
+  // Setup ViewsV1 input event listener.
+  // TODO(crbug.com/881591): Remove this when ViewsV1 deprecation is complete.
   fuchsia::sys::ServiceProviderPtr view_service_provider;
   view_->GetServiceProvider(view_service_provider.NewRequest());
   view_service_provider->ConnectToService(
@@ -226,23 +225,34 @@ void ScenicWindow::OnScenicError() {
 
 void ScenicWindow::OnScenicEvents(
     fidl::VectorPtr<fuchsia::ui::scenic::Event> events) {
-  for (const auto& event : events.get()) {
-    if (!event.is_gfx() || !event.gfx().is_metrics())
-      continue;
+  for (const auto& event : *events) {
+    if (event.is_gfx()) {
+      if (!event.gfx().is_metrics())
+        continue;
 
-    auto& metrics = event.gfx().metrics();
-    if (metrics.node_id != parent_node_.id())
-      continue;
+      auto& metrics = event.gfx().metrics();
+      if (metrics.node_id != parent_node_.id())
+        continue;
 
-    device_pixel_ratio_ =
-        std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
+      device_pixel_ratio_ =
+          std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
 
-    ScenicScreen* screen = manager_->screen();
-    if (screen)
-      screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
+      ScenicScreen* screen = manager_->screen();
+      if (screen)
+        screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
 
-    if (!size_dips_.IsEmpty())
-      UpdateSize();
+      if (!size_dips_.IsEmpty())
+        UpdateSize();
+    } else if (event.is_input()) {
+      auto& input_event = event.input();
+      if (input_event.is_focus()) {
+        delegate_->OnActivationChanged(input_event.focus().focused);
+      } else {
+        // Scenic doesn't care if the input event was handled, so ignore the
+        // "handled" status.
+        ignore_result(event_dispatcher_.ProcessEvent(input_event));
+      }
+    }
   }
 }
 
