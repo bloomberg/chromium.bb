@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "ios/web/public/test/web_test.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"

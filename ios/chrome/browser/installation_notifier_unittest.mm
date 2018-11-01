@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/backoff_entry.h"

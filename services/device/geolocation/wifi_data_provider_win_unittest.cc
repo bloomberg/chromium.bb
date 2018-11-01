@@ -6,7 +6,7 @@
 // WifiDataProviderCommon and covered by it's unit tests.
 
 #include "services/device/geolocation/wifi_data_provider_win.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

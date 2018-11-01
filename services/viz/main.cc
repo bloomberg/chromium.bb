@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/service_manager/public/c/main.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/viz/service.h"
 

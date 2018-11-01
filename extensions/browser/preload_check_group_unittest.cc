@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/preload_check_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

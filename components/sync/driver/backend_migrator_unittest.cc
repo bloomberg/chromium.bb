@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "components/sync/base/model_type_test_util.h"

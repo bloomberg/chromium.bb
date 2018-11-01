@@ -10,7 +10,7 @@
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"

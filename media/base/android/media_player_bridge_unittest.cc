@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"

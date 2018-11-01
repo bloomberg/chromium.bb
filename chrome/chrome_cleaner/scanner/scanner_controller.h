@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"

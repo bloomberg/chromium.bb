@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"

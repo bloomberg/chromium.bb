@@ -8,7 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_scheduler/task_scheduler.h"

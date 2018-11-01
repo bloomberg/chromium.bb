@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/test/fake_output_surface.h"

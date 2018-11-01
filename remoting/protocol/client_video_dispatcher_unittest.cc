@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/buffered_socket_writer.h"

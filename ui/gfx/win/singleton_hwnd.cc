@@ -5,7 +5,7 @@
 #include "ui/gfx/win/singleton_hwnd.h"
 
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {

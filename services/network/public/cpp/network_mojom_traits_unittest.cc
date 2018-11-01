@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"

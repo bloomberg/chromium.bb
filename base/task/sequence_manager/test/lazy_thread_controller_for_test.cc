@@ -4,7 +4,7 @@
 
 #include "base/task/sequence_manager/test/lazy_thread_controller_for_test.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/time/default_tick_clock.h"
 

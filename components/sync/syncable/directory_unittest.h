@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"

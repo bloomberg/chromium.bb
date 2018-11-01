@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hdc.h"
 #include "printing/backend/printing_info_win.h"

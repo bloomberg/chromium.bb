@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"

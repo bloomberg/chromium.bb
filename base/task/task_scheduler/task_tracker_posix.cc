@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 
 namespace base {
 namespace internal {

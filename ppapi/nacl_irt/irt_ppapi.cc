@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_logging.h"

@@ -6,7 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 
 #include "third_party/khronos_glcts/framework/common/tcuApp.hpp"
 #include "third_party/khronos_glcts/framework/common/tcuCommandLine.hpp"

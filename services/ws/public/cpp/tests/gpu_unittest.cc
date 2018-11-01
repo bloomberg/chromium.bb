@@ -5,7 +5,7 @@
 #include "services/ws/public/cpp/gpu/gpu.h"
 
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"

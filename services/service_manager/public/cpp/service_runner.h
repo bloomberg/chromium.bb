@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/export.h"
 

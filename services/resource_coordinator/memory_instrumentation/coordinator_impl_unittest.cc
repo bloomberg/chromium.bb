@@ -5,7 +5,7 @@
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"

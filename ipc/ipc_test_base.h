@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "build/build_config.h"

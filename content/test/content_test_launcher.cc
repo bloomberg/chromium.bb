@@ -30,7 +30,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/url_schemes.h"
 #include "content/public/common/content_paths.h"

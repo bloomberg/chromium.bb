@@ -4,7 +4,7 @@
 
 #include "ios/components/io_thread/ios_io_thread.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

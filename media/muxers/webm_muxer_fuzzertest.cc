@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "media/base/audio_parameters.h"

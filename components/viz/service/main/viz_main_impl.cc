@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"

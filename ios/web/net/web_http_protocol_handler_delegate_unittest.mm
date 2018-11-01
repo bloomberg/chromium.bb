@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"

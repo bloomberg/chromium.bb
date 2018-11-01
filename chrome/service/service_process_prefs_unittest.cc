@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/service/service_process_prefs.h"

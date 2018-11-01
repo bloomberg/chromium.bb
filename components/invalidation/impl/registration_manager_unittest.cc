@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/stl_util.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"

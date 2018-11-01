@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/gamepad/public/cpp/gamepad_mojom_traits.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "mojo/public/cpp/test_support/test_utils.h"

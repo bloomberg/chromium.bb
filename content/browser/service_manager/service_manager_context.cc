@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"

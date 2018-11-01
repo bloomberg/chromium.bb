@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"

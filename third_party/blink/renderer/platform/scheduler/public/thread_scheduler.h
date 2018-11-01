@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"

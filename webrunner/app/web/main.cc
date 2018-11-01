@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/fuchsia/service_directory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "webrunner/app/common/web_content_runner.h"
 

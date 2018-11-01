@@ -8,7 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_forward.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
