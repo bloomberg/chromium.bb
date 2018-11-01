@@ -105,6 +105,10 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1JntConvolve2DTest,
                         libaom_test::AV1Convolve2D::BuildParams(
                             av1_jnt_convolve_2d_copy_sse2, 0, 0));
+INSTANTIATE_TEST_CASE_P(
+    SSE2, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_sse2, 1, 1));
+
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE2_X, AV1JntConvolve2DTest,

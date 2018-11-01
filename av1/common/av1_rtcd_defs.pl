@@ -379,7 +379,7 @@ add_proto qw/void av1_highbd_jnt_convolve_2d_copy/, "const uint16_t *src, int sr
   specialize qw/av1_convolve_x_sr sse2 avx2 neon/;
   specialize qw/av1_convolve_y_sr sse2 avx2 neon/;
   specialize qw/av1_convolve_2d_scale sse4_1/;
-  specialize qw/av1_jnt_convolve_2d ssse3 avx2 neon/;
+  specialize qw/av1_jnt_convolve_2d sse2 ssse3 avx2 neon/;
   specialize qw/av1_jnt_convolve_2d_copy sse2 avx2 neon/;
   specialize qw/av1_jnt_convolve_x sse2 avx2 neon/;
   specialize qw/av1_jnt_convolve_y sse2 avx2 neon/;
