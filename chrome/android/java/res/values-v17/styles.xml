@@ -735,14 +735,22 @@
         <item name="android:background">@drawable/content_card_modern_background</item>
         <item name="android:foreground">@drawable/button_borderless_compat</item>
     </style>
+    <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
+     for these requires updating the NTP article suggestions thumbnail size as well. -->
     <style name="SuggestionCardTitleModern" parent="BlackTitle1">
         <item name="android:ellipsize">end</item>
         <item name="leading">20sp</item>
+    </style>
+    <style name="ContextualSuggestionCardTitleModern" parent="SuggestionCardTitleModern">
+        <item name="leading">@dimen/text_size_large_leading</item>
     </style>
     <style name="SuggestionCardBodyModern" parent="BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
+    </style>
+    <style name="ContextualSuggestionCardBodyModern" parent="SuggestionCardBodyModern">
+        <item name="leading">@dimen/text_size_medium_leading</item>
     </style>
     <style name="SuggestionCardAction">
         <item name="android:minHeight">48dp</item>

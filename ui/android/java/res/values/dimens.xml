@@ -4,12 +4,17 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Common text sizes -->
     <dimen name="headline_size">22sp</dimen>
     <dimen name="text_size_large">16sp</dimen>
     <dimen name="text_size_medium">14sp</dimen>
     <dimen name="text_size_small">12sp</dimen>
+
+    <dimen name="headline_size_leading" tools:ignore="UnusedResources">28sp</dimen>
+    <dimen name="text_size_large_leading" tools:ignore="UnusedResources">24sp</dimen>
+    <dimen name="text_size_medium_leading" tools:ignore="UnusedResources">20sp</dimen>
+    <dimen name="text_size_small_leading" tools:ignore="UnusedResources">16sp</dimen>
 
     <!-- Common alpha values -->
     <item name="disabled_text_alpha" format="float" type="dimen">0.38</item>
