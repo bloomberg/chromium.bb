@@ -7,6 +7,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -28,9 +29,10 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   NGLogicalSize flex_container_border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
+  NGBoxStrut flex_container_border_scrollbar_padding =
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   NGLogicalSize flex_container_content_box_size = ShrinkAvailableSize(
-      flex_container_border_box_size,
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Node()));
+      flex_container_border_box_size, flex_container_border_scrollbar_padding);
   LayoutUnit flex_container_border_box_inline_size =
       flex_container_border_box_size.inline_size;
   LayoutUnit flex_container_content_inline_size =
@@ -101,10 +103,10 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         .ng_input_node = child;
   }
 
-  NGBoxStrut borders_scrollbar_padding =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
-  LayoutUnit main_axis_offset = borders_scrollbar_padding.inline_start;
-  LayoutUnit cross_axis_offset = borders_scrollbar_padding.block_start;
+  LayoutUnit main_axis_offset =
+      flex_container_border_scrollbar_padding.inline_start;
+  LayoutUnit cross_axis_offset =
+      flex_container_border_scrollbar_padding.block_start;
   FlexLine* line;
   while ((line = algorithm.ComputeNextFlexLine(
               flex_container_border_box_inline_size))) {
@@ -139,21 +141,54 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // in to the next iteration.
     line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
 
-    for (wtf_size_t i = 0; i < line->line_items.size(); ++i) {
-      FlexItem& flex_item = line->line_items[i];
-      container_builder_.AddChild(
-          *flex_item.layout_result,
-          {flex_item.desired_location.X(), flex_item.desired_location.Y()});
-    }
 
     // TODO(dgrogan): For column flex containers, keep track of tallest flex
     // line and pass to ComputeBlockSizeForFragment as content_size.
   }
   LayoutUnit intrinsic_block_content_size = cross_axis_offset;
   LayoutUnit intrinsic_block_size =
-      intrinsic_block_content_size + borders_scrollbar_padding.BlockSum();
+      intrinsic_block_content_size +
+      flex_container_border_scrollbar_padding.BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), intrinsic_block_size);
+
+  // Apply stretch alignment.
+  // TODO(dgrogan): Move this to its own method, which means making some of the
+  // container-specific local variables into data members.
+  // TODO(dgrogan): Change this to final_content_cross_size when column
+  // flexboxes are supported.
+  LayoutUnit final_content_block_size =
+      block_size - flex_container_border_scrollbar_padding.BlockSum();
+  for (FlexLine& line_context : algorithm.FlexLines()) {
+    for (wtf_size_t child_number = 0;
+         child_number < line_context.line_items.size(); ++child_number) {
+      FlexItem& flex_item = line_context.line_items[child_number];
+      if (flex_item.Alignment() == ItemPosition::kStretch) {
+        flex_item.ComputeStretchedSize(
+            // TODO(dgrogan): Change this to line_context.cross_axis_extent once
+            // lines are also sized and spaced.
+            final_content_block_size);
+        NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+        NGLogicalSize available_size(flex_item.flexed_content_size +
+                                         flex_item.main_axis_border_and_padding,
+                                     flex_item.cross_axis_size);
+        space_builder.SetAvailableSize(available_size);
+        space_builder.SetPercentageResolutionSize(
+            flex_container_content_box_size);
+        space_builder.SetIsFixedSizeInline(true);
+        space_builder.SetIsFixedSizeBlock(true);
+        NGConstraintSpace child_space = space_builder.ToConstraintSpace(
+            flex_item.box->Style()->GetWritingMode());
+        flex_item.layout_result =
+            ToNGBlockNode(flex_item.ng_input_node)
+                .Layout(child_space, nullptr /*break token*/);
+      }
+      container_builder_.AddChild(
+          *flex_item.layout_result,
+          {flex_item.desired_location.X(), flex_item.desired_location.Y()});
+    }
+  }
+
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetInlineSize(flex_container_border_box_inline_size);
   container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Style()));

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 
 namespace blink {
@@ -136,6 +137,28 @@ void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
       box->SetMarginTop(auto_margin_offset);
     if (box->StyleRef().MarginBottom().IsAuto())
       box->SetMarginBottom(auto_margin_offset);
+  }
+}
+
+void FlexItem::ComputeStretchedSize(LayoutUnit line_cross_axis_extent) {
+  // TODO(dgrogan): Pass resolved cross-axis MinMaxSize to FlexItem
+  // constructor. Then use cross_axis_min_max.ClampSizeToMinAndMax instead of
+  // relying on legacy in this method.
+  DCHECK_EQ(Alignment(), ItemPosition::kStretch);
+  LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box->Parent());
+  if (!HasOrthogonalFlow() && box->StyleRef().LogicalHeight().IsAuto()) {
+    LayoutUnit stretched_logical_height =
+        std::max(box->BorderAndPaddingLogicalHeight(),
+                 line_cross_axis_extent - CrossAxisMarginExtent());
+    cross_axis_size = box->ConstrainLogicalHeightByMinMax(
+        stretched_logical_height, box->IntrinsicContentLogicalHeight());
+  } else if (HasOrthogonalFlow() && box->StyleRef().LogicalWidth().IsAuto()) {
+    LayoutUnit child_width = (line_cross_axis_extent - CrossAxisMarginExtent())
+                                 .ClampNegativeToZero();
+    // This probably doesn't work in NG because flexbox might not yet know its
+    // CrossAxisContentExtent()
+    cross_axis_size = box->ConstrainLogicalWidthByMinMax(
+        child_width, flexbox->CrossAxisContentExtent(), flexbox);
   }
 }
 

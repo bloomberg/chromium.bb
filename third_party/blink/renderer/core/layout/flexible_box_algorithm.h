@@ -112,6 +112,10 @@ class FlexItem {
 
   void UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset);
 
+  // Computes the cross-axis size that a stretched item should have and stores
+  // it in cross_axis_size. DCHECKs if the item is not stretch aligned.
+  void ComputeStretchedSize(LayoutUnit line_cross_axis_extent);
+
   FlexLayoutAlgorithm* algorithm;
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
