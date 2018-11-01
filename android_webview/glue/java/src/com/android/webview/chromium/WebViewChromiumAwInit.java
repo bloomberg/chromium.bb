@@ -160,7 +160,7 @@ public class WebViewChromiumAwInit {
             AwBrowserProcess.configureChildProcessLauncher();
 
             // finishVariationsInitLocked() must precede native initialization so the seed is
-            // available when AwFieldTrialCreator::SetUpFieldTrials() runs.
+            // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
 
             AwBrowserProcess.start();

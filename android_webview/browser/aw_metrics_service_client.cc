@@ -84,8 +84,9 @@ bool IsInSample(const std::string& client_id) {
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return g_lazy_instance_.Pointer();
+  AwMetricsServiceClient* client = g_lazy_instance_.Pointer();
+  DCHECK(client->sequence_checker_.CalledOnValidSequence());
+  return client;
 }
 
 void AwMetricsServiceClient::LoadOrCreateClientId() {
@@ -134,7 +135,7 @@ std::string AwMetricsServiceClient::GetClientId() {
 }
 
 void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(pref_service_ == nullptr);  // Initialize should only happen once.
   pref_service_ = pref_service;
@@ -191,7 +192,7 @@ AwMetricsServiceClient::CreateLowEntropyProvider() {
 }
 
 bool AwMetricsServiceClient::IsConsentGiven() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return consent_;
 }
 
@@ -200,7 +201,7 @@ bool AwMetricsServiceClient::IsReportingEnabled() const {
 }
 
 void AwMetricsServiceClient::SetHaveMetricsConsent(bool consent) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   consent_ = consent;
   // Receiving this call is the last step in determining whether metrics should
   // be enabled; if so, start metrics. There's no need for a matching Stop()
