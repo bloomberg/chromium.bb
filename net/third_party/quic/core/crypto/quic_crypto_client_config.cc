@@ -394,8 +394,13 @@ void QuicCryptoClientConfig::SetDefaults() {
   // Key exchange methods.
   kexs = {kC255, kP256};
 
-  // Authenticated encryption algorithms. Prefer RFC 7539 ChaCha20 by default.
-  aead = {kCC20, kAESG};
+  // Authenticated encryption algorithms. Prefer AES-GCM if hardware-supported
+  // fast implementation is available.
+  if (EVP_has_aes_hardware() == 1) {
+    aead = {kAESG, kCC20};
+  } else {
+    aead = {kCC20, kAESG};
+  }
 }
 
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
@@ -946,18 +951,6 @@ void QuicCryptoClientConfig::InitializeFrom(
 
 void QuicCryptoClientConfig::AddCanonicalSuffix(const QuicString& suffix) {
   canonical_suffixes_.push_back(suffix);
-}
-
-void QuicCryptoClientConfig::PreferAesGcm() {
-  DCHECK(!aead.empty());
-  if (aead.size() <= 1) {
-    return;
-  }
-  auto pos = std::find(aead.begin(), aead.end(), kAESG);
-  if (pos != aead.end()) {
-    aead.erase(pos);
-    aead.insert(aead.begin(), kAESG);
-  }
 }
 
 bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(

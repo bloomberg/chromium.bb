@@ -193,6 +193,11 @@ quic::QuicConfig InitializeQuicConfig(
   return config;
 }
 
+bssl::UniquePtr<SSL_CTX> QuicStreamFactoryCreateSslCtx() {
+  crypto::EnsureOpenSSLInit();
+  return quic::TlsClientHandshaker::CreateSslCtx();
+}
+
 // An implementation of quic::QuicCryptoClientConfig::ServerIdFilter that wraps
 // an |origin_filter|.
 class ServerIdOriginFilter
@@ -967,7 +972,7 @@ QuicStreamFactory::QuicStreamFactory(
                                                   ct_policy_enforcer,
                                                   transport_security_state,
                                                   cert_transparency_verifier),
-          quic::TlsClientHandshaker::CreateSslCtx()),
+          QuicStreamFactoryCreateSslCtx()),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),
@@ -1015,12 +1020,9 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".ggpht.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
-  crypto::EnsureOpenSSLInit();
-  bool has_aes_hardware_support = !!EVP_has_aes_hardware();
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
-                        has_aes_hardware_support);
-  if (has_aes_hardware_support)
-    crypto_config_.PreferAesGcm();
+  bool prefer_aes_gcm =
+      !crypto_config_.aead.empty() && (crypto_config_.aead[0] == quic::kAESG);
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm", prefer_aes_gcm);
 
   if (migrate_sessions_early_v2 || retry_on_alternate_network_before_handshake)
     DCHECK(migrate_sessions_on_network_change_v2);

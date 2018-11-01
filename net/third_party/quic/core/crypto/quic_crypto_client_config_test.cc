@@ -201,13 +201,16 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   EXPECT_EQ("hq", alpn);
 }
 
+// Make sure AES-GCM is the preferred encryption algorithm if it has hardware
+// acceleration.
 TEST_F(QuicCryptoClientConfigTest, PreferAesGcm) {
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
-  if (config.aead.size() > 1)
-    EXPECT_NE(kAESG, config.aead[0]);
-  config.PreferAesGcm();
-  EXPECT_EQ(kAESG, config.aead[0]);
+  if (EVP_has_aes_hardware() == 1) {
+    EXPECT_EQ(kAESG, config.aead[0]);
+  } else {
+    EXPECT_EQ(kCC20, config.aead[0]);
+  }
 }
 
 TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
