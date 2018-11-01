@@ -121,3 +121,8 @@ action("blobstore_extended_qcow2") {
     rebase_path(blobstore_qcow_path),
   ]
 }
+
+# Settings for executables.
+config("executable_config") {
+  ldflags = [ "-pie" ]
+}

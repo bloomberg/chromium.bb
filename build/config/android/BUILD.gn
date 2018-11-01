@@ -181,12 +181,6 @@ config("runtime_library") {
   }
 }
 
-config("executable_config") {
-  cflags = [ "-fPIE" ]
-  asmflags = [ "-fPIE" ]
-  ldflags = [ "-pie" ]
-}
-
 config("hide_all_but_jni_onload") {
   ldflags = [ "-Wl,--version-script=" + rebase_path(
                   "//build/android/android_only_explicit_jni_exports.lst",

@@ -375,10 +375,9 @@ config("compiler") {
   # Linux/Android/Fuchsia common flags setup.
   # ---------------------------------
   if (is_linux || is_android || is_fuchsia) {
-    if (use_pic) {
-      cflags += [ "-fPIC" ]
-      ldflags += [ "-fPIC" ]
-    }
+    asmflags += [ "-fPIC" ]
+    cflags += [ "-fPIC" ]
+    ldflags += [ "-fPIC" ]
 
     if (!is_clang) {
       # Use pipes for communicating between sub-processes. Faster.
