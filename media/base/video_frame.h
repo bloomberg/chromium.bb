@@ -164,6 +164,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       size_t data_size,
       base::TimeDelta timestamp);
 
+  static scoped_refptr<VideoFrame> WrapExternalDataWithLayout(
+      const VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8_t* data,
+      size_t data_size,
+      base::TimeDelta timestamp);
+
   // Same as WrapExternalData() with a ReadOnlySharedMemoryRegion and its
   // offset. Neither |region| nor |data| are owned by this VideoFrame. The
   // region and mapping which back |data| must outlive this instance; a
@@ -531,9 +539,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
  private:
   static scoped_refptr<VideoFrame> WrapExternalStorage(
-      VideoPixelFormat format,
       StorageType storage_type,
-      const gfx::Size& coded_size,
+      const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       uint8_t* data,

@@ -107,7 +107,7 @@ static bool AreValidPixelFormatsForWrap(VideoPixelFormat source_format,
 
 // If it is required to allocate aligned to multiple-of-two size overall for the
 // frame of pixel |format|.
-bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
+static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
@@ -145,6 +145,59 @@ bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
   return false;
 }
 
+// Creates VideoFrameLayout for tightly packed frame.
+static base::Optional<VideoFrameLayout> GetDefaultLayout(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size) {
+  std::vector<VideoFrameLayout::Plane> planes;
+
+  switch (format) {
+    case PIXEL_FORMAT_I420: {
+      int uv_width = (coded_size.width() + 1) / 2;
+      int uv_height = (coded_size.height() + 1) / 2;
+      int uv_stride = uv_width;
+      int uv_size = uv_width * uv_height;
+      planes = std::vector<VideoFrameLayout::Plane>{
+          VideoFrameLayout::Plane(coded_size.width(), 0),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea()),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea() + uv_size),
+      };
+      break;
+    }
+
+    case PIXEL_FORMAT_Y16:
+      planes = std::vector<VideoFrameLayout::Plane>{
+          VideoFrameLayout::Plane(coded_size.width() * 2, 0)};
+      break;
+
+    case PIXEL_FORMAT_ARGB:
+      planes = std::vector<VideoFrameLayout::Plane>{
+          VideoFrameLayout::Plane(coded_size.width() * 4, 0)};
+      break;
+
+    case PIXEL_FORMAT_NV12: {
+      int uv_width = (coded_size.width() + 1) / 2;
+      int uv_stride = uv_width * 2;
+      planes = std::vector<VideoFrameLayout::Plane>{
+          VideoFrameLayout::Plane(coded_size.width(), 0),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea()),
+      };
+      break;
+    }
+
+    default:
+      // TODO(miu): This function should support any pixel format.
+      // http://crbug.com/555909 .
+      DLOG(ERROR)
+          << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_NV12, "
+             "and PIXEL_FORMAT_ARGB formats are supported: "
+          << VideoPixelFormatToString(format);
+      return base::nullopt;
+  }
+
+  return VideoFrameLayout::CreateWithPlanes(format, coded_size, planes);
+}
+
 // static
 bool VideoFrame::IsValidConfig(VideoPixelFormat format,
                                StorageType storage_type,
@@ -162,8 +215,9 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
       visible_rect.bottom() > coded_size.height() ||
       natural_size_area > limits::kMaxCanvas ||
       natural_size.width() > limits::kMaxDimension ||
-      natural_size.height() > limits::kMaxDimension)
+      natural_size.height() > limits::kMaxDimension) {
     return false;
+  }
 
   // TODO(mcasas): Remove parameter |storage_type| when the opaque storage types
   // comply with the checks below. Right now we skip them.
@@ -256,10 +310,24 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalData(
     uint8_t* data,
     size_t data_size,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_UNOWNED_MEMORY, coded_size,
-                             visible_rect, natural_size, data, data_size,
-                             timestamp, nullptr, nullptr,
-                             base::SharedMemoryHandle(), 0);
+  auto layout = GetDefaultLayout(format, coded_size);
+  if (!layout)
+    return nullptr;
+  return WrapExternalDataWithLayout(*layout, visible_rect, natural_size, data,
+                                    data_size, timestamp);
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalDataWithLayout(
+    const VideoFrameLayout& layout,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    uint8_t* data,
+    size_t data_size,
+    base::TimeDelta timestamp) {
+  return WrapExternalStorage(STORAGE_UNOWNED_MEMORY, layout, visible_rect,
+                             natural_size, data, data_size, timestamp, nullptr,
+                             nullptr, base::SharedMemoryHandle(), 0);
 }
 
 // static
@@ -273,9 +341,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalReadOnlySharedMemory(
     base::ReadOnlySharedMemoryRegion* region,
     size_t data_offset,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_SHMEM, coded_size, visible_rect,
-                             natural_size, data, data_size, timestamp, region,
-                             nullptr, base::SharedMemoryHandle(), data_offset);
+  auto layout = GetDefaultLayout(format, coded_size);
+  if (!layout)
+    return nullptr;
+  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
+                             data, data_size, timestamp, region, nullptr,
+                             base::SharedMemoryHandle(), data_offset);
 }
 
 // static
@@ -289,9 +360,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalUnsafeSharedMemory(
     base::UnsafeSharedMemoryRegion* region,
     size_t data_offset,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_SHMEM, coded_size, visible_rect,
-                             natural_size, data, data_size, timestamp, nullptr,
-                             region, base::SharedMemoryHandle(), data_offset);
+  auto layout = GetDefaultLayout(format, coded_size);
+  if (!layout)
+    return nullptr;
+  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
+                             data, data_size, timestamp, nullptr, region,
+                             base::SharedMemoryHandle(), data_offset);
 }
 
 // static
@@ -305,9 +379,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
     base::SharedMemoryHandle handle,
     size_t data_offset,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_SHMEM, coded_size, visible_rect,
-                             natural_size, data, data_size, timestamp, nullptr,
-                             nullptr, handle, data_offset);
+  auto layout = GetDefaultLayout(format, coded_size);
+  if (!layout)
+    return nullptr;
+  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
+                             data, data_size, timestamp, nullptr, nullptr,
+                             handle, data_offset);
 }
 
 // static
@@ -917,9 +994,8 @@ size_t VideoFrame::BitDepth() const {
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
-    VideoPixelFormat format,
     StorageType storage_type,
-    const gfx::Size& coded_size,
+    const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     uint8_t* data,
@@ -931,81 +1007,20 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
     size_t data_offset) {
   DCHECK(IsStorageTypeMappable(storage_type));
 
-  // TODO(miu): This function should support any pixel format.
-  // http://crbug.com/555909
-  if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_Y16 &&
-      format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_NV12) {
-    DLOG(ERROR)
-        << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_NV12, and "
-           "PIXEL_FORMAT_ARGB formats are supported: "
-        << VideoPixelFormatToString(format);
-    return nullptr;
-  }
-
-  if (!IsValidConfig(format, storage_type, coded_size, visible_rect,
-                     natural_size)) {
+  if (!IsValidConfig(layout.format(), storage_type, layout.coded_size(),
+                     visible_rect, natural_size)) {
     DLOG(ERROR) << __func__ << " Invalid config."
-                << ConfigToString(format, storage_type, coded_size,
-                                  visible_rect, natural_size);
+                << ConfigToString(layout.format(), storage_type,
+                                  layout.coded_size(), visible_rect,
+                                  natural_size);
     return nullptr;
   }
 
-  scoped_refptr<VideoFrame> frame;
-  switch (NumPlanes(format)) {
-    case 1: {
-      auto layout = VideoFrameLayout::CreateWithStrides(
-          format, coded_size,
-          std::vector<int>{RowBytes(kYPlane, format, coded_size.width())});
-      if (!layout) {
-        DLOG(ERROR) << "Invalid layout.";
-        return nullptr;
-      }
-      frame = new VideoFrame(*layout, storage_type, visible_rect, natural_size,
-                             timestamp);
-      frame->data_[kYPlane] = data;
-      break;
-    }
-    case 2: {
-      auto layout = VideoFrameLayout::CreateWithStrides(
-          format, coded_size,
-          std::vector<int>{RowBytes(kYPlane, format, coded_size.width()),
-                           RowBytes(kUVPlane, format, coded_size.width())});
-      if (!layout) {
-        DLOG(ERROR) << "Invalid layout.";
-        return nullptr;
-      }
-      frame = new VideoFrame(*layout, storage_type, visible_rect, natural_size,
-                             timestamp);
-      frame->data_[kYPlane] = data;
-      frame->data_[kUVPlane] = data + coded_size.GetArea();
-      break;
-    }
-    case 3: {
-      DCHECK_EQ(format, PIXEL_FORMAT_I420);
-      // TODO(miu): This always rounds widths down, whereas
-      // VideoFrame::RowBytes() always rounds up.  This inconsistency must be
-      // resolved.  Perhaps a CommonAlignment() check should be made in
-      // IsValidConfig()?
-      // http://crbug.com/555909
-      auto layout = VideoFrameLayout::CreateWithStrides(
-          format, coded_size,
-          {RowBytes(kYPlane, format, coded_size.width()),
-           coded_size.width() / 2, coded_size.width() / 2});
-      if (!layout) {
-        DLOG(ERROR) << "Invalid layout.";
-        return nullptr;
-      }
-      frame = new VideoFrame(*layout, storage_type, visible_rect, natural_size,
-                             timestamp);
-      frame->data_[kYPlane] = data;
-      frame->data_[kVPlane] = data + (coded_size.GetArea() * 5 / 4);
-      frame->data_[kUPlane] = data + coded_size.GetArea();
-      break;
-    }
-    default:
-      DLOG(ERROR) << "Invalid number of planes: " << NumPlanes(format)
-                  << " in format: " << VideoPixelFormatToString(format);
-      return nullptr;
+  scoped_refptr<VideoFrame> frame = new VideoFrame(
+      layout, storage_type, visible_rect, natural_size, timestamp);
+
+  for (size_t i = 0; i < layout.planes().size(); ++i) {
+    frame->data_[i] = data + layout.planes()[i].offset;
   }
 
   if (storage_type == STORAGE_SHMEM) {
@@ -1027,6 +1042,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
       frame->shared_memory_offset_ = data_offset;
     }
   }
+
   return frame;
 }
 

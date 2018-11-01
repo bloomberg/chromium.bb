@@ -554,16 +554,37 @@ void FuchsiaVideoDecoder::OnOutputPacket(
     fuchsia::mediacodec::CodecPacket output_packet,
     bool error_detected_before,
     bool error_detected_during) {
-  VideoPixelFormat pixel_format;
+  if (output_packet.header.buffer_lifetime_ordinal !=
+      output_buffer_lifetime_ordinal_) {
+    return;
+  }
+
+  auto coded_size = gfx::Size(output_format_.primary_width_pixels,
+                              output_format_.primary_height_pixels);
+
+  base::Optional<VideoFrameLayout> layout;
   switch (output_format_.fourcc) {
     case libyuv::FOURCC_NV12:
-      pixel_format = PIXEL_FORMAT_NV12;
+      layout = VideoFrameLayout::CreateWithPlanes(
+          PIXEL_FORMAT_NV12, coded_size,
+          std::vector<VideoFrameLayout::Plane>{
+              VideoFrameLayout::Plane(output_format_.primary_line_stride_bytes,
+                                      output_format_.primary_start_offset),
+              VideoFrameLayout::Plane(
+                  output_format_.secondary_line_stride_bytes,
+                  output_format_.secondary_start_offset)});
+      DCHECK(layout);
       break;
+
     default:
       LOG(ERROR) << "unknown fourcc: "
                  << std::string(reinterpret_cast<char*>(&output_format_.fourcc),
                                 4);
-      return;
+  }
+
+  if (!layout) {
+    codec_->RecycleOutputPacket(output_packet.header);
+    return;
   }
 
   base::TimeDelta timestamp;
@@ -588,14 +609,10 @@ void FuchsiaVideoDecoder::OnOutputPacket(
   auto display_rect = gfx::Rect(output_format_.primary_display_width_pixels,
                                 output_format_.primary_display_height_pixels);
 
-  // TODO(sergeyu): Returned frame is correct only when stride=width, which
-  // is not always the case. Currently VideoFrame::WrapExternalData() doesn't
-  // allow custom frame layout.
-  auto frame = VideoFrame::WrapExternalData(
-      pixel_format,
-      gfx::Size(output_format_.primary_width_pixels,
-                output_format_.primary_height_pixels),
-      display_rect, GetNaturalSize(display_rect, pixel_aspect_ratio),
+  // TODO(sergeyu): Create ReadOnlySharedMemoryRegion for the VMO and pass
+  // it to the frame.
+  auto frame = VideoFrame::WrapExternalDataWithLayout(
+      *layout, display_rect, GetNaturalSize(display_rect, pixel_aspect_ratio),
       const_cast<uint8_t*>(buffer->mapped_memory()) +
           output_format_.primary_start_offset,
       buffer->buffer().size() - output_format_.primary_start_offset, timestamp);
