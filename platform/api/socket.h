@@ -20,6 +20,11 @@ using UdpSocketPtr = UdpSocketPrivate*;
 UdpSocketPtr CreateUdpSocketIPv4();
 UdpSocketPtr CreateUdpSocketIPv6();
 
+// Returns true if |socket| is not null and it belongs to the IPv4/IPv6 address
+// family.
+bool IsIPv4Socket(UdpSocketPtr socket);
+bool IsIPv6Socket(UdpSocketPtr socket);
+
 // Closes the underlying platform socket and frees any allocated memory.
 void DestroyUdpSocket(UdpSocketPtr socket);
 

@@ -59,6 +59,14 @@ UdpSocketPtr CreateUdpSocketIPv6() {
                   : new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV6};
 }
 
+bool IsIPv4Socket(UdpSocketPtr socket) {
+  return socket && socket->version == UdpSocketPrivate::Version::kV4;
+}
+
+bool IsIPv6Socket(UdpSocketPtr socket) {
+  return socket && socket->version == UdpSocketPrivate::Version::kV6;
+}
+
 void DestroyUdpSocket(UdpSocketPtr socket) {
   close(socket->fd);
   delete socket;

@@ -18,7 +18,16 @@ namespace {
 constexpr char kServiceName[] = "_openscreen";
 constexpr char kServiceProtocol[] = "_udp";
 const IPAddress kMulticastAddress{224, 0, 0, 251};
+const IPAddress kMulticastIPv6Address{
+    // ff02::fb
+    0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb,
+};
 const IPEndpoint kMulticastListeningEndpoint{IPAddress{0, 0, 0, 0}, 5353};
+const IPEndpoint kMulticastIPv6ListeningEndpoint{
+    IPAddress{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00},
+    5353};
 
 class MdnsResponderAdapterImplFactory final
     : public MdnsResponderAdapterFactory {
@@ -31,21 +40,33 @@ class MdnsResponderAdapterImplFactory final
   }
 };
 
-bool SetupMulticastSocket(platform::UdpSocketPtr socket,
+bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
                           platform::InterfaceIndex ifindex) {
-  if (!JoinUdpMulticastGroup(socket, kMulticastAddress, ifindex)) {
-    LOG_ERROR << "join multicast group failed: "
-              << platform::GetLastErrorString();
-    DestroyUdpSocket(socket);
-    return false;
-  }
-  if (!BindUdpSocket(socket, kMulticastListeningEndpoint, ifindex)) {
-    LOG_ERROR << "bind failed: " << platform::GetLastErrorString();
-    DestroyUdpSocket(socket);
-    return false;
-  }
+  do {
+    const IPAddress broadcast_address =
+        IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
+    if (!JoinUdpMulticastGroup(socket, broadcast_address, ifindex)) {
+      LOG_ERROR << "join multicast group failed for interface " << ifindex
+                << ": " << platform::GetLastErrorString();
+      break;
+    }
 
-  return true;
+    const IPEndpoint listen_endpoint = IsIPv6Socket(socket)
+                                           ? kMulticastIPv6ListeningEndpoint
+                                           : kMulticastListeningEndpoint;
+    if (!BindUdpSocket(socket, listen_endpoint, ifindex)) {
+      LOG_ERROR << "bind failed for interface " << ifindex << ": "
+                << platform::GetLastErrorString();
+      break;
+    }
+
+    return true;
+  } while (false);
+
+  if (platform::GetLastError() == EADDRINUSE) {
+    LOG_ERROR << "Is there a mDNS service, such as Bonjour, already running?";
+  }
+  return false;
 }
 
 // Ref-counted singleton instance of InternalServices. This lives only as long
@@ -125,8 +146,10 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
     auto* socket = addr.addresses.front().address.IsV4()
                        ? platform::CreateUdpSocketIPv4()
                        : platform::CreateUdpSocketIPv6();
-    if (!SetupMulticastSocket(socket, index))
+    if (!SetUpMulticastSocket(socket, index)) {
+      DestroyUdpSocket(socket);
       continue;
+    }
 
     // Pick any address for the given interface.
     result.emplace_back(addr.info, addr.addresses.front(), socket);
