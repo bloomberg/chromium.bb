@@ -244,9 +244,9 @@ def Main(args):
     if options.profile_dest:
       import hotshot
       prof = hotshot.Profile(options.profile_dest)
-      prof.runcall(toolobject.Run, options, args[1:])
+      return prof.runcall(toolobject.Run, options, args[1:])
     else:
-      toolobject.Run(options, args[1:])
+      return toolobject.Run(options, args[1:])
 
 
 if __name__ == '__main__':
