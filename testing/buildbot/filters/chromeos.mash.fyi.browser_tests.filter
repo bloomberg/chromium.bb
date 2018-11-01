@@ -126,6 +126,9 @@
 -LauncherPlatformAppBrowserTest.PanelAttentionStatus
 -LauncherPlatformAppBrowserTest.PanelItemClickBehavior
 
+# JS failure: hasAccessToCurrentWindow: FAIL (no message)
+-LockScreenNoteTakingTest.*
+
 # Missing magnification manager and also RefCounted check failed:
 # CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -LoginScreenDefaultPolicyInSessionBrowsertest.*

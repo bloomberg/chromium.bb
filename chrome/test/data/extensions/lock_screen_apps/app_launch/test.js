@@ -11,6 +11,7 @@ chrome.test.runTests([
   function hasAccessToCurrentWindow() {
     chrome.test.assertTrue(!!chrome.app.window.current);
     chrome.test.assertTrue(!!chrome.app.window.current());
+    chrome.test.assertTrue(chrome.app.window.current().isMaximized());
     chrome.test.succeed();
   },
 
