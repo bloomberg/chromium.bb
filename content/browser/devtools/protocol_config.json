@@ -74,7 +74,7 @@
             },
             {
                 "domain": "SystemInfo",
-                "async": ["getInfo"]
+                "async": ["getInfo", "getProcessInfo"]
             },
             {
                 "domain": "Target",

@@ -14,7 +14,9 @@
         continue;
       }
     }
-    testRunner.log(process, 'Process:', ['id', 'cpuTime']);
+    // Avoid all processes but browser and renderer to ensure stable test.
+    if (process.type === "browser" || process.type === "renderer")
+      testRunner.log(process, 'Process:', ['id', 'cpuTime']);
   }
 
   testRunner.completeTest();
