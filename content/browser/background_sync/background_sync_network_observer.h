@@ -45,6 +45,9 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
   virtual void RegisterWithNetworkConnectionTracker(
       network::NetworkConnectionTracker* network_connection_tracker);
 
+  // Update the current connection type from the NetworkConnectionTracker.
+  void UpdateConnectionType();
+
   // Calls NotifyConnectionChanged if the connection type has changed.
   void NotifyManagerIfConnectionChanged(
       network::mojom::ConnectionType connection_type);
