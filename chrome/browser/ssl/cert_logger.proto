@@ -36,7 +36,7 @@ message CertLoggerInterstitialInfo {
     INTERSTITIAL_CLOCK = 3;
     // An interstitial telling the user to remove the Superfish software from
     // their system.
-    INTERSTITIAL_SUPERFISH = 4;
+    INTERSTITIAL_SUPERFISH = 4 [deprecated = true];
     // An interstitial telling the user to fix misconfigured MITM software.
     INTERSTITIAL_MITM_SOFTWARE = 5;
   }

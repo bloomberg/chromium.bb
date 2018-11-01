@@ -488,10 +488,6 @@ void ExpectMITMInterstitial(content::WebContents* tab) {
   ExpectInterstitialHeading(tab, "An application is stopping");
 }
 
-void ExpectSuperfishInterstitial(content::WebContents* tab) {
-  ExpectInterstitialHeading(tab, "Software on your computer is stopping");
-}
-
 void ExpectBadClockInterstitial(content::WebContents* tab) {
   ExpectInterstitialHeading(tab, "Your clock is");
 }
@@ -5637,7 +5633,6 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
     return SSLBlockingPage::Create(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
         base::Time::NowFromSystemTime(), GURL(), nullptr,
-        false /* is superfish */,
         base::Callback<void(content::CertificateRequestResultType)>());
   }
 };
@@ -7032,177 +7027,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest,
 
   SetUpMITMSoftwareCertList(0u);
   TestNoMITMSoftwareInterstitial();
-}
-
-class SuperfishSSLUITest : public CertVerifierBrowserTest,
-                           public testing::WithParamInterface<bool> {
- public:
-  SuperfishSSLUITest()
-      : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~SuperfishSSLUITest() override {}
-
-  void SetUpOnMainThread() override {
-    CertVerifierBrowserTest::SetUpOnMainThread();
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
-    }
-    host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(https_server_.Start());
-  }
-
- protected:
-  void SetUpCertVerifier(bool use_superfish_cert) {
-    net::CertVerifyResult verify_result;
-    verify_result.verified_cert =
-        use_superfish_cert ? CreateSuperfishChain()
-                           : net::ImportCertFromFile(
-                                 net::GetTestCertsDirectory(), "ok_cert.pem");
-    ASSERT_TRUE(verify_result.verified_cert);
-
-    verify_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-
-    // Collect the hashes of the leaf and intermediates.
-    verify_result.public_key_hashes.push_back(
-        GetSPKIHash(verify_result.verified_cert->cert_buffer()));
-    for (const auto& intermediate :
-         verify_result.verified_cert->intermediate_buffers()) {
-      verify_result.public_key_hashes.push_back(
-          GetSPKIHash(intermediate.get()));
-    }
-
-    mock_cert_verifier()->AddResultForCert(https_server_.GetCertificate().get(),
-                                           verify_result,
-                                           net::ERR_CERT_DATE_INVALID);
-  }
-
-  net::EmbeddedTestServer https_server_;
-
- private:
-  static scoped_refptr<net::X509Certificate> CreateSuperfishChain() {
-    const std::vector<std::string> certs = {
-        // The contents of the leaf certificate don't matter; any cert will do.
-        "MIIDczCCAlugAwIBAgIBAjANBgkqhkiG9w0BAQsFADAXMRUwEwYDVQQDDAxUZXN0"
-        "IFJvb3QgQ0EwHhcNMTQwODE0MDMwNTI5WhcNMjQwODExMDMwNTI5WjBgMQswCQYD"
-        "VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4g"
-        "VmlldzEQMA4GA1UECgwHVGVzdCBDQTESMBAGA1UEAwwJMTI3LjAuMC4xMIIBIjAN"
-        "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtfj0Mtj19GXK6dDL3emXoW6Q4vSy"
-        "shbQm+KZV+17xltvScGUAKkNXbU19Dp7PBgGo3haaP+mBR99EAiuCWzc7924l55s"
-        "zsug3DMrHpXvHfvT2vg+V+2Ljp6GTRKmDDAj7whFTyESQoiHAdilMp+3OO9grbdH"
-        "aztLplwrVnJc0bU4h5nsO//GAu+GOO7iBcbwZuIYkVDlVyMnmbvbSSSIZqgUln4a"
-        "bSrh/xj1ajfSiKh5yblQ9ZpoCwSeaAIdoXHgiRW6KkgGenjT0Qx3g5iD+LniYCCS"
-        "B5vUyMD6WlqdJkDCNWUA86Di0yFNpcSRiJAUp173E7fqK6K914QYGrd7XQIDAQAB"
-        "o4GAMH4wDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQUggQdvQVxg2/2mBlNTxFGiE2b"
-        "v6gwHwYDVR0jBBgwFoAUvPcw0TzA8nn675/JbFyT84poq4MwHQYDVR0lBBYwFAYI"
-        "KwYBBQUHAwEGCCsGAQUFBwMCMA8GA1UdEQQIMAaHBH8AAAEwDQYJKoZIhvcNAQEL"
-        "BQADggEBAITcEASNvT/BPvtoSz815F0C63PmDnQW5MUwawWUTpxpEF56r6R2xiin"
-        "GsFcfh1eHF6Hl/5cWyhHMbF5Svg29rFSuNWra4bv7D3tUAtAN2ULIjq3r9QENvDw"
-        "0poWaV2LJQP2BYdeSL0lFcQ7au1j2IdVjj4cRN7rG93Ec8emahJtSNXlEmqoVSYm"
-        "DX68zXGFsYp25FoaxZwmv9deVxT6tlLPhZAK6H9p4bCUG6xkWuk4zFOe/cbU4V6c"
-        "NyIuS9mBX1nhQ6d77acjIP0EkfAdTmzA3quaGStPAKMdWHTJMm7uNbYzTGSNbuyo"
-        "jtczxzPGkorOtfZdjhJS7J0Kz0s73fM=",
-        // The Superfish root certificate.
-        "MIIC9TCCAl6gAwIBAgIJANL8E4epRNznMA0GCSqGSIb3DQEBBQUAMFsxGDAWBgNV"
-        "BAoTD1N1cGVyZmlzaCwgSW5jLjELMAkGA1UEBxMCU0YxCzAJBgNVBAgTAkNBMQsw"
-        "CQYDVQQGEwJVUzEYMBYGA1UEAxMPU3VwZXJmaXNoLCBJbmMuMB4XDTE0MDUxMjE2"
-        "MjUyNloXDTM0MDUwNzE2MjUyNlowWzEYMBYGA1UEChMPU3VwZXJmaXNoLCBJbmMu"
-        "MQswCQYDVQQHEwJTRjELMAkGA1UECBMCQ0ExCzAJBgNVBAYTAlVTMRgwFgYDVQQD"
-        "Ew9TdXBlcmZpc2gsIEluYy4wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAOjz"
-        "Shh2Xxk/sc9Y6X9DBwmVgDXFD/5xMSeBmRImIKXfj2r8QlU57gk4idngNsSsAYJb"
-        "1Tnm+Y8HiN/+7vahFM6pdEXY/fAXVyqC4XouEpNarIrXFWPRt5tVgA9YvBxJ7SBi"
-        "3bZMpTrrHD2g/3pxptMQeDOuS8Ic/ZJKocPnQaQtAgMBAAGjgcAwgb0wDAYDVR0T"
-        "BAUwAwEB/zAdBgNVHQ4EFgQU+5izU38URC7o7tUJml4OVoaoNYgwgY0GA1UdIwSB"
-        "hTCBgoAU+5izU38URC7o7tUJml4OVoaoNYihX6RdMFsxGDAWBgNVBAoTD1N1cGVy"
-        "ZmlzaCwgSW5jLjELMAkGA1UEBxMCU0YxCzAJBgNVBAgTAkNBMQswCQYDVQQGEwJV"
-        "UzEYMBYGA1UEAxMPU3VwZXJmaXNoLCBJbmMuggkA0vwTh6lE3OcwDQYJKoZIhvcN"
-        "AQEFBQADgYEApHyg7ApKx3DEcWjzOyLi3JyN0JL+c35yK1VEmxu0Qusfr76645Oj"
-        "1IsYwpTws6a9ZTRMzST4GQvFFQra81eLqYbPbMPuhC+FCxkUF5i0DNSWi+kczJXJ"
-        "TtCqSwGl9t9JEoFqvtW+znZ9TqyLiOMw7TGEUI+88VAqW0qmXnwPcfo="};
-
-    std::vector<std::string> decoded_certs;
-    for (const auto& cert : certs) {
-      std::string decoded;
-      if (!base::Base64Decode(cert, &decoded))
-        return nullptr;
-      decoded_certs.push_back(decoded);
-    }
-    std::vector<base::StringPiece> decoded_pieces;
-    for (const auto& decoded : decoded_certs) {
-      decoded_pieces.push_back(decoded);
-    }
-    return net::X509Certificate::CreateFromDERCertChain(decoded_pieces);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_CASE_P(, SuperfishSSLUITest, ::testing::Values(false, true));
-
-// Tests that the Superfish histogram is recorded properly when the Superfish
-// certificate is present.
-IN_PROC_BROWSER_TEST_P(SuperfishSSLUITest, SuperfishRecorded) {
-  SetUpCertVerifier(true /* use superfish cert */);
-  GURL url(https_server_.GetURL("/ssl/google.html"));
-  base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), url);
-  histograms.ExpectUniqueSample("interstitial.ssl_error_handler.superfish",
-                                true, 1);
-}
-
-// Tests that the Superfish histogram is recorded properly when the Superfish
-// certificate is not present.
-IN_PROC_BROWSER_TEST_P(SuperfishSSLUITest, NoSuperfishRecorded) {
-  SetUpCertVerifier(false /* use superfish cert */);
-  base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-  histograms.ExpectUniqueSample("interstitial.ssl_error_handler.superfish",
-                                false, 1);
-}
-
-// Tests that the Superfish interstitial is shown when the Finch feature is
-// enabled and the Superfish certificate is present.
-IN_PROC_BROWSER_TEST_P(SuperfishSSLUITest, SuperfishInterstitial) {
-  base::HistogramTester histograms;
-  const char kDecisionHistogram[] = "interstitial.superfish.decision";
-  const char kInteractionHistogram[] = "interstitial.superfish.interaction";
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kSuperfishInterstitial} /* enabled */,
-                                       {} /* disabled */);
-
-  SetUpCertVerifier(true /* use superfish cert */);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
-  ASSERT_NO_FATAL_FAILURE(ExpectSuperfishInterstitial(tab));
-
-  // Check that the correct histograms were recorded.
-  histograms.ExpectTotalCount(kDecisionHistogram, 1);
-  histograms.ExpectBucketCount(kDecisionHistogram,
-                               security_interstitials::MetricsHelper::SHOW, 1);
-  histograms.ExpectTotalCount(kInteractionHistogram, 1);
-  histograms.ExpectBucketCount(
-      kInteractionHistogram,
-      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
-}
-
-// Tests that the Superfish interstitial is not shown when the Finch feature is
-// disabled.
-IN_PROC_BROWSER_TEST_P(SuperfishSSLUITest, SuperfishInterstitialDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({} /* enabled */,
-                                       {kSuperfishInterstitial} /* disabled */);
-  SetUpCertVerifier(true /* use superfish cert */);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
-  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
 }
 
 void SetRequireCTDelegateOnIOThread(

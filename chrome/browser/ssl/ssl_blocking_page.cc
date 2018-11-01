@@ -27,7 +27,6 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
-#include "components/security_interstitials/core/superfish_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -49,15 +48,10 @@ std::unique_ptr<ChromeMetricsHelper> CreateSslProblemMetricsHelper(
     content::WebContents* web_contents,
     int cert_error,
     const GURL& request_url,
-    bool overridable,
-    bool is_superfish) {
+    bool overridable) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  if (is_superfish) {
-    reporting_info.metric_prefix = "superfish";
-  } else {
-    reporting_info.metric_prefix =
-        overridable ? "ssl_overridable" : "ssl_nonoverridable";
-  }
+  reporting_info.metric_prefix =
+      overridable ? "ssl_overridable" : "ssl_nonoverridable";
   return std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
                                                reporting_info);
 }
@@ -78,13 +72,12 @@ SSLBlockingPage* SSLBlockingPage::Create(
     const base::Time& time_triggered,
     const GURL& support_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
   bool overridable = IsOverridable(options_mask);
   std::unique_ptr<ChromeMetricsHelper> metrics_helper(
       CreateSslProblemMetricsHelper(web_contents, cert_error, request_url,
-                                    overridable, is_superfish));
+                                    overridable));
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
 
   ChromeSSLHostStateDelegate* state =
@@ -112,17 +105,17 @@ SSLBlockingPage* SSLBlockingPage::Create(
 
   if (cert_error == net::ERR_CERT_SYMANTEC_LEGACY) {
     GURL symantec_support_url(kSymantecSupportUrl);
-    return new SSLBlockingPage(
-        web_contents, cert_error, ssl_info, request_url, options_mask,
-        time_triggered, std::move(symantec_support_url),
-        std::move(ssl_cert_reporter), overridable, std::move(metrics_helper),
-        is_superfish, callback);
+    return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
+                               options_mask, time_triggered,
+                               std::move(symantec_support_url),
+                               std::move(ssl_cert_reporter), overridable,
+                               std::move(metrics_helper), callback);
   }
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered, support_url,
                              std::move(ssl_cert_reporter), overridable,
-                             std::move(metrics_helper), is_superfish, callback);
+                             std::move(metrics_helper), callback);
 }
 
 bool SSLBlockingPage::ShouldCreateNewNavigation() const {
@@ -160,13 +153,10 @@ SSLBlockingPage::SSLBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     bool overridable,
     std::unique_ptr<ChromeMetricsHelper> metrics_helper,
-    bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(web_contents,
                           cert_error,
-                          is_superfish
-                              ? CertificateErrorReport::INTERSTITIAL_SUPERFISH
-                              : CertificateErrorReport::INTERSTITIAL_SSL,
+                          CertificateErrorReport::INTERSTITIAL_SSL,
                           ssl_info,
                           request_url,
                           std::move(ssl_cert_reporter),
@@ -183,22 +173,13 @@ SSLBlockingPage::SSLBlockingPage(
       overridable_(overridable),
       expired_but_previously_allowed_(
           (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
-      ssl_error_ui_(
-          is_superfish
-              ? std::make_unique<security_interstitials::SuperfishErrorUI>(
-                    request_url,
-                    cert_error,
-                    ssl_info,
-                    options_mask,
-                    time_triggered,
-                    controller())
-              : std::make_unique<SSLErrorUI>(request_url,
-                                             cert_error,
-                                             ssl_info,
-                                             options_mask,
-                                             time_triggered,
-                                             support_url,
-                                             controller())) {
+      ssl_error_ui_(std::make_unique<SSLErrorUI>(request_url,
+                                                 cert_error,
+                                                 ssl_info,
+                                                 options_mask,
+                                                 time_triggered,
+                                                 support_url,
+                                                 controller())) {
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
 }
