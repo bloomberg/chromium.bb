@@ -1789,6 +1789,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+  if (proxy_delegate_) {
+    proxy_delegate_->SetProxyResolutionService(
+        result.url_request_context->proxy_resolution_service());
+  }
+
   // These must be matched by cleanup code just before the URLRequestContext is
   // destroyed.
   if (params_->primary_network_context) {

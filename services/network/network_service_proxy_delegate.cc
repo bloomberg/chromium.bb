@@ -7,6 +7,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/url_loader.h"
 
 namespace network {
@@ -69,6 +70,15 @@ bool CheckProxyList(const net::ProxyList& proxy_list,
 // Whether the custom proxy can proxy |url|.
 bool IsURLValidForProxy(const GURL& url) {
   return url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url);
+}
+
+// Copies all of the valid proxies in |proxies| to |out|.
+void AddProxies(const net::ProxyList& proxies,
+                std::vector<net::ProxyServer>* out) {
+  for (const auto& proxy : proxies.GetAll()) {
+    if (proxy.is_valid() && !proxy.is_direct())
+      out->push_back(proxy);
+  }
 }
 
 }  // namespace
@@ -154,6 +164,37 @@ void NetworkServiceProxyDelegate::OnCustomProxyConfigUpdated(
       previous_proxy_configs_.pop_back();
   }
   proxy_config_ = std::move(proxy_config);
+}
+
+void NetworkServiceProxyDelegate::MarkProxiesAsBad(
+    base::TimeDelta bypass_duration,
+    const net::ProxyList& bad_proxies_list,
+    MarkProxiesAsBadCallback callback) {
+  std::vector<net::ProxyServer> bad_proxies = bad_proxies_list.GetAll();
+
+  if (bad_proxies.empty()) {
+    // TODO(https://crbug.com/721403): Temporary hack. The throttle currently
+    // passes an empty |bad_proxies_list| to mean "bypass all custom proxies".
+    AddProxies(proxy_config_->rules.proxies_for_http, &bad_proxies);
+    AddProxies(proxy_config_->alternate_proxy_list, &bad_proxies);
+  }
+
+  // Synthesize a suitable |ProxyInfo| to add the proxies to the
+  // |ProxyRetryInfoMap| of the proxy service.
+  //
+  // TODO(eroman): Support this more directly on ProxyResolutionService.
+  net::ProxyList proxy_list;
+  for (const auto& bad_proxy : bad_proxies)
+    proxy_list.AddProxyServer(bad_proxy);
+  proxy_list.AddProxyServer(net::ProxyServer::Direct());
+
+  net::ProxyInfo proxy_info;
+  proxy_info.UseProxyList(proxy_list);
+
+  proxy_resolution_service_->MarkProxiesAsBadUntil(
+      proxy_info, bypass_duration, bad_proxies, net::NetLogWithSource());
+
+  std::move(callback).Run();
 }
 
 bool NetworkServiceProxyDelegate::IsInProxyConfig(

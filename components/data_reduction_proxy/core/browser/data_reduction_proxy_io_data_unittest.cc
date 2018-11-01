@@ -235,6 +235,10 @@ class TestCustomProxyConfigClient
     config = std::move(proxy_config);
   }
 
+  void MarkProxiesAsBad(base::TimeDelta bypass_duration,
+                        const net::ProxyList& bad_proxies,
+                        MarkProxiesAsBadCallback callback) override {}
+
   network::mojom::CustomProxyConfigPtr config;
 
  private:

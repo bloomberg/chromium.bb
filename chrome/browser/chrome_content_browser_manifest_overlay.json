@@ -13,6 +13,7 @@
           "chrome.mojom.AvailableOfflineContentProvider",
           "chrome.mojom.CacheStatsRecorder",
           "chrome.mojom.NetBenchmarking",
+          "data_reduction_proxy.mojom.DataReductionProxy",
           "extensions.StashService",
           "metrics.mojom.CallStackProfileCollector",
           "mojom.ModuleEventSink",

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/util/process_version.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 # Variables:
 #   deps: Extra dependencies.
@@ -10,6 +11,8 @@ template("common_tmpl") {
   static_library(target_name) {
     sources = [
       "data_reduction_proxy_bypass_action_list.h",
+      "data_reduction_proxy_bypass_protocol.cc",
+      "data_reduction_proxy_bypass_protocol.h",
       "data_reduction_proxy_bypass_type_list.h",
       "data_reduction_proxy_config_values.h",
       "data_reduction_proxy_features.cc",
@@ -33,6 +36,7 @@ template("common_tmpl") {
     ]
 
     public_deps = [
+      ":interfaces",
       ":version_header",
     ]
     deps = [
@@ -114,5 +118,15 @@ process_version("version_header") {
   extra_args = [
     "-e",
     "VERSION_FULL=\"%s.%s.%s.%s\" % (MAJOR,MINOR,BUILD,PATCH)",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "data_reduction_proxy.mojom",
+  ]
+
+  deps = [
+    "//services/network/public/mojom",
   ]
 }

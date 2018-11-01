@@ -77,6 +77,20 @@ class CONTENT_EXPORT URLLoaderThrottle {
         network::mojom::URLLoaderPtr* original_loader,
         network::mojom::URLLoaderClientRequest* original_client_request);
 
+    // Restarts the URL loader using |additional_load_flags|.
+    //
+    // Restarting is only valid while executing within
+    // BeforeWillProcessResponse(), or during its deferred handling (before
+    // having called Resume()).
+    //
+    // When a URL loader is restarted, throttles will NOT have their
+    // WillStartRequest() method called again - that is only called for the
+    // initial request start.
+    //
+    // If multiple throttles call RestartWithFlags() then the URL loader will be
+    // restarted using a combined value of all of the |additional_load_flags|.
+    virtual void RestartWithFlags(int additional_load_flags);
+
    protected:
     virtual ~Delegate();
   };
@@ -89,7 +103,7 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void DetachFromCurrentSequence();
 
   // Called before the resource request is started.
-  // |request| needs to be modified before the callback return (i.e.
+  // |request| needs to be modified before the callback returns (i.e.
   // asynchronously touching the pointer in defer case is not valid)
   // When |request->url| is modified it will make an internal redirect, which
   // might have some side-effects: drop upload streams data might be dropped,
@@ -125,6 +139,17 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void WillProcessResponse(const GURL& response_url,
                                    network::ResourceResponseHead* response_head,
                                    bool* defer);
+
+  // Called prior WillProcessResponse() to allow throttles to restart the URL
+  // load by calling delegate_->RestartWithFlags().
+  //
+  // Having this method separate from WillProcessResponse() ensures that
+  // WillProcessResponse() is called at most once even in the presence of
+  // restarts.
+  virtual void BeforeWillProcessResponse(
+      const GURL& response_url,
+      const network::ResourceResponseHead& response_head,
+      bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 

@@ -13,7 +13,6 @@
 #include "net/url_request/url_request_interceptor.h"
 
 namespace data_reduction_proxy {
-class DataReductionProxyBypassProtocol;
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
@@ -68,10 +67,8 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   // Must outlive |this| if non-NULL.
   DataReductionProxyConfigServiceClient* config_service_client_;
 
-  // Object responsible for identifying cases when a response should cause the
-  // data reduction proxy to be bypassed, and for triggering proxy bypasses in
-  // these cases.
-  std::unique_ptr<DataReductionProxyBypassProtocol> bypass_protocol_;
+  // Must outlive |this|.
+  DataReductionProxyConfig* config_;
 
   base::ThreadChecker thread_checker_;
 
