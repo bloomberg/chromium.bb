@@ -103,10 +103,15 @@ class GestureEventQueueTest : public testing::Test,
       const GestureEventWithLatencyInfo& gesture_event) override {}
 
   // FlingControllerSchedulerClient
-  void ScheduleFlingProgress(
-      base::WeakPtr<FlingController> fling_controller) override {}
-  void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) override {}
+  void ScheduleFlingProgress() override {}
+  void DidStopFlingingOnBrowser() override {}
+  void RegisterFlingSchedulerObserver(
+      base::WeakPtr<FlingController> fling_controller) override {
+    fling_scheduler_observer_registered_ = true;
+  }
+  void UnregisterFlingSchedulerObserver() override {
+    fling_scheduler_observer_registered_ = false;
+  }
   bool NeedsBeginFrameForFlingProgress() override { return false; }
 
  protected:
@@ -188,6 +193,10 @@ class GestureEventQueueTest : public testing::Test,
         SyntheticWebGestureEventBuilder::Build(type, sourceDevice)));
   }
 
+  bool fling_scheduler_observer_registered() const {
+    return fling_scheduler_observer_registered_;
+  }
+
   unsigned GestureEventQueueSize() {
     return queue()->coalesced_gesture_events_.size();
   }
@@ -234,6 +243,7 @@ class GestureEventQueueTest : public testing::Test,
   WebGestureEvent last_acked_event_;
   std::unique_ptr<InputEventAckState> sync_ack_result_;
   std::unique_ptr<WebGestureEvent> sync_followup_event_;
+  bool fling_scheduler_observer_registered_ = false;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -1241,6 +1251,19 @@ TEST_F(GestureEventQueueWithCompositorEventQueueTest,
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate, last_acked_event().GetType());
   EXPECT_EQ(0U, GestureEventQueueSize());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+}
+
+// Checks that the fling scheduler observer is regsitered/unregistered on
+// GSB/GSE respectively.
+TEST_F(GestureEventQueueWithCompositorEventQueueTest,
+       FlingSchedulerOpbserverRegisteredOnGSB) {
+  EXPECT_FALSE(fling_scheduler_observer_registered());
+  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_TRUE(fling_scheduler_observer_registered());
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_FALSE(fling_scheduler_observer_registered());
 }
 
 }  // namespace content

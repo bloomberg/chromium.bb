@@ -197,7 +197,7 @@ void FlingController::ProcessGestureFlingStart(
 }
 
 void FlingController::ScheduleFlingProgress() {
-  scheduler_client_->ScheduleFlingProgress(weak_ptr_factory_.GetWeakPtr());
+  scheduler_client_->ScheduleFlingProgress();
 }
 
 void FlingController::ProcessGestureFlingCancel(
@@ -417,7 +417,7 @@ void FlingController::CancelCurrentFling() {
   }
 
   if (had_active_fling) {
-    scheduler_client_->DidStopFlingingOnBrowser(weak_ptr_factory_.GetWeakPtr());
+    scheduler_client_->DidStopFlingingOnBrowser();
     TRACE_EVENT_ASYNC_END0("input", kFlingTraceName, this);
   }
 }
@@ -447,6 +447,15 @@ bool FlingController::UpdateCurrentFlingState(
           gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
           GetContentClient()->browser()->ShouldUseMobileFlingCurve()));
   return true;
+}
+
+void FlingController::RegisterFlingSchedulerObserver() {
+  scheduler_client_->RegisterFlingSchedulerObserver(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+void FlingController::UnregisterFlingSchedulerObserver() {
+  scheduler_client_->UnregisterFlingSchedulerObserver();
 }
 
 bool FlingController::FlingCancellationIsDeferred() const {

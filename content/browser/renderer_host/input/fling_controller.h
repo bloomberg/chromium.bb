@@ -39,11 +39,14 @@ class CONTENT_EXPORT FlingControllerSchedulerClient {
  public:
   virtual ~FlingControllerSchedulerClient() {}
 
-  virtual void ScheduleFlingProgress(
+  virtual void ScheduleFlingProgress() = 0;
+
+  virtual void RegisterFlingSchedulerObserver(
       base::WeakPtr<FlingController> fling_controller) = 0;
 
-  virtual void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) = 0;
+  virtual void UnregisterFlingSchedulerObserver() = 0;
+
+  virtual void DidStopFlingingOnBrowser() = 0;
 
   virtual bool NeedsBeginFrameForFlingProgress() = 0;
 };
@@ -99,6 +102,19 @@ class CONTENT_EXPORT FlingController {
   bool FlingCancellationIsDeferred() const;
 
   gfx::Vector2dF CurrentFlingVelocity() const;
+
+  // Registering the FlingScheduler after processing a GFS causes a frame of
+  // jank at the beginning of the fling (see https://crbug.com/882907). This is
+  // because the first OnAnimationStep call after observer's registration might
+  // be missing and/or incorrectly have the timestamp of the last begin frame
+  // before the observer's registration rather than the first begin frame after
+  // the registration (https://crbug.com/848796). To avoid this issue we
+  // register the observer on GSB instead of GFS so that the potential
+  // missing/incorrect OnAnimationStep call passes by the time that the GFS is
+  // processed. We unregister the observer on GSE instead of when the fling
+  // stops since not all GSBs are followed by GFS events.
+  void RegisterFlingSchedulerObserver();
+  void UnregisterFlingSchedulerObserver();
 
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();

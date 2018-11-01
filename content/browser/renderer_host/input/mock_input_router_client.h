@@ -67,10 +67,11 @@ class MockInputRouterClient : public InputRouterClient,
   }
 
   // FlingControllerSchedulerClient
-  void ScheduleFlingProgress(
+  void ScheduleFlingProgress() override {}
+  void DidStopFlingingOnBrowser() override {}
+  void RegisterFlingSchedulerObserver(
       base::WeakPtr<FlingController> fling_controller) override {}
-  void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) override {}
+  void UnregisterFlingSchedulerObserver() override {}
   bool NeedsBeginFrameForFlingProgress() override;
 
  private:

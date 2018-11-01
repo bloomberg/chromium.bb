@@ -24,10 +24,11 @@ class CONTENT_EXPORT FlingScheduler : public FlingSchedulerBase,
   ~FlingScheduler() override;
 
   // FlingControllerSchedulerClient
-  void ScheduleFlingProgress(
+  void ScheduleFlingProgress() override;
+  void RegisterFlingSchedulerObserver(
       base::WeakPtr<FlingController> fling_controller) override;
-  void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) override;
+  void UnregisterFlingSchedulerObserver() override;
+  void DidStopFlingingOnBrowser() override;
   bool NeedsBeginFrameForFlingProgress() override;
 
   // FlingSchedulerBase
