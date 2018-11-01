@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/service/safe_seed_manager.h"
+#include "components/variations/variations_crash_keys.h"
 
 namespace android_webview {
 
@@ -78,6 +79,8 @@ void AwFieldTrialCreator::SetUpFieldTrials(PrefService* pref_service) {
       std::vector<std::string>(), /*low_entropy_provider=*/nullptr,
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
+
+  variations::InitCrashKeys();
 }
 
 }  // namespace android_webview
