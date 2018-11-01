@@ -25,6 +25,7 @@ class ExecutionContext;
 class InspectedFrames;
 class InspectorTaskRunner;
 class WorkerThread;
+struct WorkerDevToolsParams;
 
 class CORE_EXPORT DevToolsAgent
     : public GarbageCollectedFinalized<DevToolsAgent>,
@@ -40,7 +41,13 @@ class CORE_EXPORT DevToolsAgent
     virtual void DebuggerTaskFinished() = 0;
   };
 
-  static DevToolsAgent* From(ExecutionContext*);
+  static std::unique_ptr<WorkerDevToolsParams> WorkerThreadCreated(
+      ExecutionContext* parent_context,
+      WorkerThread*,
+      const KURL&);
+  static void WorkerThreadTerminated(ExecutionContext* parent_context,
+                                     WorkerThread*);
+
   DevToolsAgent(Client*,
                 InspectedFrames*,
                 CoreProbeSink*,
@@ -56,12 +63,6 @@ class CORE_EXPORT DevToolsAgent
   void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
                    mojom::blink::DevToolsAgentAssociatedRequest,
                    scoped_refptr<base::SingleThreadTaskRunner>);
-  void ChildWorkerThreadCreated(WorkerThread*,
-                                const KURL&,
-                                mojom::blink::DevToolsAgentRequest&,
-                                mojom::blink::DevToolsAgentHostPtrInfo&,
-                                bool& wait_for_debugger);
-  void ChildWorkerThreadTerminated(WorkerThread*);
   virtual void Trace(blink::Visitor*);
 
  private:

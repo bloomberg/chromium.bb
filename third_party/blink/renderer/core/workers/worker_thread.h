@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -62,6 +61,7 @@ class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
+struct WorkerDevToolsParams;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -100,7 +100,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const base::Optional<WorkerBackingThreadStartupData>&,
-             DevToolsAgent*,
+             std::unique_ptr<WorkerDevToolsParams>,
              ParentExecutionContextTaskRunners*);
 
   // Posts a task to evaluate a top-level classic script on the worker thread.
@@ -278,9 +278,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const base::Optional<WorkerBackingThreadStartupData>&,
-      bool wait_for_debugger,
-      mojom::blink::DevToolsAgentRequest,
-      mojom::blink::DevToolsAgentHostPtrInfo) LOCKS_EXCLUDED(mutex_);
+      std::unique_ptr<WorkerDevToolsParams>) LOCKS_EXCLUDED(mutex_);
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
@@ -314,7 +312,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   TimeDelta forcible_termination_delay_;
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
-  const base::UnguessableToken devtools_worker_token_;
+  base::UnguessableToken devtools_worker_token_;
   int debugger_task_counter_ GUARDED_BY(mutex_) = 0;
 
   WorkerReportingProxy& worker_reporting_proxy_;

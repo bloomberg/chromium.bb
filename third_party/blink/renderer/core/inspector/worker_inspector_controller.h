@@ -50,6 +50,7 @@ class CoreProbeSink;
 class InspectedFrames;
 class WorkerThread;
 class WorkerThreadDebugger;
+struct WorkerDevToolsParams;
 
 class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
@@ -60,8 +61,7 @@ class WorkerInspectorController final
   static WorkerInspectorController* Create(
       WorkerThread*,
       scoped_refptr<InspectorTaskRunner>,
-      mojom::blink::DevToolsAgentRequest,
-      mojom::blink::DevToolsAgentHostPtrInfo);
+      std::unique_ptr<WorkerDevToolsParams>);
   ~WorkerInspectorController() override;
   void Trace(blink::Visitor*);
 
@@ -74,8 +74,7 @@ class WorkerInspectorController final
   WorkerInspectorController(WorkerThread*,
                             WorkerThreadDebugger*,
                             scoped_refptr<InspectorTaskRunner>,
-                            mojom::blink::DevToolsAgentRequest,
-                            mojom::blink::DevToolsAgentHostPtrInfo);
+                            std::unique_ptr<WorkerDevToolsParams>);
 
   // Thread::TaskObserver implementation.
   void WillProcessTask(const base::PendingTask&) override;

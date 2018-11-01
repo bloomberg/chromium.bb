@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -123,12 +124,13 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    DevToolsAgent* devtools_agent,
+    std::unique_ptr<WorkerDevToolsParams> devtools_params,
     ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   DCHECK(!parent_execution_context_task_runners_);
   parent_execution_context_task_runners_ =
       parent_execution_context_task_runners;
+  devtools_worker_token_ = devtools_params->devtools_worker_token;
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
   // from posting a task to the thread before the scheduler is ready.
@@ -143,24 +145,12 @@ void WorkerThread::Start(
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
 
-  bool wait_for_debugger = false;
-  mojom::blink::DevToolsAgentRequest devtools_agent_request;
-  mojom::blink::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
-  if (devtools_agent) {
-    devtools_agent->ChildWorkerThreadCreated(
-        this, global_scope_creation_params->script_url.Copy(),
-        devtools_agent_request, devtools_agent_host_ptr_info,
-        wait_for_debugger);
-  }
-
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
-      CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
-                      CrossThreadUnretained(this),
-                      WTF::Passed(std::move(global_scope_creation_params)),
-                      thread_startup_data, wait_for_debugger,
-                      WTF::Passed(std::move(devtools_agent_request)),
-                      WTF::Passed(std::move(devtools_agent_host_ptr_info))));
+      CrossThreadBind(
+          &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
+          WTF::Passed(std::move(global_scope_creation_params)),
+          thread_startup_data, WTF::Passed(std::move(devtools_params))));
 }
 
 void WorkerThread::EvaluateClassicScript(
@@ -362,7 +352,6 @@ WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
     : time_origin_(CurrentTimeTicks()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
-      devtools_worker_token_(base::UnguessableToken::Create()),
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(RefCountedWaitableEvent::Create()) {
   MutexLocker lock(ThreadSetMutex());
@@ -431,10 +420,9 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    bool wait_for_debugger,
-    mojom::blink::DevToolsAgentRequest devtools_agent_request,
-    mojom::blink::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info) {
+    std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK(IsCurrentThread());
+  bool wait_for_debugger = devtools_params->wait_for_debugger;
   {
     MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
@@ -455,8 +443,7 @@ void WorkerThread::InitializeOnWorkerThread(
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
 
     worker_inspector_controller_ = WorkerInspectorController::Create(
-        this, inspector_task_runner_, std::move(devtools_agent_request),
-        std::move(devtools_agent_host_ptr_info));
+        this, inspector_task_runner_, std::move(devtools_params));
 
     // Since context initialization below may fail, we should notify debugger
     // about the new worker thread separately, so that it can resolve it by id

@@ -99,6 +99,7 @@ blink_core_sources("inspector") {
     "thread_debugger.h",
     "v8_inspector_string.cc",
     "v8_inspector_string.h",
+    "worker_devtools_params.h",
     "worker_inspector_controller.cc",
     "worker_inspector_controller.h",
     "worker_thread_debugger.cc",

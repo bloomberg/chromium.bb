@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -228,8 +229,8 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
     return;
   }
   worker_thread_->Terminate();
-  if (DevToolsAgent* agent = DevToolsAgent::From(shadow_page_->GetDocument()))
-    agent->ChildWorkerThreadTerminated(worker_thread_.get());
+  DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
+                                        worker_thread_.get());
 }
 
 void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
@@ -451,12 +452,15 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_), std::move(cache_storage_info_));
 
+  auto devtools_params = DevToolsAgent::WorkerThreadCreated(
+      document, worker_thread_.get(), worker_start_data_.script_url);
+
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
   // populate the task runners with default task runners of the main thread.
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        DevToolsAgent::From(document),
+                        std::move(devtools_params),
                         ParentExecutionContextTaskRunners::Create());
 
   // > Switching on job’s worker type, run these substeps with the following

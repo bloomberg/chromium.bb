@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -23,8 +24,9 @@
 
 namespace blink {
 
-// static
-DevToolsAgent* DevToolsAgent::From(ExecutionContext* execution_context) {
+namespace {
+
+DevToolsAgent* DevToolsAgentFromContext(ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
   if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
@@ -44,6 +46,8 @@ DevToolsAgent* DevToolsAgent::From(ExecutionContext* execution_context) {
   }
   return nullptr;
 }
+
+}  // namespace
 
 DevToolsAgent::DevToolsAgent(
     Client* client,
@@ -130,29 +134,40 @@ void DevToolsAgent::ReportChildWorkers(bool report, bool wait_for_debugger) {
     ReportChildWorker(std::move(it.value));
 }
 
-void DevToolsAgent::ChildWorkerThreadCreated(
+// static
+std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
+    ExecutionContext* parent_context,
     WorkerThread* worker_thread,
-    const KURL& url,
-    mojom::blink::DevToolsAgentRequest& agent_request,
-    mojom::blink::DevToolsAgentHostPtrInfo& host_ptr_info,
-    bool& wait_for_debugger) {
+    const KURL& url) {
+  auto result = std::make_unique<WorkerDevToolsParams>();
+  result->devtools_worker_token = base::UnguessableToken::Create();
+
+  DevToolsAgent* agent = DevToolsAgentFromContext(parent_context);
+  if (!agent)
+    return result;
+
   auto data = std::make_unique<WorkerData>();
   data->url = url;
-  agent_request = mojo::MakeRequest(&data->agent_ptr);
-  data->host_request = mojo::MakeRequest(&host_ptr_info);
-  data->devtools_worker_token = worker_thread->GetDevToolsWorkerToken();
-  data->waiting_for_debugger = pause_child_workers_on_start_;
-  wait_for_debugger = pause_child_workers_on_start_;
+  result->agent_request = mojo::MakeRequest(&data->agent_ptr);
+  data->host_request = mojo::MakeRequest(&result->agent_host_ptr_info);
+  data->devtools_worker_token = result->devtools_worker_token;
+  data->waiting_for_debugger = agent->pause_child_workers_on_start_;
+  result->wait_for_debugger = agent->pause_child_workers_on_start_;
 
-  if (report_child_workers_) {
-    ReportChildWorker(std::move(data));
+  if (agent->report_child_workers_) {
+    agent->ReportChildWorker(std::move(data));
   } else {
-    unreported_child_worker_threads_.insert(worker_thread, std::move(data));
+    agent->unreported_child_worker_threads_.insert(worker_thread,
+                                                   std::move(data));
   }
+  return result;
 }
 
-void DevToolsAgent::ChildWorkerThreadTerminated(WorkerThread* worker_thread) {
-  unreported_child_worker_threads_.erase(worker_thread);
+// static
+void DevToolsAgent::WorkerThreadTerminated(ExecutionContext* parent_context,
+                                           WorkerThread* worker_thread) {
+  if (DevToolsAgent* agent = DevToolsAgentFromContext(parent_context))
+    agent->unreported_child_worker_threads_.erase(worker_thread);
 }
 
 void DevToolsAgent::ReportChildWorker(std::unique_ptr<WorkerData> data) {

@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/devtools_agent.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -88,9 +90,11 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
 
   worker_thread_ = CreateWorkerThread();
 
+  auto devtools_params = DevToolsAgent::WorkerThreadCreated(
+      execution_context_.Get(), worker_thread_.get(), script_url);
+
   worker_thread_->Start(std::move(global_scope_creation_params),
-                        thread_startup_data,
-                        DevToolsAgent::From(execution_context_.Get()),
+                        thread_startup_data, std::move(devtools_params),
                         GetParentExecutionContextTaskRunners());
 
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
@@ -144,8 +148,8 @@ void ThreadedMessagingProxyBase::WorkerThreadTerminated() {
     parent_thread = scope->GetThread();
   std::unique_ptr<WorkerThread> child_thread = std::move(worker_thread_);
   if (child_thread) {
-    if (DevToolsAgent* agent = DevToolsAgent::From(execution_context_.Get()))
-      agent->ChildWorkerThreadTerminated(child_thread.get());
+    DevToolsAgent::WorkerThreadTerminated(execution_context_.Get(),
+                                          child_thread.get());
   }
 
   // If the parent Worker/Worklet object was already destroyed, this will
@@ -168,8 +172,8 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
   if (!worker_thread_)
     return;
   worker_thread_->Terminate();
-  if (DevToolsAgent* agent = DevToolsAgent::From(execution_context_.Get()))
-    agent->ChildWorkerThreadTerminated(worker_thread_.get());
+  DevToolsAgent::WorkerThreadTerminated(execution_context_.Get(),
+                                        worker_thread_.get());
 }
 
 ExecutionContext* ThreadedMessagingProxyBase::GetExecutionContext() const {

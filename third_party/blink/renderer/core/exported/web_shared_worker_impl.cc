@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -105,8 +106,8 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   }
   if (worker_thread_) {
     worker_thread_->Terminate();
-    if (DevToolsAgent* agent = DevToolsAgent::From(shadow_page_->GetDocument()))
-      agent->ChildWorkerThreadTerminated(worker_thread_.get());
+    DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
+                                          worker_thread_.get());
   }
 }
 
@@ -350,8 +351,11 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   thread_startup_data.atomics_wait_mode =
       WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
 
+  auto devtools_params = DevToolsAgent::WorkerThreadCreated(
+      document, GetWorkerThread(), script_response_url);
+
   GetWorkerThread()->Start(std::move(global_scope_creation_params),
-                           thread_startup_data, DevToolsAgent::From(document),
+                           thread_startup_data, std::move(devtools_params),
                            parent_execution_context_task_runners_);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
   GetWorkerThread()->EvaluateClassicScript(script_response_url, source_code,

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -54,13 +55,12 @@ namespace blink {
 WorkerInspectorController* WorkerInspectorController::Create(
     WorkerThread* thread,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
-    mojom::blink::DevToolsAgentRequest agent_request,
-    mojom::blink::DevToolsAgentHostPtrInfo host_ptr_info) {
+    std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(thread->GetIsolate());
   return debugger ? new WorkerInspectorController(
                         thread, debugger, std::move(inspector_task_runner),
-                        std::move(agent_request), std::move(host_ptr_info))
+                        std::move(devtools_params))
                   : nullptr;
 }
 
@@ -68,15 +68,14 @@ WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
     WorkerThreadDebugger* debugger,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
-    mojom::blink::DevToolsAgentRequest agent_request,
-    mojom::blink::DevToolsAgentHostPtrInfo host_ptr_info)
+    std::unique_ptr<WorkerDevToolsParams> devtools_params)
     : debugger_(debugger),
       thread_(thread),
       inspected_frames_(nullptr),
       probe_sink_(new CoreProbeSink()) {
   probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
-    worker_devtools_token_ = thread->GetDevToolsWorkerToken();
+    worker_devtools_token_ = devtools_params->devtools_worker_token;
     parent_devtools_token_ = scope->GetParentDevToolsToken();
     url_ = scope->Url();
     worker_thread_id_ = thread->GetPlatformThreadId();
@@ -88,7 +87,8 @@ WorkerInspectorController::WorkerInspectorController(
     agent_ = new DevToolsAgent(this, inspected_frames_.Get(), probe_sink_.Get(),
                                std::move(inspector_task_runner),
                                std::move(io_task_runner));
-    agent_->BindRequest(std::move(host_ptr_info), std::move(agent_request),
+    agent_->BindRequest(std::move(devtools_params->agent_host_ptr_info),
+                        std::move(devtools_params->agent_request),
                         thread->GetTaskRunner(TaskType::kInternalInspector));
   }
   TraceEvent::AddEnabledStateObserver(this);
