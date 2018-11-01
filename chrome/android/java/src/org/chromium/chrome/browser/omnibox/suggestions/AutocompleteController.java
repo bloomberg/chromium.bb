@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -12,9 +12,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
-import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider;
-import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
@@ -271,15 +270,11 @@ public class AutocompleteController {
     }
 
     /**
-     * Pass the autocomplete controller a {@link Bundle} representing the results of a voice
-     * recognition.
-     * @param data A {@link Bundle} containing the results of a voice recognition.
-     * @return The top voice match if one exists, {@code null} otherwise.
+     * Pass the voice provider a list representing the results of a voice recognition.
+     * @param results A list containing the results of a voice recognition.
      */
-    public VoiceResult onVoiceResults(Bundle data) {
-        mVoiceSuggestionProvider.setVoiceResultsFromIntentBundle(data);
-        List<VoiceResult> results = mVoiceSuggestionProvider.getResults();
-        return (results != null && results.size() > 0) ? results.get(0) : null;
+    public void onVoiceResults(@Nullable List<VoiceResult> results) {
+        mVoiceSuggestionProvider.setVoiceResults(results);
     }
 
     @CalledByNative

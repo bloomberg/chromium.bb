@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -23,11 +23,11 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
-import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
@@ -292,11 +292,11 @@ public class AutocompleteCoordinator
     }
 
     /**
-     * @see AutocompleteController#onVoiceResults(Bundle)
+     * @see AutocompleteController#onVoiceResults(List)
      */
-    // TODO(tedchoc): Should this coordinator own the voice query logic too?
-    public VoiceResult onVoiceResults(Bundle data) {
-        return mAutocomplete.onVoiceResults(data);
+    public void onVoiceResults(
+            @Nullable List<LocationBarVoiceRecognitionHandler.VoiceResult> results) {
+        mAutocomplete.onVoiceResults(results);
     }
 
     /**
