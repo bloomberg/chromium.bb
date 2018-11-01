@@ -305,7 +305,12 @@ void EmitProcessUkm(const GlobalMemoryDump::ProcessDump& pmd,
       }
     }
   }
+
+#if !defined(OS_MACOSX)
+  // Resident set is not populated on Mac.
   builder->SetResident(pmd.os_dump().resident_set_kb / 1024);
+#endif
+
   builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
   builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -317,6 +322,14 @@ void EmitProcessUkm(const GlobalMemoryDump::ProcessDump& pmd,
   if (!record_uma)
     return;
 
+#if defined(OS_MACOSX)
+  // Resident set is not populated on Mac.
+  DCHECK_EQ(pmd.os_dump().resident_set_kb, 0U);
+#else
+  MEMORY_METRICS_HISTOGRAM_MB(
+      std::string(UMA_PREFIX) + process_name + ".ResidentSet",
+      pmd.os_dump().resident_set_kb / 1024);
+#endif
   MEMORY_METRICS_HISTOGRAM_MB(
       std::string(UMA_PREFIX) + process_name + ".PrivateMemoryFootprint",
       pmd.os_dump().private_footprint_kb / 1024);
@@ -545,6 +558,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   uint32_t private_footprint_total_kb = 0;
   uint32_t renderer_private_footprint_total_kb = 0;
   uint32_t shared_footprint_total_kb = 0;
+  uint32_t resident_set_total_kb = 0;
   bool emit_metrics_for_all_processes = pid_scope_ == base::kNullProcessId;
 
   TabFootprintAggregator per_tab_metrics;
@@ -554,6 +568,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     uint32_t process_pmf_kb = pmd.os_dump().private_footprint_kb;
     private_footprint_total_kb += process_pmf_kb;
     shared_footprint_total_kb += pmd.os_dump().shared_footprint_kb;
+    resident_set_total_kb += pmd.os_dump().resident_set_kb;
 
     if (!emit_metrics_for_all_processes && pid_scope_ != pmd.pid())
       continue;
@@ -636,6 +651,14 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / 1024);
+#if defined(OS_MACOSX)
+    // Resident set is not populated on Mac.
+    DCHECK_EQ(resident_set_total_kb, 0U);
+#else
+    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.ResidentSet",
+                                  resident_set_total_kb / 1024);
+
+#endif
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / 1024);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.RendererPrivateMemoryFootprint",
