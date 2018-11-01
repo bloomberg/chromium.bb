@@ -764,14 +764,18 @@ bool ComputedStyle::CustomPropertiesEqual(
     const Vector<AtomicString>& properties,
     const ComputedStyle& other) const {
   // Short-circuit if neither of the styles have custom properties.
-  if (!InheritedVariables() && !NonInheritedVariables() &&
-      !other.InheritedVariables() && !other.NonInheritedVariables())
+  if (!HasVariables() && !other.HasVariables())
     return true;
 
   for (const AtomicString& property_name : properties) {
     if (!DataEquivalent(GetVariable(property_name),
-                        other.GetVariable(property_name)))
+                        other.GetVariable(property_name))) {
       return false;
+    }
+    if (!DataEquivalent(GetRegisteredVariable(property_name),
+                        other.GetRegisteredVariable(property_name))) {
+      return false;
+    }
   }
 
   return true;
@@ -1617,6 +1621,15 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
   }
 
   return AppliedTextDecorationsInternal()->GetVector();
+}
+
+static bool HasInitialVariables(const StyleInitialData* initial_data) {
+  return initial_data && initial_data->HasInitialVariables();
+}
+
+bool ComputedStyle::HasVariables() const {
+  return InheritedVariables() || NonInheritedVariables() ||
+         HasInitialVariables(InitialDataInternal().get());
 }
 
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
