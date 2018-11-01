@@ -75,19 +75,19 @@
 
   class BrowserProxy {
     constructor() {
-      /** @private {!mojom.OmniboxPageHandlerPtr} */
-      this.pagehandlePtr_ = new mojom.OmniboxPageHandlerPtr;
-      Mojo.bindInterface(
-          mojom.OmniboxPageHandler.name,
-          mojo.makeRequest(this.pagehandlePtr_).handle);
-      const client = new mojom.OmniboxPagePtr;
-      // NOTE: Need to keep a global reference to the |binding_| such that it is
-      // not garbage collected, which causes the pipe to close and future calls
-      // from C++ to JS to get dropped.
-      /** @private {!mojo.Binding} */
-      this.binding_ =
-          new mojo.Binding(mojom.OmniboxPage, this, mojo.makeRequest(client));
-      this.pagehandlePtr_.setClientPage(client);
+      /** @private {!mojom.OmniboxPageCallbackRouter} */
+      this.callbackRouter_ = new mojom.OmniboxPageCallbackRouter;
+
+      // TODO (manukh) rename method to handleNewAutocompleteResponse in order
+      // to keep terminology consistent. Result refers to a single autocomplete
+      // match. Response refers to the data returned from the C++
+      // AutocompleteController.
+      this.callbackRouter_.handleNewAutocompleteResult.addListener(
+          result => outputController.addAutocompleteResponse(result));
+
+      /** @private {!mojom.OmniboxPageHandlerProxy} */
+      this.handler_ = mojom.OmniboxPageHandler.getProxy();
+      this.handler_.setClientPage(this.callbackRouter_.createProxy());
     }
 
     /**
@@ -106,20 +106,9 @@
       // - third element: the value of prevent-inline-autocomplete
       // - forth element: the value of prefer-keyword
       // - fifth element: the value of page-classification
-      this.pagehandlePtr_.startOmniboxQuery(
-          inputString,
-          cursorPosition,
-          preventInlineAutocomplete,
-          preferKeyword,
+      this.handler_.startOmniboxQuery(
+          inputString, cursorPosition, preventInlineAutocomplete, preferKeyword,
           pageClassification);
-    }
-
-    // TODO (manukh) rename method to handleNewAutocompleteResponse in order to
-    // keep terminology consistent. Result refers to a single autocomplete
-    // match. Response refers to the data returned from the C++
-    // AutocompleteController.
-    handleNewAutocompleteResult(response) {
-      outputController.addAutocompleteResponse(response);
     }
   }
 
