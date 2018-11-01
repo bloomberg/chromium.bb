@@ -83,10 +83,6 @@ class SuggestionViewViewBinder {
             view.getTextLine1().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.getTextLine1().setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).text);
-        } else if (SuggestionViewProperties.TEXT_LINE_1_ALIGNMENT_CONSTRAINTS.equals(propertyKey)) {
-            Pair<Float, Float> constraints =
-                    model.get(SuggestionViewProperties.TEXT_LINE_1_ALIGNMENT_CONSTRAINTS);
-            view.updateTextAlignmentConstraintWidths(constraints.first, constraints.second);
         } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)) {
             Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
             view.getTextLine2().setTextSize(sizing.first, sizing.second);

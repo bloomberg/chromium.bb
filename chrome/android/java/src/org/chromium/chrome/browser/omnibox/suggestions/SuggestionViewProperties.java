@@ -122,9 +122,6 @@ class SuggestionViewProperties {
     /** The actual text content for the first line of text. */
     public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_1_TEXT =
             new WritableObjectPropertyKey<>();
-    /** The alignment constraints for positioning the first line of text. */
-    public static final WritableObjectPropertyKey<Pair<Float, Float>>
-            TEXT_LINE_1_ALIGNMENT_CONSTRAINTS = new WritableObjectPropertyKey<>();
 
     /**
      * The sizing information for the second line of text.
@@ -146,9 +143,9 @@ class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {DELEGATE, USE_DARK_COLORS,
-            LAYOUT_DIRECTION, IS_ANSWER, HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE,
-            SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING, TEXT_LINE_1_TEXT,
-            TEXT_LINE_1_ALIGNMENT_CONSTRAINTS, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES,
-            TEXT_LINE_2_TEXT_COLOR, TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {DELEGATE, USE_DARK_COLORS, LAYOUT_DIRECTION, IS_ANSWER,
+                    HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE,
+                    TEXT_LINE_1_SIZING, TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES,
+                    TEXT_LINE_2_TEXT_COLOR, TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
 }

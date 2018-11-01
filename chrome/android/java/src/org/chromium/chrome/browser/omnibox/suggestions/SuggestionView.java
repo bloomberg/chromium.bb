@@ -13,7 +13,6 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,7 +23,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,11 +88,12 @@ public class SuggestionView extends ViewGroup {
          */
         void onGestureUp(long timestamp);
 
-        /** @return max required width for the suggestion. */
-        float getMaxRequiredWidth();
-
-        /** @return max match contents width for the suggestion. */
-        float getMaxMatchContentsWidth();
+        /**
+         * @param line1 The TextView containing the line 1 text whose padding is being calculated.
+         * @param maxTextWidth The maximum width the text can occupy.
+         * @return any additional padding to be applied to the start of the first line of text.
+         */
+        int getAdditionalTextLine1StartPadding(TextView line1, int maxTextWidth);
     }
 
     /**
@@ -337,14 +336,6 @@ public class SuggestionView extends ViewGroup {
         mContentsView.invalidate();
     }
 
-    /**
-     * Updates the text alignment constraints to be applied when positioning the text.
-     */
-    void updateTextAlignmentConstraintWidths(float requiredWidth, float matchContentWidth) {
-        mContentsView.mRequiredWidth = requiredWidth;
-        mContentsView.mMatchContentsWidth = matchContentWidth;
-    }
-
     @Override
     public void setSelected(boolean selected) {
         super.setSelected(selected);
@@ -384,8 +375,6 @@ public class SuggestionView extends ViewGroup {
         private final TextView mTextLine2;
         private final ImageView mAnswerImage;
 
-        private float mRequiredWidth;
-        private float mMatchContentsWidth;
         private boolean mForceIsFocused;
 
         // TODO(crbug.com/635567): Fix this properly.
@@ -458,21 +447,6 @@ public class SuggestionView extends ViewGroup {
 
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b) {
-            // Align the text to be pixel perfectly aligned with the text in the url bar.
-            boolean isRTL = ApiCompatibilityUtils.isLayoutRtl(this);
-            if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
-                int textWidth =
-                        isRTL ? mSuggestionStartOffsetPx : (r - l - mSuggestionStartOffsetPx);
-                final float maxRequiredWidth = mSuggestionDelegate.getMaxRequiredWidth();
-                final float maxMatchContentsWidth = mSuggestionDelegate.getMaxMatchContentsWidth();
-                float paddingStart = (textWidth > maxRequiredWidth)
-                        ? (mRequiredWidth - mMatchContentsWidth)
-                        : Math.max(textWidth - maxMatchContentsWidth, 0);
-                // TODO(skanuj) : Change to ViewCompat.getPaddingEnd(...).
-                ViewCompat.setPaddingRelative(mTextLine1, (int) paddingStart,
-                        mTextLine1.getPaddingTop(), 0, mTextLine1.getPaddingBottom());
-            }
-
             int imageWidth = 0;
             int imageSpacing = 0;
             if (mAnswerImage.getVisibility() == VISIBLE) {
@@ -526,16 +500,21 @@ public class SuggestionView extends ViewGroup {
             final int line2Bottom = line2Top + line2Height;
             final int answerImageTop = t + answerVerticalOffset;
             final int answerImageBottom = answerImageTop + mAnswerImage.getMeasuredHeight();
+            final int line1AdditionalStartPadding =
+                    mSuggestionDelegate.getAdditionalTextLine1StartPadding(
+                            mTextLine1, r - l - mSuggestionStartOffsetPx);
 
-            if (isRTL) {
+            if (ApiCompatibilityUtils.isLayoutRtl(this)) {
                 int rightStartPos = r - l - mSuggestionStartOffsetPx;
-                mTextLine1.layout(0, line1Top, rightStartPos, line1Bottom);
+                mTextLine1.layout(
+                        0, line1Top, rightStartPos - line1AdditionalStartPadding, line1Bottom);
                 mAnswerImage.layout(rightStartPos - imageWidth, answerImageTop, rightStartPos,
                         answerImageBottom);
                 mTextLine2.layout(
                         0, line2Top, rightStartPos - (imageWidth + imageSpacing), line2Bottom);
             } else {
-                mTextLine1.layout(mSuggestionStartOffsetPx, line1Top, r - l, line1Bottom);
+                mTextLine1.layout(mSuggestionStartOffsetPx + line1AdditionalStartPadding, line1Top,
+                        r - l, line1Bottom);
                 mAnswerImage.layout(mSuggestionStartOffsetPx, answerImageTop,
                         mSuggestionStartOffsetPx + imageWidth, answerImageBottom);
                 mTextLine2.layout(mSuggestionStartOffsetPx + imageWidth + imageSpacing, line2Top,
