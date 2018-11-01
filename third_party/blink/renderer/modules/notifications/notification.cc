@@ -230,10 +230,11 @@ void Notification::OnShow() {
 void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   Document* document = DynamicTo<Document>(context);
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(
-          document ? document->GetFrame() : nullptr,
-          UserGestureToken::kNewGesture);
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (document && document->GetFrame()) {
+    gesture_indicator = LocalFrame::NotifyUserActivation(
+        document->GetFrame(), UserGestureToken::kNewGesture);
+  }
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(*Event::Create(event_type_names::kClick));
 
