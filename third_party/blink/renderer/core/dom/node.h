@@ -948,8 +948,6 @@ class CORE_EXPORT Node : public EventTarget {
     kCreateDocument = kCreateContainer | kIsConnectedFlag,
     kCreateV0InsertionPoint = kCreateHTMLElement | kIsV0InsertionPointFlag,
     kCreateEditingText = kCreateText | kHasNameOrIsEditingTextFlag,
-    kCreatePseudoElement = kDefaultNodeFlags | kIsContainerFlag |
-                           kIsElementFlag | kNeedsReattachLayoutTree,
   };
 
   Node(TreeScope*, ConstructionType);
