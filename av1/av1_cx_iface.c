@@ -286,7 +286,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
         "or kf_max_dist instead.");
 
   RANGE_CHECK_HI(extra_cfg, motion_vector_unit_test, 2);
-  RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 2);
+  RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 1);
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
   RANGE_CHECK(extra_cfg, cpu_used, 0, 8);
   RANGE_CHECK_HI(extra_cfg, noise_sensitivity, 6);
