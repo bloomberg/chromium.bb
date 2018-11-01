@@ -73,6 +73,11 @@ target("mac_app_bundle", "remoting_me2me_host") {
   #   defines = [ "REMOTING_ENABLE_BREAKPAD" ]
   # }
 
+  sources = [
+    "permission_utils.h",
+    "permission_utils.mm",
+  ]
+
   deps = [
     "//remoting/base:breakpad",
     "//remoting/host:main",
