@@ -26,8 +26,6 @@ from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import list_of_scalar_values
 
-from metrics import keychain_metric
-
 
 class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
   enabled_suites = [
@@ -42,9 +40,6 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(SpeedometerMeasurement, self).__init__()
-
-  def CustomizeBrowserOptions(self, options):
-    keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
@@ -92,7 +87,6 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
               suite_times;
               """,
               key=suite_name), important=False))
-    keychain_metric.KeychainMetric().AddResults(tab, results)
 
 
 @benchmark.Info(emails=['hablich@chromium.org'],
