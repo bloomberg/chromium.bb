@@ -276,6 +276,7 @@ public abstract class ChromeFeatureList {
     public static final String SIMPLIFIED_NTP = "SimplifiedNTP";
     public static final String SOLE_INTEGRATION = "SoleIntegration";
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";
+    public static final String SSL_COMMITTED_INTERSTITIALS = "SSLCommittedInterstitials";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";

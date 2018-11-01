@@ -68,6 +68,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
     &features::kSoundContentSetting,
+    &features::kSSLCommittedInterstitials,
     &features::kWebAuth,
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
