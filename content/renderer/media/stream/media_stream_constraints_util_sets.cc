@@ -43,7 +43,7 @@ bool IsGreaterOrEqual(double d1, double d2) {
   return d1 > d2 || AreApproximatelyEqual(d1, d2);
 }
 
-int ToValidDimension(long dimension) {
+int ToValidDimension(int dimension) {
   if (dimension > ResolutionSet::kMaxDimension)
     return ResolutionSet::kMaxDimension;
   if (dimension < 0)
@@ -468,6 +468,15 @@ ResolutionSet ResolutionSet::FromAspectRatio(double min, double max) {
 // static
 ResolutionSet ResolutionSet::FromExactAspectRatio(double value) {
   return ResolutionSet(0, kMaxDimension, 0, kMaxDimension, value, value);
+}
+
+// static
+ResolutionSet ResolutionSet::FromExactResolution(int width, int height) {
+  double aspect_ratio = ToValidAspectRatio(static_cast<double>(width) / height);
+  return ResolutionSet(ToValidDimension(height), ToValidDimension(height),
+                       ToValidDimension(width), ToValidDimension(width),
+                       std::isnan(aspect_ratio) ? 0.0 : aspect_ratio,
+                       std::isnan(aspect_ratio) ? HUGE_VAL : aspect_ratio);
 }
 
 std::vector<Point> ResolutionSet::ComputeVertices() const {

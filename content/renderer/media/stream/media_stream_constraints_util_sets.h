@@ -32,7 +32,7 @@ class NumericRangeSet {
  public:
   NumericRangeSet() = default;
   NumericRangeSet(base::Optional<T> min, base::Optional<T> max)
-      : min_(min), max_(max) {}
+      : min_(std::move(min)), max_(std::move(max)) {}
   NumericRangeSet(const NumericRangeSet& other) = default;
   NumericRangeSet& operator=(const NumericRangeSet& other) = default;
   ~NumericRangeSet() = default;
@@ -51,6 +51,10 @@ class NumericRangeSet {
       max = max ? std::min(*max, *other.Max()) : other.Max();
 
     return NumericRangeSet(min, max);
+  }
+
+  bool Contains(T value) const {
+    return (!Min() || value >= *Min()) && (!Max() || value <= *Max());
   }
 
   // Creates a NumericRangeSet based on the minimum and maximum values of
@@ -81,6 +85,8 @@ class NumericRangeSet {
             ? ConstraintMax(constraint)
             : base::Optional<T>());
   }
+
+  static NumericRangeSet<T> EmptySet() { return NumericRangeSet(1, 0); }
 
  private:
   base::Optional<T> min_;
@@ -335,6 +341,9 @@ class CONTENT_EXPORT ResolutionSet {
   static ResolutionSet FromAspectRatio(double min, double max);
   static ResolutionSet FromExactAspectRatio(double value);
 
+  // Returns a ResolutionSet containing only the specified width and height.
+  static ResolutionSet FromExactResolution(int width, int height);
+
   // Returns a ResolutionCandidateSet initialized with |constraint_set|'s
   // width, height and aspectRatio constraints.
   static ResolutionSet FromConstraintSet(
@@ -394,7 +403,7 @@ class CONTENT_EXPORT ResolutionSet {
 };
 
 // Scalar multiplication for Points.
-ResolutionSet::Point CONTENT_EXPORT operator*(double d,
+CONTENT_EXPORT ResolutionSet::Point operator*(double d,
                                               const ResolutionSet::Point& p);
 
 }  // namespace media_constraints
