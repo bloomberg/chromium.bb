@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/optional.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill_assistant {
 // Data shared between scripts and actions.
@@ -17,28 +19,39 @@ class ClientMemory {
   ClientMemory();
   virtual ~ClientMemory();
 
-  // GUID of the currently selected credit card, if any. It will be an empty
-  // optional if user didn't select anything, empty string if user selected
-  // 'Fill manually', or the guid of a selected card.
-  virtual base::Optional<std::string> selected_card();
+  // Selected credit card, if any. It will be a nullptr if didn't select
+  // anything or if selected 'Fill manually'.
+  virtual const autofill::CreditCard* selected_card();
 
-  // GUID of the currently selected address for |name|. It will be an empty
-  // optional if user didn't select anything, empty string if user selected
-  // 'Fill manually', or the guid of a selected address.
-  virtual base::Optional<std::string> selected_address(const std::string& name);
+  // Return true if card has been selected, otherwise return false.
+  // Note that selected_card() might return nullptr when has_selected_card() is
+  // true because fill manually was chosen.
+  virtual bool has_selected_card();
 
-  // Set the |guid| of the selected card.
-  virtual void set_selected_card(const std::string& guid);
+  // Selected address for |name|. It will be a nullptr if didn't select anything
+  // or if selected 'Fill manually'.
+  virtual const autofill::AutofillProfile* selected_address(
+      const std::string& name);
 
-  // Set the |guid| of the selected address for |name|.
-  virtual void set_selected_address(const std::string& name,
-                                    const std::string& guid);
+  // Return true if address has been selected, otherwise return false.
+  // Note that selected_address() might return nullptr when
+  // has_selected_address() is true because fill manually was chosen.
+  virtual bool has_selected_address(const std::string& name);
+
+  // Set the selected card.
+  virtual void set_selected_card(std::unique_ptr<autofill::CreditCard> card);
+
+  // Set the selected address for |name|.
+  virtual void set_selected_address(
+      const std::string& name,
+      std::unique_ptr<autofill::AutofillProfile> address);
 
  private:
-  base::Optional<std::string> selected_card_;
+  base::Optional<std::unique_ptr<autofill::CreditCard>> selected_card_;
 
-  // GUID of the selected addresses (keyed by name).
-  std::map<std::string, std::string> selected_addresses_;
+  // The selected addresses (keyed by name).
+  std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>
+      selected_addresses_;
 };
 
 }  // namespace autofill_assistant

@@ -290,7 +290,7 @@ TEST_F(ControllerTest, Reset) {
   }
 
   // Resetting should clear the client memory
-  controller_->GetClientMemory()->set_selected_card("set");
+  controller_->GetClientMemory()->set_selected_card(nullptr);
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
   GetUiDelegate()->OnScriptSelected("reset");

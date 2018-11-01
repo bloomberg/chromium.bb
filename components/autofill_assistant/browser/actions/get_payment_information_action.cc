@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -56,21 +58,22 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     ProcessActionCallback callback,
     std::unique_ptr<PaymentInformation> payment_information) {
   bool succeed = payment_information->succeed;
-
   if (succeed) {
     if (get_payment_information.ask_for_payment()) {
-      DCHECK(!payment_information->card_guid.empty());
-      delegate->GetClientMemory()->set_selected_card(
-          payment_information->card_guid);
+      DCHECK(payment_information->card);
       processed_action_proto_->set_card_issuer_network(
-          payment_information->card_issuer_network);
+          autofill::data_util::GetPaymentRequestData(
+              payment_information->card->network())
+              .basic_card_issuer_network);
+      delegate->GetClientMemory()->set_selected_card(
+          std::move(payment_information->card));
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {
-      DCHECK(!payment_information->address_guid.empty());
+      DCHECK(payment_information->address);
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
-          payment_information->address_guid);
+          std::move(payment_information->address));
     }
   }
 

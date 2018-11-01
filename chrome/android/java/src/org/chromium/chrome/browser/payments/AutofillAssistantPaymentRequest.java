@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
@@ -67,14 +68,11 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
         /** Whether selection succeed. */
         public boolean succeed;
 
-        /** Selected payment card's guid in personal data manager. */
-        public String cardGuid;
+        /** Selected payment card. */
+        public CreditCard card;
 
-        /** Selected payment card's network identifier. */
-        public String cardIssuerNetwork;
-
-        /** Selected shipping address's guid in personal data manager. */
-        public String addressGuid;
+        /** Selected shipping address. */
+        public AutofillProfile address;
 
         /** Payer's contact name. */
         public String payerName;
@@ -484,13 +482,11 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
             SelectedPaymentInformation selectedPaymentInformation =
                     new SelectedPaymentInformation();
 
-            PersonalDataManager.CreditCard creditCard =
+            selectedPaymentInformation.card =
                     ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
-            selectedPaymentInformation.cardGuid = creditCard.getGUID();
-            selectedPaymentInformation.cardIssuerNetwork = creditCard.getBasicCardIssuerNetwork();
             if (mPaymentOptions.requestShipping && selectedShippingAddress != null) {
-                selectedPaymentInformation.addressGuid =
-                        ((AutofillAddress) selectedShippingAddress).getProfile().getGUID();
+                selectedPaymentInformation.address =
+                        ((AutofillAddress) selectedShippingAddress).getProfile();
             }
             if (mPaymentOptions.requestPayerName || mPaymentOptions.requestPayerPhone
                     || mPaymentOptions.requestPayerEmail) {

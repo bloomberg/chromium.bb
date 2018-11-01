@@ -7,6 +7,11 @@
 
 #include <string>
 
+namespace autofill {
+class AutofillProfile;
+class CreditCard;
+}  // namespace autofill
+
 namespace autofill_assistant {
 
 // Struct for holding the payment information data.
@@ -15,9 +20,8 @@ struct PaymentInformation {
   ~PaymentInformation();
 
   bool succeed;
-  std::string card_guid;
-  std::string card_issuer_network;
-  std::string address_guid;
+  std::unique_ptr<autofill::CreditCard> card;
+  std::unique_ptr<autofill::AutofillProfile> address;
   std::string payer_name;
   std::string payer_phone;
   std::string payer_email;
