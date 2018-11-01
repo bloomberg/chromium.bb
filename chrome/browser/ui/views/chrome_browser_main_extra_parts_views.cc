@@ -94,10 +94,11 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
   // Start devtools server
+  constexpr int kUiDevToolsDefaultPort = 9223;
   network::mojom::NetworkContext* network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  devtools_server_ = ui_devtools::UiDevToolsServer::Create(
-      network_context, switches::kEnableUiDevTools, 9223);
+  devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViews(
+      network_context, switches::kEnableUiDevTools, kUiDevToolsDefaultPort);
   if (devtools_server_) {
     auto dom_backend = std::make_unique<ui_devtools::DOMAgentAura>();
 #if defined(OS_CHROMEOS)

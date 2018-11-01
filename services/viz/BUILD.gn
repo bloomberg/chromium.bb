@@ -29,10 +29,13 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/viz/service",
-    "//components/viz/service/main",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/viz/privileged/interfaces",
+  ]
+
+  public_deps = [
+    "//components/viz/service/main",
   ]
 }
 

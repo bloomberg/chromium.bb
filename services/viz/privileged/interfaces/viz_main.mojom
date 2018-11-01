@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom";
+import "services/network/public/mojom/tcp_socket.mojom";
 import "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom";
 import "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_host.mojom";
@@ -27,6 +28,17 @@ struct FrameSinkManagerParams {
 
   // Viz to host interface.
   FrameSinkManagerClient frame_sink_manager_client;
+
+  // Optional socket for viz devtools server, which is used to observe the
+  // FrameSinkManager in the viz compositor. This will be null unless the flag
+  // --enable-viz-devtools is used. If present, the server will be created on
+  // the viz process using this socket.
+  [EnableIf=use_viz_devtools]
+  network.mojom.TCPServerSocket? devtools_server_socket;
+
+  // Port the devtools server socket is bound to.
+  [EnableIf=use_viz_devtools]
+  uint16 server_port;
 };
 
 // This is the primordial interface used to (re)start the viz services.

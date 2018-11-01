@@ -22,6 +22,13 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
 
+#if defined(USE_VIZ_DEVTOOLS)
+#include "components/ui_devtools/css_agent.h"
+#include "components/ui_devtools/devtools_server.h"
+#include "components/ui_devtools/viz_views/dom_agent_viz.h"
+#include "components/ui_devtools/viz_views/overlay_agent_viz.h"
+#endif
+
 namespace viz {
 namespace {
 
@@ -146,7 +153,36 @@ void VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread(
       std::move(params->frame_sink_manager), nullptr,
       mojom::FrameSinkManagerClientPtr(
           std::move(params->frame_sink_manager_client)));
+
+#if defined(USE_VIZ_DEVTOOLS)
+  if (params->devtools_server_socket) {
+    InitVizDevToolsOnCompositorThread(
+        network::mojom::TCPServerSocketPtr(
+            std::move(params->devtools_server_socket)),
+        params->server_port);
+  }
+#endif
 }
+
+#if defined(USE_VIZ_DEVTOOLS)
+void VizCompositorThreadRunner::InitVizDevToolsOnCompositorThread(
+    network::mojom::TCPServerSocketPtr server_socket,
+    int port) {
+  devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViz(
+      std::move(server_socket), port);
+  auto dom_agent =
+      std::make_unique<ui_devtools::DOMAgentViz>(frame_sink_manager_.get());
+  auto css_agent = std::make_unique<ui_devtools::CSSAgent>(dom_agent.get());
+  auto overlay_agent =
+      std::make_unique<ui_devtools::OverlayAgentViz>(dom_agent.get());
+  auto devtools_client = std::make_unique<ui_devtools::UiDevToolsClient>(
+      "VizDevToolsClient", devtools_server_.get());
+  devtools_client->AddAgent(std::move(dom_agent));
+  devtools_client->AddAgent(std::move(css_agent));
+  devtools_client->AddAgent(std::move(overlay_agent));
+  devtools_server_->AttachClient(std::move(devtools_client));
+}
+#endif
 
 void VizCompositorThreadRunner::CleanupForShutdownOnCompositorThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -163,6 +199,9 @@ void VizCompositorThreadRunner::TearDownOnCompositorThread() {
         server_shared_bitmap_manager_.get());
   }
 
+#if defined(USE_VIZ_DEVTOOLS)
+  devtools_server_.reset();
+#endif
   frame_sink_manager_.reset();
   display_provider_.reset();
   server_shared_bitmap_manager_.reset();

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/ui_devtools/devtools.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
@@ -11,11 +12,17 @@ mojom("interfaces") {
 
   public_deps = [
     "//components/discardable_memory/public/interfaces",
+    "//services/network/public/mojom",
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/privileged/interfaces/gl",
     "//services/viz/public/interfaces",
     "//ui/gfx/mojo",
   ]
+
+  enabled_features = []
+  if (use_viz_devtools) {
+    enabled_features += [ "use_viz_devtools" ]
+  }
 }
 
 source_set("unit_tests") {
