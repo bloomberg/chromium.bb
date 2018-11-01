@@ -64,7 +64,7 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
 
   // Wait for JavaScript to submit at least one frame.
   EXPECT_TRUE(
-      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
+      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutMedium))
       << "No frame submitted";
 
   // Tell JavaScript that it is done with the test.
