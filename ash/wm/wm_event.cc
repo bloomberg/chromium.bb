@@ -76,6 +76,7 @@ bool WMEvent::IsTransitionEvent() const {
     case WM_EVENT_SHOW_INACTIVE:
     case WM_EVENT_PIN:
     case WM_EVENT_TRUSTED_PIN:
+    case WM_EVENT_PIP:
       return true;
     default:
       break;

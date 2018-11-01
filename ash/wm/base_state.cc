@@ -72,6 +72,8 @@ mojom::WindowStateType BaseState::GetStateForTransitionEvent(
       return mojom::WindowStateType::INACTIVE;
     case WM_EVENT_PIN:
       return mojom::WindowStateType::PINNED;
+    case WM_EVENT_PIP:
+      return mojom::WindowStateType::PIP;
     case WM_EVENT_TRUSTED_PIN:
       return mojom::WindowStateType::TRUSTED_PINNED;
     default:
