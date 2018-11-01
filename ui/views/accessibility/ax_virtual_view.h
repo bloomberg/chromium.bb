@@ -73,7 +73,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   const AXVirtualView* child_at(int index) const;
   AXVirtualView* child_at(int index);
 
-  // Returns the ViewAccessibility parent if the parent is a real View and not
+  // Returns the parent ViewAccessibility if the parent is a real View and not
   // an AXVirtualView. Returns nullptr otherwise.
   const ViewAccessibility* parent_view() const { return parent_view_; }
   ViewAccessibility* parent_view() { return parent_view_; }
@@ -95,20 +95,14 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   int GetIndexOf(const AXVirtualView* view) const;
 
   //
-  // Methods also found in ViewAccessibility.
+  // Other methods.
   //
 
+  const char* GetClassName() const;
   gfx::NativeViewAccessible GetNativeObject() const;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type);
-  void OverrideRole(const ax::mojom::Role role);
-  void OverrideState(ax::mojom::State state);
-  void OverrideName(const std::string& name);
-  void OverrideName(const base::string16& name);
-  void OverrideDescription(const std::string& description);
-  void OverrideDescription(const base::string16& description);
-  void OverrideBoundsRect(const gfx::RectF& location);
   // Allows clients to modify the AXNodeData for this virtual view.
-  ui::AXNodeData& GetData();
+  ui::AXNodeData& GetCustomData();
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
@@ -126,15 +120,28 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
 
+ protected:
+  // Handle a request from assistive technology to perform an action on this
+  // virtual view. Returns true on success, but note that the success/failure is
+  // not propagated to the client that requested the action, since the
+  // request is sometimes asynchronous. The right way to send a response is
+  // via NotifyAccessibilityEvent().
+  virtual bool HandleAccessibleAction(const ui::AXActionData& action_data);
+
  private:
-  // Sets the parent view if the parent is a real View and not an AXVirtualView.
-  // It is invalid to set both |parent_view_| and |virtual_parent_view_|.
+  // Internal class name.
+  static const char kViewClassName[];
+
+  // Sets the parent ViewAccessibility if the parent is a real View and not an
+  // AXVirtualView. It is invalid to set both |parent_view_| and
+  // |virtual_parent_view_|.
   void set_parent_view(ViewAccessibility* view_accessibility) {
     DCHECK(!virtual_parent_view_);
     parent_view_ = view_accessibility;
   }
 
-  bool IsParentVisible() const;
+  // Gets the real View that owns our shallowest virtual ancestor,, if any.
+  View* GetOwnerView() const;
 
   // We own this, but it is reference-counted on some platforms so we can't use
   // a unique_ptr. It is destroyed in the destructor.
@@ -152,7 +159,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   std::vector<std::unique_ptr<AXVirtualView>> children_;
 
   ui::AXUniqueId unique_id_;
-  mutable ui::AXNodeData custom_data_;
+  ui::AXNodeData custom_data_;
 
   friend class ViewAccessibility;
   DISALLOW_COPY_AND_ASSIGN(AXVirtualView);
