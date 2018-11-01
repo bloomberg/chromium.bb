@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
+#include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1008,6 +1009,12 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
                                    ? EUserModify::kReadWrite
                                    : EUserModify::kReadOnly);
   document.SetupFontBuilder(*initial_style);
+
+  scoped_refptr<StyleInitialData> initial_data =
+      document.GetStyleEngine().MaybeCreateAndGetInitialData();
+  if (initial_data)
+    initial_style->SetInitialData(std::move(initial_data));
+
   return initial_style;
 }
 

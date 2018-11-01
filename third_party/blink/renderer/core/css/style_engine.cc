@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -1340,6 +1342,10 @@ void StyleEngine::InvalidateForRuleSetChanges(
                                    invalidation_scope);
 }
 
+void StyleEngine::InvalidateInitialData() {
+  initial_data_ = nullptr;
+}
+
 void StyleEngine::ApplyUserRuleSetChanges(
     const ActiveStyleSheetVector& old_style_sheets,
     const ActiveStyleSheetVector& new_style_sheets) {
@@ -1506,6 +1512,7 @@ void StyleEngine::CustomPropertyRegistered() {
                                style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
+  InvalidateInitialData();
 }
 
 void StyleEngine::EnvironmentVariableChanged() {
@@ -1635,6 +1642,16 @@ DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
         StyleEnvironmentVariables::GetRootInstance(), *document_);
   }
   return *environment_variables_.get();
+}
+
+scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
+  if (initial_data_)
+    return initial_data_;
+  if (PropertyRegistry* registry = document_->GetPropertyRegistry()) {
+    if (registry->RegistrationCount())
+      initial_data_ = StyleInitialData::Create(*registry);
+  }
+  return initial_data_;
 }
 
 void StyleEngine::RecalcStyle(StyleRecalcChange change) {

@@ -1645,6 +1645,10 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   return *variables;
 }
 
+void ComputedStyle::SetInitialData(scoped_refptr<StyleInitialData> data) {
+  MutableInitialDataInternal() = std::move(data);
+}
+
 void ComputedStyle::SetVariable(const AtomicString& name,
                                 scoped_refptr<CSSVariableData> value,
                                 bool is_inherited_property) {
@@ -1690,7 +1694,36 @@ CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name,
                                  : nullptr;
 }
 
+static const CSSValue* GetInitialRegisteredVariable(
+    const AtomicString& name,
+    const StyleInitialData* initial_data) {
+  if (!initial_data)
+    return nullptr;
+  return initial_data->GetInitialVariable(name);
+}
+
 const CSSValue* ComputedStyle::GetRegisteredVariable(
+    const AtomicString& name,
+    bool is_inherited_property) const {
+  const CSSValue* result =
+      GetNonInitialRegisteredVariable(name, is_inherited_property);
+  if (result)
+    return result;
+  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
+}
+
+const CSSValue* ComputedStyle::GetRegisteredVariable(
+    const AtomicString& name) const {
+  const CSSValue* result = GetNonInitialRegisteredVariable(name, false);
+  if (result)
+    return result;
+  result = GetNonInitialRegisteredVariable(name, true);
+  if (result)
+    return result;
+  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
+}
+
+const CSSValue* ComputedStyle::GetNonInitialRegisteredVariable(
     const AtomicString& name,
     bool is_inherited_property) const {
   if (is_inherited_property) {
@@ -1700,17 +1733,6 @@ const CSSValue* ComputedStyle::GetRegisteredVariable(
   return NonInheritedVariables()
              ? NonInheritedVariables()->RegisteredVariable(name)
              : nullptr;
-}
-
-const CSSValue* ComputedStyle::GetRegisteredVariable(
-    const AtomicString& name) const {
-  // Registered custom properties are by default non-inheriting so check there
-  // first.
-  const CSSValue* result = GetRegisteredVariable(name, false);
-  if (result) {
-    return result;
-  }
-  return GetRegisteredVariable(name, true);
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {

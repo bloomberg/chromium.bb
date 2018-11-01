@@ -266,12 +266,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
   const AtomicString& name = property.CustomPropertyName();
   const CSSValue* underlying_value =
       style.GetRegisteredVariable(name, Registration().Inherits());
-  if (!underlying_value) {
-    underlying_value = Registration().Initial();
-  }
-  if (!underlying_value) {
+  if (!underlying_value)
     return nullptr;
-  }
   // TODO(alancutter): Remove the need for passing in conversion checkers.
   ConversionCheckers dummy_conversion_checkers;
   return MaybeConvertValue(*underlying_value, nullptr,
