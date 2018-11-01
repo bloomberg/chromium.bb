@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -59,6 +60,7 @@ class CachedImageFetcher : public ImageFetcher {
   // Cache
   void OnImageFetchedFromCache(
       base::Time start_time,
+      const gfx::Size& size,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
@@ -67,6 +69,7 @@ class CachedImageFetcher : public ImageFetcher {
       std::string image_data);
   void OnImageDecodedFromCache(
       base::Time start_time,
+      const gfx::Size& size,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
@@ -76,9 +79,19 @@ class CachedImageFetcher : public ImageFetcher {
       const gfx::Image& image);
 
   // Network
+  void EnqueueFetchImageFromNetwork(
+      bool cache_hit,
+      base::Time start_time,
+      const gfx::Size& size,
+      const std::string& id,
+      const GURL& image_url,
+      ImageDataFetcherCallback image_data_callback,
+      ImageFetcherCallback image_callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   void FetchImageFromNetwork(
       bool cache_hit,
       base::Time start_time,
+      const gfx::Size& size,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
@@ -95,7 +108,9 @@ class CachedImageFetcher : public ImageFetcher {
                             const GURL& image_url,
                             const std::string& image_data,
                             const RequestMetadata& request_metadata);
-  void EncodeDataAndCache(const GURL& image_url, const gfx::Image& image);
+  void StartEncodingDataAndCache(const GURL& image_url,
+                                 const gfx::Image& image);
+  void StoreEncodedData(const GURL& image_url, std::string image_data);
 
   // Whether the ImageChache is allowed to be modified in any way from requests
   // made by this CachedImageFetcher. This includes updating last used times,
@@ -106,7 +121,7 @@ class CachedImageFetcher : public ImageFetcher {
 
   scoped_refptr<ImageCache> image_cache_;
 
-  // When true, read the cache as write-only. Used for when users are incognito.
+  // When true, operations won't affect the longeivity of valid cache items.
   bool read_only_;
 
   gfx::Size desired_image_frame_size_;
