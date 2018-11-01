@@ -241,6 +241,17 @@ void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
 
 void PreviewsUITabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Delete Previews information later, so that other DidFinishNavigation
+  // methods can reliably use GetPreviewsUserData regardless of order of
+  // WebContentsObservers.
+  // Note that a lot of Navigations (sub-frames, same document, non-committed,
+  // etc.) might not have PreviewsUserData associated with them, but we reduce
+  // likelihood of future leaks by always trying to remove the data.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PreviewsUITabHelper::RemovePreviewsUserData,
+                                weak_factory_.GetWeakPtr(),
+                                navigation_handle->GetNavigationId()));
+
   // Only show the ui if this is a full main frame navigation.
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
@@ -264,13 +275,6 @@ void PreviewsUITabHelper::DidFinishNavigation(
   if (user_data) {
     previews_user_data_ =
         std::make_unique<previews::PreviewsUserData>(*user_data);
-    // Delete this information later, so that other DidFinishNavigation methods
-    // can reliably use GetPreviewsUserData regardless of order of
-    // WebContentsObservers.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PreviewsUITabHelper::RemovePreviewsUserData,
-                       weak_factory_.GetWeakPtr(), navigation_handle));
   }
 
   uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
@@ -358,24 +362,26 @@ PreviewsUITabHelper::CreatePreviewsUserDataForNavigationHandle(
     content::NavigationHandle* navigation_handle,
     int64_t page_id) {
   inflight_previews_user_datas_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(navigation_handle),
+      std::piecewise_construct,
+      std::forward_as_tuple(navigation_handle->GetNavigationId()),
       std::forward_as_tuple(page_id));
 
-  auto data = inflight_previews_user_datas_.find(navigation_handle);
+  auto data =
+      inflight_previews_user_datas_.find(navigation_handle->GetNavigationId());
 
   return data == inflight_previews_user_datas_.end() ? nullptr : &data->second;
 }
 
 previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData(
     content::NavigationHandle* navigation_handle) {
-  auto data = inflight_previews_user_datas_.find(navigation_handle);
+  auto data =
+      inflight_previews_user_datas_.find(navigation_handle->GetNavigationId());
   return data == inflight_previews_user_datas_.end() ? nullptr
                                                      : &(data->second);
 }
 
-void PreviewsUITabHelper::RemovePreviewsUserData(
-    content::NavigationHandle* navigation_handle) {
-  inflight_previews_user_datas_.erase(navigation_handle);
+void PreviewsUITabHelper::RemovePreviewsUserData(int64_t navigation_id) {
+  inflight_previews_user_datas_.erase(navigation_id);
 }
 
 // static

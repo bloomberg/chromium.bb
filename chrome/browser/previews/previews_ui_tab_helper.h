@@ -122,7 +122,7 @@ class PreviewsUITabHelper
   explicit PreviewsUITabHelper(content::WebContents* web_contents);
 
   // Synchronously removes any data associated with |navigation_handle|.
-  void RemovePreviewsUserData(content::NavigationHandle* navigation_handle);
+  void RemovePreviewsUserData(int64_t navigation_id);
 
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
@@ -148,13 +148,11 @@ class PreviewsUITabHelper
   // The callback to run when the original page is loaded.
   OnDismissPreviewsUICallback on_dismiss_callback_;
 
-  // The data related to a given navigation handle. Created in the navigation
+  // The data related to a given navigation ID. Created in the navigation
   // pathway (see chrome_content_browser_client.cc). Removed in a PostTask from
-  // DidFinishNavigation for the given NavigationHandle*.
-  // TODO(ryansturm): evaluate whether this can be stored on NavigationHandle
-  // via SupportsUserData. The lifetime management would be cleaner there.
-  std::map<content::NavigationHandle*, previews::PreviewsUserData>
-      inflight_previews_user_datas_;
+  // DidFinishNavigation for the given navigation ID related to the
+  // NavigationHandle.
+  std::map<int64_t, previews::PreviewsUserData> inflight_previews_user_datas_;
 
   // The Previews information related to the navigation that was most recently
   // finished.
