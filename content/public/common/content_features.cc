@@ -116,11 +116,6 @@ const base::Feature kCompositeOpaqueFixedPosition{
 const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables handling touch events in compositor using impl side touch action
-// knowledge.
-const base::Feature kCompositorTouchAction{"CompositorTouchAction",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables crash reporting via Reporting API.
 // https://www.w3.org/TR/reporting/#crash-report
 const base::Feature kCrashReporting{"CrashReporting",

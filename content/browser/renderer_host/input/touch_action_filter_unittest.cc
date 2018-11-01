@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/input/touch_action_filter.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "ui/events/blink/blink_features.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -20,9 +22,16 @@ const blink::WebGestureDevice kSourceDevice =
 
 }  // namespace
 
-class TouchActionFilterTest : public testing::Test {
+class TouchActionFilterTest : public testing::Test,
+                              public testing::WithParamInterface<bool> {
  public:
-  TouchActionFilterTest() { filter_.OnHasTouchEventHandlers(true); }
+  TouchActionFilterTest() {
+    filter_.OnHasTouchEventHandlers(true);
+    if (GetParam())
+      feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
+    else
+      feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
+  }
   ~TouchActionFilterTest() override {}
 
  protected:
@@ -203,9 +212,14 @@ class TouchActionFilterTest : public testing::Test {
     }
   }
   TouchActionFilter filter_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(TouchActionFilterTest, SimpleFilter) {
+INSTANTIATE_TEST_CASE_P(, TouchActionFilterTest, ::testing::Bool());
+
+TEST_P(TouchActionFilterTest, SimpleFilter) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
@@ -301,7 +315,7 @@ TEST_F(TouchActionFilterTest, SimpleFilter) {
             FilterGestureEventResult::kFilterGestureEventFiltered);
 }
 
-TEST_F(TouchActionFilterTest, PanLeft) {
+TEST_P(TouchActionFilterTest, PanLeft) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = 7;
@@ -311,7 +325,7 @@ TEST_F(TouchActionFilterTest, PanLeft) {
   PanTestForUnidirectionalTouchAction(cc::kTouchActionPanLeft, kScrollX, 0);
 }
 
-TEST_F(TouchActionFilterTest, PanRight) {
+TEST_P(TouchActionFilterTest, PanRight) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = -7;
@@ -321,7 +335,7 @@ TEST_F(TouchActionFilterTest, PanRight) {
   PanTestForUnidirectionalTouchAction(cc::kTouchActionPanRight, kScrollX, 0);
 }
 
-TEST_F(TouchActionFilterTest, PanX) {
+TEST_P(TouchActionFilterTest, PanX) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = 7;
@@ -330,7 +344,7 @@ TEST_F(TouchActionFilterTest, PanX) {
   PanTest(cc::kTouchActionPanX, kScrollX, kScrollY, kDX, kDY, kDX, 0);
 }
 
-TEST_F(TouchActionFilterTest, PanUp) {
+TEST_P(TouchActionFilterTest, PanUp) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = 6;
@@ -340,7 +354,7 @@ TEST_F(TouchActionFilterTest, PanUp) {
   PanTestForUnidirectionalTouchAction(cc::kTouchActionPanUp, 0, kScrollY);
 }
 
-TEST_F(TouchActionFilterTest, PanDown) {
+TEST_P(TouchActionFilterTest, PanDown) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = 6;
@@ -350,7 +364,7 @@ TEST_F(TouchActionFilterTest, PanDown) {
   PanTestForUnidirectionalTouchAction(cc::kTouchActionPanDown, 0, kScrollY);
 }
 
-TEST_F(TouchActionFilterTest, PanY) {
+TEST_P(TouchActionFilterTest, PanY) {
   const float kDX = 5;
   const float kDY = 10;
   const float kScrollX = 6;
@@ -359,7 +373,7 @@ TEST_F(TouchActionFilterTest, PanY) {
   PanTest(cc::kTouchActionPanY, kScrollX, kScrollY, kDX, kDY, 0, kDY);
 }
 
-TEST_F(TouchActionFilterTest, PanXY) {
+TEST_P(TouchActionFilterTest, PanXY) {
   const float kDX = 5;
   const float kDY = 10;
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -436,7 +450,7 @@ TEST_F(TouchActionFilterTest, PanXY) {
   }
 }
 
-TEST_F(TouchActionFilterTest, BitMath) {
+TEST_P(TouchActionFilterTest, BitMath) {
   // Verify that the simple flag mixing properties we depend on are now
   // trivially true.
   EXPECT_EQ(cc::kTouchActionNone, cc::kTouchActionNone & cc::kTouchActionAuto);
@@ -450,7 +464,7 @@ TEST_F(TouchActionFilterTest, BitMath) {
             cc::kTouchActionManipulation | cc::kTouchActionDoubleTapZoom);
 }
 
-TEST_F(TouchActionFilterTest, MultiTouch) {
+TEST_P(TouchActionFilterTest, MultiTouch) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
@@ -495,8 +509,16 @@ TEST_F(TouchActionFilterTest, MultiTouch) {
             FilterGestureEventResult::kFilterGestureEventFiltered);
 }
 
-class TouchActionFilterPinchTest : public testing::Test {
+class TouchActionFilterPinchTest : public testing::Test,
+                                   public testing::WithParamInterface<bool> {
  public:
+  TouchActionFilterPinchTest() {
+    if (GetParam())
+      feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
+    else
+      feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
+  }
+
   void RunTest(bool force_enable_zoom) {
     filter_.OnHasTouchEventHandlers(true);
     filter_.SetForceEnableZoom(force_enable_zoom);
@@ -668,19 +690,22 @@ class TouchActionFilterPinchTest : public testing::Test {
 
  private:
   TouchActionFilter filter_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(TouchActionFilterPinchTest, Pinch) {
+INSTANTIATE_TEST_CASE_P(, TouchActionFilterPinchTest, ::testing::Bool());
+
+TEST_P(TouchActionFilterPinchTest, Pinch) {
   RunTest(false);
 }
 
 // Enables force enable zoom will override touch-action except for
 // touch-action: none.
-TEST_F(TouchActionFilterPinchTest, ForceEnableZoom) {
+TEST_P(TouchActionFilterPinchTest, ForceEnableZoom) {
   RunTest(true);
 }
 
-TEST_F(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
+TEST_P(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
@@ -711,7 +736,7 @@ TEST_F(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, DoubleTap) {
+TEST_P(TouchActionFilterTest, DoubleTap) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
@@ -743,7 +768,7 @@ TEST_F(TouchActionFilterTest, DoubleTap) {
   EXPECT_EQ(2, double_tap.data.tap.tap_count);
 }
 
-TEST_F(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
+TEST_P(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
@@ -763,7 +788,7 @@ TEST_F(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, SingleTap) {
+TEST_P(TouchActionFilterTest, SingleTap) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
@@ -783,7 +808,7 @@ TEST_F(TouchActionFilterTest, SingleTap) {
             FilterGestureEventResult::kFilterGestureEventFiltered);
 }
 
-TEST_F(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
+TEST_P(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
@@ -817,7 +842,7 @@ TEST_F(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, TouchActionResetMidSequence) {
+TEST_P(TouchActionFilterTest, TouchActionResetMidSequence) {
   filter_.OnHasTouchEventHandlers(true);
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
@@ -876,7 +901,7 @@ TEST_F(TouchActionFilterTest, TouchActionResetMidSequence) {
 
 // This test makes sure that we do not reset scrolling touch action in the
 // middle of a gesture sequence.
-TEST_F(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
+TEST_P(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
   filter_.OnSetTouchAction(cc::kTouchActionPanY);
@@ -918,7 +943,7 @@ TEST_F(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
 // The following 3 tests ensures that when the IPC message
 // OnHasTouchEventHandlers is received in the middle of a gesture sequence, the
 // touch action is not reset.
-TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
+TEST_P(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -940,7 +965,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 }
 
-TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringDoubleTap) {
+TEST_P(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringDoubleTap) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -968,7 +993,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringDoubleTap) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
+TEST_P(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -1001,7 +1026,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
 
 // If OnHasTouchEventHandlers IPC is received after LongTap or TwoFingerTap,
 // the touch action should be reset.
-TEST_F(TouchActionFilterTest,
+TEST_P(TouchActionFilterTest,
        OnHasTouchEventHandlersReceivedAfterLongTapOrTwoFingerTap) {
   filter_.OnHasTouchEventHandlers(false);
 
@@ -1038,7 +1063,7 @@ TEST_F(TouchActionFilterTest,
   EXPECT_FALSE(ScrollingTouchAction().has_value());
 }
 
-TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedAfterTouchStart) {
+TEST_P(TouchActionFilterTest, OnHasTouchEventHandlersReceivedAfterTouchStart) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ScrollingTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
@@ -1057,14 +1082,14 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedAfterTouchStart) {
 // If the renderer is busy, the gesture event might have come before the
 // OnHasTouchEventHanlders IPC is received. In this case, we should allow all
 // the gestures.
-TEST_F(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
+TEST_P(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
+TEST_P(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
   // This should not crash, and should set touch action to auto.
   ResetTouchAction();
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -1075,7 +1100,7 @@ TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
 
 // Having a gesture scroll begin without tap down should set touch action to
 // Auto.
-TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDown) {
+TEST_P(TouchActionFilterTest, ScrollBeginWithoutTapDown) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ScrollingTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
@@ -1091,7 +1116,7 @@ TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDown) {
 // Regression test for crbug.com/771330. One can start one finger panning y, and
 // add another finger to pinch zooming. The pinch zooming should not be allowed
 // if the allowed touch action doesn't allow it.
-TEST_F(TouchActionFilterTest, PinchZoomStartsWithOneFingerPanDisallowed) {
+TEST_P(TouchActionFilterTest, PinchZoomStartsWithOneFingerPanDisallowed) {
   filter_.OnHasTouchEventHandlers(true);
   filter_.OnSetTouchAction(cc::kTouchActionPanY);
   WebGestureEvent scroll_begin =
@@ -1128,7 +1153,7 @@ TEST_F(TouchActionFilterTest, PinchZoomStartsWithOneFingerPanDisallowed) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDownWithKnownTouchAction) {
+TEST_P(TouchActionFilterTest, ScrollBeginWithoutTapDownWithKnownTouchAction) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ScrollingTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
@@ -1142,7 +1167,7 @@ TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDownWithKnownTouchAction) {
   EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPan);
 }
 
-TEST_F(TouchActionFilterTest, TouchpadScroll) {
+TEST_P(TouchActionFilterTest, TouchpadScroll) {
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(
           2, 3, blink::kWebGestureDeviceTouchpad);
