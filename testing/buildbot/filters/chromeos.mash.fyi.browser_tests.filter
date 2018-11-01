@@ -262,10 +262,6 @@
 -PlatformAppBrowserTest.PictureInPicture
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage
 
-# Excluded from Mash because pointer events from EventGenerator aren't seen.
-# https://crbug.com/814675
--ChromeOSInfoPrivateTest.StylusSeen
-
 # Has become super flaky on linux-chromeos-rel bot. Note that the test itself
 # is also flaky on Windows and Mac even without "mash":
 # https://crbug.com/671891
