@@ -1651,6 +1651,11 @@ DirectoryTree.createDirectoryItem = function(modelItem, tree) {
           VolumeManagerCommon.RootType.CROSTINI,
           /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
       break;
+    case NavigationModelItemType.DRIVE:
+      return new FakeItem(
+          VolumeManagerCommon.RootType.DRIVE,
+          /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
     case NavigationModelItemType.ENTRY_LIST:
       return new EntryListItem(
           VolumeManagerCommon.RootType.MY_FILES,

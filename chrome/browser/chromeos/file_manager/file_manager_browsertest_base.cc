@@ -47,6 +47,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -1387,6 +1388,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     local_volume_->Unmount(profile());
     android_files_volume_->Unmount(profile());
     drive_volume_->Unmount();
+    return;
+  }
+
+  if (name == "setDriveEnabled") {
+    bool enabled;
+    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, !enabled);
     return;
   }
 

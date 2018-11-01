@@ -1207,6 +1207,18 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     });
   }
 
+  // If the current directory is the Drive placeholder and the real Drive is
+  // mounted, switch to it.
+  if (this.getCurrentRootType() ===
+      VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
+    for (let newVolume of event.added) {
+      if (newVolume.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+        newVolume.resolveDisplayRoot().then((displayRoot) => {
+          this.changeDirectoryEntry(displayRoot);
+        });
+      }
+    }
+  }
   // If a new file backed provided volume is mounted,
   // then redirect to it in the focused window.
   // If crostini is mounted, redirect even if window is not focused.
@@ -1253,6 +1265,10 @@ DirectoryModel.prototype.createDirectoryContents_ =
   if (entry.rootType == VolumeManagerCommon.RootType.MY_FILES) {
     return DirectoryContents.createForDirectory(
         context, /** @type {!FilesAppDirEntry} */ (entry));
+  }
+  if (entry.rootType == VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
+    return DirectoryContents.createForFakeDrive(
+        context, /** @type {!FakeEntry} */ (entry));
   }
   if (query && canUseDriveSearch) {
     // Drive search.

@@ -359,6 +359,20 @@ function FileManager() {
    * @private
    */
   this.commandLineFlags_ = {};
+
+  /**
+   * Whether Drive is enabled. Retrieved from user preferences.
+   * @type {boolean}
+   * @private
+   */
+  this.driveEnabled_ = false;
+
+  /**
+   * A fake Drive placeholder item.
+   * @type {NavigationModelFakeItem}
+   * @private
+   */
+  this.fakeDriveItem_ = null;
 }
 
 FileManager.prototype = /** @struct */ {
@@ -1209,6 +1223,11 @@ FileManager.prototype = /** @struct */ {
             null);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
+
+    chrome.fileManagerPrivate.onPreferencesChanged.addListener(() => {
+      this.onPreferencesChanged_();
+    });
+    this.onPreferencesChanged_();
   };
 
   /**
@@ -1569,5 +1588,46 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
+  };
+
+  /**
+   * Refreshes Drive prefs when they change. If Drive has been enabled or
+   * disabled, add or remove, respectively, the fake Drive item, creating it if
+   * necessary.
+   */
+  FileManager.prototype.onPreferencesChanged_ = function() {
+    chrome.fileManagerPrivate.getPreferences(
+        (/** chrome.fileManagerPrivate.Preferences */ prefs) => {
+          if (chrome.runtime.lastError ||
+              this.driveEnabled_ === prefs.driveEnabled) {
+            return;
+          }
+          this.driveEnabled_ = prefs.driveEnabled;
+          if (prefs.driveEnabled) {
+            if (!this.fakeDriveItem_) {
+              this.fakeDriveItem_ = new NavigationModelFakeItem(
+                  str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
+                  new FakeEntry(
+                      str('DRIVE_DIRECTORY_LABEL'),
+                      VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT));
+            }
+            this.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
+          } else {
+            this.directoryTree.dataModel.fakeDriveItem = null;
+            // The fake Drive item is being hidden so navigate away if it's the
+            // current directory.
+            if (this.directoryModel_.getCurrentDirEntry() ===
+                this.fakeDriveItem_.entry) {
+              this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
+                if (this.directoryModel_.getCurrentDirEntry() ===
+                        this.fakeDriveItem_.entry &&
+                    displayRoot) {
+                  this.directoryModel_.changeDirectoryEntry(displayRoot);
+                }
+              });
+            }
+          }
+          this.directoryTree.redraw(false);
+        });
   };
 })();

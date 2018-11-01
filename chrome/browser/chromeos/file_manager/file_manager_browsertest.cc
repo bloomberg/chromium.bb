@@ -209,6 +209,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayWithoutVolumesThenMountDownloads"),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DisableDriveFs(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").EnableDriveFs(),
+        TestCase("fileDisplayWithoutDrive"),
+        TestCase("fileDisplayWithoutDriveThenDisable"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound")));
 
