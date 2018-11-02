@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
 #else
 #define MAYBE_CrashReport CrashReport
 #endif
-IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, CrashReport) {
+IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver navigation_observer(contents);
