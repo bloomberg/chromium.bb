@@ -30,15 +30,10 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/events/text_event.h"
-#include "third_party/blink/renderer/core/events/text_event_input_type.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 
 namespace blink {
@@ -217,7 +212,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
 
 inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
     Document& document)
-    : HTMLDivElement(document), capturing_(false) {}
+    : HTMLDivElement(document) {}
 
 SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
     Document& document) {
@@ -226,15 +221,6 @@ SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
   element->SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
   element->setAttribute(kIdAttr, ShadowElementNames::SearchClearButton());
   return element;
-}
-
-void SearchFieldCancelButtonElement::DetachLayoutTree(
-    const AttachContext& context) {
-  if (capturing_) {
-    if (LocalFrame* frame = GetDocument().GetFrame())
-      frame->GetEventHandler().SetCapturingMouseEventsNode(nullptr);
-  }
-  HTMLDivElement::DetachLayoutTree(context);
 }
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
