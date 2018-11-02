@@ -24,12 +24,19 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
  public:
+  // Creates a main-thread bound PaintWorkletGlobalScope.
   static PaintWorkletGlobalScope* Create(
       LocalFrame*,
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerReportingProxy&,
       PaintWorkletPendingGeneratorRegistry*,
       size_t global_scope_number);
+
+  // Creates an worklet-thread bound PaintWorkletGlobalScope.
+  static PaintWorkletGlobalScope* Create(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      WorkerThread*);
+
   ~PaintWorkletGlobalScope() override;
   void Dispose() final;
 
@@ -49,13 +56,29 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
                           WorkerReportingProxy&,
                           PaintWorkletPendingGeneratorRegistry*);
 
+  PaintWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                          WorkerThread*);
+
+  // Registers the global scope with a proxy client, if not already done. Only
+  // used for worklet-thread bound PaintWorkletGlobalScopes.
+  void RegisterWithProxyClientIfNeeded();
+
   // The implementation of the "paint definition" concept:
   // https://drafts.css-houdini.org/css-paint-api/#paint-definition
   typedef HeapHashMap<String, TraceWrapperMember<CSSPaintDefinition>>
       DefinitionMap;
   DefinitionMap paint_definitions_;
 
-  Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;
+  // Only used for main-thread bound PaintWorkletGlobalScopes.
+  // TODO(smcgruer): Move elsewhere for worklet-thread bound
+  // PaintWorkletGlobalScope.
+  Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_ =
+      nullptr;
+
+  // Tracks whether this PaintWorkletGlobalScope has been registered with a
+  // PaintWorkletProxyClient. Only used in worklet-thread bound
+  // PaintWorkletGlobalScopes.
+  bool registered_ = false;
 };
 
 template <>

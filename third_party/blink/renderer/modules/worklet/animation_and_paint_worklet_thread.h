@@ -22,7 +22,8 @@ class MODULES_EXPORT AnimationAndPaintWorkletThread final
  public:
   static std::unique_ptr<AnimationAndPaintWorkletThread>
   CreateForAnimationWorklet(WorkerReportingProxy&);
-  // TODO(smcgruer): Add ability to create a PaintWorklet version.
+  static std::unique_ptr<AnimationAndPaintWorkletThread> CreateForPaintWorklet(
+      WorkerReportingProxy&);
   ~AnimationAndPaintWorkletThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override;

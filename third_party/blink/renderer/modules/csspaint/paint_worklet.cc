@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
@@ -90,6 +92,9 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const FloatSize& container_size,
                                          const CSSStyleValueVector* data) {
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    return nullptr;
+
   if (!document_definition_map_.Contains(name))
     return nullptr;
 
@@ -123,9 +128,20 @@ bool PaintWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  return new PaintWorkletGlobalScopeProxy(
-      To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
-      pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    return new PaintWorkletGlobalScopeProxy(
+        To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
+        pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
+  }
+
+  PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create();
+  WorkerClients* worker_clients = WorkerClients::Create();
+  ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
+
+  PaintWorkletMessagingProxy* proxy =
+      new PaintWorkletMessagingProxy(GetExecutionContext());
+  proxy->Initialize(worker_clients, ModuleResponsesMap());
+  return proxy;
 }
 
 }  // namespace blink

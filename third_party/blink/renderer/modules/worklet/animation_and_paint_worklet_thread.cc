@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
@@ -27,6 +28,16 @@ AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
   DCHECK(IsMainThread());
   return base::WrapUnique(new AnimationAndPaintWorkletThread(
       WorkletType::ANIMATION_WORKLET, worker_reporting_proxy));
+}
+
+std::unique_ptr<AnimationAndPaintWorkletThread>
+AnimationAndPaintWorkletThread::CreateForPaintWorklet(
+    WorkerReportingProxy& worker_reporting_proxy) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("paint-worklet"),
+               "AnimationAndPaintWorkletThread::CreateForPaintWorklet");
+  DCHECK(IsMainThread());
+  return base::WrapUnique(new AnimationAndPaintWorkletThread(
+      WorkletType::PAINT_WORKLET, worker_reporting_proxy));
 }
 
 template class WorkletThreadHolder<AnimationAndPaintWorkletThread>;
@@ -82,9 +93,9 @@ AnimationAndPaintWorkletThread::CreateWorkerGlobalScope(
                                                  this);
     }
     case WorkletType::PAINT_WORKLET:
-      // TODO(smcgruer): Add ability to create a PaintWorkletGlobalScope.
-      NOTREACHED();
-      return nullptr;
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("paint-worklet"),
+                   "AnimationAndPaintWorkletThread::CreateWorkerGlobalScope");
+      return PaintWorkletGlobalScope::Create(std::move(creation_params), this);
   };
 }
 

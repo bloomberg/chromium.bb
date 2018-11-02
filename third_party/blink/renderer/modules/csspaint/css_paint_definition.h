@@ -67,6 +67,9 @@ class MODULES_EXPORT CSSPaintDefinition final
 
   ScriptState* GetScriptState() const { return script_state_; }
 
+  v8::Local<v8::Function> ConstructorForTesting(v8::Isolate* isolate) {
+    return constructor_.NewLocal(isolate);
+  }
   v8::Local<v8::Function> PaintFunctionForTesting(v8::Isolate* isolate) {
     return paint_.NewLocal(isolate);
   }

@@ -23,7 +23,11 @@ blink_modules_sources("csspaint") {
     "paint_worklet_global_scope.h",
     "paint_worklet_global_scope_proxy.cc",
     "paint_worklet_global_scope_proxy.h",
+    "paint_worklet_messaging_proxy.cc",
+    "paint_worklet_messaging_proxy.h",
     "paint_worklet_pending_generator_registry.cc",
     "paint_worklet_pending_generator_registry.h",
+    "paint_worklet_proxy_client.cc",
+    "paint_worklet_proxy_client.h",
   ]
 }
