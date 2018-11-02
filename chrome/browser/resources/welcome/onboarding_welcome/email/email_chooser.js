@@ -10,7 +10,7 @@ cr.exportPath('nuxEmail');
  *   name: string,
  *   icon: string,
  *   url: string,
- *   bookmarkId: (string|undefined),
+ *   bookmarkId: (string|undefined|null),
  * }}
  */
 nuxEmail.EmailProviderModel;
@@ -73,12 +73,34 @@ Polymer({
         return;
 
       if (this.selectedEmailProvider_) {
-        this.emailProxy_.recordProviderSelected(
-            this.selectedEmailProvider_.id, this.emailList_.length);
+        // TODO(hcarmona): metrics.
+        this.revertBookmark_();
+        this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
       }
 
       this.emailProxy_.recordFinalize();
     });
+  },
+
+  /** Initializes the section when navigated to. */
+  initializeSection: function() {
+    this.finalized_ = false;
+    if (this.selectedEmailProvider_) {
+      this.addBookmark_(this.selectedEmailProvider_);
+      this.bookmarkProxy_.toggleBookmarkBar(true);
+    }
+  },
+
+  /** Finalizes the section when navigated away from. */
+  finalizeSection: function() {
+    if (this.finalized_)
+      return;
+
+    if (this.selectedEmailProvider_) {
+      // TODO(hcarmona): metrics?
+      this.revertBookmark_();
+      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+    }
   },
 
   /**
@@ -123,14 +145,37 @@ Polymer({
   },
 
   /**
+   * @param {nuxEmail.EmailProviderModel} emailProvider
+   * @private
+   */
+  addBookmark_: function(emailProvider) {
+    if (emailProvider.bookmarkId)
+      return;
+
+    this.emailProxy_.cacheBookmarkIcon(emailProvider.id);
+    this.bookmarkProxy_.toggleBookmarkBar(true);
+    this.bookmarkProxy_.addBookmark(
+        {
+          title: emailProvider.name,
+          url: emailProvider.url,
+          parentId: '1',
+        },
+        results => {
+          this.selectedEmailProvider_.bookmarkId = results.id;
+        });
+  },
+
+  /**
    * @param {nuxEmail.EmailProviderModel=} opt_emailProvider
    * @private
    */
   revertBookmark_: function(opt_emailProvider) {
     let emailProvider = opt_emailProvider || this.selectedEmailProvider_;
 
-    if (emailProvider && emailProvider.bookmarkId)
+    if (emailProvider && emailProvider.bookmarkId) {
       this.bookmarkProxy_.removeBookmark(emailProvider.bookmarkId);
+      emailProvider.bookmarkId = null;
+    }
   },
 
   /**
@@ -148,21 +193,10 @@ Polymer({
       this.revertBookmark_(prevEmail);
     }
 
-    if (newEmail) {
-      this.emailProxy_.cacheBookmarkIcon(newEmail.id);
-      this.bookmarkProxy_.toggleBookmarkBar(true);
-      this.bookmarkProxy_.addBookmark(
-          {
-            title: newEmail.name,
-            url: newEmail.url,
-            parentId: '1',
-          },
-          results => {
-            this.selectedEmailProvider_.bookmarkId = results.id;
-          });
-    } else {
+    if (newEmail)
+      this.addBookmark_(newEmail);
+    else
       this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
-    }
 
     // Announcements are mutually exclusive, so keeping separate.
     if (prevEmail && newEmail) {
