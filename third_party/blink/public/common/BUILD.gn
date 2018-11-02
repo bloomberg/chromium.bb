@@ -76,7 +76,7 @@ source_set("headers") {
     "page/launching_process_state.h",
     "picture_in_picture/picture_in_picture_control_info.h",
     "privacy_preferences.h",
-    "screen_orientation/web_screen_orientation_enum_traits.h",
+    "screen_orientation/web_screen_orientation_mojom_traits.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
     "service_worker/service_worker_status_code.h",

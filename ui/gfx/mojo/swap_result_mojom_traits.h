@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_MOJO_SWAP_RESULT_ENUM_TRAITS_H_
-#define UI_GFX_MOJO_SWAP_RESULT_ENUM_TRAITS_H_
+#ifndef UI_GFX_MOJO_SWAP_RESULT_MOJOM_TRAITS_H_
+#define UI_GFX_MOJO_SWAP_RESULT_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "ui/gfx/mojo/swap_result.mojom-shared.h"
@@ -45,4 +45,4 @@ struct EnumTraits<gfx::mojom::SwapResult, gfx::SwapResult> {
 
 }  // namespace mojo
 
-#endif  // UI_GFX_MOJO_SWAP_RESULT_ENUM_TRAITS_H_
+#endif  // UI_GFX_MOJO_SWAP_RESULT_MOJOM_TRAITS_H_
