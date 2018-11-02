@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt.h"
@@ -50,8 +49,6 @@ namespace chromeos {
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
-
-class EasyUnlockServiceObserver;
 
 class EasyUnlockService : public KeyedService {
  public:
@@ -162,9 +159,6 @@ class EasyUnlockService : public KeyedService {
   // Checks the consistency between pairing data and cryptohome keys. Set
   // hardlock state if the two do not match.
   void CheckCryptohomeKeysAndMaybeHardlock();
-
-  void AddObserver(EasyUnlockServiceObserver* observer);
-  void RemoveObserver(EasyUnlockServiceObserver* observer);
 
   ChromeProximityAuthClient* proximity_auth_client() {
     return &proximity_auth_client_;
@@ -286,8 +280,6 @@ class EasyUnlockService : public KeyedService {
   bool shut_down_;
 
   bool tpm_key_checked_;
-
-  base::ObserverList<EasyUnlockServiceObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_;
 
