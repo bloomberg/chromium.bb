@@ -1268,7 +1268,7 @@
     },
     {
       name: "UserActivationAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UserActivationV2",
