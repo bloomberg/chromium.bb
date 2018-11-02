@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -33,11 +35,18 @@ class ServiceContext;
 // service references to different endpoints in your service.
 class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
  public:
-  class TimeoutObserver {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~TimeoutObserver() {}
-    virtual void OnTimeoutExpired() = 0;
-    virtual void OnTimeoutCancelled() = 0;
+    ~Observer() override {}
+
+    // Invoked whenever the ServiceKeepalive detects that the service has been
+    // idle for at least the idle time delta specified (if any) upon
+    // construction of the ServiceKeepalive.
+    virtual void OnIdleTimeout() = 0;
+
+    // Invoked whenever the ServiceKeepalive detects new activity again after
+    // having been idle for any amount of time.
+    virtual void OnIdleTimeoutCancelled() = 0;
   };
 
   ServiceKeepalive(ServiceBinding* binding,
@@ -52,12 +61,14 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
   // DEPRECATED: Please consider switching from ServiceContext to ServiceBinding
   // and using the constructor above.
   ServiceKeepalive(ServiceContext* context,
-                   base::Optional<base::TimeDelta> idle_timeout,
-                   TimeoutObserver* timeout_observer = nullptr);
+                   base::Optional<base::TimeDelta> idle_timeout);
   ~ServiceKeepalive();
 
   std::unique_ptr<ServiceContextRef> CreateRef();
   bool HasNoRefs();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   void OnRefAdded();
@@ -68,7 +79,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
   ServiceContext* const context_ = nullptr;
   const base::Optional<base::TimeDelta> idle_timeout_;
   base::Optional<base::OneShotTimer> idle_timer_;
-  TimeoutObserver* const timeout_observer_ = nullptr;
+  base::ObserverList<Observer> observers_;
   ServiceContextRefFactory ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceKeepalive);

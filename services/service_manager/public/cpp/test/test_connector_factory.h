@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/service_control.mojom.h"
 
 namespace service_manager {
 
@@ -50,16 +52,22 @@ class Service;
 //   std::unique_ptr<service_manager::Connector> connector =
 //       connector_factory->CreateConnector();
 //   ...
-class TestConnectorFactory {
+class TestConnectorFactory : public mojom::ServiceControl {
  public:
   // Creates a simple TestConnectorFactory which can be used register unowned
   // Service instances and vend Connectors which can connect to them.
   TestConnectorFactory();
-  ~TestConnectorFactory();
+  ~TestConnectorFactory() override;
 
   // A mapping from service names to Service proxies for unowned Service
   // instances.
   using NameToServiceProxyMap = std::map<std::string, mojom::ServicePtr>;
+
+  // Used to hold a mapping from service names to callbacks which can
+  // instantiate an instance of those services.
+  using ServiceHandler =
+      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>;
+  using NameToServiceHandlerMap = std::map<std::string, ServiceHandler>;
 
   // Used to hold a mapping from service names to owned Service instances.
   using NameToServiceMap = std::map<std::string, std::unique_ptr<Service>>;
@@ -90,11 +98,37 @@ class TestConnectorFactory {
   // simulated events from this object.
   mojom::ServiceRequest RegisterInstance(const std::string& service_name);
 
+  // Registers a callback to start an instance of a specific named service
+  // whenever it's needed by this TestConnectorFactory. This may be used instead
+  // of a one-time registration via |RegisterInstance()| in cases where a
+  // service-under-test may be stopped and restarted multiple times during a
+  // single test.
+  void RegisterServiceHandler(const std::string& service_name,
+                              const ServiceHandler& handler);
+
   const std::string& test_user_id() const { return test_user_id_; }
+
+  // Normally when a service instance registered via either |RegisterInstance()|
+  // or |RegisterServiceHandler()| requests termination from the Service
+  // Manager, TestConnectorFactory immediately severs the service instance's
+  // connection, typically triggering the service's shutdown path.
+  //
+  // If this is set to |true| (defaults to |false|), quit requests are ignored
+  // and each service instance will remain connected to the TestConnectorFactory
+  // until either it or the TestConnoctorFactory is destroyed.
+  void set_ignore_quit_requests(bool ignore) { ignore_quit_requests_ = ignore; }
 
  private:
   explicit TestConnectorFactory(std::unique_ptr<mojom::Connector> impl,
                                 std::string test_user_id);
+
+  void OnStartResponseHandler(
+      const std::string& service_name,
+      mojom::ConnectorRequest connector_request,
+      mojom::ServiceControlAssociatedRequest control_request);
+
+  // mojom::ServiceControl:
+  void RequestQuit() override;
 
   NameToServiceMap names_to_services_;
 
@@ -105,6 +139,17 @@ class TestConnectorFactory {
   // are unowned by the TestConnectorFactory. Maps service names to their
   // proxies.
   NameToServiceProxyMap service_proxies_;
+
+  // Maps service names to handlers which can construct service instances.
+  NameToServiceHandlerMap service_handlers_;
+
+  // ServiceControl bindings which receive and process RequestQuit requests from
+  // connected service instances. The associated service name is used as
+  // context.
+  mojo::AssociatedBindingSet<mojom::ServiceControl, std::string>
+      service_control_bindings_;
+
+  bool ignore_quit_requests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectorFactory);
 };

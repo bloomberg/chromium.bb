@@ -84,6 +84,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   if (!connector_factory_) {
     connector_factory_ =
         std::make_unique<service_manager::TestConnectorFactory>();
+    connector_factory_->set_ignore_quit_requests(true);
     data_decoder_ = std::make_unique<data_decoder::DataDecoderService>(
         connector_factory_->RegisterInstance(
             data_decoder::mojom::kServiceName));

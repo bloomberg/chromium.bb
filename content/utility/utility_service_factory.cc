@@ -133,12 +133,6 @@ void UtilityServiceFactory::CreateService(
 void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   GetContentClient()->utility()->RegisterServices(services);
 
-  service_manager::EmbeddedServiceInfo video_capture_info;
-  video_capture_info.factory =
-      base::BindRepeating(&video_capture::ServiceImpl::Create);
-  services->insert(
-      std::make_pair(video_capture::mojom::kServiceName, video_capture_info));
-
   GetContentClient()->utility()->RegisterAudioBinders(audio_registry_.get());
   service_manager::EmbeddedServiceInfo audio_info;
   audio_info.factory = base::BindRepeating(
@@ -186,6 +180,9 @@ bool UtilityServiceFactory::HandleServiceRequest(
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     running_service_ =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
+  } else if (name == video_capture::mojom::kServiceName) {
+    running_service_ =
+        std::make_unique<video_capture::ServiceImpl>(std::move(request));
   }
 
   if (running_service_) {

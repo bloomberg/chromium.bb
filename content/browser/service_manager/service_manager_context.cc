@@ -371,6 +371,42 @@ bool AudioServiceOutOfProcess() {
          !GetContentClient()->browser()->OverridesAudioManager();
 }
 
+using InProcessServiceFactory =
+    base::RepeatingCallback<std::unique_ptr<service_manager::Service>(
+        service_manager::mojom::ServiceRequest request)>;
+
+void LaunchInProcessServiceOnSequence(
+    const InProcessServiceFactory& factory,
+    service_manager::mojom::ServiceRequest request) {
+  auto* raw_service_impl = factory.Run(std::move(request)).release();
+  raw_service_impl->set_termination_closure(base::BindOnce(
+      [](service_manager::Service* impl) { delete impl; }, raw_service_impl));
+}
+
+void LaunchInProcessService(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const InProcessServiceFactory& factory,
+    service_manager::mojom::ServiceRequest request) {
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&LaunchInProcessServiceOnSequence, factory,
+                                std::move(request)));
+}
+
+void RegisterInProcessService(
+    ServiceManagerConnection* connection,
+    const std::string& service_name,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const InProcessServiceFactory& factory) {
+  connection->AddServiceRequestHandler(
+      service_name,
+      base::BindRepeating(&LaunchInProcessService, task_runner, factory));
+}
+
+std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<video_capture::ServiceImpl>(std::move(request));
+}
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -614,10 +650,8 @@ ServiceManagerContext::ServiceManagerContext(
   }
 
   if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
-    service_manager::EmbeddedServiceInfo video_capture_info;
-    video_capture_info.factory =
-        base::BindRepeating(&video_capture::ServiceImpl::Create);
-    video_capture_info.task_runner =
+    RegisterInProcessService(
+        packaged_services_connection_.get(), video_capture::mojom::kServiceName,
 #if defined(OS_WIN)
         base::CreateCOMSTATaskRunnerWithTraits(
 #else
@@ -625,9 +659,8 @@ ServiceManagerContext::ServiceManagerContext(
 #endif
             base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
                               base::TaskPriority::BEST_EFFORT}),
-            base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-    packaged_services_connection_->AddEmbeddedService(
-        video_capture::mojom::kServiceName, video_capture_info);
+            base::SingleThreadTaskRunnerThreadMode::DEDICATED),
+        base::BindRepeating(&CreateVideoCaptureService));
   }
 
   {

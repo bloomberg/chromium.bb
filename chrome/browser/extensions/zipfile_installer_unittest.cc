@@ -105,7 +105,9 @@ class ZipFileInstallerTest : public testing::Test {
         unzip_service_context_(unzip::UnzipService::CreateService(),
                                test_connector_factory_.RegisterInstance(
                                    unzip::mojom::kServiceName)),
-        connector_(test_connector_factory_.CreateConnector()) {}
+        connector_(test_connector_factory_.CreateConnector()) {
+    test_connector_factory_.set_ignore_quit_requests(true);
+  }
 
   void SetUp() override {
     extensions::LoadErrorReporter::Init(/*enable_noisy_errors=*/false);

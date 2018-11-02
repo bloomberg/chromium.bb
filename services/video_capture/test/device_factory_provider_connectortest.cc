@@ -33,25 +33,20 @@ class DeviceFactoryProviderConnectorTest : public ::testing::Test {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-    std::unique_ptr<ServiceImpl> service_impl = std::make_unique<ServiceImpl>(
+    service_impl_ = std::make_unique<ServiceImpl>(
+        connector_factory_.RegisterInstance(video_capture::mojom::kServiceName),
         DeviceFactoryProviderConnectorTestTraits::shutdown_delay());
-    service_impl->SetDestructionObserver(base::BindOnce(
-        [](base::RunLoop* service_destroyed_wait_loop) {
-          service_destroyed_wait_loop->Quit();
-        },
-        &service_destroyed_wait_loop_));
-    service_impl_ = service_impl.get();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(service_impl), true /*release_service_on_quit_request*/);
-    connector_ = connector_factory_->CreateConnector();
-    {
-      base::RunLoop wait_loop;
-      service_impl_->SetFactoryProviderClientConnectedObserver(
-          wait_loop.QuitClosure());
-      connector_->BindInterface(mojom::kServiceName, &factory_provider_);
-      wait_loop.Run();
-    }
+    service_impl_->set_termination_closure(
+        base::BindOnce(&DeviceFactoryProviderConnectorTest::OnServiceQuit,
+                       base::Unretained(this)));
+
+    connector_ = connector_factory_.CreateConnector();
+
+    base::RunLoop wait_loop;
+    service_impl_->SetFactoryProviderClientConnectedObserver(
+        wait_loop.QuitClosure());
+    connector_->BindInterface(mojom::kServiceName, &factory_provider_);
+    wait_loop.Run();
   }
 
   void TearDown() override {
@@ -65,15 +60,25 @@ class DeviceFactoryProviderConnectorTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ServiceImpl* service_impl_;
+  std::unique_ptr<ServiceImpl> service_impl_;
   mojom::DeviceFactoryProviderPtr factory_provider_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
       device_info_receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   base::RunLoop service_destroyed_wait_loop_;
+  base::OnceClosure service_quit_callback_;
 
  private:
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  void OnServiceQuit() {
+    service_impl_.reset();
+    service_destroyed_wait_loop_.Quit();
+    if (service_quit_callback_)
+      std::move(service_quit_callback_).Run();
+  }
+
+  service_manager::TestConnectorFactory connector_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderConnectorTest);
 };
 
 // We need to set the shutdown delay to at least some epsilon > 0 in order
@@ -233,7 +238,7 @@ TEST_F(NoAutomaticShutdownDeviceFactoryProviderConnectorTest,
   }
 
   base::MockCallback<base::OnceClosure> service_impl_destructor_cb;
-  service_impl_->SetDestructionObserver(service_impl_destructor_cb.Get());
+  service_quit_callback_ = service_impl_destructor_cb.Get();
   EXPECT_CALL(service_impl_destructor_cb, Run()).Times(0);
 
   // Wait for an arbitrary short extra time after which we are convinced that
@@ -246,7 +251,7 @@ TEST_F(NoAutomaticShutdownDeviceFactoryProviderConnectorTest,
     wait_loop.Run();
   }
 
-  service_impl_->SetDestructionObserver(base::DoNothing());
+  service_quit_callback_.Reset();
 }
 
 }  // namespace video_capture
