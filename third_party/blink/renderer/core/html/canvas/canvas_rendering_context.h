@@ -207,7 +207,10 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   HashSet<String> dirty_urls_;
   CanvasColorParams color_params_;
   CanvasContextCreationAttributesCore creation_attributes_;
-  bool finalize_frame_scheduled_ = false;
+
+  void StartListeningForDidProcessTask();
+  void StopListeningForDidProcessTask();
+  bool listening_for_did_process_task_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext);
 };

@@ -372,7 +372,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   mutable UsageCounters usage_counters_;
 
-  virtual void NeedsFinalizeFrame(){};
+  virtual void NeedsFinalizeFrame() {}
 
   float GetFontBaseline(const SimpleFontData&) const;
 

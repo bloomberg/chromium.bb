@@ -99,8 +99,7 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
 }
 
 void CanvasRenderingContext::Dispose() {
-  if (finalize_frame_scheduled_)
-    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  StopListeningForDidProcessTask();
 
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
   // When the pair is no longer reachable, their destruction order is non-
@@ -116,25 +115,22 @@ void CanvasRenderingContext::Dispose() {
 
 void CanvasRenderingContext::DidDraw(const SkIRect& dirty_rect) {
   Host()->DidDraw(SkRect::Make(dirty_rect));
-  NeedsFinalizeFrame();
+  StartListeningForDidProcessTask();
 }
 
 void CanvasRenderingContext::DidDraw() {
   Host()->DidDraw();
-  NeedsFinalizeFrame();
+  StartListeningForDidProcessTask();
 }
 
 void CanvasRenderingContext::NeedsFinalizeFrame() {
-  if (!finalize_frame_scheduled_) {
-    finalize_frame_scheduled_ = true;
-    Platform::Current()->CurrentThread()->AddTaskObserver(this);
-  }
+  StartListeningForDidProcessTask();
 }
 
 void CanvasRenderingContext::DidProcessTask(
-    const base::PendingTask& pending_task) {
-  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
-  finalize_frame_scheduled_ = false;
+    const base::PendingTask& /* pending_task */) {
+  StopListeningForDidProcessTask();
+
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
   if (Host())
@@ -200,6 +196,22 @@ void CanvasRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(host_);
   visitor->Trace(creation_attributes_);
   ScriptWrappable::Trace(visitor);
+}
+
+void CanvasRenderingContext::StartListeningForDidProcessTask() {
+  if (listening_for_did_process_task_)
+    return;
+
+  listening_for_did_process_task_ = true;
+  Platform::Current()->CurrentThread()->AddTaskObserver(this);
+}
+
+void CanvasRenderingContext::StopListeningForDidProcessTask() {
+  if (!listening_for_did_process_task_)
+    return;
+
+  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  listening_for_did_process_task_ = false;
 }
 
 }  // namespace blink
