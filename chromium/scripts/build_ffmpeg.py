@@ -565,8 +565,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       # missing system headers break some Android builds.
       '--disable-linux-perf',
 
-      # Force usage of yasm
-      '--x86asmexe=yasm',
+      # Force usage of nasm.
+      '--x86asmexe=nasm',
   ])
 
   if target_os == 'android':

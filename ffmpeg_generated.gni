@@ -10,7 +10,7 @@ import("ffmpeg_options.gni")
 # Declare empty versions of each variable for easier +=ing later.
 ffmpeg_c_sources = []
 ffmpeg_gas_sources = []
-ffmpeg_yasm_sources = []
+ffmpeg_asm_sources = []
 
 use_linux_config = is_linux || is_fuchsia
 
@@ -293,7 +293,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config &&
 }
 
 if ((is_android && current_cpu == "x64") || (is_mac) || (is_win) || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86")) {
-  ffmpeg_yasm_sources += [
+  ffmpeg_asm_sources += [
     "libavcodec/x86/dct32.asm",
     "libavcodec/x86/fft.asm",
     "libavcodec/x86/flacdsp.asm",
@@ -316,7 +316,7 @@ if ((is_mac) || (is_win) || (use_linux_config && current_cpu == "x64") || (use_l
     "libavcodec/x86/vp3dsp_init.c",
     "libavcodec/x86/vp8dsp_init.c",
   ]
-  ffmpeg_yasm_sources += [
+  ffmpeg_asm_sources += [
     "libavcodec/x86/autorename_libavcodec_x86_videodsp.asm",
     "libavcodec/x86/fpel.asm",
     "libavcodec/x86/h264_intrapred.asm",
@@ -344,7 +344,7 @@ if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_android && curr
 }
 
 if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
-  ffmpeg_yasm_sources += [
+  ffmpeg_asm_sources += [
     "libavcodec/x86/aacpsdsp.asm",
     "libavcodec/x86/mdct15.asm",
     "libavcodec/x86/sbrdsp.asm",
@@ -497,7 +497,7 @@ if ((is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Ch
     "libavcodec/x86/h264chroma_init.c",
     "libavcodec/x86/h264dsp_init.c",
   ]
-  ffmpeg_yasm_sources += [
+  ffmpeg_asm_sources += [
     "libavcodec/x86/h264_chromamc.asm",
     "libavcodec/x86/h264_chromamc_10bit.asm",
     "libavcodec/x86/h264_deblock.asm",
@@ -651,7 +651,7 @@ if ((use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") 
     "libavcodec/x86/qpeldsp_init.c",
     "libavcodec/x86/xvididct_init.c",
   ]
-  ffmpeg_yasm_sources += [
+  ffmpeg_asm_sources += [
     "libavcodec/x86/blockdsp.asm",
     "libavcodec/x86/h263_loopfilter.asm",
     "libavcodec/x86/idctdsp.asm",
