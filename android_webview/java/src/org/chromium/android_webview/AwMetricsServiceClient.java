@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -82,6 +83,11 @@ public class AwMetricsServiceClient {
         if (sShouldEnable) {
             nativeSetHaveMetricsConsent(true);
         }
+    }
+
+    @CalledByNative
+    private static String getAppPackageName() {
+        return ContextUtils.getApplicationContext().getPackageName();
     }
 
     public static native void nativeSetHaveMetricsConsent(boolean enabled);

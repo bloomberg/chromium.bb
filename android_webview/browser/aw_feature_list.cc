@@ -47,6 +47,10 @@ namespace features {
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether the application package name is logged in UMA.
+const base::Feature kWebViewUmaLogAppPackageName{
+    "WebViewUmaLogAppPackageName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 static jboolean JNI_AwFeatureList_IsEnabled(

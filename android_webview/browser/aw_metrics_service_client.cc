@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_metrics_log_uploader.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
@@ -266,6 +267,16 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
   // The platform logging mechanism is responsible for upload frequency; this
   // just specifies how frequently to provide logs to the platform.
   return base::TimeDelta::FromMinutes(kUploadIntervalMinutes);
+}
+
+std::string AwMetricsServiceClient::GetAppPackageName() {
+  if (!base::FeatureList::IsEnabled(features::kWebViewUmaLogAppPackageName))
+    return std::string();
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_app_name =
+      Java_AwMetricsServiceClient_getAppPackageName(env);
+  return ConvertJavaStringToUTF8(env, j_app_name);
 }
 
 AwMetricsServiceClient::AwMetricsServiceClient()
