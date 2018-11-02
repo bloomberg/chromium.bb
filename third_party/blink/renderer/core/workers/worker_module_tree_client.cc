@@ -41,6 +41,9 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   // asynchronous completion, with script being the asynchronous completion
   // value."
   worker_reporting_proxy.WillEvaluateModuleScript();
+  // This |error| is always null because the second argument is |kReport|.
+  // TODO(nhiroki): Catch an error when an evaluation error happens.
+  // (https://crbug.com/680046)
   ScriptValue error = modulator_->ExecuteModule(
       module_script, Modulator::CaptureEvalErrorFlag::kReport);
   worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());

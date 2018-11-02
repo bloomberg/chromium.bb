@@ -403,12 +403,6 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
     return;
   }
 
-  // "Let worker be a new ServiceWorker object..." and start
-  // the worker.
-  set_new_version(new ServiceWorkerVersion(
-      registration(), script_url_, worker_script_type_, version_id, context_));
-  new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
-
   // Module service workers don't support pause after download so we can't
   // perform script comparison.
   // TODO(asamidoi): Support pause after download in module workers.
@@ -416,7 +410,19 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
     skip_script_comparison_ = true;
   }
 
-  if (registration()->has_installed_version() && !skip_script_comparison_) {
+  // Skip the byte-for-byte comparison when the script type is updated.
+  if (registration()->newest_installed_version() &&
+      registration()->newest_installed_version()->script_type() !=
+          worker_script_type_) {
+    skip_script_comparison_ = true;
+  }
+
+  // "Let worker be a new ServiceWorker object..." and start the worker.
+  set_new_version(new ServiceWorkerVersion(
+      registration(), script_url_, worker_script_type_, version_id, context_));
+  new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
+
+  if (registration()->newest_installed_version() && !skip_script_comparison_) {
     new_version()->SetToPauseAfterDownload(
         base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
                        weak_factory_.GetWeakPtr()));
@@ -628,7 +634,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (registration()) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
-    if (registration()->has_installed_version())
+    if (registration()->newest_installed_version())
       registration()->set_is_uninstalled(false);
   }
 }
@@ -705,7 +711,7 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
       registration()->last_update_check().is_null()) {
     registration()->set_last_update_check(base::Time::Now());
 
-    if (registration()->has_installed_version())
+    if (registration()->newest_installed_version())
       context_->storage()->UpdateLastUpdateCheckTime(registration());
   }
 }

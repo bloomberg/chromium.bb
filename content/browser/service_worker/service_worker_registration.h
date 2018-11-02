@@ -106,8 +106,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return installing_version_.get();
   }
 
-  bool has_installed_version() const {
-    return active_version() || waiting_version();
+  ServiceWorkerVersion* newest_installed_version() const {
+    return waiting_version() ? waiting_version() : active_version();
   }
 
   const blink::mojom::NavigationPreloadState navigation_preload_state() const {
