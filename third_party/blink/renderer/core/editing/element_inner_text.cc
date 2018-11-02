@@ -139,10 +139,21 @@ String ElementInnerTextCollector::RunOn(const Element& element) {
     return element.textContent(convert_brs_to_newlines);
   }
 
-  // 2. Let results be the list resulting in running the inner text collection
-  // steps with this element. Each item in results will either be a JavaScript
-  // string or a positive integer (a required line break count).
-  ProcessNode(element);
+  // 2. Let results be a new empty list.
+  // 3. For each child node node of this element:
+  //   1. Let current be the list resulting in running the inner text collection
+  //      steps with node. Each item in results will either be a JavaScript
+  //      string or a positive integer (a required line break count).
+  //   2. For each item item in current, append item to results.
+  // Note: Handles <select> and <option> here since they are implemented as
+  // UA shadow DOM, e.g. Text nodes in <option> don't have layout object.
+  // See also: https://github.com/whatwg/html/issues/3797
+  if (IsHTMLSelectElement(element))
+    ProcessSelectElement(ToHTMLSelectElement(element));
+  else if (IsHTMLOptionElement(element))
+    ProcessOptionElement(ToHTMLOptionElement(element));
+  else
+    ProcessChildrenWithRequiredLineBreaks(element, 0);
   return result_.Finish();
 }
 
