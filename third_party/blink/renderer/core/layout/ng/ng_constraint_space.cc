@@ -15,6 +15,24 @@
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGConstraintSpace {
+  NGLogicalSize logical_sizes[3];
+  NGPhysicalSize physical_sizes[1];
+  LayoutUnit layout_units[3];
+  NGMarginStrut margin_strut;
+  NGBfcOffset bfc_offset;
+  NGExclusionSpace exclusion_space;
+  base::Optional<LayoutUnit> optional_layout_unit;
+  unsigned flags[1];
+};
+
+static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
+              "NGConstraintSpace should stay small.");
+
+}  // namespace
+
 NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
                                      bool is_new_fc,
                                      NGConstraintSpaceBuilder& builder)
@@ -32,13 +50,13 @@ NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
       writing_mode_(static_cast<unsigned>(out_writing_mode)),
       direction_(static_cast<unsigned>(builder.text_direction_)),
       flags_(builder.flags_),
+      baseline_requests_(builder.baseline_requests_.Serialize()),
       margin_strut_(is_new_fc ? NGMarginStrut() : builder.margin_strut_),
       bfc_offset_(is_new_fc ? NGBfcOffset() : builder.bfc_offset_),
       floats_bfc_block_offset_(is_new_fc ? base::nullopt
                                          : builder.floats_bfc_block_offset_),
       clearance_offset_(is_new_fc ? LayoutUnit::Min()
-                                  : builder.clearance_offset_),
-      baseline_requests_(std::move(builder.baseline_requests_)) {
+                                  : builder.clearance_offset_) {
   bool is_in_parallel_flow =
       IsParallelWritingMode(builder.parent_writing_mode_, out_writing_mode);
 

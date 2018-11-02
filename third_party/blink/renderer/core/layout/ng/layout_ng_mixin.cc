@@ -184,22 +184,22 @@ void LayoutNGMixin<Base>::AddOutlineRects(
 
 // Retrieve NGBaseline from the current fragment.
 template <typename Base>
-const NGBaseline* LayoutNGMixin<Base>::FragmentBaseline(
+base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
     NGBaselineAlgorithmType type) const {
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
     FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
     return ToNGPhysicalBoxFragment(physical_fragment)
         ->Baseline({type, baseline_type});
   }
-  return nullptr;
+  return base::nullopt;
 }
 
 template <typename Base>
 LayoutUnit LayoutNGMixin<Base>::FirstLineBoxBaseline() const {
   if (Base::ChildrenInline()) {
-    if (const NGBaseline* baseline =
+    if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kFirstLine)) {
-      return baseline->offset;
+      return offset.value();
     }
   }
   return Base::FirstLineBoxBaseline();
@@ -209,9 +209,9 @@ template <typename Base>
 LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
   if (Base::ChildrenInline()) {
-    if (const NGBaseline* baseline =
+    if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kAtomicInline)) {
-      return baseline->offset;
+      return offset.value();
     }
   }
   return Base::InlineBlockBaseline(line_direction);

@@ -44,26 +44,16 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               ? kFragmentRenderedLegend
               : kFragmentBox,
           builder->BoxType()),
-      baselines_(std::move(builder->baselines_)),
+      baselines_(builder->baselines_),
       borders_(builder->borders_.ConvertToPhysical(builder->GetWritingMode(),
                                                    builder->Direction())),
       padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
                                                    builder->Direction())) {
-  DCHECK(builder->baselines_.IsEmpty());  // Ensure move semantics is used.
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_old_layout_root_ = builder->is_old_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
   children_inline_ =
       builder->layout_object_ && builder->layout_object_->ChildrenInline();
-}
-
-const NGBaseline* NGPhysicalBoxFragment::Baseline(
-    const NGBaselineRequest& request) const {
-  for (const auto& baseline : baselines_) {
-    if (baseline.request == request)
-      return &baseline;
-  }
-  return nullptr;
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {

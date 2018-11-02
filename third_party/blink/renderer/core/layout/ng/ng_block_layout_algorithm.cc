@@ -2077,7 +2077,8 @@ LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
     const NGBaselineRequest& request,
     const NGPhysicalLineBoxFragment& line_box,
     LayoutUnit line_box_block_offset) const {
-  NGLineHeightMetrics metrics = line_box.BaselineMetrics(request.baseline_type);
+  NGLineHeightMetrics metrics =
+      line_box.BaselineMetrics(request.BaselineType());
 
   // NGLineHeightMetrics is line-relative, which matches to the flow-relative
   // unless this box is in flipped-lines writing-mode.
@@ -2125,8 +2126,8 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
 
   if (child->IsBox()) {
     const NGPhysicalBoxFragment* box = ToNGPhysicalBoxFragment(child);
-    if (const NGBaseline* baseline = box->Baseline(request)) {
-      container_builder_.AddBaseline(request, baseline->offset + child_offset);
+    if (base::Optional<LayoutUnit> baseline = box->Baseline(request)) {
+      container_builder_.AddBaseline(request, baseline.value() + child_offset);
       return true;
     }
   }
@@ -2137,13 +2138,12 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
 // Propagate computed baselines from children.
 // Skip children that do not produce baselines (e.g., empty blocks.)
 void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
-  const NGConstraintSpace::NGBaselineRequestVector& requests =
-      ConstraintSpace().BaselineRequests();
+  const NGBaselineRequestList requests = ConstraintSpace().BaselineRequests();
   if (requests.IsEmpty())
     return;
 
   for (const auto& request : requests) {
-    switch (request.algorithm_type) {
+    switch (request.AlgorithmType()) {
       case NGBaselineAlgorithmType::kAtomicInline:
         if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
           break;

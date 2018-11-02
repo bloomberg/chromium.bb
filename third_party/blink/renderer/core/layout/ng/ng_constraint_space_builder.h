@@ -175,12 +175,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  void AddBaselineRequests(
-      const NGConstraintSpace::NGBaselineRequestVector& requests) {
+  void AddBaselineRequests(const NGBaselineRequestList requests) {
     DCHECK(baseline_requests_.IsEmpty());
     baseline_requests_.AppendVector(requests);
   }
-  NGConstraintSpaceBuilder& AddBaselineRequest(const NGBaselineRequest&);
+  NGConstraintSpaceBuilder& AddBaselineRequest(
+      const NGBaselineRequest request) {
+    baseline_requests_.push_back(request);
+    return *this;
+  }
 
   // Creates a new constraint space. This may be called multiple times, for
   // example the constraint space will be different for a child which:
@@ -226,7 +229,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   base::Optional<LayoutUnit> floats_bfc_block_offset_;
   const NGExclusionSpace* exclusion_space_ = nullptr;
   LayoutUnit clearance_offset_;
-  NGConstraintSpace::NGBaselineRequestVector baseline_requests_;
+  NGBaselineRequestList baseline_requests_;
 
   friend class NGConstraintSpace;
 };

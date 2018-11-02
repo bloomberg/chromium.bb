@@ -199,12 +199,12 @@ class LayoutUnit {
     return return_value;
   }
 
-  static const LayoutUnit Max() {
+  static constexpr LayoutUnit Max() {
     LayoutUnit m;
     m.value_ = std::numeric_limits<int>::max();
     return m;
   }
-  static const LayoutUnit Min() {
+  static constexpr LayoutUnit Min() {
     LayoutUnit m;
     m.value_ = std::numeric_limits<int>::min();
     return m;

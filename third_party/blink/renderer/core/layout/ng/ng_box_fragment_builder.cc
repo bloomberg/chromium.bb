@@ -165,7 +165,7 @@ void NGBoxFragmentBuilder::AddBaseline(NGBaselineRequest request,
   for (const auto& baseline : baselines_)
     DCHECK(baseline.request != request);
 #endif
-  baselines_.push_back(NGBaseline{request, offset});
+  baselines_.emplace_back(request, offset);
 }
 
 EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(

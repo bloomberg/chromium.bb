@@ -22,7 +22,6 @@ class NGConstraintSpace;
 class NGLayoutResult;
 class NGPaintFragment;
 class NGPhysicalFragment;
-struct NGBaseline;
 struct NGInlineNodeData;
 struct NGPhysicalOffset;
 
@@ -102,7 +101,7 @@ class LayoutNGMixin : public Base {
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;
 
-  const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
+  base::Optional<LayoutUnit> FragmentBaseline(NGBaselineAlgorithmType) const;
 
   void DirtyLinesFromChangedChild(LayoutObject* child,
                                   MarkingBehavior marking_behavior) final;
