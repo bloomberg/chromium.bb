@@ -107,8 +107,9 @@ class SynchronousCompositorSyncCallBridge
   friend class base::RefCountedThreadSafe<SynchronousCompositorSyncCallBridge>;
   ~SynchronousCompositorSyncCallBridge();
 
-  // Callback passed to WindowAndroid, runs when the current vsync is completed.
-  void VSyncCompleteOnUIThread();
+  // Callback passed to WindowAndroid, runs when the current begin frame is
+  // completed.
+  void BeginFrameCompleteOnUIThread();
 
   // Process metadata.
   void ProcessFrameMetadataOnUIThread(uint32_t metadata_version,
