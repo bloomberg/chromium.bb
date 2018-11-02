@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <memory>
 #include <string>
 #include "common/tools_common.h"
 #include "config/aom_config.h"
@@ -405,7 +406,7 @@ TEST_P(ExternalFrameBufferMD5Test, ExtFBMD5Match) {
   set_num_buffers(num_buffers);
 
   // Open compressed video file.
-  testing::internal::scoped_ptr<libaom_test::CompressedVideoSource> video;
+  std::unique_ptr<libaom_test::CompressedVideoSource> video;
   if (filename.substr(filename.length() - 3, 3) == "ivf") {
     video.reset(new libaom_test::IVFVideoSource(filename));
   } else {
