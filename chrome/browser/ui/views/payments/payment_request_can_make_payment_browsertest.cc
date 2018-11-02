@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY);
 
-  ExpectBodyContains({"NotAllowedError"});
+  ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
 
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY);
 
-  ExpectBodyContains({"NotAllowedError"});
+  ExpectBodyContains({"false"});
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
 
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY);
 
-  ExpectBodyContains({"NotAllowedError"});
+  ExpectBodyContains({"false"});
 }
 
 // Querying for both payment apps and autofill cards in incognito returns result
@@ -466,9 +466,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   ExpectBodyContains({"true"});
 
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
+  CallCanMakePayment(CheckFor::BOB_PAY);
 
-  ExpectBodyContains({"NotAllowedError"});
+  ExpectBodyContains({"false"});
+
+  CallCanMakePayment(CheckFor::BASIC_VISA);
+
+  ExpectBodyContains({"true"});
 }
 
 }  // namespace payments

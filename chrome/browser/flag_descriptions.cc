@@ -1484,6 +1484,12 @@ const char kPdfIsolationName[] = "PDF Isolation";
 const char kPdfIsolationDescription[] =
     "Render PDF files from different origins in different plugin processes.";
 
+const char kPerMethodCanMakePaymentQuotaName[] =
+    "Per-method canMakePayment() quota.";
+const char kPerMethodCanMakePaymentQuotaDescription[] =
+    "Allow calling canMakePayment() for different payment methods, as long as "
+    "method-specific parameters remain unchanged.";
+
 const char kPinchScaleName[] = "Pinch scale";
 const char kPinchScaleDescription[] =
     "Enables experimental support for scale using pinch.";

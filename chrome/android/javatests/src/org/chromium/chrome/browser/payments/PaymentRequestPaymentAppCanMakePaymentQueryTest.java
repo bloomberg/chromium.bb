@@ -55,7 +55,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
     }
 
     @Test
@@ -73,7 +73,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         Thread.sleep(10000);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, false"});
     }
 
     @Test
@@ -88,7 +88,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
     }
 
     @Test
@@ -103,7 +103,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
     }
 
     @Test
@@ -118,7 +118,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, false"});
     }
 
     @Test
@@ -133,6 +133,6 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, false"});
     }
 }
