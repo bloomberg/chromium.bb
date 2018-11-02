@@ -126,7 +126,6 @@ scoped_refptr<VideoFrame> VideoFrameValidator::CreateI420Frame(
                          width, height);
       break;
     case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_I420:
       libyuv::I420Copy(src_frame->data(VideoFrame::kYPlane),
                        src_frame->stride(VideoFrame::kYPlane),
                        src_frame->data(VideoFrame::kUPlane),
