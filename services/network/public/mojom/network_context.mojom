@@ -14,6 +14,7 @@ import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
+import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_param.mojom";
@@ -650,6 +651,9 @@ interface NetworkContext {
   CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
                          P2PTrustedSocketManager& trusted_socket_manager,
                          P2PSocketManager& socket_manager);
+
+  // Creates an MdnsResponder instance.
+  CreateMdnsResponder(MdnsResponder& responder_request);
 
   // Destroys all URLLoaderFactory bindings, which should then be regenerated.
   // This should be called if there is a change to the proxies which should be

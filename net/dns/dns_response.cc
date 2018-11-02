@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
@@ -38,12 +39,80 @@ const size_t kResourceRecordSizeInBytesWithoutNameAndRData = 10;
 
 DnsResourceRecord::DnsResourceRecord() = default;
 
-DnsResourceRecord::DnsResourceRecord(const DnsResourceRecord& other) = default;
+DnsResourceRecord::DnsResourceRecord(const DnsResourceRecord& other)
+    : name(other.name),
+      type(other.type),
+      klass(other.klass),
+      ttl(other.ttl),
+      owned_rdata(other.owned_rdata) {
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+}
+
+DnsResourceRecord::DnsResourceRecord(DnsResourceRecord&& other)
+    : name(std::move(other.name)),
+      type(other.type),
+      klass(other.klass),
+      ttl(other.ttl),
+      owned_rdata(std::move(other.owned_rdata)) {
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+}
 
 DnsResourceRecord::~DnsResourceRecord() = default;
 
-DnsRecordParser::DnsRecordParser() : packet_(NULL), length_(0), cur_(0) {
+DnsResourceRecord& DnsResourceRecord::operator=(
+    const DnsResourceRecord& other) {
+  name = other.name;
+  type = other.type;
+  klass = other.klass;
+  ttl = other.ttl;
+  owned_rdata = other.owned_rdata;
+
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+
+  return *this;
 }
+
+DnsResourceRecord& DnsResourceRecord::operator=(DnsResourceRecord&& other) {
+  name = std::move(other.name);
+  type = other.type;
+  klass = other.klass;
+  ttl = other.ttl;
+  owned_rdata = std::move(other.owned_rdata);
+
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+
+  return *this;
+}
+
+void DnsResourceRecord::SetOwnedRdata(std::string value) {
+  owned_rdata = std::move(value);
+  rdata = owned_rdata;
+}
+
+size_t DnsResourceRecord::CalculateRecordSize() const {
+  bool has_final_dot = name.back() == '.';
+  // Depending on if |name| in the dotted format has the final dot for the root
+  // domain or not, the corresponding wire data in the DNS domain name format is
+  // 1 byte (with dot) or 2 bytes larger in size. See RFC 1035, Section 3.1 and
+  // DNSDomainFromDot.
+  return name.size() + (has_final_dot ? 1 : 2) +
+         kResourceRecordSizeInBytesWithoutNameAndRData +
+         (owned_rdata.empty() ? rdata.size() : owned_rdata.size());
+}
+
+DnsRecordParser::DnsRecordParser() : packet_(nullptr), length_(0), cur_(0) {}
 
 DnsRecordParser::DnsRecordParser(const void* packet,
                                  size_t length,
@@ -148,7 +217,7 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
 }
 
 bool DnsRecordParser::SkipQuestion() {
-  size_t consumed = ReadName(cur_, NULL);
+  size_t consumed = ReadName(cur_, nullptr);
   if (!consumed)
     return false;
 
@@ -178,9 +247,9 @@ DnsResponse::DnsResponse(
     header.qdcount = 1;
   }
   header.flags |= dns_protocol::kFlagResponse;
-  if (is_authoritative) {
+  if (is_authoritative)
     header.flags |= dns_protocol::kFlagAA;
-  }
+
   header.ancount = answers.size();
   header.arcount = additional_records.size();
 
@@ -189,18 +258,11 @@ DnsResponse::DnsResponse(
                              ? sizeof(header) + query.value().question_size()
                              : sizeof(header);
   // Add the size of all answers and additional records.
-  auto do_accumulation = [](size_t cur_size, const DnsResourceRecord& answer) {
-    bool has_final_dot = answer.name.back() == '.';
-    // Depending on if answer.name in the dotted format has the final dot
-    // for the root domain or not, the corresponding DNS domain name format
-    // to be written to rdata is 1 byte (with dot) or 2 bytes larger in
-    // size. See RFC 1035, Section 3.1 and DNSDomainFromDot.
-    return cur_size + answer.name.size() + (has_final_dot ? 1 : 2) +
-           kResourceRecordSizeInBytesWithoutNameAndRData + answer.rdata.size();
+  auto do_accumulation = [](size_t cur_size, const DnsResourceRecord& record) {
+    return cur_size + record.CalculateRecordSize();
   };
   response_size = std::accumulate(answers.begin(), answers.end(), response_size,
                                   do_accumulation);
-
   response_size =
       std::accumulate(additional_records.begin(), additional_records.end(),
                       response_size, do_accumulation);
@@ -232,11 +294,10 @@ DnsResponse::DnsResponse(
   // Ensure we don't have any remaining uninitialized bytes in the buffer.
   DCHECK(!writer.remaining());
   memset(writer.ptr(), 0, writer.remaining());
-  if (has_query) {
+  if (has_query)
     InitParse(io_buffer_size_, query.value());
-  } else {
+  else
     InitParseWithoutQuery(io_buffer_size_);
-  }
 }
 
 DnsResponse::DnsResponse()
@@ -462,7 +523,13 @@ bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
 
 bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
                               const DnsResourceRecord& record) {
-  if (!RecordRdata::HasValidSize(record.rdata, record.type)) {
+  if (record.rdata.data() != record.owned_rdata.data() ||
+      record.rdata.size() != record.owned_rdata.size()) {
+    VLOG(1) << "record.rdata should point to record.owned_rdata.";
+    return false;
+  }
+
+  if (!RecordRdata::HasValidSize(record.owned_rdata, record.type)) {
     VLOG(1) << "Invalid RDATA size for a record.";
     return false;
   }
@@ -474,8 +541,10 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
   return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
          writer->WriteU16(record.type) && writer->WriteU16(record.klass) &&
          writer->WriteU32(record.ttl) &&
-         writer->WriteU16(record.rdata.size()) &&
-         writer->WriteBytes(record.rdata.data(), record.rdata.size());
+         writer->WriteU16(record.owned_rdata.size()) &&
+         // Use the owned RDATA in the record to construct the response.
+         writer->WriteBytes(record.owned_rdata.data(),
+                            record.owned_rdata.size());
 }
 
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,

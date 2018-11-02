@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,6 +31,10 @@ namespace {
 // Section 3.1: Each label is represented as a one octet length field followed
 // by that number of octets.
 const int kMaxLabelLength = 63;
+
+// RFC 1035, section 4.1.4: the first two bits of a 16-bit name pointer are
+// ones.
+const uint16_t kFlagNamePointer = 0xc000;
 
 }  // namespace
 
@@ -238,6 +243,14 @@ AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
     return DELTA_OVERLAP;
   else
     return DELTA_DISJOINT;
+}
+
+std::string CreateNamePointer(uint16_t offset) {
+  DCHECK_LE(offset, 0x3fff);
+  offset |= kFlagNamePointer;
+  char buf[2];
+  base::WriteBigEndian(buf, offset);
+  return std::string(buf, sizeof(buf));
 }
 
 }  // namespace net

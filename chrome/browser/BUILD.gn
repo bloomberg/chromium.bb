@@ -4006,17 +4006,6 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (enable_mdns) {
-    sources += [
-      "local_discovery/service_discovery_client_impl.cc",
-      "local_discovery/service_discovery_client_impl.h",
-      "local_discovery/service_discovery_client_mdns.cc",
-      "local_discovery/service_discovery_client_mdns.h",
-      "printing/cloud_print/privet_traffic_detector.cc",
-      "printing/cloud_print/privet_traffic_detector.h",
-    ]
-  }
-
   if (enable_message_center) {
     sources += [
       "notifications/notification_platform_bridge_message_center.cc",
@@ -4348,6 +4337,17 @@ jumbo_split_static_library("browser") {
       "printing/cloud_print/privet_url_loader.cc",
       "printing/cloud_print/privet_url_loader.h",
     ]
+
+    if (enable_mdns) {
+      sources += [
+        "local_discovery/service_discovery_client_impl.cc",
+        "local_discovery/service_discovery_client_impl.h",
+        "local_discovery/service_discovery_client_mdns.cc",
+        "local_discovery/service_discovery_client_mdns.h",
+        "printing/cloud_print/privet_traffic_detector.cc",
+        "printing/cloud_print/privet_traffic_detector.h",
+      ]
+    }
   }
 
   if (enable_session_service) {
@@ -5339,7 +5339,7 @@ static_library("test_support") {
     deps += [ "//media/cdm:cdm_paths" ]
   }
 
-  if (enable_mdns) {
+  if (enable_service_discovery) {
     sources += [
       "local_discovery/test_service_discovery_client.cc",
       "local_discovery/test_service_discovery_client.h",

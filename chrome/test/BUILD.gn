@@ -2107,7 +2107,7 @@ test("browser_tests") {
         ]
       }
     }
-    if (enable_mdns) {
+    if (enable_service_discovery && !is_mac) {
       sources += [
         "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc",
       ]
@@ -3875,14 +3875,6 @@ test("unit_tests") {
     deps += [ "//chrome/browser/ui/libgtkui" ]
   }
 
-  if (enable_mdns) {
-    sources += [
-      "../browser/local_discovery/local_domain_resolver_unittest.cc",
-      "../browser/local_discovery/service_discovery_client_unittest.cc",
-      "../browser/printing/cloud_print/privet_device_lister_unittest.cc",
-      "../browser/printing/cloud_print/privet_local_printer_lister_unittest.cc",
-    ]
-  }
   if (enable_service_discovery) {
     sources += [
       "../browser/devtools/device/cast_device_provider_unittest.cc",
@@ -3894,6 +3886,15 @@ test("unit_tests") {
       "../browser/printing/cloud_print/privet_notifications_unittest.cc",
       "../browser/printing/cloud_print/privet_url_loader_unittest.cc",
     ]
+
+    if (!is_mac) {
+      sources += [
+        "../browser/local_discovery/local_domain_resolver_unittest.cc",
+        "../browser/local_discovery/service_discovery_client_unittest.cc",
+        "../browser/printing/cloud_print/privet_device_lister_unittest.cc",
+        "../browser/printing/cloud_print/privet_local_printer_lister_unittest.cc",
+      ]
+    }
   }
 
   if (safe_browsing_mode > 0) {

@@ -69,6 +69,7 @@ class ExpectCTReporter;
 class HostResolver;
 class NetworkService;
 class NetworkServiceProxyDelegate;
+class MdnsResponderManager;
 class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
@@ -300,6 +301,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::P2PTrustedSocketManagerClientPtr client,
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override;
+  void CreateMdnsResponder(
+      mojom::MdnsResponderRequest responder_request) override;
+
   void ResetURLLoaderFactories() override;
   void QueueReport(const std::string& type,
                    const std::string& group,
@@ -430,6 +434,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   base::flat_map<P2PSocketManager*, std::unique_ptr<P2PSocketManager>>
       socket_managers_;
+
+#if BUILDFLAG(ENABLE_MDNS)
+  std::unique_ptr<MdnsResponderManager> mdns_responder_manager_;
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
 
