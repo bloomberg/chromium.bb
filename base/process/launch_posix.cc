@@ -303,10 +303,9 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                       const LaunchOptions& options) {
   TRACE_EVENT0("base", "LaunchProcess");
 #if defined(OS_MACOSX)
+  // TODO(rsesek): Remove this feature. https://crbug.com/179923.
   if (FeatureList::IsEnabled(kMacLaunchProcessPosixSpawn)) {
-    // TODO(rsesek): Do this unconditionally. https://crbug.com/179923.
-    if (options.current_directory.empty())
-      return LaunchProcessPosixSpawn(argv, options);
+    return LaunchProcessPosixSpawn(argv, options);
   }
 #endif
 
