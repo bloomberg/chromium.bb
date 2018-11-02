@@ -1059,6 +1059,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
         }
       }
     } else {
+      prewalk_result->undrawn_surfaces.erase(surface_id);
       referenced_surfaces_.insert(surface_id);
       CopyPasses(surface->GetActiveFrame(), surface);
       // CopyPasses may have mutated container, need to re-query to erase.
@@ -1127,6 +1128,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
 
   CopyUndrawnSurfaces(&prewalk_result);
+  undrawn_surfaces_ = std::move(prewalk_result.undrawn_surfaces);
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
   // CopyPasses may have mutated container, need to re-query to erase.
