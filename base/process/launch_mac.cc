@@ -8,11 +8,22 @@
 #include <mach/mach.h>
 #include <spawn.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
+
+// Changes the current thread's directory to a path or directory file
+// descriptor. libpthread only exposes a syscall wrapper starting in
+// macOS 10.12, but the system call dates back to macOS 10.5. On older OSes,
+// the syscall is issued directly.
+extern "C" {
+int pthread_chdir_np(const char*) API_AVAILABLE(macosx(10.12));
+int pthread_fchdir_np(int fd) API_AVAILABLE(macosx(10.12));
+}
 
 namespace base {
 
@@ -71,6 +82,24 @@ class PosixSpawnFileActions {
   DISALLOW_COPY_AND_ASSIGN(PosixSpawnFileActions);
 };
 
+int ChangeCurrentThreadDirectory(const char* path) {
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_chdir_np(path);
+  } else {
+    return syscall(SYS___pthread_chdir, path);
+  }
+}
+
+// The recommended way to unset a per-thread cwd is to set a new value to an
+// invalid file descriptor, per libpthread-218.1.3/private/private.h.
+int ResetCurrentThreadDirectory() {
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_fchdir_np(-1);
+  } else {
+    return syscall(SYS___pthread_fchdir, -1);
+  }
+}
+
 }  // namespace
 
 void RestoreDefaultExceptionHandler() {
@@ -92,9 +121,6 @@ void RestoreDefaultExceptionHandler() {
 
 Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
                                 const LaunchOptions& options) {
-  DCHECK(options.current_directory.empty())
-      << "LaunchProcessPosixSpawn does not support current_directory";
-
   PosixSpawnAttr attr;
 
   short flags = POSIX_SPAWN_CLOEXEC_DEFAULT;
@@ -153,10 +179,26 @@ Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
                                     ? options.real_path.value().c_str()
                                     : argv_cstr[0];
 
+  // If the new program has specified its PWD, change the thread-specific
+  // working directory. The new process will inherit it during posix_spawn().
+  if (!options.current_directory.empty()) {
+    int rv =
+        ChangeCurrentThreadDirectory(options.current_directory.value().c_str());
+    if (rv != 0) {
+      DPLOG(ERROR) << "pthread_chdir_np";
+      return Process();
+    }
+  }
+
   // Use posix_spawnp as some callers expect to have PATH consulted.
   pid_t pid;
   int rv = posix_spawnp(&pid, executable_path, file_actions.get(), attr.get(),
                         &argv_cstr[0], new_environ);
+
+  // Restore the thread's working directory if it was changed.
+  if (!options.current_directory.empty()) {
+    ResetCurrentThreadDirectory();
+  }
 
   if (rv != 0) {
     DLOG(ERROR) << "posix_spawnp(" << executable_path << "): -" << rv << " "
