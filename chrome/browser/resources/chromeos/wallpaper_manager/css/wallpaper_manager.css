@@ -127,20 +127,6 @@ body.v1 {
   position: relative;
 }
 
-#spinner-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  background: url(chrome://resources/images/throbber_medium.svg) center/32px
-      no-repeat;
-  display: -webkit-box;
-  height: 287px;
-  padding-bottom: 15px;
-  padding-top: 5px;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
 #wallpaper-set-by-message {
   height: 30px;
   padding-inline-end: 5px;

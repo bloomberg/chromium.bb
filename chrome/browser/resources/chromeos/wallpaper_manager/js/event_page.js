@@ -31,100 +31,12 @@ SurpriseWallpaper.getInstance = function() {
 };
 
 /**
- * Tries to change wallpaper to a new one in the background. May fail due to a
- * network issue.
- */
-SurpriseWallpaper.prototype.tryChangeWallpaper = function() {
-  var self = this;
-  var onFailure = function(status) {
-    if (status != 404)
-      self.fallbackToLocalRss_();
-    else
-      self.updateRandomWallpaper_();
-  };
-  // Try to fetch newest rss as document from server first. If the requested
-  // URL is not found (404 error), set a random wallpaper displayed in the
-  // wallpaper picker. If any other error occurs, proceed with local copy of
-  // rss.
-  WallpaperUtil.fetchURL(Constants.WallpaperRssURL, 'document', function(xhr) {
-    WallpaperUtil.saveToLocalStorage(
-        Constants.AccessLocalRssKey,
-        new XMLSerializer().serializeToString(xhr.responseXML));
-    self.updateSurpriseWallpaper(xhr.responseXML);
-  }, onFailure);
-};
-
-/**
  * Retries changing the wallpaper 1 hour later. This is called when fetching the
- * rss or wallpaper from server fails.
+ * wallpaper from server fails.
  * @private
  */
 SurpriseWallpaper.prototype.retryLater_ = function() {
   chrome.alarms.create('RetryAlarm', {delayInMinutes: 60});
-};
-
-/**
- * Fetches the cached rss feed from local storage in the event of being unable
- * to download the online feed.
- * @private
- */
-SurpriseWallpaper.prototype.fallbackToLocalRss_ = function() {
-  var self = this;
-  Constants.WallpaperLocalStorage.get(
-      Constants.AccessLocalRssKey, function(items) {
-        var rssString = items[Constants.AccessLocalRssKey];
-        if (rssString) {
-          self.updateSurpriseWallpaper(
-              new DOMParser().parseFromString(rssString, 'text/xml'));
-        } else {
-          self.updateSurpriseWallpaper();
-        }
-      });
-};
-
-/**
- * Starts to change wallpaper. Called after rss is fetched.
- * @param {Document=} opt_rss The fetched rss document. If opt_rss is null, uses
- *     a random wallpaper.
- */
-SurpriseWallpaper.prototype.updateSurpriseWallpaper = function(opt_rss) {
-  if (opt_rss) {
-    var items = opt_rss.querySelectorAll('item');
-    var date = new Date(new Date().toDateString()).getTime();
-    for (var i = 0; i < items.length; i++) {
-      item = items[i];
-      var disableDate =
-          new Date(item.getElementsByTagNameNS(
-                           Constants.WallpaperNameSpaceURI, 'disableDate')[0]
-                       .textContent)
-              .getTime();
-      var enableDate =
-          new Date(item.getElementsByTagNameNS(
-                           Constants.WallpaperNameSpaceURI, 'enableDate')[0]
-                       .textContent)
-              .getTime();
-      var regionsString = item.getElementsByTagNameNS(
-                                  Constants.WallpaperNameSpaceURI, 'regions')[0]
-                              .textContent;
-      var regions = regionsString.split(', ');
-      if (enableDate <= date && disableDate > date &&
-          regions.indexOf(navigator.language) != -1) {
-        var self = this;
-        this.setWallpaperFromRssItem_(
-            item, function() {},
-            function(status) {
-              if (status != 404)
-                self.retryLater_();
-              else
-                self.updateRandomWallpaper_();
-            });
-        return;
-      }
-    }
-  }
-  // No surprise wallpaper for today at current locale or fetching rss feed
-  // fails. Fallback to use a random one from wallpaper server.
-  this.updateRandomWallpaper_();
 };
 
 /**
@@ -242,41 +154,6 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
 };
 
 /**
- * Sets wallpaper to the wallpaper specified by item from rss. If downloading
- * the wallpaper fails, retry one hour later.
- * @param {Element} item The wallpaper rss item element.
- * @param {function} onSuccess Success callback.
- * @param {function} onFailure Failure callback.
- * @private
- */
-SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(
-    item, onSuccess, onFailure) {
-  var url = item.querySelector('link').textContent;
-  var layout =
-      item.getElementsByTagNameNS(Constants.WallpaperNameSpaceURI, 'layout')[0]
-          .textContent;
-  var self = this;
-  WallpaperUtil.fetchURL(url, 'arraybuffer', function(xhr) {
-    if (xhr.response != null) {
-      chrome.wallpaperPrivate.setCustomWallpaper(
-          xhr.response, layout, false /*generateThumbnail=*/,
-          'surprise_wallpaper', false /*previewMode=*/, onSuccess);
-      WallpaperUtil.saveWallpaperInfo(
-          url, layout, Constants.WallpaperSourceEnum.Daily, '');
-      var dateString = new Date().toDateString();
-      WallpaperUtil.saveToLocalStorage(
-          Constants.AccessLastSurpriseWallpaperChangedDate, dateString,
-          function() {
-            WallpaperUtil.saveToSyncStorage(
-                Constants.AccessLastSurpriseWallpaperChangedDate, dataString);
-          });
-    } else {
-      self.updateRandomWallpaper_();
-    }
-  }, onFailure);
-};
-
-/**
  * Disables the wallpaper surprise me feature. Clear all alarms and states.
  */
 SurpriseWallpaper.prototype.disable = function() {
@@ -296,7 +173,7 @@ SurpriseWallpaper.prototype.disable = function() {
 SurpriseWallpaper.prototype.next = function() {
   var nextUpdate = this.nextUpdateTime(new Date());
   chrome.alarms.create({when: nextUpdate});
-  this.tryChangeWallpaper();
+  this.updateRandomWallpaper_();
 };
 
 /**
