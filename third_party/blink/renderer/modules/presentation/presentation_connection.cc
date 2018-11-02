@@ -136,7 +136,7 @@ class PresentationConnection::BlobLoader final
     presentation_connection_->DidFinishLoadingBlob(
         loader_->ArrayBufferResult());
   }
-  void DidFail(FileError::ErrorCode error_code) override {
+  void DidFail(file_error::ErrorCode error_code) override {
     presentation_connection_->DidFailLoadingBlob(error_code);
   }
 
@@ -609,7 +609,7 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
 }
 
 void PresentationConnection::DidFailLoadingBlob(
-    FileError::ErrorCode error_code) {
+    file_error::ErrorCode error_code) {
   DCHECK(!messages_.IsEmpty());
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // FIXME: generate error message?

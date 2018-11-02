@@ -62,7 +62,7 @@ FileSystemDirectoryIterator::FileSystemDirectoryIterator(
 ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
   if (error_ != base::File::FILE_OK) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, FileError::CreateDOMException(error_));
+        script_state, file_error::CreateDOMException(error_));
   }
 
   if (!entries_.IsEmpty()) {
@@ -104,7 +104,7 @@ void FileSystemDirectoryIterator::AddEntries(const EntryHeapVector& entries) {
 void FileSystemDirectoryIterator::OnError(base::File::Error error) {
   error_ = error;
   if (pending_next_) {
-    pending_next_->Reject(FileError::CreateDOMException(error));
+    pending_next_->Reject(file_error::CreateDOMException(error));
     pending_next_ = nullptr;
   }
 }

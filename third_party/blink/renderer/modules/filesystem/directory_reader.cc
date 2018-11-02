@@ -148,7 +148,7 @@ void DirectoryReader::OnError(base::File::Error error) {
   entries_callback_ = nullptr;
   if (auto* error_callback = error_callback_.Release()) {
     error_callback->InvokeAndReportException(
-        nullptr, FileError::CreateDOMException(error_));
+        nullptr, file_error::CreateDOMException(error_));
   }
 }
 

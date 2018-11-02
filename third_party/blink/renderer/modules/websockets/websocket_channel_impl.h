@@ -177,7 +177,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   // Methods for BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
-  void DidFailLoadingBlob(FileError::ErrorCode);
+  void DidFailLoadingBlob(file_error::ErrorCode);
 
   void TearDownFailedConnection();
   bool ShouldDisallowConnection(const KURL&);

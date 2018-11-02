@@ -227,6 +227,7 @@ _CONFIG = [
             'encoding::.+',
             'event_handling_util::.+',
             'event_util::.+',
+            'file_error::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
             'network_utils::.+',
@@ -327,6 +328,12 @@ _CONFIG = [
         'allowed': [
             # The existing code already contains gin::IsolateHolder.
             'gin::IsolateHolder',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/fileapi/file_reader_loader.cc'],
+        'allowed': [
+            'net::ERR_FILE_NOT_FOUND',
         ],
     },
     {

@@ -241,7 +241,7 @@ class XMLHttpRequest::BlobLoader final
     xhr_->DidReceiveData(data, length);
   }
   void DidFinishLoading() override { xhr_->DidFinishLoadingFromBlob(); }
-  void DidFail(FileError::ErrorCode error) override {
+  void DidFail(file_error::ErrorCode error) override {
     xhr_->DidFailLoadingFromBlob();
   }
 

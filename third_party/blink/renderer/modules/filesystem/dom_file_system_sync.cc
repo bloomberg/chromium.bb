@@ -143,7 +143,7 @@ File* DOMFileSystemSync::CreateFile(const FileEntrySync* file_entry,
       file_system_url, CreateFileHelper::Create(result, file_entry->name(),
                                                 file_system_url, GetType()));
   if (result->failed_) {
-    FileError::ThrowDOMException(
+    file_error::ThrowDOMException(
         exception_state, result->error_,
         "Could not create '" + file_entry->name() + "'.");
     return nullptr;

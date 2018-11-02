@@ -36,7 +36,7 @@
 
 namespace blink {
 
-namespace FileError {
+namespace file_error {
 
 const char kAbortErrorMessage[] =
     "An ongoing operation was aborted, typically with a call to abort().";
@@ -280,6 +280,6 @@ DOMException* CreateDOMException(base::File::Error code) {
                               FileErrorToMessage(code));
 }
 
-}  // namespace FileError
+}  // namespace file_error
 
 }  // namespace blink

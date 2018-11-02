@@ -40,7 +40,7 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 
-namespace FileError {
+namespace file_error {
 
 enum ErrorCode {
   kOK = 0,
@@ -79,7 +79,7 @@ CORE_EXPORT void ThrowDOMException(ExceptionState& exception_state,
 CORE_EXPORT DOMException* CreateDOMException(ErrorCode);
 CORE_EXPORT DOMException* CreateDOMException(base::File::Error);
 
-}  // namespace FileError
+}  // namespace file_error
 
 }  // namespace blink
 
