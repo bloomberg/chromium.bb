@@ -473,9 +473,27 @@ template <typename ValueArg,
 class HeapHashSet
     : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base = HashSet<ValueArg, HashArg, TraitsArg>;
   static_assert(WTF::IsTraceable<ValueArg>::value,
                 "For hash sets without traceable elements, use HashSet<> "
                 "instead of HeapHashSet<>");
+
+ public:
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    return ThreadHeap::Allocate<HeapHashSet<ValueArg, HashArg, TraitsArg>>(
+        size, eagerly_sweep);
+  }
+
+  void* operator new(size_t size) = delete;
+  void operator delete(void* p) = delete;
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
+  }
 };
 
 template <typename ValueArg,
@@ -484,9 +502,27 @@ template <typename ValueArg,
 class HeapLinkedHashSet
     : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base = LinkedHashSet<ValueArg, HashArg, TraitsArg>;
   static_assert(WTF::IsTraceable<ValueArg>::value,
                 "For sets without traceable elements, use LinkedHashSet<> "
                 "instead of HeapLinkedHashSet<>");
+
+ public:
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    return ThreadHeap::Allocate<
+        HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size, eagerly_sweep);
+  }
+
+  void* operator new(size_t size) = delete;
+  void operator delete(void* p) = delete;
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
+  }
 };
 
 template <typename ValueArg,
@@ -500,9 +536,28 @@ class HeapListHashSet
                          HashArg,
                          HeapListHashSetAllocator<ValueArg, inlineCapacity>> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base = ListHashSet<ValueArg, inlineCapacity, HashArg>;
   static_assert(WTF::IsTraceable<ValueArg>::value,
                 "For sets without traceable elements, use ListHashSet<> "
                 "instead of HeapListHashSet<>");
+
+ public:
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    return ThreadHeap::Allocate<
+        HeapListHashSet<ValueArg, inlineCapacity, HashArg>>(size,
+                                                            eagerly_sweep);
+  }
+
+  void* operator new(size_t size) = delete;
+  void operator delete(void* p) = delete;
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
+  }
 };
 
 template <typename Value,

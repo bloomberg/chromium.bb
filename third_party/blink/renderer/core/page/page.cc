@@ -89,12 +89,14 @@ void ResetPluginCache(bool reload_pages) {
 // Set of all live pages; includes internal Page objects that are
 // not observable from scripts.
 static Page::PageSet& AllPages() {
-  DEFINE_STATIC_LOCAL(Persistent<Page::PageSet>, pages, (new Page::PageSet));
+  DEFINE_STATIC_LOCAL(Persistent<Page::PageSet>, pages,
+                      (MakeGarbageCollected<Page::PageSet>()));
   return *pages;
 }
 
 Page::PageSet& Page::OrdinaryPages() {
-  DEFINE_STATIC_LOCAL(Persistent<Page::PageSet>, pages, (new Page::PageSet));
+  DEFINE_STATIC_LOCAL(Persistent<Page::PageSet>, pages,
+                      (MakeGarbageCollected<Page::PageSet>()));
   return *pages;
 }
 

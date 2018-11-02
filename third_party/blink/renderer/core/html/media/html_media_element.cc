@@ -218,7 +218,7 @@ void AddElementToDocumentMap(HTMLMediaElement* element, Document* document) {
   WeakMediaElementSet* set = nullptr;
   auto it = map.find(document);
   if (it == map.end()) {
-    set = new WeakMediaElementSet;
+    set = MakeGarbageCollected<WeakMediaElementSet>();
     map.insert(document, set);
   } else {
     set = it->value;

@@ -84,7 +84,7 @@ void EventDispatcher::DispatchSimulatedClick(
   // dispatchSimulatedClick().
   DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<Node>>>,
                       nodes_dispatching_simulated_clicks,
-                      (new HeapHashSet<Member<Node>>));
+                      (MakeGarbageCollected<HeapHashSet<Member<Node>>>()));
 
   if (IsDisabledFormControl(&node))
     return;

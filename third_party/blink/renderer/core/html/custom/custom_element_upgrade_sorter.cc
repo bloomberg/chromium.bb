@@ -15,7 +15,7 @@
 namespace blink {
 
 CustomElementUpgradeSorter::CustomElementUpgradeSorter()
-    : elements_(new HeapHashSet<Member<Element>>()),
+    : elements_(MakeGarbageCollected<HeapHashSet<Member<Element>>>()),
       parent_child_map_(MakeGarbageCollected<ParentChildMap>()) {}
 
 static HTMLLinkElement* GetLinkElementForImport(const Document& import) {
@@ -33,7 +33,7 @@ CustomElementUpgradeSorter::AddToParentChildMap(Node* parent, Node* child) {
     return kParentAlreadyExistsInMap;
   }
 
-  ChildSet* child_set = new ChildSet();
+  ChildSet* child_set = MakeGarbageCollected<ChildSet>();
   child_set->insert(child);
   result.stored_value->value = child_set;
   return kParentAddedToMap;

@@ -641,9 +641,9 @@ void SVGElement::RemoveInstanceMapping(SVGElement* instance) {
 }
 
 static HeapHashSet<WeakMember<SVGElement>>& EmptyInstances() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement>>>,
-                      empty_instances,
-                      (new HeapHashSet<WeakMember<SVGElement>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapHashSet<WeakMember<SVGElement>>>, empty_instances,
+      (MakeGarbageCollected<HeapHashSet<WeakMember<SVGElement>>>()));
   return *empty_instances;
 }
 
@@ -1250,7 +1250,7 @@ SVGElementSet& SVGElement::GetDependencyTraversalVisitedSet() {
   // This strong reference is safe, as it is guaranteed that this set will be
   // emptied at the end of recursion in NotifyIncomingReferences.
   DEFINE_STATIC_LOCAL(Persistent<SVGElementSet>, invalidating_dependencies,
-                      (new SVGElementSet));
+                      (MakeGarbageCollected<SVGElementSet>()));
   return *invalidating_dependencies;
 }
 

@@ -7731,7 +7731,7 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 #ifndef NDEBUG
 static WeakDocumentSet& liveDocumentSet() {
   DEFINE_STATIC_LOCAL(blink::Persistent<WeakDocumentSet>, set,
-                      (new WeakDocumentSet));
+                      (blink::MakeGarbageCollected<WeakDocumentSet>()));
   return *set;
 }
 

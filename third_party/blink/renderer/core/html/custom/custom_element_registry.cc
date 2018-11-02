@@ -89,7 +89,7 @@ CustomElementRegistry* CustomElementRegistry::Create(
 CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     : element_definition_is_running_(false),
       owner_(owner),
-      v0_(new V0RegistrySet()),
+      v0_(MakeGarbageCollected<V0RegistrySet>()),
       upgrade_candidates_(MakeGarbageCollected<UpgradeCandidateMap>()),
       reaction_stack_(&CustomElementReactionStack::Current()) {}
 
@@ -303,7 +303,8 @@ void CustomElementRegistry::AddCandidate(Element* candidate) {
   if (it != upgrade_candidates_->end()) {
     set = it->value;
   } else {
-    set = upgrade_candidates_->insert(name, new UpgradeCandidateSet())
+    set = upgrade_candidates_
+              ->insert(name, MakeGarbageCollected<UpgradeCandidateSet>())
               .stored_value->value;
   }
   set->insert(candidate);

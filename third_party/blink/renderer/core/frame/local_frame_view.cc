@@ -3442,7 +3442,7 @@ void LocalFrameView::AddScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
   if (!scrollable_areas_)
-    scrollable_areas_ = new ScrollableAreaSet;
+    scrollable_areas_ = MakeGarbageCollected<ScrollableAreaSet>();
   scrollable_areas_->insert(scrollable_area);
 
   if (GetScrollingCoordinator())
@@ -3463,7 +3463,7 @@ void LocalFrameView::AddAnimatingScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
   if (!animating_scrollable_areas_)
-    animating_scrollable_areas_ = new ScrollableAreaSet;
+    animating_scrollable_areas_ = MakeGarbageCollected<ScrollableAreaSet>();
   animating_scrollable_areas_->insert(scrollable_area);
 }
 
