@@ -842,6 +842,10 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   device_settings_update->mutable_device_settings()->set_locale(
       service_->assistant_state()->locale().value());
 
+  // Enable personal readout to grant permission for personal features.
+  device_settings_update->mutable_device_settings()->set_personal_readout(
+      assistant::AssistantDeviceSettings::PERSONAL_READOUT_ENABLED);
+
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
   SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
