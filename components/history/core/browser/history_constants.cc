@@ -16,8 +16,6 @@ const base::FilePath::CharType kHistoryFilename[] =
 const base::FilePath::CharType kTopSitesFilename[] =
     FILE_PATH_LITERAL("Top Sites");
 
-const int kMaxTopHosts = 50;
-
 const int kMaxTitleChanges = 10;
 
 base::TimeDelta GetTitleSettingWindow() {

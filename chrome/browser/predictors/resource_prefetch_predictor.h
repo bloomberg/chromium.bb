@@ -233,10 +233,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                     const GURL& main_frame_origin,
                     const std::map<GURL, OriginRequestSummary>& summaries);
 
-  // Reports database readiness metric defined as percentage of navigated hosts
-  // found in DB for last X entries in history.
-  void ReportDatabaseReadiness(const history::TopHostsList& top_hosts) const;
-
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;

@@ -84,9 +84,6 @@ class WebHistoryService;
 // thread that made the request.
 class HistoryService : public syncer::SyncableService, public KeyedService {
  public:
-  // Callback for value asynchronously returned by TopHosts().
-  typedef base::Callback<void(const TopHostsList&)> TopHostsCallback;
-
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use
@@ -142,36 +139,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   typedef base::Callback<void(const OriginCountAndLastVisitMap&)>
       GetCountsAndLastVisitForOriginsCallback;
 
-  // Computes the |num_hosts| most-visited hostnames in the past 30 days and
-  // returns a list of those hosts paired with their visit counts. The following
-  // caveats apply:
-  // 1. Hostnames are stripped of their 'www.' prefix. Visits to foo.com and
-  //    www.foo.com are summed into the resultant foo.com entry.
-  // 2. Ports and schemes are ignored. Visits to http://foo.com/ and
-  //    https://foo.com:567/ are summed into the resultant foo.com entry.
-  // 3. If the history is abnormally large and diverse, the function will give
-  //    up early and return an approximate list.
-  // 4. Only http://, https://, and ftp:// URLs are counted.
-  //
-  // Note: Virtual needed for mocking.
-  virtual void TopHosts(size_t num_hosts,
-                        const TopHostsCallback& callback) const;
-
   // Gets the counts and most recent visit date of URLs that belong to |origins|
   // in the history database.
   void GetCountsAndLastVisitForOriginsForTesting(
       const std::set<GURL>& origins,
       const GetCountsAndLastVisitForOriginsCallback& callback) const;
-
-  // Returns, for the given URL, a 0-based index into the list produced by
-  // TopHosts(), corresponding to that URL's host. If TopHosts() has not
-  // previously been run, or the host is not in the top kMaxTopHosts, returns
-  // kMaxTopHosts.
-  //
-  // Note: Virtual needed for mocking.
-  virtual void HostRankIfAvailable(
-      const GURL& url,
-      const base::Callback<void(int)>& callback) const;
 
   // Navigation ----------------------------------------------------------------
 

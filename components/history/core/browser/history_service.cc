@@ -330,16 +330,6 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
                      base::ThreadTaskRunnerHandle::Get(), task));
 }
 
-void HistoryService::TopHosts(size_t num_hosts,
-                              const TopHostsCallback& callback) const {
-  DCHECK(backend_task_runner_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  PostTaskAndReplyWithResult(
-      backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::TopHosts, history_backend_, num_hosts),
-      callback);
-}
-
 void HistoryService::GetCountsAndLastVisitForOriginsForTesting(
     const std::set<GURL>& origins,
     const GetCountsAndLastVisitForOriginsCallback& callback) const {
@@ -349,17 +339,6 @@ void HistoryService::GetCountsAndLastVisitForOriginsForTesting(
       backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetCountsAndLastVisitForOrigins,
                  history_backend_, origins),
-      callback);
-}
-
-void HistoryService::HostRankIfAvailable(
-    const GURL& url,
-    const base::Callback<void(int)>& callback) const {
-  DCHECK(backend_task_runner_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  PostTaskAndReplyWithResult(
-      backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::HostRankIfAvailable, history_backend_, url),
       callback);
 }
 
