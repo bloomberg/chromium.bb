@@ -104,7 +104,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspection() override;
   void WorkerContextFailedToStart() override;
-  void FailedToLoadInstalledScript() override;
+  void FailedToLoadInstalledClassicScript() override;
+  void FailedToFetchModuleScript() override;
   void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;

@@ -53,13 +53,13 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_clients.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_module_tree_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_script_cached_metadata_handler.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
@@ -155,7 +155,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
     std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
         installed_scripts_manager->GetScriptData(script_url);
     if (!script_data) {
-      ReportingProxy().DidFailToLoadInstalledScript();
+      ReportingProxy().DidFailToLoadInstalledClassicScript();
       // This will eventually initiate worker thread termination. See
       // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
       close();
@@ -205,7 +205,7 @@ void ServiceWorkerGlobalScope::ImportModuleScript(
 
   FetchModuleScript(module_url_record, outside_settings_object,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    fetch_type, new WorkerModuleTreeClient(modulator));
+                    fetch_type, new ServiceWorkerModuleTreeClient(modulator));
 }
 
 void ServiceWorkerGlobalScope::Dispose() {
