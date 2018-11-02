@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">ലൈറ്റ്</translation>
 <translation id="1821253160463689938">നിങ്ങൾ ആ പേജുകൾ സന്ദർശിക്കുന്നില്ലെങ്കിൽ പോലും, നിങ്ങളുടെ മുൻഗണനകൾ ഓർമ്മിക്കുന്നതിന് കുക്കികളെ ഉപയോഗിക്കുന്നു</translation>
 <translation id="1829244130665387512">പേജില്‍ കണ്ടുപിടിക്കുക</translation>
-<translation id="1832521218263067499">സുരക്ഷാ സംഭവങ്ങൾ</translation>
 <translation id="1853692000353488670">പുതിയ ആൾമാറാട്ട ടാബ്</translation>
 <translation id="1868024384445905608">Chrome ഇപ്പോൾ വേഗത്തിൽ ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യുന്നു</translation>
+<translation id="187628348035757895">ഡെവലപ്പർ ഓപ്‌ഷനുകൾ</translation>
 <translation id="1878302395768190018">Chrome ക്രമീകരണത്തിൽ, ഏത് സമയത്തും നിങ്ങൾക്കിത് ഇഷ്‌ടാനുസൃതമാക്കാം</translation>
 <translation id="1880072593381090678">Chrome-ൽ നിന്നുള്ള ജനപ്രിയ പേജുകൾ</translation>
 <translation id="1883903952484604915">എന്റെ ഫയലുകൾ</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="6985347914332179298">ഇവിടെ ഡൗൺലോഡുകളൊന്നുമില്ല</translation>
 <translation id="6990079615885386641">Google Play സ്റ്റോറിൽ നിന്ന് അപ്ലിക്കേഷൻ സ്വീകരിക്കുക: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">സുരക്ഷയെ ബാധിക്കാൻ സാധ്യതയുള്ള കാര്യങ്ങളുടെ വിശദാംശങ്ങൾ Google-ൽ സ്വയമേവ റിപ്പോർട്ടുചെയ്യുന്നു</translation>
 <translation id="6992289844737586249">നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ആദ്യം ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7016516562562142042">നിലവിലെ തിരയൽ എഞ്ചിനിൽ അനുവദിച്ചിരിക്കുന്നു</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ഡൗൺലോഡുചെയ്‌തു</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">ചിത്രം പുതിയ ടാബിൽ തുറക്കുക</translation>
 <translation id="8084114998886531721">സംരക്ഷിച്ച പാസ്‌വേഡ്</translation>
 <translation id="8087000398470557479">ഈ ഉള്ളടക്കം Google-ൽ നിന്നുള്ള <ph name="DOMAIN_NAME" /> ഡൊമെയ്‌നിൽ നിന്നുള്ളതാണ്.</translation>
+<translation id="8087980556724996220">'സ്വമേധയാ പൂരിപ്പിക്കൽ അസിസ്റ്റന്റ്' <ph name="DURATION_SECONDS" />സെക്കന്‍ഡില്‍ പ്രവര്‍ത്തനം അവസാനിപ്പിക്കും…</translation>
 <translation id="8103578431304235997">ആൾമാറാട്ട ടാബ്</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">ബന്ധപ്പെട്ട പേജുകൾ നിർദ്ദേശിക്കുക</translation>

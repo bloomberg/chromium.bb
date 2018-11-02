@@ -235,10 +235,12 @@
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">阅读清单中有 1 篇未读文章。</translation>
 <translation id="481968316161811770">Cookie 和网站数据</translation>
+<translation id="4840495572919996524">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中。</translation>
 <translation id="4854345657858711387">设置密码</translation>
 <translation id="4860895144060829044">拨打</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4882831918239250449">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
+<translation id="4895709476292058519">更改帐号</translation>
 <translation id="4904877109095351937">标记为已读</translation>
 <translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
@@ -482,6 +484,7 @@
 <translation id="9079935439869366234">全部标为未读</translation>
 <translation id="9081058212938299310">更新 <ph name="USERNAME" /> 的密码？</translation>
 <translation id="9083392325882095631">有1个书签</translation>
+<translation id="9083838294503912307">要在您的所有设备上保持同步并进行个性化设置，请开启同步功能。</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>

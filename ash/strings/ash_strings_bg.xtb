@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
 <translation id="2865888419503095837">Информация за мрежата</translation>
+<translation id="287224423103674444">Използвахте клавишната комбинация за завъртане на екрана. Искате ли да промените ориентацията му?</translation>
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="2878884018241093801">Няма скорошни елементи</translation>
 <translation id="2903844815300039659">Установена е връзка с мрежата „<ph name="NAME" />“, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
 <translation id="5691772641933328258">Отпечатъкът не бе разпознат</translation>
+<translation id="5710450975648804523">Режимът „Не безпокойте“ е включен</translation>
 <translation id="574392208103952083">Среден</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5750765938512549687">Функцията за Bluetooth е изключена</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Натиснете и двата бутона за силата на звука и ги задръжте за пет секунди, за да деактивирате обратната връзка с говор.</translation>
 <translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 известие}other{# известия}}</translation>
 <translation id="776344839111254542">Кликнете, за да видите подробности за актуализацията</translation>
+<translation id="7780159184141939021">Завъртане на екрана</translation>
 <translation id="7796353162336583443">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате Google Асистент, лазерната показалка или лупата.</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>

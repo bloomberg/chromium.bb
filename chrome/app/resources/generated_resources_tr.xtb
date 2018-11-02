@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Resim Yükle</translation>
 <translation id="1029317248976101138">Yakınlaştır</translation>
 <translation id="1030706264415084469"><ph name="URL" /> büyük miktarda veriyi cihazınızda kalıcı olarak depolamak istiyor</translation>
+<translation id="1030889518049751641">Etkinlik Günlüğünü Görüntüle</translation>
 <translation id="1031362278801463162">Önizleme yükleniyor</translation>
 <translation id="103279545524624934">Android uygulamalarını başlatmak için disk alanını boşaltın.</translation>
 <translation id="1033780634303702874">Seri cihazlarınıza erişme</translation>
@@ -163,6 +164,7 @@
     Profilinizi tekrar ayarlamanız gerekecek.<ph name="BR" />
     <ph name="BR" />
     Sorunu düzeltmemize yardımcı olmak için lütfen bir sonraki ekranda geri bildirim gönderin.</translation>
+<translation id="1217668622537098248">İşlemden sonra sol tıklamaya geri döndürür</translation>
 <translation id="121783623783282548">Şifreler eşleşmiyor.</translation>
 <translation id="1218860753635451122">"Kabul Ediyorum" düğmesini tıklayarak bu Google hizmetleri ile ilgili yukarıda açıklanan işlemleri kabul etmiş olursunuz.</translation>
 <translation id="122082903575839559">Sertifika İmza Algoritması</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Güvenlik anahtarınız listede yoksa anahtarın düğmesine en az 5 saniye boyunca basın.</translation>
 <translation id="275662540872599901">ekran kapalı</translation>
 <translation id="2761898608071930085">Başka Bir Hesap Kullan</translation>
+<translation id="276233135255363312">{0,plural, =1{Tek bir gizli pencereniz var.}other{# gizli pencereniz var.}}</translation>
 <translation id="2762441749940182211">Kamera engellendi</translation>
 <translation id="2765217105034171413">Küçük</translation>
 <translation id="2766006623206032690">Ya&amp;pıştır ve git</translation>
@@ -1554,6 +1557,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3350117557200012647">Eşleme moduna geçin</translation>
 <translation id="3353984535370177728">Yüklemek için bir klasör seçin</translation>
 <translation id="3355936511340229503">Bağlantı hatası</translation>
+<translation id="3356580349448036450">Tamamlandı</translation>
 <translation id="3356797067524893661">Artık Hangouts Meet'e devam edebilirsiniz</translation>
 <translation id="3358935496594837302">Telefonunuz bulunamıyor. Uyumlu bir Android telefon kullandığınızdan, ayrıca telefonunuzun açık ve yakında olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Sertifika Politikası Kısıtlamaları</translation>
@@ -2186,6 +2190,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4312866146174492540">Engelle (varsayılan)</translation>
 <translation id="4316850752623536204">Geliştirici Web Sitesi</translation>
 <translation id="4320177379694898372">İnternet bağlantısı yok</translation>
+<translation id="4320948194796820126">E-postanıza yer işareti ekleyin</translation>
 <translation id="4322394346347055525">Diğer Sekmeleri Kapat</translation>
 <translation id="4324577459193912240">Dosya eksik</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> Dilini Hiçbir Zaman Çevirme</translation>
@@ -2206,6 +2211,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, bir pencereyi paylaşıyor.</translation>
 <translation id="4364830672918311045">Bildirimleri görüntüleme</translation>
 <translation id="4365673000813822030">Hata, Senkronizasyonun çalışması durdu.</translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" /> ile <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">Girdiğiniz e-posta ve şifre eşleşmiyor</translation>
 <translation id="437184764829821926">Gelişmiş yazı tipi ayarları</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3071,6 +3077,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5669691691057771421">Yeni PIN'i girin</translation>
 <translation id="5671641761787789573">Resimler engellendi</translation>
+<translation id="567643736130151854">Tüm cihazlarda yer işaretlerinizi, şifrelerinizi ve daha pek çok şeyi almak için oturum açın ve senkronizasyonu etkinleştirin</translation>
 <translation id="5677503058916217575">Sayfanın dili:</translation>
 <translation id="5677928146339483299">Engellendi</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> birimine okuma ve yazma erişimi izni verildi.</translation>
@@ -3942,6 +3949,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7007648447224463482">Tümünü yeni pencerede aç</translation>
 <translation id="701080569351381435">Kaynağı Görüntüle</translation>
 <translation id="7014174261166285193">Yükleme işlemi başarısız oldu.</translation>
+<translation id="7017004637493394352">Tekrar "Ok Google" deyin</translation>
 <translation id="7017219178341817193">Yeni sayfa ekle</translation>
 <translation id="7017354871202642555">Pencere ayarlandıktan sonra mod ayarlanamaz.</translation>
 <translation id="7017480957358237747">çeşitli web sitelerine izin verebilir veya bu siteleri yasaklayabilir,</translation>
@@ -4269,6 +4277,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Cihazınızdaki ana Konum ayarını kapatarak Konum hizmetini devre dışı bırakabilirsiniz. Ayrıca konum ayarlarından, konum hizmetleri için kablosuz ağ, mobil ağlar ve sensörlerin kullanımını da kapatabilirsiniz.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Bir şifre oluşturun -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">"Ok Google" deyin</translation>
 <translation id="7525067979554623046">Oluştur</translation>
 <translation id="7529411698175791732">İnternet bağlantınızı kontrol edin. Sorun devam ederse oturumu kapatıp tekrar açmayı deneyin.</translation>
 <translation id="7530016656428373557">Vat Olarak Boşalma Oranı</translation>
@@ -4958,6 +4967,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8571213806525832805">Son 4 hafta</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> sitesinde sese her zaman izin ver</translation>
 <translation id="8575286410928791436">Çıkmak için <ph name="KEY_EQUIVALENT" /> tuşunu basılı tutun.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Bu pencereyi kapat.}other{Tüm gizli pencereleri kapat}}</translation>
 <translation id="8578639784464423491">99 harften uzun olamaz</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> öğe senkronize ediliyor...</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>
@@ -5311,7 +5321,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9112748030372401671">Duvar kağıdınızı değiştirme</translation>
 <translation id="9112987648460918699">Bul...</translation>
 <translation id="9114663181201435112">Kolayca oturum açın</translation>
-<translation id="9115487443206954631">Cast cihazlarını yönet</translation>
 <translation id="9115675100829699941">&amp;Yer İşaretleri</translation>
 <translation id="9116465289595958864">Son değiştirilme</translation>
 <translation id="9116799625073598554">Not alma uygulaması</translation>

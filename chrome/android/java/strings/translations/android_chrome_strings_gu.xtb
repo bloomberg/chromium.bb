@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">આછું</translation>
 <translation id="1821253160463689938">તમારી પસંદગીઓ યાદ રાખવા માટે કુકીનો ઉપયોગ કરે છે, પછી ભલે તમે તે પેજની મુલાકાત ન પણ લો</translation>
 <translation id="1829244130665387512">આ પૃષ્ઠમાં શોધો</translation>
-<translation id="1832521218263067499">સુરક્ષા પ્રસંગો</translation>
 <translation id="1853692000353488670">નવી છુપી ટેબ</translation>
 <translation id="1868024384445905608">Chrome હવે ફાઇલોને વધુ ઝડપથી ડાઉનલોડ કરે છે</translation>
+<translation id="187628348035757895">ડેવલપરના વિકલ્પો</translation>
 <translation id="1878302395768190018">Chrome સેટિંગમાં તમે આને કોઈપણ સમયે કસ્ટમાઇઝ કરી શકો છો</translation>
 <translation id="1880072593381090678">Chromeમાંથી લોકપ્રિય પેજ</translation>
 <translation id="1883903952484604915">મારી ફાઇલો</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="6985347914332179298">અહીં કોઈ ડાઉનલોડ્સ નથી</translation>
 <translation id="6990079615885386641">Google Play Store માંથી ઍપ્લિકેશન મેળવો: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની આપમેળે જાણ કરો</translation>
 <translation id="6992289844737586249">સાઇટ્સને તમારા માઇક્રોફોનનો ઉપયોગ કરવાની મંજૂરી આપતાં પહેલા પૂછો (ભલામણ કરેલ)</translation>
 <translation id="7016516562562142042">હાલનાં શોધ એંજિન માટે મંજૂર</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ડાઉનલોડ કરી</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">નવા ટેબમાં છબી ખોલો</translation>
 <translation id="8084114998886531721">સાચવેલ પાસવર્ડ</translation>
 <translation id="8087000398470557479">આ કન્ટેન્ટ <ph name="DOMAIN_NAME" /> માંથી, Google દ્વારા વિતરિત કરેલ છે.</translation>
+<translation id="8087980556724996220">આસિસ્ટંટ ઑટોમૅટિક રીતે ભરવાનું <ph name="DURATION_SECONDS" /> સેકન્ડમાં બંધ કરશે…</translation>
 <translation id="8103578431304235997">છૂપું ટૅબ</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">સંબંધિત પેજ સૂચવો</translation>

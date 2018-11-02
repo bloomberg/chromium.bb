@@ -575,6 +575,7 @@
 <translation id="2529880111512635313">設定強制安裝的應用程式和擴充功能清單</translation>
 <translation id="253135976343875019">在 AC 供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="2536525645274582300">使用者可決定是否要啟用 Google 定位服務</translation>
+<translation id="254653220329944566">啟用 <ph name="PRODUCT_NAME" /> 雲端報告功能</translation>
 <translation id="2550593661567988768">僅限單面列印</translation>
 <translation id="2552966063069741410">時區</translation>
 <translation id="2562339630163277285">指定用於提供互動智慧搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。
@@ -1872,6 +1873,15 @@
 <translation id="6133088669883929098">允許所有網站使用金鑰產生功能</translation>
 <translation id="6145799962557135888">允許你設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="614662973812186053">這項政策也可以控制 Android 使用資料和診斷資料的收集設定。</translation>
+<translation id="6153048425064249648">這項政策可控管 <ph name="PRODUCT_NAME" /> 雲端報告功能，該功能會將瀏覽器運作資訊上傳到 Google 管理控制台。
+
+      如果不設定這項政策或設為 False，系統不會收集或上傳資料。
+      如果將這項政策設為 True，系統會收集資料並上傳到 Google 管理控制台。
+      如要控管上傳資料內容，請使用「Chrome 資訊回報擴充功能」群組中的政策。
+
+      想要套用這項政策，電腦必須先註冊使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />。
+
+      這項政策會強制安裝「<ph name="CHROME_REPORTING_EXTENSION_NAME" />」來回報資訊，並且會覆寫所有與該擴充功能相關的擴充功能政策。</translation>
 <translation id="6155936611791017817">設定大型游標在登入畫面的預設狀態</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="6158324314836466367">企業線上應用程式商店名稱 (已不適用)</translation>
@@ -2903,14 +2913,6 @@
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
-<translation id="8669669491594628013">讓你控制密碼保護警告訊息的觸發設定。當使用者在疑似不安全的網站上重複使用受保護的密碼時，密碼保護功能就會向使用者發出警示。
-
-      你可以使用「PasswordProtectionLoginURLs」和「PasswordProtectionChangePasswordURL」政策設定要保護的密碼。
-
-      如果將這項政策設為「PasswordProtectionWarningOff」，系統就不會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPasswordReuse」，當使用者在任何非許可的網站上重複使用受保護的密碼時，系統就會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPhishingReuse」，當使用者在網路詐騙網站上重複使用受保護的密碼時，系統就會顯示密碼保護警告訊息。
-      如果未設定這項政策，密碼保護服務就只會保護 Google 密碼，但使用者可以變更這項設定。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
 <translation id="8682611302223077049">可設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。

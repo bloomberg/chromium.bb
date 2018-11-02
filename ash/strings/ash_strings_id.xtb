@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Perangkat USB-C (port depan sebelah kiri)</translation>
 <translation id="2865888419503095837">Info jaringan</translation>
+<translation id="287224423103674444">Anda menekan pintasan untuk rotasi layar. Apakah Anda ingin memutar layar?</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2878884018241093801">Tidak ada item baru-baru ini</translation>
 <translation id="2903844815300039659">Terhubung ke <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
 <translation id="5691772641933328258">Sidik jari tidak dikenali</translation>
+<translation id="5710450975648804523">Mode Jangan Ganggu aktif</translation>
 <translation id="574392208103952083">Sedang</translation>
 <translation id="5744083938413354016">Tap tarik</translation>
 <translation id="5750765938512549687">Bluetooth nonaktif</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Tekan dan tahan kedua tombol volume selama 5 detik untuk menonaktifkan masukan lisan.</translation>
 <translation id="7692480393933218409">Mengisi daya perangkat USB-C yang tersambung</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikasi}other{# notifikasi}}</translation>
 <translation id="776344839111254542">Klik untuk melihat detail update</translation>
+<translation id="7780159184141939021">Memutar Layar</translation>
 <translation id="7796353162336583443">Tap tombol stilus di rak untuk mencatat, mengambil screenshot, menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>

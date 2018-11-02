@@ -582,6 +582,7 @@
 <translation id="2529880111512635313">強制インストールするアプリと拡張機能のリストを設定します</translation>
 <translation id="253135976343875019">アイドル警告が表示されるまでの時間（AC 電源での実行時）</translation>
 <translation id="2536525645274582300">Google 位置情報サービスを有効にするかどうかをユーザーに確認する</translation>
+<translation id="254653220329944566"><ph name="PRODUCT_NAME" /> のクラウド レポートを有効にする</translation>
 <translation id="2550593661567988768">片面印刷のみ</translation>
 <translation id="2552966063069741410">タイムゾーン</translation>
 <translation id="2562339630163277285">インスタント検索の結果表示に使用する検索エンジンの URL を指定します。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、検索時にユーザーが入力したテキストに置き換えられます。
@@ -1881,6 +1882,15 @@
 <translation id="6133088669883929098">すべてのサイトにキー生成の使用を許可する</translation>
 <translation id="6145799962557135888">JavaScript の実行を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultJavaScriptSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="614662973812186053">このポリシーでは Android の使用状況と診断データの収集も管理できます。</translation>
+<translation id="6153048425064249648">ブラウザの操作に関する情報を Google 管理コンソールにアップロードする <ph name="PRODUCT_NAME" /> のクラウド レポートを制御します。
+
+      このポリシーが未設定のままか False に設定されている場合は、どのデータも収集およびアップロードされません。
+      このポリシーが True に設定されている場合は、データが収集され Google 管理コンソールにアップロードされます。
+      アップロードされるデータを管理するには、グループの Chrome レポート拡張機能のポリシーを使用してください。
+
+      このポリシーは、<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> でマシンが登録されている場合にのみ有効です。
+
+      このポリシーを指定した場合は、<ph name="CHROME_REPORTING_EXTENSION_NAME" />がレポート用に強制インストールされ、この拡張機能に関連する拡張機能ポリシーは無視されます。</translation>
 <translation id="6155936611791017817">ログイン画面での大きいカーソルのデフォルト状態を設定する</translation>
 <translation id="6157537876488211233">プロキシ バイパス ルールのカンマ区切りリスト</translation>
 <translation id="6158324314836466367">エンタープライズ ウェブストア名（サポート終了）</translation>
@@ -2929,14 +2939,6 @@
           サーバー名を複数指定する場合はカンマで区切ります。ワイルドカード（*）を使用できます。
 
           このポリシーを設定しない場合、<ph name="PRODUCT_NAME" /> はサーバーがイントラネット上にあるかどうか検出を試み、その上で IWA リクエストに応答します。サーバーがインターネット上で検出された場合、そのサーバーからの IWA リクエストは <ph name="PRODUCT_NAME" /> では無視されます。</translation>
-<translation id="8669669491594628013">パスワード保護の警告を表示するトリガーを制御できます。パスワード保護の警告は、不審なサイトでユーザーが保護されたパスワードを再使用したときに表示されます。
-
-      保護するパスワードを設定するには、「PasswordProtectionLoginURLs」ポリシーと「PasswordProtectionChangePasswordURL」ポリシーを使用します。
-
-      このポリシーが「PasswordProtectionWarningOff」に設定されている場合、パスワード保護の警告は表示されません。
-      このポリシーが「PasswordProtectionWarningOnPasswordReuse」に設定されている場合、ホワイトリストに登録されていないサイトでユーザーが保護されたパスワードを再使用したときに、パスワード保護の警告が表示されます。
-      このポリシーが「PasswordProtectionWarningOnPhishingReuse」に設定されている場合、フィッシング サイトでユーザーが保護されたパスワードを再使用したときに、パスワード保護の警告が表示されます。
-      このポリシーが設定されていない場合、パスワード保護サービスでは Google パスワードのみが保護されますが、ユーザーはこの設定を変更できます。</translation>
 <translation id="8672321184841719703">自動更新の対象バージョンを指定</translation>
 <translation id="867410340948518937">U2F（Universal Second Factor）</translation>
 <translation id="8682611302223077049">保留中のアップデートを適用するために <ph name="PRODUCT_NAME" /> または <ph name="PRODUCT_OS_NAME" /> 搭載端末の再起動が必要であることをユーザーに通知する期間をミリ秒単位で設定します。

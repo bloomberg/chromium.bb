@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Wczytaj obraz</translation>
 <translation id="1029317248976101138">Powiększ</translation>
 <translation id="1030706264415084469"><ph name="URL" /> chce na stałe przechowywać dużą ilość danych na Twoim urządzeniu</translation>
+<translation id="1030889518049751641">Wyświetl historię aktywności</translation>
 <translation id="1031362278801463162">Wczytuję podgląd</translation>
 <translation id="103279545524624934">Aby uruchomić aplikacje na Androida, zwolnij miejsce na dysku.</translation>
 <translation id="1033780634303702874">Dostęp do urządzeń szeregowych</translation>
@@ -163,6 +164,7 @@
     Musisz ponownie skonfigurować profil.<ph name="BR" />
     <ph name="BR" />
     Na następnym ekranie wyślij opinię, by pomóc nam naprawić ten problem.</translation>
+<translation id="1217668622537098248">Przywróć działanie po kliknięciu lewego przycisku myszy</translation>
 <translation id="121783623783282548">Hasła nie są zgodne.</translation>
 <translation id="1218860753635451122">Klikając przycisk „Zgadzam się”, wyrażasz zgodę na opisane powyżej przetwarzanie danych w przypadku tych usług Google.</translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Jeśli Twojego klucza bezpieczeństwa nie ma na liście, naciśnij i przytrzymaj przycisk na kluczu przez co najmniej 5 sekund.</translation>
 <translation id="275662540872599901">ekran wyłączony</translation>
 <translation id="2761898608071930085">Użyj innego konta</translation>
+<translation id="276233135255363312">{0,plural, =1{Masz jedno okno incognito.}few{Masz # okna incognito.}many{Masz # okien incognito.}other{Masz # okna incognito.}}</translation>
 <translation id="2762441749940182211">Zablokowano dostęp do kamery</translation>
 <translation id="2765217105034171413">Mały</translation>
 <translation id="2766006623206032690">Wk&amp;lej i otwórz</translation>
@@ -1554,6 +1557,7 @@
 <translation id="3350117557200012647">Otwórz tryb parowania</translation>
 <translation id="3353984535370177728">Wybierz folder do przesłania</translation>
 <translation id="3355936511340229503">Błąd połączenia</translation>
+<translation id="3356580349448036450">Zakończone</translation>
 <translation id="3356797067524893661">Wszystko gotowe do korzystania z Hangouts Meet</translation>
 <translation id="3358935496594837302">Nie można znaleźć telefonu. Upewnij się, że używasz zgodnego telefonu z Androidem oraz że jest on włączony i znajduje się w zasięgu ręki. &lt;a&gt;Więcej informacji&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ograniczenia zasad certyfikatu</translation>
@@ -2186,6 +2190,7 @@
 <translation id="4312866146174492540">Blokuj (domyślnie)</translation>
 <translation id="4316850752623536204">Witryna programisty</translation>
 <translation id="4320177379694898372">Brak połączenia z internetem</translation>
+<translation id="4320948194796820126">Dodaj zakładkę do e-maila</translation>
 <translation id="4322394346347055525">Zamknij inne karty</translation>
 <translation id="4324577459193912240">Plik niekompletny</translation>
 <translation id="4330387663455830245">Nigdy nie tłumacz z tego języka: <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2211,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> udostępnia okno.</translation>
 <translation id="4364830672918311045">Wyświetlanie powiadomień</translation>
 <translation id="4365673000813822030">Ups, synchronizacja przestała działać.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> w aplikacji <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Podany adres e-mail i hasło nie pasują do siebie</translation>
 <translation id="437184764829821926">Zaawansowane ustawienia czcionek</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -3070,6 +3076,7 @@
 <translation id="5669267381087807207">Aktywowanie</translation>
 <translation id="5669691691057771421">Wpisz nowy kod PIN</translation>
 <translation id="5671641761787789573">Obrazy zablokowane</translation>
+<translation id="567643736130151854">Zaloguj się w Chromium, by mieć dostęp do swoich zakładek, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="5677503058916217575">Język strony:</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5678550637669481956">Uprawnienia do zapisu i odczytu nośnika <ph name="VOLUME_NAME" /> zostały przyznane.</translation>
@@ -3941,6 +3948,7 @@
 <translation id="7007648447224463482">Otwórz wszystkie w nowym oknie</translation>
 <translation id="701080569351381435">Wyświetl źródło</translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>
+<translation id="7017004637493394352">Powiedz „OK Google” jeszcze raz</translation>
 <translation id="7017219178341817193">Dodaj nową stronę</translation>
 <translation id="7017354871202642555">Nie można ustawić trybu po ustawieniu okna.</translation>
 <translation id="7017480957358237747">zezwalać na dostęp do określonych witryn lub blokować go,</translation>
@@ -4268,6 +4276,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Aby wyłączyć tę usługę, wyłącz główne ustawienie Lokalizacja na urządzeniu. Możesz też wyłączyć w ustawieniach lokalizacji korzystanie z sieci Wi‑Fi, sieci komórkowych i czujników przy określaniu lokalizacji.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Utwórz hasło –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Powiedz „OK Google”</translation>
 <translation id="7525067979554623046">Utwórz</translation>
 <translation id="7529411698175791732">Sprawdź połączenie z internetem. Jeśli problem nie ustąpi, wyloguj się i zaloguj ponownie.</translation>
 <translation id="7530016656428373557">Szybkość rozładowywania w watach</translation>
@@ -4959,6 +4968,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
 <translation id="8574990355410201600">Zawsze zezwalaj na odtwarzanie dźwięku na stronie <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Aby zakończyć, przytrzymaj klawisz <ph name="KEY_EQUIVALENT" /></translation>
+<translation id="8578421807258988326">{0,plural, =1{Zamknij to okno}few{Zamknij wszystkie okna incognito}many{Zamknij wszystkie okna incognito}other{Zamknij wszystkie okna incognito}}</translation>
 <translation id="8578639784464423491">Nie może mieć więcej niż 99 liter</translation>
 <translation id="8579285237314169903">Synchronizuję elementy – <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="857943718398505171">Dozwolone (zalecane)</translation>
@@ -5312,7 +5322,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9112748030372401671">Zmiana tapety</translation>
 <translation id="9112987648460918699">Znajdź...</translation>
 <translation id="9114663181201435112">Łatwe logowanie</translation>
-<translation id="9115487443206954631">Zarządzaj urządzeniami przesyłającymi</translation>
 <translation id="9115675100829699941">&amp;Zakładki</translation>
 <translation id="9116465289595958864">Ostatnia modyfikacja</translation>
 <translation id="9116799625073598554">Aplikacja do notatek</translation>

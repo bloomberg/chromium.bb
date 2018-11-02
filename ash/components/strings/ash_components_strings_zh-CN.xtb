@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">打印当前网页</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">转至行末</translation>
 <translation id="1510238584712386396">启动器</translation>
 <translation id="152892567002884378">调高音量</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="ESC" /> 键</translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">粘贴剪贴板中的内容</translation>
 <translation id="9052808072970550123">切换到下一位用户</translation>
 <translation id="906458777597946297">最大化窗口</translation>
+<translation id="9091855755813503076">转至行首</translation>
 <translation id="9106898733795143799">网页和网络浏览器</translation>
 <translation id="9162942292291287644">找不到与“<ph name="QUERY" />”相符的搜索结果</translation>
 <translation id="9179672198516322668">常用快捷键</translation>

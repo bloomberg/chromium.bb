@@ -1554,6 +1554,7 @@
 <translation id="3350117557200012647">כניסה למצב התאמה</translation>
 <translation id="3353984535370177728">בחר תיקיה להעלאה</translation>
 <translation id="3355936511340229503">שגיאת חיבור</translation>
+<translation id="3356580349448036450">בוצע</translation>
 <translation id="3356797067524893661">‏הכול מוכן ואפשר להמשיך אל Hangouts Meet</translation>
 <translation id="3358935496594837302">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שימוש בטלפון Android תואם ושהוא מופעל ונמצא בקרבתך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="3359256513598016054">מגבלות מדיניות אישורים </translation>
@@ -3945,6 +3946,7 @@
 <translation id="7007648447224463482">פתח הכול בחלון חדש</translation>
 <translation id="701080569351381435">הצג מקור</translation>
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>
+<translation id="7017004637493394352">‏אמור שוב "Ok Google"</translation>
 <translation id="7017219178341817193">הוסף דף חדש</translation>
 <translation id="7017354871202642555">לא ניתן להגדיר מצב לאחר שהחלון הוגדר.</translation>
 <translation id="7017480957358237747">התר או חסום אתרים מסוימים,</translation>
@@ -4272,6 +4274,7 @@
     <ph name="BEGIN_PARAGRAPH3" />ניתן לכבות את המיקום על-ידי כיבוי של הגדרת המיקום הראשית במכשיר. בהגדרות המיקום ניתן גם לבטל את השימוש ב-Wi-Fi, ברשתות סלולריות ובחיישנים לאיתור המיקום.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">צור סיסמה -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">‏אמור "Ok Google"</translation>
 <translation id="7525067979554623046">צור</translation>
 <translation id="7529411698175791732">בדוק את חיבור האינטרנט. אם הבעיה לא נפתרת, נסה לצאת מהחשבון ולהיכנס אליו שוב.</translation>
 <translation id="7530016656428373557">שיעור פריקה בוואט</translation>
@@ -5313,7 +5316,6 @@
 <translation id="9112748030372401671">שינוי הטפט שלך</translation>
 <translation id="9112987648460918699">חפש...</translation>
 <translation id="9114663181201435112">כניסה בקלות</translation>
-<translation id="9115487443206954631">‏נהל מכשירי Cast</translation>
 <translation id="9115675100829699941">&amp;סימניות</translation>
 <translation id="9116465289595958864">שינוי אחרון</translation>
 <translation id="9116799625073598554">יישום לרישום הערות</translation>

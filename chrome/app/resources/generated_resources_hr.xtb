@@ -1557,6 +1557,7 @@
 <translation id="3350117557200012647">Pokreni način uparivanja</translation>
 <translation id="3353984535370177728">Odaberite mapu za prijenos</translation>
 <translation id="3355936511340229503">Pogreška veze</translation>
+<translation id="3356580349448036450">Dovršeno</translation>
 <translation id="3356797067524893661">Spremni ste za nastavak na Hangouts Meet</translation>
 <translation id="3358935496594837302">Telefon nije moguće pronaći. Provjerite je li vaš Android telefon kompatibilan i pri ruci. &lt;a&gt;Saznajte više&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ograničenja pravila certifikata</translation>
@@ -3947,6 +3948,7 @@
 <translation id="7007648447224463482">Otvori sve u novom prozoru</translation>
 <translation id="701080569351381435">Prikaži izvor</translation>
 <translation id="7014174261166285193">Instalacija nije uspjela.</translation>
+<translation id="7017004637493394352">Ponovo recite "Ok Google"</translation>
 <translation id="7017219178341817193">Dodaj novu stranicu</translation>
 <translation id="7017354871202642555">Nakon postavljanja prozora nije moguće postaviti način.</translation>
 <translation id="7017480957358237747">dopustiti ili zabraniti određene web-lokacije</translation>
@@ -4274,6 +4276,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Lokaciju možete isključiti tako što ćete isključiti glavnu postavku lokacije na uređaju. U postavkama lokacije također možete isključiti upotrebu Wi‑Fi-ja, mobilnih mreža i senzora za lokaciju.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Izrada zaporke –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Recite "Ok Google"</translation>
 <translation id="7525067979554623046">Stvori</translation>
 <translation id="7529411698175791732">Provjerite internetsku vezu. Ako se problem ne riješi, pokušajte se odjaviti i ponovo prijaviti.</translation>
 <translation id="7530016656428373557">Stopa pražnjenja u vatima</translation>
@@ -5319,7 +5322,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="9112748030372401671">promijeniti pozadinu</translation>
 <translation id="9112987648460918699">Traži...</translation>
 <translation id="9114663181201435112">Jednostavna prijava</translation>
-<translation id="9115487443206954631">Upravljanje uređajima Cast</translation>
 <translation id="9115675100829699941">&amp;Bookmarks (Oznake)</translation>
 <translation id="9116465289595958864">Zadnja izmjena</translation>
 <translation id="9116799625073598554">Aplikacija za zapisivanje bilješki</translation>

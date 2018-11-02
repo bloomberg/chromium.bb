@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">چاپ صفحه کنونی</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> یا <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">رفتن به انتهای خط</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="152892567002884378">افزایش صدا</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="ESC" /></translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">جای‌گذاری محتوا از کلیپ‌بورد</translation>
 <translation id="9052808072970550123">جابه‌جا شدن به کاربر بعدی</translation>
 <translation id="906458777597946297">بازکردن پنجره در حداکثر اندازه</translation>
+<translation id="9091855755813503076">رفتن به ابتدای خط</translation>
 <translation id="9106898733795143799">صفحه و مرورگر وب</translation>
 <translation id="9162942292291287644">هیچ نتیجه جستجویی برای <ph name="QUERY" /> وجود ندارد</translation>
 <translation id="9179672198516322668">میان‌برهای پرطرفدار</translation>

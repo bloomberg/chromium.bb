@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">లేత</translation>
 <translation id="1821253160463689938">మీ ప్రాధాన్యతలను గుర్తుంచుకోవడానికి కుక్కీలను ఉపయోగిస్తుంది, మీరు ఆ పేజీలను సందర్శించకపోయినా కూడా అది అమలవుతుంది</translation>
 <translation id="1829244130665387512">పేజీలో కనుగొను</translation>
-<translation id="1832521218263067499">భద్రతా సంఘటనలు</translation>
 <translation id="1853692000353488670">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1868024384445905608">Chrome ఇప్పుడు ఫైల్‌లను మరింత వేగంగా డౌన్‌లోడ్ చేస్తుంది</translation>
+<translation id="187628348035757895">డెవలపర్ ఎంపికలు</translation>
 <translation id="1878302395768190018">మీరు ఏ సమయంలో అయినా దీనిని Chrome సెట్టింగ్‌లలో అనుకూలీకరించవచ్చు</translation>
 <translation id="1880072593381090678">Chrome నుండి జనాదరణ పొందిన పేజీలు</translation>
 <translation id="1883903952484604915">నా ఫైల్‌లు</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">యాక్సెస్ సామర్థ్యం</translation>
 <translation id="6985347914332179298">ఇక్కడ డౌన్‌లోడ్‌లు లేవు</translation>
 <translation id="6990079615885386641">Google Play Store నుండి అనువర్తనాన్ని పొందండి: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">సంభావ్య భద్రతాపరమైన దాడులకు సంబంధించిన వివరాలను Googleకి స్వయంచాలకంగా నివేదించు</translation>
 <translation id="6992289844737586249">సైట్‌లను మీ మైక్రోఫోన్ ఉపయోగించడానికి అనుమతించే ముందు మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="7016516562562142042">ప్రస్తుత శోధన ఇంజిన్‌కు అనుమతించబడింది</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> డౌన్‌లోడ్ చేయబడింది</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">చిత్రాన్ని కొత్త ట్యాబ్‌లో తె.</translation>
 <translation id="8084114998886531721">సేవ్ చేసిన పాస్‌వర్డ్</translation>
 <translation id="8087000398470557479">ఈ కంటెంట్ Google ద్వారా డెలివర్ చేయబడిన <ph name="DOMAIN_NAME" />లోనిది.</translation>
+<translation id="8087980556724996220"><ph name="DURATION_SECONDS" />సె తర్వాత స్వీయ పూరణ అసిస్టెంట్ ఆపివేయబడుతుంది…</translation>
 <translation id="8103578431304235997">అజ్ఞాత ట్యాబ్</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">సంబంధిత పేజీలను సూచించు</translation>

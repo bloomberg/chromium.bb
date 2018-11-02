@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">이미지 로드</translation>
 <translation id="1029317248976101138">확대</translation>
 <translation id="1030706264415084469"><ph name="URL" />에서 내 기기에 대용량 데이터를 영구 저장하려고 합니다</translation>
+<translation id="1030889518049751641">활동 로그 보기</translation>
 <translation id="1031362278801463162">미리보기 로드 중</translation>
 <translation id="103279545524624934">Android 앱을 실행하려면 디스크 저장 공간을 확보하세요.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -163,6 +164,7 @@
     프로필을 다시 설정해야 합니다.<ph name="BR" />
     <ph name="BR" />
     다음 화면에서 Google이 문제를 해결할 수 있도록 의견을 보내주시기 바랍니다.</translation>
+<translation id="1217668622537098248">작업 후 왼쪽 클릭으로 되돌리기</translation>
 <translation id="121783623783282548">비밀번호가 일치하지 않습니다.</translation>
 <translation id="1218860753635451122">'동의' 버튼을 클릭하면 이 Google 서비스와 관련하여 상기한 바와 같이 처리함에 동의하는 것으로 간주됩니다.</translation>
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">보안 키가 목록에 없으면 키에 있는 버튼을 5초 이상 길게 누르세요.</translation>
 <translation id="275662540872599901">화면 꺼짐</translation>
 <translation id="2761898608071930085">다른 계정 사용</translation>
+<translation id="276233135255363312">{0,plural, =1{시크릿 창이 1개 열려 있습니다.}other{시크릿 창이 #개 열려 있습니다.}}</translation>
 <translation id="2762441749940182211">카메라 차단됨</translation>
 <translation id="2765217105034171413">작게</translation>
 <translation id="2766006623206032690">붙여넣어 바로가기(&amp;S)</translation>
@@ -1554,6 +1557,7 @@
 <translation id="3350117557200012647">페어링 모드 시작</translation>
 <translation id="3353984535370177728">업로드할 폴더 선택</translation>
 <translation id="3355936511340229503">연결 오류</translation>
+<translation id="3356580349448036450">완료</translation>
 <translation id="3356797067524893661">행아웃 Meet 사용 준비 완료</translation>
 <translation id="3358935496594837302">휴대전화를 찾을 수 없습니다. 호환 가능한 Android 휴대전화를 사용 중인지, 휴대전화의 전원이 켜져 있고 가까이 있는지 확인하세요. &lt;a&gt;자세히 알아보기e&lt;/a&gt;</translation>
 <translation id="3359256513598016054">인증서 정책 제약조건</translation>
@@ -2184,6 +2188,7 @@
 <translation id="4312866146174492540">차단(기본값)</translation>
 <translation id="4316850752623536204">개발자 웹사이트</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
+<translation id="4320948194796820126">이메일에 북마크 추가</translation>
 <translation id="4322394346347055525">다른 탭 닫기</translation>
 <translation id="4324577459193912240">파일 다운로드가 완료되지 않음</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> 번역 안함</translation>
@@ -2204,6 +2209,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" />이(가) 창을 공유합니다.</translation>
 <translation id="4364830672918311045">알림 표시</translation>
 <translation id="4365673000813822030">동기화 작업이 중지되었습니다.</translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" /> 앱으로 <ph name="ACTION_NAME" /> 작업을 실행합니다.</translation>
 <translation id="4370975561335139969">입력한 이메일과 비밀번호가 일치하지 않습니다.</translation>
 <translation id="437184764829821926">고급 글꼴 설정</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3068,6 +3074,7 @@
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5669691691057771421">새 PIN 입력</translation>
 <translation id="5671641761787789573">이미지가 차단됨</translation>
+<translation id="567643736130151854">로그인 후 동기화를 사용 설정하여 모든 기기에서 내 북마크, 비밀번호 등을 사용하세요.</translation>
 <translation id="5677503058916217575">페이지 언어:</translation>
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />에 대한 읽기/쓰기 액세스 권한이 부여되었습니다.</translation>
@@ -3939,6 +3946,7 @@
 <translation id="7007648447224463482">모두 새 창에서 열기</translation>
 <translation id="701080569351381435">소스 보기</translation>
 <translation id="7014174261166285193">설치에 실패했습니다.</translation>
+<translation id="7017004637493394352">다시 한번 "Ok Google"이라고 말하세요.</translation>
 <translation id="7017219178341817193">새 페이지 추가</translation>
 <translation id="7017354871202642555">창이 설정된 후에는 모드를 설정할 수 없습니다.</translation>
 <translation id="7017480957358237747">특정 웹사이트 허용 또는 금지</translation>
@@ -4266,6 +4274,7 @@
     <ph name="BEGIN_PARAGRAPH3" />기기에서 기본 위치 설정을 사용 중지하면 위치를 사용 중지할 수 있습니다. 또한 위치 설정에서 위치를 추정하는 데 Wi-Fi, 모바일 네트워크, 센서를 사용하지 않도록 할 수도 있습니다.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">비밀번호 만들기 -</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
+<translation id="7522255036471229694">"Ok Google"이라고 말하세요.</translation>
 <translation id="7525067979554623046">만들기</translation>
 <translation id="7529411698175791732">인터넷 연결 상태를 확인하세요. 문제가 계속되면 로그아웃한 뒤 다시 로그인해보세요.</translation>
 <translation id="7530016656428373557">방전율(와트)</translation>
@@ -4956,6 +4965,7 @@
 <translation id="8571213806525832805">지난 4주</translation>
 <translation id="8574990355410201600"><ph name="HOST" />에서 소리 항상 허용</translation>
 <translation id="8575286410928791436">종료하려면 <ph name="KEY_EQUIVALENT" /> 키를 길게 누르세요.</translation>
+<translation id="8578421807258988326">{0,plural, =1{창 닫기}other{시크릿 창 모두 닫기}}</translation>
 <translation id="8578639784464423491">99자를 초과할 수 없습니다.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />개 항목 동기화 중...</translation>
 <translation id="857943718398505171">허용(권장)</translation>
@@ -5309,7 +5319,6 @@
 <translation id="9112748030372401671">배경화면 변경</translation>
 <translation id="9112987648460918699">찾기...</translation>
 <translation id="9114663181201435112">간편한 로그인</translation>
-<translation id="9115487443206954631">Cast 기기 관리</translation>
 <translation id="9115675100829699941">북마크(&amp;B)</translation>
 <translation id="9116465289595958864">최종 수정 날짜</translation>
 <translation id="9116799625073598554">메모 앱</translation>

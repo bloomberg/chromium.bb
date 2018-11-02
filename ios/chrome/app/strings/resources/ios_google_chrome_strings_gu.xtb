@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Chrome હમણાં જ વધુ સારું થયું છે! એક નવું વર્ઝન ઉપલબ્ધ છે.</translation>
 <translation id="257708665678654955">શું તમે Google Chrome ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME" /> પેજને અનુવાદ કરવાની ઓફર કરવા માગો છો?</translation>
 <translation id="2943166482989655199">Googleને સિસ્ટમ તથા વપરાશ ડેટા મોકલીને Chrome અને તેની સુરક્ષા બહેતર બનાવો</translation>
+<translation id="3030414234702425231">કારણ કે તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો, આ ડિવાઇસમાંથી તમારા Chrome ડેટા ડિલીટ થઈ જશે. તમારો ડેટા તમારા Google એકાઉન્ટમાં જળવાઈ રહેશે.</translation>
 <translation id="3148434565183091099">તમારા સમગ્ર ઉપકરણો પર તમારા બુકમાર્ક્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="3148688391461398285">તમારા સ્થાનના આધારે Chrome માં બહેતર અનુભવ મેળવો.</translation>
 <translation id="3167189358072330585">તમારું એકાઉન્ટ, Google Chrome પર કાર્ય કરતું નથી. કૃપા કરીને તમારા ડોમેન એડમિનનો સંપર્ક કરો અથવા સાઇન ઇન કરવા માટે નિયમિત Google એકાઉન્ટનો ઉપયોગ કરો.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">તમારા અન્ય ઉપકરણો પર તમે Chrome માં ખોલેલા ટૅબ્સ અહીં દેખાશે.</translation>
 <translation id="6600954340915313787">Chrome માં કોપી કરાયું</translation>
 <translation id="6648150602980899529">તમે <ph name="DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવાનું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
+<translation id="6676840375528380067">આ ડિવાઇસમાંથી તમારા Chrome ડેટાને સાફ કરીએ?</translation>
 <translation id="690638524486313356">Google Chrome સેવાની શરતો</translation>
 <translation id="7165736900384873061">Google Chrome QR સ્કૅનરને ઉપયોગમાં લેવાનું શરૂ કરો</translation>
 <translation id="7172660552945675509">ટિપ: <ph name="BEGIN_LINK" />Chrome ને તમારા ડૉક પર ખસેડો<ph name="END_LINK" /></translation>

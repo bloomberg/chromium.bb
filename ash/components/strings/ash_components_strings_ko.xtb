@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">현재 페이지를 인쇄</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 또는 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">행의 끝으로 이동</translation>
 <translation id="1510238584712386396">런처</translation>
 <translation id="152892567002884378">볼륨 크게</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="ESC" /></translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">클립보드에서 콘텐츠 붙여넣기</translation>
 <translation id="9052808072970550123">다음 사용자로 전환</translation>
 <translation id="906458777597946297">창 최대화</translation>
+<translation id="9091855755813503076">행의 처음으로 이동</translation>
 <translation id="9106898733795143799">페이지 및 웹브라우저</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> 검색결과 없음</translation>
 <translation id="9179672198516322668">자주 쓰는 단축키</translation>

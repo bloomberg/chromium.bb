@@ -1556,6 +1556,7 @@
 <translation id="3350117557200012647">Aktivera kopplingsläget</translation>
 <translation id="3353984535370177728">Välj en mapp för uppladdning</translation>
 <translation id="3355936511340229503">Anslutningsfel</translation>
+<translation id="3356580349448036450">Klart</translation>
 <translation id="3356797067524893661">Klart att fortsätta med Hangouts Meet</translation>
 <translation id="3358935496594837302">Mobilen hittades inte. Använd en kompatibel Android-mobil som är på och finns till hands. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Begränsningar för Certifikatpolicy</translation>
@@ -3946,6 +3947,7 @@
 <translation id="7007648447224463482">Öppna alla i ett nytt fönster</translation>
 <translation id="701080569351381435">Visa källa</translation>
 <translation id="7014174261166285193">Installationen misslyckades.</translation>
+<translation id="7017004637493394352">Säg ”Ok Google” igen</translation>
 <translation id="7017219178341817193">Lägg till ny sida</translation>
 <translation id="7017354871202642555">Det går inte att ange läge när fönstret har skapats.</translation>
 <translation id="7017480957358237747">tillåt eller förbjud vissa webbplatser,</translation>
@@ -4273,6 +4275,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Du kan inaktivera tjänsten genom att inaktivera huvudinställningen för Plats på enheten. Du kan även inaktivera användningen av Wi-Fi, mobila nätverk och sensorer för plats i platsinställningarna.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Skapa ett lösenord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Säg ”Ok Google”</translation>
 <translation id="7525067979554623046">Skapa</translation>
 <translation id="7529411698175791732">Kontrollera internetanslutningen. Om problemet kvarstår testar du att logga ut och logga in igen.</translation>
 <translation id="7530016656428373557">Urladdningstakt i watt</translation>
@@ -5317,7 +5320,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9112748030372401671">Ändra bakgrund</translation>
 <translation id="9112987648460918699">Sök...</translation>
 <translation id="9114663181201435112">Logga in enkelt</translation>
-<translation id="9115487443206954631">Hantera Cast-enheter</translation>
 <translation id="9115675100829699941">&amp;Bokmärken</translation>
 <translation id="9116465289595958864">Senast ändrat</translation>
 <translation id="9116799625073598554">App för anteckningar</translation>

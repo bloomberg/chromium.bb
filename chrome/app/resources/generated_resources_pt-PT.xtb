@@ -1557,6 +1557,7 @@ Pretende pará-lo?</translation>
 <translation id="3350117557200012647">Aceder ao modo de sincronização</translation>
 <translation id="3353984535370177728">Selecionar uma pasta a carregar</translation>
 <translation id="3355936511340229503">Erro de ligação</translation>
+<translation id="3356580349448036450">Concluído</translation>
 <translation id="3356797067524893661">Está preparado para continuar para o Hangouts Meet</translation>
 <translation id="3358935496594837302">Não é possível localizar o telemóvel. Certifique-se de que está a utilizar um telemóvel Android compatível que está ligado e próximo. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restrições de políticas de certificados</translation>
@@ -3948,6 +3949,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7007648447224463482">Abrir tudo numa nova janela</translation>
 <translation id="701080569351381435">Ver origem</translation>
 <translation id="7014174261166285193">A instalação falhou.</translation>
+<translation id="7017004637493394352">Diga "Ok Google" novamente</translation>
 <translation id="7017219178341817193">Adicionar uma nova página</translation>
 <translation id="7017354871202642555">Não é possível definir o modo uma vez definida a janela.</translation>
 <translation id="7017480957358237747">permitir ou proibir determinados Sites,</translation>
@@ -4275,6 +4277,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Pode desativar a Localização ao desativar a definição de Localização principal no dispositivo. Também pode desativar a utilização das redes Wi-Fi e móveis, bem como de sensores, para fins de localização nas definições de localização.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Criar palavra-passe –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Diga "Ok Google"</translation>
 <translation id="7525067979554623046">Criar</translation>
 <translation id="7529411698175791732">Verifique a sua ligação à Internet. Se o problema continuar, experimente terminar e iniciar sessão novamente.</translation>
 <translation id="7530016656428373557">Taxa de descarga em Watts</translation>
@@ -5318,7 +5321,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9112748030372401671">Alterar a imagem de fundo</translation>
 <translation id="9112987648460918699">Localizar...</translation>
 <translation id="9114663181201435112">Iniciar sessão facilmente</translation>
-<translation id="9115487443206954631">Gerir dispositivos de transmissão</translation>
 <translation id="9115675100829699941">&amp;Marcadores</translation>
 <translation id="9116465289595958864">Última modificação</translation>
 <translation id="9116799625073598554">Aplicação para tirar notas</translation>

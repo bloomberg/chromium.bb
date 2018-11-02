@@ -553,6 +553,7 @@
 <translation id="2529880111512635313">配置强制安装的应用和扩展程序的列表</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2536525645274582300">用户可决定是否要启用 Google 位置信息服务</translation>
+<translation id="254653220329944566">启用 <ph name="PRODUCT_NAME" /> 云端报告</translation>
 <translation id="2550593661567988768">仅限单面打印</translation>
 <translation id="2552966063069741410">时区</translation>
 <translation id="2562339630163277285">指定用于提供即搜即得结果的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
@@ -1836,6 +1837,15 @@
 <translation id="6133088669883929098">允许所有网站使用密钥生成功能</translation>
 <translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="614662973812186053">此政策亦用于控制对 Android 使用情况和诊断数据的收集。</translation>
+<translation id="6153048425064249648">此政策用于控制可将浏览器操作信息上传到 Google 管理控制台的 <ph name="PRODUCT_NAME" /> 云端报告。
+
+      当此政策设为 False 或未设置时，系统不会收集或上传任何数据。
+      当此政策设为 True 时，系统会收集数据并将其上传到 Google 管理控制台。
+      要想控制系统所上传的数据，请使用 Chrome Reporting Extension 组中的政策。
+
+      仅当已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。
+
+      此政策会强制安装 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 以便生成报告，并会替换与该扩展程序相关的所有扩展程序政策。</translation>
 <translation id="6155936611791017817">设置登录屏幕上大号光标的默认状态</translation>
 <translation id="6157537876488211233">代理绕过规则的逗号分隔列表</translation>
 <translation id="6158324314836466367">企业网上应用店名称（已弃用）</translation>
@@ -2849,14 +2859,6 @@
           如果有多个服务器名称，要使用英文逗号分隔。允许使用通配符 (*)。
 
           如果此政策未设置，<ph name="PRODUCT_NAME" /> 将会尝试检测某个服务器是否在内网上，只有当该服务器在内网上时，该浏览器才会回应 IWA 请求。如果检测到某个服务器在互联网上，<ph name="PRODUCT_NAME" /> 将忽略来自它的 IWA 请求。</translation>
-<translation id="8669669491594628013">让您能够控制密码保护服务警告的触发条件。当用户在可疑的网站上重复使用受保护的密码时，密码保护服务就会向用户发出提醒。
-
-      您可以使用“PasswordProtectionLoginURLs”和“PasswordProtectionChangePasswordURL”政策来配置要保护的密码。
-
-      如果此政策设为“PasswordProtectionWarningOff”，则一律不会触发密码保护服务警告。
-      如果此政策设为“PasswordProtectionWarningOnPasswordReuse”，那么每当用户在任何未列入白名单的网站上重复使用受保护的密码时，都会触发密码保护服务警告。
-      如果此政策设为“PasswordProtectionWarningOnPhishingReuse”，那么每当用户在“网上诱骗”性质的网站上重复使用受保护的密码时，都会触发密码保护服务警告。
-      如果未设置此政策，那么密码保护服务仅会保护 Google 密码，但用户将能够更改此设置。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="867410340948518937">U2F（通用第二重因素）</translation>
 <translation id="8682611302223077049">可让您设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，则用户将会收到通知。

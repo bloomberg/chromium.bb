@@ -1557,6 +1557,7 @@
 <translation id="3350117557200012647">Entrar no modo de pareamento</translation>
 <translation id="3353984535370177728">Selecionar uma pasta para upload</translation>
 <translation id="3355936511340229503">Erro de conexão</translation>
+<translation id="3356580349448036450">Concluído</translation>
 <translation id="3356797067524893661">Está tudo pronto para usar o Hangouts Meet</translation>
 <translation id="3358935496594837302">Não foi possível localizar seu smartphone. Certifique-se de que você esteja usando um smartphone compatível com Android ativado e acessível. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restrições da diretiva de certificação</translation>
@@ -3949,6 +3950,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7007648447224463482">Abrir todos em uma nova janela</translation>
 <translation id="701080569351381435">Exibir o código fonte</translation>
 <translation id="7014174261166285193">Falha na instalação.</translation>
+<translation id="7017004637493394352">Diga "Ok Google" novamente</translation>
 <translation id="7017219178341817193">Adicionar uma nova página</translation>
 <translation id="7017354871202642555">Não é possível definir o modo após a definição da janela.</translation>
 <translation id="7017480957358237747">permitir ou proibir determinados websites,</translation>
@@ -4276,6 +4278,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
     <ph name="BEGIN_PARAGRAPH3" />É possível desativar a localização desativando a configuração principal de Local no seu dispositivo. Você também pode desativar o uso de Wi-Fi, redes móveis e sensores de local nas configurações.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Criar uma senha:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Diga "Ok Google"</translation>
 <translation id="7525067979554623046">Criar</translation>
 <translation id="7529411698175791732">Verifique sua conexão com a Internet. Se o problema continuar, tente sair e fazer login novamente.</translation>
 <translation id="7530016656428373557">Taxa de descarga em Watts</translation>
@@ -5321,7 +5324,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9112748030372401671">Altere seu papel de parede</translation>
 <translation id="9112987648460918699">Buscar...</translation>
 <translation id="9114663181201435112">Fazer login de forma fácil</translation>
-<translation id="9115487443206954631">Gerenciar dispositivos de transmissão</translation>
 <translation id="9115675100829699941">&amp;Favoritos</translation>
 <translation id="9116465289595958864">Última modificação</translation>
 <translation id="9116799625073598554">App de anotações</translation>

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">画像を読み込む</translation>
 <translation id="1029317248976101138">ズーム</translation>
 <translation id="1030706264415084469"><ph name="URL" /> から、端末に大きなデータを永続的に保存する許可を求められています</translation>
+<translation id="1030889518049751641">アクティビティ ログを表示</translation>
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
 <translation id="103279545524624934">Android アプリを起動できるようにディスク領域を解放します。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
@@ -163,6 +164,7 @@
     プロフィールをもう一度設定する必要があります。<ph name="BR" />
     <ph name="BR" />
     次の画面でフィードバックをお送りください。この問題の解決に役立てさせていただきます。</translation>
+<translation id="1217668622537098248">終了後、デフォルトの左クリック動作に戻す</translation>
 <translation id="121783623783282548">パスワードが一致しません。</translation>
 <translation id="1218860753635451122">[同意する] をクリックすると、これらの Google サービスに関する上記の処理内容に同意したことになります。</translation>
 <translation id="122082903575839559">証明書の署名アルゴリズム</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">セキュリティ キーが表示されていない場合は、キーのボタンを 5 秒以上長押ししてください。</translation>
 <translation id="275662540872599901">画面オフ</translation>
 <translation id="2761898608071930085">別のアカウントを使用</translation>
+<translation id="276233135255363312">{0,plural, =1{1 個のシークレット ウィンドウを開いています。}other{# 個のシークレット ウィンドウを開いています。}}</translation>
 <translation id="2762441749940182211">カメラがブロックされています</translation>
 <translation id="2765217105034171413">小</translation>
 <translation id="2766006623206032690">貼り付けて移動(&amp;S)</translation>
@@ -1554,6 +1557,7 @@
 <translation id="3350117557200012647">ペア設定モードにしてください</translation>
 <translation id="3353984535370177728">アップロードするフォルダを選択</translation>
 <translation id="3355936511340229503">接続エラー</translation>
+<translation id="3356580349448036450">完了</translation>
 <translation id="3356797067524893661">設定が完了しました。ハングアウト Meet を使用できます</translation>
 <translation id="3358935496594837302">スマートフォンが見つかりません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
@@ -2186,6 +2190,7 @@
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
 <translation id="4316850752623536204">デベロッパーのウェブサイト</translation>
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
+<translation id="4320948194796820126">メールサービスへのブックマークを追加</translation>
 <translation id="4322394346347055525">他のタブをすべて閉じる</translation>
 <translation id="4324577459193912240">ファイルが不完全です</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> を翻訳しない</translation>
@@ -2206,6 +2211,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
 <translation id="4365673000813822030">同期は停止されました。</translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" /> で<ph name="ACTION_NAME" />します。</translation>
 <translation id="4370975561335139969">入力したメールアドレスとパスワードが一致しません</translation>
 <translation id="437184764829821926">フォントの詳細設定</translation>
 <translation id="4372884569765913867">1×1</translation>
@@ -3070,6 +3076,7 @@
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5669691691057771421">新しい PIN を入力</translation>
 <translation id="5671641761787789573">画像がブロックされました</translation>
+<translation id="567643736130151854">ログインして同期を有効にすれば、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます</translation>
 <translation id="5677503058916217575">ページの言語:</translation>
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> への読み書きのアクセス権が許可されました。</translation>
@@ -3941,6 +3948,7 @@
 <translation id="7007648447224463482">すべてを新しいウィンドウで開く</translation>
 <translation id="701080569351381435">ソースを表示</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
+<translation id="7017004637493394352">もう一度「OK Google」と言ってください</translation>
 <translation id="7017219178341817193">新しいページを追加</translation>
 <translation id="7017354871202642555">ウィンドウが設定されている場合はモードを設定できません。</translation>
 <translation id="7017480957358237747">特定のウェブサイトへのアクセスを許可または禁止する</translation>
@@ -4269,6 +4277,7 @@
     <ph name="BEGIN_PARAGRAPH3" />位置情報をオフにするには、端末でメインの位置情報の設定をオフにします。位置情報の設定では、Wi‑Fi、モバイル ネットワーク、センサーを使用した現在地の特定をオフにすることもできます。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">パスワードを作成 -</translation>
 <translation id="7521387064766892559">Javascript</translation>
+<translation id="7522255036471229694">「OK Google」と言ってください</translation>
 <translation id="7525067979554623046">作成</translation>
 <translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>
 <translation id="7530016656428373557">放電率（ワット）</translation>
@@ -4959,6 +4968,7 @@
 <translation id="8571213806525832805">過去 4 週間</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> の音声を常に許可する</translation>
 <translation id="8575286410928791436">終了するには <ph name="KEY_EQUIVALENT" /> キーを押します</translation>
+<translation id="8578421807258988326">{0,plural, =1{このウィンドウを閉じる}other{すべてのシークレット ウィンドウを閉じる}}</translation>
 <translation id="8578639784464423491">99 文字までで指定してください</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> 個のアイテムを同期しています...</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
@@ -5312,7 +5322,6 @@
 <translation id="9112748030372401671">壁紙を変更する</translation>
 <translation id="9112987648460918699">検索...</translation>
 <translation id="9114663181201435112">簡単にログイン</translation>
-<translation id="9115487443206954631">キャスト デバイスを管理</translation>
 <translation id="9115675100829699941">ブックマーク(&amp;B)</translation>
 <translation id="9116465289595958864">最終更新</translation>
 <translation id="9116799625073598554">メモ用アプリ</translation>
