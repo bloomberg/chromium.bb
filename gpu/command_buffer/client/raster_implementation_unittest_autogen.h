@@ -20,10 +20,10 @@ TEST_F(RasterImplementationTest, DeleteTextures) {
     GLuint data[2];
   };
   Cmds expected;
-  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.del.Init(base::size(ids), &ids[0]);
   expected.data[0] = kTexturesStartId;
   expected.data[1] = kTexturesStartId + 1;
-  gl_->DeleteTextures(arraysize(ids), &ids[0]);
+  gl_->DeleteTextures(base::size(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -65,10 +65,10 @@ TEST_F(RasterImplementationTest, GenQueriesEXT) {
     GLuint data[2];
   };
   Cmds expected;
-  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.gen.Init(base::size(ids), &ids[0]);
   expected.data[0] = kQueriesStartId;
   expected.data[1] = kQueriesStartId + 1;
-  gl_->GenQueriesEXT(arraysize(ids), &ids[0]);
+  gl_->GenQueriesEXT(base::size(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(kQueriesStartId, ids[0]);
   EXPECT_EQ(kQueriesStartId + 1, ids[1]);
@@ -81,10 +81,10 @@ TEST_F(RasterImplementationTest, DeleteQueriesEXT) {
     GLuint data[2];
   };
   Cmds expected;
-  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.del.Init(base::size(ids), &ids[0]);
   expected.data[0] = kQueriesStartId;
   expected.data[1] = kQueriesStartId + 1;
-  gl_->DeleteQueriesEXT(arraysize(ids), &ids[0]);
+  gl_->DeleteQueriesEXT(base::size(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

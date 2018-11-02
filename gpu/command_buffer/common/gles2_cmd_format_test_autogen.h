@@ -731,15 +731,15 @@ TEST_F(GLES2FormatTest, DeleteBuffersImmediate) {
   };
   cmds::DeleteBuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteBuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteBuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -749,15 +749,15 @@ TEST_F(GLES2FormatTest, DeleteFramebuffersImmediate) {
   };
   cmds::DeleteFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteFramebuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteFramebuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -777,15 +777,15 @@ TEST_F(GLES2FormatTest, DeleteRenderbuffersImmediate) {
   };
   cmds::DeleteRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteRenderbuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteRenderbuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -795,15 +795,15 @@ TEST_F(GLES2FormatTest, DeleteSamplersImmediate) {
   };
   cmds::DeleteSamplersImmediate& cmd =
       *GetBufferAs<cmds::DeleteSamplersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteSamplersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -833,15 +833,15 @@ TEST_F(GLES2FormatTest, DeleteTexturesImmediate) {
   };
   cmds::DeleteTexturesImmediate& cmd =
       *GetBufferAs<cmds::DeleteTexturesImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteTexturesImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -851,16 +851,16 @@ TEST_F(GLES2FormatTest, DeleteTransformFeedbacksImmediate) {
   };
   cmds::DeleteTransformFeedbacksImmediate& cmd =
       *GetBufferAs<cmds::DeleteTransformFeedbacksImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(
       static_cast<uint32_t>(cmds::DeleteTransformFeedbacksImmediate::kCmdId),
       cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1062,15 +1062,15 @@ TEST_F(GLES2FormatTest, GenBuffersImmediate) {
       12, 23, 34,
   };
   cmds::GenBuffersImmediate& cmd = *GetBufferAs<cmds::GenBuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenBuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1090,15 +1090,15 @@ TEST_F(GLES2FormatTest, GenFramebuffersImmediate) {
   };
   cmds::GenFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::GenFramebuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenFramebuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1108,15 +1108,15 @@ TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
   };
   cmds::GenRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::GenRenderbuffersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenRenderbuffersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1125,15 +1125,15 @@ TEST_F(GLES2FormatTest, GenSamplersImmediate) {
       12, 23, 34,
   };
   cmds::GenSamplersImmediate& cmd = *GetBufferAs<cmds::GenSamplersImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenSamplersImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1142,15 +1142,15 @@ TEST_F(GLES2FormatTest, GenTexturesImmediate) {
       12, 23, 34,
   };
   cmds::GenTexturesImmediate& cmd = *GetBufferAs<cmds::GenTexturesImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenTexturesImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -1160,15 +1160,15 @@ TEST_F(GLES2FormatTest, GenTransformFeedbacksImmediate) {
   };
   cmds::GenTransformFeedbacksImmediate& cmd =
       *GetBufferAs<cmds::GenTransformFeedbacksImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenTransformFeedbacksImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -3743,15 +3743,15 @@ TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
   };
   cmds::GenQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::GenQueriesEXTImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenQueriesEXTImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -3761,15 +3761,15 @@ TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
   };
   cmds::DeleteQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::DeleteQueriesEXTImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteQueriesEXTImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -3884,15 +3884,15 @@ TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
   };
   cmds::GenVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::GenVertexArraysOESImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::GenVertexArraysOESImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
@@ -3902,15 +3902,15 @@ TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
   };
   cmds::DeleteVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::DeleteVertexArraysOESImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
   EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteVertexArraysOESImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
   EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
