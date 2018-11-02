@@ -24,6 +24,20 @@ class TestInkDropHost : public InkDropHostView {
     return num_ink_drop_layers_added_ - num_ink_drop_layers_removed_;
   }
 
+  int num_ink_drop_ripples_created() const {
+    return num_ink_drop_ripples_created_;
+  }
+  int num_ink_drop_highlights_created() const {
+    return num_ink_drop_highlights_created_;
+  }
+
+  const InkDropRipple* last_ink_drop_ripple() const {
+    return last_ink_drop_ripple_;
+  }
+  const InkDropHighlight* last_ink_drop_highlight() const {
+    return last_ink_drop_highlight_;
+  }
+
   void set_disable_timers_for_test(bool disable_timers_for_test) {
     disable_timers_for_test_ = disable_timers_for_test;
   }
@@ -37,6 +51,14 @@ class TestInkDropHost : public InkDropHostView {
  private:
   int num_ink_drop_layers_added_;
   int num_ink_drop_layers_removed_;
+
+  // CreateInkDrop{Ripple,Highlight} are const, so these members must be
+  // mutable.
+  mutable int num_ink_drop_ripples_created_;
+  mutable int num_ink_drop_highlights_created_;
+
+  mutable const InkDropRipple* last_ink_drop_ripple_;
+  mutable const InkDropHighlight* last_ink_drop_highlight_;
 
   // When true, the InkDropRipple/InkDropHighlight instances will have their
   // timers disabled after creation.

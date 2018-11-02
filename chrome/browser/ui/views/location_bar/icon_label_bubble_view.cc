@@ -229,6 +229,11 @@ gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
 }
 
+void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ink_drop_container_->SetBoundsRect(CalculateInkDropContainerBounds());
+  views::Button::OnBoundsChanged(previous_bounds);
+}
+
 void IconLabelBubbleView::Layout() {
   // We may not have horizontal room for both the image and the trailing
   // padding. When the view is expanding (or showing-label steady state), the
@@ -266,12 +271,7 @@ void IconLabelBubbleView::Layout() {
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
-  gfx::Rect ink_drop_bounds = GetLocalBounds();
-  if (ShouldShowSeparator()) {
-    ink_drop_bounds.set_width(ink_drop_bounds.width() -
-                              GetEndPaddingWithSeparator());
-  }
-
+  gfx::Rect ink_drop_bounds = CalculateInkDropContainerBounds();
   ink_drop_container_->SetBoundsRect(ink_drop_bounds);
 
   if (focus_ring() && !ink_drop_bounds.IsEmpty()) {
@@ -562,4 +562,11 @@ void IconLabelBubbleView::HideAnimation() {
   slide_animation_.Hide();
   GetInkDrop()->SetShowHighlightOnHover(false);
   GetInkDrop()->SetShowHighlightOnFocus(false);
+}
+
+gfx::Rect IconLabelBubbleView::CalculateInkDropContainerBounds() const {
+  gfx::Rect ink_drop_bounds = GetLocalBounds();
+  if (ShouldShowSeparator())
+    ink_drop_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
+  return ink_drop_bounds;
 }

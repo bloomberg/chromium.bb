@@ -24,10 +24,6 @@ InkDropMask::~InkDropMask() {
   layer_.set_delegate(nullptr);
 }
 
-void InkDropMask::UpdateLayerSize(const gfx::Size& new_layer_size) {
-  layer_.SetBounds(gfx::Rect(new_layer_size));
-}
-
 void InkDropMask::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                              float new_device_scale_factor) {}
 

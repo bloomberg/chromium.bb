@@ -225,7 +225,6 @@ gfx::Size NewTabButton::CalculatePreferredSize() const {
 void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   const gfx::Size ink_drop_size = GetContentsBounds().size();
   GetInkDrop()->HostSizeChanged(ink_drop_size);
-  UpdateInkDropMaskLayerSize(ink_drop_size);
 }
 
 bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {

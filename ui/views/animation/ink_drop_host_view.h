@@ -169,10 +169,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   void ResetInkDropMask();
 
-  // Updates the ink drop mask layer size to |new_size|. It does nothing if
-  // |ink_drop_mask_| is null.
-  void UpdateInkDropMaskLayerSize(const gfx::Size& new_size);
-
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);

@@ -209,7 +209,6 @@ void InkDropHostView::ViewHierarchyChanged(
 void InkDropHostView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (ink_drop_)
     ink_drop_->HostSizeChanged(size());
-  UpdateInkDropMaskLayerSize(size());
 }
 
 void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
@@ -310,11 +309,6 @@ void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
 
 void InkDropHostView::ResetInkDropMask() {
   ink_drop_mask_.reset();
-}
-
-void InkDropHostView::UpdateInkDropMaskLayerSize(const gfx::Size& new_size) {
-  if (ink_drop_mask_)
-    ink_drop_mask_->UpdateLayerSize(new_size);
 }
 
 // static

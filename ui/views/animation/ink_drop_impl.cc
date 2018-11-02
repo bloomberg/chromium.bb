@@ -630,8 +630,25 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   // when a mask layer is applied to it. This will not affect clipping if no
   // mask layer is set.
   root_layer_->SetBounds(gfx::Rect(new_size));
-  if (ink_drop_ripple_)
-    ink_drop_ripple_->HostSizeChanged(new_size);
+
+  const bool create_ink_drop_ripple = !!ink_drop_ripple_;
+  const bool activated =
+      ink_drop_ripple_ &&
+      ink_drop_ripple_->target_ink_drop_state() == InkDropState::ACTIVATED;
+  DestroyInkDropRipple();
+
+  const bool create_ink_drop_highlight = !!highlight_;
+  DestroyInkDropHighlight();
+
+  // Both the ripple and the highlight must have been destroyed before
+  // recreating either of them otherwise the mask will not get recreated.
+  if (create_ink_drop_ripple)
+    CreateInkDropRipple();
+  if (activated)
+    ink_drop_ripple_->SnapToActivated();
+
+  if (create_ink_drop_highlight)
+    CreateInkDropHighlight();
 }
 
 InkDropState InkDropImpl::GetTargetInkDropState() const {
