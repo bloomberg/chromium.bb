@@ -63,7 +63,7 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 
 SliderThumbElement* SliderThumbElement::Create(Document& document) {
   SliderThumbElement* element = new SliderThumbElement(document);
-  element->setAttribute(kIdAttr, ShadowElementNames::SliderThumb());
+  element->setAttribute(kIdAttr, shadow_element_names::SliderThumb());
   return element;
 }
 
@@ -105,7 +105,7 @@ void SliderThumbElement::DragFrom(const LayoutPoint& point) {
 void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   HTMLInputElement* input(HostInput());
   Element* track_element = input->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SliderTrack());
+      shadow_element_names::SliderTrack());
 
   if (!input->GetLayoutObject() || !GetLayoutBox() ||
       !track_element->GetLayoutBox())
@@ -387,7 +387,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
 
   TouchList* touches = event->targetTouches();
   SliderThumbElement* thumb = ToSliderThumbElement(
-      GetTreeScope().getElementById(ShadowElementNames::SliderThumb()));
+      GetTreeScope().getElementById(shadow_element_names::SliderThumb()));
   if (!thumb || !touches)
     return;
 

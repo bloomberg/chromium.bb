@@ -77,7 +77,7 @@ void SearchInputType::CreateShadowSubtree() {
   TextFieldInputType::CreateShadowSubtree();
   Element* container = ContainerElement();
   Element* view_port = GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::EditingViewPort());
+      shadow_element_names::EditingViewPort());
   DCHECK(container);
   DCHECK(view_port);
   container->InsertBefore(
@@ -151,7 +151,7 @@ void SearchInputType::UpdateView() {
 
 void SearchInputType::UpdateCancelButtonVisibility() {
   Element* button = GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SearchClearButton());
+      shadow_element_names::SearchClearButton());
   if (!button)
     return;
   if (GetElement().value().IsEmpty()) {

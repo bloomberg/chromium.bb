@@ -245,7 +245,7 @@ void RangeInputType::CreateShadowSubtree() {
   Document& document = GetElement().GetDocument();
   HTMLDivElement* track = HTMLDivElement::Create(document);
   track->SetShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
-  track->setAttribute(kIdAttr, ShadowElementNames::SliderTrack());
+  track->setAttribute(kIdAttr, shadow_element_names::SliderTrack());
   track->AppendChild(SliderThumbElement::Create(document));
   HTMLElement* container = SliderContainerElement::Create(document);
   container->AppendChild(track);
@@ -330,12 +330,12 @@ bool RangeInputType::ShouldRespectListAttribute() {
 inline SliderThumbElement* RangeInputType::GetSliderThumbElement() const {
   return ToSliderThumbElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::SliderThumb()));
+          shadow_element_names::SliderThumb()));
 }
 
 inline Element* RangeInputType::SliderTrackElement() const {
   return GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SliderTrack());
+      shadow_element_names::SliderTrack());
 }
 
 void RangeInputType::ListAttributeTargetChanged() {

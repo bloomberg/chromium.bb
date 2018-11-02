@@ -56,7 +56,7 @@ PickerIndicatorElement* PickerIndicatorElement::Create(
   PickerIndicatorElement* element =
       new PickerIndicatorElement(document, picker_indicator_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-  element->setAttribute(kIdAttr, ShadowElementNames::PickerIndicator());
+  element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
   return element;
 }
 

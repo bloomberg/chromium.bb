@@ -559,7 +559,7 @@ DateTimeEditElement* DateTimeEditElement::Create(
   DateTimeEditElement* container =
       new DateTimeEditElement(document, edit_control_owner);
   container->SetShadowPseudoId(AtomicString("-webkit-datetime-edit"));
-  container->setAttribute(kIdAttr, ShadowElementNames::DateTimeEdit());
+  container->setAttribute(kIdAttr, shadow_element_names::DateTimeEdit());
   return container;
 }
 

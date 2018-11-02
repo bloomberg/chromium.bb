@@ -36,7 +36,7 @@
 
 namespace blink {
 
-namespace ShadowElementNames {
+namespace shadow_element_names {
 
 const AtomicString& DetailsContent();
 const AtomicString& DetailsSummary();
@@ -54,7 +54,7 @@ const AtomicString& SliderTrack();
 const AtomicString& TextFieldContainer();
 const AtomicString& OptGroupLabel();
 
-}  // namespace ShadowElementNames
+}  // namespace shadow_element_names
 
 }  // namespace blink
 

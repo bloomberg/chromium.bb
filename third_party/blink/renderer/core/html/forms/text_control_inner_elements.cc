@@ -46,7 +46,7 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 TextControlInnerContainer* TextControlInnerContainer::Create(
     Document& document) {
   TextControlInnerContainer* element = new TextControlInnerContainer(document);
-  element->setAttribute(kIdAttr, ShadowElementNames::TextFieldContainer());
+  element->setAttribute(kIdAttr, shadow_element_names::TextFieldContainer());
   return element;
 }
 
@@ -64,7 +64,7 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
 
 EditingViewPortElement* EditingViewPortElement::Create(Document& document) {
   EditingViewPortElement* element = new EditingViewPortElement(document);
-  element->setAttribute(kIdAttr, ShadowElementNames::EditingViewPort());
+  element->setAttribute(kIdAttr, shadow_element_names::EditingViewPort());
   return element;
 }
 
@@ -219,7 +219,7 @@ SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
   SearchFieldCancelButtonElement* element =
       new SearchFieldCancelButtonElement(document);
   element->SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
-  element->setAttribute(kIdAttr, ShadowElementNames::SearchClearButton());
+  element->setAttribute(kIdAttr, shadow_element_names::SearchClearButton());
   return element;
 }
 
