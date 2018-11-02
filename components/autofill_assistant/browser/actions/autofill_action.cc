@@ -234,9 +234,12 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
+  const autofill::AutofillProfile* profile =
+      delegate->GetClientMemory()->selected_address(name_);
+  DCHECK(profile);
   delegate->FillAddressForm(
-      delegate->GetClientMemory()->selected_address(name_), selectors_,
-      base::BindOnce(&AutofillAction::OnFormFilled,
+      profile, selectors_,
+      base::BindOnce(&AutofillAction::OnAddressFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), delegate));
 }
 
@@ -250,13 +253,19 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
     return;
   }
 
-  delegate->FillCardForm(
-      std::move(card), cvc, selectors_,
-      base::BindOnce(&AutofillAction::OnFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), delegate));
+  delegate->FillCardForm(std::move(card), cvc, selectors_,
+                         base::BindOnce(&AutofillAction::OnCardFormFilled,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AutofillAction::OnFormFilled(ActionDelegate* delegate, bool successful) {
+void AutofillAction::OnCardFormFilled(bool successful) {
+  // TODO(crbug.com/806868): Implement required fields checking for cards.
+  EndAction(successful);
+  return;
+}
+
+void AutofillAction::OnAddressFormFilled(ActionDelegate* delegate,
+                                         bool successful) {
   // In case Autofill failed, we fail the action.
   if (!successful) {
     EndAction(/* successful= */ false);
@@ -268,12 +277,6 @@ void AutofillAction::OnFormFilled(ActionDelegate* delegate, bool successful) {
 
 void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
                                          bool allow_fallback) {
-  if (is_autofill_card_) {
-    // TODO(crbug.com/806868): Implement required fields checking for cards.
-    EndAction(/* successful= */ true);
-    return;
-  }
-
   // If there are no required fields, finish the action successfully.
   if (proto_.use_address().required_fields().empty()) {
     EndAction(/* successful= */ true);

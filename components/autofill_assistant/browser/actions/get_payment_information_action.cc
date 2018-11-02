@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
@@ -32,6 +34,14 @@ void GetPaymentInformationAction::InternalProcessAction(
 
   payments::mojom::PaymentOptionsPtr payment_options =
       payments::mojom::PaymentOptions::New();
+  if (get_payment_information.has_contact_details()) {
+    auto contact_details = get_payment_information.contact_details();
+    payment_options->request_payer_email =
+        contact_details.request_payer_email();
+    payment_options->request_payer_name = contact_details.request_payer_name();
+    payment_options->request_payer_phone =
+        contact_details.request_payer_phone();
+  }
   bool ask_for_payment = get_payment_information.ask_for_payment();
   payment_options->request_payer_email = ask_for_payment;
   payment_options->request_payer_name = ask_for_payment;
@@ -74,6 +84,31 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->address));
+    }
+
+    if (get_payment_information.has_contact_details()) {
+      auto contact_details_proto = get_payment_information.contact_details();
+      autofill::AutofillProfile contact_profile;
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::NAME_FULL,
+          base::ASCIIToUTF16(payment_information->payer_name));
+      autofill::data_util::NameParts parts = autofill::data_util::SplitName(
+          base::ASCIIToUTF16(payment_information->payer_name));
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
+                                 parts.given);
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
+                                 parts.middle);
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_LAST,
+                                 parts.family);
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::EMAIL_ADDRESS,
+          base::ASCIIToUTF16(payment_information->payer_email));
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+          base::ASCIIToUTF16(payment_information->payer_phone));
+      delegate->GetClientMemory()->set_selected_address(
+          contact_details_proto.contact_details_name(),
+          std::make_unique<autofill::AutofillProfile>(contact_profile));
     }
   }
 

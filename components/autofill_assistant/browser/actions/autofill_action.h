@@ -18,7 +18,7 @@
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
-}
+}  // namespace autofill
 
 namespace autofill_assistant {
 // An action to autofill a form using a local address or credit card.
@@ -41,7 +41,7 @@ class AutofillAction : public Action {
                       const std::string& guid);
 
   // Fill the form using data in client memory. Return whether filling succeeded
-  // or not through |callback|.
+  // or not through OnAddressFormFilled or OnCardFormFilled.
   void FillFormWithData(ActionDelegate* delegate);
   void OnWaitForElement(ActionDelegate* delegate, bool element_found);
 
@@ -50,8 +50,11 @@ class AutofillAction : public Action {
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);
 
-  // Called when the form has been filled.
-  void OnFormFilled(ActionDelegate* delegate, bool successful);
+  // Called when the credit card form has been filled.
+  void OnCardFormFilled(bool successful);
+
+  // Called when the address form has been filled.
+  void OnAddressFormFilled(ActionDelegate* delegate, bool successful);
 
   // Check whether all required fields have a non-empty value. If it is the
   // case, finish the action successfully. If it's not and |allow_fallback|
