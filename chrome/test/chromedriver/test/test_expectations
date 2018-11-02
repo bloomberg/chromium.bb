@@ -37,6 +37,12 @@ _OS_NEGATIVE_FILTER['mac'] = [
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['mac_69'] = [
+    # Maximize window doesn't always increase window size on Mac 69
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
+]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.*',
