@@ -33,5 +33,6 @@ static_library("test_support") {
   public_deps = [
     "//base",
     "//device/usb/public/mojom",
+    "//url:url",
   ]
 }

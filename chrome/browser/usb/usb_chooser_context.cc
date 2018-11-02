@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/usb/mojo/device_manager_impl.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

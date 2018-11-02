@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
-#include "device/usb/mojo/device_manager_impl.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "url/gurl.h"
 
 namespace device {
 
@@ -33,6 +34,12 @@ class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
                     const std::string& manufacturer_string,
                     const std::string& product_string,
                     const std::string& serial_number);
+  FakeUsbDeviceInfo(uint16_t vendor_id,
+                    uint16_t product_id,
+                    const std::string& manufacturer_string,
+                    const std::string& product_string,
+                    const std::string& serial_number,
+                    const GURL& webusb_landing_page);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
