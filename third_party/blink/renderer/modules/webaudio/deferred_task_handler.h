@@ -75,7 +75,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   // called by the nodes who want to add/remove themselves into/from the
   // automatic pull lists.
   void AddAutomaticPullNode(scoped_refptr<AudioHandler>);
-  void RemoveAutomaticPullNode(scoped_refptr<AudioHandler>);
+  void RemoveAutomaticPullNode(AudioHandler*);
 
   // Called right before handlePostRenderTasks() to handle nodes which need to
   // be pulled even when they are not connected to anything.
@@ -117,8 +117,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   // complete).  Set |disable_outputs| to true if the outputs of the handler
   // should also be disabled.  This should be true if the tail is done.  But if
   // we're reconnected or re-enabled, then |disable_outputs| should be false.
-  void RemoveTailProcessingHandler(scoped_refptr<AudioHandler> node,
-                                   bool disable_outputs);
+  void RemoveTailProcessingHandler(AudioHandler*, bool disable_outputs);
 
   // Remove all tail processing nodes.  Should be called only when the
   // context is done.

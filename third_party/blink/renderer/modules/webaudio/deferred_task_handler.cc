@@ -137,12 +137,12 @@ void DeferredTaskHandler::AddAutomaticPullNode(
   }
 }
 
-void DeferredTaskHandler::RemoveAutomaticPullNode(
-    scoped_refptr<AudioHandler> node) {
+void DeferredTaskHandler::RemoveAutomaticPullNode(AudioHandler* node) {
   AssertGraphOwner();
 
-  if (automatic_pull_handlers_.Contains(node)) {
-    automatic_pull_handlers_.erase(node);
+  auto it = automatic_pull_handlers_.find(node);
+  if (it != automatic_pull_handlers_.end()) {
+    automatic_pull_handlers_.erase(it);
     automatic_pull_handlers_need_updating_ = true;
   }
 }
@@ -177,9 +177,8 @@ void DeferredTaskHandler::AddTailProcessingHandler(
   }
 }
 
-void DeferredTaskHandler::RemoveTailProcessingHandler(
-    scoped_refptr<AudioHandler> handler,
-    bool disable_outputs) {
+void DeferredTaskHandler::RemoveTailProcessingHandler(AudioHandler* handler,
+                                                      bool disable_outputs) {
   AssertGraphOwner();
 
   size_t index = tail_processing_handlers_.Find(handler);
@@ -191,7 +190,8 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(
     if (disable_outputs) {
       // Disabling of outputs should happen on the main thread so save this
       // handler so it can be processed there.
-      finished_tail_processing_handlers_.push_back(handler);
+      finished_tail_processing_handlers_.push_back(
+          std::move(tail_processing_handlers_[index]));
     }
     tail_processing_handlers_.EraseAt(index);
 
@@ -223,7 +223,7 @@ void DeferredTaskHandler::UpdateTailProcessingHandlers() {
               handler->Context()->currentTime(), handler->TailTime(),
               handler->LatencyTime());
 #endif
-      RemoveTailProcessingHandler(handler, true);
+      RemoveTailProcessingHandler(handler.get(), true);
     }
   }
 }
