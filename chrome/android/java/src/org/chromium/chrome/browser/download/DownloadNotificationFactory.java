@@ -259,12 +259,7 @@ public final class DownloadNotificationFactory {
 
         Bundle extras = new Bundle();
         extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
-
-        if (downloadUpdate.getIsOffTheRecord()) {
-            builder.setSmallIcon(R.drawable.offline_pin).addExtras(extras);
-        } else {
-            builder.setSmallIcon(iconId).addExtras(extras);
-        }
+        builder.setSmallIcon(iconId).addExtras(extras);
 
         // Context text is shown as title in incognito mode as the file name is not shown.
         if (downloadUpdate.getIsOffTheRecord()) {
