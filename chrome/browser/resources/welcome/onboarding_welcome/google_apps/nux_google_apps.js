@@ -15,6 +15,19 @@ Polymer({
     indicatorModel: Object,
   },
 
+  /** @private */
+  finalized_: false,
+
+  /** @override */
+  ready: function() {
+    window.addEventListener('beforeunload', () => {
+      if (this.finalized_)
+        return;
+      // TODO(hcarmona): Add metrics.
+      this.$.appChooser.removeAllBookmarks();
+    });
+  },
+
   /**
    * Elements can override onRouteChange to handle route changes.
    * Overrides function in behavior.
@@ -23,11 +36,17 @@ Polymer({
    */
   onRouteChange: function(route, step) {
     if (`step-${step}` == this.id) {
+      this.finalized_ = false;
       nux.BookmarkProxyImpl.getInstance().isBookmarkBarShown().then(
           bookmarkBarShown => {
             this.$.appChooser.bookmarkBarWasShown = bookmarkBarShown;
           });
       this.$.appChooser.populateAllBookmarks();
+    } else {
+      if (this.finalized_)
+        return;
+      // TODO(hcarmona): Add metrics?
+      this.$.appChooser.removeAllBookmarks();
     }
   },
 
@@ -41,6 +60,7 @@ Polymer({
   /** @private */
   onGetStartedClicked_: function() {
     // TODO(hcarmona): Add metrics.
+    this.finalized_ = true;
     welcome.navigateToNextStep();
   },
 });

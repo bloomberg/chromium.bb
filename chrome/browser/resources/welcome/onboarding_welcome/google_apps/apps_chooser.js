@@ -66,12 +66,14 @@ Polymer({
 
   /** Called when bookmarks should be created for all selected apps. */
   populateAllBookmarks() {
-    if (!this.appList_) {
+    if (this.appList_) {
+      this.appList_.forEach(app => this.updateBookmark(app));
+    } else {
       this.appsProxy_.getGoogleAppsList().then(list => {
         this.appList_ = list;
-        this.appList_.forEach(app => {
-          // Default select all items.
-          app.selected = true;
+        this.appList_.forEach((app, index) => {
+          // Default select first few items.
+          app.selected = index < 3;
           this.updateBookmark(app);
         });
         this.updateHasAppsSelected();
@@ -82,17 +84,21 @@ Polymer({
 
   /** Called when bookmarks should be removed for all selected apps. */
   removeAllBookmarks() {
+    if (!this.appList_)
+      return;  // No apps to remove.
+
     let removedBookmarks = false;
     this.appList_.forEach(app => {
-      if (app.selected) {
-        app.selected = false;
-        this.updateBookmark(app);
+      if (app.selected && app.bookmarkId) {
+        // Don't call |updateBookmark| b/c we want to save the selection.
+        this.bookmarkProxy_.removeBookmark(app.bookmarkId);
+        app.bookmarkId = null;
         removedBookmarks = true;
       }
     });
     // Only update and announce if we removed bookmarks.
     if (removedBookmarks) {
-      this.updateHasAppsSelected();
+      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
       this.fire('iron-announce', {text: this.i18n('bookmarksRemoved')});
     }
   },
