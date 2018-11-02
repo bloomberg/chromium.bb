@@ -308,8 +308,16 @@ class CORE_EXPORT NGConstraintSpace final {
   NGLogicalSize replaced_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
 
+  NGMarginStrut margin_strut_;
+  NGBfcOffset bfc_offset_;
+  base::Optional<LayoutUnit> floats_bfc_block_offset_;
+
+  NGExclusionSpace exclusion_space_;
+
   LayoutUnit fragmentainer_block_size_;
   LayoutUnit fragmentainer_space_at_bfc_start_;
+
+  LayoutUnit clearance_offset_;
 
   unsigned block_direction_fragmentation_type_ : 2;
   unsigned table_cell_child_layout_phase_ : 2;  // NGTableCellChildLayoutPhase
@@ -318,13 +326,6 @@ class CORE_EXPORT NGConstraintSpace final {
   unsigned direction_ : 1;
   unsigned flags_ : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
   unsigned baseline_requests_ : NGBaselineRequestList::kSerializedBits;
-
-  NGMarginStrut margin_strut_;
-  NGBfcOffset bfc_offset_;
-  base::Optional<LayoutUnit> floats_bfc_block_offset_;
-
-  NGExclusionSpace exclusion_space_;
-  LayoutUnit clearance_offset_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

@@ -20,11 +20,11 @@ namespace {
 struct SameSizeAsNGConstraintSpace {
   NGLogicalSize logical_sizes[3];
   NGPhysicalSize physical_sizes[1];
-  LayoutUnit layout_units[3];
   NGMarginStrut margin_strut;
   NGBfcOffset bfc_offset;
   NGExclusionSpace exclusion_space;
   base::Optional<LayoutUnit> optional_layout_unit;
+  LayoutUnit layout_units[3];
   unsigned flags[1];
 };
 
@@ -41,22 +41,22 @@ NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
       replaced_percentage_resolution_size_(
           builder.replaced_percentage_resolution_size_),
       initial_containing_block_size_(builder.initial_containing_block_size_),
+      margin_strut_(is_new_fc ? NGMarginStrut() : builder.margin_strut_),
+      bfc_offset_(is_new_fc ? NGBfcOffset() : builder.bfc_offset_),
+      floats_bfc_block_offset_(is_new_fc ? base::nullopt
+                                         : builder.floats_bfc_block_offset_),
       fragmentainer_block_size_(builder.fragmentainer_block_size_),
       fragmentainer_space_at_bfc_start_(
           builder.fragmentainer_space_at_bfc_start_),
+      clearance_offset_(is_new_fc ? LayoutUnit::Min()
+                                  : builder.clearance_offset_),
       block_direction_fragmentation_type_(builder.fragmentation_type_),
       table_cell_child_layout_phase_(builder.table_cell_child_layout_phase_),
       adjoining_floats_(builder.adjoining_floats_),
       writing_mode_(static_cast<unsigned>(out_writing_mode)),
       direction_(static_cast<unsigned>(builder.text_direction_)),
       flags_(builder.flags_),
-      baseline_requests_(builder.baseline_requests_.Serialize()),
-      margin_strut_(is_new_fc ? NGMarginStrut() : builder.margin_strut_),
-      bfc_offset_(is_new_fc ? NGBfcOffset() : builder.bfc_offset_),
-      floats_bfc_block_offset_(is_new_fc ? base::nullopt
-                                         : builder.floats_bfc_block_offset_),
-      clearance_offset_(is_new_fc ? LayoutUnit::Min()
-                                  : builder.clearance_offset_) {
+      baseline_requests_(builder.baseline_requests_.Serialize()) {
   bool is_in_parallel_flow =
       IsParallelWritingMode(builder.parent_writing_mode_, out_writing_mode);
 
