@@ -42,8 +42,6 @@ var injectIframe =
     'iframe.src = "' + iframeUrl + '";\n' +
     'document.body.appendChild(iframe);\n';
 
-var testConfig;  // Populated in response to chrome.test.getConfig().
-
 var runCount = 0;
 chrome.browserAction.onClicked.addListener(function(tab) {
   runCount++;
@@ -80,16 +78,12 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
   if (!details.url.endsWith('page.html'))
     return;
 
-  assertTrue(!!testConfig);
-  assertTrue(
-      testConfig.customArg == 'RuntimeHostPermissionsEnabled' ||
-      testConfig.customArg == 'RuntimeHostPermissionsDisabled');
-
   navigationCount++;
   chrome.test.sendMessage(navigationCount.toString());
 
-  var expectHasAccess = navigationCount === 2 &&
-      testConfig.customArg === 'RuntimeHostPermissionsEnabled';
+  // The second navigation remains on the same site, so we should still have
+  // access.
+  var expectHasAccess = navigationCount === 2;
 
   if (expectHasAccess) {
     chrome.tabs.executeScript({code: 'true'}, callbackPass());
@@ -112,7 +106,4 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
   assertFalse(canXhr(details.url));
 });
 
-chrome.test.getConfig(function(config) {
-  testConfig = config;
-  chrome.test.sendMessage('ready');
-});
+chrome.test.sendMessage('ready');

@@ -16,9 +16,11 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -31,6 +33,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
@@ -45,6 +48,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -69,23 +73,16 @@ namespace extensions {
 namespace {
 
 scoped_refptr<const Extension> CreateTestExtension(
-    const std::string& id,
+    const std::string& name,
     bool has_active_tab_permission,
     bool has_tab_capture_permission) {
-  ListBuilder permissions;
+  ExtensionBuilder builder(name);
   if (has_active_tab_permission)
-    permissions.Append("activeTab");
+    builder.AddPermission("activeTab");
   if (has_tab_capture_permission)
-    permissions.Append("tabCapture");
-  return ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                       .Set("name", "Extension with ID " + id)
-                       .Set("version", "1.0")
-                       .Set("manifest_version", 2)
-                       .Set("permissions", permissions.Build())
-                       .Build())
-      .SetID(id)
-      .Build();
+    builder.AddPermission("tabCapture");
+
+  return builder.Build();
 }
 
 enum PermittedFeature {
@@ -137,6 +134,24 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     TabHelper::CreateForWebContents(web_contents());
+
+    // We need to add extensions to the ExtensionService; else trying to commit
+    // any of their URLs fails and redirects to about:blank.
+    ExtensionService* service =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))
+            ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                                     base::FilePath(), false);
+    service->AddExtension(extension.get());
+    service->AddExtension(another_extension.get());
+    service->AddExtension(extension_without_active_tab.get());
+    service->AddExtension(extension_with_tab_capture.get());
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    chromeos::KioskAppManager::Shutdown();
+#endif
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   int tab_id() { return SessionTabHelper::IdForTab(web_contents()).id(); }
@@ -252,23 +267,17 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(another_extension, mail_google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, mail_google));
 
-  // Reloading the page should clear the active permissions.
+  // Reloading the page should not clear the active permissions, since the
+  // user remains on the same site.
   content::NavigationSimulator::Reload(web_contents());
-
-  EXPECT_TRUE(IsBlocked(extension, google));
-  EXPECT_TRUE(IsBlocked(another_extension, google));
-  EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
-
-  EXPECT_FALSE(HasTabsPermission(extension));
-  EXPECT_FALSE(HasTabsPermission(another_extension));
-  EXPECT_FALSE(HasTabsPermission(extension_without_active_tab));
-
-  // But they should still be able to be granted again.
-  active_tab_permission_granter()->GrantIfRequested(extension.get());
 
   EXPECT_TRUE(IsAllowed(extension, google));
   EXPECT_TRUE(IsBlocked(another_extension, google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
+
+  EXPECT_TRUE(HasTabsPermission(extension));
+  EXPECT_FALSE(HasTabsPermission(another_extension));
+  EXPECT_FALSE(HasTabsPermission(extension_without_active_tab));
 
   // And grant a few more times redundantly for good measure.
   active_tab_permission_granter()->GrantIfRequested(extension.get());
@@ -349,6 +358,7 @@ TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
   for (const GURL& url : test_urls) {
     SCOPED_TRACE(url);
     NavigateAndCommit(url);
+    EXPECT_EQ(url, web_contents()->GetLastCommittedURL());
     // By default, there should be no access.
     EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
         url, tab_id(), nullptr /*error*/));
@@ -363,7 +373,7 @@ TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
   }
 }
 
-TEST_F(ActiveTabTest, Uninstalling) {
+TEST_F(ActiveTabTest, Unloading) {
   // Some semi-arbitrary setup.
   GURL google("http://www.google.com");
   NavigateAndCommit(google);
@@ -373,11 +383,10 @@ TEST_F(ActiveTabTest, Uninstalling) {
   EXPECT_TRUE(IsGrantedForTab(extension.get(), web_contents()));
   EXPECT_TRUE(IsAllowed(extension, google));
 
-  // Uninstalling the extension should clear its tab permissions.
-  ExtensionRegistry* registry =
-      ExtensionRegistry::Get(web_contents()->GetBrowserContext());
-  registry->TriggerOnUnloaded(extension.get(),
-                              UnloadedExtensionReason::DISABLE);
+  // Unloading the extension should clear its tab permissions.
+  ExtensionSystem::Get(web_contents()->GetBrowserContext())
+      ->extension_service()
+      ->DisableExtension(extension->id(), disable_reason::DISABLE_USER_ACTION);
 
   // Note: can't EXPECT_FALSE(IsAllowed) here because uninstalled extensions
   // are just that... considered to be uninstalled, and the manager might
@@ -440,8 +449,8 @@ TEST_F(ActiveTabTest, SameDocumentNavigations) {
 
   EXPECT_FALSE(IsAllowed(extension, google));
   EXPECT_FALSE(IsAllowed(extension, google_h1));
-  EXPECT_FALSE(IsAllowed(extension, chromium));
-  EXPECT_FALSE(IsAllowed(extension, chromium_h1));
+  EXPECT_TRUE(IsAllowed(extension, chromium));
+  EXPECT_TRUE(IsAllowed(extension, chromium_h1));
 }
 
 TEST_F(ActiveTabTest, ChromeUrlGrants) {
