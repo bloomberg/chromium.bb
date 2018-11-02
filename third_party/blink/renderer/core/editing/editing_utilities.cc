@@ -1086,24 +1086,24 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
   return nullptr;
 }
 
-// Returns the visible position at the beginning of a node
-VisiblePosition VisiblePositionBeforeNode(const Node& node) {
+// Returns the position at the beginning of a node
+Position PositionBeforeNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(FirstPositionInOrBeforeNode(node));
+    return FirstPositionInOrBeforeNode(node);
   DCHECK(node.parentNode()) << node;
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
-  return VisiblePosition::InParentBeforeNode(node);
+  return Position::InParentBeforeNode(node);
 }
 
-// Returns the visible position at the ending of a node
-VisiblePosition VisiblePositionAfterNode(const Node& node) {
+// Returns the position at the ending of a node
+Position PositionAfterNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(LastPositionInOrAfterNode(node));
+    return LastPositionInOrAfterNode(node);
   DCHECK(node.parentNode()) << node.parentNode();
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
-  return VisiblePosition::InParentAfterNode(node);
+  return Position::InParentAfterNode(node);
 }
 
 bool IsHTMLListElement(const Node* n) {

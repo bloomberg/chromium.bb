@@ -260,14 +260,13 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     Node* target_node);
 Position ComputePositionForNodeRemoval(const Position&, const Node&);
 
+// TODO(editing-dev): These two functions should be eliminated.
+CORE_EXPORT Position PositionBeforeNode(const Node&);
+Position PositionAfterNode(const Node&);
+
 // -------------------------------------------------------------------------
 // VisiblePosition
 // -------------------------------------------------------------------------
-
-// Functions returning VisiblePosition
-
-CORE_EXPORT VisiblePosition VisiblePositionBeforeNode(const Node&);
-VisiblePosition VisiblePositionAfterNode(const Node&);
 
 int ComparePositions(const VisiblePosition&, const VisiblePosition&);
 
