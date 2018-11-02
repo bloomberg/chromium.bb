@@ -724,6 +724,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportUserIDData,
     extensions::enterprise_reporting::kReportUserIDData,
     base::Value::Type::BOOLEAN },
+  { key::kReportExtensionsAndPluginsData,
+    extensions::enterprise_reporting::kReportExtensionsAndPluginsData,
+    base::Value::Type::BOOLEAN },
+  { key::kReportSafeBrowsingData,
+    extensions::enterprise_reporting::kReportSafeBrowsingData,
+    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

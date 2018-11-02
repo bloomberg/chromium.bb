@@ -24,6 +24,12 @@ extern const char kReportMachineIDData[];
 // Controls reporting of information that can identify users.
 extern const char kReportUserIDData[];
 
+// Controls reporting of Chrome extensions and plugins data.
+extern const char kReportExtensionsAndPluginsData[];
+
+// Controls reporting of Safe browsing data.
+extern const char kReportSafeBrowsingData[];
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace enterprise_reporting

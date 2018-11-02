@@ -14825,6 +14825,8 @@ Called by update_net_error_codes.py.-->
   <int value="496" label="BrowserSwitcherUrlList"/>
   <int value="497" label="BrowserSwitcherUrlGreylist"/>
   <int value="498" label="BrowserSwitcherUseIeSitelist"/>
+  <int value="499" label="ReportExtensionsAndPluginsData"/>
+  <int value="500" label="ReportSafeBrowsingData"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

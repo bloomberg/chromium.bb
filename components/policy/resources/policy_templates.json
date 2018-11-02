@@ -689,6 +689,8 @@
         'ReportPolicyData',
         'ReportMachineIDData',
         'ReportUserIDData',
+        'ReportExtensionsAndPluginsData',
+        'ReportSafeBrowsingData',
         'CloudReportingEnabled',
       ],
     },
@@ -13445,6 +13447,46 @@
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
     },
     {
+      'id':499,
+      'name':'ReportExtensionsAndPluginsData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:72-'],
+      'caption': '''Report Extensions and Plugins information''',
+      'example_value': False,
+      'desc': '''This policy controls whether to report extensions and plugins information.
+
+      When this policy is left unset or set to True, extension and plugins data are gathered.
+      When this policy is set to False, extensions and plugins data are not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+    },
+    {
+      'id':500,
+      'name':'ReportSafeBrowsingData',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:72-'],
+      'caption': '''Report Safe Browsing information''',
+      'example_value': False,
+      'desc': '''This policy controls whether to report Safe Browsing information including the number of Safe Browsing warning and the number of safe browsering warning click through.
+
+      When this policy is left unset or set to True, Safe Browsing data are gathered.
+      When this policy is set to False, Safe Browsing data are not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+    },
+    {
       'id': 493,
       'name': 'CloudReportingEnabled',
       'type': 'main',
@@ -13892,5 +13934,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 498
+  'highest_id_currently_used':  500
 }

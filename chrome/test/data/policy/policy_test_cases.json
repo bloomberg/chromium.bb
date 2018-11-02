@@ -4151,6 +4151,22 @@
     ]
   },
 
+  "ReportExtensionsAndPluginsData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportExtensionsAndPluginsData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_extensions_and_plugins_data" }
+    ]
+  },
+
+  "ReportSafeBrowsingData": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ReportSafeBrowsingData": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.report_safe_browsing_data" }
+    ]
+  },
+
   "CloudReportingEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "CloudReportingEnabled": true },
