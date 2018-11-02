@@ -279,7 +279,13 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Mark this line box was changed, in order to re-use part of an inline
   // formatting context.
-  void MarkLineBoxDirty();
+  void MarkLineBoxDirty() {
+    DCHECK(PhysicalFragment().IsLineBox());
+    is_dirty_inline_ = true;
+  }
+
+  // Mark the line box that contains this fragment dirty.
+  void MarkContainingLineBoxDirty();
 
   // Computes LocalVisualRect for an inline LayoutObject in the
   // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with

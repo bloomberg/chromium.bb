@@ -719,17 +719,16 @@ bool NGInlineNode::PrepareReuseFragments(
   return true;
 }
 
-// Mark line boxes dirty for where marked for |NeedsLayout()|.
+// Mark the first line box that have |NeedsLayout()| dirty.
 //
-// Removal of LayoutObject already marks relevant line boxes dirty by calling
-// |DirtyLinesFromChangedChild()|, but style changes have not marked yet.
-//
-// TODO(kojii): By having this loop, we probably don't have to mark in
-// |InsertedIntoTree()|. NG mimics legacy doing so in |InsertedIntoTree()| and
-// also have this loop in |LayoutBlockFlow::LayoutInlineChildren()|. Investigate
-// if we can remove the duplicated marking.
+// Removals of LayoutObject already marks relevant line boxes dirty by calling
+// |DirtyLinesFromChangedChild()|, but insertions and style changes are not
+// marked yet.
 bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
+  DCHECK(block_flow);
+  DCHECK(block_flow->PaintFragment());
   bool has_dirtied_lines = false;
+  NGPaintFragment* last_fragment = nullptr;
   for (LayoutObject* layout_object = block_flow->NextInPreOrder(block_flow);
        layout_object;) {
     bool should_dirty_lines = false;
@@ -744,7 +743,7 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
           !has_dirtied_lines && layout_object->SelfNeedsLayout();
       next = layout_object->NextInPreOrder(block_flow);
       layout_object->ClearNeedsLayout();
-    } else if (layout_object->IsFloatingOrOutOfFlowPositioned()) {
+    } else if (UNLIKELY(layout_object->IsFloatingOrOutOfFlowPositioned())) {
       // Aborting in the middle of the traversal is safe because this function
       // ClearNeedsLayout() on text and LayoutInline, but since an inline
       // formatting context is laid out as a whole, these flags don't matter.
@@ -764,13 +763,30 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
       // crbug.com/897141
       next = layout_object->NextInPreOrder(block_flow);
     }
-    if (should_dirty_lines) {
-      // TODO(kojii): This seems to invalidate more than necessary because this
-      // function reads PreviousSibling, whose InlineFragments maybe cleared
-      // already.
-      NGPaintFragment::DirtyLinesFromChangedChild(layout_object);
-      has_dirtied_lines = true;
+
+    if (!has_dirtied_lines) {
+      if (should_dirty_lines) {
+        if (last_fragment) {
+          // Changes in this LayoutObject may affect the line that contains its
+          // previous object. Mark the line box that contains the last fragment
+          // of the previous object.
+          last_fragment->LastForSameLayoutObject()
+              ->MarkContainingLineBoxDirty();
+        } else {
+          // If there were no fragments so far in this pre-order traversal, mark
+          // the first line box dirty.
+          NGPaintFragment* block_fragment = block_flow->PaintFragment();
+          DCHECK(block_fragment);
+          if (NGPaintFragment* first_line = block_fragment->FirstLineBox())
+            first_line->MarkLineBoxDirty();
+        }
+        has_dirtied_lines = true;
+      } else {
+        if (NGPaintFragment* fragment = layout_object->FirstInlineFragment())
+          last_fragment = fragment;
+      }
     }
+
     ClearInlineFragment(layout_object);
     layout_object = next;
   }

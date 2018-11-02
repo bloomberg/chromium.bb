@@ -218,7 +218,7 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
         box->Remove();
     } else if (Parent()) {
       if (NGPaintFragment* first_fragment = FirstInlineFragment())
-        first_fragment->MarkLineBoxDirty();
+        first_fragment->MarkContainingLineBoxDirty();
       else
         Parent()->DirtyLinesFromChangedChild(this);
     }

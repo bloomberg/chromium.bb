@@ -429,7 +429,12 @@ void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
   DCHECK_EQ(marking_behavior, kMarkContainerChain);
-  NGPaintFragment::DirtyLinesFromChangedChild(child);
+
+  // We need to dirty line box fragments only if the child is once laid out in
+  // LayoutNG inline formatting context. New objects are handled in
+  // NGInlineNode::MarkLineBoxesDirty().
+  if (child->IsInLayoutNGInlineFormattingContext())
+    NGPaintFragment::DirtyLinesFromChangedChild(child);
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;
