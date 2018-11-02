@@ -1551,6 +1551,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return client == null ? null : client.getCustomTextClassifier();
     }
 
+    @CalledByNative
+    private void nativeSelectionPopupControllerDestroyed() {
+        mNativeSelectionPopupController = 0;
+    }
+
     private native long nativeInit(WebContents webContents);
     private native void nativeSetTextHandlesTemporarilyHidden(
             long nativeSelectionPopupController, boolean hidden);
