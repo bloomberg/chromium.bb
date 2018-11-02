@@ -12583,8 +12583,36 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
   }
 }
 
-static INLINE uint8_t get_pix(const uint8_t *src, int stride, int i, int j) {
-  return src[i + stride * j];
+/* Use standard 3x3 Sobel matrix. Macro so it can be used for either high or
+   low bit-depth arrays. */
+#define SOBEL_X(src, stride, i, j)                       \
+  ((src)[((i)-1) + (stride) * ((j)-1)] -                 \
+   (src)[((i) + 1) + (stride) * ((j)-1)] +  /* NOLINT */ \
+   2 * (src)[((i)-1) + (stride) * (j)] -    /* NOLINT */ \
+   2 * (src)[((i) + 1) + (stride) * (j)] +  /* NOLINT */ \
+   (src)[((i)-1) + (stride) * ((j) + 1)] -  /* NOLINT */ \
+   (src)[((i) + 1) + (stride) * ((j) + 1)]) /* NOLINT */
+#define SOBEL_Y(src, stride, i, j)                       \
+  ((src)[((i)-1) + (stride) * ((j)-1)] +                 \
+   2 * (src)[(i) + (stride) * ((j)-1)] +    /* NOLINT */ \
+   (src)[((i) + 1) + (stride) * ((j)-1)] -  /* NOLINT */ \
+   (src)[((i)-1) + (stride) * ((j) + 1)] -  /* NOLINT */ \
+   2 * (src)[(i) + (stride) * ((j) + 1)] -  /* NOLINT */ \
+   (src)[((i) + 1) + (stride) * ((j) + 1)]) /* NOLINT */
+
+sobel_xy sobel(const uint8_t *input, int stride, int i, int j, int bd) {
+  int16_t s_x;
+  int16_t s_y;
+  if (bd <= 8) {
+    s_x = SOBEL_X(input, stride, i, j);
+    s_y = SOBEL_Y(input, stride, i, j);
+  } else {
+    const uint16_t *src = CONVERT_TO_SHORTPTR(input);
+    s_x = SOBEL_X(src, stride, i, j);
+    s_y = SOBEL_Y(src, stride, i, j);
+  }
+  sobel_xy r = { .x = s_x, .y = s_y };
+  return r;
 }
 
 // 8-tap Gaussian convolution filter with sigma = 1.3, sums to 128,
@@ -12593,8 +12621,8 @@ DECLARE_ALIGNED(16, static const int16_t, gauss_filter[8]) = { 2,  12, 30, 40,
                                                                30, 12, 2,  0 };
 
 void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
-                   uint8_t *dst) {
-  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+                   uint8_t *dst, int bd) {
+  ConvolveParams conv_params = get_conv_params(0, 0, bd);
   InterpFilterParams filter = { .filter_ptr = gauss_filter,
                                 .taps = 8,
                                 .subpel_shifts = 0,
@@ -12604,29 +12632,17 @@ void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
   assert(w % 8 == 0);
   // Because we use an eight tap filter, the stride should be at least 7 + w.
   assert(src_stride >= w + 7);
-  av1_convolve_2d_sr(src, src_stride, dst, w, w, h, &filter, &filter, 0, 0,
-                     &conv_params);
+  if (bd <= 8) {
+    av1_convolve_2d_sr(src, src_stride, dst, w, w, h, &filter, &filter, 0, 0,
+                       &conv_params);
+  } else {
+    av1_highbd_convolve_2d_sr(CONVERT_TO_SHORTPTR(src), src_stride,
+                              CONVERT_TO_SHORTPTR(dst), w, w, h, &filter,
+                              &filter, 0, 0, &conv_params, bd);
+  }
 }
 
-/* Use standard 3x3 Sobel matrix. */
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j) {
-  const int16_t s_x = get_pix(input, stride, i - 1, j - 1) -
-                      get_pix(input, stride, i + 1, j - 1) +
-                      2 * get_pix(input, stride, i - 1, j) -
-                      2 * get_pix(input, stride, i + 1, j) +
-                      get_pix(input, stride, i - 1, j + 1) -
-                      get_pix(input, stride, i + 1, j + 1);
-  const int16_t s_y = get_pix(input, stride, i - 1, j - 1) +
-                      2 * get_pix(input, stride, i, j - 1) +
-                      get_pix(input, stride, i + 1, j - 1) -
-                      get_pix(input, stride, i - 1, j + 1) -
-                      2 * get_pix(input, stride, i, j + 1) -
-                      get_pix(input, stride, i + 1, j + 1);
-  sobel_xy r = { .x = s_x, .y = s_y };
-  return r;
-}
-
-static uint16_t edge_probability(const uint8_t *input, int w, int h) {
+static uint16_t edge_probability(const uint8_t *input, int w, int h, int bd) {
   // The probability of an edge in the whole image is the same as the highest
   // probability of an edge for any individual pixel. Use Sobel as the metric
   // for finding an edge.
@@ -12634,8 +12650,11 @@ static uint16_t edge_probability(const uint8_t *input, int w, int h) {
   // Ignore the 1 pixel border around the image for the computation.
   for (int j = 1; j < h - 1; ++j) {
     for (int i = 1; i < w - 1; ++i) {
-      sobel_xy g = sobel(input, w, i, j);
-      uint16_t magnitude = (uint16_t)sqrt(g.x * g.x + g.y * g.y);
+      sobel_xy g = sobel(input, w, i, j, bd);
+      // Scale down to 8-bit to get same output regardless of bit depth.
+      int16_t g_x = g.x >> (bd - 8);
+      int16_t g_y = g.y >> (bd - 8);
+      uint16_t magnitude = (uint16_t)sqrt(g_x * g_x + g_y * g_y);
       highest = AOMMAX(highest, magnitude);
     }
   }
@@ -12645,18 +12664,27 @@ static uint16_t edge_probability(const uint8_t *input, int w, int h) {
 /* Uses most of the Canny edge detection algorithm to find if there are any
  * edges in the image.
  */
-uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h) {
+uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
+                         int bd) {
   if (w < 3 || h < 3) {
     return 0;
   }
-  uint8_t *blurred = NULL;
-  blurred = (uint8_t *)aom_memalign(32, sizeof(*blurred) * w * h);
-  gaussian_blur(src, src_stride, w, h, blurred);
+  uint8_t *blurred;
+  if (bd <= 8) {
+    blurred = (uint8_t *)aom_memalign(32, sizeof(uint8_t) * w * h);
+  } else {
+    blurred = CONVERT_TO_BYTEPTR(aom_memalign(32, sizeof(uint16_t) * w * h));
+  }
+  gaussian_blur(src, src_stride, w, h, blurred, bd);
   // Skip the non-maximum suppression step in Canny edge detection. We just
   // want a probability of an edge existing in the buffer, which is determined
   // by the strongest edge in it -- we don't need to eliminate the weaker
   // edges. Use Sobel for the edge detection.
-  uint16_t prob = edge_probability(blurred, w, h);
-  aom_free(blurred);
+  uint16_t prob = edge_probability(blurred, w, h, bd);
+  if (bd <= 8) {
+    aom_free(blurred);
+  } else {
+    aom_free(CONVERT_TO_SHORTPTR(blurred));
+  }
   return prob;
 }

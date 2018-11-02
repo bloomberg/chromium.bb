@@ -129,15 +129,16 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
 /** Returns an integer indicating the strength of the edge.
  * 0 means no edge found, 556 is the strength of a solid black/white edge,
  * and the number may range higher if the signal is even stronger (e.g., on a
- * corner).
+ * corner). bd is the bit depth.
  */
-uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h);
+uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
+                         int bd);
 
 /** Applies a Gaussian blur with sigma = 1.3. Used by av1_edge_exists and
  * tests.
  */
 void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
-                   uint8_t *dst);
+                   uint8_t *dst, int bd);
 
 /* Applies standard 3x3 Sobel matrix. */
 typedef struct {
@@ -145,7 +146,7 @@ typedef struct {
   int16_t y;
 } sobel_xy;
 
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j);
+sobel_xy sobel(const uint8_t *input, int stride, int i, int j, int bd);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
