@@ -3801,12 +3801,12 @@ def BranchScheduleConfig():
 
     # We extract the release number from the branch, and use it to
     # watch for new chrome tags to trigger Chrome PFQ builds.
-    # release-R71-11151.B -> 71 -> regexp:refs/tags/71\..*
+    # release-R71-11151.B -> 71 -> regexp:refs/tags/71\\..*
     release_num = re.search(r'release-R(\d+)-.*', branch).group(1)
     branch_builds.append(
         [branch, chrome_pfq, config_lib.DISPLAY_LABEL_RELEASE, 'triggered',
          [['https://chromium.googlesource.com/chromium/src',
-           [r'regexp:refs/tags/%s\..*' % release_num]]]])
+           [r'regexp:refs/tags/%s\\..*' % release_num]]]])
 
   # Convert all branch builds into scheduler config entries.
   default_config = config_lib.GetConfig().GetDefault()
