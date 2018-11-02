@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "content/common/media/media_stream_controls.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
@@ -76,21 +78,23 @@ const AudioPropertyConstraintPair kAudioPropertyConstraintMap[] = {
     {&AudioProcessingProperties::goog_experimental_auto_gain_control,
      GOOG_EXPERIMENTAL_AUTO_GAIN_CONTROL}};
 
-// Selects the best value from the nonempty |set|, subject to |constraint|. The
-// first selection criteria is equality to |constraint.Ideal()|, followed by
-// equality to |default_value|. There is always a single best value.
-bool SelectBool(const DiscreteSet<bool>& set,
-                const blink::BooleanConstraint& constraint,
-                bool default_value) {
+// Selects the best value from the nonempty |set|, subject to |constraint| and
+// determines the associated fitness. The first selection criteria is equality
+// to |constraint.Ideal()|, followed by equality to |default_value|. There is
+// always a single best value.
+std::tuple<bool, double> SelectBoolAndFitness(
+    const DiscreteSet<bool>& set,
+    const blink::BooleanConstraint& constraint,
+    bool default_value) {
   DCHECK(!set.IsEmpty());
   if (constraint.HasIdeal() && set.Contains(constraint.Ideal()))
-    return constraint.Ideal();
+    return std::make_tuple(constraint.Ideal(), 1.0);
 
   if (set.is_universal())
-    return default_value;
+    return std::make_tuple(default_value, 0.0);
 
   DCHECK_EQ(set.elements().size(), 1U);
-  return set.FirstElement();
+  return std::make_tuple(set.FirstElement(), 0.0);
 }
 
 // Selects the best value from the nonempty |set|, subject to |constraint|. The
@@ -110,25 +114,28 @@ base::Optional<bool> SelectOptionalBool(
   return set.FirstElement();
 }
 
-// Selects the best value from the nonempty |set|, subject to |constraint|. The
-// first selection criteria is inclusion in |constraint.Ideal()|, followed by
-// equality to |default_value|. There is always a single best value.
-std::string SelectString(const DiscreteSet<std::string>& set,
-                         const blink::StringConstraint& constraint,
-                         const std::string& default_value) {
+// Selects the best value from the nonempty |set|, subject to |constraint| and
+// determines the associated fitness. The first selection criteria is inclusion
+// in |constraint.Ideal()|, followed by equality to |default_value|. There is
+// always a single best value.
+std::tuple<std::string, double> SelectStringAndFitness(
+    const DiscreteSet<std::string>& set,
+    const blink::StringConstraint& constraint,
+    const std::string& default_value) {
   DCHECK(!set.IsEmpty());
+
   if (constraint.HasIdeal()) {
     for (const blink::WebString& ideal_candidate : constraint.Ideal()) {
       std::string candidate = ideal_candidate.Utf8();
       if (set.Contains(candidate))
-        return candidate;
+        return std::make_tuple(candidate, 1.0);
     }
   }
 
   if (set.Contains(default_value))
-    return default_value;
+    return std::make_tuple(default_value, 0.0);
 
-  return set.FirstElement();
+  return std::make_tuple(set.FirstElement(), 0.0);
 }
 
 bool SelectUseEchoCancellation(base::Optional<bool> echo_cancellation,
@@ -322,93 +329,66 @@ class SingleDeviceCandidateSet {
     }
   }
 
-  // Fitness function to support device selection. Based on
-  // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
-  double Fitness(
-      const blink::WebMediaTrackConstraintSet& constraint_set) const {
-    double fitness = 0.0;
-
-    if (constraint_set.device_id.HasIdeal()) {
-      for (const blink::WebString& ideal_value :
-           constraint_set.device_id.Ideal()) {
-        if (device_id_set_.Contains(ideal_value.Utf8())) {
-          fitness += 1.0;
-          break;
-        }
-      }
-    }
-
-    if (constraint_set.group_id.HasIdeal()) {
-      for (const blink::WebString& ideal_value :
-           constraint_set.group_id.Ideal()) {
-        if (group_id_set_.Contains(ideal_value.Utf8())) {
-          fitness += 1.0;
-          break;
-        }
-      }
-    }
-
-    for (size_t i = 0; i < NUM_BOOL_CONSTRAINTS; ++i) {
-      if ((constraint_set.*kBlinkBoolConstraintFields[i]).HasIdeal() &&
-          bool_sets_[i].Contains(
-              (constraint_set.*kBlinkBoolConstraintFields[i]).Ideal())) {
-        fitness += 1.0;
-      }
-    }
-
-    // If echo cancellation constraint is not set to true, the type shall be
-    // ignored.
-    if ((constraint_set.*kBlinkBoolConstraintFields[ECHO_CANCELLATION])
-            .Matches(true) &&
-        constraint_set.echo_cancellation_type.HasIdeal()) {
-      for (const blink::WebString& ideal_value :
-           constraint_set.echo_cancellation_type.Ideal()) {
-        if (echo_cancellation_type_set_.Contains(ideal_value.Utf8())) {
-          fitness += 1.0;
-          break;
-        }
-      }
-    }
-
-    return fitness;
-  }
-
   // Returns the settings supported by this SingleDeviceCandidateSet that best
-  // satisfy the ideal values in |basic_constraint_set|.
-  AudioCaptureSettings SelectBestSettings(
-      const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+  // satisfy the ideal values in |basic_constraint_set| as well as the
+  // associated fitness, which is based on
+  // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+  std::tuple<AudioCaptureSettings, double> SelectBestSettingsAndFitness(
+      const blink::WebMediaTrackConstraintSet& constraint_set,
       const std::string& default_device_id,
       const std::string& media_stream_source,
       bool should_disable_hardware_noise_suppression) const {
-    std::string device_id = SelectString(
-        device_id_set_, basic_constraint_set.device_id, default_device_id);
-    bool hotword_enabled =
-        SelectBool(bool_sets_[HOTWORD_ENABLED],
-                   basic_constraint_set.hotword_enabled, false);
-    bool disable_local_echo_default =
-        media_stream_source != kMediaStreamSourceDesktop;
-    bool disable_local_echo = SelectBool(
-        bool_sets_[DISABLE_LOCAL_ECHO], basic_constraint_set.disable_local_echo,
-        disable_local_echo_default);
-    bool render_to_associated_sink =
-        SelectBool(bool_sets_[RENDER_TO_ASSOCIATED_SINK],
-                   basic_constraint_set.render_to_associated_sink, false);
+    double fitness = 0.0;
+    double sub_fitness;
 
-    bool is_device_capture = media_stream_source.empty();
-    AudioProcessingProperties audio_processing_properties =
-        SelectAudioProcessingProperties(
-            basic_constraint_set, is_device_capture,
+    // Fitness and setting for the device ID.
+    std::string device_id;
+    std::tie(device_id, sub_fitness) = SelectStringAndFitness(
+        device_id_set_, constraint_set.device_id, default_device_id);
+    fitness += sub_fitness;
+
+    // Fitness for the group ID.
+    std::tie(std::ignore, sub_fitness) =
+        SelectStringAndFitness(group_id_set_, constraint_set.group_id, "");
+    fitness += sub_fitness;
+
+    // googHotword, disableLocalEcho, and chromeRenderToAssociatedSink cannot
+    // have ideal values, hence we explicitely ignore the fitness value for all
+    // three.
+    bool hotword_enabled;
+    std::tie(hotword_enabled, std::ignore) = SelectBoolAndFitness(
+        bool_sets_[HOTWORD_ENABLED], constraint_set.hotword_enabled, false);
+
+    bool disable_local_echo;
+    std::tie(disable_local_echo, std::ignore) = SelectBoolAndFitness(
+        bool_sets_[DISABLE_LOCAL_ECHO], constraint_set.disable_local_echo,
+        media_stream_source != kMediaStreamSourceDesktop);
+
+    bool render_to_associated_sink;
+    std::tie(render_to_associated_sink, std::ignore) =
+        SelectBoolAndFitness(bool_sets_[RENDER_TO_ASSOCIATED_SINK],
+                             constraint_set.render_to_associated_sink, false);
+
+    // Fitness and settings for the properties associated to audio processing.
+    AudioProcessingProperties audio_processing_properties;
+    std::tie(audio_processing_properties, sub_fitness) =
+        SelectAudioProcessingPropertiesAndFitness(
+            constraint_set, media_stream_source.empty(),
             should_disable_hardware_noise_suppression);
+    fitness += sub_fitness;
 
-    return AudioCaptureSettings(std::move(device_id), hotword_enabled,
-                                disable_local_echo, render_to_associated_sink,
-                                audio_processing_properties);
+    auto settings = AudioCaptureSettings(
+        std::move(device_id), hotword_enabled, disable_local_echo,
+        render_to_associated_sink, audio_processing_properties);
+    return std::make_tuple(settings, fitness);
   }
 
  private:
-  EchoCancellationType SelectEchoCancellationType(
+  std::tuple<EchoCancellationType, double> SelectEchoCancellationTypeAndFitness(
       const blink::StringConstraint& echo_cancellation_type,
       const media::AudioParameters& audio_parameters) const {
+    double fitness = 0.0;
+
     // Try to use an ideal candidate, if supplied.
     base::Optional<std::string> selected_type;
     if (echo_cancellation_type.HasIdeal()) {
@@ -416,6 +396,7 @@ class SingleDeviceCandidateSet {
         std::string candidate = ideal.Utf8();
         if (echo_cancellation_type_set_.Contains(candidate)) {
           selected_type = candidate;
+          fitness = 1.0;
           break;
         }
       }
@@ -432,11 +413,14 @@ class SingleDeviceCandidateSet {
 
     // Return type based the selected type.
     if (selected_type == blink::kEchoCancellationTypeBrowser) {
-      return EchoCancellationType::kEchoCancellationAec2;
+      return std::make_tuple(EchoCancellationType::kEchoCancellationAec2,
+                             fitness);
     } else if (selected_type == blink::kEchoCancellationTypeAec3) {
-      return EchoCancellationType::kEchoCancellationAec3;
+      return std::make_tuple(EchoCancellationType::kEchoCancellationAec3,
+                             fitness);
     } else if (selected_type == blink::kEchoCancellationTypeSystem) {
-      return EchoCancellationType::kEchoCancellationSystem;
+      return std::make_tuple(EchoCancellationType::kEchoCancellationSystem,
+                             fitness);
     }
 
     // If no type has been selected, choose system if the device has the
@@ -444,7 +428,8 @@ class SingleDeviceCandidateSet {
     // system echo canceller.
     if (audio_parameters.IsValid() &&
         audio_parameters.effects() & media::AudioParameters::ECHO_CANCELLER) {
-      return EchoCancellationType::kEchoCancellationSystem;
+      return std::make_tuple(EchoCancellationType::kEchoCancellationSystem,
+                             fitness);
     }
 
     // Finally, choose the browser provided AEC2 or AEC3 based on an optional
@@ -460,20 +445,23 @@ class SingleDeviceCandidateSet {
     const bool use_aec3 = override_aec3.value_or(
         base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
 
-    return use_aec3 ? EchoCancellationType::kEchoCancellationAec3
-                    : EchoCancellationType::kEchoCancellationAec2;
+    auto ec_type = use_aec3 ? EchoCancellationType::kEchoCancellationAec3
+                            : EchoCancellationType::kEchoCancellationAec2;
+    return std::make_tuple(ec_type, fitness);
   }
 
   // Returns the audio-processing properties supported by this
   // SingleDeviceCandidateSet that best satisfy the ideal values in
-  // |basic_constraint_set|.
-  AudioProcessingProperties SelectAudioProcessingProperties(
-      const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+  // |basic_constraint_set| and the associated fitness.
+  std::tuple<AudioProcessingProperties, double>
+  SelectAudioProcessingPropertiesAndFitness(
+      const blink::WebMediaTrackConstraintSet& constraint_set,
       bool is_device_capture,
       bool should_disable_hardware_noise_suppression) const {
     DCHECK(!IsEmpty());
+
     base::Optional<bool> echo_cancellation = SelectOptionalBool(
-        bool_sets_[ECHO_CANCELLATION], basic_constraint_set.echo_cancellation);
+        bool_sets_[ECHO_CANCELLATION], constraint_set.echo_cancellation);
     // Audio-processing properties are disabled by default for content capture,
     // or if the |echo_cancellation| constraint is false.
     bool default_audio_processing_value = true;
@@ -482,15 +470,20 @@ class SingleDeviceCandidateSet {
 
     base::Optional<bool> goog_echo_cancellation =
         SelectOptionalBool(bool_sets_[GOOG_ECHO_CANCELLATION],
-                           basic_constraint_set.goog_echo_cancellation);
+                           constraint_set.goog_echo_cancellation);
 
     const bool use_echo_cancellation = SelectUseEchoCancellation(
         echo_cancellation, goog_echo_cancellation, is_device_capture);
 
     AudioProcessingProperties properties;
+    bool fitness = 0;
+    bool sub_fitness;
+
     if (use_echo_cancellation) {
-      properties.echo_cancellation_type = SelectEchoCancellationType(
-          basic_constraint_set.echo_cancellation_type, parameters_);
+      std::tie(properties.echo_cancellation_type, sub_fitness) =
+          SelectEchoCancellationTypeAndFitness(
+              constraint_set.echo_cancellation_type, parameters_);
+      fitness += sub_fitness;
     } else {
       properties.echo_cancellation_type =
           EchoCancellationType::kEchoCancellationDisabled;
@@ -501,20 +494,23 @@ class SingleDeviceCandidateSet {
         properties.echo_cancellation_type ==
             EchoCancellationType::kEchoCancellationSystem;
 
-    properties.goog_audio_mirroring =
-        SelectBool(bool_sets_[GOOG_AUDIO_MIRRORING],
-                   basic_constraint_set.goog_audio_mirroring,
-                   properties.goog_audio_mirroring);
+    std::tie(properties.goog_audio_mirroring, sub_fitness) =
+        SelectBoolAndFitness(bool_sets_[GOOG_AUDIO_MIRRORING],
+                             constraint_set.goog_audio_mirroring,
+                             properties.goog_audio_mirroring);
+    fitness += sub_fitness;
 
     for (auto& entry : kAudioPropertyConstraintMap) {
-      properties.*entry.audio_property = SelectBool(
-          bool_sets_[entry.bool_set_index],
-          basic_constraint_set.*
-              kBlinkBoolConstraintFields[entry.bool_set_index],
-          default_audio_processing_value && properties.*entry.audio_property);
+      std::tie(properties.*entry.audio_property, sub_fitness) =
+          SelectBoolAndFitness(
+              bool_sets_[entry.bool_set_index],
+              constraint_set.*kBlinkBoolConstraintFields[entry.bool_set_index],
+              default_audio_processing_value &&
+                  properties.*entry.audio_property);
+      fitness += sub_fitness;
     }
 
-    return properties;
+    return std::make_tuple(properties, fitness);
   }
 
   static constexpr blink::BooleanConstraint
@@ -597,45 +593,40 @@ class AudioCaptureCandidates {
   // |basic_constraint_set| subject to the limitations of this
   // AudioCaptureCandidates object.
   AudioCaptureSettings SelectBestSettings(
-      const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+      const blink::WebMediaTrackConstraintSet& constraint_set,
       const std::string& default_device_id,
       const std::string& media_stream_source,
       bool should_disable_hardware_noise_suppression) const {
-    const SingleDeviceCandidateSet* device_candidate_set =
-        SelectBestDevice(basic_constraint_set, default_device_id);
-    DCHECK(!device_candidate_set->IsEmpty());
-    return device_candidate_set->SelectBestSettings(
-        basic_constraint_set, default_device_id, media_stream_source,
-        should_disable_hardware_noise_suppression);
-  }
-
- private:
-  // Selects the best device based on the fitness function.
-  // The returned pointer is valid as long as |candidate_sets_| is not mutated.
-  const SingleDeviceCandidateSet* SelectBestDevice(
-      const blink::WebMediaTrackConstraintSet& constraint_set,
-      const std::string& default_device_id) const {
     DCHECK(!candidate_sets_.empty());
 
     auto best_candidate = candidate_sets_.end();
-    std::vector<double> best_fitness({-1, -1});
+    std::vector<double> best_score({-1, -1});
+    AudioCaptureSettings best_settings;
 
     for (auto it = candidate_sets_.begin(); it != candidate_sets_.end(); ++it) {
       DCHECK(!it->IsEmpty());
-      std::vector<double> fitness;
-      fitness.push_back(it->Fitness(constraint_set));
-      // Second selection criterion is being the default device.
-      fitness.push_back(it->device_id_set().Contains(default_device_id) ? 1.0
-                                                                        : 0.0);
-      if (fitness > best_fitness) {
-        best_fitness = fitness;
+
+      std::vector<double> score(2);
+      AudioCaptureSettings settings;
+
+      std::tie(settings, score[0]) = it->SelectBestSettingsAndFitness(
+          constraint_set, default_device_id, media_stream_source,
+          should_disable_hardware_noise_suppression);
+      score[1] = it->device_id_set().Contains(default_device_id) ? 1.0 : 0.0;
+
+      if (score > best_score) {
+        best_score = score;
         best_candidate = it;
+        best_settings = settings;
       }
     }
 
-    return &(*best_candidate);
+    DCHECK(best_candidate != candidate_sets_.end());
+    DCHECK(!best_candidate->IsEmpty());
+    return best_settings;
   }
 
+ private:
   const char* failed_constraint_name_ = nullptr;
   std::vector<SingleDeviceCandidateSet> candidate_sets_;
 };
