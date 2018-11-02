@@ -483,14 +483,6 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
 }
 
-void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void EasyUnlockService::Shutdown() {
   if (shut_down_)
     return;
