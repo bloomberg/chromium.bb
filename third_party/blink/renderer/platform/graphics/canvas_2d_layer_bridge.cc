@@ -374,7 +374,8 @@ void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
     return;
 
   UMA_HISTOGRAM_ENUMERATION(
-      "Blink.Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason);
+      "Blink.Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason,
+      kDisableDeferralReasonCount);
   FlushRecording();
   // Because we will be discarding the recorder, if the flush failed
   // content will be lost -> force m_haveRecordedDrawCommands to false
