@@ -1134,6 +1134,17 @@ bool Resource::StaleRevalidationRequested() const {
   return false;
 }
 
+bool Resource::NetworkAccessed() const {
+  if (GetResponse().NetworkAccessed())
+    return true;
+
+  for (auto& redirect : redirect_chain_) {
+    if (redirect.redirect_response_.NetworkAccessed())
+      return true;
+  }
+  return false;
+}
+
 bool Resource::CanUseCacheValidator() const {
   if (IsLoading() || ErrorOccurred())
     return false;

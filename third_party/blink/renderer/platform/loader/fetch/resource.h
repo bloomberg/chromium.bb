@@ -316,6 +316,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // revalidation is started SetStaleRevalidationStarted() should be called.
   bool StaleRevalidationRequested() const;
 
+  // Returns true if any response returned from the upstream in the redirect
+  // chain accessed the network.
+  bool NetworkAccessed() const;
+
   // Set that stale revalidation has been started so that subsequent
   // requests won't trigger it again. When stale revalidation is completed
   // this resource will be removed from the MemoryCache so there is no

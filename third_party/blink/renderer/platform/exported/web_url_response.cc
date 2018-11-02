@@ -447,6 +447,10 @@ void WebURLResponse::SetAsyncRevalidationRequested(bool requested) {
   resource_response_->SetAsyncRevalidationRequested(requested);
 }
 
+void WebURLResponse::SetNetworkAccessed(bool network_accessed) {
+  resource_response_->SetNetworkAccessed(network_accessed);
+}
+
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}
 
 }  // namespace blink

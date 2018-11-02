@@ -58,6 +58,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       keepalive_(false),
       should_reset_app_cache_(false),
       allow_stale_response_(false),
+      stale_revalidate_candidate_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
       download_to_cache_only_(false),

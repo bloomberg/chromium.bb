@@ -209,6 +209,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT WebSecurityDetails SecurityDetailsForTesting();
 
   BLINK_PLATFORM_EXPORT void SetAsyncRevalidationRequested(bool);
+  BLINK_PLATFORM_EXPORT void SetNetworkAccessed(bool);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT const ResourceResponse& ToResourceResponse() const;

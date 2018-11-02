@@ -412,6 +412,12 @@ class PLATFORM_EXPORT ResourceResponse final {
     async_revalidation_requested_ = requested;
   }
 
+  bool NetworkAccessed() const { return network_accessed_; }
+
+  void SetNetworkAccessed(bool network_accessed) {
+    network_accessed_ = network_accessed;
+  }
+
   bool IsSignedExchangeInnerResponse() const {
     return is_signed_exchange_inner_response_;
   }
@@ -487,6 +493,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if this resource is from an inner response of a signed exchange.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
   bool is_signed_exchange_inner_response_ = false;
+
+  // True if this resource was loaded from the network.
+  bool network_accessed_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =
