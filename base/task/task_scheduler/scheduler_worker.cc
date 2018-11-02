@@ -283,8 +283,8 @@ NOINLINE void SchedulerWorker::RunBackgroundDedicatedCOMWorker() {
 
 void SchedulerWorker::RunWorker() {
   DCHECK_EQ(self_, this);
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("task_scheduler_diagnostics"),
-                     "SchedulerWorkerThread alive");
+  TRACE_EVENT_INSTANT0("task_scheduler", "SchedulerWorkerThread born",
+                       TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_BEGIN0("task_scheduler", "SchedulerWorkerThread active");
 
   if (scheduler_worker_observer_)
@@ -358,8 +358,8 @@ void SchedulerWorker::RunWorker() {
   self_ = nullptr;
 
   TRACE_EVENT_END0("task_scheduler", "SchedulerWorkerThread active");
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("task_scheduler_diagnostics"),
-                   "SchedulerWorkerThread alive");
+  TRACE_EVENT_INSTANT0("task_scheduler", "SchedulerWorkerThread dead",
+                       TRACE_EVENT_SCOPE_THREAD);
 }
 
 }  // namespace internal
