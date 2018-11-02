@@ -33,13 +33,13 @@ class VisibleUnitsWordTest : public EditingTestBase {
   std::string DoNextWord(const std::string& selection_text) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
     return GetCaretTextFromBody(
-        NextWordPosition(CreateVisiblePosition(position)).DeepEquivalent());
+        CreateVisiblePosition(NextWordPosition(position)).DeepEquivalent());
   }
 
   std::string DoPreviousWord(const std::string& selection_text) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
     const Position result =
-        PreviousWordPosition(CreateVisiblePosition(position)).DeepEquivalent();
+        CreateVisiblePosition(PreviousWordPosition(position)).DeepEquivalent();
     if (result.IsNull())
       return GetSelectionTextFromBody(SelectionInDOMTree());
     return GetCaretTextFromBody(result);
