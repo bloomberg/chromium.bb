@@ -23,21 +23,26 @@ TaskQueueProxy::~TaskQueueProxy() = default;
 bool TaskQueueProxy::PostTask(PostedTask task) const {
   // NOTE: Task's destructor might attempt to post another task,
   // so ensure it never happens inside this lock.
-  Optional<MoveableAutoLock> lock(AcquireLockIfNeeded());
-  if (!task_queue_impl_)
-    return false;
-  task_queue_impl_->PostTask(std::move(task));
-  return true;
+  if (RunsTasksInCurrentSequence()) {
+    if (!task_queue_impl_)
+      return false;
+
+    task_queue_impl_->PostTask(std::move(task),
+                               TaskQueueImpl::CurrentThread::kMainThread);
+    return true;
+  } else {
+    AutoLock lock(lock_);
+    if (!task_queue_impl_)
+      return false;
+
+    task_queue_impl_->PostTask(std::move(task),
+                               TaskQueueImpl::CurrentThread::kNotMainThread);
+    return true;
+  }
 }
 
 bool TaskQueueProxy::RunsTasksInCurrentSequence() const {
   return associated_thread_->thread_id == PlatformThread::CurrentId();
-}
-
-Optional<MoveableAutoLock> TaskQueueProxy::AcquireLockIfNeeded() const {
-  if (RunsTasksInCurrentSequence())
-    return nullopt;
-  return MoveableAutoLock(lock_);
 }
 
 void TaskQueueProxy::DetachFromTaskQueueImpl() {

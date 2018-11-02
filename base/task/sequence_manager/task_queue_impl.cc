@@ -164,14 +164,16 @@ bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return PlatformThread::CurrentId() == associated_thread_->thread_id;
 }
 
-void TaskQueueImpl::PostTask(PostedTask task) {
+void TaskQueueImpl::PostTask(PostedTask task, CurrentThread current_thread) {
+  DCHECK_EQ(current_thread == CurrentThread::kMainThread,
+            RunsTasksInCurrentSequence());
   // This method can only be called if task queue is able to accept tasks,
   // i.e. has a sequence manager and not being unregistered. This is enforced
   // by |proxy_| which is detached if this condition not met.
   if (task.delay.is_zero()) {
     PostImmediateTaskImpl(std::move(task));
   } else {
-    PostDelayedTaskImpl(std::move(task));
+    PostDelayedTaskImpl(std::move(task), current_thread);
   }
 }
 
@@ -191,7 +193,8 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task) {
       sequence_number, sequence_number));
 }
 
-void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
+void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
+                                        CurrentThread current_thread) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.callback);
@@ -207,7 +210,7 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
     resolution = WakeUpResolution::kHigh;
 #endif  // defined(OS_WIN)
 
-  if (PlatformThread::CurrentId() == associated_thread_->thread_id) {
+  if (current_thread == CurrentThread::kMainThread) {
     // Lock-free fast path for delayed tasks posted from the main thread.
     DCHECK(main_thread_only().sequence_manager);
 
