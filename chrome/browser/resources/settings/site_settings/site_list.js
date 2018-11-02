@@ -242,8 +242,15 @@ Polymer({
     // potential targets. Since paper-tooltip does not expose a public property
     // or method to update the target, the private property |_target| is
     // updated directly.
-    this.$.tooltip._target = target;
-    /** @type {{updatePosition: Function}} */ (this.$.tooltip).updatePosition();
+    const tooltip = this.$.tooltip;
+    /** @type {{updatePosition: Function}} */ (tooltip).updatePosition();
+    tooltip._target = target;
+    const parentRect = tooltip.offsetParent.getBoundingClientRect();
+    const rect = tooltip.getBoundingClientRect();
+    if (parentRect.left + parentRect.width < rect.left + rect.width) {
+      tooltip.style.right = '0';
+      tooltip.style.left = 'auto';
+    }
     const hide = () => {
       this.$.tooltip.hide();
       target.removeEventListener('mouseleave', hide);
