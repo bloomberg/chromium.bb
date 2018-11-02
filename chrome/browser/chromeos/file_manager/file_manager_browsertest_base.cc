@@ -115,7 +115,7 @@ struct AddEntriesMessage {
   };
 
   // Represents the different types of entries (e.g. file, folder).
-  enum EntryType { FILE, DIRECTORY, TEAM_DRIVE };
+  enum EntryType { FILE, DIRECTORY, TEAM_DRIVE, COMPUTER };
 
   // Represents whether an entry appears in 'Share with Me' or not.
   enum SharedOption { NONE, SHARED, SHARED_WITH_ME, NESTED_SHARED_WITH_ME };
@@ -214,6 +214,7 @@ struct AddEntriesMessage {
                   const std::string& target_path,
                   const std::string& mime_type,
                   const std::string& team_drive_name,
+                  const std::string& computer_name,
                   SharedOption shared_option,
                   const base::Time& last_modified_time,
                   const EntryCapabilities& capabilities,
@@ -223,6 +224,7 @@ struct AddEntriesMessage {
           source_file_name(source_file_name),
           target_path(target_path),
           team_drive_name(team_drive_name),
+          computer_name(computer_name),
           mime_type(mime_type),
           last_modified_time(last_modified_time),
           capabilities(capabilities),
@@ -234,6 +236,7 @@ struct AddEntriesMessage {
     std::string target_path;         // Target file or directory path.
     std::string name_text;           // Display file name.
     std::string team_drive_name;     // Name of team drive this entry is in.
+    std::string computer_name;       // Name of the computer this entry is in.
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Entry permissions.
@@ -250,6 +253,8 @@ struct AddEntriesMessage {
       converter->RegisterStringField("nameText", &TestEntryInfo::name_text);
       converter->RegisterStringField("teamDriveName",
                                      &TestEntryInfo::team_drive_name);
+      converter->RegisterStringField("computerName",
+                                     &TestEntryInfo::computer_name);
       converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
       converter->RegisterCustomField("sharedOption",
                                      &TestEntryInfo::shared_option,
@@ -270,6 +275,8 @@ struct AddEntriesMessage {
         *type = DIRECTORY;
       else if (value == "team_drive")
         *type = TEAM_DRIVE;
+      else if (value == "Computer")
+        *type = COMPUTER;
       else
         return false;
       return true;
@@ -456,6 +463,10 @@ class LocalTestVolume : public TestVolume {
         NOTREACHED() << "Can't create a team drive in a local volume: "
                      << target_path.value();
         break;
+      case AddEntriesMessage::COMPUTER:
+        NOTREACHED() << "Can't create a computer in a local volume: "
+                     << target_path.value();
+        break;
     }
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
@@ -572,13 +583,13 @@ class FakeTestVolume : public LocalTestVolume {
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
     CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "text.txt", "hello.txt", std::string(),
-        "text/plain", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
+        AddEntriesMessage::FILE, "text.txt", "hello.txt", "text/plain",
+        std::string(), std::string(), AddEntriesMessage::SharedOption::NONE,
+        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::DIRECTORY, std::string(), "A", std::string(),
-        std::string(), AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
+        std::string(), std::string(), AddEntriesMessage::SharedOption::NONE,
+        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -588,21 +599,21 @@ class FakeTestVolume : public LocalTestVolume {
       return false;
 
     CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::DIRECTORY, "", "DCIM", std::string(), "",
-        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::DIRECTORY, "", "DCIM", std::string(), std::string(),
+        "", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
         AddEntriesMessage::EntryCapabilities(), false));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::FILE, "image2.png", "image2.png", std::string(),
-        "image/png", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
+        std::string(), "image/png", AddEntriesMessage::SharedOption::NONE,
+        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::FILE, "image3.jpg", "DCIM/image3.jpg", std::string(),
-        "image/jpeg", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
+        std::string(), "image/jpeg", AddEntriesMessage::SharedOption::NONE,
+        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::FILE, "text.txt", "DCIM/hello.txt", std::string(),
-        "text/plain", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
+        std::string(), "text/plain", AddEntriesMessage::SharedOption::NONE,
+        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -709,6 +720,9 @@ class DriveTestVolume : public TestVolume {
       case AddEntriesMessage::TEAM_DRIVE:
         CreateTeamDrive(entry.team_drive_name, team_drive_capabilities);
         break;
+      case AddEntriesMessage::COMPUTER:
+        NOTREACHED() << "Can't create a computer in a drive test volume: "
+                     << entry.computer_name;
     }
 
     // Any file or directory created above, will only appear in Drive after
@@ -902,6 +916,9 @@ class DriveFsTestVolume : public DriveTestVolume {
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a team drive: " << target_path.value();
         break;
+      case AddEntriesMessage::COMPUTER:
+        ASSERT_TRUE(base::CreateDirectory(target_path))
+            << "Failed to create a computer: " << target_path.value();
     }
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
@@ -913,6 +930,7 @@ class DriveFsTestVolume : public DriveTestVolume {
   CreateDriveFsConnectionDelegate() override {
     CHECK(base::CreateDirectory(GetMyDrivePath()));
     CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
+    CHECK(base::CreateDirectory(GetComputerGrandRoot()));
 
     if (!fake_drivefs_helper_) {
       fake_drivefs_helper_ =
@@ -934,6 +952,7 @@ class DriveFsTestVolume : public DriveTestVolume {
     // Update the modified time of parent directories because they may be
     // also affected by the update of child items.
     if (path.DirName() != GetTeamDriveGrandRoot() &&
+        path.DirName() != GetComputerGrandRoot() &&
         path.DirName() != GetMyDrivePath() &&
         path.DirName() != GetSharedWithMePath()) {
       const auto it = entries_.find(path.DirName());
@@ -963,6 +982,9 @@ class DriveFsTestVolume : public DriveTestVolume {
     if (!entry.team_drive_name.empty()) {
       return GetTeamDrivePath(entry.team_drive_name);
     }
+    if (!entry.computer_name.empty()) {
+      return GetComputerPath(entry.computer_name);
+    }
     return GetMyDrivePath();
   }
 
@@ -982,12 +1004,20 @@ class DriveFsTestVolume : public DriveTestVolume {
     return mount_path().Append("team_drives");
   }
 
+  base::FilePath GetComputerGrandRoot() {
+    return mount_path().Append("Computers");
+  }
+
   base::FilePath GetSharedWithMePath() {
     return mount_path().Append(".files-by-id/123");
   }
 
   base::FilePath GetTeamDrivePath(const std::string& team_drive_name) {
     return GetTeamDriveGrandRoot().Append(team_drive_name);
+  }
+
+  base::FilePath GetComputerPath(const std::string& computer_name) {
+    return GetComputerGrandRoot().Append(computer_name);
   }
 
   Profile* const profile_;

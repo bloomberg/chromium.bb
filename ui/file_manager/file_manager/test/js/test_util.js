@@ -425,7 +425,7 @@ test.addEntries = function(downloads, drive, crostini) {
           .fileSystem);
   fsDrive.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
-  fsDrive.populate(['/team_drives/']);
+  fsDrive.populate(['/team_drives/', '/Computers/']);
 
   const fsCrostini = /** @type {MockFileSystem} */ (
       mockVolumeManager

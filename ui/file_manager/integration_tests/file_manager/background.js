@@ -252,6 +252,17 @@ var TEAM_DRIVE_ENTRY_SET = [
 ];
 
 /**
+ * Entry set for Drive that includes Computers, including nested computers with
+ * files and nested "USB and External Devices" with nested devices.
+ */
+let COMPUTERS_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.computerA,
+  ENTRIES.computerAFile,
+  ENTRIES.computerAdirectoryA,
+];
+
+/**
  * Opens a Files app's main window.
  *
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.

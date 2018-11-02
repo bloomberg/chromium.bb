@@ -552,7 +552,9 @@ RemoteCallFilesApp.prototype.navigateWithDirectoryTree = function(
       .then(() => {
         // Entries within Drive starts with /root/ but it isn't displayed in the
         // breadcrubms used by waitUntilCurrentDirectoryIsChanged.
-        path = path.replace(/^\/root/, '').replace(/^\/team_drives/, '');
+        path = path.replace(/^\/root/, '')
+                   .replace(/^\/team_drives/, '')
+                   .replace(/^\/Computers/, '');
 
         // Wait until the Files app is navigated to the path.
         return this.waitUntilCurrentDirectoryIsChanged(

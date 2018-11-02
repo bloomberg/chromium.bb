@@ -228,6 +228,7 @@ var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
   TEAM_DRIVE: 'team_drive',
+  COMPUTER: 'Computer'
 });
 
 /**
@@ -315,6 +316,11 @@ TestEntryInfoOptions.prototype.targetPath;
  */
 TestEntryInfoOptions.prototype.teamDriveName;
 /**
+ * @type {string} Name of the computer this entry is in. Defaults to a blank
+ *     string (no computer). Computer names must be unique.
+ */
+TestEntryInfoOptions.prototype.computerName;
+/**
  * @type {string|undefined} Mime type.
  */
 TestEntryInfoOptions.prototype.mimeType;
@@ -358,6 +364,7 @@ function TestEntryInfo(options) {
   this.sourceFileName = options.sourceFileName || '';
   this.targetPath = options.targetPath;
   this.teamDriveName = options.teamDriveName || '';
+  this.computerName = options.computerName || '';
   this.mimeType = options.mimeType || '';
   this.sharedOption = options.sharedOption || SharedOption.NONE;
   this.lastModifiedTime = options.lastModifiedTime;
@@ -748,6 +755,41 @@ var ENTRIES = {
       canAddChildren: false,
       canShare: true,
     },
+  }),
+
+  // Computer entries.
+  computerA: new TestEntryInfo({
+    type: EntryType.COMPUTER,
+    computerName: 'Computer A',
+  }),
+
+  computerAFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'computerAFile.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'computerAFile.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    computerName: 'Computer A',
+    capabilities: {
+      canCopy: true,
+      canDelete: true,
+      canRename: true,
+      canAddChildren: false,
+      canShare: true,
+    },
+  }),
+
+  computerAdirectoryA: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'A',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    computerName: 'Computer A',
+    nameText: 'A',
+    sizeText: '--',
+    typeText: 'Folder'
   }),
 
   // Read-only and write-restricted entries.
