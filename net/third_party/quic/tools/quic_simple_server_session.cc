@@ -168,7 +168,6 @@ spdy::SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
   // :authority could be different from original request.
   spdy_headers[":authority"] = push_request_url.host();
   spdy_headers[":path"] = push_request_url.path();
-  ;
   // Push request always use GET.
   spdy_headers[":method"] = "GET";
   spdy_headers["referer"] = request_url;

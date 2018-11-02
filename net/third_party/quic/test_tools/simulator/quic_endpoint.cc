@@ -4,7 +4,6 @@
 
 #include "net/third_party/quic/test_tools/simulator/quic_endpoint.h"
 
-#include "base/sha1.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/quic_data_writer.h"

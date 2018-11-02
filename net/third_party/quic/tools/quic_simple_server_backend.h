@@ -34,7 +34,7 @@ class QuicSimpleServerBackend {
         std::list<QuicBackendResponse::ServerPushInfo> resources) = 0;
   };
 
-  virtual ~QuicSimpleServerBackend(){};
+  virtual ~QuicSimpleServerBackend() = default;
   // This method initializes the backend instance to fetch responses
   // from a backend server, in-memory cache etc.
   virtual bool InitializeBackend(const QuicString& backend_url) = 0;

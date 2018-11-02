@@ -69,8 +69,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   QuicStreamTest()
       : initial_flow_control_window_bytes_(kMaxPacketSize),
         zero_(QuicTime::Delta::Zero()),
-        supported_versions_(AllSupportedVersions()) {
-  }
+        supported_versions_(AllSupportedVersions()) {}
 
   void Initialize() {
     connection_ = new StrictMock<MockQuicConnection>(

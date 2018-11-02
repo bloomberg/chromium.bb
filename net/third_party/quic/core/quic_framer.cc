@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "net/third_party/quic/core/crypto/crypto_framer.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
