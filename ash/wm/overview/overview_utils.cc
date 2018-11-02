@@ -13,7 +13,6 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
@@ -140,14 +139,8 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
-  if (slide) {
+  if (slide)
     window->SetTransform(original_transform);
-
-    auto start_observer = std::make_unique<StartAnimationObserver>();
-    scoped_overview_animation_settings.AddObserver(start_observer.get());
-    Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
-        std::move(start_observer));
-  }
 }
 
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
