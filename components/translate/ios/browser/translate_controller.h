@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_TRANSLATE_IOS_BROWSER_TRANSLATE_CONTROLLER_H_
 #define COMPONENTS_TRANSLATE_IOS_BROWSER_TRANSLATE_CONTROLLER_H_
 
+#include <iterator>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -83,6 +85,7 @@ class TranslateController : public web::WebStateObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest, TranslationSuccess);
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest, TranslationFailure);
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest, OnTranslateLoadJavascript);
+  FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest, OnTranslateSendRequest);
 
   // Called when a JavaScript command is received.
   bool OnJavascriptCommandReceived(const base::DictionaryValue& command,
@@ -95,11 +98,16 @@ class TranslateController : public web::WebStateObserver {
   bool OnTranslateReady(const base::DictionaryValue& command);
   bool OnTranslateComplete(const base::DictionaryValue& command);
   bool OnTranslateLoadJavaScript(const base::DictionaryValue& command);
+  bool OnTranslateSendRequest(const base::DictionaryValue& command);
 
-  // Use to fetch additional scripts needed for translate.
-  void FetchScript(const std::string& url);
   // The callback when the script is fetched or a server error occurred.
   void OnScriptFetchComplete(std::unique_ptr<std::string> response_body);
+  // The callback when translate requests have completed.
+  void OnRequestFetchComplete(
+      std::set<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
+      std::string url,
+      int request_id,
+      std::unique_ptr<std::string> response_body);
 
   // web::WebStateObserver implementation:
   void WebStateDestroyed(web::WebState* web_state) override;
@@ -110,6 +118,8 @@ class TranslateController : public web::WebStateObserver {
   // WebStateDestroyed has been called.
   web::WebState* web_state_ = nullptr;
 
+  // Used to fetch translate requests. There may be multiple requests in flight.
+  std::set<std::unique_ptr<network::SimpleURLLoader>> request_fetchers_;
   // Used to fetch additional scripts needed for translate.
   std::unique_ptr<network::SimpleURLLoader> script_fetcher_;
 
