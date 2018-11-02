@@ -317,44 +317,38 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
         close_button_(close_button) {
     AddChildView(listener_button_);
 
+    // Helper function to add a child view to a parent view and make it paint to
+    // layer.
+    auto add_child_with_layer = [](views::View* parent, views::View* child) {
+      child->SetPaintToLayer();
+      child->layer()->SetFillsBoundsOpaquely(false);
+      parent->AddChildView(child);
+    };
+
     header_view_ = new views::View();
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kHorizontal, gfx::Insets(),
             kHorizontalLabelPaddingDp));
     if (image_view_)
-      header_view_->AddChildView(image_view_);
-    header_view_->AddChildView(title_label_);
-    AddChildWithLayer(header_view_, close_button_);
-    AddChildWithLayer(this, header_view_);
+      add_child_with_layer(header_view_, image_view_);
+    add_child_with_layer(header_view_, title_label_);
+    add_child_with_layer(header_view_, close_button_);
+    add_child_with_layer(this, header_view_);
     layout->SetFlexForView(title_label_, 1);
-  }
 
-  ~CaptionContainerView() override {
-    // If the cannot snap container was never created, delete cannot_snap_label_
-    // manually.
-    if (!cannot_snap_container_)
-      delete cannot_snap_label_;
-  }
-
-  RoundedRectView* GetCannotSnapContainer() {
-    if (!cannot_snap_container_) {
-      // Use |cannot_snap_container_| to specify the padding surrounding
-      // |cannot_snap_label_| and to give the label rounded corners.
-      cannot_snap_container_ = new RoundedRectView(
-          kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
-      cannot_snap_container_->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(
-              views::BoxLayout::kVertical,
-              gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                          kSplitviewLabelHorizontalInsetDp)));
-      cannot_snap_container_->AddChildView(cannot_snap_label_);
-      cannot_snap_container_->set_can_process_events_within_subtree(false);
-      AddChildWithLayer(this, cannot_snap_container_);
-      cannot_snap_container_->layer()->SetOpacity(0.f);
-      Layout();
-    }
-    return cannot_snap_container_;
+    // Use |cannot_snap_container_| to specify the padding surrounding
+    // |cannot_snap_label_| and to give the label rounded corners.
+    cannot_snap_container_ = new RoundedRectView(
+        kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
+    cannot_snap_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kSplitviewLabelVerticalInsetDp,
+                    kSplitviewLabelHorizontalInsetDp)));
+    cannot_snap_container_->AddChildView(cannot_snap_label_);
+    cannot_snap_container_->set_can_process_events_within_subtree(false);
+    add_child_with_layer(this, cannot_snap_container_);
+    cannot_snap_container_->layer()->SetOpacity(0.f);
   }
 
   ShieldButton* listener_button() { return listener_button_; }
@@ -377,11 +371,8 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   }
 
   void SetCannotSnapLabelVisibility(bool visible) {
-    if (!cannot_snap_container_ && !visible)
-      return;
-
     DoSplitviewOpacityAnimation(
-        GetCannotSnapContainer()->layer(),
+        cannot_snap_container_->layer(),
         visible ? SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN
                 : SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT);
   }
@@ -409,14 +400,12 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     backdrop_bounds_ = bounds;
     backdrop_bounds_.Inset(0, visible_height, 0, 0);
 
-    if (cannot_snap_container_) {
-      // Position the cannot snap label in the middle of the item, minus the
-      // title.
-      gfx::Rect cannot_snap_bounds = GetLocalBounds();
-      cannot_snap_bounds.Inset(0, visible_height, 0, 0);
-      cannot_snap_bounds.ClampToCenteredSize(label_size);
-      cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
-    }
+    // Position the cannot snap label in the middle of the item, minus the
+    // title.
+    gfx::Rect cannot_snap_bounds = GetLocalBounds();
+    cannot_snap_bounds.Inset(0, visible_height, 0, 0);
+    cannot_snap_bounds.ClampToCenteredSize(label_size);
+    cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
 
     // Position the header at the top. The left should be indented to match
     // the transformed window, but not the right because the close button hit
@@ -458,19 +447,11 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     }
   }
 
-  // Helper function to add a child view to a parent view and make it paint to
-  // layer.
-  static void AddChildWithLayer(views::View* parent, views::View* child) {
-    child->SetPaintToLayer();
-    child->layer()->SetFillsBoundsOpaquely(false);
-    parent->AddChildView(child);
-  };
-
   ShieldButton* listener_button_;
   views::ImageView* image_view_;
   views::Label* title_label_;
   views::Label* cannot_snap_label_;
-  RoundedRectView* cannot_snap_container_ = nullptr;
+  RoundedRectView* cannot_snap_container_;
   views::ImageButton* close_button_;
   // View which contains the icon, title and close button.
   views::View* header_view_ = nullptr;
