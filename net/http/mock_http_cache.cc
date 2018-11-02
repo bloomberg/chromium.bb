@@ -398,6 +398,7 @@ MockDiskCache::MockDiskCache()
       doomed_count_(0),
       fail_requests_(false),
       soft_failures_(false),
+      soft_failures_one_instance_(false),
       double_create_check_(true),
       fail_sparse_requests_(false),
       support_in_memory_entry_data_(true),
@@ -439,8 +440,10 @@ net::Error MockDiskCache::OpenEntry(const std::string& key,
   it->second->AddRef();
   *entry = it->second;
 
-  if (soft_failures_)
+  if (soft_failures_ || soft_failures_one_instance_) {
     it->second->set_fail_requests();
+    soft_failures_one_instance_ = false;
+  }
 
   if (GetTestModeForEntry(key) & TEST_MODE_SYNC_CACHE_START)
     return OK;
@@ -479,8 +482,10 @@ net::Error MockDiskCache::CreateEntry(const std::string& key,
   new_entry->AddRef();
   *entry = new_entry;
 
-  if (soft_failures_)
+  if (soft_failures_ || soft_failures_one_instance_) {
     new_entry->set_fail_requests();
+    soft_failures_one_instance_ = false;
+  }
 
   if (fail_sparse_requests_)
     new_entry->set_fail_sparse_requests();

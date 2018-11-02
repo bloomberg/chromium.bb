@@ -6565,6 +6565,37 @@ TEST_F(HttpCacheTest, RangeGET_OK) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
+TEST_F(HttpCacheTest, RangeGET_CacheReadError) {
+  // Tests recovery on cache read error on range request.
+  MockHttpCache cache;
+  AddMockTransaction(&kRangeGET_TransactionOK);
+  std::string headers;
+
+  // Write to the cache (40-49).
+  RunTransactionTestWithResponse(cache.http_cache(), kRangeGET_TransactionOK,
+                                 &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  cache.disk_cache()->set_soft_failures_one_instance(true);
+
+  // Try to read from the cache (40-49), which will fail quickly enough to
+  // restart, due to the failure injected above.  This should still be a range
+  // request. (https://crbug.com/891212)
+  RunTransactionTestWithResponse(cache.http_cache(), kRangeGET_TransactionOK,
+                                 &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  RemoveMockTransaction(&kRangeGET_TransactionOK);
+}
+
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network, with synchronous responses.
 TEST_F(HttpCacheTest, RangeGET_SyncOK) {
