@@ -1671,7 +1671,6 @@ jumbo_component("base") {
   # Desktop Mac.
   if (is_mac) {
     sources -= [
-      "process/launch_posix.cc",
       "profiler/native_stack_sampler_posix.cc",
       "sampling_heap_profiler/module_cache_posix.cc",
     ]
