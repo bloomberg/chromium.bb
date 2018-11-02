@@ -24,6 +24,10 @@ source_set("x11") {
     "x11_cursor_factory_ozone.h",
     "x11_cursor_ozone.cc",
     "x11_cursor_ozone.h",
+    "x11_display_fetcher_ozone.cc",
+    "x11_display_fetcher_ozone.h",
+    "x11_screen_ozone.cc",
+    "x11_screen_ozone.h",
     "x11_surface_factory.cc",
     "x11_surface_factory.h",
     "x11_window_manager_ozone.cc",
@@ -59,7 +63,10 @@ source_set("x11") {
     deps += [ "//gpu/vulkan/x" ]
   }
 
-  configs += [ "//build/config/linux:x11" ]
+  configs += [
+    "//build/config/linux:x11",
+    "//build/config/linux:xrandr",
+  ]
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 }
@@ -68,6 +75,7 @@ source_set("x11_unittests") {
   testonly = true
   sources = [
     "x11_cursor_factory_ozone_unittest.cc",
+    "x11_screen_ozone_unittest.cc",
     "x11_window_ozone_unittest.cc",
   ]
 
