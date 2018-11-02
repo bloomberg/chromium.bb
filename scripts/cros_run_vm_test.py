@@ -311,7 +311,9 @@ def ParseCommandLine(argv):
                       '--build-dir must be specified.')
   parser.add_argument('--nostrip', action='store_true', default=False,
                       help="Don't strip symbols from binaries if deploying.")
-  parser.add_argument('--cwd', type='path', help='Change working directory. '
+  # type='path' converts a relative path for cwd into an absolute one on the
+  # host, which we don't want.
+  parser.add_argument('--cwd', help='Change working directory. '
                       'An absolute path or a path relative to CWD on the host.')
   parser.add_argument('--files', default=[], action='append',
                       help='Files to scp to the VM.')
