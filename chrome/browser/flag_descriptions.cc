@@ -531,11 +531,16 @@ const char kEnableDesktopPWAsLinkCapturingDescription[] =
     "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
     "#enable-desktop-pwas.";
 
+const char kDesktopPWAsCustomTabUIName[] = "Desktop PWAs Custom Tab UI";
+const char kDesktopPWAsCustomTabUIDescription[] =
+    "Browsing out-of-scope links in a desktop PWA will use the custom tab UI "
+    "for displaying the page title and origin instead of the location bar.";
+
 const char kDesktopPWAsStayInWindowName[] =
     "Desktop PWAs out-of-scope links open in the app window";
 const char kDesktopPWAsStayInWindowDescription[] =
-    "Links to sites in a different scope will open in a custom "
-    "tab (inside the PWA window) as opposed to in the browser.";
+    "Links to sites in a different scope will open inside the PWA window as "
+    "opposed to in the browser.";
 
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
