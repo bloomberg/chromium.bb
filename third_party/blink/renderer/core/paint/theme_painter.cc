@@ -215,7 +215,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       auto* element = ToElementOrNull(node);
       if (!element || !element->OwnerShadowHost() ||
           element->FastGetAttribute(html_names::kIdAttr) !=
-              ShadowElementNames::SearchClearButton())
+              shadow_element_names::SearchClearButton())
         COUNT_APPEARANCE(doc, SearchCancelForOthers);
       return PaintSearchFieldCancelButton(o, paint_info, r);
     }
@@ -356,7 +356,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntSize thumb_size;
   LayoutObject* thumb_layout_object =
       input->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderThumb())
+          ->getElementById(shadow_element_names::SliderThumb())
           ->GetLayoutObject();
   if (thumb_layout_object) {
     const ComputedStyle& thumb_style = thumb_layout_object->StyleRef();
@@ -374,7 +374,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntRect track_bounds;
   LayoutObject* track_layout_object =
       input->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderTrack())
+          ->getElementById(shadow_element_names::SliderTrack())
           ->GetLayoutObject();
   // We can ignoring transforms because transform is handled by the graphics
   // context.

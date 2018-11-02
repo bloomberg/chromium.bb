@@ -60,7 +60,7 @@ SpinButtonElement* SpinButtonElement::Create(
   SpinButtonElement* element =
       new SpinButtonElement(document, spin_button_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
-  element->setAttribute(kIdAttr, ShadowElementNames::SpinButton());
+  element->setAttribute(kIdAttr, shadow_element_names::SpinButton());
   return element;
 }
 

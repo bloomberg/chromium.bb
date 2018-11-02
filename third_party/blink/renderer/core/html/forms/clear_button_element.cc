@@ -46,7 +46,7 @@ ClearButtonElement* ClearButtonElement::Create(
   ClearButtonElement* element =
       new ClearButtonElement(document, clear_button_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-clear-button"));
-  element->setAttribute(kIdAttr, ShadowElementNames::ClearButton());
+  element->setAttribute(kIdAttr, shadow_element_names::ClearButton());
   return element;
 }
 

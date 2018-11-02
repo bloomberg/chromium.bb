@@ -136,28 +136,28 @@ DateTimeEditElement*
 MultipleFieldsTemporalInputTypeView::GetDateTimeEditElement() const {
   return ToDateTimeEditElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::DateTimeEdit()));
+          shadow_element_names::DateTimeEdit()));
 }
 
 SpinButtonElement* MultipleFieldsTemporalInputTypeView::GetSpinButtonElement()
     const {
   return ToSpinButtonElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::SpinButton()));
+          shadow_element_names::SpinButton()));
 }
 
 ClearButtonElement* MultipleFieldsTemporalInputTypeView::GetClearButtonElement()
     const {
   return ToClearButtonElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::ClearButton()));
+          shadow_element_names::ClearButton()));
 }
 
 PickerIndicatorElement*
 MultipleFieldsTemporalInputTypeView::GetPickerIndicatorElement() const {
   return ToPickerIndicatorElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::PickerIndicator()));
+          shadow_element_names::PickerIndicator()));
 }
 
 inline bool MultipleFieldsTemporalInputTypeView::ContainsFocusedShadowElement()

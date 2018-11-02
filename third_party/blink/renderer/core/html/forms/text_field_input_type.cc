@@ -101,7 +101,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
     DataListIndicatorElement* element = new DataListIndicatorElement(document);
     element->SetShadowPseudoId(
         AtomicString("-webkit-calendar-picker-indicator"));
-    element->setAttribute(kIdAttr, ShadowElementNames::PickerIndicator());
+    element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
     return element;
   }
 };
@@ -127,7 +127,7 @@ InputType::ValueMode TextFieldInputType::GetValueMode() const {
 SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
   return ToSpinButtonElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::SpinButton()));
+          shadow_element_names::SpinButton()));
 }
 
 bool TextFieldInputType::MayTriggerVirtualKeyboard() const {
@@ -317,7 +317,7 @@ void TextFieldInputType::CreateShadowSubtree() {
 
 Element* TextFieldInputType::ContainerElement() const {
   return GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::TextFieldContainer());
+      shadow_element_names::TextFieldContainer());
 }
 
 void TextFieldInputType::DestroyShadowSubtree() {
@@ -330,7 +330,7 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   if (ChromeClient* chrome_client = GetChromeClient())
     chrome_client->TextFieldDataListChanged(GetElement());
   Element* picker = GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::PickerIndicator());
+      shadow_element_names::PickerIndicator());
   bool did_have_picker_indicator = picker;
   bool will_have_picker_indicator = GetElement().HasValidDataListOptions();
   if (did_have_picker_indicator == will_have_picker_indicator)
@@ -482,7 +482,7 @@ void TextFieldInputType::UpdatePlaceholderText() {
         CSSPropertyDisplay,
         GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
         true);
-    placeholder->setAttribute(kIdAttr, ShadowElementNames::Placeholder());
+    placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();
     previous->parentNode()->InsertBefore(placeholder, previous);

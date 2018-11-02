@@ -143,7 +143,7 @@ void HTMLOptGroupElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   label->setAttribute(kAriaLabelAttr, AtomicString());
   label->SetInlineStyleProperty(CSSPropertyPadding, label_padding);
   label->SetInlineStyleProperty(CSSPropertyMinHeight, label_min_height);
-  label->SetIdAttribute(ShadowElementNames::OptGroupLabel());
+  label->SetIdAttribute(shadow_element_names::OptGroupLabel());
   root.AppendChild(label);
 
   root.AppendChild(
@@ -159,7 +159,7 @@ void HTMLOptGroupElement::UpdateGroupLabel() {
 
 HTMLDivElement& HTMLOptGroupElement::OptGroupLabelElement() const {
   return *ToHTMLDivElementOrDie(UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::OptGroupLabel()));
+      shadow_element_names::OptGroupLabel()));
 }
 
 }  // namespace blink

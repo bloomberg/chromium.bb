@@ -60,7 +60,7 @@ void LayoutSlider::ComputeIntrinsicLogicalWidths(
 inline SliderThumbElement* LayoutSlider::GetSliderThumbElement() const {
   return ToSliderThumbElement(
       ToElement(GetNode())->UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::SliderThumb()));
+          shadow_element_names::SliderThumb()));
 }
 
 bool LayoutSlider::InDragMode() const {

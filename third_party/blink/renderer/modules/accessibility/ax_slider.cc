@@ -142,7 +142,7 @@ LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
   Element* thumb_element =
       ToElement(slider_layout_object->GetNode())
           ->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderThumb());
+          ->getElementById(shadow_element_names::SliderThumb());
   DCHECK(thumb_element);
   return thumb_element->GetLayoutObject();
 }

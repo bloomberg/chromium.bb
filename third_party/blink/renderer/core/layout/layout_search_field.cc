@@ -40,12 +40,12 @@ LayoutSearchField::~LayoutSearchField() = default;
 
 inline Element* LayoutSearchField::SearchDecorationElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SearchDecoration());
+      shadow_element_names::SearchDecoration());
 }
 
 inline Element* LayoutSearchField::CancelButtonElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::ClearButton());
+      shadow_element_names::ClearButton());
 }
 
 LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(
