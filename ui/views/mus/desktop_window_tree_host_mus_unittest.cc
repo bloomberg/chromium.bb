@@ -19,7 +19,7 @@
 #include "ui/aura/mus/window_tree_client_test_observer.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/mus/test_window_tree.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -220,7 +220,7 @@ TEST_F(DesktopWindowTreeHostMusTest, BecomesActiveOnMousePress) {
 
   // The mouse event should generate a focus request to the server.
   EXPECT_TRUE(
-      aura::WindowTreeClientPrivate(MusClient::Get()->window_tree_client())
+      aura::WindowTreeClientTestApi(MusClient::Get()->window_tree_client())
           .HasChangeInFlightOfType(aura::ChangeType::FOCUS));
 }
 
@@ -497,7 +497,7 @@ TEST_F(DesktopWindowTreeHostMusTest,
   // Swap the WindowTree implementation to verify SetClientArea() is called when
   // the bounds change.
   aura::TestWindowTree test_window_tree;
-  aura::WindowTreeClientPrivate window_tree_client_private(
+  aura::WindowTreeClientTestApi window_tree_client_private(
       MusClient::Get()->window_tree_client());
   ws::mojom::WindowTree* old_tree =
       window_tree_client_private.SwapTree(&test_window_tree);

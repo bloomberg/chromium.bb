@@ -13,7 +13,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"

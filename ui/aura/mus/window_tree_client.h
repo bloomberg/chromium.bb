@@ -73,8 +73,8 @@ class TopmostWindowTracker;
 class WindowMus;
 class WindowPortMus;
 class WindowTreeClientDelegate;
-class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
+class WindowTreeClientTestApi;
 class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
@@ -215,7 +215,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightVisibleChange;
   friend class TopmostWindowTracker;
   friend class WindowPortMus;
-  friend class WindowTreeClientPrivate;
+  friend class WindowTreeClientTestApi;
 
   enum class Origin {
     CLIENT,

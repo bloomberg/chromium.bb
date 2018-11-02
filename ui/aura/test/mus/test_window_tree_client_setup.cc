@@ -5,7 +5,7 @@
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
 
 #include "ui/aura/test/mus/test_window_tree.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/display/display.h"
@@ -22,14 +22,14 @@ TestWindowTreeClientSetup::~TestWindowTreeClientSetup() {
 void TestWindowTreeClientSetup::Init(
     WindowTreeClientDelegate* window_tree_delegate) {
   CommonInit(window_tree_delegate);
-  WindowTreeClientPrivate(window_tree_client_.get())
+  WindowTreeClientTestApi(window_tree_client_.get())
       .OnEmbed(window_tree_.get());
 }
 
 void TestWindowTreeClientSetup::InitWithoutEmbed(
     WindowTreeClientDelegate* window_tree_delegate) {
   CommonInit(window_tree_delegate);
-  WindowTreeClientPrivate(window_tree_client_.get())
+  WindowTreeClientTestApi(window_tree_client_.get())
       .SetTree(window_tree_.get());
 }
 
@@ -48,7 +48,7 @@ void TestWindowTreeClientSetup::CommonInit(
   window_tree_ = std::make_unique<TestWindowTree>();
   window_tree_->set_delegate(this);
   window_tree_client_ =
-      WindowTreeClientPrivate::CreateWindowTreeClient(window_tree_delegate);
+      WindowTreeClientTestApi::CreateWindowTreeClient(window_tree_delegate);
   window_tree_->set_client(window_tree_client_.get());
 
   window_occlusion_tracker_ = test::WindowOcclusionTrackerTestApi::Create();
@@ -56,7 +56,7 @@ void TestWindowTreeClientSetup::CommonInit(
 
 void TestWindowTreeClientSetup::TrackOcclusionState(ws::Id window_id) {
   window_occlusion_tracker_->Track(
-      WindowTreeClientPrivate(window_tree_client_.get())
+      WindowTreeClientTestApi(window_tree_client_.get())
           .GetWindowByServerId(window_id));
 }
 

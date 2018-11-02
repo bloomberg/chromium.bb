@@ -39,7 +39,7 @@
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_port_mus_test_helper.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_window_targeter.h"
@@ -87,7 +87,7 @@ std::unique_ptr<Window> CreateWindowUsingId(
   ws::mojom::WindowData window_data;
   window_data.window_id = server_id;
   WindowMus* window_mus =
-      WindowTreeClientPrivate(window_tree_client)
+      WindowTreeClientTestApi(window_tree_client)
           .NewWindowFromWindowData(WindowMus::Get(parent), window_data);
   // WindowTreeClient implicitly creates the Window but doesn't own it.
   // Pass ownership to the caller.
@@ -2558,7 +2558,7 @@ TEST_F(WindowTreeClientTest, ChangeFocusInEmbedRootWindow) {
   TestEmbedRootDelegate embed_root_delegate;
   std::unique_ptr<EmbedRoot> embed_root =
       window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
-  WindowTreeClientPrivate(window_tree_client_impl())
+  WindowTreeClientTestApi(window_tree_client_impl())
       .CallOnEmbedFromToken(embed_root.get());
   ASSERT_TRUE(embed_root->window());
   window_tree_client()->OnWindowFocused(server_id(embed_root->window()));
