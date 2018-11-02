@@ -189,25 +189,31 @@ GenerateChromeUserProfileReportRequest(const base::Value& profile_report,
     }
   }
 
-  if (!UpdateJSONEncodedStringEntry(profile_report, kExtensionData,
-                                    request->mutable_extension_data(), LIST) ||
-      !UpdateJSONEncodedStringEntry(profile_report, kPlugins,
-                                    request->mutable_plugins(), LIST)) {
-    return nullptr;
+  if (prefs->GetBoolean(
+          enterprise_reporting::kReportExtensionsAndPluginsData)) {
+    if (!UpdateJSONEncodedStringEntry(profile_report, kExtensionData,
+                                      request->mutable_extension_data(),
+                                      LIST) ||
+        !UpdateJSONEncodedStringEntry(profile_report, kPlugins,
+                                      request->mutable_plugins(), LIST)) {
+      return nullptr;
+    }
   }
 
-  if (const base::Value* count =
-          profile_report.FindKey(kSafeBrowsingWarnings)) {
-    if (!count->is_int())
-      return nullptr;
-    request->set_safe_browsing_warnings(count->GetInt());
-  }
+  if (prefs->GetBoolean(enterprise_reporting::kReportSafeBrowsingData)) {
+    if (const base::Value* count =
+            profile_report.FindKey(kSafeBrowsingWarnings)) {
+      if (!count->is_int())
+        return nullptr;
+      request->set_safe_browsing_warnings(count->GetInt());
+    }
 
-  if (const base::Value* count =
-          profile_report.FindKey(kSafeBrowsingWarningsClickThrough)) {
-    if (!count->is_int())
-      return nullptr;
-    request->set_safe_browsing_warnings_click_through(count->GetInt());
+    if (const base::Value* count =
+            profile_report.FindKey(kSafeBrowsingWarningsClickThrough)) {
+      if (!count->is_int())
+        return nullptr;
+      request->set_safe_browsing_warnings_click_through(count->GetInt());
+    }
   }
 
   return request;
