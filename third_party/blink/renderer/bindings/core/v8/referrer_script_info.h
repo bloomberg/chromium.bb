@@ -53,7 +53,8 @@ class CORE_EXPORT ReferrerScriptInfo {
 
   bool IsDefaultValue() const {
     return base_url_.IsNull() &&
-           credentials_mode_ == network::mojom::FetchCredentialsMode::kOmit &&
+           credentials_mode_ ==
+               network::mojom::FetchCredentialsMode::kSameOrigin &&
            nonce_.IsEmpty() && parser_state_ == kNotParserInserted;
   }
 
@@ -67,10 +68,10 @@ class CORE_EXPORT ReferrerScriptInfo {
   const KURL base_url_;
 
   // Spec: "referencing script's credentials mode"
-  // The default value is "omit" per:
+  // The default value is "same-origin" per:
   // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
   const network::mojom::FetchCredentialsMode credentials_mode_ =
-      network::mojom::FetchCredentialsMode::kOmit;
+      network::mojom::FetchCredentialsMode::kSameOrigin;
 
   // Spec: "referencing script's cryptographic nonce"
   const String nonce_;
