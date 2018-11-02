@@ -297,6 +297,33 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
 
+[volume-type-icon='computers_grand_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/my_files.png) 1x,
+      url(../images/volumes/2x/my_files.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='computers_grand_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/my_files_active.png) 1x,
+      url(../images/volumes/2x/my_files_active.png) 2x);
+}
+
+[volume-type-icon='computer'],
+.computers-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/hard_drive.png) 1x,
+      url(../images/volumes/2x/hard_drive.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='computer'],
+tree .tree-item[selected] > .tree-row >
+.computers-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/hard_drive_active.png) 1x,
+      url(../images/volumes/2x/hard_drive_active.png) 2x);
+}
+
 [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
       url(../images/volumes/offline.png) 1x,

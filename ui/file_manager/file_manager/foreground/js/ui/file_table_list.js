@@ -135,7 +135,8 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
   var externalProps = metadataModel.getCache(
       [entry], ['hosted', 'availableOffline', 'customIconUrl', 'shared'])[0];
   filelist.updateListItemExternalProps(
-      li, externalProps, util.isTeamDriveRoot(entry));
+      li, externalProps, util.isTeamDriveRoot(entry),
+      util.isComputersRoot(entry));
 
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
@@ -203,7 +204,7 @@ filelist.renderFileNameLabel = function(doc, entry) {
  * @param {boolean} isTeamDriveRoot Whether the item is a team drive root entry.
  */
 filelist.updateListItemExternalProps = function(
-    li, externalProps, isTeamDriveRoot) {
+    li, externalProps, isTeamDriveRoot, isComputersRoot) {
   if (li.classList.contains('file')) {
     if (externalProps.availableOffline === false)
       li.classList.add('dim-offline');
@@ -226,6 +227,7 @@ filelist.updateListItemExternalProps = function(
   if (li.classList.contains('directory')) {
     iconDiv.classList.toggle('shared', !!externalProps.shared);
     iconDiv.classList.toggle('team-drive-root', !!isTeamDriveRoot);
+    iconDiv.classList.toggle('computers-root', !!isComputersRoot);
   }
 };
 
