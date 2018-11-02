@@ -12,38 +12,16 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DownloadStats {
  public:
-  enum class FrameType {
-    kMainFrame,
-    kSameOriginAdSubframe,
-    kSameOriginNonAdSubframe,
-    kCrossOriginAdSubframe,
-    kCrossOriginNonAdSubframe,
-  };
+  // These values are used to construct an enum in UMA. They should never be
+  // changed.
+  static constexpr unsigned kGestureBit = 0x1 << 0;
+  static constexpr unsigned kAdBit = 0x1 << 1;
+  static constexpr unsigned kCrossOriginBit = 0x1 << 2;
+  static constexpr unsigned kSandboxBit = 0x1 << 3;
+  static constexpr unsigned kCountSandboxOriginAdGesture = 16;
 
-  enum class GestureType {
-    kWithoutGesture,
-    kWithGesture,
-  };
-
-  // Note that these values are reported in UMA. So entries should never be
-  // renumbered, and numeric values should never be reused.
-  enum class FrameGesture {
-    kMainFrameNoGesture = 0,
-    kMainFrameGesture = 1,
-    kSameOriginAdSubframeNoGesture = 2,
-    kSameOriginAdSubframeGesture = 3,
-    kSameOriginNonAdSubframeNoGesture = 4,
-    kSameOriginNonAdSubframeGesture = 5,
-    kCrossOriginAdSubframeNoGesture = 6,
-    kCrossOriginAdSubframeGesture = 7,
-    kCrossOriginNonAdSubframeNoGesture = 8,
-    kCrossOriginNonAdSubframeGesture = 9,
-    kMaxValue = kCrossOriginNonAdSubframeGesture,
-  };
-
-  static FrameGesture GetMetricsEnum(FrameType frame, GestureType gesture);
-
-  static void Record(FrameType frame, GestureType gesture);
+  static void RecordMainFrameHasGesture(bool gesture);
+  static void RecordSubframeSandboxOriginAdGesture(unsigned value);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DownloadStats);

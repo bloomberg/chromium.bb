@@ -256,6 +256,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
       std::vector<url::Origin> request_initiators,
       bool push_to_renderer_now) override;
+  bool IsSandboxed(blink::WebSandboxFlags flags) const override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

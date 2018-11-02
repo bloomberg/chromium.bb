@@ -11852,6 +11852,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadFrameGesture">
+  <obsolete>
+    Deprecated 11/2018.
+  </obsolete>
   <summary>
     The type of frame in which a download occurs and whether the download
     involves a transient user gesture. It is only recorded for downloads
@@ -47779,6 +47782,32 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="No usable cache found"/>
   <int value="1" label="DiskCache served the CSS source"/>
   <int value="2" label="MemoryCached StyleSheetContents was reused"/>
+</enum>
+
+<enum name="SubframeDownloadSandboxOriginAdGesture">
+  <summary>
+    For a download that occurs in subframe, record whether the frame is
+    sandboxed, whether the origin is same to the top frame, whether it's an ad
+    subframe, and whether the download involves a transient user gesture. It is
+    only recorded for downloads originated from navigations or from HTML anchor
+    download attributes.
+  </summary>
+  <int value="0" label="NotSandboxed_SameOrigin_NonAd_NoGesture"/>
+  <int value="1" label="NotSandboxed_SameOrigin_NonAd_Gesture"/>
+  <int value="2" label="NotSandboxed_SameOrigin_Ad_NoGesture"/>
+  <int value="3" label="NotSandboxed_SameOrigin_Ad_Gesture"/>
+  <int value="4" label="NotSandboxed_CrossOrigin_NonAd_NoGesture"/>
+  <int value="5" label="NotSandboxed_CrossOrigin_NonAd_Gesture"/>
+  <int value="6" label="NotSandboxed_CrossOrigin_Ad_NoGesture"/>
+  <int value="7" label="NotSandboxed_CrossOrigin_Ad_Gesture"/>
+  <int value="8" label="Sandboxed_SameOrigin_NonAd_NoGesture"/>
+  <int value="9" label="Sandboxed_SameOrigin_NonAd_Gesture"/>
+  <int value="10" label="Sandboxed_SameOrigin_Ad_NoGesture"/>
+  <int value="11" label="Sandboxed_SameOrigin_Ad_Gesture"/>
+  <int value="12" label="Sandboxed_CrossOrigin_NonAd_NoGesture"/>
+  <int value="13" label="Sandboxed_CrossOrigin_NonAd_Gesture"/>
+  <int value="14" label="Sandboxed_CrossOrigin_Ad_NoGesture"/>
+  <int value="15" label="Sandboxed_CrossOrigin_Ad_Gesture"/>
 </enum>
 
 <enum name="SubmissionIndicatorEvent">
