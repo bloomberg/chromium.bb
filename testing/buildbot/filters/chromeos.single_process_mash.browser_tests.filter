@@ -44,16 +44,11 @@
 # Crashes on exit, even without SingleProcessMash.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.Success/*
 
-# Blub Arc tests.
--Blub/UnaffiliatedArcAllowedTest.ProfileTest/0
--Blub/UnaffiliatedArcAllowedTest.ProfileTest/1
-
 # Flaky.  crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
 
-# Flaky test. crbug.com/880584
-# Not implemented reached in virtual base::i18n::TextDirection content::RenderWidgetHostViewAura::GetTextDirection()
+# Flaky (regardless of Mash). https://crbug.com/873884
 -CrSettingsResetPageTest.All
 
 # Encrypted media tests are failing on Asan/Lsan bot due to memory leak. crbug.com/889993
@@ -87,9 +82,6 @@
 
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs
-
-# Service worker tests.
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.SWServedBackgroundPageReceivesEvent/*
 
 # Uses ash::LockWindow. https://crbug.com/899862
 -ShutdownPolicyLockerTest.*
