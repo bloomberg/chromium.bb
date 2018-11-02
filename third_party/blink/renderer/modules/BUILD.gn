@@ -260,6 +260,7 @@ jumbo_source_set("unit_tests") {
     "credentialmanager/credentials_container_test.cc",
     "credentialmanager/password_credential_test.cc",
     "csspaint/paint_rendering_context_2d_test.cc",
+    "csspaint/paint_worklet_global_scope_test.cc",
     "csspaint/paint_worklet_test.cc",
     "device_orientation/device_motion_event_pump_unittest.cc",
     "device_orientation/device_orientation_event_pump_unittest.cc",
