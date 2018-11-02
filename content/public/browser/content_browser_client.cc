@@ -194,6 +194,11 @@ bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
   return false;
 }
 
+bool ContentBrowserClient::ShouldSubframesTryToReuseExistingProcess(
+    RenderFrameHost* main_frame) {
+  return true;
+}
+
 bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_url,

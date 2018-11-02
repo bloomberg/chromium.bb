@@ -17,6 +17,7 @@
 
 namespace content {
 struct Referrer;
+class RenderFrameHost;
 class RenderProcessHost;
 class ResourceContext;
 class VpnServiceProxy;
@@ -61,6 +62,8 @@ class ChromeContentBrowserClientExtensionsPart
                              const GURL& site_url);
   static bool ShouldTryToUseExistingProcessHost(Profile* profile,
                                                 const GURL& url);
+  static bool ShouldSubframesTryToReuseExistingProcess(
+      content::RenderFrameHost* main_frame);
   static bool ShouldSwapBrowsingInstancesForNavigation(
       content::SiteInstance* site_instance,
       const GURL& current_url,
