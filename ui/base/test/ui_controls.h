@@ -118,6 +118,17 @@ bool SendMouseClick(MouseButton type);
 // pointers, |screen_x| and |screen_y| are the screen coordinates of a touch
 // pointer.
 bool SendTouchEvents(int action, int num, int screen_x, int screen_y);
+#elif defined(OS_CHROMEOS)
+// Sends a TouchEvent to the window system. |action| is a bitmask of the
+// TouchType constants that indicates what events are generated, |id| identifies
+// the touch point.
+// TODO(mukai): consolidate this interface with the Windows SendTouchEvents.
+bool SendTouchEvents(int action, int id, int x, int y);
+bool SendTouchEventsNotifyWhenDone(int action,
+                                   int id,
+                                   int x,
+                                   int y,
+                                   base::OnceClosure task);
 #endif
 
 #if defined(USE_AURA)
