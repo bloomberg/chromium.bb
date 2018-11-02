@@ -118,6 +118,10 @@
 #include "net/url_request/http_user_agent_settings.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+#if BUILDFLAG(ENABLE_MDNS)
+#include "services/network/mdns_responder.h"
+#endif  // BUILDFLAG(ENABLE_MDNS)
+
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif  // defined(USE_NSS_CERTS)
@@ -1456,6 +1460,18 @@ void NetworkContext::CreateP2PSocketManager(
                      base::Unretained(this)),
           url_request_context_);
   socket_managers_[socket_manager.get()] = std::move(socket_manager);
+}
+
+void NetworkContext::CreateMdnsResponder(
+    mojom::MdnsResponderRequest responder_request) {
+#if BUILDFLAG(ENABLE_MDNS)
+  if (!mdns_responder_manager_)
+    mdns_responder_manager_ = std::make_unique<MdnsResponderManager>();
+
+  mdns_responder_manager_->CreateMdnsResponder(std::move(responder_request));
+#else
+  NOTREACHED();
+#endif  // BUILDFLAG(ENABLE_MDNS)
 }
 
 void NetworkContext::ResetURLLoaderFactories() {

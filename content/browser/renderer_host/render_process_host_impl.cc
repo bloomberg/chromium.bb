@@ -2228,6 +2228,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&P2PSocketDispatcherHost::BindRequest,
                           base::Unretained(p2p_socket_dispatcher_host_.get())));
 
+#if BUILDFLAG(ENABLE_MDNS)
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::CreateMdnsResponder,
+                          base::Unretained(this)));
+#endif  // BUILDFLAG(ENABLE_MDNS)
+
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 
   associated_interfaces_ =
@@ -4556,6 +4563,14 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
     media_stream_track_metrics_host_.reset(new MediaStreamTrackMetricsHost());
   media_stream_track_metrics_host_->BindRequest(std::move(request));
 }
+
+#if BUILDFLAG(ENABLE_MDNS)
+void RenderProcessHostImpl::CreateMdnsResponder(
+    network::mojom::MdnsResponderRequest request) {
+  GetStoragePartition()->GetNetworkContext()->CreateMdnsResponder(
+      std::move(request));
+}
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
 void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
   base::PostTaskWithTraits(

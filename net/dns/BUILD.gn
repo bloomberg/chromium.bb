@@ -322,6 +322,7 @@ source_set("mdns_client") {
     "//chrome/browser/chromeos",
     "//chrome/tools/service_discovery_sniffer",
     "//net/*",
+    "//services/network/*",
   ]
 
   public = []
