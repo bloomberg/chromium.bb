@@ -214,9 +214,9 @@ int g_next_accessibility_reset_token = 1;
 // The next value to use for the javascript callback id.
 int g_next_javascript_callback_id = 1;
 
-#if defined(OS_ANDROID)
-// Whether to allow injecting javascript into any kind of frame (for Android
-// WebView).
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+// Whether to allow injecting javascript into any kind of frame, for Android
+// WebView and Fuchsia web.ContextProvider.
 bool g_allow_injecting_javascript = false;
 #endif
 
@@ -605,12 +605,12 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
   return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // static
-void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
+void RenderFrameHost::AllowInjectingJavaScript() {
   g_allow_injecting_javascript = true;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
@@ -5090,7 +5090,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   if (g_allow_injecting_javascript)
     return true;
 #endif

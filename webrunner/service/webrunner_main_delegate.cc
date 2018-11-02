@@ -14,6 +14,7 @@
 #include "webrunner/browser/webrunner_browser_main.h"
 #include "webrunner/browser/webrunner_content_browser_client.h"
 #include "webrunner/common/webrunner_content_client.h"
+#include "webrunner/renderer/webrunner_content_renderer_client.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -89,6 +90,12 @@ WebRunnerMainDelegate::CreateContentBrowserClient() {
   browser_client_ = std::make_unique<WebRunnerContentBrowserClient>(
       std::move(context_channel_));
   return browser_client_.get();
+}
+
+content::ContentRendererClient*
+WebRunnerMainDelegate::CreateContentRendererClient() {
+  renderer_client_ = std::make_unique<WebRunnerContentRendererClient>();
+  return renderer_client_.get();
 }
 
 }  // namespace webrunner

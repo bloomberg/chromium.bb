@@ -40,6 +40,9 @@ class WEBRUNNER_EXPORT ContextImpl : public chromium::web::Context {
   // Removes and destroys the specified |frame|.
   void DestroyFrame(FrameImpl* frame);
 
+  // Returns |true| if JS injection was enabled for this Context.
+  bool IsJavaScriptInjectionAllowed();
+
   // chromium::web::Context implementation.
   void CreateFrame(fidl::InterfaceRequest<chromium::web::Frame> frame) override;
 
@@ -49,6 +52,10 @@ class WEBRUNNER_EXPORT ContextImpl : public chromium::web::Context {
 
  private:
   content::BrowserContext* browser_context_;
+
+  // TODO(crbug.com/893236): Make this false by default, and allow it to be
+  // initialized at Context creation time.
+  bool allow_javascript_injection_ = true;
 
   // Tracks all active FrameImpl instances, so that we can request their
   // destruction when this ContextImpl is destroyed.

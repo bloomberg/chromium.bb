@@ -4,8 +4,11 @@
 
 #include "webrunner/browser/frame_impl.h"
 
+#include <zircon/syscalls.h>
+
 #include <string>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +16,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -117,6 +121,32 @@ bool FrameFocusRules::SupportsChildActivation(aura::Window*) const {
   // TODO(crbug.com/878439): Return a result based on window properties such as
   // visibility.
   return true;
+}
+
+bool IsOriginWhitelisted(const GURL& url,
+                         const std::vector<std::string>& allowed_origins) {
+  constexpr const char kWildcard[] = "*";
+
+  for (const std::string& origin : allowed_origins) {
+    if (origin == kWildcard)
+      return true;
+
+    GURL origin_url(origin);
+    if (!origin_url.is_valid()) {
+      DLOG(WARNING) << "Ignored invalid origin spec for whitelisting: "
+                    << origin;
+      continue;
+    }
+
+    if (origin_url != url.GetOrigin())
+      continue;
+
+    // TODO(crbug.com/893236): Add handling for nonstandard origins
+    // (e.g. data: URIs).
+
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -284,6 +314,48 @@ void FrameImpl::SetNavigationEventObserver(
   }
 }
 
+void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+                                  fuchsia::mem::Buffer script,
+                                  chromium::web::ExecuteMode mode,
+                                  ExecuteJavaScriptCallback callback) {
+  if (!context_->IsJavaScriptInjectionAllowed()) {
+    callback(false);
+    return;
+  }
+
+  if (origins->empty()) {
+    callback(false);
+    return;
+  }
+
+  std::string script_utf8;
+  script_utf8.reserve(script.size);
+  zx_status_t status = script.vmo.read(&script_utf8.front(), 0, script.size);
+  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_read";
+
+  base::string16 script_utf16;
+  if (!base::UTF8ToUTF16(&script_utf8.front(), script.size, &script_utf16)) {
+    DLOG(WARNING) << "Ignored non-UTF8 script passed to ExecuteJavaScript().";
+    callback(false);
+    return;
+  }
+  script_utf8.clear();
+  script_utf8.shrink_to_fit();
+
+  std::vector<std::string> origins_strings;
+  for (const auto& origin : *origins)
+    origins_strings.push_back(origin);
+
+  if (mode == chromium::web::ExecuteMode::IMMEDIATE_ONCE) {
+    if (IsOriginWhitelisted(web_contents_->GetLastCommittedURL(),
+                            origins_strings))
+      web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
+  } else {
+    before_load_scripts_.emplace_back(origins_strings, script_utf16);
+  }
+  callback(true);
+}
+
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
   if (web_contents_->GetMainFrame() != render_frame_host) {
@@ -320,5 +392,36 @@ void FrameImpl::MaybeSendNavigationEvent() {
     waiting_for_navigation_event_ack_ = false;
   }
 }
+
+void FrameImpl::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (before_load_scripts_.empty())
+    return;
+
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
+    return;
+
+  mojom::OnLoadScriptInjectorAssociatedPtr before_load_script_injector;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&before_load_script_injector);
+
+  // Provision the renderer's ScriptInjector with the scripts scoped to this
+  // page's origin.
+  before_load_script_injector->ClearOnLoadScripts();
+  for (const OriginScopedScript& script : before_load_scripts_) {
+    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins)) {
+      before_load_script_injector->AddOnLoadScript(script.script);
+    }
+  }
+}
+
+FrameImpl::OriginScopedScript::OriginScopedScript(
+    std::vector<std::string> origins,
+    base::string16 script)
+    : origins(std::move(origins)), script(script) {}
+
+FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
 
 }  // namespace webrunner

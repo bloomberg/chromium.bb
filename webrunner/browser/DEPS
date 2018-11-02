@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/browser",
   "+content/public/test",
+  "+third_party/blink/public/common/associated_interfaces",
   "+ui/aura",
   "+ui/display",
   "+ui/ozone/public",
