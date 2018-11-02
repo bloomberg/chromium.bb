@@ -97,17 +97,14 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (Input& input : inputs) {
       // Collect items for this LayoutObject.
       DCHECK(input.layout_text);
-      Vector<NGInlineItem*> previous_items;
       for (auto& item : items_) {
         if (item.GetLayoutObject() == input.layout_text)
-          previous_items.push_back(&item);
+          input.layout_text->AddInlineItem(&item);
       }
 
       // Try to re-use previous items, or Append if it was not re-usable.
-      bool reused =
-          !previous_items.IsEmpty() &&
-          reuse_builder.Append(text_, ToLayoutNGText(input.layout_text),
-                               previous_items);
+      bool reused = input.layout_text->HasValidInlineItems() &&
+                    reuse_builder.Append(text_, input.layout_text);
       if (!reused) {
         reuse_builder.Append(input.text, input.layout_text->Style(),
                              input.layout_text);

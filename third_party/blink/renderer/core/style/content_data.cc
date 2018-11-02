@@ -90,7 +90,7 @@ LayoutObject* TextContentData::CreateLayoutObject(
     PseudoElement& pseudo,
     ComputedStyle& pseudo_style) const {
   LayoutObject* layout_object =
-      LayoutTextFragment::CreateAnonymous(pseudo, text_.Impl());
+      LayoutTextFragment::CreateAnonymous(pseudo_style, pseudo, text_.Impl());
   layout_object->SetPseudoStyle(&pseudo_style);
   return layout_object;
 }

@@ -247,8 +247,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& original_string,
-    LayoutNGText* layout_text,
-    const Vector<NGInlineItem*>& items) {
+    LayoutText* layout_text) {
+  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
   // TODO(layout-dev): This could likely be optimized further.
@@ -348,10 +348,8 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 }
 
 template <>
-bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
-    const String&,
-    LayoutNGText*,
-    const Vector<NGInlineItem*>&) {
+bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(const String&,
+                                                                  LayoutText*) {
   NOTREACHED();
   return false;
 }

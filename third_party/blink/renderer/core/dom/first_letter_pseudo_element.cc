@@ -311,12 +311,13 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   LayoutTextFragment* remaining_text;
 
   if (first_letter_text->GetNode()) {
-    remaining_text =
-        new LayoutTextFragment(first_letter_text->GetNode(), old_text.Impl(),
-                               length, remaining_length);
+    remaining_text = LayoutTextFragment::Create(
+        *first_letter_text->Style(), first_letter_text->GetNode(),
+        old_text.Impl(), length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
-        *this, old_text.Impl(), length, remaining_length);
+        *first_letter_text->Style(), *this, old_text.Impl(), length,
+        remaining_length);
   }
 
   remaining_text->SetFirstLetterPseudoElement(this);
@@ -332,10 +333,11 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   GetLayoutObject()->Parent()->AddChild(remaining_text, next_sibling);
 
   // Construct text fragment for the first letter.
-  LayoutTextFragment* letter =
-      LayoutTextFragment::CreateAnonymous(*this, old_text.Impl(), 0, length);
+  ComputedStyle* const letter_style = MutableComputedStyle();
+  LayoutTextFragment* letter = LayoutTextFragment::CreateAnonymous(
+      *letter_style, *this, old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
-  letter->SetStyle(MutableComputedStyle());
+  letter->SetStyle(letter_style);
   GetLayoutObject()->AddChild(letter);
 
   first_letter_text->Destroy();

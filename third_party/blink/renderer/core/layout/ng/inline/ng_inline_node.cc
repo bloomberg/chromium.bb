@@ -75,8 +75,8 @@ void ClearNeedsLayout(LayoutObject* object) {
   // Reset previous items if they cannot be reused to prevent stale items
   // for subsequent layouts. Items that can be reused have already been
   // added to the builder.
-  if (object->IsLayoutNGText())
-    ToLayoutNGText(object)->ClearInlineItems();
+  if (object->IsText())
+    ToLayoutText(object)->ClearInlineItems();
 }
 
 // The function is templated to indicate the purpose of collected inlines:
@@ -109,11 +109,8 @@ void CollectInlinesInternal(
       // if the last ended with space and this starts with space, do not allow
       // reuse. builder->MightCollapseWithPreceding(*previous_text)
       bool item_reused = false;
-      if (node->IsLayoutNGText() && ToLayoutNGText(node)->HasValidLayout() &&
-          previous_text) {
-        item_reused = builder->Append(*previous_text, ToLayoutNGText(node),
-                                      ToLayoutNGText(node)->InlineItems());
-      }
+      if (previous_text && layout_text->HasValidInlineItems())
+        item_reused = builder->Append(*previous_text, layout_text);
 
       // If not create a new item as needed.
       if (!item_reused) {
@@ -642,8 +639,8 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
   LayoutObject* last_object = nullptr;
   for (auto& item : data->items) {
     LayoutObject* object = item.GetLayoutObject();
-    if (object && object->IsLayoutNGText()) {
-      LayoutNGText* layout_text = ToLayoutNGText(object);
+    if (object && object->IsText()) {
+      LayoutText* layout_text = ToLayoutText(object);
       if (object != last_object)
         layout_text->ClearInlineItems();
       layout_text->AddInlineItem(&item);
