@@ -193,7 +193,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
        ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          true /* should_ask_for_child_region */, root_accepts_events);
+          /* should_ask_for_child_regions */ false, root_accepts_events);
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
