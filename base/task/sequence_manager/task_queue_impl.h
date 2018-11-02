@@ -82,6 +82,9 @@ class BASE_EXPORT TaskQueueImpl {
   // Types of queues TaskQueueImpl is maintaining internally.
   enum class WorkQueueType { kImmediate, kDelayed };
 
+  // Some methods have fast paths when on the main thread.
+  enum class CurrentThread { kMainThread, kNotMainThread };
+
   // Non-nestable tasks may get deferred but such queue is being maintained on
   // SequenceManager side, so we need to keep information how to requeue it.
   struct DeferredNonNestableTask {
@@ -102,8 +105,7 @@ class BASE_EXPORT TaskQueueImpl {
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  void PostTask(PostedTask task);
-  // Require a reference to enclosing task queue for lifetime control.
+  void PostTask(PostedTask task, CurrentThread current_thread);
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
   bool IsQueueEnabled() const;
@@ -328,7 +330,7 @@ class BASE_EXPORT TaskQueueImpl {
   };
 
   void PostImmediateTaskImpl(PostedTask task);
-  void PostDelayedTaskImpl(PostedTask task);
+  void PostDelayedTaskImpl(PostedTask task, CurrentThread current_thread);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.

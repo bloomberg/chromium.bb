@@ -42,9 +42,6 @@ class TaskQueueProxy : public RefCountedThreadSafe<TaskQueueProxy> {
   friend class RefCountedThreadSafe<TaskQueueProxy>;
   ~TaskQueueProxy();
 
-  // Doesn't acquire lock on main thread.
-  Optional<MoveableAutoLock> AcquireLockIfNeeded() const;
-
   mutable Lock lock_;
   TaskQueueImpl* task_queue_impl_;  // Not owned.
   const scoped_refptr<AssociatedThreadId> associated_thread_;
