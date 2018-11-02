@@ -3965,24 +3965,6 @@
             ]
         }
     ],
-    "RuntimeHostPermissions": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RuntimeHostPermissions"
-                    ]
-                }
-            ]
-        }
-    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
