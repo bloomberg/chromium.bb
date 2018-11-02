@@ -15,6 +15,9 @@ namespace util {
 // Increment number of queries fired for each entry point.
 void IncrementAssistantQueryCountForEntryPoint(AssistantSource entry_point);
 
+// Record the entry point where Assistant UI becomes visible.
+void RecordAssistantEntryPoint(AssistantSource entry_point);
+
 }  // namespace util
 }  // namespace assistant
 }  // namespace ash

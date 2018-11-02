@@ -15,6 +15,10 @@ void IncrementAssistantQueryCountForEntryPoint(AssistantSource entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.QueryCountPerEntryPoint", entry_point);
 }
 
+void RecordAssistantEntryPoint(AssistantSource entry_point) {
+  UMA_HISTOGRAM_ENUMERATION("Assistant.EntryPoint", entry_point);
+}
+
 }  // namespace util
 }  // namespace assistant
 }  // namespace ash

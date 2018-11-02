@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/assistant/util/histogram_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
@@ -303,6 +304,8 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     container_view_->GetWidget()->Activate();
     return;
   }
+
+  assistant::util::RecordAssistantEntryPoint(source);
 
   if (!container_view_)
     CreateContainerView();

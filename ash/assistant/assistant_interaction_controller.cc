@@ -95,6 +95,9 @@ void AssistantInteractionController::OnDeepLinkReceived(
   using assistant::util::DeepLinkType;
 
   if (type == DeepLinkType::kWhatsOnMyScreen) {
+    // Explicitly call ShowUi() to set the correct Assistant entry point.
+    // ShowUi() will no-op if UI is already shown.
+    assistant_controller_->ui_controller()->ShowUi(AssistantSource::kDeepLink);
     StartScreenContextInteraction();
     return;
   }
@@ -116,6 +119,7 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
+  assistant_controller_->ui_controller()->ShowUi(AssistantSource::kDeepLink);
   StartTextInteraction(query.value());
 }
 
