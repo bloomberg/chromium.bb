@@ -192,6 +192,12 @@ class MockDiskCache : public disk_cache::Backend {
   // Return entries that fail some of their requests.
   void set_soft_failures(bool value) { soft_failures_ = value; }
 
+  // Returns entries that fail some of their requests, but only until
+  // the entry is re-created.
+  void set_soft_failures_one_instance(bool value) {
+    soft_failures_one_instance_ = value;
+  }
+
   // Makes sure that CreateEntry is not called twice for a given key.
   void set_double_create_check(bool value) { double_create_check_ = value; }
 
@@ -232,6 +238,7 @@ class MockDiskCache : public disk_cache::Backend {
   int doomed_count_;
   bool fail_requests_;
   bool soft_failures_;
+  bool soft_failures_one_instance_;
   bool double_create_check_;
   bool fail_sparse_requests_;
   bool support_in_memory_entry_data_;

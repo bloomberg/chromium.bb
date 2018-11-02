@@ -3170,6 +3170,11 @@ int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
                           partial_ != nullptr);
     entry_ = NULL;
     is_sparse_ = false;
+    // It's OK to use PartialData::RestoreHeaders here as |restart| is only set
+    // when the HttpResponseInfo couldn't even be read, at which point it's
+    // too early for range info in |partial_| to have changed.
+    if (partial_)
+      partial_->RestoreHeaders(&custom_request_->extra_headers);
     partial_.reset();
     TransitionToState(STATE_GET_BACKEND);
     return OK;
