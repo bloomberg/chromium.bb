@@ -158,8 +158,15 @@ void AutocompleteResult::SortAndCull(
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
-  // Wipe tail suggestions if not exclusive (minus default match).
-  MaybeCullTailSuggestions(&matches_);
+  // Do not cull the tail suggestions for zero prefix query suggetions of
+  // chromeOS launcher case, since there won't be any default match in this
+  // scenario.
+  if (!(input.text().empty() &&
+        input.current_page_classification() ==
+            metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+    // Wipe tail suggestions if not exclusive (minus default match).
+    MaybeCullTailSuggestions(&matches_);
+  }
 #endif
   SortAndDedupMatches(input.current_page_classification(), &matches_);
 
