@@ -273,6 +273,8 @@ ZoomBubbleView* ZoomBubbleView::GetZoomBubble() {
 
 void ZoomBubbleView::Refresh() {
   UpdateZoomPercent();
+  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                                       true);
   StartTimerIfNecessary();
 }
 
@@ -569,7 +571,6 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
 void ZoomBubbleView::UpdateZoomPercent() {
   label_->SetText(base::FormatPercent(
       zoom::ZoomController::FromWebContents(web_contents())->GetZoomPercent()));
-  label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void ZoomBubbleView::UpdateZoomIconVisibility() {
