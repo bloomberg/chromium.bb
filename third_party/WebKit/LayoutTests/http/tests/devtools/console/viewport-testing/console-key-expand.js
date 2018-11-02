@@ -145,6 +145,47 @@
 
       next();
     },
+
+    async function testExpandingElement(next) {
+      await TestRunner.evaluateInPagePromise(`
+        var el = document.createElement('div');
+        var child = document.createElement('span');
+        el.appendChild(child); undefined;
+      `);
+      const nodePromise = TestRunner.addSnifferPromise(Console.ConsoleViewMessage.prototype, '_formattedParameterAsNodeForTest');
+      await clearAndLog(`console.log("before");console.log(el);console.log("after");`, 3);
+      await nodePromise;
+      forceSelect(1);
+
+      dumpFocus(true, 1);
+      press('ArrowDown');
+      dumpFocus(true, 1);
+
+      // Expand object.
+      press('ArrowRight');
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      dumpFocus(true, 1);
+
+      next();
+    },
+
+    async function testShiftTabShouldSelectLastObject(next) {
+      await clearAndLog(`console.log("before");console.log(obj1);`, 2);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+
+      TestRunner.addResult(`Setting focus in prompt:`);
+      prompt.focus();
+      shiftPress('Tab');
+
+      dumpFocus(true, 1);
+
+      // Expand object.
+      press('ArrowRight');
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      dumpFocus(true, 1);
+
+      next();
+    },
   ]);
 
 
@@ -167,6 +208,11 @@
   function press(key) {
     TestRunner.addResult(`\n${key}:`);
     eventSender.keyDown(key);
+  }
+
+  function shiftPress(key) {
+    TestRunner.addResult(`\nShift+${key}:`);
+    eventSender.keyDown(key, ['shiftKey']);
   }
 
   function dumpFocus(activeElement, messageIndex = 0, skipObjectCheck) {

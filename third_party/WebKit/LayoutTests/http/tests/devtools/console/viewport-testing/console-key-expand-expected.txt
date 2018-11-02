@@ -208,3 +208,39 @@ activeElement: DIV.console-message-wrapper.console-from-api.console-warning-leve
 active text: console-key-expand.js:112 warning {x: 1}
 (anonymous) @ console-key-expand.js:112
 
+Running: testExpandingElement
+Evaluating: console.log("before");console.log(el);console.log("after");
+Message count: 3
+
+Force selecting index 1
+Viewport virtual selection: 1
+activeElement: DIV.console-message-wrapper.console-from-api.console-info-level.console-selected
+active text: console-key-expand.js:156 <div>​…​</div>​
+
+ArrowDown:
+Viewport virtual selection: 1
+activeElement: LI.parent.selected
+active text: <div>​…​</div>​
+
+ArrowRight:
+Viewport virtual selection: 1
+activeElement: LI.parent.selected.expanded
+active text: <div>​
+
+Running: testShiftTabShouldSelectLastObject
+Evaluating: console.log("before");console.log(obj1);
+Message count: 2
+Setting focus in prompt:
+
+Shift+Tab:
+Viewport virtual selection: 1
+Has object: collapsed
+activeElement: LI.parent.object-properties-section-root-element.selected
+active text: {x: 1}
+
+ArrowRight:
+Viewport virtual selection: 1
+Has object: expanded
+activeElement: LI.parent.object-properties-section-root-element.selected.expanded
+active text: {x: 1}
+
