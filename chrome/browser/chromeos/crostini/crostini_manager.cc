@@ -670,7 +670,7 @@ void CrostiniManager::CreateDiskImage(
   request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
   request.set_disk_path(std::move(disk_path_string));
   // The type of disk image to be created.
-  request.set_image_type(vm_tools::concierge::DISK_IMAGE_QCOW2);
+  request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
 
   if (storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT &&
       storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS) {
@@ -776,7 +776,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(std::move(disk_path_string));
-  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_QCOW2);
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(true);
   disk_image->set_do_mount(false);
 
