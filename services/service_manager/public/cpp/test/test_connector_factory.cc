@@ -189,23 +189,41 @@ class MultipleServiceConnector : public TestConnectorImplBase {
 
 class ProxiedServiceConnector : public mojom::Connector {
  public:
-  ProxiedServiceConnector(TestConnectorFactory::NameToServiceProxyMap* proxies,
-                          const std::string& test_user_id)
-      : proxies_(proxies), test_user_id_(test_user_id) {}
+  ProxiedServiceConnector(
+      TestConnectorFactory::NameToServiceProxyMap* proxies,
+      TestConnectorFactory::NameToServiceHandlerMap* handlers,
+      const std::string& test_user_id)
+      : proxies_(proxies), handlers_(handlers), test_user_id_(test_user_id) {}
 
   ~ProxiedServiceConnector() override = default;
 
  private:
+  mojom::Service* GetServiceProxy(const std::string& service_name) {
+    auto proxy_it = proxies_->find(service_name);
+    if (proxy_it == proxies_->end()) {
+      auto handler_it = handlers_->find(service_name);
+      if (handler_it == handlers_->end())
+        return nullptr;
+
+      mojom::ServicePtr proxy;
+      handler_it->second.Run(mojo::MakeRequest(&proxy));
+      auto result = proxies_->emplace(service_name, std::move(proxy));
+      DCHECK(result.second);
+      proxy_it = result.first;
+    }
+
+    return proxy_it->second.get();
+  }
+
   // mojom::Connector:
   void BindInterface(const Identity& target,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    auto it = proxies_->find(target.name());
-    CHECK(it != proxies_->end())
+    auto* proxy = GetServiceProxy(target.name());
+    CHECK(proxy)
         << "TestConnectorFactory received a BindInterface request for an "
         << "unregistered service '" << target.name() << "'";
-    mojom::ServicePtr& proxy = it->second;
     proxy->OnBindInterface(
         BindSourceInfo(Identity("TestConnectorFactory", test_user_id_),
                        CapabilitySet()),
@@ -243,23 +261,19 @@ class ProxiedServiceConnector : public mojom::Connector {
   }
 
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;
+  TestConnectorFactory::NameToServiceHandlerMap* const handlers_;
   const std::string test_user_id_;
   mojo::BindingSet<mojom::Connector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxiedServiceConnector);
 };
 
-void OnStartResponse(mojom::Connector* connector,
-                     mojom::ConnectorRequest connector_request,
-                     mojom::ServiceControlAssociatedRequest control_request) {
-  connector->Clone(std::move(connector_request));
-}
-
 }  // namespace
 
 TestConnectorFactory::TestConnectorFactory() {
   std::string guid = base::GenerateGUID();
-  impl_ = std::make_unique<ProxiedServiceConnector>(&service_proxies_, guid);
+  impl_ = std::make_unique<ProxiedServiceConnector>(&service_proxies_,
+                                                    &service_handlers_, guid);
   test_user_id_ = guid;
 }
 
@@ -306,9 +320,34 @@ mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
   mojom::ServicePtr proxy;
   mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
   proxy->OnStart(Identity(service_name, test_user_id_),
-                 base::BindOnce(&OnStartResponse, impl_.get()));
+                 base::BindOnce(&TestConnectorFactory::OnStartResponseHandler,
+                                base::Unretained(this), service_name));
   service_proxies_[service_name] = std::move(proxy);
   return request;
+}
+
+void TestConnectorFactory::RegisterServiceHandler(
+    const std::string& service_name,
+    const ServiceHandler& handler) {
+  service_handlers_[service_name] = handler;
+}
+
+void TestConnectorFactory::OnStartResponseHandler(
+    const std::string& service_name,
+    mojom::ConnectorRequest connector_request,
+    mojom::ServiceControlAssociatedRequest control_request) {
+  impl_->Clone(std::move(connector_request));
+  service_control_bindings_.AddBinding(this, std::move(control_request),
+                                       service_name);
+}
+
+void TestConnectorFactory::RequestQuit() {
+  if (ignore_quit_requests_)
+    return;
+
+  service_proxies_.erase(service_control_bindings_.dispatch_context());
+  service_control_bindings_.RemoveBinding(
+      service_control_bindings_.dispatch_binding());
 }
 
 }  // namespace service_manager

@@ -22,11 +22,9 @@ ServiceKeepalive::ServiceKeepalive(ServiceBinding* binding,
 }
 
 ServiceKeepalive::ServiceKeepalive(ServiceContext* context,
-                                   base::Optional<base::TimeDelta> idle_timeout,
-                                   TimeoutObserver* timeout_observer)
+                                   base::Optional<base::TimeDelta> idle_timeout)
     : context_(context),
       idle_timeout_(idle_timeout),
-      timeout_observer_(timeout_observer),
       ref_factory_(base::BindRepeating(&ServiceKeepalive::OnRefCountZero,
                                        base::Unretained(this))) {
   ref_factory_.SetRefAddedCallback(base::BindRepeating(
@@ -43,10 +41,20 @@ bool ServiceKeepalive::HasNoRefs() {
   return ref_factory_.HasNoRefs();
 }
 
+void ServiceKeepalive::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ServiceKeepalive::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ServiceKeepalive::OnRefAdded() {
-  if (idle_timer_ && timeout_observer_)
-    timeout_observer_->OnTimeoutCancelled();
-  idle_timer_.reset();
+  if (idle_timer_) {
+    idle_timer_.reset();
+    for (auto& observer : observers_)
+      observer.OnIdleTimeoutCancelled();
+  }
 }
 
 void ServiceKeepalive::OnRefCountZero() {
@@ -59,8 +67,9 @@ void ServiceKeepalive::OnRefCountZero() {
 }
 
 void ServiceKeepalive::OnTimerExpired() {
-  if (timeout_observer_)
-    timeout_observer_->OnTimeoutExpired();
+  for (auto& observer : observers_)
+    observer.OnIdleTimeout();
+
   if (context_)
     context_->CreateQuitClosure().Run();
   else

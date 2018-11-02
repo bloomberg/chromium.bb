@@ -7,10 +7,13 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
@@ -23,16 +26,17 @@
 namespace video_capture {
 
 class ServiceImpl : public service_manager::Service,
-                    public service_manager::ServiceKeepalive::TimeoutObserver {
+                    public service_manager::ServiceKeepalive::Observer {
  public:
-  // If |shutdown_delay| is provided, the service will shut itself down as soon
-  // as no client was connect for the corresponding duration.
-  explicit ServiceImpl(base::Optional<base::TimeDelta> shutdown_delay);
+  explicit ServiceImpl(service_manager::mojom::ServiceRequest request);
+
+  // Constructs a service instance which overrides the default idle timeout
+  // behavior.
+  ServiceImpl(service_manager::mojom::ServiceRequest request,
+              base::Optional<base::TimeDelta> idle_timeout);
+
   ~ServiceImpl() override;
 
-  static std::unique_ptr<service_manager::Service> Create();
-
-  void SetDestructionObserver(base::OnceClosure observer_cb);
   void SetFactoryProviderClientConnectedObserver(
       base::RepeatingClosure observer_cb);
   void SetFactoryProviderClientDisconnectedObserver(
@@ -47,9 +51,9 @@ class ServiceImpl : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() override;
 
-  // service_manager::ServiceKeepalive::TimeoutObserver implementation.
-  void OnTimeoutExpired() override;
-  void OnTimeoutCancelled() override;
+  // service_manager::ServiceKeepalive::Observer implementation.
+  void OnIdleTimeout() override;
+  void OnIdleTimeoutCancelled() override;
 
  private:
   void OnDeviceFactoryProviderRequest(
@@ -60,7 +64,9 @@ class ServiceImpl : public service_manager::Service,
   void LazyInitializeDeviceFactoryProvider();
   void OnProviderClientDisconnected();
 
-  const base::Optional<base::TimeDelta> shutdown_delay_;
+  service_manager::ServiceBinding binding_;
+  service_manager::ServiceKeepalive keepalive_;
+
 #if defined(OS_WIN)
   // COM must be initialized in order to access the video capture devices.
   base::win::ScopedCOMInitializer com_initializer_;
@@ -68,16 +74,13 @@ class ServiceImpl : public service_manager::Service,
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::DeviceFactoryProvider> factory_provider_bindings_;
   std::unique_ptr<DeviceFactoryProviderImpl> device_factory_provider_;
-  std::unique_ptr<service_manager::ServiceKeepalive> ref_factory_;
 
   // Callbacks that can optionally be set by clients.
-  base::OnceClosure destruction_cb_;
   base::RepeatingClosure factory_provider_client_connected_cb_;
   base::RepeatingClosure factory_provider_client_disconnected_cb_;
   base::RepeatingClosure shutdown_timeout_cancelled_cb_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<ServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
