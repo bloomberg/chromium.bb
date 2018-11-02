@@ -162,7 +162,10 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
             .Build();
 
     ExtensionRegistry::Get(profile())->AddEnabled(extension);
-    PermissionsUpdater(profile()).InitializePermissions(extension.get());
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+    updater.GrantActivePermissions(extension.get());
+
     return extension;
   }
 
@@ -311,8 +314,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
     }
     ++i;
   }
-  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
-  EXPECT_FALSE(info->permissions.specific_site_controls);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
 
   ASSERT_EQ(2u, info->runtime_errors.size());
   const api::developer_private::RuntimeError& runtime_error =
@@ -426,8 +428,13 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
       GenerateExtensionInfo(all_urls_extension->id());
 
   // The extension should be set to run on all sites.
-  EXPECT_EQ(developer::HOST_ACCESS_ON_ALL_SITES, info->permissions.host_access);
-  EXPECT_FALSE(info->permissions.specific_site_controls);
+  ASSERT_TRUE(info->permissions.runtime_host_permissions);
+  const developer::RuntimeHostPermissions* runtime_hosts =
+      info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_ALL_SITES, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":true,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
+  EXPECT_TRUE(runtime_hosts->has_all_hosts);
   // With runtime host permissions, no host permissions are added to
   // |simple_permissions|.
   EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
@@ -438,22 +445,25 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
                                                     all_urls_extension);
   permissions_modifier.SetWithholdHostPermissions(true);
   info = GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK, info->permissions.host_access);
-  EXPECT_FALSE(info->permissions.specific_site_controls);
+  runtime_hosts = info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":false,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
+  EXPECT_TRUE(runtime_hosts->has_all_hosts);
   EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
 
   // Granting a host permission should set the extension to run on specific
   // sites, and those sites should be in the specific_site_controls.hosts set.
   permissions_modifier.GrantHostPermission(GURL("https://example.com"));
   info = GenerateExtensionInfo(all_urls_extension->id());
+  runtime_hosts = info->permissions.runtime_host_permissions.get();
   EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
-            info->permissions.host_access);
-  ASSERT_TRUE(info->permissions.specific_site_controls);
+            runtime_hosts->host_access);
   EXPECT_EQ(
       R"([{"granted":true,"host":"https://example.com/*"},)"
       R"({"granted":false,"host":"*://*/*"}])",
-      SiteControlsToString(info->permissions.specific_site_controls->hosts));
-  EXPECT_TRUE(info->permissions.specific_site_controls->has_all_hosts);
+      SiteControlsToString(runtime_hosts->hosts));
+  EXPECT_TRUE(runtime_hosts->has_all_hosts);
   EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
 
   // An extension that doesn't request any host permissions should not have
@@ -461,8 +471,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
   scoped_refptr<const Extension> no_urls_extension =
       CreateExtension("no urls", ListBuilder().Build(), Manifest::INTERNAL);
   info = GenerateExtensionInfo(no_urls_extension->id());
-  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
-  EXPECT_FALSE(info->permissions.specific_site_controls);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
 }
 
 TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
@@ -473,8 +482,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
       Manifest::INTERNAL);
   std::unique_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_EQ(developer::HOST_ACCESS_NONE, info->permissions.host_access);
-  EXPECT_FALSE(info->permissions.specific_site_controls);
+  EXPECT_FALSE(info->permissions.runtime_host_permissions);
   ASSERT_EQ(1u, info->permissions.simple_permissions.size());
   EXPECT_EQ("Read and change all your data on the websites you visit",
             info->permissions.simple_permissions[0].message);
@@ -518,14 +526,16 @@ TEST_F(ExtensionInfoGeneratorUnitTest,
   // The generated info should use the entirety of the granted permission,
   // which is *://chromium.org/*.
   info = GenerateExtensionInfo(extension->id());
+  ASSERT_TRUE(info->permissions.runtime_host_permissions);
+  const developer::RuntimeHostPermissions* runtime_hosts =
+      info->permissions.runtime_host_permissions.get();
   EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
-            info->permissions.host_access);
-  ASSERT_TRUE(info->permissions.specific_site_controls);
+            runtime_hosts->host_access);
   EXPECT_EQ(
       R"([{"granted":true,"host":"*://chromium.org/*"},)"
       R"({"granted":false,"host":"http://*/*"}])",
-      SiteControlsToString(info->permissions.specific_site_controls->hosts));
-  EXPECT_TRUE(info->permissions.specific_site_controls->has_all_hosts);
+      SiteControlsToString(runtime_hosts->hosts));
+  EXPECT_TRUE(runtime_hosts->has_all_hosts);
 }
 
 // Tests that specific_site_controls is correctly populated when the extension
@@ -560,14 +570,166 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsSpecificHosts) {
   // The generated info should use the entirety of the granted permission,
   // which is *://chromium.org/*.
   info = GenerateExtensionInfo(extension->id());
+  ASSERT_TRUE(info->permissions.runtime_host_permissions);
+  const developer::RuntimeHostPermissions* runtime_hosts =
+      info->permissions.runtime_host_permissions.get();
   EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
-            info->permissions.host_access);
-  ASSERT_TRUE(info->permissions.specific_site_controls);
+            runtime_hosts->host_access);
   EXPECT_EQ(
       R"([{"granted":true,"host":"https://chromium.org/*"},)"
       R"({"granted":false,"host":"https://example.com/*"}])",
-      SiteControlsToString(info->permissions.specific_site_controls->hosts));
-  EXPECT_FALSE(info->permissions.specific_site_controls->has_all_hosts);
+      SiteControlsToString(runtime_hosts->hosts));
+  EXPECT_FALSE(runtime_hosts->has_all_hosts);
+}
+
+// Tests the population of withheld runtime hosts when they overlap with granted
+// patterns.
+TEST_F(ExtensionInfoGeneratorUnitTest, WithheldUrlsOverlapping) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      CreateExtension("extension",
+                      ListBuilder()
+                          .Append("*://example.com/*")
+                          .Append("https://chromium.org/*")
+                          .Build(),
+                      Manifest::INTERNAL);
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  {
+    std::unique_ptr<developer::ExtensionInfo> info =
+        GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info->permissions.runtime_host_permissions);
+    // Initially, no hosts are granted.
+    EXPECT_EQ(
+        R"([{"granted":false,"host":"*://example.com/*"},)"
+        R"({"granted":false,"host":"https://chromium.org/*"}])",
+        SiteControlsToString(
+            info->permissions.runtime_host_permissions->hosts));
+    EXPECT_FALSE(info->permissions.runtime_host_permissions->has_all_hosts);
+    EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK,
+              info->permissions.runtime_host_permissions->host_access);
+  }
+
+  // Grant http://example.com, which is a subset of the requested host pattern
+  // (*://example.com).
+  modifier.GrantHostPermission(GURL("http://example.com/"));
+  {
+    std::unique_ptr<developer::ExtensionInfo> info =
+        GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info->permissions.runtime_host_permissions);
+    // We should display that http://example.com is granted, but *://example.com
+    // is still requested. This is technically correct.
+    // TODO(devlin): This is an edge case, so it's okay for it to be a little
+    // rough (as long as it's not incorrect), but it would be nice to polish it
+    // out. Ideally, for extensions requesting specific hosts, we'd only allow
+    // granting/revoking specific patterns (e.g., all example.com sites).
+    EXPECT_EQ(
+        R"([{"granted":true,"host":"http://example.com/*"},)"
+        R"({"granted":false,"host":"*://example.com/*"},)"
+        R"({"granted":false,"host":"https://chromium.org/*"}])",
+        SiteControlsToString(
+            info->permissions.runtime_host_permissions->hosts));
+    EXPECT_FALSE(info->permissions.runtime_host_permissions->has_all_hosts);
+    EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
+              info->permissions.runtime_host_permissions->host_access);
+  }
+
+  // Grant the requested pattern ("*://example.com/*").
+  {
+    URLPattern example_com(Extension::kValidHostPermissionSchemes,
+                           "*://example.com/*");
+    PermissionSet example_com_set(APIPermissionSet(), ManifestPermissionSet(),
+                                  URLPatternSet({example_com}),
+                                  URLPatternSet({example_com}));
+    PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
+                                                          example_com_set);
+  }
+
+  {
+    std::unique_ptr<developer::ExtensionInfo> info =
+        GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info->permissions.runtime_host_permissions);
+    // The http://example.com/* pattern should be omitted, since it's consumed
+    // by the *://example.com/* pattern.
+    EXPECT_EQ(
+        R"([{"granted":true,"host":"*://example.com/*"},)"
+        R"({"granted":false,"host":"https://chromium.org/*"}])",
+        SiteControlsToString(
+            info->permissions.runtime_host_permissions->hosts));
+    EXPECT_FALSE(info->permissions.runtime_host_permissions->has_all_hosts);
+    EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
+              info->permissions.runtime_host_permissions->host_access);
+  }
+
+  // Grant permission beyond what was requested (*://*.example.com, when
+  // subdomains weren't in the extension manifest).
+  {
+    URLPattern example_com(Extension::kValidHostPermissionSchemes,
+                           "*://*.example.com/*");
+    PermissionSet example_com_set(APIPermissionSet(), ManifestPermissionSet(),
+                                  URLPatternSet({example_com}),
+                                  URLPatternSet({example_com}));
+    PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
+                                                          example_com_set);
+  }
+
+  {
+    std::unique_ptr<developer::ExtensionInfo> info =
+        GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info->permissions.runtime_host_permissions);
+    // The full granted pattern should be visible.
+    EXPECT_EQ(
+        R"([{"granted":true,"host":"*://*.example.com/*"},)"
+        R"({"granted":false,"host":"https://chromium.org/*"}])",
+        SiteControlsToString(
+            info->permissions.runtime_host_permissions->hosts));
+    EXPECT_FALSE(info->permissions.runtime_host_permissions->has_all_hosts);
+    EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
+              info->permissions.runtime_host_permissions->host_access);
+  }
+}
+
+// Tests the population of withheld runtime hosts when they overlap with granted
+// patterns.
+TEST_F(ExtensionInfoGeneratorUnitTest,
+       WithheldUrlsOverlappingWithContentScript) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermissions({"*://example.com/*", "*://chromium.org/*"})
+          .AddContentScript("script.js", {"*://example.com/foo"})
+          .Build();
+  {
+    ExtensionRegistry::Get(profile())->AddEnabled(extension);
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+    updater.GrantActivePermissions(extension.get());
+  }
+
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  {
+    std::unique_ptr<developer::ExtensionInfo> info =
+        GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info->permissions.runtime_host_permissions);
+    // Initially, no hosts are granted.
+    EXPECT_EQ(
+        R"([{"granted":false,"host":"*://chromium.org/*"},)"
+        R"({"granted":false,"host":"*://example.com/*"}])",
+        SiteControlsToString(
+            info->permissions.runtime_host_permissions->hosts));
+    EXPECT_FALSE(info->permissions.runtime_host_permissions->has_all_hosts);
+    EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK,
+              info->permissions.runtime_host_permissions->host_access);
+  }
 }
 
 // Test that file:// access checkbox does not show up when the user can't

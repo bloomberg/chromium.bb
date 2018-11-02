@@ -167,9 +167,15 @@ cr.define('extension_detail_view_tests', function() {
 
       // Adding any runtime host permissions should result in the runtime host
       // controls becoming visible.
-      item.set(
-          'data.permissions.hostAccess',
-          chrome.developerPrivate.HostAccess.ON_CLICK);
+      const allSitesPermissions = {
+        simplePermissions: [],
+        runtimeHostPermissions: {
+          hosts: [{granted: false, host: '<all_urls>'}],
+          hasAllHosts: true,
+          hostAccess: chrome.developerPrivate.HostAccess.ON_CLICK,
+        },
+      };
+      item.set('data.permissions', allSitesPermissions);
       Polymer.dom.flush();
       expectTrue(testIsVisible('extensions-runtime-host-permissions'));
     });
