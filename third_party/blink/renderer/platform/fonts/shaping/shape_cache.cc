@@ -30,13 +30,17 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
 #include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#if defined(USE_FUNCTION_CITYHASH)
+#include "third_party/smhasher/src/City.h"
+#endif
 
 namespace blink {
 
 void ShapeCache::SmallStringKey::HashString() {
-  // TODO(cavalcantii): replace this for a better hash function,
-  // see crbug.com/735674.
-  hash_ = StringHasher::ComputeHash(characters_, length_);
+// TODO(cavalcanti): next add xxhash.
+#if defined(USE_FUNCTION_CITYHASH)
+  hash_ = CityHash64((const char*)characters_, length_ * sizeof(UChar));
+#endif
 }
 
 }  // namespace blink
