@@ -60,6 +60,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(ContextLostIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--is-asan',
         help='Indicates whether currently running an ASAN build',
         action='store_true')
