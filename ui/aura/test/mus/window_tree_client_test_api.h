@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_PRIVATE_H_
-#define UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_PRIVATE_H_
+#ifndef UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_TEST_API_H_
+#define UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_TEST_API_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ namespace ws {
 namespace mojom {
 class WindowTree;
 }
-}
+}  // namespace ws
 
 namespace ui {
 class Event;
@@ -35,11 +35,11 @@ class WindowTreeClient;
 enum class ChangeType;
 
 // Use to access implementation details of WindowTreeClient.
-class WindowTreeClientPrivate {
+class WindowTreeClientTestApi {
  public:
-  explicit WindowTreeClientPrivate(WindowTreeClient* tree_client_impl);
-  explicit WindowTreeClientPrivate(Window* window);
-  ~WindowTreeClientPrivate();
+  explicit WindowTreeClientTestApi(WindowTreeClient* tree_client_impl);
+  explicit WindowTreeClientTestApi(Window* window);
+  ~WindowTreeClientTestApi();
 
   static std::unique_ptr<WindowTreeClient> CreateWindowTreeClient(
       WindowTreeClientDelegate* window_tree_delegate);
@@ -82,9 +82,9 @@ class WindowTreeClientPrivate {
 
   WindowTreeClient* tree_client_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPrivate);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTestApi);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_PRIVATE_H_
+#endif  // UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_TEST_API_H_

@@ -47,7 +47,7 @@ namespace aura {
 class ClientSurfaceEmbedder;
 class PropertyConverter;
 class WindowTreeClient;
-class WindowTreeClientPrivate;
+class WindowTreeClientTestApi;
 class WindowTreeHostMus;
 
 // WindowPortMus is a WindowPort that forwards calls to WindowTreeClient
@@ -108,7 +108,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
  private:
   friend class WindowPortMusTestHelper;
   friend class WindowTreeClient;
-  friend class WindowTreeClientPrivate;
+  friend class WindowTreeClientTestApi;
   friend class WindowTreeHostMus;
   friend class HitTestDataProviderAuraTest;
 
