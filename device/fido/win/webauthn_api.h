@@ -14,7 +14,6 @@
 #include "base/macros.h"
 
 namespace device {
-namespace fido {
 
 // WinWebAuthnApi is a wrapper for the native Windows WebAuthn API.
 //
@@ -87,7 +86,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
   virtual const wchar_t* GetErrorName(HRESULT hr) = 0;
 };
 
-}  // namespace fido
 }  // namespace device
 
 #endif  // DEVICE_FIDO_WIN_WEBAUTHN_API_H_

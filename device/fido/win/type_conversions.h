@@ -15,7 +15,6 @@
 #include "device/fido/fido_constants.h"
 
 namespace device {
-namespace fido {
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorMakeCredentialResponse>
@@ -35,7 +34,6 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name);
 
-}  // namespace fido
 }  // namespace device
 
 #endif  // DEVICE_FIDO_WIN_TYPE_CONVERSIONS_H_

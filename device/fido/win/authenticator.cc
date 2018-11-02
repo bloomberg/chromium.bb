@@ -23,7 +23,6 @@
 #include "device/fido/win/webauthn.h"
 
 namespace device {
-namespace fido {
 
 // Time out all Windows API requests after 5 minutes. We maintain our own
 // timeout and cancel the operation when it expires, so this value simply needs
@@ -424,5 +423,4 @@ void WinNativeCrossPlatformAuthenticator::InvokeGetAssertionCallback(
   std::move(cb).Run(status, std::move(response));
 }
 
-}  // namespace fido
 }  // namespace device
