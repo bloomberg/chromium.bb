@@ -138,3 +138,18 @@ TEST_F(IOSSecurityStateTabHelperTest, SecurityInfoWithInsecureCreditCardField) {
   events = GetInsecureInputEventData();
   EXPECT_TRUE(events.credit_card_field_edited);
 }
+
+// Ensures that re-navigating to the same page does not keep
+// |insecure_field_set| set.
+TEST_F(IOSSecurityStateTabHelperTest, InsecureInputClearedOnRenavigation) {
+  // Simulate an edit and verify |insecure_field_edited| is noted in the
+  // insecure_input_events.
+  insecure_input()->DidEditFieldInInsecureContext();
+  security_state::InsecureInputEventData events = GetInsecureInputEventData();
+  EXPECT_TRUE(events.insecure_field_edited);
+
+  // Navigate to the same page again.
+  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
+  events = GetInsecureInputEventData();
+  EXPECT_FALSE(events.insecure_field_edited);
+}
