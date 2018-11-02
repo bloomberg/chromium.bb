@@ -14,7 +14,6 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 
 /**
  * A location bar implementation specific for smaller/phone screens.
@@ -137,11 +136,6 @@ public class LocationBarPhone extends LocationBarLayout {
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
         setUrlFocusChangeInProgress(false);
-
-        NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-        if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP()) {
-            updateFadingBackgroundView(true, true);
-        }
     }
 
     @Override

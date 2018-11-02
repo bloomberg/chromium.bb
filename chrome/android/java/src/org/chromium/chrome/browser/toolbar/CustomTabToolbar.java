@@ -59,7 +59,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -828,9 +827,6 @@ public class CustomTabToolbar
     public int getUrlContainerMarginEnd() {
         return 0;
     }
-
-    @Override
-    public void setScrim(ScrimView scrim) {}
 
     @Override
     public void setUnfocusedWidth(float unfocusedWidth) {}

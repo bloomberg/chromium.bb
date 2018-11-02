@@ -399,6 +399,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         try (TraceEvent te = TraceEvent.scoped("ChromeActivity.postInflationStartup")) {
             super.postInflationStartup();
 
+            ViewGroup coordinator = findViewById(R.id.coordinator);
+            mScrimView = new ScrimView(this, (fraction) -> {
+                mStatusBarScrimFraction = fraction;
+                setStatusBarColor(null, mBaseStatusBarColor);
+            }, coordinator);
+
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
@@ -1434,11 +1440,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         super.finishNativeInitialization();
 
         ViewGroup coordinator = findViewById(R.id.coordinator);
-        mScrimView = new ScrimView(this, (fraction) -> {
-            mStatusBarScrimFraction = fraction;
-            setStatusBarColor(null, mBaseStatusBarColor);
-        }, coordinator);
-
         ViewStub accessoryBarStub = findViewById(R.id.keyboard_accessory_stub);
         ViewStub accessorySheetStub = findViewById(R.id.keyboard_accessory_sheet_stub);
         if (accessoryBarStub != null && accessorySheetStub != null) {
@@ -1452,10 +1453,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
         mPageViewTimer = createPageViewTimer();
-
-        if (mToolbarManager != null && mToolbarManager.getToolbar() != null) {
-            mToolbarManager.getToolbar().setScrim(mScrimView);
-        }
 
         if (supportsContextualSuggestionsBottomSheet()
                 && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
