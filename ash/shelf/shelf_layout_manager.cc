@@ -487,13 +487,12 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
-void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
-    bool canceled) {
+void ShelfLayoutManager::OnOverviewModeStarting() {
   UpdateVisibilityState();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
-void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
+void ShelfLayoutManager::OnOverviewModeEnded() {
   UpdateVisibilityState();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
