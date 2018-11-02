@@ -1465,6 +1465,11 @@ jumbo_component("platform") {
     "//ui/gfx/geometry",
   ]
 
+  # This is faster on armv7, untested on other CPUs (e.g. mips, power, etc).
+  # TODO(cavalcantii): add next xxhash.
+  defines = [ "USE_FUNCTION_CITYHASH" ]
+  deps += [ "//third_party/smhasher:cityhash" ]
+
   if (is_mac) {
     sources -= [
       "fonts/skia/font_cache_skia.cc",
