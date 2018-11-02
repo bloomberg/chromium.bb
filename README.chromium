@@ -251,5 +251,9 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20246
   - Fix:
     https://github.com/unicode-org/icu/pull/253
-           
 
+9. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
+
+  - patches/iso2022jp.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20251
