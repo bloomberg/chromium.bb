@@ -97,6 +97,8 @@ class SavePackage;
 class ScreenOrientationProvider;
 class SiteInstance;
 class TestWCBeforeUnloadDelegate;  // site_per_process_browsertest.cc
+class
+    TestWCDelegateForDialogsAndFullscreen;  // web_contents_impl_browsertest.cc
 class TestWebContents;
 class TextInputManager;
 class WebContentsAudioMuter;
@@ -1000,6 +1002,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   friend class RenderFrameHostImplBeforeUnloadBrowserTest;
   friend class WebContentsImplBrowserTest;
   friend class TestWCBeforeUnloadDelegate;
+  friend class TestWCDelegateForDialogsAndFullscreen;
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);
@@ -1035,20 +1038,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            TwoSubframesCreatePopupMenuWidgetsSimultaneously);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessAccessibilityBrowserTest,
                            CrossSiteIframeAccessibility);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           JavaScriptDialogsInMainAndSubframes);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           JavaScriptDialogsNormalizeText);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           DialogsFromJavaScriptEndFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           DialogsFromJavaScriptEndFullscreenEvenInInnerWC);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           FileChooserEndsFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           PopupsFromJavaScriptEndFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           FocusFromJavaScriptEndsFullscreen);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            IframeBeforeUnloadParentHang);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
