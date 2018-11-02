@@ -47,12 +47,16 @@ class PixelProjErrorTest
     target_func_ = GET_PARAM(0);
     src_ = (uint8_t *)(aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK *
                                   sizeof(uint8_t)));
+    ASSERT_NE(src_, nullptr);
     dgd_ = (uint8_t *)(aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK *
                                   sizeof(uint8_t)));
+    ASSERT_NE(dgd_, nullptr);
     flt0_ = (int32_t *)(aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK *
                                    sizeof(int32_t)));
+    ASSERT_NE(flt0_, nullptr);
     flt1_ = (int32_t *)(aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK *
                                    sizeof(int32_t)));
+    ASSERT_NE(flt1_, nullptr);
   }
   virtual void TearDown() {
     aom_free(src_);
@@ -210,12 +214,16 @@ class PixelProjHighbdErrorTest
     target_func_ = GET_PARAM(0);
     src_ =
         (uint16_t *)aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*src_));
+    ASSERT_NE(src_, nullptr);
     dgd_ =
         (uint16_t *)aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*dgd_));
+    ASSERT_NE(dgd_, nullptr);
     flt0_ =
         (int32_t *)aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*flt0_));
+    ASSERT_NE(flt0_, nullptr);
     flt1_ =
         (int32_t *)aom_malloc(MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*flt1_));
+    ASSERT_NE(flt1_, nullptr);
   }
   virtual void TearDown() {
     aom_free(src_);

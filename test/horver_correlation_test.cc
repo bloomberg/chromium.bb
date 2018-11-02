@@ -37,6 +37,7 @@ class HorverTest : public ::testing::TestWithParam<HorverTestParam> {
  public:
   virtual void SetUp() {
     data_buf = (int16_t *)aom_malloc(MAX_SB_SQUARE * sizeof(int16_t));
+    ASSERT_NE(data_buf, nullptr);
     target_func_ = GET_PARAM(0);
   }
   virtual void TearDown() { aom_free(data_buf); }
