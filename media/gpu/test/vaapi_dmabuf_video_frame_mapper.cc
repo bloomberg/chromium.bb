@@ -22,7 +22,8 @@ namespace {
 constexpr uint32_t kDummyPictureBufferId = 0;
 // This is equal to GBM_FORMAT_MOD_NONE.
 constexpr uint64_t kDummyGbmModifier = 0;
-constexpr VAImageFormat kImageFormatI420{.fourcc = VA_FOURCC_I420,
+
+constexpr VAImageFormat kImageFormatNV12{.fourcc = VA_FOURCC_NV12,
                                          .byte_order = VA_LSB_FIRST,
                                          .bits_per_pixel = 12};
 
@@ -123,6 +124,11 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   if (!video_frame->HasDmaBufs()) {
     return nullptr;
   }
+  if (video_frame->format() != PIXEL_FORMAT_NV12) {
+    NOTIMPLEMENTED() << " Unsupported PixelFormat: " << video_frame->format();
+    return nullptr;
+  }
+
   const gfx::Size& coded_size = video_frame->coded_size();
 
   // Passing empty callbacks is ok, because given PictureBuffer doesn't have
@@ -147,9 +153,10 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  // Map and Convert tiled buffer into I420 format buffer.
-  constexpr VideoPixelFormat kConvertedFormat = PIXEL_FORMAT_I420;
-  VAImageFormat va_image_format = kImageFormatI420;
+  // Map tiled NV12 buffer by CreateVaImage so that mapped buffers can be
+  // accessed as non-tiled NV12 buffer.
+  constexpr VideoPixelFormat kConvertedFormat = PIXEL_FORMAT_NV12;
+  VAImageFormat va_image_format = kImageFormatNV12;
   auto va_image = vaapi_wrapper_->CreateVaImage(
       va_picture->va_surface_id(), &va_image_format, video_frame->coded_size());
   if (!va_image || !va_image->IsValid()) {
