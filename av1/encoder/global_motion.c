@@ -58,8 +58,8 @@ typedef struct {
 static const double erroradv_tr[] = { 0.65, 0.60, 0.55 };
 static const double erroradv_prod_tr[] = { 20000, 18000, 16000 };
 
-int is_enough_erroradvantage(double best_erroradvantage, int params_cost,
-                             int erroradv_type) {
+int av1_is_enough_erroradvantage(double best_erroradvantage, int params_cost,
+                                 int erroradv_type) {
   assert(erroradv_type < GM_ERRORADV_TR_TYPES);
   return best_erroradvantage < erroradv_tr[erroradv_type] &&
          best_erroradvantage * params_cost < erroradv_prod_tr[erroradv_type];
@@ -98,7 +98,8 @@ static void convert_to_params(const double *params, int32_t *model) {
   }
 }
 
-void convert_model_to_params(const double *params, WarpedMotionParams *model) {
+void av1_convert_model_to_params(const double *params,
+                                 WarpedMotionParams *model) {
   convert_to_params(params, model->wmmat);
   model->wmtype = get_gmtype(model);
   model->invalid = 0;
@@ -154,12 +155,13 @@ static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
   wm->wmtype = wmtype;
 }
 
-int64_t refine_integerized_param(WarpedMotionParams *wm,
-                                 TransformationType wmtype, int use_hbd, int bd,
-                                 uint8_t *ref, int r_width, int r_height,
-                                 int r_stride, uint8_t *dst, int d_width,
-                                 int d_height, int d_stride, int n_refinements,
-                                 int64_t best_frame_error) {
+int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
+                                     TransformationType wmtype, int use_hbd,
+                                     int bd, uint8_t *ref, int r_width,
+                                     int r_height, int r_stride, uint8_t *dst,
+                                     int d_width, int d_height, int d_stride,
+                                     int n_refinements,
+                                     int64_t best_frame_error) {
   static const int max_trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6 };
   const int border = ERRORADV_BORDER;
   int i = 0, p;
@@ -529,10 +531,10 @@ static int compute_global_motion_disflow_based(
 }
 #endif
 
-int compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
-                          YV12_BUFFER_CONFIG *ref, int bit_depth,
-                          int *num_inliers_by_motion, double *params_by_motion,
-                          int num_motions) {
+int av1_compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
+                              YV12_BUFFER_CONFIG *ref, int bit_depth,
+                              int *num_inliers_by_motion,
+                              double *params_by_motion, int num_motions) {
 #if USE_GM_FEATURE_BASED
   return compute_global_motion_feature_based(type, frm, ref, bit_depth,
                                              num_inliers_by_motion,
