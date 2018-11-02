@@ -74,18 +74,23 @@ void PreviewsOptimizationGuide::OnLoadedHint(
   std::vector<std::string> resource_patterns_to_block;
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
-    if (optimization.optimization_type() ==
+    if (optimization.optimization_type() !=
         optimization_guide::proto::RESOURCE_LOADING) {
-      for (const auto& resource_loading_hint :
-           optimization.resource_loading_hints()) {
-        if (!resource_loading_hint.resource_pattern().empty() &&
-            resource_loading_hint.loading_optimization_type() ==
-                optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
-          resource_patterns_to_block.push_back(
-              resource_loading_hint.resource_pattern());
-        }
+      continue;
+    }
+
+    // TODO(jegray): When persistence is added for hints, address handling of
+    // disabled experimental optimizations.
+    for (const auto& resource_loading_hint :
+         optimization.resource_loading_hints()) {
+      if (!resource_loading_hint.resource_pattern().empty() &&
+          resource_loading_hint.loading_optimization_type() ==
+              optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
+        resource_patterns_to_block.push_back(
+            resource_loading_hint.resource_pattern());
       }
     }
+    break;
   }
   if (!resource_patterns_to_block.empty()) {
     std::move(callback).Run(document_url, resource_patterns_to_block);

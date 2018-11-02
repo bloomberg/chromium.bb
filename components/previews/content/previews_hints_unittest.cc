@@ -295,6 +295,11 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   optimization_with_inflation_percent->set_inflation_percent(55);
   optimization_with_inflation_percent->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint1 =
+      optimization_with_inflation_percent->add_resource_loading_hints();
+  resource_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint1->set_resource_pattern("default_resource.js");
   // Page hint for "/has_max_ect_trigger/"
   optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
   page_hint2->set_page_pattern("/has_max_ect_trigger/");
@@ -306,6 +311,11 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
           page_hint2->add_whitelisted_optimizations();
   optimization_without_inflation_percent->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint2 =
+      optimization_without_inflation_percent->add_resource_loading_hints();
+  resource_hint2->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint2->set_resource_pattern("default_resource.js");
   ParseConfig(config);
 
   // Verify optimization providing inflation_percent.
@@ -331,6 +341,32 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   EXPECT_EQ(0, inflation_percent);
   EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G,
             ect_threshold);
+}
+
+TEST_F(PreviewsHintsTest,
+       IsWhitelistedForNoScriptInPageHintsWithResourceLoadingHintsDisabled) {
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint with NOSCRIPT optimization
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/has_noscript/");
+  optimization_guide::proto::Optimization* optimization_with_inflation_percent =
+      page_hint1->add_whitelisted_optimizations();
+  optimization_with_inflation_percent->set_optimization_type(
+      optimization_guide::proto::NOSCRIPT);
+
+  ParseConfig(config);
+
+  int inflation_percent = 0;
+  net::EffectiveConnectionType ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  EXPECT_TRUE(previews_hints()->IsWhitelisted(
+      GURL("https://www.somedomain.org/has_noscript/"), PreviewsType::NOSCRIPT,
+      &inflation_percent, &ect_threshold));
 }
 
 TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
@@ -371,28 +407,45 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   default_resourcehint->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   default_resourcehint->set_resource_pattern("experimental_resource.js");
-  ParseConfig(config);
 
-  // Verify default resource hint whitelisted (via inflation_percent).
-  int inflation_percent = 0;
-  net::EffectiveConnectionType ect_threshold =
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  EXPECT_TRUE(previews_hints()->IsWhitelisted(
-      GURL("https://www.somedomain.org/experimental_preview/"
-           "experimental_resource.js"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-      &ect_threshold));
-  EXPECT_EQ(33, inflation_percent);
-  EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
-            ect_threshold);
+  // Test with the experiment disabled.
+  {
+    base::HistogramTester histogram_tester;
+
+    ParseConfig(config);
+
+    // Verify default resource hint whitelisted (via inflation_percent).
+    int inflation_percent = 0;
+    net::EffectiveConnectionType ect_threshold =
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    EXPECT_TRUE(previews_hints()->IsWhitelisted(
+        GURL("https://www.somedomain.org/experimental_preview/"
+             "experimental_resource.js"),
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+        &ect_threshold));
+    EXPECT_EQ(33, inflation_percent);
+    EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
+              ect_threshold);
+
+    // Verify that the experimental optimization was not added when it was
+    // disabled.
+    histogram_tester.ExpectUniqueSample(
+        "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
+  }
 
   // Now enable the experiment and verify experimental resource hint chosen.
   {
+    base::HistogramTester histogram_tester;
+
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
         features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
-    int inflation_percent;
+
+    // Parse the config again with the experiment enabled.
+    ParseConfig(config);
+
+    int inflation_percent = 0;
     net::EffectiveConnectionType ect_threshold =
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
     EXPECT_TRUE(previews_hints()->IsWhitelisted(
@@ -403,6 +456,11 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     EXPECT_EQ(99, inflation_percent);
     EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
               ect_threshold);
+
+    // Verify that the second optimization was not added when the experimental
+    // optimization was enabled.
+    histogram_tester.ExpectUniqueSample(
+        "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   }
 }
 
