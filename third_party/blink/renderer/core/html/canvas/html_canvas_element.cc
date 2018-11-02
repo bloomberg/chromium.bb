@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -81,7 +82,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
@@ -815,6 +815,7 @@ String HTMLCanvasElement::ToDataURLInternal(
     const String& mime_type,
     const double& quality,
     SourceDrawingBuffer source_buffer) const {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   if (!IsPaintable())
     return String("data:,");
 
@@ -822,35 +823,36 @@ String HTMLCanvasElement::ToDataURLInternal(
       ImageEncoderUtils::ToEncodingMimeType(
           mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
 
-  base::Optional<ScopedUsHistogramTimer> timer;
-  if (encoding_mime_type == kMimeTypePng) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, scoped_us_counter_png,
-        ("Blink.Canvas.ToDataURL.PNG", 0, 10000000, 50));
-    timer.emplace(scoped_us_counter_png);
-  } else if (encoding_mime_type == kMimeTypeJpeg) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, scoped_us_counter_jpeg,
-        ("Blink.Canvas.ToDataURL.JPEG", 0, 10000000, 50));
-    timer.emplace(scoped_us_counter_jpeg);
-  } else if (encoding_mime_type == kMimeTypeWebp) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, scoped_us_counter_webp,
-        ("Blink.Canvas.ToDataURL.WEBP", 0, 10000000, 50));
-    timer.emplace(scoped_us_counter_webp);
-  } else {
-    // Currently we only support three encoding types.
-    NOTREACHED();
-  }
-
   scoped_refptr<StaticBitmapImage> image_bitmap =
       Snapshot(source_buffer, kPreferNoAcceleration);
   if (image_bitmap) {
     std::unique_ptr<ImageDataBuffer> data_buffer =
         ImageDataBuffer::Create(image_bitmap);
-    if (data_buffer)
-      return data_buffer->ToDataURL(encoding_mime_type, quality);
+    if (!data_buffer)
+      return String("data:,");
+
+    String data_url = data_buffer->ToDataURL(encoding_mime_type, quality);
+    base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+    float sqrt_pixels =
+        std::sqrt(image_bitmap->width() * image_bitmap->height());
+    int scaled_time =
+        elapsed_time.InMicrosecondsF() / (sqrt_pixels == 0 ? 1 : sqrt_pixels);
+    if (encoding_mime_type == kMimeTypePng) {
+      UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.PNG",
+                                  scaled_time);
+    } else if (encoding_mime_type == kMimeTypeJpeg) {
+      UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.JPEG",
+                                  scaled_time);
+    } else if (encoding_mime_type == kMimeTypeWebp) {
+      UMA_HISTOGRAM_COUNTS_100000("Blink.Canvas.ToDataURLScaledDuration.WEBP",
+                                  scaled_time);
+    } else {
+      // Currently we only support three encoding types.
+      NOTREACHED();
+    }
+    return data_url;
   }
+
   return String("data:,");
 }
 
