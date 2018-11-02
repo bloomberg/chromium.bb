@@ -48,9 +48,6 @@ extern const char kDriveExtensionId[];
 // The extension id of the Drive hosted app.
 extern const char kDriveHostedAppId[];
 
-// The extension id of the Easy Unlock component application.
-extern const char kEasyUnlockAppId[];
-
 // The extension id of the Enterprise Web Store component application.
 extern const char kEnterpriseWebStoreAppId[];
 
