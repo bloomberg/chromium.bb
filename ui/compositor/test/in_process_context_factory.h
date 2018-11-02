@@ -65,7 +65,6 @@ class InProcessContextFactory : public ContextFactory,
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
   void RemoveCompositor(Compositor* compositor) override;
-  double GetRefreshRate() const override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   viz::FrameSinkId AllocateFrameSinkId() override;

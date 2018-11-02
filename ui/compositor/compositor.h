@@ -182,9 +182,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;
 
-  // Returns refresh rate. Tests may return higher values.
-  virtual double GetRefreshRate() const = 0;
-
   // Gets the GPU memory buffer manager.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 
@@ -415,6 +412,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override {}
+  void FrameIntervalUpdated(base::TimeDelta interval) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -465,8 +463,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // A sequence number of a current compositor frame for use with metrics.
   int activated_frame_count_ = 0;
 
-  // Current vsync refresh rate per second.
-  float refresh_rate_ = 0.f;
+  // Current vsync refresh rate per second. Initialized to 60hz as a reasonable
+  // value until first begin frame arrives with the real refresh rate.
+  float refresh_rate_ = 60.f;
 
   // A map from child id to parent id.
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash> child_frame_sinks_;

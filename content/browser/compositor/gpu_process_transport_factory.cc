@@ -737,10 +737,6 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 #endif
 }
 
-double GpuProcessTransportFactory::GetRefreshRate() const {
-  return 60.0;
-}
-
 gpu::GpuMemoryBufferManager*
 GpuProcessTransportFactory::GetGpuMemoryBufferManager() {
   return gpu_channel_factory_->GetGpuMemoryBufferManager();

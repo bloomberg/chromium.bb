@@ -55,10 +55,6 @@ void FakeContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   frame_sink_ = nullptr;
 }
 
-double FakeContextFactory::GetRefreshRate() const {
-  return 200.0;
-}
-
 gpu::GpuMemoryBufferManager* FakeContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }

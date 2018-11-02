@@ -48,7 +48,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
   void RemoveCompositor(ui::Compositor* compositor) override {}
-  double GetRefreshRate() const override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   void AddObserver(ui::ContextFactoryObserver* observer) override;

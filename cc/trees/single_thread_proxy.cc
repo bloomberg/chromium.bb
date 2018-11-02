@@ -704,6 +704,11 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
   host_impl_->DidSendBeginMainFrame();
 }
 
+void SingleThreadProxy::FrameIntervalUpdated(base::TimeDelta interval) {
+  DebugScopedSetMainThread main(task_runner_provider_);
+  single_thread_client_->FrameIntervalUpdated(interval);
+}
+
 void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
   layer_tree_host_->BeginMainFrameNotExpectedSoon();
 }

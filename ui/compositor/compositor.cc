@@ -106,7 +106,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.layers_always_allowed_lcd_text = true;
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
-  refresh_rate_ = context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
   settings.delegated_sync_points_required =
       context_factory_->SyncTokensRequiredForDisplayCompositor();
@@ -472,8 +471,6 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
 
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  refresh_rate_ =
-      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
   if (context_factory_private_) {
     context_factory_private_->SetDisplayVSyncParameters(this, timebase,
                                                         interval);
@@ -634,6 +631,11 @@ void Compositor::DidSubmitCompositorFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (auto& observer : observer_list_)
     observer.OnCompositingStarted(this, start_time);
+}
+
+void Compositor::FrameIntervalUpdated(base::TimeDelta interval) {
+  refresh_rate_ =
+      base::Time::kMicrosecondsPerSecond / interval.InMicrosecondsF();
 }
 
 void Compositor::OnFirstSurfaceActivation(

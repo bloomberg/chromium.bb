@@ -96,12 +96,6 @@ TestImageTransportFactory::SharedMainThreadContextProvider() {
   return shared_main_context_provider_;
 }
 
-double TestImageTransportFactory::GetRefreshRate() const {
-  // The context factory created here is for unit tests, thus using a higher
-  // refresh rate to spend less time waiting for BeginFrames.
-  return 200.0;
-}
-
 gpu::GpuMemoryBufferManager*
 TestImageTransportFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
