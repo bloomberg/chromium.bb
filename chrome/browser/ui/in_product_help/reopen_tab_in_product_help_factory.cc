@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-namespace in_product_help {
-
 ReopenTabInProductHelpFactory::ReopenTabInProductHelpFactory()
     : BrowserContextKeyedServiceFactory(
           "ReopenTabInProductHelp",
@@ -47,5 +45,3 @@ content::BrowserContext* ReopenTabInProductHelpFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
-
-}  // namespace in_product_help

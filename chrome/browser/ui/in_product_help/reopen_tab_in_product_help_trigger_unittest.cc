@@ -18,8 +18,6 @@ using ::testing::Return;
 
 using feature_engagement::test::MockTracker;
 
-namespace in_product_help {
-
 namespace {
 
 void DismissImmediately(ReopenTabInProductHelpTrigger* trigger) {
@@ -156,5 +154,3 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
 
   EXPECT_TRUE(triggered);
 }
-
-}  // namespace in_product_help

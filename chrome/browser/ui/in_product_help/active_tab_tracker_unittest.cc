@@ -38,8 +38,6 @@ constexpr base::TimeDelta kTimeStep = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
-namespace in_product_help {
-
 class ActiveTabTrackerTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -194,5 +192,3 @@ TEST_F(ActiveTabTrackerTest, StopsObservingUponRemove) {
 
   model.DetachWebContentsAt(0);
 }
-
-}  // namespace in_product_help

@@ -334,8 +334,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   auto* reopen_tab_iph =
-      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
-          browser_->profile());
+      ReopenTabInProductHelpFactory::GetForProfile(browser_->profile());
   reopen_tab_iph->TabReopened();
 #endif
 

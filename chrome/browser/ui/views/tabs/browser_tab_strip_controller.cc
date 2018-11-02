@@ -323,9 +323,8 @@ void BrowserTabStripController::CreateNewTab() {
   // after NewTabOpened. TODO(collinbaker): remove omnibox focusing from
   // triggering conditions (since it is always focused for new tabs) and move
   // this after AddTabAt() call.
-  auto* reopen_tab_iph =
-      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
-          browser_view_->browser()->profile());
+  auto* reopen_tab_iph = ReopenTabInProductHelpFactory::GetForProfile(
+      browser_view_->browser()->profile());
   reopen_tab_iph->NewTabOpened();
 #endif
 

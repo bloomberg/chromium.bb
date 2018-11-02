@@ -28,8 +28,6 @@ using ::testing::Return;
 
 using MockTracker = ::testing::NiceMock<feature_engagement::test::MockTracker>;
 
-namespace in_product_help {
-
 class ReopenTabInProductHelpTest : public BrowserWithTestWindowTest {
  protected:
   // We want to use |MockTracker| instead of |Tracker|, so we must override its
@@ -79,5 +77,3 @@ TEST_F(ReopenTabInProductHelpTest, TriggersIPH) {
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
-
-}  // namespace in_product_help
