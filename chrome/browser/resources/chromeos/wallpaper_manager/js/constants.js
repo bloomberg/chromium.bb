@@ -5,11 +5,6 @@
 
 /** @const */ var Constants = {
   /**
-   * Key to access wallpaper rss in chrome.storage.local.
-   */
-  AccessLocalRssKey: 'wallpaper-picker-surprise-rss-key',
-
-  /**
    * Key to access wallpaper manifest in chrome.storage.local.
    */
   AccessLocalManifestKey: 'wallpaper-picker-manifest-key',
@@ -60,18 +55,6 @@
   AccessLocalImagesInfoKey: 'images-info-key',
 
   /**
-   * URL to get latest wallpaper RSS feed.
-   */
-  WallpaperRssURL: 'https://storage.googleapis.com/' +
-      'chromeos-wallpaper-public/wallpaper.rss',
-
-  /**
-   * cros-wallpaper namespace URI.
-   */
-  WallpaperNameSpaceURI: 'http://commondatastorage.googleapis.com/' +
-      'chromeos-wallpaper-public/cros-wallpaper-uri',
-
-  /**
    * Wallpaper sources enum.
    */
   WallpaperSourceEnum: {
@@ -80,7 +63,6 @@
     OEM: 'OEM',
     Custom: 'CUSTOM',
     ThirdParty: 'THIRDPARTY',
-    AddNew: 'ADDNEW',
     Default: 'DEFAULT'
   },
 

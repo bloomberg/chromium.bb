@@ -8,7 +8,6 @@ cr.define('wallpapers', function() {
   /** @const */ var GridItem = cr.ui.GridItem;
   /** @const */ var GridSelectionController = cr.ui.GridSelectionController;
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
-  /** @const */ var ShowSpinnerDelayMs = 500;
 
   /**
    * The number of images that appear in the slideshow of the daily refresh
@@ -105,16 +104,6 @@ cr.define('wallpapers', function() {
       this.appendChild(imageEl);
 
       switch (this.dataItem.source) {
-        case Constants.WallpaperSourceEnum.AddNew:
-          this.id = 'add-new';
-          this.addEventListener('click', function(e) {
-            if (!WallpaperUtil.getSurpriseMeCheckboxValue())
-              $('wallpaper-selection-container').hidden = false;
-          });
-          // Delay dispatching the completion callback until all items have
-          // begun loading and are tracked.
-          window.setTimeout(this.callback_.bind(this, this.dataModelId_), 0);
-          break;
         case Constants.WallpaperSourceEnum.Custom:
           this.decorateCustomWallpaper_(imageEl, this.dataItem);
           break;
@@ -284,12 +273,6 @@ cr.define('wallpapers', function() {
     },
 
     /**
-     * ID of spinner delay timer.
-     * @private
-     */
-    spinnerTimeout_: 0,
-
-    /**
      * The timer of the slideshow of the daily refresh item.
      * @private
      */
@@ -399,9 +382,6 @@ cr.define('wallpapers', function() {
           dataModel.splice(
               0, 0, {isDailyRefreshItem: true, availableOffline: false});
         }
-      } else {
-        // Sets dataModel to null should hide spinner immediately.
-        $('spinner-container').hidden = true;
       }
 
       var parentSetter = cr.ui.Grid.prototype.__lookupSetter__('dataModel');
@@ -520,9 +500,6 @@ cr.define('wallpapers', function() {
 
       if (this.pendingItems_ == 0) {
         this.style.visibility = 'visible';
-        window.clearTimeout(this.spinnerTimeout_);
-        this.spinnerTimeout_ = 0;
-        $('spinner-container').hidden = true;
         // Start the slideshow.
         if (this.dailyRefreshItem) {
           window.clearTimeout(this.dailyRefreshTimer_);
@@ -602,17 +579,6 @@ cr.define('wallpapers', function() {
       this.selectionModel.leadIndex = index;
       this.selectionModel.selectedIndex = index;
       this.inProgramSelection_ = false;
-    },
-
-    /**
-     * Forces re-display, size re-calculation and focuses grid.
-     */
-    updateAndFocus: function() {
-      // Recalculate the measured item size.
-      this.measured_ = null;
-      this.columns = 0;
-      this.redraw();
-      this.focus();
     },
 
     /**
