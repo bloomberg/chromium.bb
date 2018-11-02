@@ -92,7 +92,7 @@ struct CORE_EXPORT FrameLoadRequest {
     should_set_opener_ = should_set_opener;
   }
 
-  const AtomicString& HrefTranslate() { return href_translate_; }
+  const AtomicString& HrefTranslate() const { return href_translate_; }
   void SetHrefTranslate(const AtomicString& translate) {
     href_translate_ = translate;
   }

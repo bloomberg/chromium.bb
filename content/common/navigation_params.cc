@@ -55,6 +55,7 @@ CommonNavigationParams::CommonNavigationParams(
     bool started_from_context_menu,
     bool has_user_gesture,
     const InitiatorCSPInfo& initiator_csp_info,
+    const std::string& href_translate,
     base::TimeTicks input_start)
     : url(url),
       referrer(referrer),
@@ -72,6 +73,7 @@ CommonNavigationParams::CommonNavigationParams(
       started_from_context_menu(started_from_context_menu),
       has_user_gesture(has_user_gesture),
       initiator_csp_info(initiator_csp_info),
+      href_translate(href_translate),
       input_start(input_start) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {

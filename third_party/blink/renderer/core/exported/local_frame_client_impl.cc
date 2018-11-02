@@ -500,7 +500,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,
     mojom::blink::BlobURLTokenPtr blob_url_token,
-    base::TimeTicks input_start_time) {
+    base::TimeTicks input_start_time,
+    const String& href_translate) {
   if (!web_frame_->Client())
     return kNavigationPolicyIgnore;
 
@@ -571,6 +572,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     navigation_info.devtools_initiator_info =
         devtools->NavigationInitiatorInfo(web_frame_->GetFrame());
   }
+
+  navigation_info.href_translate = href_translate;
 
   WebNavigationPolicy web_policy =
       web_frame_->Client()->DecidePolicyForNavigation(navigation_info);

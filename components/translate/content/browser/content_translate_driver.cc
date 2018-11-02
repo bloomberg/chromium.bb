@@ -221,6 +221,9 @@ void ContentTranslateDriver::DidFinishNavigation(
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
       reload);
+
+  // TODO(crbug.com/900586): Trigger auto-translate if NavigationHandle has a
+  // non-empty href_translate field.
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {

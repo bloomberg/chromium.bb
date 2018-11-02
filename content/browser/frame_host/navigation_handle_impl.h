@@ -79,6 +79,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
           blink::mojom::RequestContextType::UNSPECIFIED,
       blink::WebMixedContentContextType mixed_content_context_type =
           blink::WebMixedContentContextType::kBlockable,
+      const std::string& href_translate = std::string(),
       base::TimeTicks input_start = base::TimeTicks());
 
   ~NavigationHandleImpl() override;
@@ -167,6 +168,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSignedExchangeInnerResponse() override;
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;
+  const std::string& GetHrefTranslate() override;
 
   const std::string& origin_policy() const { return origin_policy_; }
   void set_origin_policy(const std::string& origin_policy) {
@@ -410,6 +412,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_external_protocol,
       blink::mojom::RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
+      const std::string& href_translate,
       base::TimeTicks input_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
@@ -479,6 +482,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   net::SSLInfo ssl_info_;
+  std::string href_translate_;
 
   // The original url of the navigation. This may differ from |url_| if the
   // navigation encounters redirects.

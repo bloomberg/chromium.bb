@@ -164,6 +164,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool is_external_protocol,
     blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
+    const std::string& href_translate,
     base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
@@ -172,7 +173,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
       is_form_submission, std::move(navigation_ui_data), method,
       std::move(request_headers), resource_request_body, sanitized_referrer,
       has_user_gesture, transition, is_external_protocol, request_context_type,
-      mixed_content_context_type, input_start));
+      mixed_content_context_type, href_translate, input_start));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -196,6 +197,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool is_external_protocol,
     blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
+    const std::string& href_translate,
     base::TimeTicks input_start)
     : url_(url),
       has_user_gesture_(has_user_gesture),
@@ -210,6 +212,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       should_update_history_(false),
       subframe_entry_committed_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+      href_translate_(href_translate),
       original_url_(url),
       method_(method),
       request_headers_(std::move(request_headers)),
@@ -654,6 +657,10 @@ bool NavigationHandleImpl::IsDownload() {
 
 bool NavigationHandleImpl::IsFormSubmission() {
   return is_form_submission_;
+}
+
+const std::string& NavigationHandleImpl::GetHrefTranslate() {
+  return href_translate_;
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {

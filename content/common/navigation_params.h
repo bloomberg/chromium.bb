@@ -99,6 +99,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool started_from_context_menu,
       bool has_user_gesture,
       const InitiatorCSPInfo& initiator_csp_info,
+      const std::string& href_translate,
       base::TimeTicks input_start = base::TimeTicks());
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
@@ -173,6 +174,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The current origin policy for this request's origin.
   // (Empty if none applies.)
   std::string origin_policy;
+
+  // The value of the hrefTranslate attribute if this navigation was initiated
+  // from a link that had that attribute set.
+  std::string href_translate;
 
   // The time the input event leading to the navigation occurred. This will
   // not always be set; it depends on the creator of the CommonNavigationParams

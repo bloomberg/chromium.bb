@@ -1602,6 +1602,7 @@ class CONTENT_EXPORT RenderFrameImpl
     blink::WebString devtools_initiator_info;
     blink::mojom::BlobURLTokenPtr blob_url_token;
     base::TimeTicks input_start;
+    blink::WebString href_translate;
 
     explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
     ~PendingNavigationInfo();

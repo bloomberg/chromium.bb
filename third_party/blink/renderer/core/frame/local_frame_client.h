@@ -162,7 +162,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy,
       mojom::blink::BlobURLTokenPtr,
-      base::TimeTicks input_start_time) = 0;
+      base::TimeTicks input_start_time,
+      const String& href_translate) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 

@@ -949,7 +949,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
-      request.GetBlobURLToken(), request.GetInputStartTime());
+      request.GetBlobURLToken(), request.GetInputStartTime(),
+      request.HrefTranslate().GetString());
 
   // 'beforeunload' can be fired above, which can detach this frame from inside
   // the event handler.
