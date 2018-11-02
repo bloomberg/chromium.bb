@@ -19,13 +19,6 @@
 
 namespace views {
 
-// GetClassName will be mapped to GetClassNameW if windows.h has been included
-// and the UNICODE macro has been defined. We need to undef it to use it in this
-// file.
-#ifdef GetClassName
-#undef GetClassName
-#endif
-
 // static
 const char AXVirtualView::kViewClassName[] = "AXVirtualView";
 
@@ -34,7 +27,7 @@ AXVirtualView::AXVirtualView()
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_platform_node_);
   custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                                  GetClassName());
+                                  GetViewClassName());
 }
 
 AXVirtualView::~AXVirtualView() {
@@ -148,7 +141,7 @@ int AXVirtualView::GetIndexOf(const AXVirtualView* view) const {
                                  : -1;
 }
 
-const char* AXVirtualView::GetClassName() const {
+const char* AXVirtualView::GetViewClassName() const {
   return kViewClassName;
 }
 

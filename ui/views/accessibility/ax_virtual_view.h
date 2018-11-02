@@ -98,7 +98,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // Other methods.
   //
 
-  const char* GetClassName() const;
+  const char* GetViewClassName() const;
   gfx::NativeViewAccessible GetNativeObject() const;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type);
   // Allows clients to modify the AXNodeData for this virtual view.
