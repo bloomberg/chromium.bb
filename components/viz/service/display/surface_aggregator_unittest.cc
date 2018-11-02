@@ -211,7 +211,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             std::vector<SurfaceRange>* referenced_surfaces) {
     switch (desc.material) {
       case DrawQuad::SOLID_COLOR:
-        cc::AddQuad(pass, gfx::Rect(0, 0, 5, 5), desc.color);
+        cc::AddQuad(pass, desc.rect, desc.color);
         break;
       case DrawQuad::SURFACE_CONTENT:
         referenced_surfaces->emplace_back(desc.surface_range);
@@ -797,7 +797,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
       // Bottom guttter.
       Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(0, 5, 5, 10)),
       // Contents of the fallback surface.
-      Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(5, 5)),
+      Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(fallback_size)),
   };
   std::vector<Pass> expected_passes1 = {Pass(expected_quads1, SurfaceSize())};
 
