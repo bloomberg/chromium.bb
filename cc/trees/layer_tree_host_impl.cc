@@ -2509,34 +2509,40 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // for changes in the size (e.g. browser controls) since the last resize from
   // Blink.
   auto* property_trees = active_tree_->property_trees();
-  gfx::Vector2dF inner_bounds_delta(0.f, delta_from_top_controls);
-  if (property_trees->inner_viewport_container_bounds_delta() ==
-      inner_bounds_delta)
+  gfx::Vector2dF bounds_delta(0.f, delta_from_top_controls);
+  if (property_trees->inner_viewport_container_bounds_delta() == bounds_delta)
     return;
 
-  property_trees->SetInnerViewportContainerBoundsDelta(inner_bounds_delta);
+  property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
 
   ClipNode* inner_clip_node = property_trees->clip_tree.Node(
       InnerViewportScrollLayer()->clip_tree_index());
   inner_clip_node->clip.set_height(
-      InnerViewportScrollNode()->container_bounds.height() +
-      inner_bounds_delta.y());
+      InnerViewportScrollNode()->container_bounds.height() + bounds_delta.y());
 
   // Adjust the outer viewport container as well, since adjusting only the
   // inner may cause its bounds to exceed those of the outer, causing scroll
   // clamping.
   if (OuterViewportScrollNode()) {
-    gfx::Vector2dF outer_bounds_delta = gfx::ScaleVector2d(
-        inner_bounds_delta, 1.f / active_tree_->min_page_scale_factor());
+    gfx::Vector2dF scaled_bounds_delta = gfx::ScaleVector2d(
+        bounds_delta, 1.f / active_tree_->min_page_scale_factor());
 
-    property_trees->SetOuterViewportContainerBoundsDelta(outer_bounds_delta);
-    property_trees->SetInnerViewportScrollBoundsDelta(outer_bounds_delta);
+    property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
+    property_trees->SetInnerViewportScrollBoundsDelta(scaled_bounds_delta);
 
     ClipNode* outer_clip_node = property_trees->clip_tree.Node(
         OuterViewportScrollLayer()->clip_tree_index());
-    outer_clip_node->clip.set_height(
-        OuterViewportScrollNode()->container_bounds.height() +
-        outer_bounds_delta.y());
+
+    float container_height =
+        OuterViewportScrollNode()->container_bounds.height();
+
+    // TODO(bokan): The container bounds for the outer viewport are incorrectly
+    // computed pre-Blink-Gen-Property-Trees so we must apply the minimum page
+    // scale factor.  https://crbug.com/901083
+    if (!settings().use_layer_lists)
+      container_height *= active_tree_->min_page_scale_factor();
+
+    outer_clip_node->clip.set_height(container_height + bounds_delta.y());
 
     // Expand all clips between the outer viewport and the inner viewport.
     auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
