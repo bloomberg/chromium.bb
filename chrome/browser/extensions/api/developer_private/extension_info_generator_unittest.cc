@@ -233,6 +233,10 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   // Enable error console for testing.
   FeatureSwitch::ScopedOverride error_console_override(
       FeatureSwitch::error_console(), true);
+  // Disable runtime host permissions - they are tested extensively below.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      extensions_features::kRuntimeHostPermissions);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 
   const char kName[] = "extension name";
@@ -475,6 +479,10 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
 }
 
 TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Without the runtime host permissions feature enabled, the runtime host
   // permissions entry should always be empty.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
