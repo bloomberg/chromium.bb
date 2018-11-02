@@ -12,8 +12,6 @@ namespace feature_engagement {
 class Tracker;
 }  // namespace feature_engagement
 
-namespace in_product_help {
-
 // Contains the triggering logic for the reopen closed tab IPH. Determines when
 // a user might have accidentally closed a tab based on user interactions
 // reported to it. When this happens, this class asks the feature engagement
@@ -76,7 +74,5 @@ class ReopenTabInProductHelpTrigger {
 
   DISALLOW_COPY_AND_ASSIGN(ReopenTabInProductHelpTrigger);
 };
-
-}  // namespace in_product_help
 
 #endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_

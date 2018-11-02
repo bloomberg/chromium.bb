@@ -25,8 +25,6 @@ class Tracker;
 
 class TabStripModel;
 
-namespace in_product_help {
-
 // Listens for the triggering conditions for the reopen tab in-product help and
 // starts the IPH flow at the appropriate time. This is a |Profile|-keyed
 // service since we track interactions per user profile. Hooks throughout the
@@ -71,7 +69,5 @@ class ReopenTabInProductHelp : public BrowserListObserver, public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(ReopenTabInProductHelp);
 };
-
-}  // namespace in_product_help
 
 #endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_H_

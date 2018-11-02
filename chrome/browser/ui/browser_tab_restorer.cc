@@ -105,8 +105,7 @@ void RestoreTab(Browser* browser) {
   base::RecordAction(base::UserMetricsAction("RestoreTab"));
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   auto* reopen_tab_iph =
-      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
-          browser->profile());
+      ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
   reopen_tab_iph->TabReopened();
 #endif
 

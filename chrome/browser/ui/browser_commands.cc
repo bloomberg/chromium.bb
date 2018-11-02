@@ -604,8 +604,7 @@ void NewTab(Browser* browser) {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Notify IPH that new tab was opened.
   auto* reopen_tab_iph =
-      in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
-          browser->profile());
+      ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
   reopen_tab_iph->NewTabOpened();
 #endif
 

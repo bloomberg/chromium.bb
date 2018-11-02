@@ -9,8 +9,6 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-namespace in_product_help {
-
 ActiveTabTracker::ActiveTabTracker(const base::TickClock* clock,
                                    ActiveTabClosedCallback callback)
     : clock_(clock), active_tab_closed_callback_(std::move(callback)) {
@@ -62,5 +60,3 @@ void ActiveTabTracker::OnTabStripModelChanged(
   if (selection.active_tab_changed())
     active_tab_changed_times_[model] = clock_->NowTicks();
 }
-
-}  // namespace in_product_help

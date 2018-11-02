@@ -1123,9 +1123,8 @@ void OmniboxViewViews::OnFocus() {
           ->OnOmniboxFocused();
     }
 
-    auto* reopen_tab_iph =
-        in_product_help::ReopenTabInProductHelpFactory::GetForProfile(
-            location_bar_view_->profile());
+    auto* reopen_tab_iph = ReopenTabInProductHelpFactory::GetForProfile(
+        location_bar_view_->profile());
     reopen_tab_iph->OmniboxFocused();
   }
 #endif

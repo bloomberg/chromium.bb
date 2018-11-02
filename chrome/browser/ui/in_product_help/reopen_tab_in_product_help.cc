@@ -16,8 +16,6 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 
-namespace in_product_help {
-
 ReopenTabInProductHelp::ReopenTabInProductHelp(Profile* profile,
                                                const base::TickClock* clock)
     : profile_(profile),
@@ -82,5 +80,3 @@ void ReopenTabInProductHelp::OnBrowserRemoved(Browser* browser) {
 feature_engagement::Tracker* ReopenTabInProductHelp::GetTracker() {
   return feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
 }
-
-}  // namespace in_product_help

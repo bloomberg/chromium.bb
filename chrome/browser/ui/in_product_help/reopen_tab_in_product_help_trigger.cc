@@ -10,8 +10,6 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 
-namespace in_product_help {
-
 // static
 const base::TimeDelta ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration =
     base::TimeDelta::FromSeconds(10);
@@ -95,5 +93,3 @@ void ReopenTabInProductHelpTrigger::ResetTriggerState() {
   time_of_last_step_ = base::TimeTicks();
   trigger_state_ = NO_ACTIONS_SEEN;
 }
-
-}  // namespace in_product_help

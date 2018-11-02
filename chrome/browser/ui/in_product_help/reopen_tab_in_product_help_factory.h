@@ -19,8 +19,6 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace in_product_help {
-
 class ReopenTabInProductHelp;
 
 class ReopenTabInProductHelpFactory : public BrowserContextKeyedServiceFactory {
@@ -43,7 +41,5 @@ class ReopenTabInProductHelpFactory : public BrowserContextKeyedServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(ReopenTabInProductHelpFactory);
 };
-
-}  // namespace in_product_help
 
 #endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_FACTORY_H_

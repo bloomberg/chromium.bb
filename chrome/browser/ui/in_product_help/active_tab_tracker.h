@@ -17,8 +17,6 @@ class TickClock;
 
 class TabStripModel;
 
-namespace in_product_help {
-
 // Tracks when tabs become active and notifies client when active tabs are
 // closed. The client must register and unregister |TabStripModel|s and set a
 // callback to be called when an active tab is closed.
@@ -56,7 +54,5 @@ class ActiveTabTracker : public TabStripModelObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ActiveTabTracker);
 };
-
-}  // namespace in_product_help
 
 #endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_ACTIVE_TAB_TRACKER_H_
