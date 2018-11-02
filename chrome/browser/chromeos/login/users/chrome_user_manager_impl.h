@@ -82,10 +82,6 @@ class ChromeUserManagerImpl
 
   // UserManager implementation:
   void Shutdown() override;
-  void UserLoggedIn(const AccountId& account_id,
-                    const std::string& user_id_hash,
-                    bool browser_restart,
-                    bool is_child) override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
   user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
       const override;

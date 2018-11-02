@@ -69,11 +69,18 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
                  // This is safe since |this| is never deleted.
                  base::Unretained(this)));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCrosSettings)) {
+  base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
+  if (commandLine->HasSwitch(switches::kStubCrosSettings)) {
     std::unique_ptr<StubCrosSettingsProvider> stubbed_provider =
         std::make_unique<StubCrosSettingsProvider>(notify_cb);
     stubbed_provider_ptr_ = stubbed_provider.get();
+    // When kStubCrosSettings is set, then kLoginUser is treated as the device
+    // owner (if it is also set):
+    if (commandLine->HasSwitch(switches::kLoginUser)) {
+      stubbed_provider->Set(
+          kDeviceOwner,
+          base::Value(commandLine->GetSwitchValueASCII(switches::kLoginUser)));
+    }
     AddSettingsProvider(std::move(stubbed_provider));
 
   } else {
