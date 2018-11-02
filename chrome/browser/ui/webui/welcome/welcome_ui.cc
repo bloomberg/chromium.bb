@@ -152,41 +152,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         "email-interstitial",
         IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML);
 
-    html_source->AddResourcePath(
-        "images/background_svgs/blue_circle.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_BLUE_CIRCLE_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/green_rectangle.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREEN_RECTANGLE_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/grey_oval.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_OVAL_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/grey_rounded_rectangle.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_ROUNDED_RECTANGLE_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/red_triangle.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_RED_TRIANGLE_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/yellow_dots.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_DOTS_SVG);
-    html_source->AddResourcePath(
-        "images/background_svgs/yellow_semicircle.svg",
-        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_SEMICIRCLE_SVG);
-
-    html_source->AddResourcePath("images/email_provider_1x.png",
-                                 IDR_NUX_EMAIL_PROVIDER_LOGO_1X);
-    html_source->AddResourcePath("images/email_provider_2x.png",
-                                 IDR_NUX_EMAIL_PROVIDER_LOGO_2X);
-    html_source->AddResourcePath("images/set_as_default_1x.png",
-                                 IDR_NUX_SET_AS_DEFAULT_LOGO_1X);
-    html_source->AddResourcePath("images/set_as_default_2x.png",
-                                 IDR_NUX_SET_AS_DEFAULT_LOGO_2X);
-    html_source->AddResourcePath("images/set_as_default_illustration_1x.png",
-                                 IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X);
-    html_source->AddResourcePath("images/set_as_default_illustration_2x.png",
-                                 IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X);
-
 #if defined(OS_WIN)
     html_source->AddBoolean(
         "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
@@ -202,7 +167,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     // Add google apps bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
-    nux::GoogleAppsHandler::AddSources(html_source);
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());

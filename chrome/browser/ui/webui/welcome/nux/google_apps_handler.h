@@ -9,10 +9,6 @@
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-namespace content {
-class WebUIDataSource;
-}  // namespace content
-
 namespace nux {
 
 extern const char* kGoogleAppsInteractionHistogram;
@@ -37,9 +33,6 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   // Callbacks for JS APIs.
   void HandleCacheGoogleAppIcon(const base::ListValue* args);
   void HandleGetGoogleAppsList(const base::ListValue* args);
-
-  // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source);
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };

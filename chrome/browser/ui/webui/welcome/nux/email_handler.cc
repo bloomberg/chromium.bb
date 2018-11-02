@@ -12,8 +12,8 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/onboarding_welcome_resources.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
@@ -109,20 +109,6 @@ void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
 }
 
 void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
-  // Add icons
-  html_source->AddResourcePath("email/aol_1x.png", IDR_NUX_EMAIL_AOL_1X);
-  html_source->AddResourcePath("email/aol_2x.png", IDR_NUX_EMAIL_AOL_2X);
-  html_source->AddResourcePath("email/gmail_1x.png", IDR_NUX_EMAIL_GMAIL_1X);
-  html_source->AddResourcePath("email/gmail_2x.png", IDR_NUX_EMAIL_GMAIL_2X);
-  html_source->AddResourcePath("email/icloud_1x.png", IDR_NUX_EMAIL_ICLOUD_1X);
-  html_source->AddResourcePath("email/icloud_2x.png", IDR_NUX_EMAIL_ICLOUD_2X);
-  html_source->AddResourcePath("email/outlook_1x.png",
-                               IDR_NUX_EMAIL_OUTLOOK_1X);
-  html_source->AddResourcePath("email/outlook_2x.png",
-                               IDR_NUX_EMAIL_OUTLOOK_2X);
-  html_source->AddResourcePath("email/yahoo_1x.png", IDR_NUX_EMAIL_YAHOO_1X);
-  html_source->AddResourcePath("email/yahoo_2x.png", IDR_NUX_EMAIL_YAHOO_2X);
-
   // Add constants to loadtime data
   html_source->AddInteger("email_providers_count",
                           static_cast<int>(EmailProviders::kCount));

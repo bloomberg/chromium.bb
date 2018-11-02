@@ -11,15 +11,14 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/onboarding_welcome_resources.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace nux {
@@ -106,39 +105,6 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
   ResolveJavascriptCallback(
       *callback_id,
       bookmarkItemsToListValue(kGoogleApps, base::size(kGoogleApps)));
-}
-
-void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
-  // Add icons
-  html_source->AddResourcePath("google_apps/chrome_store_1x.png",
-                               IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X);
-  html_source->AddResourcePath("google_apps/chrome_store_2x.png",
-                               IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X);
-  // TODO: rename and centralize to make it easier to share icons between NUX.
-  html_source->AddResourcePath("google_apps/gmail_1x.png",
-                               IDR_NUX_EMAIL_GMAIL_1X);
-  html_source->AddResourcePath("google_apps/gmail_2x.png",
-                               IDR_NUX_EMAIL_GMAIL_2X);
-  html_source->AddResourcePath("google_apps/google_apps_1x.png",
-                               IDR_NUX_GOOGLE_APPS_LOGO_1X);
-  html_source->AddResourcePath("google_apps/google_apps_2x.png",
-                               IDR_NUX_GOOGLE_APPS_LOGO_2X);
-  html_source->AddResourcePath("google_apps/maps_1x.png",
-                               IDR_NUX_GOOGLE_APPS_MAPS_1X);
-  html_source->AddResourcePath("google_apps/maps_2x.png",
-                               IDR_NUX_GOOGLE_APPS_MAPS_2X);
-  html_source->AddResourcePath("google_apps/news_1x.png",
-                               IDR_NUX_GOOGLE_APPS_NEWS_1X);
-  html_source->AddResourcePath("google_apps/news_2x.png",
-                               IDR_NUX_GOOGLE_APPS_NEWS_2X);
-  html_source->AddResourcePath("google_apps/translate_1x.png",
-                               IDR_NUX_GOOGLE_APPS_TRANSLATE_1X);
-  html_source->AddResourcePath("google_apps/translate_2x.png",
-                               IDR_NUX_GOOGLE_APPS_TRANSLATE_2X);
-  html_source->AddResourcePath("google_apps/youtube_1x.png",
-                               IDR_NUX_GOOGLE_APPS_YOUTUBE_1X);
-  html_source->AddResourcePath("google_apps/youtube_2x.png",
-                               IDR_NUX_GOOGLE_APPS_YOUTUBE_2X);
 }
 
 }  // namespace nux
