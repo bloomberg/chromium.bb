@@ -130,8 +130,6 @@ crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll
 # "default" setting. These will all need to be re-baselined at that point.
 # All differences should be related to the overflow menu being (now
 # expectedly) present in the new output.
-crbug.com/881040 http/tests/media/controls/video-controls-overflow-menu-correct-ordering.html [ Failure ]
-crbug.com/881040 http/tests/media/controls/video-controls-overflow-menu-updates-appropriately.html [ Failure ]
 crbug.com/881040 media/controls-after-reload.html [ Failure ]
 crbug.com/881040 media/controls-strict.html [ Failure ]
 crbug.com/881040 media/controls-styling-strict.html [ Failure ]
@@ -147,8 +145,6 @@ crbug.com/881040 media/controls/paint-controls-webkit-appearance-none.html [ Fai
 crbug.com/881040 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
 crbug.com/881040 virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
 crbug.com/881040 virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
-crbug.com/881040 virtual/new-remote-playback-pipeline/http/tests/media/controls/video-controls-overflow-menu-correct-ordering.html [ Failure ]
-crbug.com/881040 virtual/new-remote-playback-pipeline/http/tests/media/controls/video-controls-overflow-menu-updates-appropriately.html [ Failure ]
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure ]
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none.html [ Failure ]
