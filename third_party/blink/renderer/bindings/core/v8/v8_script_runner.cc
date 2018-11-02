@@ -225,22 +225,23 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     v8::Isolate* isolate,
     const String& source,
     const String& file_name,
-    AccessControlStatus access_control_status,
     const TextPosition& start_position,
     const ReferrerScriptInfo& referrer_info) {
   TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
                file_name.Utf8());
 
+  // |resource_is_shared_cross_origin| is always true and |resource_is_opaque|
+  // is always false because CORS is enforced to module scripts.
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, start_position.column_.ZeroBasedInt()),
-      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
-      v8::Local<v8::Integer>(),    // script id
-      v8::String::Empty(isolate),  // source_map_url
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
-      v8::False(isolate),  // is_wasm
-      v8::True(isolate),   // is_module
+      v8::Boolean::New(isolate, true),   // resource_is_shared_cross_origin
+      v8::Local<v8::Integer>(),          // script id
+      v8::String::Empty(isolate),        // source_map_url
+      v8::Boolean::New(isolate, false),  // resource_is_opaque
+      v8::False(isolate),                // is_wasm
+      v8::True(isolate),                 // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
   v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);

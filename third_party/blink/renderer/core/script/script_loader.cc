@@ -560,7 +560,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
             ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
             ParkableString(element_->TextFromChildren().Impl()), modulator,
-            source_url, base_url, options, kSharableCrossOrigin, position);
+            source_url, base_url, options, position);
 
         // <spec step="25.2.B.2">If this returns null, set the script's script
         // to null and return; the script is ready.</spec>

@@ -38,14 +38,9 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     return;
   }
 
-  const AccessControlStatus access_control_status =
-      global_scope_->GetSecurityOrigin()->CanReadContent(fetch_params.Url())
-          ? kSharableCrossOrigin
-          : kOpaqueResource;
   ModuleScriptCreationParams params(
       fetch_params.Url(), ParkableString(script->TakeSourceText().Impl()),
-      fetch_params.GetResourceRequest().GetFetchCredentialsMode(),
-      access_control_status);
+      fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
 }
 

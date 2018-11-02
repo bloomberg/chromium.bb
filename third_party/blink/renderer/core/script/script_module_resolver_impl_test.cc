@@ -75,8 +75,8 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
   KURL js_url("https://example.com/referrer.js");
   ScriptModule referrer_record = ScriptModule::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url,
-      js_url, ScriptFetchOptions(), kSharableCrossOrigin,
-      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+      js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
+      ASSERT_NO_EXCEPTION);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
       ModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
@@ -89,8 +89,8 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
   KURL js_url("https://example.com/target.js");
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", js_url, js_url,
-      ScriptFetchOptions(), kSharableCrossOrigin,
-      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+      ScriptFetchOptions(), TextPosition::MinimumPosition(),
+      ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");
   auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
   if (has_parse_error) {

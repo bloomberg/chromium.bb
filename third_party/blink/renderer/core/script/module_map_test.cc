@@ -115,8 +115,7 @@ class ModuleMapTestModulator final : public DummyModulator {
       TestRequest* test_request = new TestRequest(
           ModuleScriptCreationParams(
               request.Url(), ParkableString(String("").ReleaseImpl()),
-              request.GetResourceRequest().GetFetchCredentialsMode(),
-              kSharableCrossOrigin),
+              request.GetResourceRequest().GetFetchCredentialsMode()),
           client);
       modulator_->test_requests_.push_back(test_request);
     }

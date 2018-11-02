@@ -17,7 +17,6 @@ ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
                                    const KURL& source_url,
                                    const KURL& base_url,
                                    const ScriptFetchOptions& options,
-                                   AccessControlStatus access_control_status,
                                    const TextPosition& start_position) {
   // <spec step="1">If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string.</spec>
@@ -40,9 +39,9 @@ ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScript", "Create");
 
-  ScriptModule result = ScriptModule::Compile(
-      isolate, source_text.ToString(), source_url, base_url, options,
-      access_control_status, start_position, exception_state);
+  ScriptModule result =
+      ScriptModule::Compile(isolate, source_text.ToString(), source_url,
+                            base_url, options, start_position, exception_state);
 
   // CreateInternal processes Steps 4 and 8-10.
   //
