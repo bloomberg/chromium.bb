@@ -291,6 +291,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   // download request.
   download_params->set_referrer(download_item_->GetReferrerUrl());
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+  download_params->set_follow_cross_origin_redirects(false);
 
   // Send the request.
   worker->SendRequest(std::move(download_params), url_loader_factory_getter_,

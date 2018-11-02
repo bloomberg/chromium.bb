@@ -1686,6 +1686,35 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
   EXPECT_GT(parameters.size, requests[2]->transferred_byte_count);
 }
 
+// Verify that DownloadUrl can support URL redirect.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectDownload) {
+  // Setup a redirect chain with two URL.
+  GURL first_url = embedded_test_server()->GetURL("example.com", "/first-url");
+  GURL download_url =
+      embedded_test_server()->GetURL("example.com", "/download");
+  TestDownloadHttpResponse::StartServingStaticResponse(
+      base::StringPrintf("HTTP/1.1 302 Redirect\r\n"
+                         "Location: %s\r\n\r\n",
+                         download_url.spec().c_str()),
+      first_url);
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         download_url);
+
+  // Start a download and explicitly specify to support redirect.
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
+      first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  download_parameters->set_follow_cross_origin_redirects(true);
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  // Verify download is done.
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  EXPECT_EQ(1u, downloads.size());
+  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+}
+
 // If the server response for the resumption request specifies a bad range (i.e.
 // not the range that was requested or an invalid or missing Content-Range
 // header), then the download should be marked as interrupted again without

@@ -32,6 +32,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
                 base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
                 bool is_parallel_request,
                 const std::string& request_origin,
+                bool follow_cross_origin_redirects,
                 download::DownloadSource download_source);
   ~UrlDownloader() override;
 
@@ -77,6 +78,8 @@ class UrlDownloader : public net::URLRequest::Delegate,
   // Live on UI thread, post task to call |delegate_| functions.
   base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate_;
   DownloadRequestCore core_;
+
+  bool follow_cross_origin_redirects_;
 
   base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_;
 };

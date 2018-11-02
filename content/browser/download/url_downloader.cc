@@ -46,9 +46,10 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
 
   // From this point forward, the |UrlDownloader| is responsible for
   // |started_callback|.
-  std::unique_ptr<UrlDownloader> downloader(
-      new UrlDownloader(std::move(request), delegate, is_parallel_request,
-                        params->request_origin(), params->download_source()));
+  std::unique_ptr<UrlDownloader> downloader(new UrlDownloader(
+      std::move(request), delegate, is_parallel_request,
+      params->request_origin(), params->follow_cross_origin_redirects(),
+      params->download_source()));
   downloader->Start();
 
   return downloader;
@@ -59,6 +60,7 @@ UrlDownloader::UrlDownloader(
     base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
     bool is_parallel_request,
     const std::string& request_origin,
+    bool follow_cross_origin_redirects,
     download::DownloadSource download_source)
     : request_(std::move(request)),
       delegate_(delegate),
@@ -67,6 +69,7 @@ UrlDownloader::UrlDownloader(
             is_parallel_request,
             request_origin,
             download_source),
+      follow_cross_origin_redirects_(follow_cross_origin_redirects),
       weak_ptr_factory_(this) {}
 
 UrlDownloader::~UrlDownloader() {
@@ -82,13 +85,12 @@ void UrlDownloader::Start() {
 void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
                                        const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {
+  if (follow_cross_origin_redirects_)
+    return;
+
   DVLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
-  // We are going to block redirects even if DownloadRequestCore allows it.  No
-  // redirects are expected for download requests that are made without a
-  // renderer, which are currently exclusively resumption requests. Since there
-  // is no security policy being applied here, it's safer to block redirects and
-  // revisit if some previously unknown legitimate use case arises for redirects
-  // while resuming.
+
+  // Block redirects since there is no security policy being applied here.
   core_.OnWillAbort(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE);
   request_->CancelWithError(net::ERR_UNSAFE_REDIRECT);
 }
