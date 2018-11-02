@@ -208,6 +208,7 @@ class BreakingContext {
   bool ignoring_spaces_;
   bool current_character_is_space_;
   bool single_leading_space_;
+  unsigned current_start_offset_;  // initial offset for the current text
   bool applied_start_width_;
   bool include_end_width_;
   bool auto_wrap_;
@@ -379,6 +380,10 @@ inline void BreakingContext::InitializeForCurrentObject() {
   if (collapse_white_space_ && !ComputedStyle::CollapseWhiteSpace(last_ws_))
     current_character_is_space_ = false;
 
+  // Since current_ iterates all along the text's length, we need to store the
+  // initial offset of the current handle text so that we can then identify
+  // a single leading white-space as potential breaking opportunities.
+  current_start_offset_ = current_.Offset();
   single_leading_space_ = false;
 }
 
@@ -1362,7 +1367,7 @@ inline void BreakingContext::PrepareForNextCharacter(
     if (auto_wrap_ && current_style_->BreakOnlyAfterWhiteSpace()) {
       line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
                          current_.NextBreakablePosition());
-      if (current_.Offset() == 1)
+      if (current_.Offset() == current_start_offset_ + 1)
         single_leading_space_ = true;
     }
   }
