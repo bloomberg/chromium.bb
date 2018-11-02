@@ -57,6 +57,9 @@ config("nasm_config") {
 
       # NASM sometimes redefines macros from its config.h.
       "-Wno-macro-redefined",
+
+      # NASM sometimes compares enums to unsigned integers.
+      "-Wno-sign-compare",
     ]
   }
 }
