@@ -184,7 +184,7 @@ WebViewImpl.prototype.attachWindow$ = function(opt_guestInstanceId) {
     }
     this.guest.destroy();
     this.guest = new GuestView('webview', opt_guestInstanceId);
-    this.prepareForReattach_();
+    this.prepareForReattach$();
   }
 
   return $Function.call(GuestViewContainer.prototype.attachWindow$, this);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// --site-per-process overrides for guest_view_container.js
+// GuestViewCrossProcessFrames overrides for guest_view_container.js
 
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var IdGenerator = requireNative('id_generator');
@@ -16,7 +16,7 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   return iframeElement;
 };
 
-GuestViewContainer.prototype.prepareForReattach_ = function() {
+GuestViewContainer.prototype.prepareForReattach$ = function() {
   // Since attachment swaps a local frame for a remote frame, we need our
   // internal iframe element to be local again before we can reattach.
   var newFrame = this.createInternalElement$();
@@ -32,7 +32,7 @@ GuestViewContainer.prototype.attachWindow$ = function() {
   return true;
 };
 
-GuestViewContainer.prototype.willAttachElement = function () {
+GuestViewContainer.prototype.willAttachElement$ = function() {
   if (this.deferredAttachCallback) {
     this.deferredAttachCallback();
     this.deferredAttachCallback = null;

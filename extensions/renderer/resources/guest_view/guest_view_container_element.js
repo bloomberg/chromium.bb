@@ -78,7 +78,7 @@ var customElementCallbacks = {
       return;
 
     internal.elementAttached = true;
-    internal.willAttachElement();
+    internal.willAttachElement$();
     internal.onElementAttached();
   },
 

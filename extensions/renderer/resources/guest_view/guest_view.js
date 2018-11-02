@@ -5,6 +5,10 @@
 // This module implements a wrapper for a guestview that manages its
 // creation, attaching, and destruction.
 
+// Methods ending with $ will be overwritten by guest_view_iframe.js
+// TODO(mcnee): When BrowserPlugin is removed, merge
+// guest_view_iframe.js into this file.
+
 var CreateEvent = require('guestViewEvents').CreateEvent;
 var GuestViewInternal = getInternalApi ?
     getInternalApi('guestViewInternal') :
@@ -238,7 +242,7 @@ GuestViewImpl.prototype.sendCreateRequest = function(
 };
 
 // Internal implementation of destroy().
-GuestViewImpl.prototype.destroyImpl = function(callback) {
+GuestViewImpl.prototype.destroyImpl$ = function(callback) {
   // Check the current state.
   if (!this.checkState('destroy')) {
     this.handleCallback(callback);
@@ -329,8 +333,9 @@ GuestView.prototype.create = function(createParams, callback) {
 // been destroyed.
 GuestView.prototype.destroy = function(callback) {
   var internal = privates(this).internal;
-  $Array.push(internal.actionQueue,
-      $Function.bind(internal.destroyImpl, internal, callback));
+  $Array.push(
+      internal.actionQueue,
+      $Function.bind(internal.destroyImpl$, internal, callback));
   internal.performNextAction();
 };
 
@@ -366,6 +371,7 @@ GuestView.prototype.getId = function() {
 // Exports
 if (!apiBridge) {
   exports.$set('GuestView', GuestView);
+  // TODO(mcnee): Don't export GuestViewImpl once guest_view_iframe.js is gone.
   exports.$set('GuestViewImpl', GuestViewImpl);
   exports.$set('ResizeEvent', ResizeEvent);
 }
