@@ -44,6 +44,11 @@ const char kAutofillJapanCityFieldMigrated[] =
 // was run. This routine will be run once per version.
 const char kAutofillLastVersionDeduped[] = "autofill.last_version_deduped";
 
+// Integer that is set to the last version where the profile validation routine
+// was run. We validate profiles at least once per version to keep track of the
+// changes in the validation logic.
+const char kAutofillLastVersionValidated[] = "autofill.last_version_validated";
+
 // Integer that is set to the last version where disused addresses were
 // deleted. This deletion will be run once per version.
 const char kAutofillLastVersionDisusedAddressesDeleted[] =
@@ -99,6 +104,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDeduped, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAutofillLastVersionValidated, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedAddressesDeleted, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

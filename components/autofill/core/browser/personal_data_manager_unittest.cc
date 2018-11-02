@@ -51,6 +51,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service_utils.h"
+#include "components/version_info/version_info.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -76,6 +77,18 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
   ~PersonalDataLoadedObserverMock() override {}
 
   MOCK_METHOD0(OnPersonalDataChanged, void());
+};
+
+class PersonalDataManagerMock : public PersonalDataManager {
+ public:
+  explicit PersonalDataManagerMock(const std::string& app_locale)
+      : PersonalDataManager(app_locale) {}
+  ~PersonalDataManagerMock() override {}
+
+  MOCK_METHOD1(OnValidated, void(AutofillProfile* profile));
+  void OnValidatedPDM(AutofillProfile* profile) {
+    PersonalDataManager::OnValidated(profile);
+  }
 };
 
 template <typename T>
@@ -157,9 +170,12 @@ class PersonalDataManagerTestBase {
     test::DisableSystemServices(prefs_.get());
     ResetPersonalDataManager(USER_MODE_NORMAL);
 
-    // Reset the deduping pref to its default value.
+    // Reset the deduping and profile validation prefs to their default value.
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
+    personal_data_->pref_service_->SetInteger(
+        prefs::kAutofillLastVersionValidated,
+        atoi(version_info::GetVersionNumber().c_str()));
   }
 
   void TearDownTest() {
@@ -172,7 +188,7 @@ class PersonalDataManagerTestBase {
   void ResetPersonalDataManager(UserMode user_mode,
                                 bool use_account_server_storage) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
-    personal_data_.reset(new PersonalDataManager("en"));
+    personal_data_.reset(new PersonalDataManagerMock("en"));
     personal_data_->Init(
         scoped_refptr<AutofillWebDataService>(profile_database_service_),
         use_account_server_storage
@@ -362,6 +378,24 @@ class PersonalDataManagerTestBase {
     base::RunLoop().Run();
   }
 
+  void ExpectOnValidated(AutofillProfile* profile) {
+    EXPECT_CALL(*personal_data_, OnValidated(profile)).Times(1);
+    ON_CALL(*personal_data_, OnValidated(profile))
+        .WillByDefault(testing::Invoke(
+            personal_data_.get(), &PersonalDataManagerMock::OnValidatedPDM));
+  }
+
+  void ResetAutofillLastVersionValidated() {
+    ASSERT_TRUE(personal_data_);
+    personal_data_->pref_service_->SetInteger(
+        prefs::kAutofillLastVersionValidated, 0);
+  }
+
+  int GetLastVersionValidatedUpdate() {
+    return personal_data_->pref_service_->GetInteger(
+        prefs::kAutofillLastVersionValidated);
+  }
+
   // The temporary directory should be deleted at the end to ensure that
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
@@ -376,7 +410,7 @@ class PersonalDataManagerTestBase {
   AutofillTable* profile_autofill_table_;  // weak ref
   AutofillTable* account_autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
-  std::unique_ptr<PersonalDataManager> personal_data_;
+  std::unique_ptr<PersonalDataManagerMock> personal_data_;
   base::test::ScopedFeatureList scoped_features_;
 };
 
@@ -6685,8 +6719,12 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates) {
 
   // Validate the profiles through the client validation API.
   auto profiles = personal_data_->GetProfiles();
-  for (auto* profile : profiles)
+  for (auto* profile : profiles) {
     ASSERT_FALSE(profile->is_client_validity_states_updated());
+    // Expect OnValidated to be called for each profile.
+    ExpectOnValidated(profile);
+  }
+
   personal_data_->UpdateClientValidityStates(profiles);
 
   ASSERT_EQ(3U, profiles.size());
@@ -6783,7 +6821,10 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_UpdatedFlag) {
   ASSERT_FALSE(profiles[0]->is_client_validity_states_updated());
   ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());
 
+  ExpectOnValidated(profiles[0]);
+  ExpectOnValidated(profiles[1]);
   personal_data_->UpdateClientValidityStates(profiles);
+
   ASSERT_EQ(2U, profiles.size());
   EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
   EXPECT_TRUE(profiles[1]->is_client_validity_states_updated());
@@ -6796,6 +6837,7 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_UpdatedFlag) {
   ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
   ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());
 
+  ExpectOnValidated(profiles[1]);
   personal_data_->UpdateClientValidityStates(profiles);
   ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
   ASSERT_TRUE(profiles[1]->is_client_validity_states_updated());
@@ -6806,6 +6848,111 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_UpdatedFlag) {
 
   profiles[0]->SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Goli Boli"));
   ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
+}
+
+// Check that the validity states are not updated when the validity flags are up
+// to date.
+TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_AlreadyUpdated) {
+  // Create two profiles and add them to personal_data_.
+  AutofillProfile profile1(test::GetFullValidProfileForCanada());
+  profile1.SetRawInfo(EMAIL_ADDRESS, base::UTF8ToUTF16("invalid email!"));
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(test::GetFullValidProfileForChina());
+  profile2.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("invalid state!"));
+  personal_data_->AddProfile(profile2);
+
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_CALL(*personal_data_, OnValidated(testing::_)).Times(0);
+
+  auto profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, profiles.size());
+  // Pretend that the validity states are updated.
+  profiles[0]->set_is_client_validity_states_updated(true);
+  profiles[1]->set_is_client_validity_states_updated(true);
+
+  // Validating the profiles through the client validation API should not change
+  // the validity states.
+  personal_data_->UpdateClientValidityStates(profiles);
+  profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, profiles.size());
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::UNVALIDATED,
+      profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profiles[1]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+}
+
+// Verify that the fields are validated according to the version.
+TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Version) {
+  // Create two profiles and add them to personal_data_. Set the guids
+  // explicitly to preserve the order.
+  AutofillProfile profile1(test::GetFullValidProfileForCanada());
+  profile1.SetRawInfo(EMAIL_ADDRESS, base::UTF8ToUTF16("invalid email!"));
+  profile1.set_guid("00000000-0000-0000-0000-000000000001");
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(test::GetFullValidProfileForChina());
+  profile2.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("invalid state!"));
+  profile2.set_guid("00000000-0000-0000-0000-000000000002");
+  personal_data_->AddProfile(profile2);
+
+  WaitForOnPersonalDataChanged();
+  auto profiles = personal_data_->GetProfiles();
+
+  // Pretend that the validity states are updated.
+  profiles[0]->set_is_client_validity_states_updated(true);
+  profiles[1]->set_is_client_validity_states_updated(true);
+
+  // Should validate regardless of the validity update flag, because of the
+  // major version update.
+  ResetAutofillLastVersionValidated();
+
+  profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, profiles.size());
+
+  ExpectOnValidated(profiles[0]);
+  ExpectOnValidated(profiles[1]);
+
+  personal_data_->UpdateClientValidityStates(profiles);
+
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::INVALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+
+  // Verify that the version of the last update is set to this version.
+  EXPECT_EQ(atoi(version_info::GetVersionNumber().c_str()),
+            GetLastVersionValidatedUpdate());
+
+  // Update should not update any validity state, because both the validity
+  // state flag and the version are up to date.
+  // A fake change in the validity state of profile[1].
+  profiles[1]->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::VALID,
+                                AutofillProfile::CLIENT);
+  EXPECT_CALL(*personal_data_, OnValidated(testing::_)).Times(0);
+  personal_data_->UpdateClientValidityStates(profiles);
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
 }
 
 TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
