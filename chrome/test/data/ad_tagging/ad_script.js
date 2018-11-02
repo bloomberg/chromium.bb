@@ -4,11 +4,14 @@
 
 'use strict';
 
-function createAdFrame(url, name) {
+function createAdFrame(url, name, sbox_attr) {
   let frame = document.createElement('iframe');
   frame.name = name;
   frame.id = name;
   frame.src = url;
+  if (sbox_attr !== undefined) {
+    frame.sandbox = sbox_attr;
+  }
   document.body.appendChild(frame);
 }
 

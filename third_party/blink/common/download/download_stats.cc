@@ -9,36 +9,14 @@
 namespace blink {
 
 // static
-DownloadStats::FrameGesture DownloadStats::GetMetricsEnum(FrameType frame,
-                                                          GestureType gesture) {
-  switch (frame) {
-    case FrameType::kMainFrame:
-      return gesture == GestureType::kWithGesture
-                 ? FrameGesture::kMainFrameGesture
-                 : FrameGesture::kMainFrameNoGesture;
-    case FrameType::kSameOriginAdSubframe:
-      return gesture == GestureType::kWithGesture
-                 ? FrameGesture::kSameOriginAdSubframeGesture
-                 : FrameGesture::kSameOriginAdSubframeNoGesture;
-    case FrameType::kSameOriginNonAdSubframe:
-      return gesture == GestureType::kWithGesture
-                 ? FrameGesture::kSameOriginNonAdSubframeGesture
-                 : FrameGesture::kSameOriginNonAdSubframeNoGesture;
-    case FrameType::kCrossOriginAdSubframe:
-      return gesture == GestureType::kWithGesture
-                 ? FrameGesture::kCrossOriginAdSubframeGesture
-                 : FrameGesture::kCrossOriginAdSubframeNoGesture;
-    case FrameType::kCrossOriginNonAdSubframe:
-      return gesture == GestureType::kWithGesture
-                 ? FrameGesture::kCrossOriginNonAdSubframeGesture
-                 : FrameGesture::kCrossOriginNonAdSubframeNoGesture;
-  }
+void DownloadStats::RecordMainFrameHasGesture(bool gesture) {
+  UMA_HISTOGRAM_BOOLEAN("Download.MainFrame.HasGesture", gesture);
 }
 
 // static
-void DownloadStats::Record(FrameType frame, GestureType gesture) {
-  UMA_HISTOGRAM_ENUMERATION("Download.FrameGesture",
-                            GetMetricsEnum(frame, gesture));
+void DownloadStats::RecordSubframeSandboxOriginAdGesture(unsigned value) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Subframe.SandboxOriginAdGesture", value,
+                            kCountSandboxOriginAdGesture);
 }
 
 }  // namespace blink

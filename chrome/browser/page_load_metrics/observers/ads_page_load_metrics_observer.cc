@@ -19,6 +19,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/download/download_stats.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
@@ -96,14 +97,6 @@ bool IsSubframeSameOriginToMainFrame(content::RenderFrameHost* sub_host,
   url::Origin subframe_origin = sub_host->GetLastCommittedOrigin();
   url::Origin mainframe_origin = main_host->GetLastCommittedOrigin();
   return subframe_origin.IsSameOriginWith(mainframe_origin);
-}
-
-void RecordDownloadMetrics(blink::DownloadStats::FrameType frame_type,
-                           bool has_user_gesture) {
-  blink::DownloadStats::GestureType gesture_type =
-      has_user_gesture ? blink::DownloadStats::GestureType::kWithGesture
-                       : blink::DownloadStats::GestureType::kWithoutGesture;
-  blink::DownloadStats::Record(frame_type, gesture_type);
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
@@ -239,15 +232,16 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
   if (navigation_handle->IsDownload()) {
-    blink::DownloadStats::FrameType frame_type =
-        IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false)
-            ? ad_types.any()
-                  ? blink::DownloadStats::FrameType::kSameOriginAdSubframe
-                  : blink::DownloadStats::FrameType::kSameOriginNonAdSubframe
-            : ad_types.any()
-                  ? blink::DownloadStats::FrameType::kCrossOriginAdSubframe
-                  : blink::DownloadStats::FrameType::kCrossOriginNonAdSubframe;
-    RecordDownloadMetrics(frame_type, navigation_handle->HasUserGesture());
+    unsigned value = 0;
+    if (ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads))
+      value |= blink::DownloadStats::kSandboxBit;
+    if (!IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false))
+      value |= blink::DownloadStats::kCrossOriginBit;
+    if (ad_types.any())
+      value |= blink::DownloadStats::kAdBit;
+    if (navigation_handle->HasUserGesture())
+      value |= blink::DownloadStats::kGestureBit;
+    blink::DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
   }
 
   RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
@@ -259,8 +253,8 @@ void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
     content::NavigationHandle* navigation_handle) {
   // Main frame navigation
   if (navigation_handle->IsDownload()) {
-    RecordDownloadMetrics(blink::DownloadStats::FrameType::kMainFrame,
-                          navigation_handle->HasUserGesture());
+    blink::DownloadStats::RecordMainFrameHasGesture(
+        navigation_handle->HasUserGesture());
   }
 }
 

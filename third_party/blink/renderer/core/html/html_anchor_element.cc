@@ -57,21 +57,22 @@ namespace blink {
 namespace {
 
 void RecordDownloadMetrics(LocalFrame* frame) {
-  DownloadStats::FrameType frame_type =
-      frame->IsMainFrame()
-          ? DownloadStats::FrameType::kMainFrame
-          : frame->IsAdSubframe()
-                ? frame->IsCrossOriginSubframe()
-                      ? DownloadStats::FrameType::kCrossOriginAdSubframe
-                      : DownloadStats::FrameType::kSameOriginAdSubframe
-                : frame->IsCrossOriginSubframe()
-                      ? DownloadStats::FrameType::kCrossOriginNonAdSubframe
-                      : DownloadStats::FrameType::kSameOriginNonAdSubframe;
-  DownloadStats::GestureType gesture_type =
-      LocalFrame::HasTransientUserActivation(frame)
-          ? DownloadStats::GestureType::kWithGesture
-          : DownloadStats::GestureType::kWithoutGesture;
-  DownloadStats::Record(frame_type, gesture_type);
+  if (frame->IsMainFrame()) {
+    DownloadStats::RecordMainFrameHasGesture(
+        LocalFrame::HasTransientUserActivation(frame));
+    return;
+  }
+
+  unsigned value = 0;
+  if (frame->GetDocument()->IsSandboxed(kSandboxDownloads))
+    value |= DownloadStats::kSandboxBit;
+  if (frame->IsCrossOriginSubframe())
+    value |= DownloadStats::kCrossOriginBit;
+  if (frame->IsAdSubframe())
+    value |= DownloadStats::kAdBit;
+  if (LocalFrame::HasTransientUserActivation(frame))
+    value |= DownloadStats::kGestureBit;
+  DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
 }
 
 }  // namespace
