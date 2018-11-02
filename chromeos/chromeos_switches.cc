@@ -488,7 +488,8 @@ const char kLoginManager[] = "login-manager";
 // to pass user_id hash for primary user.
 const char kLoginProfile[] = "login-profile";
 
-// Specifies the user which is already logged in.
+// Specifies the user which is already logged in. If kStubCrosSettings is set,
+// this user will also be treated as the owner (see kStubCrosSettings).
 const char kLoginUser[] = "login-user";
 
 // The memory pressure threshold selection which is used to decide whether and
