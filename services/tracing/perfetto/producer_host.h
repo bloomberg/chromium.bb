@@ -11,12 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
-
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-
-#include "mojo/public/cpp/bindings/binding.h"
-
 #include "third_party/perfetto/include/perfetto/tracing/core/producer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
@@ -41,16 +37,10 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   ProducerHost();
   ~ProducerHost() override;
 
-  void set_connection_error_handler(
-      base::OnceClosure connection_error_handler) {
-    connection_error_handler_ = std::move(connection_error_handler);
-  }
-
   // Called by the ProducerService to register the
   // Producer with Perfetto and connect to the
   // corresponding remote ProducerClient.
   void Initialize(mojom::ProducerClientPtr producer_client,
-                  mojom::ProducerHostRequest producer_host,
                   perfetto::TracingService* service,
                   const std::string& name);
 
@@ -95,8 +85,6 @@ class ProducerHost : public tracing::mojom::ProducerHost,
 
  private:
   mojom::ProducerClientPtr producer_client_;
-  std::unique_ptr<mojo::Binding<mojom::ProducerHost>> binding_;
-  base::OnceClosure connection_error_handler_;
 
  protected:
   // Perfetto guarantees that no OnXX callbacks are invoked on |this|

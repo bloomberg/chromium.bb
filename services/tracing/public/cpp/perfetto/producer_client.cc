@@ -100,6 +100,10 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
   origin_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(producer_client),
                                 mojo::MakeRequest(&producer_host_)));
+
+  for (auto* data_source : data_sources_) {
+    RegisterDataSourceWithHost(data_source);
+  }
 }
 
 void ProducerClient::AddDataSource(DataSourceBase* data_source) {
@@ -110,7 +114,14 @@ void ProducerClient::AddDataSource(DataSourceBase* data_source) {
 
 void ProducerClient::AddDataSourceOnSequence(DataSourceBase* data_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   data_sources_.insert(data_source);
+  if (producer_host_) {
+    RegisterDataSourceWithHost(data_source);
+  }
+}
+
+void ProducerClient::RegisterDataSourceWithHost(DataSourceBase* data_source) {
   auto new_registration = mojom::DataSourceRegistration::New();
   new_registration->name = data_source->name();
   new_registration->will_notify_on_stop = true;
@@ -164,7 +175,7 @@ void ProducerClient::StopDataSource(uint64_t id,
     }
   }
 
-  LOG(FATAL) << "Invalid data source ID.";
+  LOG(DFATAL) << "Invalid data source ID.";
 }
 
 void ProducerClient::Flush(uint64_t flush_request_id,
