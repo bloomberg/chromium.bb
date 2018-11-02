@@ -38,7 +38,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoDecoderConfig(VideoCodec codec,
                      VideoCodecProfile profile,
                      VideoPixelFormat format,
-                     ColorSpace color_space,
+                     const VideoColorSpace& color_space,
                      VideoRotation rotation,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
@@ -54,7 +54,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   void Initialize(VideoCodec codec,
                   VideoCodecProfile profile,
                   VideoPixelFormat format,
-                  ColorSpace color_space,
+                  const VideoColorSpace& color_space,
                   VideoRotation rotation,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
@@ -118,7 +118,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
     return encryption_scheme_;
   }
 
-  void set_color_space_info(const VideoColorSpace& color_space_info);
   const VideoColorSpace& color_space_info() const;
 
   void set_hdr_metadata(const HDRMetadata& hdr_metadata);

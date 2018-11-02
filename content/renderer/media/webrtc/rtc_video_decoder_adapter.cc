@@ -297,7 +297,7 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   media::VideoDecoderConfig config(
       ToVideoCodec(video_codec_type_),
       GuessVideoCodecProfile(video_codec_type_), kDefaultPixelFormat,
-      media::COLOR_SPACE_UNSPECIFIED, media::VIDEO_ROTATION_0, kDefaultSize,
+      media::VideoColorSpace(), media::VIDEO_ROTATION_0, kDefaultSize,
       gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
       media::Unencrypted());
 

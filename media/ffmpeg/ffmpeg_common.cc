@@ -589,10 +589,9 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     extra_data.assign(codec_context->extradata,
                       codec_context->extradata + codec_context->extradata_size);
   }
-  config->Initialize(codec, profile, format, COLOR_SPACE_UNSPECIFIED,
-                     video_rotation, coded_size, visible_rect, natural_size,
-                     extra_data, GetEncryptionScheme(stream));
-  config->set_color_space_info(color_space);
+  config->Initialize(codec, profile, format, color_space, video_rotation,
+                     coded_size, visible_rect, natural_size, extra_data,
+                     GetEncryptionScheme(stream));
   return true;
 }
 
