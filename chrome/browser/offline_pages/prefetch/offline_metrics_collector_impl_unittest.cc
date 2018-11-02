@@ -27,7 +27,9 @@ class OfflineMetricsCollectorTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    test_clock().SetNow(base::Time::Now().LocalMidnight());
+    base::Time epoch;
+    ASSERT_TRUE(base::Time::FromUTCString("1 Jan 1994 GMT", &epoch));
+    test_clock().SetNow(epoch.LocalMidnight());
     OfflineMetricsCollectorImpl::RegisterPrefs(pref_service_.registry());
     Reload();
   }
