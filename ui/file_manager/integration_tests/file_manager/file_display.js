@@ -160,6 +160,48 @@ testcase.fileDisplayDriveOnline = function() {
 };
 
 /**
+ * Tests files display in the "Computers" section of Google Drive. Testing that
+ * we can navigate to folders inside /Computers also has the side effect of
+ * testing that the breadcrumbs are working.
+ */
+testcase.fileDisplayComputers = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Drive with Computers registered.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], COMPUTERS_ENTRY_SET);
+    },
+    function(result) {
+      appId = result.windowId;
+      // Navigate to Comuter Grand Root.
+      return remoteCall
+          .navigateWithDirectoryTree(appId, '/Computers', 'Computers')
+          .then(this.next);
+    },
+    function() {
+      // Navigiate to a Computer Root.
+      return remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/Computers/Computer A', 'Computers')
+          .then(this.next);
+    },
+    function() {
+      // Navigiate to a subdirectory under a Computer Root.
+      return remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/Computers/Computer A/A', 'Computers')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+
+/**
  * Tests files display in an MTP volume.
  */
 testcase.fileDisplayMtp = function() {
