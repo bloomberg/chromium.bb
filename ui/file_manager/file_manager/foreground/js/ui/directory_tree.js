@@ -745,26 +745,43 @@ EntryListItem.prototype = {
  */
 EntryListItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (!this.entry) {
+  if (!this.entry || this.entry.createReader === undefined) {
     opt_errorCallback && opt_errorCallback();
     return;
   }
   this.entries_ = [];
-  if (this.entry && this.entry.children) {
-    for (let childEntry of this.entry.children) {
-      if (childEntry instanceof VolumeEntry) {
-        // For VolumeEntry we want to display its root.
-        this.entries_.push(childEntry.rootEntry);
-      } else {
-        this.entries_.push(childEntry);
+  const onSuccess = (entries) => {
+    this.entries_ = entries;
+    this.updateSubElementsFromList(recursive);
+    if (this.entries_.length > 0)
+      this.expanded = true;
+    opt_successCallback && opt_successCallback();
+    // TODO(lucmult): Remove this log once flakiness is fixed.
+    console.log('EntryListItem children loaded.');
+  };
+  const reader = this.entry.createReader();
+  const entries = [];
+  const readEntry = () => {
+    reader.readEntries((results) => {
+      if (!results.length) {
+        onSuccess(this.sortEntries(entries));
+        return;
       }
-    }
-  }
-  if (this.entries_.length > 0) {
-    this.expanded = true;
-  }
-  this.updateSubElementsFromList(recursive);
-  opt_successCallback && opt_successCallback();
+      for (let i = 0; i < results.length; i++) {
+        const entry = results[i];
+        if (entry.isDirectory) {
+          // For VolumeEntry we want to display its root.
+          if (entry instanceof VolumeEntry) {
+            entries.push(entry.rootEntry);
+          } else {
+            entries.push(entry);
+          }
+        }
+      }
+      readEntry();
+    });
+  };
+  readEntry();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
