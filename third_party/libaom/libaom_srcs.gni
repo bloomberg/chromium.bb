@@ -188,6 +188,7 @@ aom_av1_encoder_intrin_avx2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm2d_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/wedge_utils_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/encodetxb_avx2.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/rdopt_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/pickrst_avx2.c",
 ]
 
@@ -217,6 +218,7 @@ aom_av1_encoder_intrin_sse4_1 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/corner_match_sse4.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/encodetxb_sse4.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/highbd_fwd_txfm_sse4.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/rdopt_sse4.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/pickrst_sse4.c",
 ]
 
