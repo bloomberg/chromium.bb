@@ -51,22 +51,6 @@ def Rate(numerator, denominator):
   return DivideIfPossibleOrZero(numerator, denominator)
 
 
-def ClockOverheadForEvent(event):
-  if (event.category == OverheadTraceCategory and
-      event.name == OverheadTraceName):
-    return event.duration
-  else:
-    return 0
-
-
-def CpuOverheadForEvent(event):
-  if (event.category == OverheadTraceCategory and
-      event.thread_duration):
-    return event.thread_duration
-  else:
-    return 0
-
-
 def ThreadCategoryName(thread_name):
   thread_category = "other"
   for substring, category in TimelineThreadCategories.iteritems():
@@ -75,11 +59,6 @@ def ThreadCategoryName(thread_name):
   if thread_name in TimelineThreadCategories:
     thread_category = TimelineThreadCategories[thread_name]
   return thread_category
-
-
-def ThreadCpuTimeResultName(thread_category):
-  # This isn't a good name, but I don't want to change it and lose continuity.
-  return "thread_" + thread_category + "_cpu_time_per_frame"
 
 
 def ThreadTasksResultName(thread_category):
@@ -106,29 +85,6 @@ class ResultsForThread(object):
     self.all_action_time = \
         sum([record_range.bounds for record_range in self.record_ranges])
 
-  @property
-  def clock_time(self):
-    clock_duration = sum([x.duration for x in self.toplevel_slices])
-    clock_overhead = sum([ClockOverheadForEvent(x) for x in self.all_slices])
-    return clock_duration - clock_overhead
-
-  @property
-  def cpu_time(self):
-    cpu_duration = 0
-    cpu_overhead = sum([CpuOverheadForEvent(x) for x in self.all_slices])
-    for x in self.toplevel_slices:
-      # Only report thread-duration if we have it for all events.
-      #
-      # A thread_duration of 0 is valid, so this only returns 0 if it is None.
-      if x.thread_duration is None:
-        if not x.duration:
-          continue
-        else:
-          return 0
-      else:
-        cpu_duration += x.thread_duration
-    return cpu_duration - cpu_overhead
-
   def SlicesInActions(self, slices):
     slices_in_actions = []
     for event in slices:
@@ -144,13 +100,7 @@ class ResultsForThread(object):
 
   # Reports cpu-time per interval and tasks per interval.
   def AddResults(self, num_intervals, results):
-    cpu_per_interval = Rate(self.cpu_time, num_intervals)
     tasks_per_interval = Rate(len(self.toplevel_slices), num_intervals)
-    results.AddValue(scalar.ScalarValue(
-        results.current_page,
-        ThreadCpuTimeResultName(self.name),
-        "ms",
-        cpu_per_interval))
     results.AddValue(scalar.ScalarValue(
         results.current_page,
         ThreadTasksResultName(self.name),
