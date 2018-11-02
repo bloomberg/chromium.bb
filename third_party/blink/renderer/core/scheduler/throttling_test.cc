@@ -44,9 +44,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
       "  f(5);"
       "</script>)");
 
-  Platform::Current()
-      ->CurrentThread()
-      ->Scheduler()
+  ThreadScheduler::Current()
       ->GetWebMainThreadSchedulerForTest()
       ->SetRendererBackgrounded(true);
 
@@ -75,9 +73,7 @@ TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
       "  setTimeout(f, 10, 50);"
       "</script>)");
 
-  Platform::Current()
-      ->CurrentThread()
-      ->Scheduler()
+  ThreadScheduler::Current()
       ->GetWebMainThreadSchedulerForTest()
       ->SetRendererBackgrounded(true);
 

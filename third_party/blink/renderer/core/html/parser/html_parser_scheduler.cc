@@ -117,10 +117,7 @@ void HTMLParserScheduler::Detach() {
 inline bool HTMLParserScheduler::ShouldYield(
     const SpeculationsPumpSession& session,
     bool starting_script) const {
-  if (Platform::Current()
-          ->CurrentThread()
-          ->Scheduler()
-          ->ShouldYieldForHighPriorityWork())
+  if (ThreadScheduler::Current()->ShouldYieldForHighPriorityWork())
     return true;
 
   if (session.ElapsedTime() > parser_time_limit_)

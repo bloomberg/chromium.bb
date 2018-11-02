@@ -492,8 +492,8 @@ void ThreadDebugger::startRepeatingTimer(
 
   std::unique_ptr<TaskRunnerTimer<ThreadDebugger>> timer =
       std::make_unique<TaskRunnerTimer<ThreadDebugger>>(
-          Platform::Current()->CurrentThread()->Scheduler()->V8TaskRunner(),
-          this, &ThreadDebugger::OnTimer);
+          ThreadScheduler::Current()->V8TaskRunner(), this,
+          &ThreadDebugger::OnTimer);
   TaskRunnerTimer<ThreadDebugger>* timer_ptr = timer.get();
   timers_.push_back(std::move(timer));
   timer_ptr->StartRepeating(TimeDelta::FromSecondsD(interval), FROM_HERE);
