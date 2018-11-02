@@ -135,7 +135,7 @@ enum DisableDeferralReason {
   kDisableDeferralReasonSubPixelTextAntiAliasingSupport = 5,
   kDisableDeferralDrawImageWithTextureBackedSourceImage = 6,
   kDisableDeferralReasonLowEndDevice = 7,
-  kMaxValue = kDisableDeferralReasonLowEndDevice,
+  kDisableDeferralReasonCount,
 };
 
 enum MailboxSyncMode {
