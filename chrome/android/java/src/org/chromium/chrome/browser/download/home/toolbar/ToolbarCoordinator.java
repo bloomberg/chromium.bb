@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
@@ -70,7 +69,6 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
     private final ToolbarListActionDelegate mListActionDelegate;
     private final ToolbarActionDelegate mDelegate;
 
-    private final UiConfig mUiConfig;
     private final ViewGroup mView;
     private final DownloadHomeToolbar mToolbar;
     private final FadingShadowView mShadow;
@@ -113,8 +111,6 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar = mView.findViewById(R.id.toolbar);
         mShadow = mView.findViewById(R.id.shadow);
 
-        mUiConfig = new UiConfig(mView);
-
         mToolbar.initialize(selectionDelegate, 0 /* titleResId */, null /* drawerLayout */,
                 normalMenuGroupId, R.id.selection_mode_menu_group, R.color.modern_primary_color,
                 hasCloseButton);
@@ -124,7 +120,6 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar.getMenu().setGroupVisible(normalMenuGroupId, true);
         mToolbar.initializeSearchView(
                 mSearchDelegate, R.string.download_manager_search, searchMenuId);
-        mToolbar.configureWideDisplayStyle(mUiConfig);
 
         if (isLocationEnabled) ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar);
 
