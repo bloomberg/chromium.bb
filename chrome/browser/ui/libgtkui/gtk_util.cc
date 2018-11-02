@@ -31,6 +31,8 @@
 
 namespace {
 
+const char kAuraTransientParent[] = "aura-transient-parent";
+
 void CommonInitFromCommandLine(const base::CommandLine& command_line) {
 #if GTK_CHECK_VERSION(3, 90, 0)
   gtk_init();
@@ -136,6 +138,19 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
   XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
                        GDK_WINDOW_XID(gdk_window),
                        parent->GetHost()->GetAcceleratedWidget());
+
+  // We also set the |parent| as a property of |dialog|, so that we can unlink
+  // the two later.
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, parent);
+}
+
+aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
+  return reinterpret_cast<aura::Window*>(
+      g_object_get_data(G_OBJECT(dialog), kAuraTransientParent));
+}
+
+void ClearAuraTransientParent(GtkWidget* dialog) {
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, nullptr);
 }
 
 void ParseButtonLayout(const std::string& button_string,
