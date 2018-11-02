@@ -12,6 +12,19 @@
 namespace base {
 namespace sequence_manager {
 namespace internal {
+namespace {
+
+// Returns |next_run_time| capped at 1 day from |lazy_now|. This is used to
+// mitigate https://crbug.com/850450 where some platforms are unhappy with
+// delays > 100,000,000 seconds. In practice, a diagnosis metric showed that no
+// sleep > 1 hour ever completes (always interrupted by an earlier MessageLoop
+// event) and 99% of completed sleeps are the ones scheduled for <= 1 second.
+// Details @ https://crrev.com/c/1142589.
+TimeTicks CapAtOneDay(TimeTicks next_run_time, LazyNow* lazy_now) {
+  return std::min(next_run_time, lazy_now->Now() + TimeDelta::FromDays(1));
+}
+
+}  // namespace
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
     std::unique_ptr<MessagePump> message_pump,
@@ -93,6 +106,8 @@ void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
   // needed.
   if (main_thread_only().immediate_do_work_posted || InTopLevelDoWork())
     return;
+
+  run_time = CapAtOneDay(run_time, lazy_now);
 
   main_thread_only().next_delayed_do_work = run_time;
   pump_->ScheduleDelayedWork(run_time);
@@ -195,7 +210,7 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     main_thread_only().immediate_do_work_posted = true;
     return true;
   } else if (do_work_delay != TimeDelta::Max()) {
-    *next_run_time = lazy_now.Now() + do_work_delay;
+    *next_run_time = CapAtOneDay(lazy_now.Now() + do_work_delay, &lazy_now);
     // Cancels any previously scheduled delayed wake-ups.
     pump_->ScheduleDelayedWork(*next_run_time);
   } else {
