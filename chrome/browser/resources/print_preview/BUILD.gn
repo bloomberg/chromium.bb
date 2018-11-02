@@ -66,6 +66,7 @@ js_type_check("print_preview_resources") {
     ":cloud_print_interface",
     ":cloud_print_interface_js",
     ":cloud_print_interface_manager",
+    ":cloud_print_interface_native",
     ":metrics",
     ":native_layer",
     ":print_preview",
@@ -93,6 +94,7 @@ js_library("print_preview") {
     "cloud_print_interface.js",
     "cloud_print_interface_js.js",
     "cloud_print_interface_manager.js",
+    "cloud_print_interface_native.js",
     "common/overlay.js",
     "common/search_box.js",
     "common/search_bubble.js",
@@ -200,6 +202,7 @@ js_library("cloud_print_interface_manager") {
   deps = [
     ":cloud_print_interface",
     ":cloud_print_interface_js",
+    ":cloud_print_interface_native",
     ":native_layer",
     "data:user_info",
   ]
@@ -215,6 +218,12 @@ js_library("cloud_print_interface_js") {
     "data:invitation",
     "data:user_info",
     "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("cloud_print_interface_native") {
+  deps = [
+    ":cloud_print_interface",
   ]
 }
 

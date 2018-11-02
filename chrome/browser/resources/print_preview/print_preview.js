@@ -1389,6 +1389,7 @@ cr.define('print_preview', function() {
 // <include src="print_preview_animations.js">
 // <include src="cloud_print_interface.js">
 // <include src="cloud_print_interface_js.js">
+// <include src="cloud_print_interface_native.js">
 // <include src="cloud_print_interface_manager.js">
 // <include src="print_preview_utils.js">
 // <include src="print_header.js">
