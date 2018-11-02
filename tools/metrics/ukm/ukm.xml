@@ -3780,7 +3780,7 @@ be describing additional metrics about the same event.
   <owner>ryansturm@chromium.org</owner>
   <summary>
     Previews related metrics associated with a page load. See
-    //componenets/previews/.
+    //components/previews/.
   </summary>
   <metric name="client_lofi">
     <summary>
@@ -3828,6 +3828,58 @@ be describing additional metrics about the same event.
   <metric name="server_lofi">
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsResourceLoadingHints" singular="True">
+  <owner>jegray@chromium.org</owner>
+  <summary>
+    Metrics associated with loading a resource loading hints based preview. This
+    is recorded when the URL's document finishes loading. See
+    //components/previews/.
+  </summary>
+  <metric name="blocked_high_priority">
+    <summary>
+      The number of high priority resource requests that were blocked by the
+      resource loading hints based preview while the URL's document was loading.
+    </summary>
+  </metric>
+  <metric name="blocked_low_priority">
+    <summary>
+      The number of low priority resource requests that were blocked by the
+      resource loading hints based preview while the URL's document was loading.
+    </summary>
+  </metric>
+  <metric name="blocked_medium_priority">
+    <summary>
+      The number of medium priority resource requests that were blocked by the
+      resource loading hints based preview while the URL's document was loading.
+    </summary>
+  </metric>
+  <metric name="blocked_very_high_priority">
+    <summary>
+      The number of very high priority resource requests that were blocked by
+      the resource loading hints based preview while the URL's document was
+      loading.
+    </summary>
+  </metric>
+  <metric name="blocked_very_low_priority">
+    <summary>
+      The number of very low priority resource requests that were blocked by the
+      resource loading hints based preview while the URL's document was loading.
+    </summary>
+  </metric>
+  <metric name="patterns_to_block_total">
+    <summary>
+      The total number of patterns to block included in the resource loading
+      hints based preview.
+    </summary>
+  </metric>
+  <metric name="patterns_to_block_used">
+    <summary>
+      The number of patterns that blocked at least one resource request in the
+      resource loading hints based preview while the URL's document was loading.
     </summary>
   </metric>
 </event>

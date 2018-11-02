@@ -3583,6 +3583,15 @@ bool Document::CheckCompletedInternal() {
     }
 
     AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*this);
+
+    // If this is a document associated with a resource loading hints based
+    // preview, then record the resource loading hints UKM now that the load is
+    // finished.
+    PreviewsResourceLoadingHints* hints =
+        Loader()->GetPreviewsResourceLoadingHints();
+    if (hints) {
+      hints->RecordUKM(UkmRecorder());
+    }
   }
 
   return true;
