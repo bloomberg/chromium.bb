@@ -79,10 +79,7 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
 
  private:
   explicit SearchFieldCancelButtonElement(Document&);
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   bool SupportsFocus() const override { return false; }
-
-  bool capturing_;
 };
 
 }  // namespace blink
