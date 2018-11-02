@@ -15,8 +15,10 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/origin_util.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
+#include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -128,6 +130,24 @@ void InsecureInputTabHelper::FormActivityRegistered(
   if (params.type == "input" &&
       !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
     DidEditFieldInInsecureContext();
+  }
+}
+
+void InsecureInputTabHelper::DidFinishNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
+  // Check if the navigation should clear insecure input event data (i.e., not a
+  // same-document navigation).
+  if (!web::IsOriginSecure(web_state->GetLastCommittedURL()) &&
+      navigation_context->HasCommitted() &&
+      !navigation_context->IsSameDocument()) {
+    security_state::SSLStatusInputEventData* input_events =
+        GetOrCreateSSLStatusInputEventData(web_state_);
+    if (!input_events)
+      return;
+    input_events->input_events()->insecure_field_edited = false;
+    web_state_->DidChangeVisibleSecurityState();
   }
 }
 
