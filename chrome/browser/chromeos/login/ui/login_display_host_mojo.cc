@@ -150,7 +150,7 @@ void LoginDisplayHostMojo::OnFinalize() {
   if (dialog_)
     dialog_->Close();
 
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  ShutdownDisplayHost();
 }
 
 void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
