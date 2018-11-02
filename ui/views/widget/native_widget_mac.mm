@@ -568,6 +568,7 @@ Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(
   if (!bridge_impl())
     return Widget::MOVE_LOOP_CANCELED;
 
+  ReleaseCapture();
   return bridge_impl()->RunMoveLoop(drag_offset) ? Widget::MOVE_LOOP_SUCCESSFUL
                                                  : Widget::MOVE_LOOP_CANCELED;
 }
