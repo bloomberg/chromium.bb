@@ -2070,7 +2070,7 @@ test("browser_tests") {
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
       ]
     }
-    if (is_desktop_linux && is_asan && is_lsan) {
+    if (is_linux && is_asan && is_lsan) {
       # TODO(crbug.com/793426): Fix the flakiness on Linux Asan Lsan bot.
       sources -= [ "../browser/media/encrypted_media_browsertest.cc" ]
     }
