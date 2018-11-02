@@ -92,7 +92,7 @@ class FileSystemWriter::StreamWriterClient
     DCHECK(writer_->pending_operation_);
     did_complete_ = true;
     writer_->pending_operation_->Reject(
-        FileError::CreateDOMException(base::File::FILE_ERROR_FAILED));
+        file_error::CreateDOMException(base::File::FILE_ERROR_FAILED));
     Reset();
   }
 
@@ -104,7 +104,7 @@ class FileSystemWriter::StreamWriterClient
     DCHECK(writer_->pending_operation_);
     did_complete_ = true;
     writer_->pending_operation_->Reject(
-        FileError::CreateDOMException(base::File::FILE_ERROR_ABORT));
+        file_error::CreateDOMException(base::File::FILE_ERROR_ABORT));
     Reset();
   }
 
@@ -116,7 +116,7 @@ class FileSystemWriter::StreamWriterClient
     did_complete_ = true;
     if (result != base::File::FILE_OK) {
       writer_->pending_operation_->Reject(
-          FileError::CreateDOMException(result));
+          file_error::CreateDOMException(result));
     } else {
       DCHECK(did_finish_writing_to_pipe_);
       writer_->pending_operation_->Resolve();
@@ -207,7 +207,7 @@ void FileSystemWriter::WriteComplete(base::File::Error result,
   if (result == base::File::FILE_OK) {
     pending_operation_->Resolve();
   } else {
-    pending_operation_->Reject(FileError::CreateDOMException(result));
+    pending_operation_->Reject(file_error::CreateDOMException(result));
   }
   pending_operation_ = nullptr;
 }
@@ -217,7 +217,7 @@ void FileSystemWriter::TruncateComplete(base::File::Error result) {
   if (result == base::File::FILE_OK) {
     pending_operation_->Resolve();
   } else {
-    pending_operation_->Reject(FileError::CreateDOMException(result));
+    pending_operation_->Reject(file_error::CreateDOMException(result));
   }
   pending_operation_ = nullptr;
 }

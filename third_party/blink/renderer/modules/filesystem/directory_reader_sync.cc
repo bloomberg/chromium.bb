@@ -104,7 +104,7 @@ EntrySyncHeapVector DirectoryReaderSync::readEntries(
   DCHECK(!has_more_entries_);
 
   if (error_code_ != base::File::FILE_OK) {
-    FileError::ThrowDOMException(exception_state, error_code_);
+    file_error::ThrowDOMException(exception_state, error_code_);
     return EntrySyncHeapVector();
   }
 

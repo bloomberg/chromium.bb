@@ -291,7 +291,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
   ScheduleAsyncImageBitmapDecoding(array_buffer);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileError::ErrorCode) {
+void ImageBitmapFactories::ImageBitmapLoader::DidFail(file_error::ErrorCode) {
   RejectPromise(kUndecodableImageBitmapRejectionReason);
 }
 

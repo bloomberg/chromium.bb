@@ -90,7 +90,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void DidStartLoading() override;
   void DidReceiveData() override;
   void DidFinishLoading() override;
-  void DidFail(FileError::ErrorCode) override;
+  void DidFail(file_error::ErrorCode) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);

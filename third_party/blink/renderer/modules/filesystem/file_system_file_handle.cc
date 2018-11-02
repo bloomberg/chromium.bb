@@ -52,7 +52,7 @@ ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
                 if (result == base::File::FILE_OK) {
                   resolver->Resolve(new FileSystemWriter(std::move(writer)));
                 } else {
-                  resolver->Reject(FileError::CreateDOMException(result));
+                  resolver->Reject(file_error::CreateDOMException(result));
                 }
               },
               WrapPersistent(resolver)));

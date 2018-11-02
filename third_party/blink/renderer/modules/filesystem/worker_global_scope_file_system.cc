@@ -86,7 +86,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     ExceptionState& exception_state) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
-    exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
+    exception_state.ThrowSecurityError(file_error::kSecurityErrorMessage);
     return nullptr;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
@@ -155,7 +155,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem() ||
       !secure_context->GetSecurityOrigin()->CanRequest(completed_url)) {
-    exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
+    exception_state.ThrowSecurityError(file_error::kSecurityErrorMessage);
     return nullptr;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);

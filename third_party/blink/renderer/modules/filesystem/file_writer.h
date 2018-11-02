@@ -115,7 +115,7 @@ class FileWriter final : public EventTargetWithInlineData,
 
   void FireEvent(const AtomicString& type);
 
-  void SetError(FileError::ErrorCode, ExceptionState&);
+  void SetError(file_error::ErrorCode, ExceptionState&);
 
   void Dispose();
 

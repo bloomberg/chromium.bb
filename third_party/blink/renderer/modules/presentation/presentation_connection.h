@@ -131,7 +131,7 @@ class PresentationConnection : public EventTargetWithInlineData,
 
   // Callbacks invoked from BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
-  void DidFailLoadingBlob(FileError::ErrorCode);
+  void DidFailLoadingBlob(file_error::ErrorCode);
 
   void SendMessageToTargetConnection(
       mojom::blink::PresentationConnectionMessagePtr);

@@ -51,7 +51,7 @@ class CORE_EXPORT FileReaderLoaderClient {
     NOTREACHED();
   }
   virtual void DidFinishLoading() = 0;
-  virtual void DidFail(FileError::ErrorCode) = 0;
+  virtual void DidFail(file_error::ErrorCode) = 0;
 };
 
 }  // namespace blink

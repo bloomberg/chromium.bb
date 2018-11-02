@@ -121,7 +121,7 @@ void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
 
 void ScriptErrorCallback::Invoke(base::File::Error error) {
   callback_->InvokeAndReportException(nullptr,
-                                      FileError::CreateDOMException(error));
+                                      file_error::CreateDOMException(error));
 };
 
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
@@ -138,7 +138,7 @@ void PromiseErrorCallback::Trace(Visitor* visitor) {
 }
 
 void PromiseErrorCallback::Invoke(base::File::Error error) {
-  resolver_->Reject(FileError::CreateDOMException(error));
+  resolver_->Reject(file_error::CreateDOMException(error));
 }
 
 // EntryCallbacks -------------------------------------------------------------

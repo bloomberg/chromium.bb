@@ -83,11 +83,11 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   DCHECK(data);
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(file_error::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(FileError::kSecurityErr, exception_state);
+    SetError(file_error::kSecurityErr, exception_state);
     return;
   }
 
@@ -111,7 +111,7 @@ void FileWriter::seek(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
   if (ready_state_ == kWriting) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(file_error::kInvalidStateErr, exception_state);
     return;
   }
 
@@ -125,11 +125,11 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     return;
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting || position < 0) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(file_error::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(FileError::kSecurityErr, exception_state);
+    SetError(file_error::kSecurityErr, exception_state);
     return;
   }
 
@@ -295,7 +295,7 @@ void FileWriter::SignalCompletion(base::File::Error error) {
   ready_state_ = kDone;
   truncate_length_ = -1;
   if (error != base::File::FILE_OK) {
-    error_ = FileError::CreateDOMException(error);
+    error_ = file_error::CreateDOMException(error);
     if (base::File::FILE_ERROR_ABORT == error)
       FireEvent(event_type_names::kAbort);
     else
@@ -317,11 +317,11 @@ void FileWriter::FireEvent(const AtomicString& type) {
   DCHECK_GE(recursion_depth_, 0);
 }
 
-void FileWriter::SetError(FileError::ErrorCode error_code,
+void FileWriter::SetError(file_error::ErrorCode error_code,
                           ExceptionState& exception_state) {
   DCHECK(error_code);
-  FileError::ThrowDOMException(exception_state, error_code);
-  error_ = FileError::CreateDOMException(error_code);
+  file_error::ThrowDOMException(exception_state, error_code);
+  error_ = file_error::CreateDOMException(error_code);
 }
 
 void FileWriter::Dispose() {

@@ -235,7 +235,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
              base::File::Error result,
              Vector<mojom::blink::FileSystemEntryPtr> entries) {
             if (result != base::File::FILE_OK) {
-              resolver->Reject(FileError::CreateDOMException(result));
+              resolver->Reject(file_error::CreateDOMException(result));
               return;
             }
             bool is_directory = options->type() == "openDirectory";
