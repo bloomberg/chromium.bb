@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -263,7 +264,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     ShowErrorNotification(
         cellular->path(), kNetworkOutOfCreditsNotificationId, cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
-        base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+        base::Bind(&NetworkStateNotifier::ShowMobileSetup,
                    weak_ptr_factory_.GetWeakPtr(), cellular->guid()));
   }
 }
@@ -503,6 +504,10 @@ void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   } else {
     SystemTrayClient::Get()->ShowNetworkSettings(network_id);
   }
+}
+
+void NetworkStateNotifier::ShowMobileSetup(const std::string& network_id) {
+  NetworkConnect::Get()->ShowMobileSetup(network_id);
 }
 
 }  // namespace chromeos
