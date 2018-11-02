@@ -40,6 +40,8 @@ SIMPLE_SIGNATURES = [
     ('void quux(void)', _MakeSignature('void', 'quux', ['void'])),
     ('void waldo(void);', _MakeSignature('void', 'waldo', ['void'])),
     ('int corge(void);', _MakeSignature('int', 'corge', ['void'])),
+    ('int ferda(char **argv[]);',
+     _MakeSignature('int', 'ferda', ['char **argv[]'])),
     ]
 
 TRICKY_SIGNATURES = [
@@ -210,6 +212,13 @@ void  waldo(void) {
 int* TEST_EXPORT foo(bool b) {
   return foo_ptr(b);
 }""", gs.PosixStubWriter.StubFunction(sig))
+
+    # Test for a signature where an array is passed. It should be passed without
+    # square brackets otherwise the compilation failure will occur..
+    self.assertEqual("""extern int ferda(char **argv[]) __attribute__((weak));
+int  ferda(char **argv[]) {
+  return ferda_ptr(argv);
+}""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[6][1]))
 
   def testWriteImplemenationContents(self):
     outfile = StringIO.StringIO()

@@ -649,6 +649,12 @@ class PosixStubWriter(object):
     # Generate the argument list.
     arguments = [re.split('[\*& ]', arg)[-1].strip() for arg in
                  signature['params']]
+    # Remove square brackets from arrays, otherwise we will end with a
+    # compilation failure.
+    for i in range(0, len(arguments)):
+      if arguments[i].endswith('[]'):
+        arguments[i] = arguments[i][0:-2]
+
     arg_list = ', '.join(arguments)
     if arg_list == 'void':
       arg_list = ''
