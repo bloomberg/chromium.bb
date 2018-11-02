@@ -13,8 +13,7 @@ bool DeviceUsesKeyboardLayout2() {
   for (const InputDevice& keyboard :
        InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
     EventRewriterChromeOS::KeyboardTopRowLayout layout;
-    if (keyboard.type == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        EventRewriterChromeOS::GetKeyboardTopRowLayout(keyboard.sys_path,
+    if (EventRewriterChromeOS::GetKeyboardTopRowLayout(keyboard.sys_path,
                                                        &layout)) {
       return layout == EventRewriterChromeOS::kKbdTopRowLayout2;
     }
