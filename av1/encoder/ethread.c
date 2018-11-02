@@ -276,7 +276,8 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
 
     td->mb.e_mbd.tile_ctx = td->tctx;
     td->mb.backup_tile_ctx = &this_tile->backup_tctx;
-    memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
+    if (current_mi_row == this_tile->tile_info.mi_row_start)
+      memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
     av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
 
     // Disable exhaustive search speed features for row based multi-threading of
