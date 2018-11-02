@@ -799,6 +799,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/lifecycle/StartStopWithNativeObserver.java",
   "java/src/org/chromium/chrome/browser/locale/DefaultSearchEngineDialogHelper.java",
   "java/src/org/chromium/chrome/browser/locale/DefaultSearchEnginePromoDialog.java",
+  "java/src/org/chromium/chrome/browser/locale/LocaleChangedBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
   "java/src/org/chromium/chrome/browser/locale/SogouPromoDialog.java",
   "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",

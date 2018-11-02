@@ -65,6 +65,12 @@ public class ChannelsUpdater {
         storeChannelVersionInPrefs();
     }
 
+    public void updateLocale() {
+        if (!mIsAtLeastO) return;
+        assert mChannelsInitializer != null;
+        mChannelsInitializer.updateLocale(ContextUtils.getApplicationContext().getResources());
+    }
+
     private void storeChannelVersionInPrefs() {
         assert mSharedPreferences != null;
         mSharedPreferences.edit().putInt(CHANNELS_VERSION_KEY, mChannelsVersion).apply();
