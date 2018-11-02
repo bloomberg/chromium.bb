@@ -147,7 +147,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
            sb.st_uid != effective_uid)) {
         LOG(ERROR) <<
             "Invalid owner when opening existing shared memory file.";
-        close(fd.get());
         return false;
       }
 
@@ -160,7 +159,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
       if (!readonly_fd.is_valid()) {
         DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-        close(fd.get());
         return false;
       }
     }
