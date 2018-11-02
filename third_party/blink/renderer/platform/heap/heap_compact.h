@@ -137,6 +137,10 @@ class PLATFORM_EXPORT HeapCompact final {
     return false;
   }
 
+  size_t last_fixup_count_for_testing() {
+    return last_fixup_count_for_testing_;
+  }
+
  private:
   class MovableObjectFixups;
 
@@ -179,6 +183,8 @@ class PLATFORM_EXPORT HeapCompact final {
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   HashSet<MovableReference*> traced_slots_;
+
+  size_t last_fixup_count_for_testing_;
 
   static bool force_compaction_gc_;
 };

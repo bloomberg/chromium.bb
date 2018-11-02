@@ -315,7 +315,8 @@ HeapCompact::HeapCompact(ThreadHeap* heap)
       do_compact_(false),
       gc_count_since_last_compaction_(0),
       free_list_size_(0),
-      compactable_arenas_(0u) {
+      compactable_arenas_(0u),
+      last_fixup_count_for_testing_(0) {
   // The heap compaction implementation assumes the contiguous range,
   //
   //   [Vector1ArenaIndex, HashTableArenaIndex]
@@ -489,9 +490,12 @@ void HeapCompact::StartThreadCompaction() {
     return;
 
   // The mapping between the slots and the backing stores are created
+  last_fixup_count_for_testing_ = 0;
   for (auto** slot : traced_slots_) {
-    if (*slot)
+    if (*slot) {
       Fixups().Add(slot);
+      last_fixup_count_for_testing_++;
+    }
   }
   traced_slots_.clear();
 }

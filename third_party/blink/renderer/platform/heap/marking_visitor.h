@@ -135,6 +135,9 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
                                TraceDescriptor desc,
                                WeakCallback callback,
                                void* parameter) final {
+    RegisterBackingStoreReference(object_slot);
+    if (!object)
+      return;
     RegisterWeakCallback(parameter, callback);
   }
 

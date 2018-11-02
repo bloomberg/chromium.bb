@@ -1637,9 +1637,9 @@ class IncrementalMarkingTestDriver {
     thread_state_->CompleteSweep();
   }
 
-  HashSet<MovableReference*>& GetTracedSlot() {
+  size_t GetHeapCompactLastFixupCount() {
     HeapCompact* compaction = ThreadState::Current()->Heap().Compaction();
-    return compaction->traced_slots_;
+    return compaction->last_fixup_count_for_testing();
   }
 
  private:
@@ -1754,12 +1754,32 @@ TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
   HeapCompact::ScheduleCompactionGCForTesting(true);
   persistent->push_back(Object::Create());
   driver.Start();
-  driver.FinishSteps();
+  driver.FinishGC();
 
   // Should collect also slots that has only inline buffer and nullptr
   // references.
-  EXPECT_EQ(driver.GetTracedSlot().size(), 2u);
+#if defined(ANNOTATE_CONTIGUOUS_CONTAINER)
+  // When ANNOTATE_CONTIGUOUS_CONTAINER is defined, inline capacity is ignored.
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
+#else
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 2u);
+#endif
+}
+
+TEST(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
+  using Store = HeapHashCountedSet<WeakMember<Object>>;
+
+  Persistent<Store> persistent(new Store());
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  HeapCompact::ScheduleCompactionGCForTesting(true);
+  driver.Start();
+  driver.FinishSteps();
+  persistent->insert(Object::Create());
   driver.FinishGC();
+
+  // Weak caallback should register the slot.
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
 }
 
 }  // namespace incremental_marking_test
