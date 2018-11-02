@@ -331,7 +331,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
         base::NumberToString(ack_result).c_str());
     touch_action_filter_.AppendToGestureSequenceForDebugging(
         base::NumberToString(event.event.unique_touch_event_id).c_str());
-    touch_action_filter_.SetTouchSequenceInProgress(true);
+    touch_action_filter_.IncreaseActiveTouches();
     // There are some cases the touch action may not have value when receiving
     // the ACK for the touch start, such as input ack state is
     // NO_CONSUMER_EXISTS, or the renderer has swapped out. In these cases, set
@@ -347,7 +347,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     touch_action_filter_.AppendToGestureSequenceForDebugging("E");
     touch_action_filter_.AppendToGestureSequenceForDebugging(
         base::NumberToString(event.event.unique_touch_event_id).c_str());
-    touch_action_filter_.SetTouchSequenceInProgress(false);
+    touch_action_filter_.DecreaseActiveTouches();
     touch_action_filter_.ReportAndResetTouchAction();
     UpdateTouchAckTimeoutEnabled();
   }
