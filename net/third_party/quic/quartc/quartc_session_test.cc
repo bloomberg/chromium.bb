@@ -5,7 +5,7 @@
 #include "net/third_party/quic/quartc/quartc_session.h"
 
 #include "build/build_config.h"
-#include "net/third_party/quic/core/crypto/crypto_server_config_protobuf.h"
+#include "net/third_party/quic/core/proto/crypto_server_config.pb.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"

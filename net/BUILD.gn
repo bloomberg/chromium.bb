@@ -1283,8 +1283,6 @@ component("net") {
       "third_party/quic/core/crypto/crypto_protocol.h",
       "third_party/quic/core/crypto/crypto_secret_boxer.cc",
       "third_party/quic/core/crypto/crypto_secret_boxer.h",
-      "third_party/quic/core/crypto/crypto_server_config_protobuf.cc",
-      "third_party/quic/core/crypto/crypto_server_config_protobuf.h",
       "third_party/quic/core/crypto/crypto_utils.cc",
       "third_party/quic/core/crypto/crypto_utils.h",
       "third_party/quic/core/crypto/curve25519_key_exchange.cc",
@@ -2266,6 +2264,7 @@ proto_library("net_quic_proto") {
 
   sources = [
     "third_party/quic/core/proto/cached_network_parameters.proto",
+    "third_party/quic/core/proto/crypto_server_config.proto",
     "third_party/quic/core/proto/source_address_token.proto",
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
