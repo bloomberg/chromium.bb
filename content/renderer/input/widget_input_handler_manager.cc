@@ -286,12 +286,8 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
 
 void WidgetInputHandlerManager::ProcessTouchAction(
     cc::TouchAction touch_action) {
-  // Cancel the touch timeout on TouchActionNone since it is a good hint
-  // that author doesn't want scrolling.
-  if (touch_action == cc::TouchAction::kTouchActionNone) {
-    if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
-      host->CancelTouchTimeout();
-  }
+  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+    host->SetTouchActionFromMain(touch_action);
 }
 
 mojom::WidgetInputHandlerHost*

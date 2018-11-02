@@ -156,7 +156,9 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       has_ongoing_compositor_scroll_or_pinch_(false),
       is_first_gesture_scroll_update_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)) {
+      snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)),
+      compositor_touch_action_enabled_(
+          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
@@ -786,7 +788,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
           event_listener_type ==
           cc::InputHandler::TouchStartOrMoveEventListenerType::
               HANDLER_ON_SCROLLING_LAYER;
-      result = DID_NOT_HANDLE;
+      // A non-passive touch start / move will always set the whitelisted touch
+      // action to kTouchActionNone, and in that case we do not ack the event
+      // from the compositor.
+      if (compositor_touch_action_enabled_ && white_listed_touch_action &&
+          *white_listed_touch_action != cc::kTouchActionNone)
+        result = DID_HANDLE_NON_BLOCKING;
+      else
+        result = DID_NOT_HANDLE;
       break;
     }
   }

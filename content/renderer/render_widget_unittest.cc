@@ -78,7 +78,7 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
   MockWidgetInputHandlerHost(
       mojo::InterfaceRequest<mojom::WidgetInputHandlerHost> request)
       : binding_(this, std::move(request)) {}
-  MOCK_METHOD0(CancelTouchTimeout, void());
+  MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
 
   MOCK_METHOD3(SetWhiteListedTouchAction,
                void(cc::TouchAction, uint32_t, content::InputEventAckState));

@@ -28,10 +28,12 @@ class TouchTimeoutHandler {
 
   void StartIfNecessary(const TouchEventWithLatencyInfo& event);
   bool ConfirmTouchEvent(uint32_t unique_touch_event_id,
-                         InputEventAckState ack_result);
+                         InputEventAckState ack_result,
+                         bool should_stop_timeout_monitor);
   bool FilterEvent(const blink::WebTouchEvent& event);
   void SetEnabled(bool enabled);
   void SetUseMobileTimeout(bool use_mobile_timeout);
+  void StopTimeoutMonitor();
   bool IsTimeoutTimerRunning() const { return timeout_monitor_.IsRunning(); }
   bool IsEnabled() const { return enabled_ && !GetTimeoutDelay().is_zero(); }
 

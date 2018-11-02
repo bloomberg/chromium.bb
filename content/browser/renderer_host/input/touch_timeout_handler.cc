@@ -81,7 +81,8 @@ void TouchTimeoutHandler::StartIfNecessary(
 }
 
 bool TouchTimeoutHandler::ConfirmTouchEvent(uint32_t unique_touch_event_id,
-                                            InputEventAckState ack_result) {
+                                            InputEventAckState ack_result,
+                                            bool should_stop_timeout_monitor) {
   if (timeout_event_.event.unique_touch_event_id != unique_touch_event_id)
     return false;
 
@@ -89,7 +90,8 @@ bool TouchTimeoutHandler::ConfirmTouchEvent(uint32_t unique_touch_event_id,
     case PENDING_ACK_NONE:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
         enabled_for_current_sequence_ = false;
-      timeout_monitor_.Stop();
+      if (should_stop_timeout_monitor)
+        timeout_monitor_.Stop();
       return false;
     case PENDING_ACK_ORIGINAL_EVENT:
       if (AckedTimeoutEventRequiresCancel(ack_result)) {
@@ -120,6 +122,10 @@ bool TouchTimeoutHandler::FilterEvent(const WebTouchEvent& event) {
   }
 
   return true;
+}
+
+void TouchTimeoutHandler::StopTimeoutMonitor() {
+  timeout_monitor_.Stop();
 }
 
 void TouchTimeoutHandler::SetEnabled(bool enabled) {
