@@ -121,7 +121,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   void SetInterfaceAlternateSettingComplete(uint8_t interface_number,
                                             uint8_t alternate_setting,
                                             const ResultCallback& callback);
-  Request* MakeRequest(HANDLE handle);
+  Request* MakeRequest(bool winusb_handle);
   std::unique_ptr<Request> UnlinkRequest(Request* request);
   void GotNodeConnectionInformation(TransferCallback callback,
                                     void* node_connection_info,
@@ -136,11 +136,13 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
       Request* request_ptr,
       DWORD win32_result,
       size_t bytes_transferred);
-  void TransferComplete(TransferCallback callback,
-                        scoped_refptr<base::RefCountedBytes> buffer,
-                        Request* request_ptr,
-                        DWORD win32_result,
-                        size_t bytes_transferred);
+  void TransferComplete(
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+      TransferCallback callback,
+      scoped_refptr<base::RefCountedBytes> buffer,
+      Request* request_ptr,
+      DWORD win32_result,
+      size_t bytes_transferred);
   void GenericTransferInternal(
       UsbTransferDirection direction,
       uint8_t endpoint_number,
@@ -162,6 +164,9 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   // GetOverlappedResult().
   base::win::ScopedHandle hub_handle_;
   base::win::ScopedHandle function_handle_;
+
+  // The handle returned by WinUsb_Initialize is special.
+  WINUSB_INTERFACE_HANDLE first_interface_handle_ = INVALID_HANDLE_VALUE;
 
   std::map<uint8_t, Interface> interfaces_;
   std::map<uint8_t, Endpoint> endpoints_;
