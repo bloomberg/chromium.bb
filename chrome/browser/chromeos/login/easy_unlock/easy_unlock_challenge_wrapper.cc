@@ -77,7 +77,7 @@ void EasyUnlockChallengeWrapper::OnChannelBindingDataSigned(
   wrapped_challenge.set_header_and_body(challenge_);
   wrapped_challenge.set_signature(signature_container.SerializeAsString());
 
-  PA_LOG(INFO) << "Finished wrapping challenge.";
+  PA_LOG(VERBOSE) << "Finished wrapping challenge.";
   callback_.Run(wrapped_challenge.SerializeAsString());
 }
 

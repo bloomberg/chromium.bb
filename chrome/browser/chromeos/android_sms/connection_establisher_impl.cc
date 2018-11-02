@@ -40,8 +40,8 @@ void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
     ConnectionMode connection_mode) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (is_connected_) {
-    PA_LOG(INFO) << "Connection already exists. Skipped sending start "
-                    "streaming message to service worker.";
+    PA_LOG(VERBOSE) << "Connection already exists. Skipped sending start "
+                       "streaming message to service worker.";
     return;
   }
 
@@ -58,7 +58,7 @@ void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
   }
   msg.encoded_message = msg.owned_encoded_message;
 
-  PA_LOG(INFO) << "Dispatching start streaming message to service worker.";
+  PA_LOG(VERBOSE) << "Dispatching start streaming message to service worker.";
   is_connected_ = true;
   service_worker_context->StartServiceWorkerAndDispatchLongRunningMessage(
       GetAndroidMessagesURL(), std::move(msg),
@@ -70,8 +70,9 @@ void ConnectionEstablisherImpl::OnMessageDispatchResult(bool status) {
   // When message dispatch result callback is called, it means that the service
   // worker resolved it's message handler promise and is not holding a
   // background connection.
-  PA_LOG(INFO) << "Service worker streaming message dispatch returned status: "
-               << status;
+  PA_LOG(VERBOSE)
+      << "Service worker streaming message dispatch returned status: "
+      << status;
   is_connected_ = false;
 }
 

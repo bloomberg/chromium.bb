@@ -262,9 +262,9 @@ void HostBackendDelegateImpl::OnNewDevicesSynced() {
                                 : kNoHostForLogging;
 
   host_from_last_sync_ = host_from_sync;
-  PA_LOG(INFO) << "HostBackendDelegateImpl::OnNewDevicesSynced(): New host "
-               << "device has been set. Old host device ID: " << old_host_id
-               << ", New host device ID: " << new_host_id;
+  PA_LOG(VERBOSE) << "HostBackendDelegateImpl::OnNewDevicesSynced(): New host "
+                  << "device has been set. Old host device ID: " << old_host_id
+                  << ", New host device ID: " << new_host_id;
 
   // If there is a pending request and the new host fulfills that pending
   // request, there is no longer a pending request.
@@ -310,7 +310,7 @@ void HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult(
      << ", Attempted to enable: " << (attempted_to_enable ? "true" : "false");
 
   if (success) {
-    PA_LOG(INFO) << ss.str();
+    PA_LOG(VERBOSE) << ss.str();
     return;
   }
 

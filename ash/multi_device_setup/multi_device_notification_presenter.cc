@@ -203,9 +203,9 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
 
 void MultiDeviceNotificationPresenter::OnNotificationClicked() {
   DCHECK(notification_status_ != Status::kNoNotificationVisible);
-  PA_LOG(INFO) << "User clicked "
-               << GetNotificationDescriptionForLogging(notification_status_)
-               << ".";
+  PA_LOG(VERBOSE) << "User clicked "
+                  << GetNotificationDescriptionForLogging(notification_status_)
+                  << ".";
   UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup_NotificationClicked",
                             GetMetricValueForNotification(notification_status_),
                             kNotificationTypeMax);
@@ -230,9 +230,9 @@ void MultiDeviceNotificationPresenter::ShowNotification(
     const Status notification_status,
     const base::string16& title,
     const base::string16& message) {
-  PA_LOG(INFO) << "Showing "
-               << GetNotificationDescriptionForLogging(notification_status)
-               << ".";
+  PA_LOG(VERBOSE) << "Showing "
+                  << GetNotificationDescriptionForLogging(notification_status)
+                  << ".";
   UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup_NotificationShown",
                             GetMetricValueForNotification(notification_status),
                             kNotificationTypeMax);

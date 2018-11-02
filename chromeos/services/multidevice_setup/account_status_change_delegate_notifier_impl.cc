@@ -154,9 +154,10 @@ void AccountStatusChangeDelegateNotifierImpl::OnOobeCompleted() {
 void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   if (!delegate()) {
-    PA_LOG(INFO) << "AccountStatusChangeDelegateNotifierImpl::"
-                 << "CheckForMultiDeviceEvents(): Tried to check for potential "
-                 << "events, but no delegate was set.";
+    PA_LOG(WARNING)
+        << "AccountStatusChangeDelegateNotifierImpl::"
+        << "CheckForMultiDeviceEvents(): Tried to check for potential "
+        << "events, but no delegate was set.";
     return;
   }
 

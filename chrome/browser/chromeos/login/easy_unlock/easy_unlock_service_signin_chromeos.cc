@@ -157,7 +157,7 @@ std::vector<cryptauth::BeaconSeed> DeserializeBeaconSeeds(
     beacon_seeds.push_back(beacon_seed);
   }
 
-  PA_LOG(INFO) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
+  PA_LOG(VERBOSE) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
   return beacon_seeds;
 }
 
@@ -198,8 +198,8 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
                         &device_public_key_base64);
   for (const auto& device_data : it->second->devices) {
     if (device_data.public_key == device_public_key_base64) {
-      PA_LOG(INFO) << "Wrapping challenge for " << account_id.Serialize()
-                   << "...";
+      PA_LOG(VERBOSE) << "Wrapping challenge for " << account_id.Serialize()
+                      << "...";
       challenge_wrapper_.reset(new EasyUnlockChallengeWrapper(
           device_data.challenge, channel_binding_data, account_id,
           EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile())));
@@ -409,7 +409,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
   if (GetPersistedHardlockState(&hardlock_state) &&
       hardlock_state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
-    PA_LOG(INFO) << "Hardlock present, skipping remaining login flow.";
+    PA_LOG(VERBOSE) << "Hardlock present, skipping remaining login flow.";
     return;
   }
 
@@ -503,8 +503,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
     std::vector<cryptauth::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
-      PA_LOG(INFO) << "Deserializing BeaconSeeds: "
-                   << device.serialized_beacon_seeds;
+      PA_LOG(VERBOSE) << "Deserializing BeaconSeeds: "
+                      << device.serialized_beacon_seeds;
       beacon_seeds = DeserializeBeaconSeeds(device.serialized_beacon_seeds);
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
@@ -516,11 +516,11 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
         0L /* last_update_time_millis */, software_features, beacon_seeds);
 
     remote_devices.push_back(remote_device);
-    PA_LOG(INFO) << "Loaded Remote Device:\n"
-                 << "  user id: " << remote_device.user_id << "\n"
-                 << "  device id: "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        remote_device.GetDeviceId());
+    PA_LOG(VERBOSE) << "Loaded Remote Device:\n"
+                    << "  user id: " << remote_device.user_id << "\n"
+                    << "  device id: "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           remote_device.GetDeviceId());
   }
 
   // If |chromeos::features::kMultiDeviceApi| is enabled, both a remote device

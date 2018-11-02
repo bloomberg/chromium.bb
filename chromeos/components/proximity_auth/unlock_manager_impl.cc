@@ -179,11 +179,11 @@ void UnlockManagerImpl::OnUnlockEventSent(bool success) {
 
 void UnlockManagerImpl::OnRemoteStatusUpdate(
     const RemoteStatusUpdate& status_update) {
-  PA_LOG(INFO) << "Status Update: ("
-               << "user_present=" << status_update.user_presence << ", "
-               << "secure_screen_lock="
-               << status_update.secure_screen_lock_state << ", "
-               << "trust_agent=" << status_update.trust_agent_state << ")";
+  PA_LOG(VERBOSE) << "Status Update: ("
+                  << "user_present=" << status_update.user_presence << ", "
+                  << "secure_screen_lock="
+                  << status_update.secure_screen_lock_state << ", "
+                  << "trust_agent=" << status_update.trust_agent_state << ")";
   metrics::RecordRemoteSecuritySettingsState(
       GetRemoteSecuritySettingsState(status_update));
 
@@ -230,7 +230,7 @@ void UnlockManagerImpl::OnDisconnected() {
 }
 
 void UnlockManagerImpl::OnProximityStateChanged() {
-  PA_LOG(INFO) << "Proximity state changed.";
+  PA_LOG(VERBOSE) << "Proximity state changed.";
   UpdateLockScreen();
 }
 
@@ -291,7 +291,7 @@ void UnlockManagerImpl::AttemptToStartRemoteDeviceLifecycle() {
 
 void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   if (is_attempting_auth_) {
-    PA_LOG(INFO) << "Already attempting auth.";
+    PA_LOG(VERBOSE) << "Already attempting auth.";
     return;
   }
 
@@ -325,7 +325,8 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
     if (GetMessenger()->SupportsSignIn()) {
       GetMessenger()->RequestUnlock();
     } else {
-      PA_LOG(INFO) << "Protocol v3.1 not supported, skipping request_unlock.";
+      PA_LOG(VERBOSE)
+          << "Protocol v3.1 not supported, skipping request_unlock.";
       GetMessenger()->DispatchUnlockEvent();
     }
   }
@@ -389,7 +390,7 @@ void UnlockManagerImpl::OnGetConnectionMetadata(
 }
 
 void UnlockManagerImpl::OnGotSignInChallenge(const std::string& challenge) {
-  PA_LOG(INFO) << "Got sign-in challenge, sending for decryption...";
+  PA_LOG(VERBOSE) << "Got sign-in challenge, sending for decryption...";
   if (GetMessenger())
     GetMessenger()->RequestDecryption(challenge);
 }
@@ -512,11 +513,11 @@ void UnlockManagerImpl::AcceptAuthAttempt(bool should_accept) {
 
   is_attempting_auth_ = false;
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
-    PA_LOG(INFO) << "Finalizing sign-in...";
+    PA_LOG(VERBOSE) << "Finalizing sign-in...";
     proximity_auth_client_->FinalizeSignin(
         should_accept && sign_in_secret_ ? *sign_in_secret_ : std::string());
   } else {
-    PA_LOG(INFO) << "Finalizing unlock...";
+    PA_LOG(VERBOSE) << "Finalizing unlock...";
     proximity_auth_client_->FinalizeUnlock(should_accept);
   }
 }

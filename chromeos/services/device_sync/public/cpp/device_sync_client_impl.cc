@@ -168,9 +168,9 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
     const base::Optional<std::vector<cryptauth::RemoteDevice>>&
         remote_devices) {
   if (!remote_devices) {
-    PA_LOG(INFO) << "Tried to fetch synced devices before service was fully "
-                    "initialized; waiting for sync to complete before "
-                    "continuing.";
+    PA_LOG(VERBOSE) << "Tried to fetch synced devices before service was fully "
+                       "initialized; waiting for sync to complete before "
+                       "continuing.";
     return;
   }
 
@@ -195,9 +195,9 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
 void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     const base::Optional<cryptauth::RemoteDevice>& local_device_metadata) {
   if (!local_device_metadata) {
-    PA_LOG(INFO) << "Tried to get local device metadata before service was "
-                    "fully initialized; waiting for enrollment to complete "
-                    "before continuing.";
+    PA_LOG(VERBOSE) << "Tried to get local device metadata before service was "
+                       "fully initialized; waiting for enrollment to complete "
+                       "before continuing.";
     return;
   }
 

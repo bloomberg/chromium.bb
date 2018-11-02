@@ -288,11 +288,11 @@ void SecureChannel::OnMessageEncoded(const std::string& feature,
 
 void SecureChannel::OnMessageDecoded(
     const std::string& feature, const std::string& decoded_message) {
-  PA_LOG(INFO) << "Received message from " << connection_->GetDeviceAddress()
-               << ": {"
-               << "feature: \"" << feature << "\", "
-               << "payload: \"" << decoded_message << "\""
-               << "}";
+  PA_LOG(VERBOSE) << "Received message from " << connection_->GetDeviceAddress()
+                  << ": {"
+                  << "feature: \"" << feature << "\", "
+                  << "payload: \"" << decoded_message << "\""
+                  << "}";
 
   for (auto& observer : observer_list_)
     observer.OnMessageReceived(this, feature, decoded_message);

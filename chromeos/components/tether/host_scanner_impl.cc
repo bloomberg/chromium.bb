@@ -79,7 +79,7 @@ void HostScannerImpl::StopScan() {
   if (!host_scanner_operation_)
     return;
 
-  PA_LOG(INFO) << "Host scan has been stopped prematurely.";
+  PA_LOG(VERBOSE) << "Host scan has been stopped prematurely.";
 
   host_scanner_operation_->RemoveObserver(
       gms_core_notifications_state_tracker_);
@@ -98,8 +98,8 @@ void HostScannerImpl::OnTetherHostsFetched(
     return;
   }
 
-  PA_LOG(INFO) << "Starting Tether host scan. " << tether_hosts.size() << " "
-               << "potential host(s) included in the search.";
+  PA_LOG(VERBOSE) << "Starting Tether host scan. " << tether_hosts.size() << " "
+                  << "potential host(s) included in the search.";
 
   tether_guids_in_cache_before_scan_ =
       host_scan_cache_->GetTetherGuidsInCache();
@@ -173,8 +173,9 @@ void HostScannerImpl::OnSessionStateChanged() {
   // notification to be shown once each time the device is unlocked. Without
   // this change, the notification would only be shown once per user login.
   // See https://crbug.com/813838.
-  PA_LOG(INFO) << "Screen was locked; the \"available hosts\" notification can "
-               << "be shown again after the next unlock.";
+  PA_LOG(VERBOSE)
+      << "Screen was locked; the \"available hosts\" notification can "
+      << "be shown again after the next unlock.";
   has_notification_been_shown_in_previous_scan_ = false;
 }
 
@@ -241,8 +242,8 @@ void HostScannerImpl::OnFinalScanResultReceived(
   was_notification_shown_in_current_scan_ = false;
   was_notification_showing_when_current_scan_started_ = false;
 
-  PA_LOG(INFO) << "Finished Tether host scan. " << final_scan_results.size()
-               << " potential host(s) were found.";
+  PA_LOG(VERBOSE) << "Finished Tether host scan. " << final_scan_results.size()
+                  << " potential host(s) were found.";
 
   // If the final scan result has been received, the operation is finished.
   // Delete it.

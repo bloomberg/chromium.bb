@@ -647,7 +647,7 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesSuccess(
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
 
   if (!response.devices().empty())
-    PA_LOG(INFO) << "Devices were successfully synced.";
+    PA_LOG(VERBOSE) << "Devices were successfully synced.";
 
   for (const auto& device : response.devices()) {
     std::unique_ptr<base::DictionaryValue> device_dictionary =

@@ -221,7 +221,7 @@ void BleScannerImpl::EnsureDiscoverySessionActive() {
 void BleScannerImpl::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   is_initializing_discovery_session_ = false;
-  PA_LOG(INFO) << "Started discovery session successfully.";
+  PA_LOG(VERBOSE) << "Started discovery session successfully.";
 
   discovery_session_ = std::move(discovery_session);
   discovery_session_weak_ptr_factory_ =
@@ -256,7 +256,7 @@ void BleScannerImpl::EnsureDiscoverySessionNotActive() {
 
 void BleScannerImpl::OnDiscoverySessionStopped() {
   is_stopping_discovery_session_ = false;
-  PA_LOG(INFO) << "Stopped discovery session successfully.";
+  PA_LOG(VERBOSE) << "Stopped discovery session successfully.";
 
   discovery_session_.reset();
   discovery_session_weak_ptr_factory_.reset();

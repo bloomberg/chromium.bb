@@ -95,10 +95,10 @@ void NetworkConnectionHandlerTetherDelegate::ConnectToNetwork(
     std::string previous_host_guid = active_host_->GetTetherNetworkGuid();
     DCHECK(!previous_host_guid.empty());
 
-    PA_LOG(INFO) << "Connection requested to GUID " << tether_network_guid
-                 << ", but there is already an active connection. "
-                 << "Disconnecting from network with GUID "
-                 << previous_host_guid << ".";
+    PA_LOG(VERBOSE) << "Connection requested to GUID " << tether_network_guid
+                    << ", but there is already an active connection. "
+                    << "Disconnecting from network with GUID "
+                    << previous_host_guid << ".";
     DisconnectFromNetwork(
         previous_host_guid, base::DoNothing(),
         base::Bind(&OnFailedDisconnectionFromPreviousHost, previous_host_guid));

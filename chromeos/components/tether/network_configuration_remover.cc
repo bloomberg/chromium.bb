@@ -12,8 +12,8 @@
 namespace {
 
 void RemoveConfigurationSuccessCallback(const std::string& path) {
-  PA_LOG(INFO) << "Successfully removed Wi-Fi network with path " << path
-               << ".";
+  PA_LOG(VERBOSE) << "Successfully removed Wi-Fi network with path " << path
+                  << ".";
 }
 
 void RemoveConfigurationFailureCallback(

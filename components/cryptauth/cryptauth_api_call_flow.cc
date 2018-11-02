@@ -97,10 +97,10 @@ void CryptAuthApiCallFlow::ProcessApiCallFailure(
   }
 
   if (body) {
-    PA_LOG(INFO) << "API call failed:\n" << *body;
+    PA_LOG(ERROR) << "API call failed:\n" << *body;
   } else {
-    PA_LOG(INFO) << "API call failed, no response body available, net_error:"
-                 << net_error;
+    PA_LOG(ERROR) << "API call failed, no response body available, net_error:"
+                  << net_error;
   }
   error_callback_.Run(*error);
 }

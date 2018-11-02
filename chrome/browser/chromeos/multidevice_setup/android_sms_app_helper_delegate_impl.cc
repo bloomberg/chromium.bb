@@ -71,7 +71,7 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndLaunchAndroidSmsApp() {
       extensions::util::GetInstalledPwaForUrl(
           profile_, chromeos::android_sms::GetAndroidMessagesURL());
   if (!android_sms_pwa) {
-    PA_LOG(INFO) << "No Messages app found. Installing it.";
+    PA_LOG(VERBOSE) << "No Messages app found. Installing it.";
     InstallAndroidSmsApp(true /* launch_on_install */);
     return;
   }
@@ -85,7 +85,7 @@ void AndroidSmsAppHelperDelegateImpl::LaunchAndroidSmsApp() {
           profile_, chromeos::android_sms::GetAndroidMessagesURL());
   DCHECK(android_sms_pwa);
 
-  PA_LOG(INFO) << "Messages app Launching...";
+  PA_LOG(VERBOSE) << "Messages app Launching...";
   AppLaunchParams params(
       profile_, android_sms_pwa, extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL);
@@ -106,7 +106,7 @@ void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
         content_settings::ResourceIdentifier(),
         std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
 
-    PA_LOG(INFO) << "Messages app installed! URL: " << app_url;
+    PA_LOG(VERBOSE) << "Messages app installed! URL: " << app_url;
     if (launch_on_install)
       LaunchAndroidSmsApp();
   } else {

@@ -308,8 +308,8 @@ void MessageTransferOperation::OnConnection(
 
 void MessageTransferOperation::OnDisconnected(
     cryptauth::RemoteDeviceRef remote_device) {
-  PA_LOG(INFO) << "Remote device disconnected from this device: "
-               << remote_device.GetTruncatedDeviceIdForLogs();
+  PA_LOG(VERBOSE) << "Remote device disconnected from this device: "
+                  << remote_device.GetTruncatedDeviceIdForLogs();
   UnregisterDevice(remote_device);
 }
 
@@ -336,34 +336,34 @@ void MessageTransferOperation::HandleDeviceDisconnection(
     case BleConnectionManager::StateChangeDetail::
         STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION:
       ++attempts_for_device.empty_scan_attempts;
-      PA_LOG(INFO) << "Connection attempt failed; could not discover the "
-                   << "device with ID "
-                   << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                   << "Number of failures to establish connection: "
-                   << attempts_for_device.empty_scan_attempts;
+      PA_LOG(VERBOSE) << "Connection attempt failed; could not discover the "
+                      << "device with ID "
+                      << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                      << "Number of failures to establish connection: "
+                      << attempts_for_device.empty_scan_attempts;
 
       if (attempts_for_device.empty_scan_attempts >= kMaxEmptyScansPerDevice) {
-        PA_LOG(INFO) << "Reached retry limit for failing to discover the "
-                     << "device with ID "
-                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                     << "Unregistering device.";
+        PA_LOG(VERBOSE) << "Reached retry limit for failing to discover the "
+                        << "device with ID "
+                        << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                        << "Unregistering device.";
         UnregisterDevice(remote_device);
       }
       break;
     case BleConnectionManager::StateChangeDetail::
         STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED:
       ++attempts_for_device.gatt_connection_attempts;
-      PA_LOG(INFO) << "Connection attempt failed; GATT connection error for "
-                   << "device with ID "
-                   << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                   << "Number of GATT error: "
-                   << attempts_for_device.gatt_connection_attempts;
+      PA_LOG(VERBOSE) << "Connection attempt failed; GATT connection error for "
+                      << "device with ID "
+                      << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                      << "Number of GATT error: "
+                      << attempts_for_device.gatt_connection_attempts;
       if (attempts_for_device.gatt_connection_attempts >=
           kMaxGattConnectionAttemptsPerDevice) {
-        PA_LOG(INFO) << "Reached retry limit for GATT connection errors for "
-                     << "device with ID "
-                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                     << "Unregistering device.";
+        PA_LOG(VERBOSE) << "Reached retry limit for GATT connection errors for "
+                        << "device with ID "
+                        << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                        << "Unregistering device.";
         UnregisterDevice(remote_device);
       }
       break;
@@ -397,9 +397,9 @@ void MessageTransferOperation::StartMessageTimerForDevice(
 void MessageTransferOperation::StartTimerForDevice(
     cryptauth::RemoteDeviceRef remote_device,
     uint32_t timeout_seconds) {
-  PA_LOG(INFO) << "Starting timer for operation with message type "
-               << message_type_for_connection_ << " from device with ID "
-               << remote_device.GetTruncatedDeviceIdForLogs() << ".";
+  PA_LOG(VERBOSE) << "Starting timer for operation with message type "
+                  << message_type_for_connection_ << " from device with ID "
+                  << remote_device.GetTruncatedDeviceIdForLogs() << ".";
 
   remote_device_to_timer_map_.emplace(remote_device,
                                       timer_factory_->CreateOneShotTimer());

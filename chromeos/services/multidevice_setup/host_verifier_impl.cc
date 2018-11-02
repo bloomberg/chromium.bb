@@ -239,8 +239,8 @@ void HostVerifierImpl::AttemptHostVerification() {
     return;
   }
 
-  PA_LOG(INFO) << "HostVerifierImpl::AttemptHostVerification(): Attempting "
-               << "host verification now.";
+  PA_LOG(VERBOSE) << "HostVerifierImpl::AttemptHostVerification(): Attempting "
+                  << "host verification now.";
   device_sync_client_->FindEligibleDevices(
       cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, base::DoNothing());
 }

@@ -376,7 +376,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (auth_attempt_) {
-    PA_LOG(INFO) << "Already attempting auth, skipping this request.";
+    PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
     return;
   }
 
@@ -646,7 +646,7 @@ void EasyUnlockService::SetProximityAuthDevices(
   }
 
   if (!proximity_auth_system_) {
-    PA_LOG(INFO) << "Creating ProximityAuthSystem.";
+    PA_LOG(VERBOSE) << "Creating ProximityAuthSystem.";
     proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
         GetType() == TYPE_SIGNIN
             ? proximity_auth::ProximityAuthSystem::SIGN_IN

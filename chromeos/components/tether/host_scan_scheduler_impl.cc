@@ -94,8 +94,8 @@ void HostScanSchedulerImpl::AttemptScanIfOffline() {
       network_state_handler_->FirstNetworkByType(
           chromeos::NetworkTypePattern::Default());
   if (IsOnlineOrHasActiveTetherConnection(first_network)) {
-    PA_LOG(INFO) << "Skipping scan attempt because the device is already "
-                    "connected to a network.";
+    PA_LOG(VERBOSE) << "Skipping scan attempt because the device is already "
+                       "connected to a network.";
     return;
   }
 
@@ -180,7 +180,7 @@ void HostScanSchedulerImpl::AttemptScan() {
 
   // If the screen is locked, a host scan should not occur.
   if (session_manager_->IsScreenLocked()) {
-    PA_LOG(INFO) << "Skipping scan attempt because the screen is locked.";
+    PA_LOG(VERBOSE) << "Skipping scan attempt because the screen is locked.";
     return;
   }
 
@@ -225,8 +225,8 @@ void HostScanSchedulerImpl::LogHostScanBatchMetric() {
       base::TimeDelta::FromDays(kMaxScanMetricsDays) /* max */,
       kNumMetricsBuckets /* bucket_count */);
 
-  PA_LOG(INFO) << "Logging host scan batch duration. Duration was "
-               << batch_duration.InSeconds() << " seconds.";
+  PA_LOG(VERBOSE) << "Logging host scan batch duration. Duration was "
+                  << batch_duration.InSeconds() << " seconds.";
 }
 
 }  // namespace tether

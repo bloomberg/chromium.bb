@@ -200,28 +200,31 @@ void HostScannerOperation::OnMessageReceived(
       static_cast<TetherAvailabilityResponse*>(
           message_wrapper->GetProto().get());
   if (AreGmsCoreNotificationsDisabled(response)) {
-    PA_LOG(INFO) << "Received TetherAvailabilityResponse from device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs() << " which "
-                 << "indicates that Google Play Services notifications are "
-                 << "disabled. Response code: " << response->response_code();
+    PA_LOG(VERBOSE)
+        << "Received TetherAvailabilityResponse from device with ID "
+        << remote_device.GetTruncatedDeviceIdForLogs() << " which "
+        << "indicates that Google Play Services notifications are "
+        << "disabled. Response code: " << response->response_code();
     gms_core_notifications_disabled_devices_.push_back(remote_device);
     NotifyObserversOfScannedDeviceList(false /* is_final_scan_result */);
   } else if (!IsTetheringAvailableWithValidDeviceStatus(response)) {
     // If the received message is invalid or if it states that tethering is
     // unavailable, ignore it.
-    PA_LOG(INFO) << "Received TetherAvailabilityResponse from device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs() << " which "
-                 << "indicates that tethering is not available.";
+    PA_LOG(VERBOSE)
+        << "Received TetherAvailabilityResponse from device with ID "
+        << remote_device.GetTruncatedDeviceIdForLogs() << " which "
+        << "indicates that tethering is not available.";
   } else {
     bool setup_required =
         response->response_code() ==
         TetherAvailabilityResponse_ResponseCode::
             TetherAvailabilityResponse_ResponseCode_SETUP_NEEDED;
 
-    PA_LOG(INFO) << "Received TetherAvailabilityResponse from device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs() << " which "
-                 << "indicates that tethering is available. setup_required = "
-                 << setup_required;
+    PA_LOG(VERBOSE)
+        << "Received TetherAvailabilityResponse from device with ID "
+        << remote_device.GetTruncatedDeviceIdForLogs() << " which "
+        << "indicates that tethering is available. setup_required = "
+        << setup_required;
 
     tether_host_response_recorder_->RecordSuccessfulTetherAvailabilityResponse(
         remote_device);

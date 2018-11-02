@@ -67,8 +67,8 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
 void TetherNetworkDisconnectionHandler::HandleActiveWifiNetworkDisconnection(
     const std::string& network_guid,
     const std::string& network_path) {
-  PA_LOG(INFO) << "Connection to active host (Wi-Fi network GUID "
-               << network_guid << ") has been lost.";
+  PA_LOG(VERBOSE) << "Connection to active host (Wi-Fi network GUID "
+                  << network_guid << ") has been lost.";
 
   // Check if Wi-Fi is enabled; if it is, this indicates that the connection
   // to the Tether host dropped. If it isn't, then the event of Wi-Fi being

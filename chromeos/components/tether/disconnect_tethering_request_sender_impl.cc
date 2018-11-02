@@ -97,10 +97,10 @@ void DisconnectTetheringRequestSenderImpl::OnTetherHostFetched(
     return;
   }
 
-  PA_LOG(INFO) << "Attempting to send DisconnectTetheringRequest to device "
-               << "with ID "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      device_id);
+  PA_LOG(VERBOSE) << "Attempting to send DisconnectTetheringRequest to device "
+                  << "with ID "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id);
 
   std::unique_ptr<DisconnectTetheringOperation> disconnect_tethering_operation =
       DisconnectTetheringOperation::Factory::NewInstance(
@@ -120,10 +120,10 @@ void DisconnectTetheringRequestSenderImpl::OnOperationFinished(
     const std::string& device_id,
     bool success) {
   if (success) {
-    PA_LOG(INFO) << "Successfully sent DisconnectTetheringRequest to device "
-                 << "with ID "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        device_id);
+    PA_LOG(VERBOSE) << "Successfully sent DisconnectTetheringRequest to device "
+                    << "with ID "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           device_id);
   } else {
     PA_LOG(ERROR) << "Failed to send DisconnectTetheringRequest to device "
                   << "with ID "

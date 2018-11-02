@@ -259,8 +259,8 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
     return;
   }
 
-  PA_LOG(INFO) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
-               << ") called.";
+  PA_LOG(VERBOSE) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
+                  << ") called.";
   mojom::AccountStatusChangeDelegate* delegate =
       delegate_notifier_->delegate_ptr_.get();
 
