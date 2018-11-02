@@ -269,7 +269,7 @@ def main():
     # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,fuzzer,profile}-*.a,
     # but not dfsan.
     want.extend(['lib/clang/*/lib/linux/*[atm]san*',
-                 'lib/clang/*/lib/linux/*ubsan*',
+                 'lib/clang/*/lib/linux/*ubsan_standalone*',
                  'lib/clang/*/lib/linux/*libclang_rt.fuzzer_no_main*',
                  'lib/clang/*/lib/linux/*libclang_rt.san*',
                  'lib/clang/*/lib/linux/*profile*',
@@ -280,7 +280,7 @@ def main():
                  'lib/clang/*/lib/windows/clang_rt.asan*.lib',
                  'lib/clang/*/lib/windows/clang_rt.fuzzer_no_main*.lib',
                  'lib/clang/*/lib/windows/clang_rt.profile*.lib',
-                 'lib/clang/*/lib/windows/clang_rt.ubsan*.lib',
+                 'lib/clang/*/lib/windows/clang_rt.ubsan_standalone*.lib',
                  ])
 
   if sys.platform in ('linux2', 'darwin'):
