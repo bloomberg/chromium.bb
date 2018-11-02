@@ -26,14 +26,6 @@ const std::string& kTestDataOne = "this is the first test string";
 const std::string& kTestDataTwo = "this is the second test string";
 const std::string& kTestDataThree = "this is the third test string";
 
-std::unique_ptr<remoting::CompoundBuffer> ToBuffer(const std::string& data) {
-  std::unique_ptr<remoting::CompoundBuffer> buffer =
-      std::make_unique<remoting::CompoundBuffer>();
-  buffer->Append(base::MakeRefCounted<net::WrappedIOBuffer>(data.data()),
-                 data.size());
-  return buffer;
-}
-
 }  // namespace
 
 namespace remoting {
@@ -52,9 +44,7 @@ class FileProxyWrapperLinuxTest : public testing::Test {
     return dir_.GetPath().Append(kTestFilename);
   }
 
-  void StatusCallback(
-      FileProxyWrapper::State state,
-      base::Optional<protocol::FileTransferResponse_ErrorCode> error);
+  void ResultCallback(base::Optional<protocol::FileTransfer_Error> error);
   void OpenFileCallback(int64_t filesize);
   void ReadChunkCallback(std::unique_ptr<std::vector<char>> chunk);
 
@@ -63,8 +53,7 @@ class FileProxyWrapperLinuxTest : public testing::Test {
   base::ScopedTempDir dir_;
 
   std::unique_ptr<FileProxyWrapper> file_proxy_wrapper_;
-  base::Optional<protocol::FileTransferResponse_ErrorCode> error_;
-  FileProxyWrapper::State final_state_;
+  base::Optional<protocol::FileTransfer_Error> error_;
   bool done_callback_succeeded_;
 
   base::queue<std::vector<char>> read_chunks_;
@@ -82,10 +71,9 @@ void FileProxyWrapperLinuxTest::SetUp() {
 
   file_proxy_wrapper_ = FileProxyWrapper::Create();
   file_proxy_wrapper_->Init(base::BindOnce(
-      &FileProxyWrapperLinuxTest::StatusCallback, base::Unretained(this)));
+      &FileProxyWrapperLinuxTest::ResultCallback, base::Unretained(this)));
 
-  error_ = base::Optional<protocol::FileTransferResponse_ErrorCode>();
-  final_state_ = FileProxyWrapper::kUninitialized;
+  error_ = base::nullopt;
   done_callback_succeeded_ = false;
 
   read_chunks_ = base::queue<std::vector<char>>();
@@ -96,12 +84,10 @@ void FileProxyWrapperLinuxTest::TearDown() {
   file_proxy_wrapper_.reset();
 }
 
-void FileProxyWrapperLinuxTest::StatusCallback(
-    FileProxyWrapper::State state,
-    base::Optional<protocol::FileTransferResponse_ErrorCode> error) {
-  final_state_ = state;
+void FileProxyWrapperLinuxTest::ResultCallback(
+    base::Optional<protocol::FileTransfer_Error> error) {
   error_ = error;
-  done_callback_succeeded_ = !error_.has_value();
+  done_callback_succeeded_ = !error_;
 }
 
 void FileProxyWrapperLinuxTest::OpenFileCallback(int64_t filesize) {
@@ -117,14 +103,13 @@ void FileProxyWrapperLinuxTest::ReadChunkCallback(
 // throwing any errors.
 TEST_F(FileProxyWrapperLinuxTest, WriteThreeChunks) {
   file_proxy_wrapper_->CreateFile(TestDir(), kTestFilename);
-  file_proxy_wrapper_->WriteChunk(ToBuffer(kTestDataOne));
-  file_proxy_wrapper_->WriteChunk(ToBuffer(kTestDataTwo));
-  file_proxy_wrapper_->WriteChunk(ToBuffer(kTestDataThree));
+  file_proxy_wrapper_->WriteChunk(kTestDataOne);
+  file_proxy_wrapper_->WriteChunk(kTestDataTwo);
+  file_proxy_wrapper_->WriteChunk(kTestDataThree);
   file_proxy_wrapper_->Close();
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_FALSE(error_);
-  ASSERT_EQ(final_state_, FileProxyWrapper::kClosed);
   ASSERT_TRUE(done_callback_succeeded_);
 
   std::string actual_file_data;
@@ -135,7 +120,7 @@ TEST_F(FileProxyWrapperLinuxTest, WriteThreeChunks) {
 // Verifies that calling Cancel() deletes any temporary or destination files.
 TEST_F(FileProxyWrapperLinuxTest, CancelDeletesFiles) {
   file_proxy_wrapper_->CreateFile(TestDir(), kTestFilename);
-  file_proxy_wrapper_->WriteChunk(ToBuffer(kTestDataOne));
+  file_proxy_wrapper_->WriteChunk(kTestDataOne);
   scoped_task_environment_.RunUntilIdle();
 
   file_proxy_wrapper_->Cancel();
@@ -151,7 +136,7 @@ TEST_F(FileProxyWrapperLinuxTest, FileAlreadyExists) {
   WriteFile(TestFilePath(), kTestDataOne.data(), kTestDataOne.size());
 
   file_proxy_wrapper_->CreateFile(TestDir(), kTestFilename);
-  file_proxy_wrapper_->WriteChunk(ToBuffer(kTestDataTwo));
+  file_proxy_wrapper_->WriteChunk(kTestDataTwo);
   file_proxy_wrapper_->Close();
   scoped_task_environment_.RunUntilIdle();
 
@@ -161,7 +146,6 @@ TEST_F(FileProxyWrapperLinuxTest, FileAlreadyExists) {
   ASSERT_STREQ(kTestDataTwo.data(), actual_file_data.data());
 
   ASSERT_FALSE(error_);
-  ASSERT_EQ(final_state_, FileProxyWrapper::kClosed);
 }
 
 // Verifies that FileProxyWrapper can read chunks from a file.
@@ -222,7 +206,9 @@ TEST_F(FileProxyWrapperLinuxTest, FileDoesntExist) {
                                  base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
-  ASSERT_EQ(error_, protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR);
+  ASSERT_TRUE(error_);
+  ASSERT_TRUE(error_->has_type());
+  ASSERT_EQ(error_->type(), protocol::FileTransfer_Error_Type_IO_ERROR);
 }
 
 }  // namespace remoting
