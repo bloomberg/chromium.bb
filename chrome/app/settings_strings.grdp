@@ -603,6 +603,9 @@
   <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
     Settings
   </message>
+  <message name="IDS_SETTINGS_ALT_PAGE_TITLE" desc="The settings page title for the about page.">
+    Settings - <ph name="SECTION_TITLE">$1<ex>About Chromium</ex></ph>
+  </message>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart Chrome.">
       Relaunch

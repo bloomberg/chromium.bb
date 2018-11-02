@@ -184,6 +184,12 @@ Polymer({
     const inAbout = settings.routes.ABOUT.contains(settings.getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
+    document.title = inAbout ?
+        loadTimeData.getStringF(
+            'settingsAltPageTitle', loadTimeData.getString('aboutPageTitle')) :
+        loadTimeData.getString('settings');
+
+
     // Calculate and set the overflow padding.
     this.updateOverscrollForPage_();
 
