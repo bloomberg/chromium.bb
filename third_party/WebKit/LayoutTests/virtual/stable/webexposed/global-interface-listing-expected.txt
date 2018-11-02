@@ -3954,6 +3954,7 @@ interface MessageEvent : Event
     getter origin
     getter ports
     getter source
+    getter userActivation
     method constructor
     method initMessageEvent
 interface MessagePort : EventTarget
@@ -4088,6 +4089,7 @@ interface Navigator
     getter serviceWorker
     getter storage
     getter usb
+    getter userActivation
     getter userAgent
     getter vendor
     getter vendorSub
@@ -6803,6 +6805,11 @@ interface USBOutTransferResult
     attribute @@toStringTag
     getter bytesWritten
     getter status
+    method constructor
+interface UserActivation
+    attribute @@toStringTag
+    getter hasBeenActive
+    getter isActive
     method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag

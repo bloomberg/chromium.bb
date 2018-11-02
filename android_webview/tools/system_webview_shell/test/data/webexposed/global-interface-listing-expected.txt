@@ -3741,6 +3741,7 @@ interface MessageEvent : Event
     getter origin
     getter ports
     getter source
+    getter userActivation
     method constructor
     method initMessageEvent
 interface MessagePort : EventTarget
@@ -3860,6 +3861,7 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
+    getter userActivation
     getter userAgent
     getter vendor
     getter vendorSub
@@ -5818,6 +5820,11 @@ interface URLSearchParams
     method sort
     method toString
     method values
+interface UserActivation
+    attribute @@toStringTag
+    getter hasBeenActive
+    getter isActive
+    method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag
     getter align
