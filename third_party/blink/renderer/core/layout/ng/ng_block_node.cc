@@ -885,8 +885,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 void NGBlockNode::CopyBaselinesFromOldLayout(
     const NGConstraintSpace& constraint_space,
     NGBoxFragmentBuilder* builder) {
-  const NGConstraintSpace::NGBaselineRequestVector& requests =
-      constraint_space.BaselineRequests();
+  const NGBaselineRequestList requests = constraint_space.BaselineRequests();
   if (requests.IsEmpty())
     return;
 
@@ -894,7 +893,7 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
     return;
 
   for (const auto& request : requests) {
-    switch (request.algorithm_type) {
+    switch (request.AlgorithmType()) {
       case NGBaselineAlgorithmType::kAtomicInline: {
         LayoutUnit position =
             AtomicInlineBaselineFromOldLayout(request, constraint_space);
@@ -923,7 +922,7 @@ LayoutUnit NGBlockNode::AtomicInlineBaselineFromOldLayout(
   // classes override it assuming inline layout calls |BaselinePosition()|.
   if (box_->IsInline()) {
     LayoutUnit position = LayoutUnit(box_->BaselinePosition(
-        request.baseline_type, constraint_space.UseFirstLineStyle(),
+        request.BaselineType(), constraint_space.UseFirstLineStyle(),
         line_direction, kPositionOnContainingLine));
 
     // BaselinePosition() uses margin edge for atomic inlines. Subtract

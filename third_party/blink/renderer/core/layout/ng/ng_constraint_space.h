@@ -66,8 +66,6 @@ class CORE_EXPORT NGConstraintSpace final {
     kNumberOfConstraintSpaceFlags = 11
   };
 
-  typedef Vector<NGBaselineRequest, 2> NGBaselineRequestVector;
-
   NGConstraintSpace() {}
   NGConstraintSpace(const NGConstraintSpace&) = default;
   NGConstraintSpace(NGConstraintSpace&&) = default;
@@ -282,8 +280,8 @@ class CORE_EXPORT NGConstraintSpace final {
   // child will be canceled out with negative clearance.
   bool ShouldForceClearance() const { return HasFlag(kForceClearance); }
 
-  const NGBaselineRequestVector& BaselineRequests() const {
-    return baseline_requests_;
+  const NGBaselineRequestList BaselineRequests() const {
+    return NGBaselineRequestList(baseline_requests_);
   }
 
   bool operator==(const NGConstraintSpace&) const;
@@ -319,6 +317,7 @@ class CORE_EXPORT NGConstraintSpace final {
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
   unsigned flags_ : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
+  unsigned baseline_requests_ : NGBaselineRequestList::kSerializedBits;
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;
@@ -326,8 +325,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
   NGExclusionSpace exclusion_space_;
   LayoutUnit clearance_offset_;
-
-  NGBaselineRequestVector baseline_requests_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

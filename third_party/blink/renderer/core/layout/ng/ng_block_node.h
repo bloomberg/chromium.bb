@@ -13,6 +13,7 @@
 namespace blink {
 
 class LayoutBox;
+class NGBaselineRequest;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGBoxFragmentBuilder;
@@ -21,7 +22,6 @@ class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
 class NGPhysicalFragment;
 struct MinMaxSize;
-struct NGBaselineRequest;
 struct NGBoxStrut;
 struct NGLogicalOffset;
 

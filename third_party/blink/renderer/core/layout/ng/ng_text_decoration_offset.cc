@@ -25,9 +25,9 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
         NGBaselineAlgorithmType::kAtomicInline,
         FontBaseline::kIdeographicBaseline};
 
-    const NGBaseline* baseline = decorating_box_->Baseline(baseline_request);
-    if (baseline)
-      offset = baseline->offset;
+    if (base::Optional<LayoutUnit> baseline =
+            decorating_box_->Baseline(baseline_request))
+      offset = baseline.value();
   }
 
   if (offset == LayoutUnit::Max()) {

@@ -13,7 +13,7 @@
 
 namespace blink {
 
-struct NGBaselineRequest;
+class NGBaselineRequest;
 struct NGLineHeightMetrics;
 
 class CORE_EXPORT NGBoxFragment final : public NGFragment {

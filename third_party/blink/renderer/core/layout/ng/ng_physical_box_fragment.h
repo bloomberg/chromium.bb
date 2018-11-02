@@ -32,7 +32,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return ChildLinkList(num_children_, &children_[0]);
   }
 
-  const NGBaseline* Baseline(const NGBaselineRequest&) const;
+  base::Optional<LayoutUnit> Baseline(const NGBaselineRequest& request) const {
+    return baselines_.Offset(request);
+  }
 
   const NGPhysicalBoxStrut Borders() const { return borders_; }
 
@@ -88,7 +90,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
                         WritingMode block_or_line_writing_mode);
 
-  Vector<NGBaseline> baselines_;
+  NGBaselineList baselines_;
   NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
   NGLinkStorage children_[];
