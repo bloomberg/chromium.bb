@@ -2379,10 +2379,6 @@ static void setup_buffer_pool(AV1_COMMON *cm) {
   }
   unlock_buffer_pool(pool);
 
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_x =
-      seq_params->subsampling_x;
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_y =
-      seq_params->subsampling_y;
   pool->frame_bufs[cm->new_fb_idx].buf.bit_depth =
       (unsigned int)seq_params->bit_depth;
   pool->frame_bufs[cm->new_fb_idx].buf.color_primaries =
