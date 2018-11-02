@@ -119,7 +119,7 @@ bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginAllowed() const {
       !user_prefs->GetBooleanWithoutPathExpansion(
           chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName,
           &pref_value)) {
-    PA_LOG(INFO) << "Failed to get is_chrome_login_allowed, not disallowing";
+    PA_LOG(VERBOSE) << "Failed to get is_chrome_login_allowed, not disallowing";
     return true;
   }
   return pref_value;

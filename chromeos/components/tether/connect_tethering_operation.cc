@@ -128,11 +128,11 @@ void ConnectTetheringOperation::OnMessageReceived(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_SUCCESS) {
     if (response->has_ssid() && response->has_password()) {
-      PA_LOG(INFO) << "Received ConnectTetheringResponse from device with ID "
-                   << remote_device.GetTruncatedDeviceIdForLogs() << " and "
-                   << "response_code == SUCCESS. Config: {ssid: \""
-                   << response->ssid() << "\", password: \""
-                   << response->password() << "\"}";
+      PA_LOG(VERBOSE)
+          << "Received ConnectTetheringResponse from device with ID "
+          << remote_device.GetTruncatedDeviceIdForLogs() << " and "
+          << "response_code == SUCCESS. Config: {ssid: \"" << response->ssid()
+          << "\", password: \"" << response->password() << "\"}";
 
       tether_host_response_recorder_->RecordSuccessfulConnectTetheringResponse(
           remote_device);
@@ -151,9 +151,10 @@ void ConnectTetheringOperation::OnMessageReceived(
           HostResponseErrorCode::INVALID_HOTSPOT_CREDENTIALS;
     }
   } else {
-    PA_LOG(INFO) << "Received ConnectTetheringResponse from device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs() << " and "
-                 << "response_code == " << response->response_code() << ".";
+    PA_LOG(WARNING)
+        << "Received ConnectTetheringResponse from unexpected device with ID "
+        << remote_device.GetTruncatedDeviceIdForLogs() << " and "
+        << "response_code == " << response->response_code() << ".";
     error_code_to_return_ = ConnectTetheringResponseCodeToHostResponseErrorCode(
         response->response_code());
   }

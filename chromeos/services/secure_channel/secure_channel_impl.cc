@@ -139,10 +139,11 @@ void SecureChannelImpl::OnDisconnected(
   // connection to disconnect), pass the request off to
   // PendingConnectionManager.
   for (auto& details : pending_requests_it->second) {
-    PA_LOG(INFO) << "SecureChannelImpl::OnDisconnected(): Disconnection "
-                 << "completed; starting pending connection attempt. Request: "
-                 << *details.client_connection_parameters
-                 << ", Attempt details: " << details.connection_attempt_details;
+    PA_LOG(VERBOSE)
+        << "SecureChannelImpl::OnDisconnected(): Disconnection "
+        << "completed; starting pending connection attempt. Request: "
+        << *details.client_connection_parameters
+        << ", Attempt details: " << details.connection_attempt_details;
     pending_connection_manager_->HandleConnectionRequest(
         details.connection_attempt_details,
         std::move(details.client_connection_parameters),
@@ -228,29 +229,31 @@ void SecureChannelImpl::ProcessConnectionRequest(
       connection_attempt_details.GetAssociatedConnectionDetails();
   switch (active_connection_manager_->GetConnectionState(connection_details)) {
     case ActiveConnectionManager::ConnectionState::kActiveConnectionExists:
-      PA_LOG(INFO) << "SecureChannelImpl::" << api_fn_name << "(): Adding "
-                   << "request to active channel. Request: "
-                   << *client_connection_parameters << ", Local device ID: \""
-                   << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                          local_device.GetDeviceId())
-                   << "\""
-                   << ", Role: " << connection_role
-                   << ", Priority: " << connection_priority
-                   << ", Details: " << connection_details;
+      PA_LOG(VERBOSE) << "SecureChannelImpl::" << api_fn_name << "(): Adding "
+                      << "request to active channel. Request: "
+                      << *client_connection_parameters
+                      << ", Local device ID: \""
+                      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                             local_device.GetDeviceId())
+                      << "\""
+                      << ", Role: " << connection_role
+                      << ", Priority: " << connection_priority
+                      << ", Details: " << connection_details;
       active_connection_manager_->AddClientToChannel(
           std::move(client_connection_parameters), connection_details);
       break;
 
     case ActiveConnectionManager::ConnectionState::kNoConnectionExists:
-      PA_LOG(INFO) << "SecureChannelImpl::" << api_fn_name << "(): Starting "
-                   << "pending connection attempt. Request: "
-                   << *client_connection_parameters << ", Local device ID: \""
-                   << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                          local_device.GetDeviceId())
-                   << "\""
-                   << ", Role: " << connection_role
-                   << ", Priority: " << connection_priority
-                   << ", Details: " << connection_details;
+      PA_LOG(VERBOSE) << "SecureChannelImpl::" << api_fn_name << "(): Starting "
+                      << "pending connection attempt. Request: "
+                      << *client_connection_parameters
+                      << ", Local device ID: \""
+                      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                             local_device.GetDeviceId())
+                      << "\""
+                      << ", Role: " << connection_role
+                      << ", Priority: " << connection_priority
+                      << ", Details: " << connection_details;
       pending_connection_manager_->HandleConnectionRequest(
           connection_attempt_details, std::move(client_connection_parameters),
           connection_priority);
@@ -258,17 +261,18 @@ void SecureChannelImpl::ProcessConnectionRequest(
 
     case ActiveConnectionManager::ConnectionState::
         kDisconnectingConnectionExists:
-      PA_LOG(INFO) << "SecureChannelImpl::" << api_fn_name << "(): Received "
-                   << "request for which a disconnecting connection exists. "
-                   << "Waiting for connection to disconnect completely before "
-                   << "continuing. Request: " << *client_connection_parameters
-                   << ", Local device ID: \""
-                   << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                          local_device.GetDeviceId())
-                   << "\""
-                   << ", Role: " << connection_role
-                   << ", Priority: " << connection_priority
-                   << ", Details: " << connection_details;
+      PA_LOG(VERBOSE)
+          << "SecureChannelImpl::" << api_fn_name << "(): Received "
+          << "request for which a disconnecting connection exists. "
+          << "Waiting for connection to disconnect completely before "
+          << "continuing. Request: " << *client_connection_parameters
+          << ", Local device ID: \""
+          << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                 local_device.GetDeviceId())
+          << "\""
+          << ", Role: " << connection_role
+          << ", Priority: " << connection_priority
+          << ", Details: " << connection_details;
       disconnecting_details_to_requests_map_[connection_details].emplace_back(
           std::move(client_connection_parameters), connection_attempt_details,
           connection_priority);

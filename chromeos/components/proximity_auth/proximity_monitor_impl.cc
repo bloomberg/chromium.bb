@@ -191,7 +191,7 @@ void ProximityMonitorImpl::OnConnectionInfo(
 
 void ProximityMonitorImpl::OnGetRssi(const base::Optional<int32_t>& rssi) {
   if (!is_active_) {
-    PA_LOG(INFO) << "Received RSSI after stopping.";
+    PA_LOG(VERBOSE) << "Received RSSI after stopping.";
     return;
   }
 
@@ -231,13 +231,13 @@ void ProximityMonitorImpl::CheckForProximityStateChange() {
       rssi_rolling_average_ && *rssi_rolling_average_ > rssi_threshold_;
 
   if (rssi_rolling_average_ && !is_now_in_proximity) {
-    PA_LOG(INFO) << "Not in proximity. Rolling RSSI average: "
-                 << *rssi_rolling_average_;
+    PA_LOG(VERBOSE) << "Not in proximity. Rolling RSSI average: "
+                    << *rssi_rolling_average_;
   }
 
   if (remote_device_is_in_proximity_ != is_now_in_proximity) {
-    PA_LOG(INFO) << "[Proximity] Updated proximity state: "
-                 << (is_now_in_proximity ? "proximate" : "distant");
+    PA_LOG(VERBOSE) << "[Proximity] Updated proximity state: "
+                    << (is_now_in_proximity ? "proximate" : "distant");
     remote_device_is_in_proximity_ = is_now_in_proximity;
     for (auto& observer : observers_)
       observer.OnProximityStateChanged();

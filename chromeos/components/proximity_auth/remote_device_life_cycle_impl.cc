@@ -50,7 +50,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
 
 void RemoteDeviceLifeCycleImpl::Start() {
-  PA_LOG(INFO) << "Life cycle for " << remote_device_.name() << " started.";
+  PA_LOG(VERBOSE) << "Life cycle for " << remote_device_.name() << " started.";
   DCHECK(state_ == RemoteDeviceLifeCycle::State::STOPPED);
   FindConnection();
 }
@@ -110,7 +110,7 @@ RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
 
 void RemoteDeviceLifeCycleImpl::TransitionToState(
     RemoteDeviceLifeCycle::State new_state) {
-  PA_LOG(INFO) << "Life cycle transition: " << state_ << " => " << new_state;
+  PA_LOG(VERBOSE) << "Life cycle transition: " << state_ << " => " << new_state;
   RemoteDeviceLifeCycle::State old_state = state_;
   state_ = new_state;
   for (auto& observer : observers_)

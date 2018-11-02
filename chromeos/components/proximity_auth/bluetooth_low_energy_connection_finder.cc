@@ -76,7 +76,7 @@ void BluetoothLowEnergyConnectionFinder::Find(
     PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
   }
-  PA_LOG(INFO) << "Finding connection";
+  PA_LOG(VERBOSE) << "Finding connection";
 
   connection_callback_ = connection_callback;
 
@@ -91,7 +91,7 @@ void BluetoothLowEnergyConnectionFinder::AdapterPoweredChanged(
     BluetoothAdapter* adapter,
     bool powered) {
   DCHECK_EQ(adapter_.get(), adapter);
-  PA_LOG(INFO) << "Adapter powered: " << powered;
+  PA_LOG(VERBOSE) << "Adapter powered: " << powered;
 
   // Important: do not rely on |adapter->IsDiscoverying()| to verify if there is
   // an active discovery session. We need to create our own with an specific
@@ -138,7 +138,7 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     return;
 
   if (IsRightDevice(device)) {
-    PA_LOG(INFO) << "Connecting to device " << device->GetAddress();
+    PA_LOG(VERBOSE) << "Connecting to device " << device->GetAddress();
     connection_ = CreateConnection(device);
     connection_->AddObserver(this);
     connection_->Connect();
@@ -163,7 +163,7 @@ bool BluetoothLowEnergyConnectionFinder::IsRightDevice(
       eid_generator_->GenerateNearestEids(remote_device_.beacon_seeds());
   for (const cryptauth::DataWithTimestamp& eid : nearest_eids) {
     if (eid.data == service_data_string) {
-      PA_LOG(INFO) << "Found a matching EID: " << eid.DataInHex();
+      PA_LOG(VERBOSE) << "Found a matching EID: " << eid.DataInHex();
       return true;
     }
   }
@@ -172,7 +172,7 @@ bool BluetoothLowEnergyConnectionFinder::IsRightDevice(
 
 void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
     scoped_refptr<BluetoothAdapter> adapter) {
-  PA_LOG(INFO) << "Adapter ready";
+  PA_LOG(VERBOSE) << "Adapter ready";
   adapter_ = adapter;
   adapter_->AddObserver(this);
   StartDiscoverySession();
@@ -180,7 +180,7 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
 
 void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-  PA_LOG(INFO) << "Discovery session started";
+  PA_LOG(VERBOSE) << "Discovery session started";
   discovery_session_ = std::move(discovery_session);
 }
 
@@ -198,7 +198,7 @@ void BluetoothLowEnergyConnectionFinder::OnStartDiscoverySessionError() {
 void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
   DCHECK(adapter_);
   if (discovery_session_ && discovery_session_->IsActive()) {
-    PA_LOG(INFO) << "Discovery session already active";
+    PA_LOG(VERBOSE) << "Discovery session already active";
     return;
   }
 
@@ -216,7 +216,7 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
 }
 
 void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
-  PA_LOG(INFO) << "Stopping discovery session";
+  PA_LOG(VERBOSE) << "Stopping discovery session";
   // Destroying the discovery session also stops it.
   discovery_session_.reset();
 }
@@ -235,8 +235,8 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     cryptauth::Connection::Status old_status,
     cryptauth::Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
-  PA_LOG(INFO) << "OnConnectionStatusChanged: " << old_status << " -> "
-               << new_status;
+  PA_LOG(VERBOSE) << "OnConnectionStatusChanged: " << old_status << " -> "
+                  << new_status;
 
   if (!connection_callback_.is_null() && connection_->IsConnected()) {
     adapter_->RemoveObserver(this);
@@ -266,7 +266,7 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
 void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync() {
   bool discovery_active = discovery_session_ && discovery_session_->IsActive();
   if (!connection_ && !discovery_active) {
-    PA_LOG(INFO) << "Restarting discovery session.";
+    PA_LOG(VERBOSE) << "Restarting discovery session.";
     StartDiscoverySession();
   }
 }

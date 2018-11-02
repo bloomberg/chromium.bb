@@ -236,7 +236,7 @@ DeviceSyncImpl::DeviceSyncImpl(
       set_software_feature_timer_(std::move(timer)),
       status_(Status::FETCHING_ACCOUNT_INFO),
       weak_ptr_factory_(this) {
-  PA_LOG(INFO) << "DeviceSyncImpl: Initializing.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
   ProcessPrimaryAccountInfo(identity_manager_->GetPrimaryAccountInfo());
 }
 
@@ -374,7 +374,8 @@ void DeviceSyncImpl::GetDebugInfo(GetDebugInfoCallback callback) {
 }
 
 void DeviceSyncImpl::OnEnrollmentFinished(bool success) {
-  PA_LOG(INFO) << "DeviceSyncImpl: Enrollment finished; success = " << success;
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Enrollment finished; success = "
+                  << success;
 
   if (!success)
     return;
@@ -386,8 +387,8 @@ void DeviceSyncImpl::OnEnrollmentFinished(bool success) {
 }
 
 void DeviceSyncImpl::OnSyncDeviceListChanged() {
-  PA_LOG(INFO) << "DeviceSyncImpl: Synced devices changed; notifying "
-               << "observers.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Synced devices changed; notifying "
+                  << "observers.";
   NotifyOnNewDevicesSynced();
 
   // Iterate through pending SetSoftwareFeature() requests. If any of them have
@@ -399,8 +400,9 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
       continue;
     }
 
-    PA_LOG(INFO) << "DeviceSyncImpl::OnSyncDeviceListChanged(): Feature state "
-                 << "updated via device sync; notifying success callbacks.";
+    PA_LOG(VERBOSE)
+        << "DeviceSyncImpl::OnSyncDeviceListChanged(): Feature state "
+        << "updated via device sync; notifying success callbacks.";
     it->second->InvokeCallback(mojom::NetworkRequestResult::kSuccess);
     it = id_to_pending_set_software_feature_request_map_.erase(it);
   }
@@ -448,7 +450,7 @@ void DeviceSyncImpl::ConnectToPrefStore() {
   auto pref_registry = pref_connection_delegate_->CreatePrefRegistry();
   RegisterDeviceSyncPrefs(pref_registry.get());
 
-  PA_LOG(INFO) << "DeviceSyncImpl: Connecting to pref service.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Connecting to pref service.";
   pref_connection_delegate_->ConnectToPrefService(
       connector_, std::move(pref_registry),
       base::Bind(&DeviceSyncImpl::OnConnectedToPrefService,
@@ -460,8 +462,8 @@ void DeviceSyncImpl::OnConnectedToPrefService(
   DCHECK(status_ == Status::CONNECTING_TO_USER_PREFS);
   status_ = Status::WAITING_FOR_ENROLLMENT;
 
-  PA_LOG(INFO) << "DeviceSyncImpl: Connected to pref service; initializing "
-               << "CryptAuth managers.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Connected to pref service; initializing "
+                  << "CryptAuth managers.";
   pref_service_ = std::move(pref_service);
   InitializeCryptAuthManagementObjects();
 
@@ -469,7 +471,7 @@ void DeviceSyncImpl::OnConnectedToPrefService(
   // continue. Once enrollment has finished, OnEnrollmentFinished() is invoked,
   // which finishes the initialization flow.
   if (!cryptauth_enrollment_manager_->IsEnrollmentValid()) {
-    PA_LOG(INFO) << "DeviceSyncImpl: Waiting for enrollment to complete.";
+    PA_LOG(VERBOSE) << "DeviceSyncImpl: Waiting for enrollment to complete.";
     return;
   }
 
@@ -532,8 +534,8 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
 
   status_ = Status::READY;
 
-  PA_LOG(INFO) << "DeviceSyncImpl: CryptAuth Enrollment is valid; service "
-               << "fully initialized.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: CryptAuth Enrollment is valid; service "
+                  << "fully initialized.";
 }
 
 base::Optional<cryptauth::RemoteDevice>
@@ -555,9 +557,9 @@ DeviceSyncImpl::GetSyncedDeviceWithPublicKey(
 }
 
 void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess() {
-  PA_LOG(INFO) << "DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess(): "
-               << "Successfully completed SetSoftwareFeatureState() call; "
-               << "requesting force sync.";
+  PA_LOG(VERBOSE) << "DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess(): "
+                  << "Successfully completed SetSoftwareFeatureState() call; "
+                  << "requesting force sync.";
   cryptauth_device_manager_->ForceSyncNow(
       cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
 

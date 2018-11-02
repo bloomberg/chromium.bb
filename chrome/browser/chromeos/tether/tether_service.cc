@@ -185,8 +185,9 @@ TetherService::TetherService(
 
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
                         IsEnabledByPreference());
-  PA_LOG(INFO) << "TetherService has started. Initial user preference value: "
-               << IsEnabledByPreference();
+  PA_LOG(VERBOSE)
+      << "TetherService has started. Initial user preference value: "
+      << IsEnabledByPreference();
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     if (device_sync_client_->is_ready())
@@ -217,7 +218,7 @@ void TetherService::StartTetherIfPossible() {
   if (tether_component_)
     return;
 
-  PA_LOG(INFO) << "Starting up TetherComponent.";
+  PA_LOG(VERBOSE) << "Starting up TetherComponent.";
   tether_component_ =
       chromeos::tether::TetherComponentImpl::Factory::NewInstance(
           cryptauth_service_, device_sync_client_, secure_channel_client_,
@@ -243,7 +244,7 @@ void TetherService::StopTetherIfNecessary() {
     return;
   }
 
-  PA_LOG(INFO) << "Shutting down TetherComponent.";
+  PA_LOG(VERBOSE) << "Shutting down TetherComponent.";
 
   chromeos::tether::TetherComponent::ShutdownReason shutdown_reason;
   switch (GetTetherFeatureState()) {
@@ -430,7 +431,7 @@ void TetherService::OnShutdownComplete() {
          chromeos::tether::TetherComponent::Status::SHUT_DOWN);
   tether_component_->RemoveObserver(this);
   tether_component_.reset();
-  PA_LOG(INFO) << "TetherComponent was shut down.";
+  PA_LOG(VERBOSE) << "TetherComponent was shut down.";
 
   // It is possible that the Tether TechnologyState was set to ENABLED while the
   // previous TetherComponent instance was shutting down. If that was the case,
@@ -820,8 +821,8 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
 void TetherService::LogUserPreferenceChanged(bool is_now_enabled) {
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
                         is_now_enabled);
-  PA_LOG(INFO) << "Tether user preference changed. New value: "
-               << is_now_enabled;
+  PA_LOG(VERBOSE) << "Tether user preference changed. New value: "
+                  << is_now_enabled;
 }
 
 void TetherService::SetTestDoubles(

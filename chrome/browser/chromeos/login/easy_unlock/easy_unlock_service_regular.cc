@@ -149,8 +149,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       !device_sync_client_->is_ready()) {
     // OnEnrollmentFinished() or OnNewDevicesSynced() will call back on this
     // method once |device_sync_client_| is ready.
-    PA_LOG(INFO) << "DeviceSyncClient is not ready yet, delaying "
-                    "UseLoadedRemoteDevices().";
+    PA_LOG(VERBOSE) << "DeviceSyncClient is not ready yet, delaying "
+                       "UseLoadedRemoteDevices().";
     return;
   }
 
@@ -169,7 +169,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       !is_in_valid_legacy_host_state) {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
-    PA_LOG(INFO) << "Smart Lock is disabled; aborting.";
+    PA_LOG(VERBOSE) << "Smart Lock is disabled; aborting.";
     SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
     return;
@@ -209,7 +209,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
   //   1. New devices were synced on the lock screen.
   //   2. The service was initialized while the login screen is still up.
   if (proximity_auth::ScreenlockBridge::Get()->IsLocked()) {
-    PA_LOG(INFO) << "Deferring device load until screen is unlocked.";
+    PA_LOG(VERBOSE) << "Deferring device load until screen is unlocked.";
     deferring_device_load_ = true;
     return;
   }
@@ -391,7 +391,7 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
   std::string remote_devices_json;
   JSONStringValueSerializer serializer(&remote_devices_json);
   serializer.Serialize(devices);
-  PA_LOG(INFO) << "Setting RemoteDevices:\n  " << remote_devices_json;
+  PA_LOG(VERBOSE) << "Setting RemoteDevices:\n  " << remote_devices_json;
 
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
@@ -733,7 +733,7 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
   // user is signing in we need to load the remotes. Otherwise, the
   // first time the user locks the screen the feature won't work.
   if (deferring_device_load_) {
-    PA_LOG(INFO) << "Loading deferred devices after screen unlock.";
+    PA_LOG(VERBOSE) << "Loading deferred devices after screen unlock.";
     deferring_device_load_ = false;
     LoadRemoteDevices();
   }

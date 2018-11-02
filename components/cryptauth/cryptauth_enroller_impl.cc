@@ -98,7 +98,8 @@ void CryptAuthEnrollerImpl::Enroll(
 
 void CryptAuthEnrollerImpl::OnKeyPairGenerated(const std::string& public_key,
                                                const std::string& private_key) {
-  PA_LOG(INFO) << "Ephemeral key pair generated, calling SetupEnrollment API.";
+  PA_LOG(VERBOSE)
+      << "Ephemeral key pair generated, calling SetupEnrollment API.";
   session_public_key_ = public_key;
   session_private_key_ = private_key;
 
@@ -128,7 +129,8 @@ void CryptAuthEnrollerImpl::OnSetupEnrollmentSuccess(
     return;
   }
 
-  PA_LOG(INFO) << "SetupEnrollment request succeeded: deriving symmetric key.";
+  PA_LOG(VERBOSE)
+      << "SetupEnrollment request succeeded: deriving symmetric key.";
   setup_info_ = response.infos(0);
   device_info_.set_enrollment_session_id(setup_info_.enrollment_session_id());
 
@@ -145,8 +147,8 @@ void CryptAuthEnrollerImpl::OnSetupEnrollmentFailure(
 }
 
 void CryptAuthEnrollerImpl::OnKeyDerived(const std::string& symmetric_key) {
-  PA_LOG(INFO) << "Derived symmetric key, "
-               << "encrypting enrollment data for upload.";
+  PA_LOG(VERBOSE) << "Derived symmetric key, "
+                  << "encrypting enrollment data for upload.";
 
   // Make sure we're enrolling the same public key used below to sign the
   // secure message.
@@ -160,7 +162,7 @@ void CryptAuthEnrollerImpl::OnKeyDerived(const std::string& symmetric_key) {
   // The server verifies that the access token set here and in the header
   // of the FinishEnrollment() request are the same.
   device_info_.set_oauth_token(cryptauth_client_->GetAccessTokenUsed());
-  PA_LOG(INFO) << "Using access token: " << device_info_.oauth_token();
+  PA_LOG(VERBOSE) << "Using access token: " << device_info_.oauth_token();
 
   symmetric_key_ = symmetric_key;
   SecureMessageDelegate::CreateOptions options;
@@ -199,7 +201,7 @@ void CryptAuthEnrollerImpl::OnInnerSecureMessageCreated(
 
 void CryptAuthEnrollerImpl::OnOuterSecureMessageCreated(
     const std::string& outer_message) {
-  PA_LOG(INFO) << "SecureMessage created, calling FinishEnrollment API.";
+  PA_LOG(VERBOSE) << "SecureMessage created, calling FinishEnrollment API.";
 
   FinishEnrollmentRequest request;
   request.set_enrollment_session_id(setup_info_.enrollment_session_id());

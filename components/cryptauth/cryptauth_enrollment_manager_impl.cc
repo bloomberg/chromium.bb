@@ -238,8 +238,8 @@ void CryptAuthEnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   if (!sync_request_)
     return;
 
-  PA_LOG(INFO) << "GCM registration for CryptAuth Enrollment completed: "
-               << success;
+  PA_LOG(VERBOSE) << "GCM registration for CryptAuth Enrollment completed: "
+                  << success;
   if (success)
     DoCryptAuthEnrollment();
   else
@@ -250,7 +250,7 @@ void CryptAuthEnrollmentManagerImpl::OnKeyPairGenerated(
     const std::string& public_key,
     const std::string& private_key) {
   if (!public_key.empty() && !private_key.empty()) {
-    PA_LOG(INFO) << "Key pair generated for CryptAuth enrollment";
+    PA_LOG(VERBOSE) << "Key pair generated for CryptAuth enrollment";
     // Store the keypair in Base64 format because pref values require readable
     // string values.
     std::string public_key_b64, private_key_b64;
@@ -330,12 +330,13 @@ void CryptAuthEnrollmentManagerImpl::DoCryptAuthEnrollmentWithKeys() {
   base::Base64UrlEncode(GetUserPublicKey(),
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &public_key_b64);
-  PA_LOG(INFO) << "Making enrollment:\n"
-               << "  public_key: " << public_key_b64 << "\n"
-               << "  invocation_reason: " << invocation_reason << "\n"
-               << "  gcm_registration_id: " << device_info.gcm_registration_id()
-               << "  supported features: "
-               << GenerateSupportedFeaturesString(device_info);
+  PA_LOG(VERBOSE) << "Making enrollment:\n"
+                  << "  public_key: " << public_key_b64 << "\n"
+                  << "  invocation_reason: " << invocation_reason << "\n"
+                  << "  gcm_registration_id: "
+                  << device_info.gcm_registration_id()
+                  << "  supported features: "
+                  << GenerateSupportedFeaturesString(device_info);
 
   cryptauth_enroller_ = enroller_factory_->CreateInstance();
   cryptauth_enroller_->Enroll(

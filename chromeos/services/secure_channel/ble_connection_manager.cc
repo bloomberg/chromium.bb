@@ -65,8 +65,8 @@ void BleConnectionManager::AttemptBleInitiatorConnection(
       std::make_unique<InitiatorConnectionAttemptMetadata>(
           connection_priority, std::move(success_callback), failure_callback)));
 
-  PA_LOG(INFO) << "BleConnectionManager::AttemptBleInitiatorConnection(): "
-               << "Attempting connection; details: " << details;
+  PA_LOG(VERBOSE) << "BleConnectionManager::AttemptBleInitiatorConnection(): "
+                  << "Attempting connection; details: " << details;
   PerformAttemptBleInitiatorConnection(device_id_pair, connection_priority);
 }
 
@@ -86,10 +86,11 @@ void BleConnectionManager::UpdateBleInitiatorConnectionPriority(
 
   initiator_entry.connection_priority = connection_priority;
 
-  PA_LOG(INFO) << "BleConnectionManager::"
-               << "UpdateBleInitiatorConnectionPriority(): Updating connection "
-               << "priority; ID pair: " << device_id_pair
-               << ", Priority: " << connection_priority;
+  PA_LOG(VERBOSE)
+      << "BleConnectionManager::"
+      << "UpdateBleInitiatorConnectionPriority(): Updating connection "
+      << "priority; ID pair: " << device_id_pair
+      << ", Priority: " << connection_priority;
   PerformUpdateBleInitiatorConnectionPriority(device_id_pair,
                                               connection_priority);
 }
@@ -98,9 +99,10 @@ void BleConnectionManager::CancelBleInitiatorConnectionAttempt(
     const DeviceIdPair& device_id_pair) {
   RemoveRequestMetadata(device_id_pair, ConnectionRole::kInitiatorRole);
 
-  PA_LOG(INFO) << "BleConnectionManager::"
-               << "CancelBleInitiatorConnectionAttempt(): Canceling connection "
-               << "attempt; ID pair: " << device_id_pair;
+  PA_LOG(VERBOSE)
+      << "BleConnectionManager::"
+      << "CancelBleInitiatorConnectionAttempt(): Canceling connection "
+      << "attempt; ID pair: " << device_id_pair;
   PerformCancelBleInitiatorConnectionAttempt(device_id_pair);
 }
 
@@ -127,8 +129,8 @@ void BleConnectionManager::AttemptBleListenerConnection(
       std::make_unique<ListenerConnectionAttemptMetadata>(
           connection_priority, std::move(success_callback), failure_callback)));
 
-  PA_LOG(INFO) << "BleConnectionManager::AttemptBleListenerConnection(): "
-               << "Attempting connection; details: " << details;
+  PA_LOG(VERBOSE) << "BleConnectionManager::AttemptBleListenerConnection(): "
+                  << "Attempting connection; details: " << details;
   PerformAttemptBleListenerConnection(device_id_pair, connection_priority);
 }
 
@@ -148,10 +150,11 @@ void BleConnectionManager::UpdateBleListenerConnectionPriority(
 
   listener_entry.connection_priority = connection_priority;
 
-  PA_LOG(INFO) << "BleConnectionManager::"
-               << "UpdateBleListenerConnectionPriority(): Updating connection "
-               << "priority; ID pair: " << device_id_pair << ", Priority"
-               << connection_priority;
+  PA_LOG(VERBOSE)
+      << "BleConnectionManager::"
+      << "UpdateBleListenerConnectionPriority(): Updating connection "
+      << "priority; ID pair: " << device_id_pair << ", Priority"
+      << connection_priority;
   PerformUpdateBleListenerConnectionPriority(device_id_pair,
                                              connection_priority);
 }
@@ -160,9 +163,10 @@ void BleConnectionManager::CancelBleListenerConnectionAttempt(
     const DeviceIdPair& device_id_pair) {
   RemoveRequestMetadata(device_id_pair, ConnectionRole::kListenerRole);
 
-  PA_LOG(INFO) << "BleConnectionManager::"
-               << "CancelBleListenerConnectionAttempt(): Canceling connection "
-               << "attempt; ID pair: " << device_id_pair;
+  PA_LOG(VERBOSE)
+      << "BleConnectionManager::"
+      << "CancelBleListenerConnectionAttempt(): Canceling connection "
+      << "attempt; ID pair: " << device_id_pair;
   PerformCancelBleListenerConnectionAttempt(device_id_pair);
 }
 
@@ -207,18 +211,18 @@ bool BleConnectionManager::DoesAttemptExist(const DeviceIdPair& device_id_pair,
 void BleConnectionManager::NotifyBleInitiatorFailure(
     const DeviceIdPair& device_id_pair,
     BleInitiatorFailureType failure_type) {
-  PA_LOG(INFO) << "BleConnectionManager::NotifyBleInitiatorFailure(): "
-               << "Notifying client of failure. ID pair: " << device_id_pair
-               << ", Failure type: " << failure_type;
+  PA_LOG(VERBOSE) << "BleConnectionManager::NotifyBleInitiatorFailure(): "
+                  << "Notifying client of failure. ID pair: " << device_id_pair
+                  << ", Failure type: " << failure_type;
   GetInitiatorEntry(device_id_pair).failure_callback.Run(failure_type);
 }
 
 void BleConnectionManager::NotifyBleListenerFailure(
     const DeviceIdPair& device_id_pair,
     BleListenerFailureType failure_type) {
-  PA_LOG(INFO) << "BleConnectionManager::NotifyBleListenerFailure(): "
-               << "Notifying client of failure. ID pair: " << device_id_pair
-               << ", Failure type: " << failure_type;
+  PA_LOG(VERBOSE) << "BleConnectionManager::NotifyBleListenerFailure(): "
+                  << "Notifying client of failure. ID pair: " << device_id_pair
+                  << ", Failure type: " << failure_type;
   GetListenerEntry(device_id_pair).failure_callback.Run(failure_type);
 }
 
@@ -226,9 +230,9 @@ void BleConnectionManager::NotifyConnectionSuccess(
     const DeviceIdPair& device_id_pair,
     ConnectionRole connection_role,
     std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
-  PA_LOG(INFO) << "BleConnectionManager::NotifyConnectionSuccess(): "
-               << "Notifying client of successful connection. ID pair: "
-               << device_id_pair << ", Role: " << connection_role;
+  PA_LOG(VERBOSE) << "BleConnectionManager::NotifyConnectionSuccess(): "
+                  << "Notifying client of successful connection. ID pair: "
+                  << device_id_pair << ", Role: " << connection_role;
 
   // For each case, grab the success callback out of the map first, then remove
   // the associated metadata before invoking the callback.

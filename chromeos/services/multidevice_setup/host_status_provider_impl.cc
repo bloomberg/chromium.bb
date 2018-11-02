@@ -97,17 +97,17 @@ void HostStatusProviderImpl::CheckForUpdatedStatusAndNotifyIfChanged() {
   if (current_status_and_device == current_status_and_device_)
     return;
 
-  PA_LOG(INFO) << "HostStatusProviderImpl::"
-               << "CheckForUpdatedStatusAndNotifyIfChanged(): Host status "
-               << "changed. New status: "
-               << current_status_and_device.host_status()
-               << ", Old status: " << current_status_and_device_.host_status()
-               << ", Host device "
-               << "ID: "
-               << (current_status_and_device.host_device()
-                       ? current_status_and_device.host_device()
-                             ->GetTruncatedDeviceIdForLogs()
-                       : "[no host]");
+  PA_LOG(VERBOSE) << "HostStatusProviderImpl::"
+                  << "CheckForUpdatedStatusAndNotifyIfChanged(): Host status "
+                  << "changed. New status: "
+                  << current_status_and_device.host_status() << ", Old status: "
+                  << current_status_and_device_.host_status()
+                  << ", Host device "
+                  << "ID: "
+                  << (current_status_and_device.host_device()
+                          ? current_status_and_device.host_device()
+                                ->GetTruncatedDeviceIdForLogs()
+                          : "[no host]");
 
   current_status_and_device_ = current_status_and_device;
   NotifyHostStatusChange(current_status_and_device_.host_status(),

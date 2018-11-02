@@ -325,12 +325,12 @@ void BleConnectionManagerImpl::ProcessPotentialLingeringChannel(
   remote_device_id_to_secure_channel_map_.erase(remote_device_id);
 
   // Disconnect the channel, since it is lingering with no active request.
-  PA_LOG(INFO) << "BleConnectionManagerImpl::"
-               << "ProcessPotentialLingeringChannel(): Disconnecting lingering "
-               << "channel which is no longer associated with any active "
-               << "requests. Remote device ID: "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      remote_device_id);
+  PA_LOG(VERBOSE)
+      << "BleConnectionManagerImpl::"
+      << "ProcessPotentialLingeringChannel(): Disconnecting lingering "
+      << "channel which is no longer associated with any active "
+      << "requests. Remote device ID: "
+      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(remote_device_id);
   channel_with_roll.first->RemoveObserver(this);
   secure_channel_disconnector_->DisconnectSecureChannel(
       std::move(channel_with_roll.first));

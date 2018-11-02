@@ -59,7 +59,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
 MultiDeviceSetupService::~MultiDeviceSetupService() = default;
 
 void MultiDeviceSetupService::OnStart() {
-  PA_LOG(INFO) << "MultiDeviceSetupService::OnStart()";
+  PA_LOG(VERBOSE) << "MultiDeviceSetupService::OnStart()";
   registry_.AddInterface(
       base::BindRepeating(&MultiDeviceSetupBase::BindRequest,
                           base::Unretained(multidevice_setup_.get())));
@@ -72,8 +72,9 @@ void MultiDeviceSetupService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  PA_LOG(INFO) << "MultiDeviceSetupService::OnBindInterface() from interface "
-               << interface_name << ".";
+  PA_LOG(VERBOSE)
+      << "MultiDeviceSetupService::OnBindInterface() from interface "
+      << interface_name << ".";
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 

@@ -348,9 +348,9 @@ void ProximityAuthWebUIHandler::ToggleUnlockKey(const base::ListValue* args) {
     *(request.mutable_device_classifier()) =
         proximity_auth_client_->GetDeviceClassifier();
 
-    PA_LOG(INFO) << "Toggling unlock key:\n"
-                 << "    public_key: " << public_key_b64 << "\n"
-                 << "    make_unlock_key: " << make_unlock_key;
+    PA_LOG(VERBOSE) << "Toggling unlock key:\n"
+                    << "    public_key: " << public_key_b64 << "\n"
+                    << "    make_unlock_key: " << make_unlock_key;
     cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
     cryptauth_client_->ToggleEasyUnlock(
         request,
@@ -498,9 +498,9 @@ void ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices(
     ineligible_devices.Append(IneligibleDeviceToDictionary(ineligible_device));
   }
 
-  PA_LOG(INFO) << "Found " << eligible_devices.GetSize()
-               << " eligible devices and " << ineligible_devices.GetSize()
-               << " ineligible devices.";
+  PA_LOG(VERBOSE) << "Found " << eligible_devices.GetSize()
+                  << " eligible devices and " << ineligible_devices.GetSize()
+                  << " ineligible devices.";
   web_ui()->CallJavascriptFunctionUnsafe(
       "CryptAuthInterface.onGotEligibleDevices", eligible_devices,
       ineligible_devices);
@@ -626,8 +626,8 @@ void ProximityAuthWebUIHandler::StartRemoteDeviceLifeCycle(
 
 void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
   if (selected_remote_device_) {
-    PA_LOG(INFO) << "Cleaning up connection to "
-                 << selected_remote_device_->name();
+    PA_LOG(VERBOSE) << "Cleaning up connection to "
+                    << selected_remote_device_->name();
   }
   life_cycle_.reset();
   selected_remote_device_ = base::nullopt;
@@ -834,13 +834,13 @@ void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
 
 void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
     const RemoteStatusUpdate& status_update) {
-  PA_LOG(INFO) << "Remote status update:"
-               << "\n  user_presence: "
-               << static_cast<int>(status_update.user_presence)
-               << "\n  secure_screen_lock_state: "
-               << static_cast<int>(status_update.secure_screen_lock_state)
-               << "\n  trust_agent_state: "
-               << static_cast<int>(status_update.trust_agent_state);
+  PA_LOG(VERBOSE) << "Remote status update:"
+                  << "\n  user_presence: "
+                  << static_cast<int>(status_update.user_presence)
+                  << "\n  secure_screen_lock_state: "
+                  << static_cast<int>(status_update.secure_screen_lock_state)
+                  << "\n  trust_agent_state: "
+                  << static_cast<int>(status_update.trust_agent_state);
 
   last_remote_status_update_.reset(new RemoteStatusUpdate(status_update));
   std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
@@ -849,11 +849,11 @@ void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
 }
 
 void ProximityAuthWebUIHandler::OnForceEnrollmentNow(bool success) {
-  PA_LOG(INFO) << "Force enrollment result: " << success;
+  PA_LOG(VERBOSE) << "Force enrollment result: " << success;
 }
 
 void ProximityAuthWebUIHandler::OnForceSyncNow(bool success) {
-  PA_LOG(INFO) << "Force sync result: " << success;
+  PA_LOG(VERBOSE) << "Force sync result: " << success;
 }
 
 void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
@@ -864,8 +864,8 @@ void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
 
   if (result_code ==
       chromeos::device_sync::mojom::NetworkRequestResult::kSuccess) {
-    PA_LOG(INFO) << "Successfully set SoftwareFeature state for device: "
-                 << device_id;
+    PA_LOG(VERBOSE) << "Successfully set SoftwareFeature state for device: "
+                    << device_id;
   } else {
     PA_LOG(ERROR) << "Failed to set SoftwareFeature state for device: "
                   << device_id << ", error code: " << result_code;
@@ -892,10 +892,10 @@ void ProximityAuthWebUIHandler::OnFindEligibleDevices(
     ineligible_devices_list_value.Append(RemoteDeviceToDictionary(device));
   }
 
-  PA_LOG(INFO) << "Found " << eligible_devices_list_value.GetSize()
-               << " eligible devices and "
-               << ineligible_devices_list_value.GetSize()
-               << " ineligible devices.";
+  PA_LOG(VERBOSE) << "Found " << eligible_devices_list_value.GetSize()
+                  << " eligible devices and "
+                  << ineligible_devices_list_value.GetSize()
+                  << " ineligible devices.";
   web_ui()->CallJavascriptFunctionUnsafe(
       "CryptAuthInterface.onGotEligibleDevices", eligible_devices_list_value,
       ineligible_devices_list_value);
@@ -946,9 +946,9 @@ void ProximityAuthWebUIHandler::OnGetDebugInfo(
 void ProximityAuthWebUIHandler::NotifyOnEnrollmentFinished(
     bool success,
     std::unique_ptr<base::DictionaryValue> enrollment_state) {
-  PA_LOG(INFO) << "Enrollment attempt completed with success=" << success
-               << ":\n"
-               << *enrollment_state;
+  PA_LOG(VERBOSE) << "Enrollment attempt completed with success=" << success
+                  << ":\n"
+                  << *enrollment_state;
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onEnrollmentStateChanged", *enrollment_state);
 }
@@ -957,16 +957,16 @@ void ProximityAuthWebUIHandler::NotifyOnSyncFinished(
     bool was_sync_successful,
     bool changed,
     std::unique_ptr<base::DictionaryValue> device_sync_state) {
-  PA_LOG(INFO) << "Device sync completed with result=" << was_sync_successful
-               << ":\n"
-               << *device_sync_state;
+  PA_LOG(VERBOSE) << "Device sync completed with result=" << was_sync_successful
+                  << ":\n"
+                  << *device_sync_state;
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onDeviceSyncStateChanged", *device_sync_state);
 
   if (changed) {
     std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
-    PA_LOG(INFO) << "New unlock keys obtained after device sync:\n"
-                 << *synced_devices;
+    PA_LOG(VERBOSE) << "New unlock keys obtained after device sync:\n"
+                    << *synced_devices;
     web_ui()->CallJavascriptFunctionUnsafe(
         "LocalStateInterface.onRemoteDevicesChanged", *synced_devices);
   }
@@ -977,12 +977,12 @@ void ProximityAuthWebUIHandler::NotifyGotLocalState(
     std::unique_ptr<base::DictionaryValue> enrollment_state,
     std::unique_ptr<base::DictionaryValue> device_sync_state,
     std::unique_ptr<base::ListValue> synced_devices) {
-  PA_LOG(INFO) << "==== Got Local State ====\n"
-               << "Device ID (truncated): " << *truncated_local_device_id
-               << "\nEnrollment State: \n"
-               << *enrollment_state << "Device Sync State: \n"
-               << *device_sync_state << "Synced devices: \n"
-               << *synced_devices;
+  PA_LOG(VERBOSE) << "==== Got Local State ====\n"
+                  << "Device ID (truncated): " << *truncated_local_device_id
+                  << "\nEnrollment State: \n"
+                  << *enrollment_state << "Device Sync State: \n"
+                  << *device_sync_state << "Synced devices: \n"
+                  << *synced_devices;
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onGotLocalState", *truncated_local_device_id,
       *enrollment_state, *device_sync_state, *synced_devices);

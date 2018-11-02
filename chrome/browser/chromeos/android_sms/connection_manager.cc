@@ -92,8 +92,8 @@ void ConnectionManager::UpdateAndroidSmsFeatureState(
   if (is_android_sms_enabled_ == is_enabled)
     return;
 
-  PA_LOG(INFO) << "ConnectionManager::UpdateAndroidSmsFeatureState enabled: "
-               << is_enabled;
+  PA_LOG(VERBOSE) << "ConnectionManager::UpdateAndroidSmsFeatureState enabled: "
+                  << is_enabled;
   if (is_enabled) {
     connection_establisher_->EstablishConnection(
         service_worker_context_,

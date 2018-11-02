@@ -135,8 +135,8 @@ void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
       result_code == device_sync::mojom::NetworkRequestResult::kSuccess;
 
   if (success) {
-    PA_LOG(INFO) << "Successfully disabled EASY_UNLOCK_HOST on device "
-                 << device.GetTruncatedDeviceIdForLogs();
+    PA_LOG(VERBOSE) << "Successfully disabled EASY_UNLOCK_HOST on device "
+                    << device.GetTruncatedDeviceIdForLogs();
   } else {
     PA_LOG(WARNING) << "Failed to disable EASY_UNLOCK_HOST on device "
                     << device.GetTruncatedDeviceIdForLogs()
