@@ -56,7 +56,9 @@ class RulesData {
                  const std::string& appended,
                  std::string* transformed) const;
 
-  const re2::RE2* history_prune_re() const { return history_prune_re_.get(); }
+  bool HasTransform() const { return transform_re_merged_.get(); }
+
+  bool MatchHistoryPrune(const std::string& str) const;
 
  private:
   // The KeyMap instances under all the modifier states.

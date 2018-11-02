@@ -334,6 +334,10 @@ bool RulesData::Transform(const std::string& context,
   return true;
 }
 
+bool RulesData::MatchHistoryPrune(const std::string& str) const {
+  return re2::RE2::FullMatch(str, *history_prune_re_);
+}
+
 }  // namespace rulebased
 }  // namespace ime
 }  // namespace chromeos
