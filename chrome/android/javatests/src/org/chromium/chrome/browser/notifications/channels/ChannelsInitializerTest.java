@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -291,6 +292,17 @@ public class ChannelsInitializerTest {
     public void testEnsureInitialized_multipleCalls() throws Exception {
         mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.SITES);
         mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.BROWSER);
+        assertThat(getChannelsIgnoringDefault(), hasSize(2));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_multipleIds() throws Exception {
+        mChannelsInitializer.ensureInitialized(CollectionUtil.newHashSet(
+                ChannelDefinitions.ChannelId.SITES, ChannelDefinitions.ChannelId.BROWSER));
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }
 

@@ -12,8 +12,12 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.text.TextUtils;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
+
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Initializes our notification channels.
@@ -34,9 +38,7 @@ public class ChannelsInitializer {
      * channel settings from first launch onwards.
      */
     void initializeStartupChannels() {
-        for (String channelId : ChannelDefinitions.getStartupChannelIds()) {
-            ensureInitialized(channelId);
-        }
+        ensureInitialized(ChannelDefinitions.getStartupChannelIds());
     }
 
     /**
@@ -63,6 +65,19 @@ public class ChannelsInitializer {
     }
 
     /**
+     * Ensures the given channels have been created on the notification manager so a notification
+     * can be safely posted to them. This should only be used for channel ids with an entry in
+     * {@link ChannelDefinitions.PredefinedChannels}, or that start with a known prefix.
+     *
+     * Calling this is a (potentially lengthy) no-op if the channels have already been created.
+     *
+     * @param channelIds The IDs of the channel to be initialized.
+     */
+    public void ensureInitialized(Collection<String> channelIds) {
+        ensureInitializedWithEnabledState(channelIds, true);
+    }
+
+    /**
      * As ensureInitialized, but create the channel in disabled mode. The channel's importance will
      * be set to IMPORTANCE_NONE, instead of using the value from
      * {@link ChannelDefinitions.PredefinedChannels}.
@@ -71,29 +86,49 @@ public class ChannelsInitializer {
         ensureInitializedWithEnabledState(channelId, false);
     }
 
-    private void ensureInitializedWithEnabledState(String channelId, boolean enabled) {
+    private ChannelDefinitions.PredefinedChannel getPredefinedChannel(String channelId) {
         if (channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)) {
             // If we have a valid site channel ID at this point, it is safe to assume a channel
             // has already been created, since the only way to obtain a site channel ID is by
             // creating a channel.
             assert SiteChannelsManager.isValidSiteChannelId(channelId);
-            return;
+            return null;
         }
         ChannelDefinitions.PredefinedChannel predefinedChannel =
                 ChannelDefinitions.getChannelFromId(channelId);
         if (predefinedChannel == null) {
             throw new IllegalStateException("Could not initialize channel: " + channelId);
         }
-        // Channel group must be created before the channel.
-        NotificationChannelGroup channelGroup =
-                ChannelDefinitions.getChannelGroupForChannel(predefinedChannel)
-                        .toNotificationChannelGroup(mResources);
-        mNotificationManager.createNotificationChannelGroup(channelGroup);
-        NotificationChannel channel = predefinedChannel.toNotificationChannel(mResources);
-        if (!enabled) {
-            channel.setImportance(NotificationManager.IMPORTANCE_NONE);
+        return predefinedChannel;
+    }
+
+    private void ensureInitializedWithEnabledState(String channelId, boolean enabled) {
+        ensureInitializedWithEnabledState(CollectionUtil.newArrayList(channelId), enabled);
+    }
+
+    private void ensureInitializedWithEnabledState(Collection<String> channelIds, boolean enabled) {
+        HashMap<String, NotificationChannelGroup> channelGroups = new HashMap<>();
+        HashMap<String, NotificationChannel> channels = new HashMap<>();
+
+        for (String channelId : channelIds) {
+            ChannelDefinitions.PredefinedChannel predefinedChannel =
+                    getPredefinedChannel(channelId);
+            if (predefinedChannel == null) continue;
+            NotificationChannelGroup channelGroup =
+                    ChannelDefinitions.getChannelGroupForChannel(predefinedChannel)
+                            .toNotificationChannelGroup(mResources);
+            NotificationChannel channel = predefinedChannel.toNotificationChannel(mResources);
+            if (!enabled) {
+                channel.setImportance(NotificationManager.IMPORTANCE_NONE);
+            }
+            channelGroups.put(channelGroup.getId(), channelGroup);
+            channels.put(channel.getId(), channel);
         }
-        mNotificationManager.createNotificationChannel(channel);
+
+        // Channel groups must be created before the channels.
+        CollectionUtil.forEach(
+                channelGroups.values(), mNotificationManager::createNotificationChannelGroup);
+        CollectionUtil.forEach(channels.values(), mNotificationManager::createNotificationChannel);
     }
 
     /**
