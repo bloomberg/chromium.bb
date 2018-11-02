@@ -18,6 +18,8 @@ const int kSampleRate = 48000;
 const int kInputPacketSize = 48;
 const int kOutputPacketSize = 24;
 
+#if GTEST_HAS_COMBINE
+
 class AudioShifterTest :
       public ::testing::TestWithParam<::testing::tuple<int, int, int, bool> > {
  public:
@@ -204,5 +206,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::Range(0, 3),
                        ::testing::Range(0, 3),
                        ::testing::Bool()));
+
+#endif
 
 }  // namespace media
