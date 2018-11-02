@@ -65,10 +65,6 @@ bool IsStatefulResponseHeader(base::StringPiece name) {
   return false;
 }
 
-bool IsMethodCacheable(base::StringPiece method) {
-  return method == "GET" || method == "HEAD" || method == "POST";
-}
-
 bool ParseRequestMap(const cbor::Value& value,
                      SignedExchangeEnvelope* out,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
@@ -96,8 +92,12 @@ bool ParseRequestMap(const cbor::Value& value,
   // 3. If exchange’s request method is not safe (Section 4.2.1 of [RFC7231])
   // or not cacheable (Section 4.2.3 of [RFC7231]), return “invalid”.
   // [spec text]
-  if (!net::HttpUtil::IsMethodSafe(method_str.as_string()) ||
-      !IsMethodCacheable(method_str)) {
+  //
+  // Note: Per [RFC7231],
+  //       Safe methods are "GET", "HEAD", "OPTIONS", and "TRACE".
+  //       Cachable methods are "GET", "HEAD", and "POST",
+  //       and we only allow methods that satisfy both.
+  if (method_str != "GET" && method_str != "HEAD") {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
         base::StringPrintf(
