@@ -25,6 +25,14 @@ public class TranslateBridge {
         return nativeCanManuallyTranslate(tab.getWebContents());
     }
 
+    /**
+     * Returns true iff we're in a state where the manual translate IPH could be shown.
+     */
+    public static boolean shouldShowManualTranslateIPH(Tab tab) {
+        return nativeShouldShowManualTranslateIPH(tab.getWebContents());
+    }
+
     private static native void nativeTranslate(WebContents webContents);
-    private static native boolean nativeCanManuallyTranslate(WebContents webConcents);
+    private static native boolean nativeCanManuallyTranslate(WebContents webContents);
+    private static native boolean nativeShouldShowManualTranslateIPH(WebContents webContents);
 }
