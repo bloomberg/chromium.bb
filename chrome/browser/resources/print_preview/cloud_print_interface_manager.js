@@ -21,8 +21,12 @@ cr.define('cloudprint', function() {
   function getCloudPrintInterface(
       baseUrl, nativeLayer, userInfo, isInAppKioskMode) {
     if (instance === null) {
-      instance = new cloudprint.CloudPrintInterfaceJS(
-          baseUrl, nativeLayer, userInfo, isInAppKioskMode);
+      if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
+        instance = new cloudprint.CloudPrintInterfaceNative();
+      } else {
+        instance = new cloudprint.CloudPrintInterfaceJS(
+            baseUrl, nativeLayer, userInfo, isInAppKioskMode);
+      }
     }
     return instance;
   }
