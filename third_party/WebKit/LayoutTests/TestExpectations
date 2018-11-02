@@ -3015,6 +3015,10 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/variations/font-descriptor-range-reversed.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-002.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/replaced-elements/the-select-element/select-1-line-height.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.serviceworker.html [ Timeout ]
