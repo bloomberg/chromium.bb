@@ -10,9 +10,9 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -27,6 +27,8 @@ class UsbPolicyAllowedDevicesTest : public testing::Test {
 
  protected:
   Profile* profile() { return &profile_; }
+
+  device::FakeUsbDeviceManager device_manager_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -360,21 +362,12 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowed) {
   const GURL origins_for_any_device[] = {GURL("https://chromium.org"),
                                          GURL("https://bugs.chromium.org")};
 
-  scoped_refptr<device::UsbDevice> specific_device =
-      base::MakeRefCounted<device::MockUsbDevice>(1234, 5678, "Google", "Gizmo",
-                                                  "123ABC");
-  scoped_refptr<device::UsbDevice> vendor_device =
-      base::MakeRefCounted<device::MockUsbDevice>(1234, 8765, "Google", "Gizmo",
-                                                  "ABC123");
-  scoped_refptr<device::UsbDevice> unrelated_device =
-      base::MakeRefCounted<device::MockUsbDevice>(4321, 8765, "Chrome", "Gizmo",
-                                                  "987ZYX");
-
-  auto specific_device_info =
-      device::mojom::UsbDeviceInfo::From(*specific_device);
-  auto vendor_device_info = device::mojom::UsbDeviceInfo::From(*vendor_device);
-  auto unrelated_device_info =
-      device::mojom::UsbDeviceInfo::From(*unrelated_device);
+  auto specific_device_info = device_manager_.CreateAndAddDevice(
+      1234, 5678, "Google", "Gizmo", "123ABC");
+  auto vendor_device_info = device_manager_.CreateAndAddDevice(
+      1234, 8765, "Google", "Gizmo", "ABC123");
+  auto unrelated_device_info = device_manager_.CreateAndAddDevice(
+      4321, 8765, "Chrome", "Gizmo", "987ZYX");
 
   // Check the URLs for the specific device.
   for (const GURL& requesting_origin : origins_for_specific_device) {
@@ -420,10 +413,8 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForUrlPatternsNotInPref) {
                           GURL("https://very.evil.com"),
                           GURL("https://chromium.deceptive.org")};
 
-  scoped_refptr<device::UsbDevice> device =
-      base::MakeRefCounted<device::MockUsbDevice>(1234, 5678, "Google", "Gizmo",
-                                                  "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  auto device_info = device_manager_.CreateAndAddDevice(1234, 5678, "Google",
+                                                        "Gizmo", "123ABC");
   for (const GURL& requesting_origin : origins) {
     for (const GURL& embedding_origin : origins) {
       EXPECT_FALSE(usb_policy_allowed_devices->IsDeviceAllowed(
@@ -445,10 +436,8 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForDeviceNotInPref) {
       GURL("https://google.com"), GURL("https://mail.google.com"),
       GURL("https://youtube.com"), GURL("https://music.youtube.com")};
 
-  scoped_refptr<device::UsbDevice> device =
-      base::MakeRefCounted<device::MockUsbDevice>(4321, 8765, "Google", "Gizmo",
-                                                  "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  auto device_info = device_manager_.CreateAndAddDevice(4321, 8765, "Google",
+                                                        "Gizmo", "123ABC");
   for (const GURL& requesting_origin : origins) {
     for (const GURL& embedding_origin : origins) {
       EXPECT_FALSE(usb_policy_allowed_devices->IsDeviceAllowed(
@@ -484,10 +473,8 @@ TEST_F(UsbPolicyAllowedDevicesTest,
   const GURL requesting_origin("https://requesting.com");
   const GURL embedding_origin("https://embedding.com");
 
-  scoped_refptr<device::UsbDevice> device =
-      base::MakeRefCounted<device::MockUsbDevice>(1234, 5678, "Google", "Gizmo",
-                                                  "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  auto device_info = device_manager_.CreateAndAddDevice(1234, 5678, "Google",
+                                                        "Gizmo", "123ABC");
   EXPECT_TRUE(usb_policy_allowed_devices->IsDeviceAllowed(
       requesting_origin, embedding_origin, *device_info));
   EXPECT_FALSE(usb_policy_allowed_devices->IsDeviceAllowed(
