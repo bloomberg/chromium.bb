@@ -866,14 +866,6 @@ be describing additional metrics about the same event.
     <summary>
       Opt-in UseCounter feature.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
 </event>
 
