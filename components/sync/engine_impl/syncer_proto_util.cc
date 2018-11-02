@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/format_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
@@ -330,6 +331,10 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   DCHECK_EQ(msg.protocol_version(),
             ClientToServerMessage::default_instance().protocol_version());
   msg.SerializeToString(&params.buffer_in);
+
+  UMA_HISTOGRAM_ENUMERATION("Sync.PostedClientToServerMessage",
+                            msg.message_contents(),
+                            ClientToServerMessage::Contents_MAX + 1);
 
   // Fills in params.buffer_out and params.response.
   if (!scm->PostBufferWithCachedAuth(&params)) {

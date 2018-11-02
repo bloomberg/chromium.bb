@@ -48330,6 +48330,17 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Local version is ahead"/>
 </enum>
 
+<enum name="SyncClientToServerMessageContents">
+  <summary>
+    Type of a network message sent from the client to the sync server.
+  </summary>
+  <int value="1" label="COMMIT"/>
+  <int value="2" label="GET_UPDATES"/>
+  <int value="3" label="AUTHENTICATE"/>
+  <int value="4" label="DEPRECATED_4"/>
+  <int value="5" label="CLEAR_SERVER_DATA"/>
+</enum>
+
 <enum name="SyncConfigureResult">
   <summary>
     Sync data type configure results. The codes are listed in
