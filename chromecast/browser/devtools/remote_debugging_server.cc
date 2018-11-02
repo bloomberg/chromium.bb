@@ -26,6 +26,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
@@ -75,15 +77,16 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
 #else
 class TCPServerSocketFactory : public content::DevToolsSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16_t port)
-      : address_(address), port_(port) {}
+  explicit TCPServerSocketFactory(const net::IPEndPoint& endpoint)
+      : endpoint_(endpoint) {}
 
  private:
   // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
-    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
+
+    if (socket->Listen(endpoint_, kBackLog) != net::OK)
       return std::unique_ptr<net::ServerSocket>();
 
     return socket;
@@ -94,8 +97,7 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
     return nullptr;
   }
 
-  std::string address_;
-  uint16_t port_;
+  const net::IPEndPoint endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
@@ -113,8 +115,9 @@ std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory(
   return std::unique_ptr<content::DevToolsSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
+  net::IPEndPoint endpoint(net::IPAddress::IPv6AllZeros(), port);
   return std::unique_ptr<content::DevToolsSocketFactory>(
-      new TCPServerSocketFactory("0.0.0.0", port));
+      new TCPServerSocketFactory(endpoint));
 #endif
 }
 
