@@ -25,6 +25,8 @@ const policy::ExtensionPolicyMigrator::Migration kMigrations[] = {
     {"report_policy_data", policy::key::kReportPolicyData},
     {"report_machine_id_data", policy::key::kReportMachineIDData},
     {"report_user_id_data", policy::key::kReportUserIDData},
+    {"report_extensions_data", policy::key::kReportExtensionsAndPluginsData},
+    {"report_safe_browsing_data", policy::key::kReportSafeBrowsingData},
 };
 
 }  // namespace

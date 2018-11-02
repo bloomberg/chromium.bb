@@ -24,6 +24,8 @@ const policy::ExtensionPolicyMigrator::Migration kMigrations[] = {
     {"report_policy_data", policy::key::kReportPolicyData},
     {"report_machine_id_data", policy::key::kReportMachineIDData},
     {"report_user_id_data", policy::key::kReportUserIDData},
+    {"report_extensions_data", policy::key::kReportExtensionsAndPluginsData},
+    {"report_safe_browsing_data", policy::key::kReportSafeBrowsingData},
 };
 
 void SetPolicy(policy::PolicyMap* policy,
@@ -47,6 +49,8 @@ TEST(EnterpriseReportingPolicyMigratorTest, Migrate) {
             std::make_unique<base::Value>(false));
   SetPolicy(&stable_extension_map, kMigrations[2].old_name,
             std::make_unique<base::Value>(false));
+  SetPolicy(&stable_extension_map, kMigrations[4].old_name,
+            std::make_unique<base::Value>(false));
 
   policy::PolicyMap& beta_extension_map = bundle.Get(policy::PolicyNamespace(
       policy::POLICY_DOMAIN_EXTENSIONS, kBetaExtensionId));
@@ -54,18 +58,24 @@ TEST(EnterpriseReportingPolicyMigratorTest, Migrate) {
             std::make_unique<base::Value>(true));
   SetPolicy(&beta_extension_map, kMigrations[3].old_name,
             std::make_unique<base::Value>(true));
+  SetPolicy(&beta_extension_map, kMigrations[5].old_name,
+            std::make_unique<base::Value>(true));
 
   EnterpriseReportingPolicyMigrator().Migrate(&bundle);
 
   policy::PolicyMap& chrome_map = bundle.Get(policy::PolicyNamespace(
       policy::POLICY_DOMAIN_CHROME, /* component_id */ std::string()));
 
-  EXPECT_EQ(4u, chrome_map.size());
+  EXPECT_EQ(6u, chrome_map.size());
   EXPECT_EQ(base::Value(false), *chrome_map.GetValue(kMigrations[0].new_name));
   EXPECT_EQ(base::Value(false), *chrome_map.GetValue(kMigrations[1].new_name));
+
   // Stable takes priority over Beta, when the policy is set.
   EXPECT_EQ(base::Value(false), *chrome_map.GetValue(kMigrations[2].new_name));
+
   EXPECT_EQ(base::Value(true), *chrome_map.GetValue(kMigrations[3].new_name));
+  EXPECT_EQ(base::Value(false), *chrome_map.GetValue(kMigrations[4].new_name));
+  EXPECT_EQ(base::Value(true), *chrome_map.GetValue(kMigrations[5].new_name));
 }
 
 }  // namespace enterprise_reporting
