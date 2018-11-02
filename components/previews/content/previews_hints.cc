@@ -4,9 +4,8 @@
 
 #include "components/previews/content/previews_hints.h"
 
-#include <memory>
+#include <array>
 #include <string>
-#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -149,11 +148,6 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
   }
 }
 
-// Returns whether any features using page hints are enabled.
-bool ShouldProcessPageHints() {
-  return previews::params::IsResourceLoadingHintsEnabled();
-}
-
 bool IsDisabledExperimentalOptimization(
     const optimization_guide::proto::Optimization& optimization) {
   // If this optimization has been marked with an experiment name, consider it
@@ -174,6 +168,108 @@ bool IsDisabledExperimentalOptimization(
     return true;
   }
   return false;
+}
+
+// If |hint| contains page hints, then this function adds a pared down version
+// of the hint to |stripped_hints_with_page_hints|, removing all of the hint's
+// top-level optimizations and only retaining the first enabled optimization of
+// each preview type within each page hint.
+// |total_page_patterns_with_resource_loading_hints_received| and
+// |total_resource_loading_hints_received| have their totals updated as
+// resource loading hints are encountered.
+void MaybeAddHintToStrippedHintsWithPageHints(
+    const optimization_guide::proto::Hint& hint,
+    std::vector<optimization_guide::proto::Hint>*
+        stripped_hints_with_page_hints,
+    size_t* total_page_patterns_with_resource_loading_hints_received,
+    size_t* total_resource_loading_hints_received) {
+  DCHECK(stripped_hints_with_page_hints);
+  DCHECK(total_page_patterns_with_resource_loading_hints_received);
+  DCHECK(total_resource_loading_hints_received);
+
+  if (hint.page_hints().empty()) {
+    return;
+  }
+
+  if (previews::params::IsResourceLoadingHintsEnabled()) {
+    UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
+                         hint.page_hints().size());
+  }
+
+  // |stripped_hint| is a copy of |hint| with top-level optimizations and
+  // disabled experimental optimizations within the page hints stripped out.
+  optimization_guide::proto::Hint stripped_hint;
+
+  for (const auto& page_hint : hint.page_hints()) {
+    // Track the preview types encountered for |page_hint|. Only the first
+    // supported one will be kept for any one preview type.
+    std::array<bool, static_cast<int>(PreviewsType::LAST)>
+        encountered_preview_types;
+    encountered_preview_types.fill(false);
+
+    // Initially set the added page hint to nullptr. This will be set the first
+    // time an enabled optimization is encountered.
+    optimization_guide::proto::PageHint* added_page_hint = nullptr;
+
+    for (const auto& optimization : page_hint.whitelisted_optimizations()) {
+      if (IsDisabledExperimentalOptimization(optimization)) {
+        continue;
+      }
+
+      base::Optional<PreviewsType> previews_type =
+          ConvertProtoOptimizationTypeToPreviewsType(
+              optimization.optimization_type());
+
+      // Only add the first encountered optimization of a previews type.
+      if (!previews_type ||
+          encountered_preview_types[static_cast<int>(*previews_type)]) {
+        continue;
+      }
+      encountered_preview_types[static_cast<int>(*previews_type)] = true;
+
+      // If this is a resource loading hints optimization, then add it to the
+      // resource loading hints totals.
+      if (previews_type == PreviewsType::RESOURCE_LOADING_HINTS) {
+        // Always skip over resource loading hints when they're disabled.
+        if (!previews::params::IsResourceLoadingHintsEnabled()) {
+          continue;
+        }
+
+        (*total_page_patterns_with_resource_loading_hints_received)++;
+        (*total_resource_loading_hints_received) +=
+            optimization.resource_loading_hints_size();
+
+        // If the total page patterns with resource loading hints has reached
+        // the cap, then no additional resource loading hints optimizations can
+        // be added to page hints.
+        if (*total_page_patterns_with_resource_loading_hints_received >
+            previews::params::GetMaxPageHintsInMemoryThreshhold()) {
+          continue;
+        }
+      } else {
+        DCHECK_EQ(optimization.resource_loading_hints_size(), 0);
+      }
+
+      // If this page hint hasn't been added to the stripped hint yet, then add
+      // it now and populate its non-whitelisted optimization fields.
+      if (!added_page_hint) {
+        added_page_hint = stripped_hint.add_page_hints();
+        added_page_hint->set_page_pattern(page_hint.page_pattern());
+        if (page_hint.has_max_ect_trigger()) {
+          added_page_hint->set_max_ect_trigger(page_hint.max_ect_trigger());
+        }
+      }
+      auto* added_optimization =
+          added_page_hint->add_whitelisted_optimizations();
+      *added_optimization = optimization;
+    }
+  }
+
+  if (stripped_hint.page_hints_size() > 0) {
+    stripped_hint.set_key_representation(hint.key_representation());
+    stripped_hint.set_key(hint.key());
+    stripped_hints_with_page_hints->push_back(stripped_hint);
+  }
 }
 
 void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
@@ -222,33 +318,35 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   url_matcher::URLMatcherConditionSet::Vector all_conditions;
   std::set<std::string> seen_host_suffixes;
 
-  size_t total_resource_loading_hints_received = 0;
   size_t total_page_patterns_with_resource_loading_hints_received = 0;
+  size_t total_resource_loading_hints_received = 0;
   // Process hint configuration.
-  for (const auto hint : config.hints()) {
+  for (const auto& hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
     if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX)
       continue;
 
+    const std::string& hint_key = hint.key();
+
     // Validate configuration keys.
-    DCHECK(!hint.key().empty());
-    if (hint.key().empty())
+    DCHECK(!hint_key.empty());
+    if (hint_key.empty())
       continue;
 
-    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint.key());
+    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
     DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
     if (seen_host_suffixes_iter != seen_host_suffixes.end()) {
       DLOG(WARNING) << "Received config with duplicate key";
       continue;
     }
-    seen_host_suffixes.insert(hint.key());
+    seen_host_suffixes.insert(hint_key);
 
     // Create whitelist condition set out of the optimizations that are
     // whitelisted for the host suffix at the top level (i.e., not within
     // PageHints).
     std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
-    for (const auto optimization : hint.whitelisted_optimizations()) {
+    for (const auto& optimization : hint.whitelisted_optimizations()) {
       if (IsDisabledExperimentalOptimization(optimization)) {
         continue;
       }
@@ -267,52 +365,31 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     }
 
     url_matcher::URLMatcherCondition condition =
-        condition_factory->CreateHostSuffixCondition(hint.key());
+        condition_factory->CreateHostSuffixCondition(hint_key);
     all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
         id, std::set<url_matcher::URLMatcherCondition>{condition}));
     hints->whitelist_[id] = whitelisted_optimizations;
     id++;
 
-    // Cache hints that have PageHints.
-    if (ShouldProcessPageHints() && !hint.page_hints().empty()) {
-      UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
-                           hint.page_hints().size());
-
-      for (const auto& page_hint : hint.page_hints()) {
-        for (const auto& optimization : page_hint.whitelisted_optimizations()) {
-          if (IsDisabledExperimentalOptimization(optimization)) {
-            // This is an experimental optimization that is not enabled so
-            // continue in case there is a non-experimental one.
-            continue;
-          }
-          base::Optional<PreviewsType> previews_type =
-              ConvertProtoOptimizationTypeToPreviewsType(
-                  optimization.optimization_type());
-
-          if (!previews_type ||
-              previews_type != PreviewsType::RESOURCE_LOADING_HINTS) {
-            continue;
-          }
-          total_page_patterns_with_resource_loading_hints_received++;
-          total_resource_loading_hints_received +=
-              optimization.resource_loading_hints().size();
-        }
-      }
-
-      if (total_page_patterns_with_resource_loading_hints_received <=
-          previews::params::GetMaxPageHintsInMemoryThreshhold()) {
-        hints->initial_hints_.push_back(hint);
-      }
-    }
+    // If this hint contains page hints, then add a pared down version of the
+    // hint to the initial hints that are used to populate the hint cache,
+    // removing all of the hint's top-level optimizations and only retaining the
+    // first enabled optimization of each preview type within each page hint.
+    MaybeAddHintToStrippedHintsWithPageHints(
+        hint, &hints->initial_hints_,
+        &total_page_patterns_with_resource_loading_hints_received,
+        &total_resource_loading_hints_received);
   }
-  if (ShouldProcessPageHints()) {
-    UMA_HISTOGRAM_COUNTS_100000(
-        "ResourceLoadingHints.ResourceHints.TotalReceived",
-        total_resource_loading_hints_received);
+
+  if (previews::params::IsResourceLoadingHintsEnabled()) {
     UMA_HISTOGRAM_COUNTS_1000(
         "ResourceLoadingHints.PageHints.TotalReceived",
         total_page_patterns_with_resource_loading_hints_received);
+    UMA_HISTOGRAM_COUNTS_100000(
+        "ResourceLoadingHints.ResourceHints.TotalReceived",
+        total_resource_loading_hints_received);
   }
+
   if (!all_conditions.empty()) {
     hints->url_matcher_.AddConditionSets(all_conditions);
   }
@@ -505,11 +582,8 @@ bool PreviewsHints::IsWhitelistedInPageHints(
        matched_page_hint->whitelisted_optimizations()) {
     if (ConvertProtoOptimizationTypeToPreviewsType(
             optimization.optimization_type()) == type) {
-      if (IsDisabledExperimentalOptimization(optimization)) {
-        // This is an experimental optimization that is not enabled so continue
-        // in case there is a non-experimental one.
-        continue;
-      }
+      // TODO(jegray): When persistence is added for hints, address handling of
+      // disabled experimental optimizations.
       // Found whitelisted optimization.
       *out_inflation_percent = optimization.inflation_percent();
       if (matched_page_hint->has_max_ect_trigger()) {
