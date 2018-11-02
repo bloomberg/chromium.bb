@@ -548,6 +548,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//components/variations",
     "//components/variations:test_support",
+    "//components/version_info:version_info",
     "//components/webdata/common",
     "//components/webdata_services:test_support",
     "//google_apis",
