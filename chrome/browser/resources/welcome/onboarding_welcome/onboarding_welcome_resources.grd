@@ -11,6 +11,43 @@
     <output filename="onboarding_welcome_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <includes>
+      <include name="IDR_NUX_EMAIL_AOL_1X" file="images\aol_1x.png" type="BINDATA"/>
+      <include name="IDR_NUX_EMAIL_AOL_2X" file="images\aol_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_GMAIL_1X" file="images\gmail_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_GMAIL_2X" file="images\gmail_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_ICLOUD_1X" file="images\icloud_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_ICLOUD_2X" file="images\icloud_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_OUTLOOK_1X" file="images\outlook_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_OUTLOOK_2X" file="images\outlook_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_PROVIDER_LOGO_1X" file="images\email_provider_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_PROVIDER_LOGO_2X" file="images\email_provider_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_YAHOO_1X" file="images\yahoo_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_EMAIL_YAHOO_2X" file="images\yahoo_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="images\chrome_store_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X" file="images\chrome_store_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_LOGO_1X" file="images\google_apps_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_LOGO_2X" file="images\google_apps_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X" file="images\maps_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X" file="images\maps_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X" file="images\news_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_NEWS_2X" file="images\news_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_1X" file="images\translate_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="images\translate_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="images\youtube_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="images\youtube_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X" file="images\set_as_default_illustration_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X" file="images\set_as_default_illustration_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_1X" file="images\set_as_default_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_2X" file="images\set_as_default_2x.png" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_BLUE_CIRCLE_SVG" file="images\background_svgs\blue_circle.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREEN_RECTANGLE_SVG" file="images\background_svgs\green_rectangle.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_OVAL_SVG" file="images\background_svgs\grey_oval.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_ROUNDED_RECTANGLE_SVG" file="images\background_svgs\grey_rounded_rectangle.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_RED_TRIANGLE_SVG" file="images\background_svgs\red_triangle.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_DOTS_SVG" file="images\background_svgs\yellow_dots.svg" type="BINDATA" />
+      <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_SEMICIRCLE_SVG" file="images\background_svgs\yellow_semicircle.svg" type="BINDATA" />
+    </includes>
     <structures>
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML"
                  file="email_interstitial.html"

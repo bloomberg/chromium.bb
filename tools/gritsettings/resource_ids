@@ -131,20 +131,21 @@
     "includes": [13320],
   },
   "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
-    "structures": [13330],
+    "includes": [13330],
+    "structures": [13380],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13370],
+    "includes": [13420],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [13380],
+    "includes": [13430],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13400],
-    "messages": [13410],
+    "includes": [13450],
+    "messages": [13460],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
     "includes": [13500],
