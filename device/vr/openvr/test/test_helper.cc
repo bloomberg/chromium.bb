@@ -5,6 +5,7 @@
 #include "device/vr/openvr/test/test_helper.h"
 #include "base/debug/debugger.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/vr/openvr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
@@ -26,11 +27,13 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
                                   EVREye eye) {
   // Early-out if there is nobody listening.
   bool is_hooked = false;
-  lock_.Acquire();
-  if (test_hook_) {
-    is_hooked = true;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (test_hook_) {
+      is_hooked = true;
+    }
   }
-  lock_.Release();
+
   if (!is_hooked)
     return;
 
@@ -84,10 +87,11 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
   device::Color* color = reinterpret_cast<device::Color*>(map_data.pData);
   frame_data.color = color[0];
   memcpy(&frame_data.raw_buffer, map_data.pData, buffer_size);
-  lock_.Acquire();
-  if (test_hook_)
-    test_hook_->OnFrameSubmitted(frame_data);
-  lock_.Release();
+  {
+    base::AutoLock auto_lock(lock_);
+    if (test_hook_)
+      test_hook_->OnFrameSubmitted(frame_data);
+  }
 
   context->Unmap(texture_copy.Get(), 0);
 }
@@ -114,18 +118,16 @@ vr::TrackedDevicePose_t TranslatePose(device::PoseFrameData pose) {
 }  // namespace
 
 float TestHelper::GetInterpupillaryDistance() {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     auto config = test_hook_->WaitGetDeviceConfig();
-    lock_.Release();
     return config.interpupillary_distance;
   }
-  lock_.Release();
   return 0.1f;
 }
 
 ProjectionRaw TestHelper::GetProjectionRaw(bool left) {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     auto config = test_hook_->WaitGetDeviceConfig();
     ProjectionRaw ret = {};
@@ -134,22 +136,18 @@ ProjectionRaw TestHelper::GetProjectionRaw(bool left) {
     ret.projection[1] = projection[1];
     ret.projection[2] = projection[2];
     ret.projection[3] = projection[3];
-    lock_.Release();
     return ret;
   }
-  lock_.Release();
   return {{1, 1, 1, 1}};
 }
 
 vr::TrackedDevicePose_t TestHelper::GetPose(bool presenting) {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     auto ret = TranslatePose(presenting ? test_hook_->WaitGetPresentingPose()
                                         : test_hook_->WaitGetMagicWindowPose());
-    lock_.Release();
     return ret;
   }
-  lock_.Release();
 
   device::PoseFrameData pose = {};
   pose.is_valid = true;
@@ -165,7 +163,7 @@ vr::ETrackedPropertyError TestHelper::GetInt32TrackedDeviceProperty(
     int32_t& prop_value) {
   vr::ETrackedPropertyError ret = vr::TrackedProp_Success;
   prop_value = 0;
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   switch (prop) {
     case vr::Prop_Axis0Type_Int32:
     case vr::Prop_Axis1Type_Int32:
@@ -184,7 +182,6 @@ vr::ETrackedPropertyError TestHelper::GetInt32TrackedDeviceProperty(
     default:
       ret = vr::TrackedProp_UnknownProperty;
   }
-  lock_.Release();
   return ret;
 }
 
@@ -194,7 +191,7 @@ vr::ETrackedPropertyError TestHelper::GetUint64TrackedDeviceProperty(
     uint64_t& prop_value) {
   vr::ETrackedPropertyError ret = vr::TrackedProp_Success;
   prop_value = 0;
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   switch (prop) {
     case vr::Prop_SupportedButtons_Uint64: {
       auto controller_data = test_hook_->WaitGetControllerData(index);
@@ -208,14 +205,13 @@ vr::ETrackedPropertyError TestHelper::GetUint64TrackedDeviceProperty(
     default:
       ret = vr::TrackedProp_UnknownProperty;
   }
-  lock_.Release();
   return ret;
 }
 
 vr::ETrackedControllerRole TestHelper::GetControllerRoleForTrackedDeviceIndex(
     unsigned int index) {
   vr::ETrackedControllerRole ret = vr::TrackedControllerRole_Invalid;
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     switch (test_hook_->WaitGetControllerRoleForTrackedDeviceIndex(index)) {
       case device::kControllerRoleInvalid:
@@ -230,13 +226,12 @@ vr::ETrackedControllerRole TestHelper::GetControllerRoleForTrackedDeviceIndex(
         NOTREACHED();
     }
   }
-  lock_.Release();
   return ret;
 }
 
 vr::ETrackedDeviceClass TestHelper::GetTrackedDeviceClass(unsigned int index) {
   vr::ETrackedDeviceClass tracked_class = vr::TrackedDeviceClass_Invalid;
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     switch (test_hook_->WaitGetTrackedDeviceClass(index)) {
       case device::kTrackedDeviceInvalid:
@@ -257,16 +252,14 @@ vr::ETrackedDeviceClass TestHelper::GetTrackedDeviceClass(unsigned int index) {
         NOTREACHED();
     }
   }
-  lock_.Release();
   return tracked_class;
 }
 
 bool TestHelper::GetControllerState(unsigned int index,
                                     vr::VRControllerState_t* controller_state) {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     auto controller_data = test_hook_->WaitGetControllerData(index);
-    lock_.Release();
     controller_state->unPacketNum = controller_data.packet_number;
     controller_state->ulButtonPressed = controller_data.buttons_pressed;
     controller_state->ulButtonTouched = controller_data.buttons_touched;
@@ -276,27 +269,23 @@ bool TestHelper::GetControllerState(unsigned int index,
     }
     return controller_data.is_valid;
   }
-  lock_.Release();
   return false;
 }
 
 bool TestHelper::GetControllerPose(unsigned int index,
                                    vr::TrackedDevicePose_t* controller_pose) {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   if (test_hook_) {
     auto controller_data = test_hook_->WaitGetControllerData(index);
-    lock_.Release();
     *controller_pose = TranslatePose(controller_data.pose_data);
     return controller_data.is_valid && controller_data.pose_data.is_valid;
   }
-  lock_.Release();
   return false;
 }
 
 void TestHelper::SetTestHook(device::OpenVRTestHook* hook) {
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   test_hook_ = hook;
-  lock_.Release();
 }
 
 }  // namespace vr
