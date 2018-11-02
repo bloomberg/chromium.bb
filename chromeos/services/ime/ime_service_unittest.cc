@@ -262,5 +262,69 @@ TEST_F(ImeServiceTest, RuleBasedArabic) {
   EXPECT_EQ("{\"result\":false}", response);
 }
 
+// Tests that the rule-based DevaPhone keyboard can work correctly.
+TEST_F(ImeServiceTest, RuleBasedDevaPhone) {
+  bool success = false;
+  TestClientChannel test_channel;
+  mojom::InputChannelPtr to_engine_ptr;
+
+  ime_manager_->ConnectToImeEngine(
+      "m17n:deva_phone", mojo::MakeRequest(&to_engine_ptr),
+      test_channel.CreateInterfacePtrAndBind(), extra,
+      base::BindOnce(&ConnectCallback, &success));
+  ime_manager_.FlushForTesting();
+  EXPECT_TRUE(success);
+
+  std::string response;
+
+  // KeyN.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"KeyN\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  const char* expected_response =
+      u8"{\"result\":true,\"operations\":[{\"method\":\"setComposition\","
+      u8"\"arguments\":[\"\u0928\"]}]}";
+  EXPECT_EQ(expected_response, response);
+
+  // Backspace.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"Backspace\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  expected_response =
+      u8"{\"result\":true,\"operations\":[{\"method\":\"setComposition\","
+      u8"\"arguments\":[\"\"]}]}";
+  EXPECT_EQ(expected_response, response);
+
+  // KeyN + KeyC.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"KeyN\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"KeyC\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  expected_response =
+      u8"{\"result\":true,\"operations\":[{\"method\":\"setComposition\","
+      u8"\"arguments\":[\"\u091e\u094d\u091a\"]}]}";
+  EXPECT_EQ(expected_response, response);
+
+  // Space.
+  to_engine_ptr->ProcessText(
+      "{\"method\":\"keyEvent\",\"type\":\"keydown\",\"code\":\"Space\","
+      "\"shift\":false,\"altgr\":false,\"caps\":false}",
+      base::BindOnce(&TestProcessTextCallback, &response));
+  to_engine_ptr.FlushForTesting();
+  expected_response =
+      u8"{\"result\":true,\"operations\":[{\"method\":\"commitText\","
+      u8"\"arguments\":[\"\u091e\u094d\u091a \"]}]}";
+  EXPECT_EQ(expected_response, response);
+}
+
 }  // namespace ime
 }  // namespace chromeos

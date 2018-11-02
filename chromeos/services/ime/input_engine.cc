@@ -143,19 +143,38 @@ std::string InputEngine::Process(const std::string& message,
   //   'result': <boolean>,
   //   'operations': [
   //     {
-  //       'method': 'commitText',
+  //       'method': 'commitText|setComposition',
   //       'arguments': <string>
   //     }
   //   ]
   // }
   std::string response_str = "{\"result\":";
   response_str += (res.key_handled ? "true" : "false");
-  if (res.commit_text.empty())
+  std::vector<std::string> ops;
+  if (!res.commit_text.empty()) {
+    ops.push_back("{\"method\":\"commitText\",\"arguments\":[\"" +
+                  res.commit_text + "\"]}");
+  }
+  // Need to add the setComposition operation to the result when the key is
+  // handled and commit_text and composition_text are both empty.
+  // That is the case of using Backspace to delete the last character in
+  // composition.
+  if (!res.composition_text.empty() ||
+      (res.key_handled && res.commit_text.empty())) {
+    ops.push_back("{\"method\":\"setComposition\",\"arguments\":[\"" +
+                  res.composition_text + "\"]}");
+  }
+  if (ops.empty()) {
     response_str += "}";
-  else
-    response_str +=
-        ",\"operations\":[{\"method\":\"commitText\",\"arguments\":[\"" +
-        res.commit_text + "\"]}]}";
+  } else {
+    response_str += ",\"operations\":[";
+    for (size_t i = 0; i < ops.size(); ++i) {
+      if (i > 0)
+        response_str += ",";
+      response_str += ops[i];
+    }
+    response_str += "]}";
+  }
 
   return response_str;
 }
