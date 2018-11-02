@@ -1393,7 +1393,6 @@ void Node::DetachLayoutTree(const AttachContext& context) {
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();
   SetLayoutObject(nullptr);
   SetStyleChange(kNeedsReattachStyleChange);
-  ClearChildNeedsStyleInvalidation();
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(

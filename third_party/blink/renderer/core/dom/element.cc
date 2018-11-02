@@ -1926,13 +1926,6 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       CustomElement::EnqueueDisconnectedCallback(this);
     else if (IsUpgradedV0CustomElement())
       V0CustomElement::DidDetach(this, insertion_point.GetDocument());
-
-    if (NeedsStyleInvalidation()) {
-      GetDocument()
-          .GetStyleEngine()
-          .GetPendingNodeInvalidations()
-          .ClearInvalidation(*this);
-    }
   }
 
   GetDocument().GetRootScrollerController().ElementRemoved(*this);
@@ -2084,13 +2077,6 @@ void Element::DetachLayoutTree(const AttachContext& context) {
     if (InActiveChain())
       GetDocument().ActiveChainNodeDetached(*this);
     GetDocument().UserActionElements().DidDetach(*this);
-  }
-
-  if (context.clear_invalidation) {
-    GetDocument()
-        .GetStyleEngine()
-        .GetPendingNodeInvalidations()
-        .ClearInvalidation(*this);
   }
 
   SetNeedsResizeObserverUpdate();

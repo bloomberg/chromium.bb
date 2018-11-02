@@ -727,11 +727,8 @@ void ContainerNode::RemoveBetween(Node* previous_child,
 
   DCHECK_EQ(old_child.parentNode(), this);
 
-  if (!old_child.NeedsAttach()) {
-    AttachContext context;
-    context.clear_invalidation = true;
-    old_child.DetachLayoutTree(context);
-  }
+  if (!old_child.NeedsAttach())
+    old_child.DetachLayoutTree();
 
   if (next_child)
     next_child->SetPreviousSibling(previous_child);
@@ -954,6 +951,20 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
   }
 }
 
+void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
+  if (isConnected()) {
+    if (NeedsStyleInvalidation()) {
+      GetDocument()
+          .GetStyleEngine()
+          .GetPendingNodeInvalidations()
+          .ClearInvalidation(*this);
+      ClearNeedsStyleInvalidation();
+    }
+    ClearChildNeedsStyleInvalidation();
+  }
+  Node::RemovedFrom(insertion_point);
+}
+
 #if DCHECK_IS_ON()
 namespace {
 
@@ -994,11 +1005,8 @@ void ContainerNode::AttachLayoutTree(AttachContext& context) {
 }
 
 void ContainerNode::DetachLayoutTree(const AttachContext& context) {
-  AttachContext children_context(context);
-  children_context.clear_invalidation = true;
-
   for (Node* child = firstChild(); child; child = child->nextSibling())
-    child->DetachLayoutTree(children_context);
+    child->DetachLayoutTree(context);
 
   SetChildNeedsStyleRecalc();
   Node::DetachLayoutTree(context);
