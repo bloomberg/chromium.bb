@@ -4,6 +4,8 @@
 
 #include "ui/android/window_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -178,8 +180,8 @@ void WindowAndroid::AddObserver(WindowAndroidObserver* observer) {
     observer_list_.AddObserver(observer);
 }
 
-void WindowAndroid::AddVSyncCompleteCallback(const base::Closure& callback) {
-  vsync_complete_callbacks_.push_back(callback);
+void WindowAndroid::AddVSyncCompleteCallback(base::OnceClosure callback) {
+  vsync_complete_callbacks_.emplace_back(std::move(callback));
 }
 
 void WindowAndroid::RemoveObserver(WindowAndroidObserver* observer) {
@@ -249,8 +251,8 @@ void WindowAndroid::OnVSync(JNIEnv* env,
 
   begin_frame_source_->OnVSync(frame_time, vsync_period);
 
-  for (const base::Closure& callback : vsync_complete_callbacks_)
-    callback.Run();
+  for (base::OnceClosure& callback : vsync_complete_callbacks_)
+    std::move(callback).Run();
   vsync_complete_callbacks_.clear();
 
   if (needs_begin_frames_)

@@ -93,7 +93,7 @@ bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
     return true;
   }
   window_android_in_vsync_ = window_android;
-  window_android_in_vsync_->AddVSyncCompleteCallback(base::BindRepeating(
+  window_android_in_vsync_->AddVSyncCompleteCallback(base::BindOnce(
       &SynchronousCompositorSyncCallBridge::VSyncCompleteOnUIThread, this));
   return true;
 }
