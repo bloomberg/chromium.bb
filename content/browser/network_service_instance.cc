@@ -81,13 +81,22 @@ network::mojom::NetworkService* GetNetworkService() {
 
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     service_manager::Connector* connector) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const bool is_network_service_enabled =
+      base::FeatureList::IsEnabled(network::features::kNetworkService);
+  // The DCHECK for thread is only done without network service enabled. This is
+  // because the connector and the pre-existing |g_network_service_ptr| are
+  // bound to the right thread in the network service case, and this allows
+  // Android to instantiate the NetworkService before UI thread is promoted to
+  // BrowserThread::UI.
+  if (!is_network_service_enabled)
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (is_network_service_enabled) {
       connector->BindInterface(mojom::kNetworkServiceName,
                                g_network_service_ptr);
       g_network_service_ptr->set_connection_error_handler(
@@ -107,7 +116,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      if (is_network_service_enabled) {
         if (command_line->HasSwitch(network::switches::kLogNetLog)) {
           base::FilePath log_path =
               command_line->GetSwitchValuePath(network::switches::kLogNetLog);
