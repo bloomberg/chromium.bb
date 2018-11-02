@@ -320,6 +320,8 @@
       "os": {
         "type": "chromeos"
       },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
       "features": [
         "disable_discard_framebuffer"
       ]
