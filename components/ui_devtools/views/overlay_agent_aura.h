@@ -67,9 +67,11 @@ class OverlayAgentAura : public OverlayAgent,
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightWidget);
 #if defined(USE_AURA)
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightWindow);
+  FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightEmptyOrInvisibleWindow);
 #endif
   protocol::Response HighlightNode(int node_id, bool show_size = false);
-  void UpdateHighlight(
+  // Returns true when there is any visible element to highlight.
+  bool UpdateHighlight(
       const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds);
 
   // Shows the distances between the nodes identified by |pinned_id| and

@@ -92,6 +92,16 @@ class OverlayAgentTest : public views::ViewsTestBase {
             node_id));
   }
 
+  std::unique_ptr<aura::Window> CreateWindowElement(const gfx::Rect& bounds) {
+    std::unique_ptr<aura::Window> window = std::make_unique<aura::Window>(
+        nullptr, aura::client::WINDOW_TYPE_NORMAL);
+    window->Init(ui::LAYER_NOT_DRAWN);
+    window->SetBounds(bounds);
+    GetContext()->AddChild(window.get());
+    window->Show();
+    return window;
+  }
+
   std::unique_ptr<views::Widget> CreateWidget() {
     auto widget = std::make_unique<views::Widget>();
     views::Widget::InitParams params;
@@ -333,12 +343,7 @@ TEST_F(OverlayAgentTest, HighlightWindow) {
   dom_agent()->getDocument(&root);
 
   std::unique_ptr<aura::Window> window =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetBounds(gfx::Rect());
-  GetContext()->AddChild(window.get());
-  window->Show();
-
+      CreateWindowElement(gfx::Rect(0, 0, 20, 20));
   int window_id =
       dom_agent()
           ->element_root()
@@ -354,6 +359,38 @@ TEST_F(OverlayAgentTest, HighlightWindow) {
 
   overlay_agent()->hideHighlight();
   EXPECT_FALSE(highlightingLayer->visible());
+}
+
+TEST_F(OverlayAgentTest, HighlightEmptyOrInvisibleWindow) {
+  std::unique_ptr<protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  std::unique_ptr<aura::Window> window = CreateWindowElement(gfx::Rect());
+  int window_id =
+      dom_agent()
+          ->element_root()
+          ->FindUIElementIdForBackendElement<aura::Window>(window.get());
+  DCHECK_NE(window_id, 0);
+
+  overlay_agent()->highlightNode(nullptr, window_id);
+  ui::Layer* highlightingLayer = overlay_agent()->layer_for_highlighting();
+  DCHECK(highlightingLayer);
+
+  // Highlight doesn't show for empty element.
+  EXPECT_FALSE(highlightingLayer->parent());
+  EXPECT_FALSE(highlightingLayer->visible());
+
+  // Make the window non-empty, the highlight shows up.
+  window->SetBounds(gfx::Rect(10, 10, 50, 50));
+  overlay_agent()->highlightNode(nullptr, window_id);
+  EXPECT_EQ(highlightingLayer->parent(), GetContext()->layer());
+  EXPECT_TRUE(highlightingLayer->visible());
+
+  // Make the window invisible, the highlight still shows.
+  window->Hide();
+  overlay_agent()->highlightNode(nullptr, window_id);
+  EXPECT_EQ(highlightingLayer->parent(), GetContext()->layer());
+  EXPECT_TRUE(highlightingLayer->visible());
 }
 #endif
 
