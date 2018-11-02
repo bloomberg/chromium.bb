@@ -65,7 +65,7 @@ constexpr const char kPrefPath[] = "path";
 constexpr const char kPrefManifest[] = "manifest";
 
 // The version number.
-constexpr const char kPrefVersion[] = "manifest.version";
+constexpr const char kPrefManifestVersion[] = "manifest.version";
 
 // Indicates whether an extension is blacklisted.
 constexpr const char kPrefBlacklist[] = "blacklist";
@@ -1191,7 +1191,7 @@ std::string ExtensionPrefs::GetVersionString(
     return std::string();
 
   std::string version;
-  extension->GetString(kPrefVersion, &version);
+  extension->GetString(kPrefManifestVersion, &version);
 
   return version;
 }

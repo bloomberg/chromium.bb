@@ -31,7 +31,7 @@ const char kPrefServiceWorkerRegistrationInfo[] =
     "service_worker_registration_info";
 
 // The extension version of the registered service worker.
-const char kPrefVersion[] = "version";
+const char kServiceWorkerVersion[] = "version";
 
 ServiceWorkerTaskQueue::TestObserver* g_test_observer = nullptr;
 
@@ -334,7 +334,7 @@ base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
     return base::Version();
   }
   std::string version_string;
-  info->GetString(kPrefVersion, &version_string);
+  info->GetString(kServiceWorkerVersion, &version_string);
   return base::Version(version_string);
 }
 
@@ -343,7 +343,7 @@ void ServiceWorkerTaskQueue::SetRegisteredServiceWorkerInfo(
     const base::Version& version) {
   DCHECK(version.IsValid());
   auto info = std::make_unique<base::DictionaryValue>();
-  info->SetString(kPrefVersion, version.GetString());
+  info->SetString(kServiceWorkerVersion, version.GetString());
   ExtensionPrefs::Get(browser_context_)
       ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
                             std::move(info));
