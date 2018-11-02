@@ -54,7 +54,7 @@ void AuraTestContextFactory::CreateLayerTreeFrameSink(
       std::make_unique<FrameSinkClient>(context_provider);
   constexpr bool synchronous_composite = false;
   constexpr bool disable_display_vsync = false;
-  const double refresh_rate = GetRefreshRate();
+  const double refresh_rate = 200.0;
   auto frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(),
       GetGpuMemoryBufferManager(), renderer_settings(),

@@ -52,8 +52,9 @@ class SchedulerClient {
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) = 0;
+  virtual void FrameIntervalUpdated(base::TimeDelta interval) = 0;
 
-  // Functions used for reporting anmation targeting UMA, crbug.com/758439.
+  // Functions used for reporting animation targeting UMA, crbug.com/758439.
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
@@ -222,6 +223,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
       SchedulerStateMachine::Action::NONE;
 
   bool stopped_ = false;
+
+  // Keeps track of the begin frame interval from the last BeginFrameArgs to
+  // arrive so that |client_| can be informed about changes.
+  base::TimeDelta last_frame_interval_;
 
  private:
   // Posts the deadline task if needed by checking

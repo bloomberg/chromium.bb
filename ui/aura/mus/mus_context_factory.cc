@@ -73,10 +73,6 @@ void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   // NOTIMPLEMENTED();
 }
 
-double MusContextFactory::GetRefreshRate() const {
-  return 60.0;
-}
-
 gpu::GpuMemoryBufferManager* MusContextFactory::GetGpuMemoryBufferManager() {
   return gpu_->gpu_memory_buffer_manager();
 }

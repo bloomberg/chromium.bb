@@ -306,6 +306,16 @@ void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
 bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
 
+  // If the begin frame interval is different than last frame and bigger than
+  // zero then let |client_| know about the new interval for animations. In
+  // theory the interval should always be bigger than zero but the value is
+  // provided by APIs outside our control.
+  if (args.interval != last_frame_interval_ &&
+      args.interval > base::TimeDelta()) {
+    last_frame_interval_ = args.interval;
+    client_->FrameIntervalUpdated(last_frame_interval_);
+  }
+
   if (ShouldDropBeginFrame(args)) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);

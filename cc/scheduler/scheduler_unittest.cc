@@ -73,6 +73,8 @@ class FakeSchedulerClient : public SchedulerClient,
     return posted_begin_impl_frame_deadline_;
   }
 
+  base::TimeDelta frame_interval() const { return frame_interval_; }
+
   int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
       if (!strcmp(actions_[i], action))
@@ -134,6 +136,9 @@ class FakeSchedulerClient : public SchedulerClient,
     base::AutoReset<bool> mark_inside(&inside_action_, true);
     PushAction("ScheduledActionSendBeginMainFrame");
     last_begin_main_frame_args_ = args;
+  }
+  void FrameIntervalUpdated(base::TimeDelta interval) override {
+    frame_interval_ = interval;
   }
 
   const viz::BeginFrameArgs& last_begin_main_frame_args() {
@@ -275,6 +280,7 @@ class FakeSchedulerClient : public SchedulerClient,
   std::vector<std::unique_ptr<base::trace_event::ConvertableToTraceFormat>>
       states_;
   TestScheduler* scheduler_ = nullptr;
+  base::TimeDelta frame_interval_;
 };
 
 enum BeginFrameSourceType {
@@ -1490,6 +1496,63 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginFrame) {
   EXPECT_EQ(true, scheduler_->MainThreadMissedLastDeadline());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
                  "ScheduledActionDrawIfPossible");
+}
+
+TEST_F(SchedulerTest, FrameIntervalUpdated) {
+  // Verify that the SchedulerClient gets updates when the begin frame interval
+  // changes.
+  SetUpScheduler(EXTERNAL_BFS);
+  constexpr uint64_t kSourceId = viz::BeginFrameArgs::kStartingSourceId;
+  uint64_t sequence_number = viz::BeginFrameArgs::kStartingFrameNumber;
+
+  base::TimeDelta interval = base::TimeDelta::FromMicroseconds(
+      base::Time::kMicrosecondsPerSecond / 120.0);
+
+  // Send BeginFrameArgs with 120hz refresh rate and confirm client gets update.
+  scheduler_->SetNeedsRedraw();
+  task_runner_->AdvanceMockTickClock(interval);
+  viz::BeginFrameArgs args1 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, kSourceId, sequence_number++,
+      task_runner_->NowTicks(), task_runner_->NowTicks() + interval, interval,
+      viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args1);
+  EXPECT_EQ(client_->frame_interval(), interval);
+
+  // Send another BeginFrameArgs with 120hz refresh rate that arrives late. Even
+  // though the interval between begin frames arriving is bigger than |interval|
+  // the client only hears the interval specified in BeginFrameArgs.
+  scheduler_->SetNeedsRedraw();
+  const base::TimeDelta late_delta = base::TimeDelta::FromMilliseconds(4);
+  task_runner_->AdvanceMockTickClock(interval + late_delta);
+  viz::BeginFrameArgs args2 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, kSourceId, sequence_number++, args1.deadline,
+      args1.deadline + interval, interval, viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args2);
+  EXPECT_EQ(client_->frame_interval(), interval);
+
+  // Change the interval for 90hz refresh rate.
+  interval = base::TimeDelta::FromMicroseconds(
+      base::Time::kMicrosecondsPerSecond / 90.0);
+
+  // Send BeginFrameArgs with 90hz refresh rate and confirm client gets update.
+  scheduler_->SetNeedsRedraw();
+  task_runner_->AdvanceMockTickClock(args2.deadline - task_runner_->NowTicks());
+  viz::BeginFrameArgs args3 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, kSourceId, sequence_number++, args2.deadline,
+      args2.deadline + interval, interval, viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args3);
+  EXPECT_EQ(client_->frame_interval(), interval);
+
+  // Send BeginFrameArgs with zero interval. This isn't a valid interval and
+  // client shouldn't find out about it.
+  scheduler_->SetNeedsRedraw();
+  task_runner_->AdvanceMockTickClock(interval);
+  viz::BeginFrameArgs args4 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, kSourceId, sequence_number++, args3.deadline,
+      args3.deadline + interval, base::TimeDelta(),
+      viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args4);
+  EXPECT_EQ(client_->frame_interval(), interval);
 }
 
 TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {

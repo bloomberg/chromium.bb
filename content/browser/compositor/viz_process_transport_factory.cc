@@ -250,11 +250,6 @@ void VizProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   UnconfigureCompositor(compositor);
 }
 
-double VizProcessTransportFactory::GetRefreshRate() const {
-  // TODO(kylechar): Delete this function from ContextFactoryPrivate.
-  return 60.0;
-}
-
 gpu::GpuMemoryBufferManager*
 VizProcessTransportFactory::GetGpuMemoryBufferManager() {
   return gpu_channel_establish_factory_->GetGpuMemoryBufferManager();
