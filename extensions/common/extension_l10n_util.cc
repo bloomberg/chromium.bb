@@ -114,10 +114,8 @@ std::string& GetPreferredLocale() {
 
 // Returns the desired locale to use for localization.
 std::string LocaleForLocalization() {
-  std::string preferred_locale =
-      l10n_util::NormalizeLocale(GetPreferredLocale());
-  if (!preferred_locale.empty())
-    return preferred_locale;
+  // TODO(michaelpg): Check preferred_locale first. That change was reverted to
+  // check if it alleviated: https://crbug.com/898191.
   return extension_l10n_util::CurrentLocaleOrDefault();
 }
 
@@ -351,17 +349,8 @@ void GetAllFallbackLocales(const std::string& application_locale,
                            const std::string& default_locale,
                            std::vector<std::string>* all_fallback_locales) {
   DCHECK(all_fallback_locales);
-  // Use the preferred locale if available. Otherwise, fall back to the
-  // application locale or the application locale's parent locales. Thus, a
-  // preferred locale of "en_CA" with an application locale of "en_GB" will
-  // first try to use an en_CA locale folder, followed by en_GB, followed by en.
-  std::string preferred_locale =
-      l10n_util::NormalizeLocale(GetPreferredLocale());
-  if (!preferred_locale.empty() && preferred_locale != default_locale &&
-      preferred_locale != application_locale) {
-    all_fallback_locales->push_back(preferred_locale);
-  }
-
+  // TODO(michaelpg): Check preferred_locale first. That change was reverted to
+  // check if it alleviated: https://crbug.com/898191.
   if (!application_locale.empty() && application_locale != default_locale)
     l10n_util::GetParentLocales(application_locale, all_fallback_locales);
   all_fallback_locales->push_back(default_locale);
