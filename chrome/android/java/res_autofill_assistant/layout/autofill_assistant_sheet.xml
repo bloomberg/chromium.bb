@@ -43,7 +43,7 @@
             <android.support.v7.widget.AppCompatImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                app:srcCompat="@drawable/chrome_sync_logo" />
+                app:srcCompat="@drawable/ic_autofill_assistant_24dp" />
 
             <TextView
                 android:id="@+id/status_message"
