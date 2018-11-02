@@ -114,6 +114,8 @@ class CONTENT_EXPORT RTCVideoDecoder
                            GetVDAErrorCounterForNotifyError);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
                            GetVDAErrorCounterForRunningOutOfPendingBuffers);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
+                           GetVDAErrorCounterForSendingFramesWithoutSize);
 
   RTCVideoDecoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* factories);
