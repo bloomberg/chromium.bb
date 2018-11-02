@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -36,6 +37,12 @@ class UsbChooserContextTest : public testing::Test {
     device::mojom::UsbDeviceManagerPtr device_manager_ptr;
     device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
     chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+
+    // Call GetDevices once to make sure the connection with DeviceManager has
+    // been set up, so that it can be notified when device is removed.
+    chooser_context->GetDevices(
+        base::DoNothing::Once<std::vector<UsbDeviceInfoPtr>>());
+    base::RunLoop().RunUntilIdle();
     return chooser_context;
   }
 
@@ -45,18 +52,6 @@ class UsbChooserContextTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
-
-void ExpectDevicesAndThen(
-    const std::set<std::string>& expected_guids,
-    base::OnceClosure continuation,
-    std::vector<device::mojom::UsbDeviceInfoPtr> results) {
-  EXPECT_EQ(expected_guids.size(), results.size());
-  std::set<std::string> actual_guids;
-  for (size_t i = 0; i < results.size(); ++i)
-    actual_guids.insert(results[i]->guid);
-  EXPECT_EQ(expected_guids, actual_guids);
-  std::move(continuation).Run();
-}
 
 }  // namespace
 
@@ -138,16 +133,6 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "123ABC");
 
   UsbChooserContext* store = GetChooserContext(profile());
-  {
-    // Call GetDevices once to make sure the connection with DeviceManager has
-    // been set up, so that it can be notified when device is removed.
-    std::set<std::string> guids;
-    guids.insert(device_info->guid);
-    base::RunLoop loop;
-    store->GetDevices(
-        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
-    loop.Run();
-  }
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   store->GrantDevicePermission(origin, origin, *device_info);
@@ -185,16 +170,6 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
   UsbChooserContext* store = GetChooserContext(profile());
-  {
-    // Call GetDevices once to make sure the connection with DeviceManager has
-    // been set up, so that it can be notified when device is removed.
-    std::set<std::string> guids;
-    guids.insert(device_info->guid);
-    base::RunLoop loop;
-    store->GetDevices(
-        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
-    loop.Run();
-  }
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   store->GrantDevicePermission(origin, origin, *device_info);
@@ -228,14 +203,13 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
 TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
   GURL origin("https://www.google.com");
-  UsbChooserContext* store = GetChooserContext(profile());
-  UsbChooserContext* incognito_store =
-      GetChooserContext(profile()->GetOffTheRecordProfile());
-
   UsbDeviceInfoPtr device_info_1 =
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
   UsbDeviceInfoPtr device_info_2 =
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
+  UsbChooserContext* store = GetChooserContext(profile());
+  UsbChooserContext* incognito_store =
+      GetChooserContext(profile()->GetOffTheRecordProfile());
 
   store->GrantDevicePermission(origin, origin, *device_info_1);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
@@ -377,10 +351,10 @@ TEST_F(UsbChooserContextTest,
   const std::vector<GURL> kInvalidRequestingOrigins = {
       GURL("https://gadget.com"), GURL("https://cool.com")};
 
-  auto* store = UsbChooserContextFactory::GetForProfile(profile());
-
   UsbDeviceInfoPtr specific_device_info = device_manager_.CreateAndAddDevice(
       1234, 5678, "Google", "Gizmo", "ABC123");
+
+  auto* store = GetChooserContext(profile());
 
   ExpectNoPermissions(store, *specific_device_info);
 
@@ -400,11 +374,11 @@ TEST_F(UsbChooserContextTest,
       GURL("https://product.vendor.com"), GURL("https://gadget.com"),
       GURL("https://cool.com")};
 
-  auto* store = UsbChooserContextFactory::GetForProfile(profile());
-
   UsbDeviceInfoPtr vendor_related_device_info =
       device_manager_.CreateAndAddDevice(1234, 8765, "Google", "Widget",
                                          "XYZ987");
+
+  auto* store = GetChooserContext(profile());
 
   ExpectNoPermissions(store, *vendor_related_device_info);
 
@@ -426,10 +400,10 @@ TEST_F(UsbChooserContextTest,
   const GURL kGadgetOrigin("https://gadget.com");
   const GURL& kCoolOrigin = kInvalidRequestingOrigins[2];
 
-  auto* store = UsbChooserContextFactory::GetForProfile(profile());
-
   UsbDeviceInfoPtr unrelated_device_info = device_manager_.CreateAndAddDevice(
       2468, 1357, "Cool", "Gadget", "4W350M3");
+
+  auto* store = GetChooserContext(profile());
 
   ExpectNoPermissions(store, *unrelated_device_info);
 
@@ -454,12 +428,12 @@ TEST_F(UsbChooserContextTest,
   const GURL kGadgetOrigin("https://gadget.com");
   const GURL kCoolOrigin("https://cool.com");
 
-  auto* store = UsbChooserContextFactory::GetForProfile(profile());
-
   UsbDeviceInfoPtr specific_device_info = device_manager_.CreateAndAddDevice(
       1234, 5678, "Google", "Gizmo", "ABC123");
   UsbDeviceInfoPtr unrelated_device_info = device_manager_.CreateAndAddDevice(
       2468, 1357, "Cool", "Gadget", "4W350M3");
+
+  auto* store = GetChooserContext(profile());
 
   ExpectNoPermissions(store, *specific_device_info);
   ExpectNoPermissions(store, *unrelated_device_info);

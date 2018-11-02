@@ -49,24 +49,24 @@ bool CanStorePersistentEntry(const device::mojom::UsbDeviceInfo& device_info) {
   return !device_info.serial_number->empty();
 }
 
-base::DictionaryValue DeviceInfoToDictValue(
+std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
     const device::mojom::UsbDeviceInfo& device_info) {
-  base::DictionaryValue device_dict;
-  device_dict.SetKey(kDeviceNameKey,
-                     device_info.product_name
-                         ? base::Value(*device_info.product_name)
-                         : base::Value(""));
+  auto device_dict = std::make_unique<base::DictionaryValue>();
+  device_dict->SetKey(kDeviceNameKey,
+                      device_info.product_name
+                          ? base::Value(*device_info.product_name)
+                          : base::Value(""));
 
   if (!CanStorePersistentEntry(device_info)) {
-    device_dict.SetKey(kGuidKey, base::Value(device_info.guid));
+    device_dict->SetKey(kGuidKey, base::Value(device_info.guid));
     return device_dict;
   }
-  device_dict.SetKey(kVendorIdKey, base::Value(device_info.vendor_id));
-  device_dict.SetKey(kProductIdKey, base::Value(device_info.product_id));
-  device_dict.SetKey(kSerialNumberKey,
-                     device_info.serial_number
-                         ? base::Value(*device_info.serial_number)
-                         : base::Value(""));
+  device_dict->SetKey(kVendorIdKey, base::Value(device_info.vendor_id));
+  device_dict->SetKey(kProductIdKey, base::Value(device_info.product_id));
+  device_dict->SetKey(kSerialNumberKey,
+                      device_info.serial_number
+                          ? base::Value(*device_info.serial_number)
+                          : base::Value(""));
   return device_dict;
 }
 
@@ -96,10 +96,21 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
 }
 
 void UsbChooserContext::InitDeviceList(
-    std::vector<::device::mojom::UsbDeviceInfoPtr> devices) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
   for (auto& device_info : devices) {
     DCHECK(device_info);
     devices_.insert(std::make_pair(device_info->guid, std::move(device_info)));
+  }
+  is_initialized_ = true;
+
+  while (!pending_get_devices_requests_.empty()) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
+    for (const auto& entry : devices_) {
+      device_list.push_back(entry.second->Clone());
+    }
+    std::move(pending_get_devices_requests_.front())
+        .Run(std::move(device_list));
+    pending_get_devices_requests_.pop();
   }
 }
 
@@ -147,9 +158,14 @@ UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
         std::make_pair(requesting_origin, embedding_origin));
     if (it != ephemeral_devices_.end()) {
       for (const std::string& guid : it->second) {
-        auto dict_it = ephemeral_dicts_.find(guid);
-        DCHECK(dict_it != ephemeral_dicts_.end());
-        objects.push_back(dict_it->second.CreateDeepCopy());
+        // |devices_| should be initialized when |ephemeral_devices_| is filled.
+        // Because |ephemeral_devices_| is filled by GrantDevicePermission()
+        // which is called in UsbChooserController::Select(), this method will
+        // always be called after device initialization in UsbChooserController
+        // which always returns after the device list initialization in this
+        // class.
+        DCHECK(base::ContainsKey(devices_, guid));
+        objects.push_back(DeviceInfoToDictValue(*devices_[guid]));
       }
     }
   }
@@ -170,11 +186,9 @@ UsbChooserContext::GetAllGrantedObjects() {
       continue;
 
     for (const std::string& guid : map_entry.second) {
-      auto dict_it = ephemeral_dicts_.find(guid);
-      DCHECK(dict_it != ephemeral_dicts_.end());
-      // ChooserContextBase::Object constructor will swap the object, so
-      // a deep copy is needed here.
-      auto object = dict_it->second.CreateDeepCopy();
+      DCHECK(base::ContainsKey(devices_, guid));
+      // ChooserContextBase::Object constructor will swap the object.
+      auto object = DeviceInfoToDictValue(*devices_[guid]);
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
           requesting_origin, embedding_origin, object.get(), "preference",
           is_incognito_));
@@ -215,15 +229,10 @@ void UsbChooserContext::GrantDevicePermission(
     const device::mojom::UsbDeviceInfo& device_info) {
   if (CanStorePersistentEntry(device_info)) {
     GrantObjectPermission(requesting_origin, embedding_origin,
-                          std::make_unique<base::DictionaryValue>(
-                              DeviceInfoToDictValue(device_info)));
+                          DeviceInfoToDictValue(device_info));
   } else {
     ephemeral_devices_[std::make_pair(requesting_origin, embedding_origin)]
         .insert(device_info.guid);
-    if (!base::ContainsKey(ephemeral_dicts_, device_info.guid)) {
-      ephemeral_dicts_.insert(
-          std::make_pair(device_info.guid, DeviceInfoToDictValue(device_info)));
-    }
   }
 }
 
@@ -271,8 +280,15 @@ bool UsbChooserContext::HasDevicePermission(
 
 void UsbChooserContext::GetDevices(
     device::mojom::UsbDeviceManager::GetDevicesCallback callback) {
-  EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevices(nullptr, std::move(callback));
+  if (is_initialized_) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
+    for (const auto& pair : devices_) {
+      device_list.push_back(pair.second->Clone());
+    }
+    std::move(callback).Run(std::move(device_list));
+  } else {
+    pending_get_devices_requests_.push(std::move(callback));
+  }
 }
 
 void UsbChooserContext::GetDevice(
@@ -286,6 +302,7 @@ void UsbChooserContext::GetDevice(
 
 const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
     const std::string& guid) {
+  DCHECK(is_initialized_);
   auto it = devices_.find(guid);
   return it == devices_.end() ? nullptr : it->second.get();
 }
@@ -343,16 +360,14 @@ void UsbChooserContext::OnDeviceRemoved(
 
   for (auto& map_entry : ephemeral_devices_)
     map_entry.second.erase(device_info->guid);
-
-  ephemeral_dicts_.erase(device_info->guid);
 }
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
   device_manager_.reset();
   client_binding_.Close();
   devices_.clear();
+  is_initialized_ = false;
   ephemeral_devices_.clear();
-  ephemeral_dicts_.clear();
 
   // Notify all observers.
   for (auto& observer : observer_list_)
