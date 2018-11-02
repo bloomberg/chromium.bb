@@ -352,6 +352,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   std::unique_ptr<ui::Compositor> compositor_;
 
   // The device scale factor is snapshotted in OnHostResizedInPixels.
+  // NOTE: this value is cached rather than looked up from the Display as it is
+  // entirely possible for the Display to be updated *after* |this|. For
+  // example, display changes on Windows first result in the HWND bounds
+  // changing and are then followed by changes to the set of displays
+  //
   // TODO(ccameron): The size and location from OnHostResizedInPixels and
   // OnHostMovedInPixels should be snapshotted here as well.
   float device_scale_factor_ = 1.f;
