@@ -720,6 +720,27 @@ def GeneralTemplates(site_config, ge_build_config):
   )
   # END Incremental
 
+  # BEGIN Paladin
+  paladin_hw_tests_override = (
+      hw_test_list.DefaultListNonCanary(pool=constants.HWTEST_TRYBOT_POOL,
+                                        file_bugs=False) +
+      [hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                               pool=constants.HWTEST_TRYBOT_POOL,
+                               file_bugs=False)])
+
+  site_config.templates.paladin.apply(
+      hw_tests_override=paladin_hw_tests_override,
+  )
+
+  site_config.templates.internal_paladin.apply(
+      hw_tests_override=paladin_hw_tests_override,
+  )
+
+  site_config.templates.internal_nowithdebug_paladin.apply(
+      hw_tests_override=paladin_hw_tests_override,
+  )
+  # END Paladin
+
   site_config.templates.telemetry.apply(
       site_config.templates.default_hw_tests_override,
   )
@@ -731,6 +752,8 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.chrome_pfq_cheets_informational.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      hw_tests_override=hw_test_list.SharedPoolAndroidPFQ(),
   )
 
   site_config.templates.chrome_pfq_informational.apply(
@@ -796,20 +819,40 @@ def GeneralTemplates(site_config, ge_build_config):
   # END Loonix
 
   # BEGIN Release
+  release_hw_tests = (hw_test_list.CtsGtsQualTests() +
+                      hw_test_list.SharedPoolCanary())
+
   site_config.templates.release.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=release_hw_tests,
   )
 
   site_config.templates.moblab_release.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
+                                  timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                  warn_only=True),
+          hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                                  warn_only=True),
+          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
+                                  warn_only=True)],
+  )
+
+  release_afdo_hw_tests = (
+      hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL) +
+      hw_test_list.AFDOList()
   )
 
   site_config.templates.release_afdo.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=release_afdo_hw_tests,
   )
 
   site_config.templates.release_afdo_generate.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=[hw_test_list.AFDORecordTest()],
       hw_tests_override=[hw_test_list.AFDORecordTest(
           pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False,
@@ -819,6 +862,7 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.release_afdo_use.apply(
       site_config.templates.default_hw_tests_override,
+      hw_tests=release_afdo_hw_tests,
   )
 
   site_config.templates.payloads.apply(

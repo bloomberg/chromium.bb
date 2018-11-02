@@ -151,7 +151,7 @@ def GeneralTemplates(site_config, ge_build_config):
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
   is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
-  hw_test_list = HWTestList(ge_build_config)
+
   # Config parameters for builders that do not run tests on the builder.
   site_config.AddTemplate(
       'no_unittest_builder',
@@ -179,12 +179,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'paladin',
-      hw_tests_override=(
-          hw_test_list.DefaultListNonCanary(pool=constants.HWTEST_TRYBOT_POOL,
-                                            file_bugs=False) +
-          [hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
-                                   pool=constants.HWTEST_TRYBOT_POOL,
-                                   file_bugs=False)]),
       chroot_replace=False,
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
@@ -501,8 +495,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'chrome_pfq_cheets_informational',
       site_config.templates.chrome_pfq_informational,
-      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-      hw_tests_override=hw_test_list.SharedPoolAndroidPFQ()
   )
 
   site_config.AddTemplate(
@@ -649,8 +641,6 @@ def GeneralTemplates(site_config, ge_build_config):
                                   test_suite='smoke'),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=(hw_test_list.CtsGtsQualTests() +
-                hw_test_list.SharedPoolCanary()),
       paygen=True,
       signer_tests=True,
       hwqual=True,
@@ -667,10 +657,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'release_afdo',
       site_config.templates.release,
       suite_scheduling=False,
-      hw_tests=(
-          hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL) +
-          hw_test_list.AFDOList()
-      ),
       push_image=False,
       paygen=False,
       dev_installer_prebuilts=False,
@@ -682,8 +668,6 @@ def GeneralTemplates(site_config, ge_build_config):
       afdo_generate_min=True,
       afdo_use=False,
       afdo_update_ebuild=True,
-
-      hw_tests=[hw_test_list.AFDORecordTest()],
   )
 
   site_config.AddTemplate(
@@ -699,15 +683,6 @@ def GeneralTemplates(site_config, ge_build_config):
       images=['base', 'recovery', 'test'],
       afdo_use=False,
       signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
-                                  timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                  warn_only=True),
-          hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
-                                  warn_only=True),
-          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                  warn_only=True)],
   )
 
   # Factory and Firmware releases much inherit from these classes.
