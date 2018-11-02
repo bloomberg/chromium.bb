@@ -22,7 +22,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/system/audio/tray_audio.h"
-#include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/date/tray_system_info.h"
@@ -221,8 +220,6 @@ void SystemTray::CreateItems() {
   AddTrayItem(base::WrapUnique(tray_network_));
   tray_vpn_ = new TrayVPN(this);
   AddTrayItem(base::WrapUnique(tray_vpn_));
-  tray_bluetooth_ = new TrayBluetooth(this);
-  AddTrayItem(base::WrapUnique(tray_bluetooth_));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(base::WrapUnique(tray_cast_));
   AddTrayItem(std::make_unique<ScreenCaptureTrayItem>(this));
@@ -358,10 +355,6 @@ views::View* SystemTray::GetHelpButtonView() const {
 
 TrayAudio* SystemTray::GetTrayAudio() const {
   return tray_audio_;
-}
-
-TrayBluetooth* SystemTray::GetTrayBluetooth() const {
-  return tray_bluetooth_;
 }
 
 TrayCast* SystemTray::GetTrayCast() const {
