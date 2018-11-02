@@ -11,6 +11,7 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 
+#include <cstdint>
 #include <memory>
 
 #include "base/run_loop.h"

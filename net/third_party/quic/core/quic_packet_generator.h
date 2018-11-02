@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // Responsible for generating packets on behalf of a QuicConnection.
 // Packets are serialized just-in-time.  Control frames are queued.
 // Ack and Feedback frames will be requested from the Connection

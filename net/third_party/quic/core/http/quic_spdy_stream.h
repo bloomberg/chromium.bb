@@ -1,7 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // The base class for streams which deliver data to/from an application.
 // In each direction, the data on such a stream first contains compressed
 // headers then body data.

@@ -108,7 +108,7 @@ class ShloVerifier {
 
 class CryptoTestUtilsTest : public QuicTest {};
 
-TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
+TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
   MockClock clock;
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),

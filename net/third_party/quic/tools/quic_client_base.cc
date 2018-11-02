@@ -12,9 +12,6 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using base::StringToInt;
-using std::string;
-
 namespace quic {
 
 QuicClientBase::NetworkHelper::~NetworkHelper() = default;

@@ -235,7 +235,7 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
           ReadableBytes(), block_capacity - start_offset_in_block);
       size_t bytes_to_copy =
           std::min<size_t>(bytes_available_in_block, dest_remaining);
-      DCHECK_GT(bytes_to_copy, 0UL);
+      DCHECK_GT(bytes_to_copy, 0u);
       if (blocks_[block_idx] == nullptr || dest == nullptr) {
         *error_details = QuicStrCat(
             "QuicStreamSequencerBuffer error:"
