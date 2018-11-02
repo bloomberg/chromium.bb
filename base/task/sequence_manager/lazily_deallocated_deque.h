@@ -105,7 +105,10 @@ class LazilyDeallocatedDeque {
 
     // Grow if needed.
     if (!tail_->CanPush()) {
-      tail_->next_ = std::make_unique<Ring>(tail_->capacity() * 2);
+      // Doubling the size is a common strategy, but one which can be wasteful
+      // so we use a (somewhat) slower growth curve.
+      tail_->next_ = std::make_unique<Ring>(2 + tail_->capacity() +
+                                            (tail_->capacity() / 2));
       tail_ = tail_->next_.get();
     }
 
