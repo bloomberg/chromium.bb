@@ -649,13 +649,18 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
   Client().WorkerScriptLoaded();
 }
 
-void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledScript() {
+void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
 
   // Tell ServiceWorkerContextClient about the failure. The generic
   // WorkerContextFailedToStart() wouldn't make sense because
   // WorkerContextStarted() was already called.
-  Client().FailedToLoadInstalledScript();
+  Client().FailedToLoadInstalledClassicScript();
+}
+
+void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  Client().FailedToFetchModuleScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(

@@ -71,8 +71,12 @@ class WebServiceWorkerContextClient {
   virtual void WorkerContextFailedToStart() {}
 
   // The worker started but it could not execute because loading the
-  // installed script failed.
-  virtual void FailedToLoadInstalledScript() {}
+  // installed classic script failed.
+  virtual void FailedToLoadInstalledClassicScript() {}
+
+  // The worker started but it could not execute because fetching module script
+  // failed.
+  virtual void FailedToFetchModuleScript() {}
 
   // The worker script successfully loaded. Called on the main thread when the
   // script is served from ResourceLoader or on the worker thread when the
