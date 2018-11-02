@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Initializes our notification channels.
@@ -25,7 +26,7 @@ import java.util.HashMap;
 @TargetApi(Build.VERSION_CODES.O)
 public class ChannelsInitializer {
     private final NotificationManagerProxy mNotificationManager;
-    private final Resources mResources;
+    private Resources mResources;
 
     public ChannelsInitializer(
             NotificationManagerProxy notificationManagerProxy, Resources resources) {
@@ -39,6 +40,20 @@ public class ChannelsInitializer {
      */
     void initializeStartupChannels() {
         ensureInitialized(ChannelDefinitions.getStartupChannelIds());
+    }
+
+    /**
+     * Updates all the channels to reflect the correct locale.
+     *
+     * @param resources The new resources to use.
+     */
+    void updateLocale(Resources resources) {
+        mResources = resources;
+        HashSet<String> channelIds = new HashSet<>();
+        for (NotificationChannel channel : mNotificationManager.getNotificationChannels()) {
+            channelIds.add(channel.getId());
+        }
+        ensureInitialized(channelIds);
     }
 
     /**

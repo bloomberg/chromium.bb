@@ -350,6 +350,14 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
+        <!-- Locale related -->
+        <receiver android:name="org.chromium.chrome.browser.locale.LocaleChangedBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Document mode Activities. -->
         <activity android:name="org.chromium.chrome.browser.document.DocumentActivity"
             android:exported="false"
