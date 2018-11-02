@@ -10,11 +10,11 @@
 #include "net/third_party/quic/core/crypto/channel_id.h"
 #include "net/third_party/quic/core/crypto/common_cert_set.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quic/core/crypto/crypto_server_config_protobuf.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/proto/crypto_server_config.pb.h"
 #include "net/third_party/quic/core/quic_crypto_client_stream.h"
 #include "net/third_party/quic/core/quic_crypto_server_stream.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
@@ -39,7 +39,6 @@
 #include "third_party/boringssl/src/include/openssl/ecdsa.h"
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
-
 
 namespace quic {
 namespace test {
