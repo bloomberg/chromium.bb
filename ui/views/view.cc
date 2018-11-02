@@ -123,30 +123,7 @@ const char View::kViewClassName[] = "View";
 
 // Creation and lifetime -------------------------------------------------------
 
-View::View()
-    : owned_by_client_(false),
-      id_(0),
-      group_(-1),
-      parent_(nullptr),
-#if DCHECK_IS_ON()
-      iterating_(false),
-#endif
-      can_process_events_within_subtree_(true),
-      visible_(true),
-      enabled_(true),
-      notify_enter_exit_on_child_(false),
-      registered_for_visible_bounds_notification_(false),
-      needs_layout_(true),
-      snap_layer_to_pixel_boundary_(false),
-      flip_canvas_on_paint_for_rtl_ui_(false),
-      paint_to_layer_(false),
-      accelerator_focus_manager_(nullptr),
-      registered_accelerator_count_(0),
-      next_focusable_view_(nullptr),
-      previous_focusable_view_(nullptr),
-      focus_behavior_(FocusBehavior::NEVER),
-      context_menu_controller_(nullptr),
-      drag_controller_(nullptr) {
+View::View() {
   SetTargetHandler(this);
 }
 

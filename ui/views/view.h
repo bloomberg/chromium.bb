@@ -1681,22 +1681,22 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // False if this View is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction. False is the default.
-  bool owned_by_client_;
+  bool owned_by_client_ = false;
 
   // Attributes ----------------------------------------------------------------
 
   // The id of this View. Used to find this View.
-  int id_;
+  int id_ = 0;
 
   // The group of this view. Some view subclasses use this id to find other
   // views of the same group. For example radio button uses this information
   // to find other radio buttons.
-  int group_;
+  int group_ = -1;
 
   // Tree operations -----------------------------------------------------------
 
   // This view's parent.
-  View* parent_;
+  View* parent_ = nullptr;
 
   // This view's children.
   Views children_;
@@ -1704,10 +1704,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 #if DCHECK_IS_ON()
   // True while iterating over |children_|. Used to detect and DCHECK when
   // |children_| is mutated during iteration.
-  mutable bool iterating_;
+  mutable bool iterating_ = false;
 #endif
 
-  bool can_process_events_within_subtree_;
+  bool can_process_events_within_subtree_ = true;
 
   // Size and disposition ------------------------------------------------------
 
@@ -1717,10 +1717,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Rect bounds_;
 
   // Whether this view is visible.
-  bool visible_;
+  bool visible_ = true;
 
   // Whether this view is enabled.
-  bool enabled_;
+  bool enabled_ = true;
 
   // When this flag is on, a View receives a mouse-enter and mouse-leave event
   // even if a descendant View is the event-recipient for the real mouse
@@ -1735,11 +1735,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // still into this view, this view receives a mouse-enter event if this flag
   // is turned off, but doesn't if this flag is turned on.
   // This flag is initialized to false.
-  bool notify_enter_exit_on_child_;
+  bool notify_enter_exit_on_child_ = false;
 
   // Whether or not RegisterViewForVisibleBoundsNotification on the RootView
   // has been invoked.
-  bool registered_for_visible_bounds_notification_;
+  bool registered_for_visible_bounds_notification_ = false;
 
   // List of descendants wanting notification when their visible bounds change.
   std::unique_ptr<Views> descendants_to_notify_;
@@ -1753,14 +1753,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Layout --------------------------------------------------------------------
 
   // Whether the view needs to be laid out.
-  bool needs_layout_;
+  bool needs_layout_ = true;
 
   // The View's LayoutManager defines the sizing heuristics applied to child
   // Views. The default is absolute positioning according to bounds_.
   std::unique_ptr<LayoutManager> layout_manager_;
 
   // Whether this View's layer should be snapped to the pixel boundary.
-  bool snap_layer_to_pixel_boundary_;
+  bool snap_layer_to_pixel_boundary_ = false;
 
   // Painting ------------------------------------------------------------------
 
@@ -1785,42 +1785,42 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Indicates whether or not the gfx::Canvas object passed to View::Paint()
   // is going to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
-  bool flip_canvas_on_paint_for_rtl_ui_;
+  bool flip_canvas_on_paint_for_rtl_ui_ = false;
 
   // Accelerated painting ------------------------------------------------------
 
-  bool paint_to_layer_;
+  bool paint_to_layer_ = false;
 
   // Accelerators --------------------------------------------------------------
 
   // Focus manager accelerators registered on.
-  FocusManager* accelerator_focus_manager_;
+  FocusManager* accelerator_focus_manager_ = nullptr;
 
   // The list of accelerators. List elements in the range
   // [0, registered_accelerator_count_) are already registered to FocusManager,
   // and the rest are not yet.
   std::unique_ptr<std::vector<ui::Accelerator>> accelerators_;
-  size_t registered_accelerator_count_;
+  size_t registered_accelerator_count_ = 0;
 
   // Focus ---------------------------------------------------------------------
 
   // Next view to be focused when the Tab key is pressed.
-  View* next_focusable_view_;
+  View* next_focusable_view_ = nullptr;
 
   // Next view to be focused when the Shift-Tab key combination is pressed.
-  View* previous_focusable_view_;
+  View* previous_focusable_view_ = nullptr;
 
   // The focus behavior of the view in regular and accessibility mode.
-  FocusBehavior focus_behavior_;
+  FocusBehavior focus_behavior_ = FocusBehavior::NEVER;
 
   // Context menus -------------------------------------------------------------
 
   // The menu controller.
-  ContextMenuController* context_menu_controller_;
+  ContextMenuController* context_menu_controller_ = nullptr;
 
   // Drag and drop -------------------------------------------------------------
 
-  DragController* drag_controller_;
+  DragController* drag_controller_ = nullptr;
 
   // Input  --------------------------------------------------------------------
 
