@@ -49,6 +49,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/value_builder.h"
@@ -305,38 +306,129 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
       << message_;
 }
 
-// Listens for "runtime.onStartup" event early so that tests can wait for the
-// event on startup (and not miss it).
-class ServiceWorkerOnStartupTest : public ServiceWorkerBasedBackgroundTest {
+// Listens for |message| from extension Service Worker early so that tests can
+// wait for the message on startup (and not miss it).
+class ServiceWorkerWithEarlyMessageListenerTest
+    : public ServiceWorkerBasedBackgroundTest {
  public:
-  ServiceWorkerOnStartupTest() = default;
-  ~ServiceWorkerOnStartupTest() override = default;
+  explicit ServiceWorkerWithEarlyMessageListenerTest(
+      const std::string& test_message)
+      : test_message_(test_message) {}
+  ~ServiceWorkerWithEarlyMessageListenerTest() override = default;
 
-  bool WaitForOnStartupEvent() { return listener_->WaitUntilSatisfied(); }
+  bool WaitForMessage() { return listener_->WaitUntilSatisfied(); }
 
   void CreatedBrowserMainParts(content::BrowserMainParts* main_parts) override {
     // At this point, the notification service is initialized but the profile
     // and extensions have not.
-    listener_ = std::make_unique<ExtensionTestMessageListener>(
-        "onStartup event", false);
+    listener_ =
+        std::make_unique<ExtensionTestMessageListener>(test_message_, false);
     ServiceWorkerBasedBackgroundTest::CreatedBrowserMainParts(main_parts);
   }
 
  private:
+  const std::string test_message_;
   std::unique_ptr<ExtensionTestMessageListener> listener_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerOnStartupTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerWithEarlyMessageListenerTest);
+};
+
+class ServiceWorkerOnStartupEventTest
+    : public ServiceWorkerWithEarlyMessageListenerTest {
+ public:
+  ServiceWorkerOnStartupEventTest()
+      : ServiceWorkerWithEarlyMessageListenerTest("onStartup event") {}
+  ~ServiceWorkerOnStartupEventTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerOnStartupEventTest);
 };
 
 // Tests "runtime.onStartup" for extension SW.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupTest, PRE_Event) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupEventTest, PRE_Event) {
   ASSERT_TRUE(RunExtensionTest(
       "service_worker/worker_based_background/on_startup_event"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupTest, Event) {
-  EXPECT_TRUE(WaitForOnStartupEvent());
+IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupEventTest, Event) {
+  EXPECT_TRUE(WaitForMessage());
+}
+
+class ServiceWorkerRegistrationAtStartupTest
+    : public ServiceWorkerWithEarlyMessageListenerTest,
+      public ServiceWorkerTaskQueue::TestObserver {
+ public:
+  ServiceWorkerRegistrationAtStartupTest()
+      : ServiceWorkerWithEarlyMessageListenerTest("WORKER_RUNNING") {
+    ServiceWorkerTaskQueue::SetObserverForTest(this);
+  }
+  ~ServiceWorkerRegistrationAtStartupTest() override {
+    ServiceWorkerTaskQueue::SetObserverForTest(nullptr);
+  }
+
+  // ServiceWorkerTaskQueue::TestObserver:
+  void OnActivateExtension(const ExtensionId& extension_id,
+                           bool will_register_service_worker) override {
+    if (extension_id != kExtensionId)
+      return;
+
+    will_register_service_worker_ = will_register_service_worker;
+
+    extension_activated_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void WaitForOnActivateExtension() {
+    if (extension_activated_)
+      return;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+  bool WillRegisterServiceWorker() {
+    return will_register_service_worker_.value();
+  }
+
+ protected:
+  static const char kExtensionId[];
+
+ private:
+  bool extension_activated_ = false;
+  base::Optional<bool> will_register_service_worker_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationAtStartupTest);
+};
+
+// Test extension id at
+// api_test/service_worker/worker_based_background/registration_at_startup/.
+const char ServiceWorkerRegistrationAtStartupTest::kExtensionId[] =
+    "gnchfmandajfaiajniicagenfmhdjila";
+
+// Tests that Service Worker registration for existing extension isn't issued
+// upon browser restart.
+// Regression test for https://crbug.com/889687.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerRegistrationAtStartupTest,
+                       PRE_ExtensionActivationDoesNotReregister) {
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/registration_at_startup"));
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kExtensionId, extension->id());
+  // Wait for "WORKER_RUNNING" message from the Service Worker.
+  EXPECT_TRUE(WaitForMessage());
+  EXPECT_TRUE(WillRegisterServiceWorker());
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerRegistrationAtStartupTest,
+                       ExtensionActivationDoesNotReregister) {
+  // Since the extension has onStartup listener, the Service Worker will run on
+  // browser start and we'll see "WORKER_RUNNING" message from the worker.
+  EXPECT_TRUE(WaitForMessage());
+  // As the extension activated during first run on PRE_ step, it shouldn't
+  // re-register the Service Worker upon browser restart.
+  EXPECT_FALSE(WillRegisterServiceWorker());
 }
 
 // Class that dispatches an event to |extension_id| right after a
@@ -1451,10 +1543,16 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
                         ServiceWorkerBasedBackgroundTest,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
-                        ServiceWorkerOnStartupTest,
+                        ServiceWorkerOnStartupEventTest,
                         ::testing::Values(NATIVE_BINDINGS));
 INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
-                        ServiceWorkerOnStartupTest,
+                        ServiceWorkerOnStartupEventTest,
+                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
+                        ServiceWorkerRegistrationAtStartupTest,
+                        ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
+                        ServiceWorkerRegistrationAtStartupTest,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace extensions

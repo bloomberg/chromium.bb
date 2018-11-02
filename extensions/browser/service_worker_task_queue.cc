@@ -12,6 +12,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/service_worker_task_queue_factory.h"
@@ -23,6 +24,16 @@ using content::BrowserContext;
 namespace extensions {
 
 namespace {
+
+// A preference key storing the information about an extension that was
+// activated and has a registered worker based background page.
+const char kPrefServiceWorkerRegistrationInfo[] =
+    "service_worker_registration_info";
+
+// The extension version of the registered service worker.
+const char kPrefVersion[] = "version";
+
+ServiceWorkerTaskQueue::TestObserver* g_test_observer = nullptr;
 
 void RunTask(LazyContextTaskQueue::PendingTask task,
              const ExtensionId& extension_id,
@@ -176,6 +187,11 @@ void ServiceWorkerTaskQueue::DidStopServiceWorkerContext(
   waiting_did_start_worker_tasks_.erase(key);
 }
 
+// static
+void ServiceWorkerTaskQueue::SetObserverForTest(TestObserver* observer) {
+  g_test_observer = observer;
+}
+
 bool ServiceWorkerTaskQueue::ShouldEnqueueTask(BrowserContext* context,
                                                const Extension* extension) {
   // We call StartWorker every time we want to dispatch an event to an extension
@@ -205,9 +221,22 @@ void ServiceWorkerTaskQueue::AddPendingTaskToDispatchEvent(
 void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(lazyboy): Should we only register Service Worker during installation
-  // and remember its success/failure state in prefs?
   const ExtensionId extension_id = extension->id();
+  // Note: version.IsValid() = false implies we didn't have any prefs stored.
+  base::Version version = RetrieveRegisteredServiceWorkerVersion(extension_id);
+  const bool service_worker_already_registered =
+      version.IsValid() && version == extension->version();
+  if (g_test_observer) {
+    g_test_observer->OnActivateExtension(extension_id,
+                                         !service_worker_already_registered);
+  }
+
+  if (service_worker_already_registered) {
+    // TODO(https://crbug.com/901101): We should kick off an async check to see
+    // if the registration is *actually* there and re-register if necessary.
+    return;
+  }
+
   pending_registrations_.insert(extension_id);
   GURL script_url = extension->GetResourceURL(
       BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
@@ -226,6 +255,8 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
   GURL script_url = extension->GetResourceURL(
       BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
   const ExtensionId extension_id = extension->id();
+  RemoveRegisteredServiceWorkerInfo(extension_id);
+
   content::BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                       extension->url())
       ->GetServiceWorkerContext()
@@ -264,7 +295,9 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
     bool success) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   DCHECK(registry);
-  if (!registry->enabled_extensions().Contains(extension_id))
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(extension_id);
+  if (!extension)
     return;
 
   std::vector<TaskInfo> pending_tasks;
@@ -272,6 +305,8 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
 
   if (!success)  // TODO(lazyboy): Handle.
     return;
+
+  SetRegisteredServiceWorkerInfo(extension->id(), extension->version());
 
   for (TaskInfo& task_info : pending_tasks) {
     LazyContextId context_id(browser_context_, extension_id,
@@ -288,6 +323,37 @@ void ServiceWorkerTaskQueue::DidUnregisterServiceWorker(
     const ExtensionId& extension_id,
     bool success) {
   // TODO(lazyboy): Handle success = false case.
+}
+
+base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
+    const ExtensionId& extension_id) {
+  const base::DictionaryValue* info = nullptr;
+  if (!ExtensionPrefs::Get(browser_context_)
+           ->ReadPrefAsDictionary(extension_id,
+                                  kPrefServiceWorkerRegistrationInfo, &info)) {
+    return base::Version();
+  }
+  std::string version_string;
+  info->GetString(kPrefVersion, &version_string);
+  return base::Version(version_string);
+}
+
+void ServiceWorkerTaskQueue::SetRegisteredServiceWorkerInfo(
+    const ExtensionId& extension_id,
+    const base::Version& version) {
+  DCHECK(version.IsValid());
+  auto info = std::make_unique<base::DictionaryValue>();
+  info->SetString(kPrefVersion, version.GetString());
+  ExtensionPrefs::Get(browser_context_)
+      ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
+                            std::move(info));
+}
+
+void ServiceWorkerTaskQueue::RemoveRegisteredServiceWorkerInfo(
+    const ExtensionId& extension_id) {
+  ExtensionPrefs::Get(browser_context_)
+      ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
+                            nullptr);
 }
 
 }  // namespace extensions
