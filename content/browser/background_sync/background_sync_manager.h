@@ -149,7 +149,6 @@ class CONTENT_EXPORT BackgroundSyncManager
     ~BackgroundSyncRegistrations();
 
     RegistrationMap registration_map;
-    BackgroundSyncRegistration::RegistrationId next_id;
     GURL origin;
   };
 
@@ -244,7 +243,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEventsImpl(base::OnceClosure callback);
   void FireReadyEventsDidFindRegistration(
       const std::string& tag,
-      BackgroundSyncRegistration::RegistrationId registration_id,
       base::OnceClosure event_fired_callback,
       base::OnceClosure event_completed_callback,
       blink::ServiceWorkerStatusCode service_worker_status,

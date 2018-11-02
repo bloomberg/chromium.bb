@@ -39,7 +39,6 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
 
   mojom::blink::SyncRegistrationPtr sync_registration =
       mojom::blink::SyncRegistration::New();
-  sync_registration->id = SyncManager::kUnregisteredSyncID;
   sync_registration->tag = tag;
   sync_registration->network_state =
       blink::mojom::BackgroundSyncNetworkState::ONLINE;

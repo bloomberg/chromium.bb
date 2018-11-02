@@ -443,7 +443,6 @@ TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_STREQ(sync_options_1_.tag.c_str(),
                callback_registration_->options()->tag.c_str());
-  EXPECT_TRUE(callback_registration_->IsValid());
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
@@ -586,16 +585,6 @@ TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
   sync_options_2_.tag = std::string(MaxTagLength() + 1, 'b');
   EXPECT_FALSE(Register(sync_options_2_));
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback_status_);
-}
-
-TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  BackgroundSyncRegistration::RegistrationId cur_id =
-      callback_registration_->id();
-
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_LT(cur_id, callback_registration_->id());
 }
 
 TEST_F(BackgroundSyncManagerTest, RebootRecovery) {
@@ -745,15 +734,6 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_2_));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsId) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.set_id(reg_1.id() + 1);
-  EXPECT_TRUE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
