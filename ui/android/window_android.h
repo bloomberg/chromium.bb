@@ -6,7 +6,6 @@
 #define UI_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,7 +63,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   viz::BeginFrameSource* GetBeginFrameSource();
 
   // Runs the provided callback as soon as the current vsync was handled.
-  void AddVSyncCompleteCallback(const base::Closure& callback);
+  void AddVSyncCompleteCallback(base::OnceClosure callback);
 
   void SetNeedsAnimate();
   void Animate(base::TimeTicks begin_frame_time);
@@ -117,7 +116,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   std::unique_ptr<WindowBeginFrameSource> begin_frame_source_;
   bool needs_begin_frames_;
-  std::list<base::Closure> vsync_complete_callbacks_;
+  std::vector<base::OnceClosure> vsync_complete_callbacks_;
   float mouse_wheel_scroll_factor_;
   bool vsync_paused_ = false;
 
