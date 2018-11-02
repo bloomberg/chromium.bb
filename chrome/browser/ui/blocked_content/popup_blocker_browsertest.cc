@@ -427,15 +427,18 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsLaunchWhenTabIsClosed) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigateAndCheckPopupShown(embedded_test_server()->GetURL("/popup_blocker/"),
-                             kExpectPopup);
+  GURL url2(embedded_test_server()->GetURL("/popup_blocker/"));
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  // Expect no popup.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.

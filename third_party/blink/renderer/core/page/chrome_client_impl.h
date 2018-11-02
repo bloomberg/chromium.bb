@@ -73,12 +73,12 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const SkBitmap& drag_image,
                      const WebPoint& drag_image_offset) override;
   bool AcceptsLoadDrops() const override;
-  Page* CreateWindow(LocalFrame*,
-                     const FrameLoadRequest&,
-                     const WebWindowFeatures&,
-                     NavigationPolicy,
-                     SandboxFlags,
-                     const SessionStorageNamespaceId&) override;
+  Page* CreateWindowDelegate(LocalFrame*,
+                             const FrameLoadRequest&,
+                             const WebWindowFeatures&,
+                             NavigationPolicy,
+                             SandboxFlags,
+                             const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
@@ -195,9 +195,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                bool shrinks_layout) override;
   void SetBrowserControlsShownRatio(float) override;
 
-  bool ShouldOpenModalDialogDuringPageDismissal(
+  bool ShouldOpenUIElementDuringPageDismissal(
       LocalFrame&,
-      DialogType,
+      UIElementType,
       const String& dialog_message,
       Document::PageDismissalType) const override;
 

@@ -109,18 +109,18 @@ namespace blink {
 
 namespace {
 
-const char* DialogTypeToString(ChromeClient::DialogType dialog_type) {
-  switch (dialog_type) {
-    case ChromeClient::kAlertDialog:
+const char* UIElementTypeToString(ChromeClient::UIElementType ui_element_type) {
+  switch (ui_element_type) {
+    case ChromeClient::UIElementType::kAlertDialog:
       return "alert";
-    case ChromeClient::kConfirmDialog:
+    case ChromeClient::UIElementType::kConfirmDialog:
       return "confirm";
-    case ChromeClient::kPromptDialog:
+    case ChromeClient::UIElementType::kPromptDialog:
       return "prompt";
-    case ChromeClient::kPrintDialog:
+    case ChromeClient::UIElementType::kPrintDialog:
       return "print";
-    case ChromeClient::kHTMLDialog:
-      NOTREACHED();
+    case ChromeClient::UIElementType::kPopup:
+      return "popup";
   }
   NOTREACHED();
   return "";
@@ -257,7 +257,7 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
   return !web_view_->Client() || web_view_->Client()->AcceptsLoadDrops();
 }
 
-Page* ChromeClientImpl::CreateWindow(
+Page* ChromeClientImpl::CreateWindowDelegate(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
@@ -843,16 +843,25 @@ void ChromeClientImpl::SetBrowserControlsShownRatio(float ratio) {
   web_view_->GetBrowserControls().SetShownRatio(ratio);
 }
 
-bool ChromeClientImpl::ShouldOpenModalDialogDuringPageDismissal(
+bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
     LocalFrame& frame,
-    DialogType dialog_type,
+    UIElementType ui_element_type,
     const String& dialog_message,
     Document::PageDismissalType dismissal_type) const {
-  String message = String("Blocked ") + DialogTypeToString(dialog_type) + "('" +
-                   dialog_message + "') during " +
-                   DismissalTypeToString(dismissal_type) + ".";
+  StringBuilder builder;
+  builder.Append("Blocked ");
+  builder.Append(UIElementTypeToString(ui_element_type));
+  if (dialog_message.length()) {
+    builder.Append("('");
+    builder.Append(dialog_message);
+    builder.Append("')");
+  }
+  builder.Append(" during ");
+  builder.Append(DismissalTypeToString(dismissal_type));
+  builder.Append(".");
+
   WebLocalFrameImpl::FromFrame(frame)->AddMessageToConsole(
-      WebConsoleMessage(WebConsoleMessage::kLevelError, message));
+      WebConsoleMessage(WebConsoleMessage::kLevelError, builder.ToString()));
 
   return false;
 }
