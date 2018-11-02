@@ -57,6 +57,8 @@ def _ParseArgs(args):
                       help='Path to the *.apk.res.info file')
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
+  parser.add_argument('--uncompress-dex', action='store_true',
+                      help='Store .dex files uncompressed in the APK')
   parser.add_argument('--native-libs',
                       action='append',
                       help='GYP-list of native libraries to include. '
@@ -344,10 +346,12 @@ def main(args):
           with zipfile.ZipFile(options.dex_file, 'r') as dex_zip:
             for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
               build_utils.AddToZipHermetic(out_apk, apk_dex_dir + dex,
-                                           data=dex_zip.read(dex))
+                                           data=dex_zip.read(dex),
+                                           compress=not options.uncompress_dex)
         elif options.dex_file:
           build_utils.AddToZipHermetic(out_apk, apk_dex_dir + 'classes.dex',
-                                       src_path=options.dex_file)
+                                       src_path=options.dex_file,
+                                       compress=not options.uncompress_dex)
 
         # 4. Native libraries.
         _AddNativeLibraries(out_apk,

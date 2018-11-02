@@ -2335,6 +2335,9 @@ if (enable_java_templates) {
         "--key-passwd",
         invoker.keystore_password,
       ]
+      if (defined(invoker.uncompress_dex) && invoker.uncompress_dex) {
+        args += [ "--uncompress-dex" ]
+      }
       if (defined(invoker.assets_build_config)) {
         inputs += [ invoker.assets_build_config ]
         _rebased_build_config =
@@ -2459,6 +2462,7 @@ if (enable_java_templates) {
                                "secondary_native_lib_placeholders",
                                "secondary_abi_native_libs_filearg",
                                "secondary_abi_loadable_modules",
+                               "uncompress_dex",
                                "uncompress_shared_libraries",
                                "write_asset_list",
                              ])
