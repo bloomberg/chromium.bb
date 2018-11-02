@@ -10135,6 +10135,20 @@ should be able to be added at any place in this file.
   <description>The user clicked on the cast overlay button.</description>
 </action>
 
+<action name="Media.Controls.ClickAnywhereToPause">
+  <owner>jazzhsu@chromium.org</owner>
+  <description>
+    The user clicked anywhere in the video frame to pause.
+  </description>
+</action>
+
+<action name="Media.Controls.ClickAnywhereToPlay">
+  <owner>jazzhsu@chromium.org</owner>
+  <description>
+    The user clicked anywhere in the video frame to play.
+  </description>
+</action>
+
 <action name="Media.Controls.ClosedCaptionHide">
   <owner>mlamouri@chromium.org</owner>
   <description>The user hid the closed caption from the controls.</description>

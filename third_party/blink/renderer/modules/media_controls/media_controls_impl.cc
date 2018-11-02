@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
@@ -1646,11 +1647,13 @@ void MediaControlsImpl::TapTimerFired(TimerBase*) {
     // and there's nothing to do), or the user is playing by click (in which
     // case we need to start playing).
     if (is_paused_for_double_tap_) {
-      // TODO(https://crbug.com/896255): Add and record useraction.
+      Platform::Current()->RecordAction(
+          UserMetricsAction("Media.Controls.ClickAnywhereToPause"));
       // TODO(https://crbug.com/896252): Show overlay pause animation.
       is_paused_for_double_tap_ = false;
     } else {
-      // TODO(https://crbug.com/896255): Add and record useraction.
+      Platform::Current()->RecordAction(
+          UserMetricsAction("Media.Controls.ClickAnywhereToPlay"));
       // TODO(https://crbug.com/896252): Show overlay play animation.
       MediaElement().Play();
     }
