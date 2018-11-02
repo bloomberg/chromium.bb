@@ -590,7 +590,7 @@ void IDBDatabase::ContextDestroyed(ExecutionContext*) {
 }
 
 const AtomicString& IDBDatabase::InterfaceName() const {
-  return EventTargetNames::IDBDatabase;
+  return event_target_names::kIDBDatabase;
 }
 
 ExecutionContext* IDBDatabase::GetExecutionContext() const {

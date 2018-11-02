@@ -487,7 +487,7 @@ bool RTCIceTransport::RaiseExceptionIfClosed(
 }
 
 const AtomicString& RTCIceTransport::InterfaceName() const {
-  return EventTargetNames::RTCIceTransport;
+  return event_target_names::kRTCIceTransport;
 }
 
 ExecutionContext* RTCIceTransport::GetExecutionContext() const {

@@ -299,7 +299,7 @@ void RTCDataChannel::DidDetectError() {
 }
 
 const AtomicString& RTCDataChannel::InterfaceName() const {
-  return EventTargetNames::RTCDataChannel;
+  return event_target_names::kRTCDataChannel;
 }
 
 ExecutionContext* RTCDataChannel::GetExecutionContext() const {

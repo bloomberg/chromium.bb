@@ -75,7 +75,7 @@ void SourceBufferList::ScheduleEvent(const AtomicString& event_name) {
 }
 
 const AtomicString& SourceBufferList::InterfaceName() const {
-  return EventTargetNames::SourceBufferList;
+  return event_target_names::kSourceBufferList;
 }
 
 void SourceBufferList::Trace(blink::Visitor* visitor) {

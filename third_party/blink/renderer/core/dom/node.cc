@@ -2239,7 +2239,7 @@ Element* Node::EnclosingLinkEventParentOrSelf() const {
 }
 
 const AtomicString& Node::InterfaceName() const {
-  return EventTargetNames::Node;
+  return event_target_names::kNode;
 }
 
 ExecutionContext* Node::GetExecutionContext() const {

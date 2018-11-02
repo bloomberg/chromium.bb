@@ -177,7 +177,7 @@ ExecutionContext* XRSession::GetExecutionContext() const {
 }
 
 const AtomicString& XRSession::InterfaceName() const {
-  return EventTargetNames::XRSession;
+  return event_target_names::kXRSession;
 }
 
 ScriptPromise XRSession::requestFrameOfReference(

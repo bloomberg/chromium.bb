@@ -508,7 +508,7 @@ ExecutionContext* ServiceWorkerContainer::GetExecutionContext() const {
 }
 
 const AtomicString& ServiceWorkerContainer::InterfaceName() const {
-  return EventTargetNames::ServiceWorkerContainer;
+  return event_target_names::kServiceWorkerContainer;
 }
 
 ServiceWorkerRegistration*

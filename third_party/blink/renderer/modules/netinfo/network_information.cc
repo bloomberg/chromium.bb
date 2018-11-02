@@ -221,7 +221,7 @@ void NetworkInformation::ConnectionChange(
 }
 
 const AtomicString& NetworkInformation::InterfaceName() const {
-  return EventTargetNames::NetworkInformation;
+  return event_target_names::kNetworkInformation;
 }
 
 ExecutionContext* NetworkInformation::GetExecutionContext() const {

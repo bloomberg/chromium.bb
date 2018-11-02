@@ -367,7 +367,7 @@ void ReceiverPresentationConnection::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& PresentationConnection::InterfaceName() const {
-  return EventTargetNames::PresentationConnection;
+  return event_target_names::kPresentationConnection;
 }
 
 ExecutionContext* PresentationConnection::GetExecutionContext() const {

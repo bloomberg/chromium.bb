@@ -28,7 +28,7 @@ void PictureInPictureWindow::OnResize(const WebSize& size) {
 }
 
 const AtomicString& PictureInPictureWindow::InterfaceName() const {
-  return EventTargetNames::PictureInPictureWindow;
+  return event_target_names::kPictureInPictureWindow;
 }
 
 void PictureInPictureWindow::AddedEventListener(

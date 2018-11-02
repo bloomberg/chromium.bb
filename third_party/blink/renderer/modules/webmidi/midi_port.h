@@ -83,7 +83,7 @@ class MIDIPort : public EventTargetWithInlineData,
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::MIDIPort;
+    return event_target_names::kMIDIPort;
   }
   ExecutionContext* GetExecutionContext() const final;
 

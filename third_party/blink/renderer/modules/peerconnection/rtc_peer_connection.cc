@@ -2557,7 +2557,7 @@ void RTCPeerConnection::ClosePeerConnection() {
 }
 
 const AtomicString& RTCPeerConnection::InterfaceName() const {
-  return EventTargetNames::RTCPeerConnection;
+  return event_target_names::kRTCPeerConnection;
 }
 
 ExecutionContext* RTCPeerConnection::GetExecutionContext() const {

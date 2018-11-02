@@ -705,7 +705,7 @@ ScriptPromise Animation::ready(ScriptState* script_state) {
 }
 
 const AtomicString& Animation::InterfaceName() const {
-  return EventTargetNames::Animation;
+  return event_target_names::kAnimation;
 }
 
 ExecutionContext* Animation::GetExecutionContext() const {

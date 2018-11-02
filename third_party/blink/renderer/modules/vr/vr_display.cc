@@ -1154,7 +1154,7 @@ ExecutionContext* VRDisplay::GetExecutionContext() const {
 }
 
 const AtomicString& VRDisplay::InterfaceName() const {
-  return EventTargetNames::VRDisplay;
+  return event_target_names::kVRDisplay;
 }
 
 void VRDisplay::ContextDestroyed(ExecutionContext* context) {

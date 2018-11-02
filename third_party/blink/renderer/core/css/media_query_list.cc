@@ -123,7 +123,7 @@ void MediaQueryList::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& MediaQueryList::InterfaceName() const {
-  return EventTargetNames::MediaQueryList;
+  return event_target_names::kMediaQueryList;
 }
 
 ExecutionContext* MediaQueryList::GetExecutionContext() const {

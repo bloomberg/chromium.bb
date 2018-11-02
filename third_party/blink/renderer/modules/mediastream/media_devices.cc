@@ -159,7 +159,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 }
 
 const AtomicString& MediaDevices::InterfaceName() const {
-  return EventTargetNames::MediaDevices;
+  return event_target_names::kMediaDevices;
 }
 
 ExecutionContext* MediaDevices::GetExecutionContext() const {

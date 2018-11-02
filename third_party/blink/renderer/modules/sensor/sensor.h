@@ -44,7 +44,7 @@ class Sensor : public EventTargetWithInlineData,
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::Sensor;
+    return event_target_names::kSensor;
   }
   ExecutionContext* GetExecutionContext() const override {
     return ContextLifecycleObserver::GetExecutionContext();

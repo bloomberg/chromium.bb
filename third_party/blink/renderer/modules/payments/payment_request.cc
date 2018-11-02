@@ -877,7 +877,7 @@ bool PaymentRequest::HasPendingActivity() const {
 }
 
 const AtomicString& PaymentRequest::InterfaceName() const {
-  return EventTargetNames::PaymentRequest;
+  return event_target_names::kPaymentRequest;
 }
 
 ExecutionContext* PaymentRequest::GetExecutionContext() const {

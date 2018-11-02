@@ -317,7 +317,7 @@ bool RTCQuicTransport::RaiseExceptionIfClosed(
 }
 
 const AtomicString& RTCQuicTransport::InterfaceName() const {
-  return EventTargetNames::RTCQuicTransport;
+  return event_target_names::kRTCQuicTransport;
 }
 
 ExecutionContext* RTCQuicTransport::GetExecutionContext() const {

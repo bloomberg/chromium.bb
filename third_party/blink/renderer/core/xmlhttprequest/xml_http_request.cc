@@ -1981,7 +1981,7 @@ bool XMLHttpRequest::HasPendingActivity() const {
 }
 
 const AtomicString& XMLHttpRequest::InterfaceName() const {
-  return EventTargetNames::XMLHttpRequest;
+  return event_target_names::kXMLHttpRequest;
 }
 
 ExecutionContext* XMLHttpRequest::GetExecutionContext() const {

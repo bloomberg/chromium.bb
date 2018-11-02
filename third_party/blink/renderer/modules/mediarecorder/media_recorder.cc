@@ -315,7 +315,7 @@ bool MediaRecorder::isTypeSupported(ExecutionContext* context,
 }
 
 const AtomicString& MediaRecorder::InterfaceName() const {
-  return EventTargetNames::MediaRecorder;
+  return event_target_names::kMediaRecorder;
 }
 
 ExecutionContext* MediaRecorder::GetExecutionContext() const {

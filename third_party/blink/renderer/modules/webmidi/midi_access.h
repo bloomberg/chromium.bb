@@ -80,7 +80,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::MIDIAccess;
+    return event_target_names::kMIDIAccess;
   }
   ExecutionContext* GetExecutionContext() const override {
     return ContextLifecycleObserver::GetExecutionContext();

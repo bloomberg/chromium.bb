@@ -62,7 +62,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
 const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
-  return EventTargetNames::DedicatedWorkerGlobalScope;
+  return event_target_names::kDedicatedWorkerGlobalScope;
 }
 
 bool DedicatedWorkerGlobalScope::IsNestedWorker() const {

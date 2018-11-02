@@ -459,7 +459,7 @@ DispatchEventResult Notification::DispatchEventInternal(Event& event) {
 }
 
 const AtomicString& Notification::InterfaceName() const {
-  return EventTargetNames::Notification;
+  return event_target_names::kNotification;
 }
 
 void Notification::ContextDestroyed(ExecutionContext* context) {

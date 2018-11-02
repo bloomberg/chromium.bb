@@ -997,7 +997,7 @@ void MediaKeySession::KeysStatusesChange(
 }
 
 const AtomicString& MediaKeySession::InterfaceName() const {
-  return EventTargetNames::MediaKeySession;
+  return event_target_names::kMediaKeySession;
 }
 
 ExecutionContext* MediaKeySession::GetExecutionContext() const {

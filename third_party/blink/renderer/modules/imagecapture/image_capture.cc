@@ -105,7 +105,7 @@ ImageCapture::~ImageCapture() {
 }
 
 const AtomicString& ImageCapture::InterfaceName() const {
-  return EventTargetNames::ImageCapture;
+  return event_target_names::kImageCapture;
 }
 
 ExecutionContext* ImageCapture::GetExecutionContext() const {

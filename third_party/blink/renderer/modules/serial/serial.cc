@@ -18,7 +18,7 @@ ExecutionContext* Serial::GetExecutionContext() const {
 }
 
 const AtomicString& Serial::InterfaceName() const {
-  return EventTargetNames::Serial;
+  return event_target_names::kSerial;
 }
 
 ScriptPromise Serial::getPorts(ScriptState* script_state) {

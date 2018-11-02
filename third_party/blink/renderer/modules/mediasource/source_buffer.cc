@@ -1175,7 +1175,7 @@ ExecutionContext* SourceBuffer::GetExecutionContext() const {
 }
 
 const AtomicString& SourceBuffer::InterfaceName() const {
-  return EventTargetNames::SourceBuffer;
+  return event_target_names::kSourceBuffer;
 }
 
 bool SourceBuffer::IsRemoved() const {

@@ -30,7 +30,7 @@ ScriptPromise Clipboard::writeText(ScriptState* script_state,
 }
 
 const AtomicString& Clipboard::InterfaceName() const {
-  return EventTargetNames::Clipboard;
+  return event_target_names::kClipboard;
 }
 
 ExecutionContext* Clipboard::GetExecutionContext() const {

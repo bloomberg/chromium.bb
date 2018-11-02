@@ -107,7 +107,7 @@ void RTCQuicStream::OnRemoteFinish() {
 }
 
 const AtomicString& RTCQuicStream::InterfaceName() const {
-  return EventTargetNames::RTCQuicStream;
+  return event_target_names::kRTCQuicStream;
 }
 
 ExecutionContext* RTCQuicStream::GetExecutionContext() const {

@@ -69,7 +69,7 @@ void BluetoothRemoteGATTCharacteristic::Dispose() {
 
 const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::InterfaceName()
     const {
-  return EventTargetNames::BluetoothRemoteGATTCharacteristic;
+  return event_target_names::kBluetoothRemoteGATTCharacteristic;
 }
 
 ExecutionContext* BluetoothRemoteGATTCharacteristic::GetExecutionContext()

@@ -332,7 +332,7 @@ bool MediaSource::isTypeSupported(const String& type) {
 }
 
 const AtomicString& MediaSource::InterfaceName() const {
-  return EventTargetNames::MediaSource;
+  return event_target_names::kMediaSource;
 }
 
 ExecutionContext* MediaSource::GetExecutionContext() const {

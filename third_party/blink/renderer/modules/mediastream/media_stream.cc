@@ -390,7 +390,7 @@ bool MediaStream::AddEventListenerInternal(
 }
 
 const AtomicString& MediaStream::InterfaceName() const {
-  return EventTargetNames::MediaStream;
+  return event_target_names::kMediaStream;
 }
 
 void MediaStream::AddTrackByComponentAndFireEvents(

@@ -33,7 +33,7 @@ class BatteryManager final : public EventTargetWithInlineData,
 
   // EventTarget implementation.
   const WTF::AtomicString& InterfaceName() const override {
-    return EventTargetNames::BatteryManager;
+    return event_target_names::kBatteryManager;
   }
   ExecutionContext* GetExecutionContext() const override {
     return ContextLifecycleObserver::GetExecutionContext();

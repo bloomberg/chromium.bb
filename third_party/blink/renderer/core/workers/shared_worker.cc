@@ -99,7 +99,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 SharedWorker::~SharedWorker() = default;
 
 const AtomicString& SharedWorker::InterfaceName() const {
-  return EventTargetNames::SharedWorker;
+  return event_target_names::kSharedWorker;
 }
 
 bool SharedWorker::HasPendingActivity() const {

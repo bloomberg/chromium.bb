@@ -48,7 +48,7 @@ void PermissionStatus::Dispose() {
 }
 
 const AtomicString& PermissionStatus::InterfaceName() const {
-  return EventTargetNames::PermissionStatus;
+  return event_target_names::kPermissionStatus;
 }
 
 ExecutionContext* PermissionStatus::GetExecutionContext() const {

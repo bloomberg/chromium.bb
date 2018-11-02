@@ -1067,7 +1067,7 @@ bool AccessibleNode::IsStringTokenProperty(AOMStringProperty property) {
 }
 
 const AtomicString& AccessibleNode::InterfaceName() const {
-  return EventTargetNames::AccessibleNode;
+  return event_target_names::kAccessibleNode;
 }
 
 ExecutionContext* AccessibleNode::GetExecutionContext() const {

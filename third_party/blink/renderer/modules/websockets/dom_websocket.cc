@@ -664,7 +664,7 @@ void DOMWebSocket::setBinaryType(const String& binary_type) {
 }
 
 const AtomicString& DOMWebSocket::InterfaceName() const {
-  return EventTargetNames::DOMWebSocket;
+  return event_target_names::kWebSocket;
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {

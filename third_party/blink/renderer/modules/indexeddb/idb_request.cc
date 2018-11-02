@@ -625,7 +625,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
 }
 
 const AtomicString& IDBRequest::InterfaceName() const {
-  return EventTargetNames::IDBRequest;
+  return event_target_names::kIDBRequest;
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {

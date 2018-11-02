@@ -25,7 +25,7 @@ bool AudioTrackList::HasEnabledTrack() const {
 }
 
 const AtomicString& AudioTrackList::InterfaceName() const {
-  return EventTargetNames::AudioTrackList;
+  return event_target_names::kAudioTrackList;
 }
 
 }  // namespace blink

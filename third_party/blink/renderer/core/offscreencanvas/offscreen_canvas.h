@@ -123,7 +123,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
-    return EventTargetNames::OffscreenCanvas;
+    return event_target_names::kOffscreenCanvas;
   }
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_.Get();

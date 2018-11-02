@@ -23,7 +23,7 @@ AbortSignal::AbortSignal(ExecutionContext* execution_context)
 AbortSignal::~AbortSignal() = default;
 
 const AtomicString& AbortSignal::InterfaceName() const {
-  return EventTargetNames::AbortSignal;
+  return event_target_names::kAbortSignal;
 }
 
 ExecutionContext* AbortSignal::GetExecutionContext() const {

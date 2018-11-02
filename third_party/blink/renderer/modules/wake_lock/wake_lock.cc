@@ -122,7 +122,7 @@ void WakeLock::CancelRequest() {
 }
 
 const WTF::AtomicString& WakeLock::InterfaceName() const {
-  return EventTargetNames::WakeLock;
+  return event_target_names::kWakeLock;
 }
 
 ExecutionContext* WakeLock::GetExecutionContext() const {

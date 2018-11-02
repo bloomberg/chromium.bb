@@ -348,7 +348,7 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
 }
 
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {
-  return EventTargetNames::ServiceWorkerGlobalScope;
+  return event_target_names::kServiceWorkerGlobalScope;
 }
 
 void ServiceWorkerGlobalScope::DispatchExtendableEvent(

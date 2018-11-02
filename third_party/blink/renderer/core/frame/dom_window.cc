@@ -59,7 +59,7 @@ v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
 }
 
 const AtomicString& DOMWindow::InterfaceName() const {
-  return EventTargetNames::DOMWindow;
+  return event_target_names::kWindow;
 }
 
 const DOMWindow* DOMWindow::ToDOMWindow() const {

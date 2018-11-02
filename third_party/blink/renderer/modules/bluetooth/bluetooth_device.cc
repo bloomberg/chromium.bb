@@ -84,7 +84,7 @@ void BluetoothDevice::ClearAttributeInstanceMapAndFireEvent() {
 }
 
 const WTF::AtomicString& BluetoothDevice::InterfaceName() const {
-  return EventTargetNames::BluetoothDevice;
+  return event_target_names::kBluetoothDevice;
 }
 
 ExecutionContext* BluetoothDevice::GetExecutionContext() const {

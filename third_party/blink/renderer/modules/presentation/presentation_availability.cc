@@ -45,7 +45,7 @@ PresentationAvailability::PresentationAvailability(
 PresentationAvailability::~PresentationAvailability() = default;
 
 const AtomicString& PresentationAvailability::InterfaceName() const {
-  return EventTargetNames::PresentationAvailability;
+  return event_target_names::kPresentationAvailability;
 }
 
 ExecutionContext* PresentationAvailability::GetExecutionContext() const {

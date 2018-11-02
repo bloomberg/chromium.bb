@@ -89,7 +89,7 @@ void ApplicationCache::abort() {
 }
 
 const AtomicString& ApplicationCache::InterfaceName() const {
-  return EventTargetNames::ApplicationCache;
+  return event_target_names::kApplicationCache;
 }
 
 ExecutionContext* ApplicationCache::GetExecutionContext() const {

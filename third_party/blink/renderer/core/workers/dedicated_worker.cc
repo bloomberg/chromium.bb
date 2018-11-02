@@ -343,7 +343,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {
-  return EventTargetNames::Worker;
+  return event_target_names::kWorker;
 }
 
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
