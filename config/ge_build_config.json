@@ -650,18 +650,6 @@
       ]
     },
     {
-      "name": "guado-accelerator",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "jecht",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "guado_labstation",
       "configs": [
         {

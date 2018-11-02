@@ -1544,7 +1544,6 @@ guado-accelerator-paladin (gce_beefy)
 guado-accelerator-paladin-tryjob (gce_beefy)
 guado-accelerator-payloads-tryjob (gce_beefy)
 guado-accelerator-pre-cq (gce_beefy)
-guado-accelerator-release (gce_beefy)
 guado-accelerator-release-afdo-generate-tryjob (gce_beefy)
 [guado-accelerator-release-afdo-tryjob] (gce_beefy)
   guado-accelerator-release-afdo-generate
