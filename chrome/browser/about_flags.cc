@@ -2888,6 +2888,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kJustInTimeServiceWorkerPaymentAppDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsJustInTimePaymentApp)},
+    {"per-method-can-make-payment-quota",
+     flag_descriptions::kPerMethodCanMakePaymentQuotaName,
+     flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         payments::features::kWebPaymentsPerMethodCanMakePaymentQuota)},
 #if defined(OS_ANDROID)
     {"enable-android-pay-integration-v1",
      flag_descriptions::kEnableAndroidPayIntegrationV1Name,

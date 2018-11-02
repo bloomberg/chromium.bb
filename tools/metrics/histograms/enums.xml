@@ -29954,6 +29954,8 @@ from previous Chrome versions.
   <int value="-181590721"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
+  <int value="-174706795"
+      label="WebPaymentsPerMethodCanMakePaymentQuota:enabled"/>
   <int value="-174564579"
       label="ServiceWorkerImportedScriptUpdateCheck:enabled"/>
   <int value="-174319545" label="BulkPrinters:enabled"/>
@@ -30432,6 +30434,8 @@ from previous Chrome versions.
   <int value="736911267" label="ExperimentalCrostiniUI:disabled"/>
   <int value="737421745" label="enable-accessibility-object-model"/>
   <int value="738868972" label="GdiTextPrinting:disabled"/>
+  <int value="739938466"
+      label="WebPaymentsPerMethodCanMakePaymentQuota:disabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
