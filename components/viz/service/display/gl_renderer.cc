@@ -1152,7 +1152,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin);
+              std::move(filter), &offset, &subset, quad->filters_origin, true);
         } else {
           DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
@@ -1166,7 +1166,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin);
+              std::move(filter), &offset, &subset, quad->filters_origin, true);
         }
 
         if (!params->filter_image)

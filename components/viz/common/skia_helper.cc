@@ -15,7 +15,8 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
                                             sk_sp<SkImageFilter> filter,
                                             SkIPoint* offset,
                                             SkIRect* subset,
-                                            const gfx::PointF& origin) {
+                                            const gfx::PointF& origin,
+                                            bool flush) {
   if (!filter)
     return nullptr;
 
@@ -48,7 +49,7 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
 
   // Force a flush of the Skia pipeline before we switch back to the compositor
   // context.
-  image->getBackendTexture(true);
+  image->getBackendTexture(flush);
   CHECK(image->isTextureBacked());
   return image;
 }
