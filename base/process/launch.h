@@ -297,12 +297,10 @@ BASE_EXPORT Process LaunchElevatedProcess(const CommandLine& cmdline,
 BASE_EXPORT Process LaunchProcess(const std::vector<std::string>& argv,
                                   const LaunchOptions& options);
 
-#if !defined(OS_MACOSX)
 // Close all file descriptors, except those which are a destination in the
 // given multimap. Only call this function in a child process where you know
 // that there aren't any other threads.
 BASE_EXPORT void CloseSuperfluousFds(const InjectiveMultimap& saved_map);
-#endif  // defined(OS_MACOSX)
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
@@ -353,6 +351,23 @@ BASE_EXPORT bool GetAppOutputAndError(const std::vector<std::string>& argv,
 // If supported on the platform, and the user has sufficent rights, increase
 // the current process's scheduling priority to a high priority.
 BASE_EXPORT void RaiseProcessToHighPriority();
+
+#if defined(OS_MACOSX)
+// An implementation of LaunchProcess() that uses posix_spawn() instead of
+// fork()+exec(). This does not support the |pre_exec_delegate| and
+// |current_directory| options.
+Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
+                                const LaunchOptions& options);
+
+// Restore the default exception handler, setting it to Apple Crash Reporter
+// (ReportCrash).  When forking and execing a new process, the child will
+// inherit the parent's exception ports, which may be set to the Breakpad
+// instance running inside the parent.  The parent's Breakpad instance should
+// not handle the child's exceptions.  Calling RestoreDefaultExceptionHandler
+// in the child after forking will restore the standard exception handler.
+// See http://crbug.com/20371/ for more details.
+void RestoreDefaultExceptionHandler();
+#endif  // defined(OS_MACOSX)
 
 // Creates a LaunchOptions object suitable for launching processes in a test
 // binary. This should not be called in production/released code.

@@ -60,10 +60,13 @@
 #endif
 
 #if defined(OS_MACOSX)
-#error "macOS should use launch_mac.cc"
-#endif
+#include <crt_externs.h>
+#include <sys/event.h>
 
+#include "base/feature_list.h"
+#else
 extern char** environ;
+#endif
 
 namespace base {
 
@@ -78,16 +81,29 @@ class GetAppOutputScopedAllowBaseSyncPrimitives
 
 namespace {
 
+#if defined(OS_MACOSX)
+const Feature kMacLaunchProcessPosixSpawn{"MacLaunchProcessPosixSpawn",
+                                          FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // Get the process's "environment" (i.e. the thing that setenv/getenv
 // work with).
 char** GetEnvironment() {
+#if defined(OS_MACOSX)
+  return *_NSGetEnviron();
+#else
   return environ;
+#endif
 }
 
 // Set the process's "environment" (i.e. the thing that setenv/getenv
 // work with).
 void SetEnvironment(char** env) {
+#if defined(OS_MACOSX)
+  *_NSGetEnviron() = env;
+#else
   environ = env;
+#endif
 }
 
 // Set the calling thread's signal mask to new_sigmask and return
@@ -206,6 +222,8 @@ typedef std::unique_ptr<DIR, ScopedDIRClose> ScopedDIR;
 
 #if defined(OS_LINUX) || defined(OS_AIX)
 static const char kFDDir[] = "/proc/self/fd";
+#elif defined(OS_MACOSX)
+static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_SOLARIS)
 static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_FREEBSD)
@@ -284,6 +302,12 @@ Process LaunchProcess(const CommandLine& cmdline,
 Process LaunchProcess(const std::vector<std::string>& argv,
                       const LaunchOptions& options) {
   TRACE_EVENT0("base", "LaunchProcess");
+#if defined(OS_MACOSX)
+  // TODO(rsesek): Remove this feature. https://crbug.com/179923.
+  if (FeatureList::IsEnabled(kMacLaunchProcessPosixSpawn)) {
+    return LaunchProcessPosixSpawn(argv, options);
+  }
+#endif
 
   InjectiveMultimap fd_shuffle1;
   InjectiveMultimap fd_shuffle2;
@@ -403,6 +427,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
       }
     }
 
+#if defined(OS_MACOSX)
+    RestoreDefaultExceptionHandler();
+#endif  // defined(OS_MACOSX)
+
     ResetChildSignalHandlersToDefaults();
     SetSignalMask(orig_sigmask);
 
@@ -469,9 +497,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
       RAW_CHECK(chdir(current_directory) == 0);
     }
 
+#if !defined(OS_MACOSX)
     if (options.pre_exec_delegate != nullptr) {
       options.pre_exec_delegate->RunAsyncSafe();
     }
+#endif
 
     const char* executable_path = !options.real_path.empty() ?
         options.real_path.value().c_str() : argv_cstr[0];
@@ -552,6 +582,10 @@ static bool GetAppOutputInternal(
       //
       // DANGER: no calls to malloc or locks are allowed from now on:
       // http://crbug.com/36678
+
+#if defined(OS_MACOSX)
+      RestoreDefaultExceptionHandler();
+#endif
 
       // Obscure fork() rule: in the child, if you don't end up doing exec*(),
       // you call _exit() instead of exit(). This is because _exit() does not
