@@ -555,14 +555,6 @@ const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
 
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kTopChromeMdMaterial, switches::kTopChromeMD,
-     switches::kTopChromeMDMaterial},
-    {flag_descriptions::kTopChromeMdMaterialHybrid, switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialHybrid},
-    {flag_descriptions::kTopChromeMdMaterialAuto, switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialAuto},
-    {flag_descriptions::kTopChromeMdMaterialTouchOptimized,
-     switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized},
     {flag_descriptions::kTopChromeMdMaterialRefresh, switches::kTopChromeMD,
      switches::kTopChromeMDMaterialRefresh},
     {flag_descriptions::kTopChromeMdMaterialRefreshTouchOptimized,
