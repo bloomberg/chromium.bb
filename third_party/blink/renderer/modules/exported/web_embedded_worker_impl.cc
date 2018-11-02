@@ -314,7 +314,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   // Note: We only get here if this is a new (i.e., not installed) service
   // worker.
   DCHECK(!main_script_loader_);
-  main_script_loader_ = WorkerClassicScriptLoader::Create();
+  main_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
       mojom::RequestContextType::SERVICE_WORKER,

@@ -123,7 +123,7 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(!main_script_loader_);
   shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
       client_->CreateServiceWorkerNetworkProvider());
-  main_script_loader_ = WorkerClassicScriptLoader::Create();
+  main_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
 
   network::mojom::FetchRequestMode fetch_request_mode =
       network::mojom::FetchRequestMode::kSameOrigin;

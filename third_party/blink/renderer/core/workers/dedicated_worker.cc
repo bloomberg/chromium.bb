@@ -183,7 +183,7 @@ void DedicatedWorker::Start() {
         network::mojom::FetchRequestMode::kSameOrigin;
     network::mojom::FetchCredentialsMode fetch_credentials_mode =
         network::mojom::FetchCredentialsMode::kSameOrigin;
-    classic_script_loader_ = WorkerClassicScriptLoader::Create();
+    classic_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), script_request_url_,
         mojom::RequestContextType::WORKER, fetch_request_mode,
@@ -349,6 +349,7 @@ const AtomicString& DedicatedWorker::InterfaceName() const {
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_proxy_);
   visitor->Trace(options_);
+  visitor->Trace(classic_script_loader_);
   AbstractWorker::Trace(visitor);
 }
 
