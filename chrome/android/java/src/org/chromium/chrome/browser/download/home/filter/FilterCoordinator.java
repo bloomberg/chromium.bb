@@ -77,13 +77,17 @@ public class FilterCoordinator {
      * components might need to update the UI state.
      */
     public void setSelectedFilter(@FilterType int filter) {
+        @TabType
+        int tabSelected;
         if (filter == Filters.FilterType.PREFETCHED
                 && PrefetchConfiguration.isPrefetchingFlagEnabled()) {
-            selectTab(TabType.PREFETCH);
+            tabSelected = TabType.PREFETCH;
         } else {
             mChipsProvider.setFilterSelected(filter);
-            selectTab(TabType.FILES);
+            tabSelected = TabType.FILES;
         }
+
+        handleTabSelected(tabSelected);
     }
 
     private void selectTab(@TabType int selectedTab) {
