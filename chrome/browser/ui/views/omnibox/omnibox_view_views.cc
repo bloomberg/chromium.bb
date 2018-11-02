@@ -243,14 +243,14 @@ void OmniboxViewViews::InstallPlaceholderText() {
   }
 }
 
-bool OmniboxViewViews::SelectionAtBeginning() {
+bool OmniboxViewViews::SelectionAtBeginning() const {
   const gfx::Range sel = GetSelectedRange();
-  return sel.GetMin() == 0;
+  return sel.GetMax() == 0;
 }
 
-bool OmniboxViewViews::SelectionAtEnd() {
+bool OmniboxViewViews::SelectionAtEnd() const {
   const gfx::Range sel = GetSelectedRange();
-  return sel.GetMax() == text().size();
+  return sel.GetMin() == text().size();
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -551,14 +551,33 @@ void OmniboxViewViews::UpdateSecurityLevel() {
       controller()->GetLocationBarModel()->GetSecurityLevel(false);
 }
 
-bool OmniboxViewViews::AtEndWithTabMatch() {
+// The following 2 methods implement the following table, which attempts to
+// handle left and right arrow keys versus LTR/RTL text and UI (which can be
+// different) as expected.
+//
+// LTR UI, LTR text, right arrow, at end (rightmost) - focuses
+// LTR UI, LTR text, left arrow, (regardless) - unfocuses
+// LTR UI, RTL text, right arrow, at beginning (rightmost) - focuses
+// LTR UI, RTL text, left arrow, (regardless) - unfocuses
+//
+// RTL UI, RTL text, left arrow, at end (leftmost) - focuses
+// RTL UI, RTL text, right arrow, (regardless) - unfocuses
+// RTL UI, LTR text, left arrow, at beginning (leftmost) - focuses
+// RTL UI, LTR text, right arrow, (regardless) - unfocuses
+
+bool OmniboxViewViews::TextAndUIDirectionMatch() const {
+  // If text and UI direction are RTL, or both aren't.
+  return (GetRenderText()->GetDisplayTextDirection() ==
+          base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
+}
+
+bool OmniboxViewViews::AtEndWithTabMatch() const {
   if (model()->popup_model() &&  // Can be null in tests.
       model()->popup_model()->SelectedLineHasTabMatch()) {
-    const bool text_and_ui_direction_match =
-        (GetRenderText()->GetDisplayTextDirection() ==
-         base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
-    return text_and_ui_direction_match ? SelectionAtEnd()
-                                       : SelectionAtBeginning();
+    // When text and UI direction match, 'end' is as expected,
+    // otherwise we use beginning.
+    return TextAndUIDirectionMatch() ? SelectionAtEnd()
+                                     : SelectionAtBeginning();
   }
   return false;
 }
@@ -644,8 +663,8 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
       match, display_text, model()->popup_model()->selected_line(),
       model()->result().size(), is_tab_switch_button_focused,
       &friendly_suggestion_text_prefix_length_);
-  SetWindowTextAndCaretPos(display_text, display_text.length(), false,
-                           notify_text_changed);
+  int caret_pos = TextAndUIDirectionMatch() ? display_text.length() : 0;
+  SetWindowTextAndCaretPos(display_text, caret_pos, false, notify_text_changed);
 #if defined(OS_MACOSX)
   // On macOS, the text field value changed notification is not
   // announced, so we need to explicitly announce the suggestion text.
