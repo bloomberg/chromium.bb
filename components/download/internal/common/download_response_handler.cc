@@ -224,7 +224,9 @@ void DownloadResponseHandler::OnComplete(
   // happen when the request was aborted.
   if (!create_info_)
     create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
-  create_info_->result = reason;
+  create_info_->result = reason == DOWNLOAD_INTERRUPT_REASON_NONE
+                             ? DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED
+                             : reason;
 
   OnResponseStarted(mojom::DownloadStreamHandlePtr());
   delegate_->OnResponseCompleted();
