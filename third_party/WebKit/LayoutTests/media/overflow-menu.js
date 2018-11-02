@@ -5,7 +5,9 @@ var overflowButtonsCSS = [
     "-internal-media-controls-download-button",
     "-webkit-media-controls-mute-button",
     "-internal-media-controls-cast-button",
-    "-webkit-media-controls-toggle-closed-captions-button"];
+    "-webkit-media-controls-toggle-closed-captions-button",
+    "-internal-media-controls-picture-in-picture-button",
+];
 //  PseudoID for the overflow button
 var menuID = "-internal-media-controls-overflow-button";
 //  PseudoID for the overflow list
