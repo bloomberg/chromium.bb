@@ -163,9 +163,11 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
 
 }  // namespace
 
-CastContentBrowserClient::CastContentBrowserClient()
+CastContentBrowserClient::CastContentBrowserClient(
+    CastFeatureListCreator* cast_feature_list_creator)
     : cast_browser_main_parts_(nullptr),
-      url_request_context_factory_(new URLRequestContextFactory()) {}
+      url_request_context_factory_(new URLRequestContextFactory()),
+      cast_feature_list_creator_(cast_feature_list_creator) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)

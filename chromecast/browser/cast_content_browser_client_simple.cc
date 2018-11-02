@@ -12,8 +12,10 @@ namespace chromecast {
 namespace shell {
 
 // static
-std::unique_ptr<CastContentBrowserClient> CastContentBrowserClient::Create() {
-  return base::WrapUnique(new CastContentBrowserClient());
+std::unique_ptr<CastContentBrowserClient> CastContentBrowserClient::Create(
+    CastFeatureListCreator* cast_feature_list_creator) {
+  return base::WrapUnique(
+      new CastContentBrowserClient(cast_feature_list_creator));
 }
 
 }  // namespace shell
