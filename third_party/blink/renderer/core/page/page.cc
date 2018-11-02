@@ -125,9 +125,7 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 
 Page* Page::Create(PageClients& page_clients) {
   Page* page = new Page(page_clients);
-  page->SetPageScheduler(
-      Platform::Current()->CurrentThread()->Scheduler()->CreatePageScheduler(
-          page));
+  page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
   return page;
 }
 

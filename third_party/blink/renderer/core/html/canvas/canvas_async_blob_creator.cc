@@ -344,7 +344,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
 
 void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
   schedule_idle_task_start_time_ = WTF::CurrentTimeTicks();
-  Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+  ThreadScheduler::Current()->PostIdleTask(
       FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::InitiateEncoding,
                            WrapPersistent(this), quality));
 }
@@ -378,7 +378,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
   for (int y = num_rows_completed_; y < src_data_.height(); ++y) {
     if (IsEncodeRowDeadlineNearOrPassed(deadline, src_data_.width())) {
       num_rows_completed_ = y;
-      Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+      ThreadScheduler::Current()->PostIdleTask(
           FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::IdleEncodeRows,
                                WrapPersistent(this)));
       return;

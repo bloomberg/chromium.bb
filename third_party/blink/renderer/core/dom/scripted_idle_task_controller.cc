@@ -38,10 +38,7 @@ class IdleRequestCallbackWrapper
             callback_wrapper->Controller()) {
       // If we are going to yield immediately, reschedule the callback for
       // later.
-      if (Platform::Current()
-              ->CurrentThread()
-              ->Scheduler()
-              ->ShouldYieldForHighPriorityWork()) {
+      if (ThreadScheduler::Current()->ShouldYieldForHighPriorityWork()) {
         controller->ScheduleCallback(std::move(callback_wrapper),
                                      /* timeout_millis */ 0);
         return;
@@ -94,7 +91,7 @@ void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
 ScriptedIdleTaskController::ScriptedIdleTaskController(
     ExecutionContext* context)
     : PausableObject(context),
-      scheduler_(Platform::Current()->CurrentThread()->Scheduler()),
+      scheduler_(ThreadScheduler::Current()),
       next_callback_id_(0),
       paused_(false) {
   PauseIfNeeded();

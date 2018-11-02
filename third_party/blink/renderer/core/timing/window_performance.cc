@@ -173,10 +173,7 @@ MemoryInfo* WindowPerformance::memory() const {
 }
 
 bool WindowPerformance::shouldYield() const {
-  return Platform::Current()
-      ->CurrentThread()
-      ->Scheduler()
-      ->ShouldYieldForHighPriorityWork();
+  return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
 }
 
 PerformanceNavigationTiming*

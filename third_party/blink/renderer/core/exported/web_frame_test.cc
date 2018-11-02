@@ -208,9 +208,7 @@ class WebFrameTest : public testing::Test {
     // Make sure that the RendererScheduler is foregrounded to avoid getting
     // throttled.
     if (kLaunchingProcessIsBackgrounded) {
-      Platform::Current()
-          ->CurrentThread()
-          ->Scheduler()
+      ThreadScheduler::Current()
           ->GetWebMainThreadSchedulerForTest()
           ->SetRendererBackgrounded(false);
     }
