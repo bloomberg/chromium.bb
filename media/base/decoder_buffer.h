@@ -230,6 +230,10 @@ class MEDIA_EXPORT DecoderBuffer
   // Whether the frame was marked as a keyframe in the container.
   bool is_key_frame_;
 
+  // Check for double destruction. This field is not to be used.
+  // crbug.com/794740.
+  uint32_t destruction_ = 0x55555555;
+
   // Constructor helper method for memory allocations.
   void Initialize();
 
