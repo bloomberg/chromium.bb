@@ -496,7 +496,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
       self.assertIn('function_with_some_unusual_name', exc_traceback)
 
   def test_max_value(self):
-    self.assertEqual(160, threading_utils.IOAutoRetryThreadPool.MAX_WORKERS)
+    self.assertEqual(16, threading_utils.IOAutoRetryThreadPool.MAX_WORKERS)
 
 
 class FakeProgress(object):
