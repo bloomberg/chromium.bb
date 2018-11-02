@@ -243,6 +243,9 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   }
   layer->SetOpacity(opacity);
   layer->SetTransform(translation);
+
+  // Update child views' y positions to target state to avoid stale positions.
+  view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
 }
 
 void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,

@@ -1260,9 +1260,9 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   layer->SetTransform(gfx::Transform());
 
   // In transition animation, layout is only performed after it is complete,
-  // which makes the child views jump. So layout in advance here to avoid that.
-  GetAppsContainerView()->InvalidateLayout();
-  Layout();
+  // which makes the child views jump. So update y positions in advance here to
+  // avoid that.
+  app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
