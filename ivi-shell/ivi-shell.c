@@ -331,23 +331,6 @@ bind_ivi_application(struct wl_client *client,
 				       shell, NULL);
 }
 
-struct weston_view *
-get_default_view(struct weston_surface *surface)
-{
-	struct weston_view *view;
-
-	if (!surface || wl_list_empty(&surface->views))
-		return NULL;
-
-	wl_list_for_each(view, &surface->views, surface_link) {
-		if (weston_view_is_mapped(view))
-			return view;
-	}
-
-	return container_of(surface->views.next,
-			    struct weston_view, surface_link);
-}
-
 /*
  * Called through the compositor's destroy signal.
  */

@@ -39,37 +39,7 @@ struct ivi_shell
 	struct weston_compositor *compositor;
 
 	struct wl_list ivi_surface_list; /* struct ivi_shell_surface::link */
-
-	struct text_backend *text_backend;
-
-	struct wl_listener show_input_panel_listener;
-	struct wl_listener hide_input_panel_listener;
-	struct wl_listener update_input_panel_listener;
-
-	struct weston_layer input_panel_layer;
-
-	bool locked;
-	bool showing_input_panels;
-
-	struct {
-		struct weston_surface *surface;
-		pixman_box32_t cursor_rectangle;
-	} text_input;
-
-	struct {
-		struct wl_resource *binding;
-		struct wl_list surfaces;
-	} input_panel;
 };
-
-struct weston_view *
-get_default_view(struct weston_surface *surface);
-
-int
-input_panel_setup(struct ivi_shell *shell);
-
-void
-input_panel_destroy(struct ivi_shell *shell);
 
 void
 shell_surface_send_configure(struct weston_surface *surface,
