@@ -20,7 +20,8 @@ class MockRenderWidgetHost;
 
 enum class FilterGestureEventResult {
   kFilterGestureEventAllowed,
-  kFilterGestureEventFiltered
+  kFilterGestureEventFiltered,
+  kFilterGestureEventDelayed
 };
 
 // The TouchActionFilter is responsible for filtering scroll and pinch gesture
@@ -33,9 +34,11 @@ class CONTENT_EXPORT TouchActionFilter {
   ~TouchActionFilter();
 
   // Returns kFilterGestureEventFiltered if the supplied gesture event should be
-  // dropped based on the current touch-action state. Otherwise returns
-  // kFilterGestureEventAllowed, and possibly modifies the event's directional
-  // parameters to make the event compatible with the effective touch-action.
+  // dropped based on the current touch-action state.
+  // kFilterGestureEventDelayed if the |scrolling_touch_action_| has no value.
+  // Returns kFilterGestureEventAllowed, and possibly modifies the event's
+  // directional parameters to make the event compatible with the effective
+  // touch-action.
   FilterGestureEventResult FilterGestureEvent(
       blink::WebGestureEvent* gesture_event);
 
@@ -54,6 +57,10 @@ class CONTENT_EXPORT TouchActionFilter {
 
   base::Optional<cc::TouchAction> allowed_touch_action() const {
     return allowed_touch_action_;
+  }
+
+  base::Optional<cc::TouchAction> white_listed_touch_action() const {
+    return white_listed_touch_action_;
   }
 
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }

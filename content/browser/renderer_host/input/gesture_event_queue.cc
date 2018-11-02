@@ -82,6 +82,17 @@ bool GestureEventQueue::FlingControllerFilterEvent(
   return false;
 }
 
+void GestureEventQueue::QueueDeferredEvents(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  deferred_gesture_queue_.push_back(gesture_event);
+}
+
+GestureEventQueue::GestureQueue GestureEventQueue::TakeDeferredEvents() {
+  GestureQueue deferred_gesture_events;
+  deferred_gesture_events.swap(deferred_gesture_queue_);
+  return deferred_gesture_events;
+}
+
 void GestureEventQueue::StopFling() {
   fling_controller_.StopFling();
 }

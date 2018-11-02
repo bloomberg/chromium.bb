@@ -224,6 +224,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
+  bool compositor_touch_action_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
 

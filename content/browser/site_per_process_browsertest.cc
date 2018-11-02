@@ -12460,11 +12460,16 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     ack_observer.Wait();
     effective_touch_action =
         input_router->touch_action_filter_.allowed_touch_action_;
-    // Whitelisted touch action is sent from a separate IPC channel, so it is
-    // not guaranteed to have value when the ACK for the touch start arrived
-    // because the ACK is from the main thread.
+    // Effective touch action are sent from a separate IPC
+    // channel, so it is not guaranteed to have value when the ACK for the
+    // touch start arrived because the ACK is from the main thread.
     whitelisted_touch_action =
         input_router->touch_action_filter_.white_listed_touch_action_;
+    while (!effective_touch_action.has_value()) {
+      GiveItSomeTime(TestTimeouts::tiny_timeout());
+      effective_touch_action =
+          input_router->touch_action_filter_.allowed_touch_action_;
+    }
 
     // Send a touch move and touch end to complete the sequence, this also
     // avoids triggering DCHECKs when sending followup events.
@@ -12479,6 +12484,13 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     router->RouteTouchEvent(rwhv_root, &touch_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
     ack_observer.Wait();
+  }
+
+  void GiveItSomeTime(const base::TimeDelta& t) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), t);
+    run_loop.Run();
   }
 
   // Waits until the parent frame has had enough time to propagate the effective

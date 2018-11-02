@@ -59,6 +59,7 @@ class CONTENT_EXPORT GestureEventQueueClient {
 // http://crbug.com/148443.
 class CONTENT_EXPORT GestureEventQueue {
  public:
+  using GestureQueue = base::circular_deque<GestureEventWithLatencyInfo>;
   struct CONTENT_EXPORT Config {
     Config();
 
@@ -84,6 +85,14 @@ class CONTENT_EXPORT GestureEventQueue {
   // Check for debouncing, or add the gesture event to the queue. Returns false
   // if the event wasn't queued.
   bool DebounceOrQueueEvent(const GestureEventWithLatencyInfo&);
+
+  // Adds a gesture to the queue of events that needs to be deferred until the
+  // touch action is known.
+  void QueueDeferredEvents(const GestureEventWithLatencyInfo&);
+
+  // Returns events in the |deferred_gesture_queue_| and empty
+  // the queue.
+  GestureQueue TakeDeferredEvents();
 
   // Indicates that the caller has received an acknowledgement from the renderer
   // with state |ack_result| and event |type|. May send events if the queue is
@@ -192,7 +201,6 @@ class CONTENT_EXPORT GestureEventQueue {
 
   bool processing_acks_ = false;
 
-  using GestureQueue = base::circular_deque<GestureEventWithLatencyInfo>;
   using GestureQueueWithAckState =
       base::circular_deque<GestureEventWithLatencyInfoAndAckState>;
 
@@ -212,6 +220,10 @@ class CONTENT_EXPORT GestureEventQueue {
 
   // Queue of events that have been deferred for debounce.
   GestureQueue debouncing_deferral_queue_;
+
+  // Queue of gesture events that have been deferred until the main thread touch
+  // action is known.
+  GestureQueue deferred_gesture_queue_;
 
   // Time window in which to debounce scroll/fling ends. Note that an interval
   // of zero effectively disables debouncing.

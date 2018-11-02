@@ -306,11 +306,13 @@ class InputHandlerProxyTest
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER ||
             GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS ||
             GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS),
+        compositor_touch_action_enabled_(
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_NORMAL ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_NORMAL ||
+            GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS),
         expected_disposition_(InputHandlerProxy::DID_HANDLE) {
-    if (GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_NORMAL ||
-        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_ROOT_SYNCHRONOUS ||
-        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_NORMAL ||
-        GetParam() == COMPOSITOR_TOUCH_ACTION_ENABLED_CHILD_SYNCHRONOUS)
+    if (compositor_touch_action_enabled_)
       feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
     else
       feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
@@ -386,6 +388,7 @@ class InputHandlerProxyTest
 
   const bool synchronous_root_scroll_;
   const bool install_synchronous_handler_;
+  const bool compositor_touch_action_enabled_;
   testing::StrictMock<MockInputHandler> mock_input_handler_;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler_;
@@ -1029,7 +1032,9 @@ TEST_P(InputHandlerProxyTest,
 TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
   // One of the touch points is on a touch-region. So the event should be sent
   // to the main thread.
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  expected_disposition_ = compositor_touch_action_enabled_
+                              ? InputHandlerProxy::DID_HANDLE_NON_BLOCKING
+                              : InputHandlerProxy::DID_NOT_HANDLE;
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(
@@ -1159,7 +1164,9 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
 TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
   // One of the touch points is on a touch-region. So the event should be sent
   // to the main thread.
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  expected_disposition_ = compositor_touch_action_enabled_
+                              ? InputHandlerProxy::DID_HANDLE_NON_BLOCKING
+                              : InputHandlerProxy::DID_NOT_HANDLE;
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(
@@ -1181,9 +1188,8 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
             return cc::InputHandler::TouchStartOrMoveEventListenerType::
                 HANDLER_ON_SCROLLING_LAYER;
           }));
-  EXPECT_CALL(mock_client_,
-              SetWhiteListedTouchAction(cc::kTouchActionPanY, 1,
-                                        InputHandlerProxy::DID_NOT_HANDLE))
+  EXPECT_CALL(mock_client_, SetWhiteListedTouchAction(cc::kTouchActionPanY, 1,
+                                                      expected_disposition_))
       .WillOnce(testing::Return());
   // Since the second touch point hits a touch-region, there should be no
   // hit-testing for the third touch point.
@@ -1326,7 +1332,9 @@ TEST_P(InputHandlerProxyTest, TouchMoveBlockingAddedAfterPassiveTouchStart) {
   touch.touches_length = 1;
   touch.touch_start_or_first_touch_move = true;
   touch.touches[0] = CreateWebTouchPoint(WebTouchPoint::kStateMoved, 10, 10);
-  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+  EXPECT_EQ(compositor_touch_action_enabled_
+                ? InputHandlerProxy::DID_HANDLE_NON_BLOCKING
+                : InputHandlerProxy::DID_NOT_HANDLE,
             input_handler_->HandleInputEvent(touch));
   VERIFY_AND_RESET_MOCKS();
 }
@@ -2002,9 +2010,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
        GestureScrollTouchEventHandlerRegion) {
-  // The touch event hits a touch event handler and should block on main thread.
-  // Since ScrollBegin allows the gesture to scroll on impl. We collect
-  // TouchEventHandler reason but not HandlingScrollFromMainThread.
+  // The touch event hits a touch event handler that is acked from the
+  // compositor thread when kCompositorTouchAction is enabld.
   SetupEvents(TestEventType::Touch);
 
   EXPECT_CALL(
@@ -2018,7 +2025,9 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
               SetWhiteListedTouchAction(testing::_, testing::_, testing::_))
       .WillOnce(testing::Return());
 
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  expected_disposition_ = compositor_touch_action_enabled_
+                              ? InputHandlerProxy::DID_HANDLE_NON_BLOCKING
+                              : InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_EQ(expected_disposition_,
             input_handler_->HandleInputEvent(touch_start_));
 
@@ -2027,12 +2036,15 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   EXPECT_EQ(expected_disposition_,
             input_handler_->HandleInputEvent(gesture_scroll_begin_));
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.MainThreadGestureScrollReason"),
-              testing::ElementsAre(base::Bucket(
-                  GetBucketSample(
-                      cc::MainThreadScrollingReason::kTouchEventHandlerRegion),
-                  1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Renderer4.MainThreadGestureScrollReason"),
+      testing::ElementsAre(base::Bucket(
+          GetBucketSample(
+              compositor_touch_action_enabled_
+                  ? cc::MainThreadScrollingReason::kNotScrollingOnMain
+                  : cc::MainThreadScrollingReason::kTouchEventHandlerRegion),
+          1)));
 
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_, true));
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
@@ -2061,7 +2073,9 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
               SetWhiteListedTouchAction(testing::_, testing::_, testing::_))
       .WillOnce(testing::Return());
 
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  expected_disposition_ = compositor_touch_action_enabled_
+                              ? InputHandlerProxy::DID_HANDLE_NON_BLOCKING
+                              : InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_EQ(expected_disposition_,
             input_handler_->HandleInputEvent(touch_start_));
 
@@ -2071,12 +2085,15 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
   EXPECT_EQ(expected_disposition_,
             input_handler_->HandleInputEvent(gesture_scroll_begin_));
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.MainThreadGestureScrollReason"),
-              testing::ElementsAre(base::Bucket(
-                  GetBucketSample(
-                      cc::MainThreadScrollingReason::kTouchEventHandlerRegion),
-                  1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Renderer4.MainThreadGestureScrollReason"),
+      testing::ElementsAre(base::Bucket(
+          GetBucketSample(
+              compositor_touch_action_enabled_
+                  ? cc::MainThreadScrollingReason::kHandlingScrollFromMainThread
+                  : cc::MainThreadScrollingReason::kTouchEventHandlerRegion),
+          1)));
 
   // Handle touch end event so that input handler proxy is out of the state of
   // DID_NOT_HANDLE.

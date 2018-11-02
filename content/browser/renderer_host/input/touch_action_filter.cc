@@ -18,6 +18,28 @@ using blink::WebGestureEvent;
 namespace content {
 namespace {
 
+bool TouchActionRequiredToFilterGestureEvent(
+    const WebGestureEvent* gesture_event) {
+  switch (gesture_event->GetType()) {
+    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::kGestureDoubleTap:
+    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::kGestureTap:
+    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::kGestureTwoFingerTap:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 // Actions on an axis are disallowed if the perpendicular axis has a filter set
 // and no filter is set for the queried axis.
 bool IsYAxisActionDisallowed(cc::TouchAction action) {
@@ -46,6 +68,10 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
   if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
     return FilterGestureEventResult::kFilterGestureEventAllowed;
+
+  if (TouchActionRequiredToFilterGestureEvent(gesture_event) &&
+      !active_touch_action_.has_value() && gesture_sequence_in_progress_)
+    return FilterGestureEventResult::kFilterGestureEventDelayed;
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
@@ -186,12 +212,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureTapDown:
       gesture_sequence_in_progress_ = true;
-      // If the gesture is hitting a region that has a non-blocking (such as a
-      // passive) event listener.
       // In theory, the num_of_active_touches_ should be > 0 at this point. But
       // crash reports suggest otherwise.
-      if (gesture_event->is_source_touch_event_set_non_blocking ||
-          num_of_active_touches_ <= 0)
+      if (num_of_active_touches_ <= 0)
         SetTouchAction(cc::kTouchActionAuto);
       active_touch_action_ = allowed_touch_action_;
       if (active_touch_action_.has_value())
