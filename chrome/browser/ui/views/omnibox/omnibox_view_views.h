@@ -91,9 +91,10 @@ class OmniboxViewViews : public OmniboxView,
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
 
-  // Indicates if the cursor is at one end. Accounts for text direction.
-  bool SelectionAtBeginning();
-  bool SelectionAtEnd();
+  // Indicates if the cursor is at one end of the input. Requires that both
+  // ends of the selection reside there.
+  bool SelectionAtBeginning() const;
+  bool SelectionAtEnd() const;
 
   // OmniboxView:
   void EmphasizeURLComponents() override;
@@ -191,8 +192,14 @@ class OmniboxViewViews : public OmniboxView,
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
 
-  // Helper function for MaybeFocusTabButton() and MaybeUnfocusTabButton().
-  bool AtEndWithTabMatch();
+  // Informs if text and UI direction match (otherwise what "at end" means must
+  // flip.)
+  bool TextAndUIDirectionMatch() const;
+
+  // Returns true if the caret is completely at the end of the input, and if
+  // there's a tab match present. Helper function for MaybeFocusTabButton()
+  // and MaybeUnfocusTabButton().
+  bool AtEndWithTabMatch() const;
 
   // Attempts to either focus or unfocus the tab switch button (tests if all
   // conditions are met and makes necessary subroutine call) and returns
