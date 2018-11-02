@@ -28,7 +28,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Maximum number of pages this class can allocate.
   static constexpr size_t kGpaMaxPages = 64;
 
-  // Maximum alignment for all returned allocations.
+  // Default maximum alignment for all returned allocations.
   static constexpr size_t kGpaAllocAlignment = 16;
 
   enum class ErrorType {
@@ -52,8 +52,12 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // zero-filled. Failure can occur if memory could not be mapped or protected,
   // or if all guarded pages are already allocated.
   //
-  // Precondition: size <= page_size_
-  void* Allocate(size_t size);
+  // The align parameter specifies a power of two to align the allocation up to.
+  // It must be less than or equal to the allocation size. If it's left as zero
+  // it will default to the default alignment the allocator chooses.
+  //
+  // Precondition: align <= size <= page_size_
+  void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
   // returned by a call to Allocate.

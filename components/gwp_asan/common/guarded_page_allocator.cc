@@ -53,7 +53,20 @@ GuardedPageAllocator::~GuardedPageAllocator() {
   UnmapPages();
 }
 
-void* GuardedPageAllocator::Allocate(size_t size) {
+void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
+  CHECK_LE(size, page_size_);
+  if (!size)
+    return nullptr;
+
+  // Default alignment is size's next smallest power-of-two, up to
+  // kGpaAllocAlignment.
+  if (!align) {
+    align =
+        std::min(size_t{1} << base::bits::Log2Floor(size), kGpaAllocAlignment);
+  }
+  CHECK_LE(align, size);
+  CHECK(base::bits::IsPowerOfTwo(align));
+
   size_t free_slot = ReserveSlot();
   if (free_slot == SIZE_MAX)
     return nullptr;  // All slots are reserved.
@@ -62,15 +75,12 @@ void* GuardedPageAllocator::Allocate(size_t size) {
   MarkPageReadWrite(reinterpret_cast<void*>(free_page));
 
   size_t offset;
-  if (base::RandInt(0, 1)) {
+  if (base::RandInt(0, 1))
     // Return right-aligned allocation to detect overflows.
-    size_t alignment =
-        std::min(size_t{1} << base::bits::Log2Floor(size), kGpaAllocAlignment);
-    offset = page_size_ - base::bits::Align(size, alignment);
-  } else {
+    offset = page_size_ - base::bits::Align(size, align);
+  else
     // Return left-aligned allocation to detect underflows.
     offset = 0;
-  }
 
   // Initialize slot metadata.
   data_[free_slot].RecordAllocation(size, offset);
