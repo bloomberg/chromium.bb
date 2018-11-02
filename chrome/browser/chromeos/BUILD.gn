@@ -1069,8 +1069,6 @@ source_set("chromeos") {
     "login/helper.h",
     "login/hwid_checker.cc",
     "login/hwid_checker.h",
-    "login/language_list.cc",
-    "login/language_list.h",
     "login/lock/screen_locker.cc",
     "login/lock/screen_locker.h",
     "login/lock/views_screen_locker.cc",
