@@ -6,22 +6,9 @@ import("//build/config/coverage/coverage.gni")
 
 config("default_coverage") {
   if (use_clang_coverage) {
-    cflags = [
-      "-fprofile-instr-generate",
-      "-fcoverage-mapping",
-
-      # Following experimental flags removes unused header functions from the
-      # coverage mapping data embedded in the test binaries, and the reduction
-      # of binary size enables building Chrome's large unit test targets on
-      # MacOS. Please refer to crbug.com/796290 for more details.
-      "-mllvm",
-      "-limited-coverage-experimental=true",
-    ]
-
     ldflags = []
     if (!is_win) {
       ldflags += [ "-fprofile-instr-generate" ]
-      cflags += [ "-fno-use-cxa-atexit" ]
     } else {
       # Windows directly calls link.exe instead of the compiler driver when
       # linking.  Hence, pass the runtime libraries instead of
@@ -35,6 +22,27 @@ config("default_coverage") {
       } else {
         assert(false &&
                "use_clang_coverage=true not supported yet for this target_cpu")
+      }
+    }
+
+    # Coverage flags are only on by default when instrument all source files.
+    # Otherwise, coverage flags are dynamically passed to the compile command
+    # via the //build/toolchain/clang_code_coverage_wrapper.py script.
+    if (coverage_instrumentation_input_file == "") {
+      cflags = [
+        "-fprofile-instr-generate",
+        "-fcoverage-mapping",
+
+        # Following experimental flags removes unused header functions from the
+        # coverage mapping data embedded in the test binaries, and the reduction
+        # of binary size enables building Chrome's large unit test targets on
+        # MacOS. Please refer to crbug.com/796290 for more details.
+        "-mllvm",
+        "-limited-coverage-experimental=true",
+      ]
+
+      if (!is_win) {
+        cflags += [ "-fno-use-cxa-atexit" ]
       }
     }
   }
