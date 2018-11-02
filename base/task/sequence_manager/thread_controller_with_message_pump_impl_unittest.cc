@@ -84,6 +84,10 @@ TimeTicks Seconds(int seconds) {
   return TimeTicks() + TimeDelta::FromSeconds(seconds);
 }
 
+TimeTicks Days(int seconds) {
+  return TimeTicks() + TimeDelta::FromDays(seconds);
+}
+
 }  // namespace
 
 TEST(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
@@ -99,7 +103,7 @@ TEST(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   FakeSequencedTaskSource task_source(&clock);
   thread_controller.SetSequencedTaskSource(&task_source);
 
-  base::TimeTicks next_run_time;
+  TimeTicks next_run_time;
 
   MockCallback<OnceClosure> task1;
   task_source.AddTask(PendingTask(FROM_HERE, task1.Get(), Seconds(10)));
@@ -125,7 +129,7 @@ TEST(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   testing::Mock::VerifyAndClearExpectations(message_pump);
   testing::Mock::VerifyAndClearExpectations(&task1);
 
-  // Call DoWork immeidately after the previous call. Expect a new task
+  // Call DoWork immediately after the previous call. Expect a new task
   // to be run.
   EXPECT_CALL(task2, Run()).Times(1);
   EXPECT_CALL(*message_pump, ScheduleDelayedWork(Seconds(20)));
@@ -142,6 +146,56 @@ TEST(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   EXPECT_EQ(next_run_time, TimeTicks::Max());
   testing::Mock::VerifyAndClearExpectations(message_pump);
   testing::Mock::VerifyAndClearExpectations(&task3);
+}
+
+TEST(ThreadControllerWithMessagePumpTest, SetNextDelayedDoWork) {
+  MockMessagePump* message_pump;
+  std::unique_ptr<MockMessagePump> pump =
+      std::make_unique<testing::StrictMock<MockMessagePump>>();
+  message_pump = pump.get();
+
+  SimpleTestTickClock clock;
+  ThreadControllerForTest thread_controller(std::move(pump), &clock);
+
+  EXPECT_CALL(*message_pump, ScheduleDelayedWork(Seconds(123)));
+
+  LazyNow lazy_now(&clock);
+  thread_controller.SetNextDelayedDoWork(&lazy_now, Seconds(123));
+}
+
+TEST(ThreadControllerWithMessagePumpTest, SetNextDelayedDoWork_CapAtOneDay) {
+  MockMessagePump* message_pump;
+  std::unique_ptr<MockMessagePump> pump =
+      std::make_unique<testing::StrictMock<MockMessagePump>>();
+  message_pump = pump.get();
+
+  SimpleTestTickClock clock;
+  ThreadControllerForTest thread_controller(std::move(pump), &clock);
+
+  EXPECT_CALL(*message_pump, ScheduleDelayedWork(Days(1)));
+
+  LazyNow lazy_now(&clock);
+  thread_controller.SetNextDelayedDoWork(&lazy_now, Days(2));
+}
+
+TEST(ThreadControllerWithMessagePumpTest, DelayedWork_CapAtOneDay) {
+  MockMessagePump* message_pump;
+  std::unique_ptr<MockMessagePump> pump =
+      std::make_unique<testing::StrictMock<MockMessagePump>>();
+  message_pump = pump.get();
+
+  SimpleTestTickClock clock;
+  ThreadControllerForTest thread_controller(std::move(pump), &clock);
+  thread_controller.SetWorkBatchSize(1);
+
+  FakeSequencedTaskSource task_source(&clock);
+  thread_controller.SetSequencedTaskSource(&task_source);
+
+  MockCallback<OnceClosure> task1;
+  task_source.AddTask(PendingTask(FROM_HERE, task1.Get(), Days(10)));
+
+  EXPECT_CALL(*message_pump, ScheduleDelayedWork(Days(1)));
+  EXPECT_FALSE(thread_controller.DoWork());
 }
 
 }  // namespace sequence_manager
