@@ -816,6 +816,12 @@ void FrameFetchContext::DidLoadResource(Resource* resource) {
     document_->CheckCompleted();
 }
 
+void FrameFetchContext::DidObserveLoadingBehavior(
+    WebLoadingBehaviorFlag behavior) {
+  if (document_loader_)
+    document_loader_->DidObserveLoadingBehavior(behavior);
+}
+
 void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // Normally, |document_| is cleared on Document shutdown. However, Documents
   // for HTML imports will also not have a LocalFrame set: in that case, also

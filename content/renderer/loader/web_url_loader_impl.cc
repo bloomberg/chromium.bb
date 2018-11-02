@@ -1214,6 +1214,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);
   response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
+  response->SetNetworkAccessed(info.network_accessed);
   response->SetRequestId(request_id);
   response->SetIsSignedExchangeInnerResponse(
       info.is_signed_exchange_inner_response);

@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -177,6 +178,7 @@ class PLATFORM_EXPORT FetchContext
                                      const AtomicString& fetch_initiator_name);
 
   virtual void DidLoadResource(Resource*);
+  virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
 
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }

@@ -112,6 +112,8 @@ void FetchContext::RecordLoadingActivity(
 
 void FetchContext::DidLoadResource(Resource*) {}
 
+void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
+
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
 void FetchContext::AddInfoConsoleMessage(const String&, LogSource) const {}

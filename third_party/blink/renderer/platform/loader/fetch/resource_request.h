@@ -384,6 +384,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
+  void SetStaleRevalidateCandidate(bool value) {
+    stale_revalidate_candidate_ = value;
+  }
+  bool IsStaleRevalidateCandidate() const {
+    return stale_revalidate_candidate_;
+  }
+
   const base::Optional<base::UnguessableToken>& GetDevToolsToken() const {
     return devtools_token_;
   }
@@ -428,6 +435,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
   bool allow_stale_response_ : 1;
+  bool stale_revalidate_candidate_ : 1;
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
   bool download_to_cache_only_ : 1;

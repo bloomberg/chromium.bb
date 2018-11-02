@@ -34,7 +34,16 @@ enum WebLoadingBehaviorFlag {
   kWebLoadingBehaviorDocumentWriteBlockDifferentScheme = 1 << 5,
   // Indicates that a subresource on the page matched the subresource filtering
   // rules.
-  kWebLoadingBehaviorSubresourceFilterMatch = 1 << 6
+  kWebLoadingBehaviorSubresourceFilterMatch = 1 << 6,
+  // Indicates that a subresource on the page was a candidate for stale
+  // while revalidate and caused a network load.
+  kStaleWhileRevalidateResourceCandidateNetworkLoad = 1 << 7,
+  // Indicates that a subresource on the page was a candidate for stale
+  // while revalidate and caused a stale cache load.
+  kStaleWhileRevalidateResourceCandidateStaleCacheLoad = 1 << 8,
+  // Indicates that a subresource on the page was a candidate for stale
+  // while revalidate and caused a non-stale cache load.
+  kStaleWhileRevalidateResourceCandidateCacheLoad = 1 << 9,
 };
 
 }  // namespace blink
