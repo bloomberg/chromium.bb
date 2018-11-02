@@ -103,7 +103,8 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
   // Before attaching is complete, the instance ID is not valid.
-  if (element_instance_id() != guest_view::kInstanceIDNone) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
+      element_instance_id() != guest_view::kInstanceIDNone) {
     if (auto* embedder_frame = GetEmbedderFrame()) {
       embedder_frame->Send(new ExtensionsGuestViewMsg_DestroyFrameContainer(
           element_instance_id()));
