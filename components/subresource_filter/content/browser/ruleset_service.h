@@ -183,12 +183,21 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
   // Creates a new instance of a ruleset.  This is then assigned to a
   // Delegate that calls Initialize for this ruleset service.
+  // Starts initialization of the RulesetService, performing tasks that won't
+  // slow down Chrome startup, then queues the FinishInitialization task.
   RulesetService(
       PrefService* local_state,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      RulesetServiceDelegate* delegate,
-      const base::FilePath& indexed_ruleset_base_dir);
+      const base::FilePath& indexed_ruleset_base_dir,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      // Note: Optional delegate parameter used exclusively for testing.
+      std::unique_ptr<RulesetServiceDelegate> delegate = nullptr);
   virtual ~RulesetService();
+
+  // Pass-through function to set the callback on publishing.
+  void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback) {
+    delegate_->SetRulesetPublishedCallbackForTesting(std::move(callback));
+  }
 
   // Indexes, stores, and publishes the given unindexed ruleset, unless its
   // |content_version| matches that of the most recently indexed version, in
@@ -206,12 +215,16 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Get the ruleset version associated with the current local_state_.
   IndexedRulesetVersion GetMostRecentlyIndexedVersion() const;
 
-  // Starts initialization of the RulesetService, performing tasks that won't
-  // slow down Chrome startup, then queues the FinishInitialization task.
-  void StartInitialization();
+  VerifiedRulesetDealer::Handle* GetRulesetDealer() {
+    return delegate_->GetRulesetDealer();
+  }
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
+  friend class SubresourceFilterBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      SubresourceFilterContentRulesetServiceTest,
+      PublishedRuleset_IsDistributedToExistingAndNewRenderers);
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilterContentRulesetServiceTest,
                            PublishesRulesetInOnePostTask);
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
@@ -279,8 +292,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Obsolete files deletion and indexing should be done on this runner.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // Must outlive |this| object.
-  RulesetServiceDelegate* delegate_;
+  std::unique_ptr<RulesetServiceDelegate> delegate_;
 
   UnindexedRulesetInfo queued_unindexed_ruleset_info_;
   bool is_initialized_;
@@ -290,12 +302,11 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   DISALLOW_COPY_AND_ASSIGN(RulesetService);
 };
 
-// The content-layer specific implementation of RulesetServiceDelegate. Owns the
-// underlying RulesetService.
-//
-// Its main responsibility is receiving new versions of subresource filtering
-// rules from the RulesetService, and distributing them to renderer processes,
-// where they will be memory-mapped as-needed by the UnverifiedRulesetDealer.
+// The content-layer specific implementation of RulesetServiceDelegate. Owned by
+// the underlying RulesetService. Its main responsibility is receiving new
+// versions of subresource filtering rules from the RulesetService, and
+// distributing them to renderer processes, where they will be memory-mapped
+// as-needed by the UnverifiedRulesetDealer.
 //
 // The distribution pipeline looks like this:
 //
@@ -323,10 +334,9 @@ class ContentRulesetService : public RulesetServiceDelegate,
                               content::NotificationObserver {
  public:
   explicit ContentRulesetService(
+      RulesetService* ruleset_service,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~ContentRulesetService() override;
-
-  void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback);
 
   // RulesetServiceDelegate:
   void TryOpenAndSetRulesetFile(
@@ -335,10 +345,9 @@ class ContentRulesetService : public RulesetServiceDelegate,
       base::OnceCallback<void(base::File)> callback) override;
   void PublishNewRulesetVersion(base::File ruleset_data) override;
   scoped_refptr<base::SingleThreadTaskRunner> BestEffortTaskRunner() override;
-
-  // Sets the ruleset_service_ member and calls its Initialize function.
-  void SetAndInitializeRulesetService(
-      std::unique_ptr<RulesetService> ruleset_service);
+  VerifiedRulesetDealer::Handle* GetRulesetDealer() override;
+  void SetRulesetPublishedCallbackForTesting(
+      base::OnceClosure callback) override;
 
   // Forwards calls to the underlying ruleset_service_.
   void IndexAndStoreAndPublishRulesetIfNeeded(
@@ -349,9 +358,6 @@ class ContentRulesetService : public RulesetServiceDelegate,
     return ruleset_service_->GetMostRecentlyIndexedVersion();
   }
 
-  VerifiedRulesetDealer::Handle* ruleset_dealer() {
-    return ruleset_dealer_.get();
-  }
  private:
   // content::NotificationObserver:
   void Observe(int type,
@@ -362,7 +368,8 @@ class ContentRulesetService : public RulesetServiceDelegate,
   base::File ruleset_data_;
   base::OnceClosure ruleset_published_callback_;
 
-  std::unique_ptr<RulesetService> ruleset_service_;
+  // The service owns the delegate, and therefor outlives it.
+  RulesetService* ruleset_service_;
   std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
   scoped_refptr<base::SingleThreadTaskRunner> best_effort_task_runner_;
 

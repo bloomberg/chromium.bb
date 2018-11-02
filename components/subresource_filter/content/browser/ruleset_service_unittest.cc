@@ -34,6 +34,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -163,6 +164,11 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
     return best_effort_task_runner_;
   }
 
+  VerifiedRulesetDealer::Handle* GetRulesetDealer() override { return nullptr; }
+
+  void SetRulesetPublishedCallbackForTesting(
+      base::OnceClosure callback) override {}
+
   std::vector<base::File>& published_rulesets() { return published_rulesets_; }
 
   void RunBestEffortUntilIdle() {
@@ -242,17 +248,17 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
   void ResetRulesetService() {
-    mock_delegate_ = std::make_unique<MockRulesetServiceDelegate>(
-        blocking_task_runner_, best_effort_task_runner_);
+    // Note that this takes a dummy task runner as the dealer is not used as the
+    // overridden functions use the blocking_task_runner_ explicitly.
     service_ = std::make_unique<RulesetService>(
-        &pref_service_, background_task_runner_, mock_delegate_.get(),
-        base_dir());
-    service_->StartInitialization();
+        &pref_service_, background_task_runner_, base_dir(),
+        blocking_task_runner_,
+        std::make_unique<MockRulesetServiceDelegate>(blocking_task_runner_,
+                                                     best_effort_task_runner_));
   }
 
   void ClearRulesetService() {
     service_.reset();
-    mock_delegate_.reset();
   }
 
   // Creates a new file with the given license |contents| at a unique temporary
@@ -340,7 +346,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
     while (best_effort_task_runner_->HasPendingTask() ||
            blocking_task_runner_->HasPendingTask() ||
            background_task_runner_->HasPendingTask()) {
-      mock_delegate_->RunBestEffortUntilIdle();
+      mock_delegate()->RunBestEffortUntilIdle();
       RunBlockingUntilIdle();
       RunBackgroundUntilIdle();
     }
@@ -384,7 +390,9 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
 
   PrefService* prefs() { return &pref_service_; }
   RulesetService* service() { return service_.get(); }
-  MockRulesetServiceDelegate* mock_delegate() { return mock_delegate_.get(); }
+  MockRulesetServiceDelegate* mock_delegate() {
+    return static_cast<MockRulesetServiceDelegate*>(service_->delegate_.get());
+  }
 
   virtual base::FilePath effective_temp_dir() const {
     return scoped_temp_dir_.GetPath();
@@ -412,7 +420,6 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   TestRulesetPair test_ruleset_2_;
   TestRulesetPair test_ruleset_3_;
 
-  std::unique_ptr<MockRulesetServiceDelegate> mock_delegate_;
   std::unique_ptr<RulesetService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilteringRulesetServiceTest);
@@ -510,7 +517,7 @@ const char SubresourceFilteringRulesetServiceDeathTest::kInheritedTempDirKey[] =
 
 TEST_F(SubresourceFilterContentRulesetServiceTest, NoRuleset_NoIPCMessages) {
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
+  ContentRulesetService service(nullptr, base::ThreadTaskRunnerHandle::Get());
   NotifyingMockRenderProcessHost new_renderer(browser_context());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, existing_renderer.sink().message_count());
@@ -528,8 +535,8 @@ TEST_F(SubresourceFilterContentRulesetServiceTest,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
   MockClosureTarget publish_callback_target;
+  ContentRulesetService service(nullptr, base::ThreadTaskRunnerHandle::Get());
   service.SetRulesetPublishedCallbackForTesting(base::BindOnce(
       &MockClosureTarget::Call, base::Unretained(&publish_callback_target)));
   EXPECT_CALL(publish_callback_target, Call()).Times(1);
@@ -590,16 +597,19 @@ TEST_F(SubresourceFilterContentRulesetServiceTest,
   scoped_refptr<base::TestSimpleTaskRunner> background_task_runner =
       base::MakeRefCounted<base::TestSimpleTaskRunner>();
   NotifyingMockRenderProcessHost renderer_host(browser_context());
-  auto service = std::make_unique<ContentRulesetService>(blocking_task_runner);
   base::RunLoop callback_waiter;
-  service->SetRulesetPublishedCallbackForTesting(callback_waiter.QuitClosure());
+  auto content_service =
+      std::make_unique<ContentRulesetService>(nullptr, blocking_task_runner);
+  content_service->SetRulesetPublishedCallbackForTesting(
+      callback_waiter.QuitClosure());
 
   // |RulesetService| constructor should read the last indexed ruleset version
   // and post ruleset setup on |blocking_task_runner|. (Yes, exactly
   // |blocking_task_runner| via |ContentRulesetService| as its delegate).
   ASSERT_EQ(0u, blocking_task_runner->NumPendingTasks());
-  service->SetAndInitializeRulesetService(std::make_unique<RulesetService>(
-      &prefs, background_task_runner, service.get(), base_dir));
+  auto service =
+      std::make_unique<RulesetService>(&prefs, background_task_runner, base_dir,
+                                       nullptr, std::move(content_service));
 
   // The key test assertion is that ruleset data is published via exactly one
   // post task on |blocking_task_runner|. It is important to run pending tasks

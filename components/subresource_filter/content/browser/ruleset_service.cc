@@ -261,19 +261,18 @@ decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
 RulesetService::RulesetService(
     PrefService* local_state,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    RulesetServiceDelegate* delegate,
-    const base::FilePath& indexed_ruleset_base_dir)
+    const base::FilePath& indexed_ruleset_base_dir,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    std::unique_ptr<RulesetServiceDelegate> delegate)
     : local_state_(local_state),
       background_task_runner_(std::move(background_task_runner)),
-      delegate_(delegate),
       is_initialized_(false),
       indexed_ruleset_base_dir_(indexed_ruleset_base_dir) {
-  DCHECK(delegate_);
   DCHECK_NE(local_state_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
-}
-
-void RulesetService::StartInitialization() {
+  delegate_ = delegate ? std::move(delegate)
+                       : std::make_unique<ContentRulesetService>(
+                             this, blocking_task_runner);
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -555,8 +554,10 @@ void RulesetService::OnRulesetSet(base::File file) {
 // ContentRulesetService ------------------------------------------------------
 
 ContentRulesetService::ContentRulesetService(
+    RulesetService* ruleset_service,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : ruleset_dealer_(std::make_unique<VerifiedRulesetDealer::Handle>(
+    : ruleset_service_(ruleset_service),
+      ruleset_dealer_(std::make_unique<VerifiedRulesetDealer::Handle>(
           std::move(blocking_task_runner))) {
   best_effort_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
       {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
@@ -582,8 +583,8 @@ void ContentRulesetService::TryOpenAndSetRulesetFile(
     const base::FilePath& file_path,
     int expected_checksum,
     base::OnceCallback<void(base::File)> callback) {
-  ruleset_dealer_->TryOpenAndSetRulesetFile(file_path, expected_checksum,
-                                            std::move(callback));
+  GetRulesetDealer()->TryOpenAndSetRulesetFile(file_path, expected_checksum,
+                                               std::move(callback));
 }
 
 void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
@@ -595,7 +596,7 @@ void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   if (base::FeatureList::IsEnabled(kAdTagging)) {
     // Even though the handle will immediately be destroyed, it will still
     // validate the ruleset on its task runner.
-    VerifiedRuleset::Handle ruleset_handle(ruleset_dealer_.get());
+    VerifiedRuleset::Handle ruleset_handle(GetRulesetDealer());
   }
 
   ruleset_data_ = std::move(ruleset_data);
@@ -613,10 +614,8 @@ ContentRulesetService::BestEffortTaskRunner() {
   return best_effort_task_runner_;
 }
 
-void ContentRulesetService::SetAndInitializeRulesetService(
-    std::unique_ptr<RulesetService> ruleset_service) {
-  ruleset_service_ = std::move(ruleset_service);
-  ruleset_service_->StartInitialization();
+VerifiedRulesetDealer::Handle* ContentRulesetService::GetRulesetDealer() {
+  return ruleset_dealer_.get();
 }
 
 void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(

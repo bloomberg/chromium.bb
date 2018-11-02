@@ -19,21 +19,18 @@ namespace {
 class RulesetDistributionListener {
  public:
   RulesetDistributionListener()
-      : content_service_(
-            g_browser_process->subresource_filter_ruleset_service()) {
-    content_service_->SetRulesetPublishedCallbackForTesting(
-        run_loop_.QuitClosure());
+      : service_(g_browser_process->subresource_filter_ruleset_service()) {
+    service_->SetRulesetPublishedCallbackForTesting(run_loop_.QuitClosure());
   }
 
   ~RulesetDistributionListener() {
-    content_service_->SetRulesetPublishedCallbackForTesting(
-        base::OnceClosure());
+    service_->SetRulesetPublishedCallbackForTesting(base::OnceClosure());
   }
 
   void AwaitDistribution() { run_loop_.Run(); }
 
  private:
-  ContentRulesetService* content_service_;
+  RulesetService* service_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetDistributionListener);

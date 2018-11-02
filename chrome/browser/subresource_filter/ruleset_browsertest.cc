@@ -22,29 +22,10 @@ namespace {
 
 const mojom::ActivationState kDisabled;
 
-void OpenAndPublishRuleset(ContentRulesetService* content_ruleset_service,
-                           const base::FilePath& path) {
-  base::File index_file;
-  base::RunLoop open_loop;
-  auto open_callback = base::BindRepeating(
-      [](base::OnceClosure quit_closure, base::File* out, base::File result) {
-        *out = std::move(result);
-        std::move(quit_closure).Run();
-      },
-      open_loop.QuitClosure(), &index_file);
-  IndexedRulesetVersion version =
-      content_ruleset_service->GetMostRecentlyIndexedVersion();
-  content_ruleset_service->TryOpenAndSetRulesetFile(path, version.checksum,
-                                                    std::move(open_callback));
-  open_loop.Run();
-  ASSERT_TRUE(index_file.IsValid());
-  content_ruleset_service->PublishNewRulesetVersion(std::move(index_file));
-}
-
 RulesetVerificationStatus GetRulesetVerification() {
-  ContentRulesetService* service =
+  RulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
-  VerifiedRulesetDealer::Handle* dealer_handle = service->ruleset_dealer();
+  VerifiedRulesetDealer::Handle* dealer_handle = service->GetRulesetDealer();
 
   auto callback_method = [](base::OnceClosure quit_closure,
                             RulesetVerificationStatus* status,
@@ -73,11 +54,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  ContentRulesetService* service =
+  RulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
-  ASSERT_TRUE(service->ruleset_dealer());
+  ASSERT_TRUE(service->GetRulesetDealer());
   auto ruleset_handle =
-      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->GetRulesetDealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
@@ -98,11 +79,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
   base::HistogramTester histogram_tester;
   // Do not set the ruleset, which results in an invalid ruleset.
-  ContentRulesetService* service =
+  RulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
-  ASSERT_TRUE(service->ruleset_dealer());
+  ASSERT_TRUE(service->GetRulesetDealer());
   auto ruleset_handle =
-      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->GetRulesetDealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
@@ -123,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   ASSERT_NO_FATAL_FAILURE(
       ruleset_creator.CreateRulesetToDisallowURLsWithManySuffixes(
           kTestRulesetSuffix, kNumberOfRules, &test_ruleset_pair));
-  ContentRulesetService* service =
+  RulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
 
   // Publish the good ruleset.
@@ -137,10 +118,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   testing::TestRuleset::CorruptByFilling(test_ruleset_pair.indexed, 28250,
                                          28251, 32);
   OpenAndPublishRuleset(service, test_ruleset_pair.indexed.path);
-  ASSERT_TRUE(service->ruleset_dealer());
+  ASSERT_TRUE(service->GetRulesetDealer());
 
   auto ruleset_handle =
-      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->GetRulesetDealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
@@ -183,13 +164,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   // Just publish the corrupt indexed file directly, to simulate it being
   // corrupt on startup.
-  ContentRulesetService* service =
+  RulesetService* service =
       g_browser_process->subresource_filter_ruleset_service();
-  ASSERT_TRUE(service->ruleset_dealer());
+  ASSERT_TRUE(service->GetRulesetDealer());
   OpenAndPublishRuleset(service, test_ruleset_pair.indexed.path);
 
   auto ruleset_handle =
-      std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+      std::make_unique<VerifiedRuleset::Handle>(service->GetRulesetDealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
