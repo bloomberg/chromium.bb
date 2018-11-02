@@ -82,9 +82,6 @@ constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
 // The indicator for teleported windows has 8 DIPs before and below it.
 constexpr int kProfileIndicatorPadding = 8;
 
-// The indicator for teleported windows is 24 DIP on a side.
-constexpr int kProfileIndicatorSize = 24;
-
 bool IsV1AppBackButtonEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kAshEnableV1AppBackButton);
@@ -737,7 +734,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
   int left_inset = frame_values().normal_insets.left();
   if (profile_indicator_icon_)
-    left_inset += kProfileIndicatorPadding + kProfileIndicatorSize;
+    left_inset += kProfileIndicatorPadding + profile_indicator_icon_->width();
   return left_inset;
 }
 
@@ -874,19 +871,22 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
 void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
   View* root_view = frame()->GetRootView();
   if (ShouldShowProfileIndicatorIcon()) {
+    bool needs_layout = !profile_indicator_icon_;
     if (!profile_indicator_icon_) {
       profile_indicator_icon_ = new ProfileIndicatorIcon();
       AddChildView(profile_indicator_icon_);
-      if (root_view) {
-        // Adding a child does not invalidate the layout.
-        InvalidateLayout();
-        root_view->Layout();
-      }
     }
 
-    profile_indicator_icon_->SetIcon(gfx::Image(
-        GetAvatarImageForContext(browser_view()->browser()->profile())));
-    profile_indicator_icon_->set_stroke_color(GetToolbarTopSeparatorColor());
+    gfx::Image image(
+        GetAvatarImageForContext(browser_view()->browser()->profile()));
+    profile_indicator_icon_->SetSize(image.Size());
+    profile_indicator_icon_->SetIcon(image);
+
+    if (needs_layout && root_view) {
+      // Adding a child does not invalidate the layout.
+      InvalidateLayout();
+      root_view->Layout();
+    }
   } else if (profile_indicator_icon_) {
     delete profile_indicator_icon_;
     profile_indicator_icon_ = nullptr;
@@ -897,12 +897,15 @@ void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
 
 void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
   DCHECK(profile_indicator_icon_);
-  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                     kProfileIndicatorPadding;
-  profile_indicator_icon_->SetBounds(
-      kProfileIndicatorPadding, bottom - kProfileIndicatorSize,
-      kProfileIndicatorSize, kProfileIndicatorSize);
+  const int frame_height =
+      GetTopInset(false) + browser_view()->GetTabStripHeight();
+  profile_indicator_icon_->SetPosition(
+      gfx::Point(kProfileIndicatorPadding,
+                 (frame_height - profile_indicator_icon_->height()) / 2));
   profile_indicator_icon_->SetVisible(true);
+
+  // The layout size is set along with the image.
+  DCHECK_LE(profile_indicator_icon_->height(), frame_height);
 }
 
 ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {
