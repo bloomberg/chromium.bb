@@ -35,6 +35,11 @@ FakeUsbDevice::FakeUsbDevice(scoped_refptr<FakeUsbDeviceInfo> device,
     : device_(device), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
+
+  if (client_) {
+    client_.set_connection_error_handler(base::BindOnce(
+        &FakeUsbDevice::OnClientConnectionError, base::Unretained(this)));
+  }
 }
 
 void FakeUsbDevice::CloseHandle() {
@@ -127,6 +132,12 @@ void FakeUsbDevice::IsochronousTransferOut(
 
 void FakeUsbDevice::OnDeviceRemoved(scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK_EQ(device_, device);
+  binding_->Close();
+}
+
+void FakeUsbDevice::OnClientConnectionError() {
+  // Close the binding with Blink when WebUsbService finds permission revoked
+  // from setting UI.
   binding_->Close();
 }
 

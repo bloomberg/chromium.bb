@@ -31,6 +31,8 @@ class UsbChooserContext : public ChooserContextBase,
    public:
     virtual void OnDeviceAdded(const device::mojom::UsbDeviceInfo&);
     virtual void OnDeviceRemoved(const device::mojom::UsbDeviceInfo&);
+    virtual void OnPermissionRevoked(const GURL& requesting_origin,
+                                     const GURL& embedding_origin);
     virtual void OnDeviceManagerConnectionError();
   };
 
@@ -65,6 +67,10 @@ class UsbChooserContext : public ChooserContextBase,
                  device::mojom::UsbDeviceRequest device_request,
                  device::mojom::UsbDeviceClientPtr device_client);
 
+  // This method should only be called when you are sure that |devices_| has
+  // been initialized. It will return nullptr if the guid cannot be found.
+  const device::mojom::UsbDeviceInfo* GetDeviceInfo(const std::string& guid);
+
   base::WeakPtr<UsbChooserContext> AsWeakPtr();
 
   void SetDeviceManagerForTesting(
@@ -74,6 +80,7 @@ class UsbChooserContext : public ChooserContextBase,
   // ChooserContextBase implementation.
   bool IsValidObject(const base::DictionaryValue& object) override;
   std::string GetObjectName(const base::DictionaryValue& object) override;
+  void InitDeviceList(std::vector<::device::mojom::UsbDeviceInfoPtr> devices);
 
   // device::mojom::UsbDeviceManagerClient implementation.
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
@@ -86,6 +93,7 @@ class UsbChooserContext : public ChooserContextBase,
   bool is_incognito_;
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   std::map<std::string, base::DictionaryValue> ephemeral_dicts_;
+  std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
 
   std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;
 

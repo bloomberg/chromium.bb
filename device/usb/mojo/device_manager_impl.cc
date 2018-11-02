@@ -37,11 +37,19 @@ void DeviceManagerImpl::AddBinding(mojom::UsbDeviceManagerRequest request) {
     bindings_.AddBinding(this, std::move(request));
 }
 
+void DeviceManagerImpl::EnumerateDevicesAndSetClient(
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+    EnumerateDevicesAndSetClientCallback callback) {
+  usb_service_->GetDevices(base::Bind(
+      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
+      /*options=*/nullptr, base::Passed(&client), base::Passed(&callback)));
+}
+
 void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    GetDevicesCallback callback) {
-  usb_service_->GetDevices(
-      base::Bind(&DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-                 base::Passed(&options), base::Passed(&callback)));
+  usb_service_->GetDevices(base::Bind(
+      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
+      base::Passed(&options), /*client=*/nullptr, base::Passed(&callback)));
 }
 
 void DeviceManagerImpl::GetDevice(const std::string& guid,
@@ -65,6 +73,7 @@ void DeviceManagerImpl::SetClient(
 
 void DeviceManagerImpl::OnGetDevices(
     mojom::UsbEnumerationOptionsPtr options,
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
     GetDevicesCallback callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
@@ -79,6 +88,9 @@ void DeviceManagerImpl::OnGetDevices(
   }
 
   std::move(callback).Run(std::move(device_infos));
+
+  if (client)
+    SetClient(std::move(client));
 }
 
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {

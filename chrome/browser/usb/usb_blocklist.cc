@@ -5,6 +5,7 @@
 #include "chrome/browser/usb/usb_blocklist.h"
 
 #include <algorithm>
+#include <string>
 #include <tuple>
 
 #include "base/strings/string_number_conversions.h"

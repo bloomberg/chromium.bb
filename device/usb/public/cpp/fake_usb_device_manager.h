@@ -48,6 +48,9 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
 
  private:
   // mojom::UsbDeviceManager implementation:
+  void EnumerateDevicesAndSetClient(
+      mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+      EnumerateDevicesAndSetClientCallback callback) override;
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
   void GetDevice(const std::string& guid,

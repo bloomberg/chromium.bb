@@ -78,6 +78,10 @@ void UsbChooserContext::Observer::OnDeviceAdded(
 void UsbChooserContext::Observer::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {}
 
+void UsbChooserContext::Observer::OnPermissionRevoked(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {}
+
 void UsbChooserContext::Observer::OnDeviceManagerConnectionError() {}
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
@@ -91,6 +95,14 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
       new UsbPolicyAllowedDevices(profile->GetPrefs()));
 }
 
+void UsbChooserContext::InitDeviceList(
+    std::vector<::device::mojom::UsbDeviceInfoPtr> devices) {
+  for (auto& device_info : devices) {
+    DCHECK(device_info);
+    devices_.insert(std::make_pair(device_info->guid, std::move(device_info)));
+  }
+}
+
 void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
     return;
@@ -100,6 +112,7 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
       ->GetConnector()
       ->BindInterface(device::mojom::kServiceName,
                       mojo::MakeRequest(&device_manager_));
+
   SetUpDeviceManagerConnection();
 }
 
@@ -113,7 +126,9 @@ void UsbChooserContext::SetUpDeviceManagerConnection() {
   DCHECK(!client_binding_);
   device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
   client_binding_.Bind(mojo::MakeRequest(&client));
-  device_manager_->SetClient(std::move(client));
+  device_manager_->EnumerateDevicesAndSetClient(
+      std::move(client), base::BindOnce(&UsbChooserContext::InitDeviceList,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 UsbChooserContext::~UsbChooserContext() {
@@ -188,6 +203,10 @@ void UsbChooserContext::RevokeObjectPermission(
                                                embedding_origin, object);
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
   }
+
+  // Notify observers about the permission revocation.
+  for (auto& observer : observer_list_)
+    observer.OnPermissionRevoked(requesting_origin, embedding_origin);
 }
 
 void UsbChooserContext::GrantDevicePermission(
@@ -265,6 +284,12 @@ void UsbChooserContext::GetDevice(
                              std::move(device_client));
 }
 
+const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
+    const std::string& guid) {
+  auto it = devices_.find(guid);
+  return it == devices_.end() ? nullptr : it->second.get();
+}
+
 void UsbChooserContext::AddObserver(Observer* observer) {
   EnsureConnectionWithDeviceManager();
   observer_list_.AddObserver(observer);
@@ -296,6 +321,9 @@ std::string UsbChooserContext::GetObjectName(
 void UsbChooserContext::OnDeviceAdded(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
+  // Update the device list.
+  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
   for (auto& observer : observer_list_)
@@ -305,6 +333,9 @@ void UsbChooserContext::OnDeviceAdded(
 void UsbChooserContext::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
+  // Update the device list.
+  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  devices_.erase(device_info->guid);
 
   // Notify all observers.
   for (auto& observer : observer_list_)
@@ -319,13 +350,13 @@ void UsbChooserContext::OnDeviceRemoved(
 void UsbChooserContext::OnDeviceManagerConnectionError() {
   device_manager_.reset();
   client_binding_.Close();
+  devices_.clear();
+  ephemeral_devices_.clear();
+  ephemeral_dicts_.clear();
 
   // Notify all observers.
   for (auto& observer : observer_list_)
     observer.OnDeviceManagerConnectionError();
-
-  ephemeral_devices_.clear();
-  ephemeral_dicts_.clear();
 }
 
 void UsbChooserContext::SetDeviceManagerForTesting(
