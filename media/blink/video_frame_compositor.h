@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -144,8 +145,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
     tick_clock_ = tick_clock;
   }
 
-  void clear_current_frame_for_testing() { current_frame_ = nullptr; }
-
   // Enables or disables background rendering. If |enabled|, |timeout| is the
   // amount of time to wait after the last Render() call before starting the
   // background rendering mode.  Note, this can not disable the background
@@ -218,13 +217,14 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   OnNewProcessedFrameCB new_processed_frame_cb_;
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
 
-  // Set on the compositor thread, but also read on the media thread.
+  // Set on the compositor thread, but also read on the media thread. Lock is
+  // not used when reading |current_frame_| on the compositor thread.
   base::Lock current_frame_lock_;
   scoped_refptr<VideoFrame> current_frame_;
 
   // These values are updated and read from the media and compositor threads.
   base::Lock callback_lock_;
-  VideoRendererSink::RenderCallback* callback_;
+  VideoRendererSink::RenderCallback* callback_ GUARDED_BY(callback_lock_);
 
   // AutoOpenCloseEvent for begin/end events.
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent> auto_open_close_;

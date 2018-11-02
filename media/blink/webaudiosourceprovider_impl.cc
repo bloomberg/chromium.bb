@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -101,7 +102,7 @@ class WebAudioSourceProviderImpl::TeeFilter
   // acquire a lock to read |copy_audio_bus_callback_| when necessary.
   std::atomic<bool> copy_required_;
   base::Lock copy_lock_;
-  CopyAudioCB copy_audio_bus_callback_;
+  CopyAudioCB copy_audio_bus_callback_ GUARDED_BY(copy_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(TeeFilter);
 };
