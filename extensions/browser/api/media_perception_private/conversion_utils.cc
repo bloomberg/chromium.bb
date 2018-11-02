@@ -527,6 +527,36 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
   return mri::State::STATUS_UNSPECIFIED;
 }
 
+Feature FeatureProtoToIdl(int feature) {
+  switch (feature) {
+    case mri::State::FEATURE_AUTOZOOM:
+      return FEATURE_AUTOZOOM;
+    case mri::State::FEATURE_HOTWORD_DETECTION:
+      return FEATURE_HOTWORD_DETECTION;
+    case mri::State::FEATURE_OCCUPANCY_DETECTION:
+      return FEATURE_OCCUPANCY_DETECTION;
+    case mri::State::FEATURE_UNSET:
+      return FEATURE_NONE;
+  }
+  NOTREACHED() << "Reached feature not in switch.";
+  return FEATURE_NONE;
+}
+
+mri::State::Feature FeatureIdlToProto(const Feature& feature) {
+  switch (feature) {
+    case FEATURE_AUTOZOOM:
+      return mri::State::FEATURE_AUTOZOOM;
+    case FEATURE_HOTWORD_DETECTION:
+      return mri::State::FEATURE_HOTWORD_DETECTION;
+    case FEATURE_OCCUPANCY_DETECTION:
+      return mri::State::FEATURE_OCCUPANCY_DETECTION;
+    case FEATURE_NONE:
+      return mri::State::FEATURE_UNSET;
+  }
+  NOTREACHED() << "Reached feature not in switch.";
+  return mri::State::FEATURE_UNSET;
+}
+
 void VideoStreamParamIdlToProto(mri::VideoStreamParam* param_result,
                                 const VideoStreamParam& param) {
   if (param_result == nullptr)
@@ -614,7 +644,14 @@ State StateProtoToIdl(const mri::State& state) {
   }
   if (state.has_whiteboard())
     state_result.whiteboard = WhiteboardProtoToIdl(state.whiteboard());
-
+  if (state.features_size() > 0) {
+    state_result.features = std::make_unique<std::vector<Feature>>();
+    for (const auto& feature : state.features()) {
+      const Feature feature_result = FeatureProtoToIdl(feature);
+      if (feature_result != FEATURE_NONE)
+        state_result.features->emplace_back(feature_result);
+    }
+  }
   return state_result;
 }
 
@@ -638,6 +675,11 @@ mri::State StateIdlToProto(const State& state) {
 
   if (state.whiteboard)
     WhiteboardIdlToProto(*state.whiteboard, state_result.mutable_whiteboard());
+
+  if (state.features && state.features.get() != nullptr) {
+    for (size_t i = 0; i < state.features.get()->size(); ++i)
+      state_result.add_features(FeatureIdlToProto(state.features.get()->at(i)));
+  }
 
   return state_result;
 }
