@@ -19,18 +19,23 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "extensions/common/constants.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 
 namespace ash {
@@ -600,6 +605,61 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
 
 void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
+}
+
+void AppListControllerImpl::OnAppListButtonPressed(
+    int64_t display_id,
+    app_list::AppListShowSource show_source,
+    base::TimeTicks event_time_stamp) {
+  if (!IsHomeLauncherEnabledInTabletMode()) {
+    ToggleAppList(display_id, show_source, event_time_stamp);
+    return;
+  }
+
+  // Whether the this action is handled.
+  bool handled = false;
+
+  if (home_launcher_gesture_handler_) {
+    handled = home_launcher_gesture_handler_->ShowHomeLauncher(
+        Shell::Get()->display_manager()->GetDisplayForId(display_id));
+  }
+
+  if (!handled) {
+    if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+      // End overview mode.
+      Shell::Get()->window_selector_controller()->ToggleOverview(
+          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
+      handled = true;
+    }
+    if (Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
+      // End split view mode.
+      Shell::Get()->split_view_controller()->EndSplitView(
+          SplitViewController::EndReason::kHomeLauncherPressed);
+      handled = true;
+    }
+  }
+
+  if (!handled) {
+    // Minimize all windows that aren't the app list in reverse order to
+    // preserve the mru ordering.
+    aura::Window* app_list_container =
+        Shell::Get()->GetPrimaryRootWindow()->GetChildById(
+            kShellWindowId_AppListTabletModeContainer);
+    aura::Window::Windows windows =
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+    std::reverse(windows.begin(), windows.end());
+    for (auto* window : windows) {
+      if (!app_list_container->Contains(window) &&
+          !wm::GetWindowState(window)->IsMinimized()) {
+        wm::GetWindowState(window)->Minimize();
+        handled = true;
+      }
+    }
+  }
+
+  // Perform the "back" action for the app list.
+  if (!handled)
+    Back();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
