@@ -1,3 +1,5 @@
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <body>
 <p>Test for <a href="http://bugs.webkit.org/show_bug.cgi?id=13278">bug 13278</a>: REGRESSION: cannot change SELECT option.</p>
 <form>
@@ -14,18 +16,14 @@
 </form>
 <div id=result></div>
 <script>
+test(() => {
+  document.forms[0].elements[0].options[1].selected = true;
+  document.forms[0].elements[1].options[1].selected = true;
 
-if (window.testRunner)
-  testRunner.dumpAsText();
-
-document.forms[0].elements[0].options[1].selected = true;
-document.forms[0].elements[1].options[1].selected = true;
-
-document.forms[0].elements[0].options[2].selected = true;
-document.forms[0].elements[1].options[2].selected = true;
-if (document.forms[0].elements[0].value != "SUCCESS" || document.forms[0].elements[1].options[1].selected)
-  document.getElementById("result").innerHTML = "FAILURE";
- else
-  document.getElementById("result").innerHTML = "SUCCESS";
+  document.forms[0].elements[0].options[2].selected = true;
+  document.forms[0].elements[1].options[2].selected = true;
+  assert_equals(document.forms[0].elements[0].value, 'SUCCESS');
+  assert_false(document.forms[0].elements[1].options[1].selected);
+});
 </script>
 </body>

@@ -1,6 +1,8 @@
 <html>
 <head>
     <title></title>
+    <script src="../../../resources/testharness.js"></script>
+    <script src="../../../resources/testharnessreport.js"></script>
 </head>
 <body>
     <p>This test verifies a drop-down menu can refine the selection when we send keydown events consisting of Greek small characters.</p>
@@ -34,33 +36,22 @@
     <ul id="console"></ul>
 </body>
 <script>
-function log(str) {
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(str));
-    var console = document.getElementById("console");
-    console.appendChild(li);
-}
-
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 // Set the input focus to the <select> element.
 var node = document.getElementById("test");
 node.focus();
 
 var base = 0x03B1;
 for (var i = base; i <= 0x03C9; i++) {
+  test(() => {
     // We don't have to send U+03C2 (Greek Small Letter Final Sigma).
     if (i != 0x03C2) {
         // Send a key event consisting of a Greek small character.
         eventSender.keyDown(String.fromCharCode(i));
 
         // Compare the value of this <select> element with the expected result.
-        if (node.value == i - base)
-            log('SUCCEEDED');
-        else
-            log('FAILED: expected="' + i + '", actual="' + node.value + '".');
+        assert_equals(node.value, (i - base).toString());
     }
+  });
 }
 </script>
 </html>
