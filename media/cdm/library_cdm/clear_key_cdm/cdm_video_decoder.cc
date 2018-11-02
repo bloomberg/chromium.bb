@@ -50,14 +50,12 @@ media::VideoDecoderConfig ToClearMediaVideoDecoderConfig(
 
   VideoDecoderConfig media_config(
       ToMediaVideoCodec(config.codec), ToMediaVideoCodecProfile(config.profile),
-      ToMediaVideoFormat(config.format), COLOR_SPACE_UNSPECIFIED,
+      ToMediaVideoFormat(config.format), ToMediaColorSpace(config.color_space),
       VideoRotation::VIDEO_ROTATION_0, coded_size, gfx::Rect(coded_size),
       coded_size,
       std::vector<uint8_t>(config.extra_data,
                            config.extra_data + config.extra_data_size),
       Unencrypted());
-
-  media_config.set_color_space_info(ToMediaColorSpace(config.color_space));
 
   return media_config;
 }

@@ -88,6 +88,9 @@ class TestVideoConfig {
   static VideoDecoderConfig Invalid();
 
   static VideoDecoderConfig Normal(VideoCodec codec = kCodecVP8);
+  static VideoDecoderConfig NormalWithColorSpace(
+      VideoCodec codec,
+      const VideoColorSpace& color_space);
   static VideoDecoderConfig NormalH264(
       VideoCodecProfile = VIDEO_CODEC_PROFILE_UNKNOWN);
   static VideoDecoderConfig NormalCodecProfile(

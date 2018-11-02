@@ -963,16 +963,15 @@ TEST_P(MediaCodecVideoDecoderH264Test, CsdIsIncludedInCodecConfig) {
 }
 
 TEST_P(MediaCodecVideoDecoderVp9Test, ColorSpaceIsIncludedInCodecConfig) {
-  VideoDecoderConfig config = TestVideoConfig::Normal(kCodecVP9);
-  VideoColorSpace color_space_info(VideoColorSpace::PrimaryID::BT2020,
-                                   VideoColorSpace::TransferID::SMPTEST2084,
-                                   VideoColorSpace::MatrixID::BT2020_CL,
-                                   gfx::ColorSpace::RangeID::LIMITED);
-
-  config.set_color_space_info(color_space_info);
+  VideoColorSpace color_space(VideoColorSpace::PrimaryID::BT2020,
+                              VideoColorSpace::TransferID::SMPTEST2084,
+                              VideoColorSpace::MatrixID::BT2020_CL,
+                              gfx::ColorSpace::RangeID::LIMITED);
+  VideoDecoderConfig config =
+      TestVideoConfig::NormalWithColorSpace(kCodecVP9, color_space);
   EXPECT_TRUE(InitializeFully_OneDecodePending(config));
 
-  EXPECT_EQ(color_space_info,
+  EXPECT_EQ(color_space,
             codec_allocator_->most_recent_config->container_color_space);
 }
 

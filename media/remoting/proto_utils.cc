@@ -363,11 +363,27 @@ bool ConvertProtoToVideoDecoderConfig(
     VideoDecoderConfig* video_config) {
   DCHECK(video_config);
   EncryptionScheme encryption_scheme;
+
+  // TODO(hubbe): Update pb to use VideoColorSpace
+  VideoColorSpace color_space;
+  switch (video_message.color_space()) {
+    case pb::VideoDecoderConfig::COLOR_SPACE_UNSPECIFIED:
+      break;
+    case pb::VideoDecoderConfig::COLOR_SPACE_JPEG:
+      color_space = VideoColorSpace::JPEG();
+      break;
+    case pb::VideoDecoderConfig::COLOR_SPACE_HD_REC709:
+      color_space = VideoColorSpace::REC709();
+      break;
+    case pb::VideoDecoderConfig::COLOR_SPACE_SD_REC601:
+      color_space = VideoColorSpace::REC601();
+      break;
+  }
   video_config->Initialize(
       ToMediaVideoCodec(video_message.codec()).value(),
       ToMediaVideoCodecProfile(video_message.profile()).value(),
-      ToMediaVideoPixelFormat(video_message.format()).value(),
-      ToMediaColorSpace(video_message.color_space()).value(), VIDEO_ROTATION_0,
+      ToMediaVideoPixelFormat(video_message.format()).value(), color_space,
+      VIDEO_ROTATION_0,
       gfx::Size(video_message.coded_size().width(),
                 video_message.coded_size().height()),
       gfx::Rect(video_message.visible_rect().x(),
