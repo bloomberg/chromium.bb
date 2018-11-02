@@ -1,87 +1,51 @@
-<html>
-  <!--
-    This test ensures the basic iframe traversal correctness of Spatial Navigation
-    algorithm: focusable elements in a <iframe> should be accessible.
+<div><a id="start" href="a">a</a></div>
 
-    * Pre-conditions:
-    1) DRT support for SNav enable/disable.
-
-    * Navigation steps:
-    1) Loads this page, focus goes to "start" automatically.
-    2) Focus moves along the elements in the two iframes in the
-       Web page, eventually going to outer an southward link, but
-       going back to the iframe on the top later on.
-  -->
-  <head>
-    <script src="../../resources/js-test.js"></script>
-    <script src="resources/spatial-navigation-utils.js"></script>
-    <script type="application/javascript">
-
-    var resultMap = [
-      ["Down", "1"],
-      ["Down", "2"],
-      ["Down", "3"],
-      ["Down", "7"],
-      ["Down", "6"],
-      ["Down", "end"],
-      ["Up", "4"],
-      ["Right", "5"],
-      ["Right", "6"],
-      ["Up", "3"],
-      ["Right", "7"],
-      ["Up", "3"],
-      ["Up", "2"],
-      ["Up", "1"],
-      ["DONE", "DONE"]
-    ];
-
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-      testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
-      testRunner.waitUntilDone();
-    }
-
-    function runTest()
-    {
-      // starting the test itself: get to a known place.
-      document.getElementById("start").focus();
-
-      initTest(resultMap, testCompleted);
-    }
-
-    function testCompleted()
-    {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    }
-
-    window.onload = runTest;
-    </script>
-  </head>
-  <body id="some-content" xmlns="http://www.w3.org/1999/xhtml">
-    <div><a id="start" href="a">a</a></div>
-
-    <iframe src="data:text/html,
-      <body>
-        <a id='1' href='a'>b</a><br>
-        <a id='2' href='a'>c</a><br>
-        <a id='3' href='a'>d</a><br>
-        <div style='margin-left:80px'>
-          <a id='7' href='a'>e</a>
-        </div>
-      </body>
-    "></iframe><br>
-
-    <iframe src="data:text/html,
-      <body>
-        <a id='4' href='a'>g</a>
-        <a id='5' href='a'>h</a>
-        <a id='6' href='a'>i</a>
-      </body>
-    "></iframe><br>
-
-    <a id="end" href="a">a</a>
-    <div id="console"></div>
+<iframe id="frameA" src="data:text/html,
+  <body id='frameAbody'>
+    <a id='1' href='a'>b</a><br>
+    <a id='2' href='a'>c</a><br>
+    <a id='3' href='a'>d</a><br>
+    <div style='margin-left:80px'>
+      <a id='7' href='a'>e</a>
+    </div>
   </body>
-</html>
+"></iframe><br>
+
+<iframe id="frameB" src="data:text/html,
+  <body id='frameBbody'>
+    <a id='4' href='a'>g</a>
+    <a id='5' href='a'>h</a>
+    <a id='6' href='a'>i</a>
+  </body>
+"></iframe><br>
+
+<a id="end" href="a">a</a>
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/snav-testharness.js"></script>
+<script>
+  /*
+    Once crbug.com/801162 is fixed, the expectation will change:
+    Spatnav must focus the iframe before it can search it.
+  */
+  var resultMap = [
+    ["Down", "frameA,1"],
+    ["Down", "frameA,2"],
+    ["Down", "frameA,3"],
+    ["Down", "frameA,7"],
+    ["Down", "frameB,6"],
+    ["Down", "end"],
+    ["Up", "frameB,4"],
+    ["Right", "frameB,5"],
+    ["Right", "frameB,6"],
+    ["Up", "frameA,3"],
+    ["Right", "frameA,7"],
+    ["Up", "frameA,3"],
+    ["Up", "frameA,2"],
+    ["Up", "frameA,1"],
+  ];
+  // Start at a known place.
+  document.getElementById("start").focus();
+  snav.assertFocusMoves(resultMap);
+</script>

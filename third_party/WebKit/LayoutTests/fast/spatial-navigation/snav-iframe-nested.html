@@ -1,92 +1,73 @@
-<html>
-  <!--
-    This test ensures the cross iframe traversal correctness of spatial navigation:
-    focusable elements in nested inner frame should be accessible.
+<table style="text-align: top;"  border="0" cellpadding="3px" cellspacing="3px">
+<tr>
+<td valign="top" width="10%">
+<a id="start" href="#">Link</a><br>
+</td>
+<td valign="top">
+<iframe id="frameA" width="50%" height="100px" frameborder="1" srcdoc="
+  <body id='frameAbody'>
+    <iframe id='frameB' width='80%' height='70px' frameborder='0' srcdoc='
+      <body id=frameBbody>
+        <a id=1 href=www>b</a>
+        <a id=2 href=www>c</a>
+        <a id=3 href=www>d</a>
+        <a id=4 href=www>e</a>
+        <a id=5 href=www>f</a>
+        <a id=6 href=www>g</a>
+        <a id=7 href=www>h</a>
+        <a id=8 href=www>i</a>
+      </body>
+   '></iframe>
+  "></iframe><br>
+</td>
+<td valign="top" width="10%">
+<a id="9" href="#">Link</a><br>
+</td>
+</tr>
+<tr>
+<td valign="top" width="10%">
+<a id="10" href="#">Link</a><br>
+</td>
+<td valign="top">
+  <p><a id="11" href="#">Here</a> is a link.</p>
+</td>
+<td valign="top" width="10%">
+<a id="12" href="#">Link</a><br>
+</td>
+</tr>
+</table>
 
-    * Pre-conditions:
-    1) DRT support for spatial navigation enable/disable.
+<p>Ensure spatnav can navigate in and out of nested iframes.</p>
 
-    * Navigation steps:
-    1) Loads this page, focus goes to "start" automatically.
-    2) Focus moves along the elements in the two level deep nested frame,
-       but going back to the main frame later on.
-  -->
-  <head>
-    <script src="../../resources/js-test.js"></script>
-    <script src="resources/spatial-navigation-utils.js"></script>
-    <script type="application/javascript">
-
-    var resultMap = [
-      ["Right", "1"],
-      ["Right", "2"],
-      ["Right", "3"],
-      ["Right", "4"],
-      ["Right", "5"],
-      ["Right", "6"],
-      ["Right", "7"],
-      ["Right", "8"],
-      ["Right", "9"],
-      ["Left", "8"],
-      ["Left", "7"],
-      ["Left", "6"],
-      ["Left", "5"],
-      ["Left", "4"],
-      ["Left", "3"],
-      ["Left", "2"],
-      ["Left", "1"],
-      ["Left", "start"],
-      ["DONE", "DONE"]
-    ];
-
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-      testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
-      testRunner.waitUntilDone();
-    }
-
-    function runTest()
-    {
-      // starting the test itself: get to a known place.
-      document.getElementById("start").focus();
-
-      initTest(resultMap, testCompleted);
-    }
-
-    function testCompleted()
-    {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    }
-
-    window.onload = runTest;
-    </script>
-  </head>
-  <body>
-  <table style="text-align: top;"  border="0" cellpadding="3px" cellspacing="3px">
-    <tr>
-      <td valign="top" width="10%">
-        <a id="start" href="#">Link</a><br>
-      </td>
-      <td valign="top">
-        <iframe width="50%" height="100px" frameborder="1" src="resources/iframe.html"></iframe><br>
-      </td>
-      <td valign="top" width="10%">
-        <a id="9" href="#">Link</a><br>
-      </td>
-    </tr>
-    <tr>
-      <td valign="top" width="10%">
-        <a id="10" href="#">Link</a><br>
-      </td>
-      <td valign="top">
-          <p><a id="11" href="#">Here</a> is a link.</p>
-      </td>
-      <td valign="top" width="10%">
-        <a id="12" href="#">Link</a><br>
-      </td>
-    </tr>
-  </table>
-  <div id="console"></div>
-  </body>
-</html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/snav-testharness.js"></script>
+<script>
+  var resultMap = [
+    // ["Right", "frameA,frameAbody"],  crbug.com/801162
+    // ["Right", "frameA,frameB,frameBbody"],  crbug.com/801162
+    ["Right", "frameA,frameB,1"],
+    ["Right", "frameA,frameB,2"],
+    ["Right", "frameA,frameB,3"],
+    ["Right", "frameA,frameB,4"],
+    ["Right", "frameA,frameB,5"],
+    ["Right", "frameA,frameB,6"],
+    ["Right", "frameA,frameB,7"],
+    ["Right", "frameA,frameB,8"],
+    ["Right", "9"],
+    // ["Left", "frameA,frameAbody"],  crbug.com/801162
+    // ["Left", "frameA,frameB,frameBbody"],  crbug.com/801162
+    ["Left", "frameA,frameB,8"],
+    ["Left", "frameA,frameB,7"],
+    ["Left", "frameA,frameB,6"],
+    ["Left", "frameA,frameB,5"],
+    ["Left", "frameA,frameB,4"],
+    ["Left", "frameA,frameB,3"],
+    ["Left", "frameA,frameB,2"],
+    ["Left", "frameA,frameB,1"],
+    ["Left", "start"],
+  ];
+  // Start at a known place.
+  document.getElementById("start").focus();
+  snav.assertFocusMoves(resultMap);
+</script>
