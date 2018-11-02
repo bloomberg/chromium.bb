@@ -7,8 +7,8 @@
 
 namespace ui {
 
-// Returns true if the device's internal keyboard is using the 2017 keyboard
-// layout.
+// Returns true if the device is currently connected to any keyboard (internal
+// or external) that is using the 2017 keyboard layout.
 bool DeviceUsesKeyboardLayout2();
 
 }  // namespace ui
