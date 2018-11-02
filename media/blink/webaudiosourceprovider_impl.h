@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
@@ -101,7 +102,7 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
 
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
-  scoped_refptr<SwitchableAudioRendererSink> sink_;
+  scoped_refptr<SwitchableAudioRendererSink> sink_ GUARDED_BY(sink_lock_);
   std::unique_ptr<AudioBus> bus_wrapper_;
 
   // An inner class acting as a T filter where actual data can be tapped.
