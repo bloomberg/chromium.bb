@@ -164,11 +164,6 @@ void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ClearChildNeedsReattachLayoutTree();
 }
 
-void ShadowRoot::AttachLayoutTree(AttachContext& context) {
-  Node::AttachContext children_context(context);
-  DocumentFragment::AttachLayoutTree(children_context);
-}
-
 void ShadowRoot::DetachLayoutTree(const AttachContext& context) {
   Node::AttachContext children_context(context);
   children_context.clear_invalidation = true;
