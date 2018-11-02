@@ -252,6 +252,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     // and a child gained a vertical scrollbar. However, no test fails
     // without that check.
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
+
+    // Scrollbar changes are hard to detect. Make sure everyone gets the
+    // message.
+    box_->SetNeedsLayout(LayoutInvalidationReason::kScrollbarChanged,
+                         kMarkOnlyThis);
+
     layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                         /* ignored */ nullptr);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);

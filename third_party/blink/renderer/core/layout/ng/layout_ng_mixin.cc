@@ -280,10 +280,6 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
       *Base::cached_constraint_space_;
   DCHECK(cached_result_);
 
-  // When scrollbar changes, |constraint_space.AvailableSize()| becomes
-  // different without setting |NeedsLayout()|.
-  // TODO(kojii): Should NGBlockNode::Layout() set NeedsLayout() when scrollbar
-  // change was detected and needs to relayout?
   if (constraint_space.AvailableSize().inline_size !=
       cached_constraint_space.AvailableSize().inline_size)
     return false;
