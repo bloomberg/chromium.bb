@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_ACCESSIBILITY_WINDOW_INFO_DATA_WRAPPER_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_ACCESSIBILITY_WINDOW_INFO_DATA_WRAPPER_H_
 
+#include <vector>
+
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -18,6 +20,7 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
   explicit AccessibilityWindowInfoDataWrapper(
       AXTreeSourceArc* tree_source,
       mojom::AccessibilityWindowInfoData* window);
+  ~AccessibilityWindowInfoDataWrapper() override;
 
   // ArcAccessibilityInfoData overrides.
   bool IsNode() const override;
@@ -31,7 +34,7 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;
-  const std::vector<int32_t>* GetChildren() const override;
+  const std::vector<int32_t>* GetChildren() override;
 
  private:
   bool GetProperty(mojom::AccessibilityWindowBooleanProperty prop) const;
@@ -45,6 +48,7 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
 
   AXTreeSourceArc* tree_source_ = nullptr;
   mojom::AccessibilityWindowInfoData* window_ptr_ = nullptr;
+  std::vector<int32_t> children_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWindowInfoDataWrapper);
 };

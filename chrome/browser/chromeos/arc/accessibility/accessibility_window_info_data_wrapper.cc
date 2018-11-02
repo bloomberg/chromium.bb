@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
+#include "components/exo/wm_helper.h"
+#include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace arc {
 
@@ -11,6 +13,8 @@ AccessibilityWindowInfoDataWrapper::AccessibilityWindowInfoDataWrapper(
     AXTreeSourceArc* tree_source,
     mojom::AccessibilityWindowInfoData* window)
     : tree_source_(tree_source), window_ptr_(window) {}
+
+AccessibilityWindowInfoDataWrapper::~AccessibilityWindowInfoDataWrapper() {}
 
 bool AccessibilityWindowInfoDataWrapper::IsNode() const {
   return false;
@@ -35,46 +39,108 @@ const gfx::Rect AccessibilityWindowInfoDataWrapper::GetBounds() const {
 }
 
 bool AccessibilityWindowInfoDataWrapper::IsVisibleToUser() const {
-  // TODO(katie): Calculate this from properties.
   return true;
 }
 
 bool AccessibilityWindowInfoDataWrapper::IsFocused() const {
-  // TODO(katie): Calculate this from properties.
-  // Is "input focus" the same as focus?
-  // https://developer.android.com/reference/android/view/accessibility/AccessibilityWindowInfo.html#isFocused()
+  // In Talkback, Android windows themselves cannot be focused. Only individual
+  // nodes within these windows can have focus.
   return false;
 }
 
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
-  // TODO(katie): Calculate this for windows.
-  // Can windows have a11y focus?
-  return true;
+  // Windows are too generic to be Accessibility focused in Chrome, although
+  // they can be Accessibility focused in Android by virtue of having
+  // accessibility focus on nodes within themselves.
+  return false;
 }
 
 void AccessibilityWindowInfoDataWrapper::PopulateAXRole(
     ui::AXNodeData* out_data) const {
-  // TODO(katie): Populate for windows using the window_type enum.
+  switch (window_ptr_->window_type) {
+    case mojom::AccessibilityWindowType::TYPE_ACCESSIBILITY_OVERLAY:
+      out_data->role = ax::mojom::Role::kWindow;
+      return;
+    case mojom::AccessibilityWindowType::TYPE_APPLICATION:
+      out_data->role = ax::mojom::Role::kApplication;
+      return;
+    case mojom::AccessibilityWindowType::TYPE_INPUT_METHOD:
+      out_data->role = ax::mojom::Role::kKeyboard;
+      return;
+    case mojom::AccessibilityWindowType::TYPE_SPLIT_SCREEN_DIVIDER:
+      // A system window used to divide the screen in split-screen mode. This
+      // type of window is present only in split-screen mode.
+      out_data->role = ax::mojom::Role::kSplitter;
+      return;
+    case mojom::AccessibilityWindowType::TYPE_SYSTEM:
+      out_data->role = ax::mojom::Role::kWindow;
+      return;
+  }
 }
 
 void AccessibilityWindowInfoDataWrapper::PopulateAXState(
     ui::AXNodeData* out_data) const {
-  // TODO(katie): Populate for windows.
+  // ARC++ window states are not reflected in ax::mojom::State, and for the
+  // most part aren't needed.
+  // Focusable in Android simply means a node within the window is focusable.
+  // Since the window itself is not focusable in Android, it doesn't make sense
+  // to include Focusable as an AXState.
 }
 
 void AccessibilityWindowInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
-  // TODO(katie): Serialize for windows.
-  if (!tree_source_->GetRoot()) {
+  if (!tree_source_->GetRoot())
     return;
+
+  // String properties.
+  std::string title;
+  if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {
+    out_data->SetName(title);
+    out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
   }
+
+  // Bounds.
+  exo::WMHelper* wm_helper =
+      exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;
+  if (tree_source_->GetRoot()->GetId() != -1 && wm_helper) {
+    aura::Window* active_window = tree_source_->is_notification()
+                                      ? nullptr
+                                      : wm_helper->GetActiveWindow();
+    const gfx::Rect& local_bounds = tree_source_->GetBounds(
+        tree_source_->GetFromId(GetId()), active_window);
+    out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
+                               local_bounds.width(), local_bounds.height());
+  }
+
+  // Not all properties are currently used in Chrome Accessibility.
+
+  // Boolean properties:
+  // Someday we may want to have a IN_PICTURE_IN_PICTURE_MODE state or a
+  // WINDOW_ACTIVE state, or to map the FOCUSED (i.e. has input focus) or
+  // ACCESSIBILITY_FOCUSED (i.e. some node within this window has accessibility
+  // focus) to new types.
+
+  // Integer properties:
+  // We could reflect ARC++ window properties like ANCHOR_NODE_ID,
+  // and LAYER_ORDER in ax::mojom::IntAttributes.
 }
 
-const std::vector<int32_t>* AccessibilityWindowInfoDataWrapper::GetChildren()
-    const {
-  // TODO(katie): Combine the root_node_id with the int_list_properties
-  // of AccessibilityWindowIntListProperty::CHILD_WINDOW_IDS.
-  return nullptr;
+const std::vector<int32_t>* AccessibilityWindowInfoDataWrapper::GetChildren() {
+  if (children_.size() != 0)
+    return &children_;
+
+  // Populate the children vector by combining the child window IDs with the
+  // root node ID.
+  if (window_ptr_->int_list_properties) {
+    auto it = window_ptr_->int_list_properties->find(
+        mojom::AccessibilityWindowIntListProperty::CHILD_WINDOW_IDS);
+    if (it != window_ptr_->int_list_properties->end()) {
+      children_.insert(children_.begin(), it->second.begin(), it->second.end());
+    }
+  }
+  if (window_ptr_->root_node_id)
+    children_.push_back(window_ptr_->root_node_id);
+  return &children_;
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
