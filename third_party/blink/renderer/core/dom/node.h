@@ -657,7 +657,6 @@ class CORE_EXPORT Node : public EventTarget {
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
     bool performing_reattach = false;
-    bool clear_invalidation = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
 

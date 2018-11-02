@@ -105,8 +105,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   }
   bool IsUserAgent() const { return GetType() == ShadowRootType::kUserAgent; }
 
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
 
