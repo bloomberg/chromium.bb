@@ -792,9 +792,15 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
-                      window_rect.x(), window_rect.y(), window_rect.width(),
+  unsigned internalformat = GetFramebufferCopyTextureFormat();
+  // CopyTexImage2D requires inernalformat channels to be a subset of
+  // the channels of the source texture internalformat.
+  DCHECK(internalformat == GL_RGB || internalformat == GL_RGBA ||
+         internalformat == GL_BGRA_EXT);
+  if (internalformat == GL_BGRA_EXT)
+    internalformat = GL_RGBA;
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, internalformat, window_rect.x(),
+                      window_rect.y(), window_rect.width(),
                       window_rect.height(), 0);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   return texture_id;
