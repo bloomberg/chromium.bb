@@ -69,9 +69,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "base/chrome_process_util.cc",
-    "base/chrome_process_util.h",
-    "base/chrome_process_util_mac.cc",
     "base/chrome_render_view_host_test_harness.cc",
     "base/chrome_render_view_host_test_harness.h",
     "base/chrome_test_launcher.cc",
