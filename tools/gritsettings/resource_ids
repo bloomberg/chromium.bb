@@ -166,10 +166,6 @@
   # END chromeos/ section.
 
   # START components/ section.
-  "components/autofill/android/autofill_strings.grd": {
-    "messages": [15000],
-  },
-
   "components/chrome_apps/chrome_apps_resources.grd": {
     "includes": [15020],
   },
@@ -420,9 +416,6 @@
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [28850],
-  },
-  "devtools_resources.grd": {
     "includes": [28850],
   },
 
