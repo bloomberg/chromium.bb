@@ -5,8 +5,11 @@
 #include "chrome/browser/chromeos/login/screens/discover_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/discover_screen_view.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -27,8 +30,11 @@ DiscoverScreen::~DiscoverScreen() {
 }
 
 void DiscoverScreen::Show() {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (IsPublicSessionOrEphemeralLogin() ||
-      !TabletModeClient::Get()->tablet_mode_enabled()) {
+      !TabletModeClient::Get()->tablet_mode_enabled() ||
+      !chromeos::quick_unlock::IsPinEnabled(prefs) ||
+      chromeos::quick_unlock::IsPinDisabledByPolicy(prefs)) {
     Finish(ScreenExitCode::DISCOVER_FINISHED);
     return;
   }
