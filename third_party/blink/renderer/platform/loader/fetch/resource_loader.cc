@@ -31,6 +31,9 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -79,14 +82,20 @@ bool IsThrottlableRequestContext(mojom::RequestContextType context) {
          context != mojom::RequestContextType::AUDIO;
 }
 
-void LogMixedAutoupgradeStatus(blink::MixedContentAutoupgradeStatus status) {
+void LogMixedAutoupgradeMetrics(blink::MixedContentAutoupgradeStatus status,
+                                base::Optional<int> response_or_error_code,
+                                ukm::SourceId source_id,
+                                ukm::UkmRecorder* recorder) {
   UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Status", status);
-}
-
-void LogMixedAutoupgradeResponseOrError(int response_or_error_code) {
-  base::UmaHistogramSparse(
-      "MixedAutoupgrade.ResourceRequest.ErrorOrResponseCode",
-      response_or_error_code);
+  ukm::builders::MixedContentAutoupgrade_ResourceRequest builder(source_id);
+  builder.SetStatus(static_cast<int64_t>(status));
+  if (response_or_error_code.has_value()) {
+    base::UmaHistogramSparse(
+        "MixedAutoupgrade.ResourceRequest.ErrorOrResponseCode",
+        response_or_error_code.value());
+    builder.SetCode(response_or_error_code.value());
+  }
+  builder.Record(recorder);
 }
 
 }  // namespace
@@ -369,7 +378,11 @@ void ResourceLoader::Start() {
   }
 
   if (request.IsAutomaticUpgrade()) {
-    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
+    auto recorder =
+        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+    LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kStarted,
+                               base::nullopt, request.GetUkmSourceId(),
+                               recorder.get());
   }
   scheduler_->Request(this, throttle_option, request.Priority(),
                       request.IntraPriorityValue(), &scheduler_client_id_);
@@ -734,9 +747,14 @@ void ResourceLoader::DidReceiveResponse(
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!web_url_response.IsNull());
 
-  if (resource_->GetResourceRequest().IsAutomaticUpgrade()) {
-    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kResponseReceived);
-    LogMixedAutoupgradeResponseOrError(web_url_response.HttpStatusCode());
+  const ResourceRequest& request = resource_->GetResourceRequest();
+
+  if (request.IsAutomaticUpgrade()) {
+    auto recorder =
+        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+    LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kResponseReceived,
+                               web_url_response.HttpStatusCode(),
+                               request.GetUkmSourceId(), recorder.get());
   }
 
   if (Context().IsDetached()) {
@@ -952,9 +970,14 @@ void ResourceLoader::DidFail(const WebURLError& error,
                              int64_t encoded_data_length,
                              int64_t encoded_body_length,
                              int64_t decoded_body_length) {
-  if (resource_->GetResourceRequest().IsAutomaticUpgrade()) {
-    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
-    LogMixedAutoupgradeResponseOrError(error.reason());
+  const ResourceRequest& request = resource_->GetResourceRequest();
+
+  if (request.IsAutomaticUpgrade()) {
+    auto recorder =
+        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+    LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kFailed,
+                               error.reason(), request.GetUkmSourceId(),
+                               recorder.get());
   }
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);

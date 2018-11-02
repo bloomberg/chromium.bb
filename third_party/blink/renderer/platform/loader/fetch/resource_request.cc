@@ -129,6 +129,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetUpgradeIfInsecure(UpgradeIfInsecure());
   request->SetIsAutomaticUpgrade(IsAutomaticUpgrade());
   request->SetRequestedWith(GetRequestedWith());
+  request->SetUkmSourceId(GetUkmSourceId());
 
   return request;
 }

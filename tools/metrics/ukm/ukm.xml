@@ -5230,4 +5230,23 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MixedContentAutoupgrade.ResourceRequest">
+  <owner>carlosil@chromium.org</owner>
+  <summary>
+    Status and Network error or HTTP response code for a resource request that
+    was autoupgraded to HTTPS as part of the mixed content autoupgrade
+    experiment.
+  </summary>
+  <metric name="Code">
+    <summary>
+      The HTTP response or network error code for an autoupgraded request.
+    </summary>
+  </metric>
+  <metric name="Status">
+    <summary>
+      An enum with 0 representing started, 1 failed, and 2 response received.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

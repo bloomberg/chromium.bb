@@ -392,6 +392,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetRequestedWith(const String& value) { requested_with_ = value; }
   const String& GetRequestedWith() const { return requested_with_; }
 
+  void SetUkmSourceId(int64_t ukm_source_id) { ukm_source_id_ = ukm_source_id; }
+  int64_t GetUkmSourceId() const { return ukm_source_id_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -464,6 +467,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
   String requested_with_;
+
+  int64_t ukm_source_id_;
 };
 
 }  // namespace blink
