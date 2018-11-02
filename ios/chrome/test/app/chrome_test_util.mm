@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
@@ -27,10 +28,11 @@
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/native_controller_test_util.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -239,10 +241,26 @@ void OpenChromeFromExternalApp(const GURL& url) {
 
 bool PurgeCachedWebViewPages() {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  const GURL last_committed_url = web_state->GetLastCommittedURL();
+
   web_state->SetWebUsageEnabled(false);
   web_state->SetWebUsageEnabled(true);
+
+  auto observer = std::make_unique<web::TestWebStateObserver>(web_state);
+  web::TestWebStateObserver* observer_ptr = observer.get();
+
   web_state->GetNavigationManager()->LoadIfNecessary();
-  return chrome_test_util::WaitForPageToFinishLoading();
+
+  // The navigation triggered by LoadIfNecessary() may only start loading in the
+  // next run loop, if it is for a web URL. The most reliable way to detect that
+  // this navigation has finished is via the WebStateObserver.
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^{
+        return observer_ptr->did_finish_navigation_info() &&
+               observer_ptr->did_finish_navigation_info()->context &&
+               observer_ptr->did_finish_navigation_info()->context->GetUrl() ==
+                   last_committed_url;
+      });
 }
 
 }  // namespace chrome_test_util
