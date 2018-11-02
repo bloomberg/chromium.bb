@@ -28,11 +28,16 @@ loadTimeData.data = {
 function setUp() {
   new MockCommandLinePrivate();
   // Override VolumeInfo.prototype.resolveDisplayRoot.
-  VolumeInfoImpl.prototype.resolveDisplayRoot = function() {};
+  VolumeInfoImpl.prototype.resolveDisplayRoot = function(successCallback) {
+    this.displayRoot_ = this.fileSystem_.root;
+    successCallback(this.displayRoot_);
+  };
 
   // TODO(crbug.com/834103): Add integration test for Crostini.
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');
+
+  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = false;
 }
 
 function testModel() {
@@ -50,10 +55,6 @@ function testModel() {
           'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
 
   assertEquals(4, model.length);
-  console.log(model.item(0).label);
-  console.log(model.item(1).label);
-  console.log(model.item(2).label);
-  console.log(model.item(3).label);
   assertEquals('fake-entry://recent', model.item(0).entry.toURL());
   assertEquals('/root/shortcut', model.item(1).entry.fullPath);
   assertEquals('My files', model.item(2).label);
@@ -61,8 +62,6 @@ function testModel() {
 
   // Downloads and Crostini are displayed within My files.
   const myFilesEntry = model.item(2).entry;
-  console.log(myFilesEntry.children[0].name);
-  console.log(myFilesEntry.children[1].name);
   assertEquals(2, myFilesEntry.children.length);
   assertEquals('Downloads', myFilesEntry.children[0].name);
   assertEquals('linux-files-label', myFilesEntry.children[1].name);
@@ -296,4 +295,70 @@ function testOrderAndNestItems() {
   // Check if My Files model is still the same instance, because DirectoryTree
   // expects it to be the same instance to be able to find it on the tree.
   assertEquals(myFilesModel, model.item(6));
+}
+
+
+function testMyFilesVolumeEnabled(callback) {
+  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = true;
+  const volumeManager = new MockVolumeManager();
+  // Index 1 is Downloads.
+  assertEquals(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeManager.volumeInfoList.item(1).volumeType);
+
+  // Create a downloads folder inside it.
+  const downloadsVolume = volumeManager.volumeInfoList.item(1);
+  downloadsVolume.fileSystem.populate(['/Downloads/']);
+
+  const shortcutListModel = new MockFolderShortcutDataModel([]);
+  const recentItem = null;
+
+
+  const crostiniFakeItem = new NavigationModelFakeItem(
+      'linux-files-label', NavigationModelItemType.CROSTINI,
+      new FakeEntry(
+          'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
+
+  // Create Android volume.
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files:droid'));
+
+  // Navigation items built above:
+  //  1. My files
+  //       -> Play files
+  //       -> Linux files
+  //  2. Drive  - added by default by MockVolumeManager.
+
+  // Constructor already calls orderAndNestItems_.
+  const model =
+      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  model.linuxFilesItem = crostiniFakeItem;
+
+  assertEquals(2, model.length);
+  assertEquals('My files', model.item(0).label);
+  assertEquals('My Drive', model.item(1).label);
+
+  // Android and Crostini are displayed within My files. And there is no
+  // Downloads volume inside it. Downloads should be a normal folder inside My
+  // files volume.
+  const myFilesEntry = model.item(0).entry;
+  assertEquals(2, myFilesEntry.children_.length);
+  assertEquals('android_files:droid', myFilesEntry.children_[0].name);
+  assertEquals('linux-files-label', myFilesEntry.children_[1].name);
+
+  const reader = myFilesEntry.createReader();
+  const foundEntries = [];
+  reader.readEntries((entries) => {
+    for (entry of entries)
+      foundEntries.push(entry);
+  });
+  reportPromise(
+      waitUntil(() => {
+        // Wait for Downloads folder to be read from My files volume.
+        return foundEntries.length >= 1;
+      }).then(() => {
+        assertEquals(foundEntries[0].name, 'Downloads');
+        assertTrue(foundEntries[0].isDirectory);
+      }),
+      callback);
 }
