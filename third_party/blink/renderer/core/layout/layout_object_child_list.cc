@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
@@ -45,8 +44,8 @@ namespace {
 void InvalidateInlineItems(LayoutObject* object) {
   if (object->IsInLayoutNGInlineFormattingContext())
     object->SetFirstInlineFragment(nullptr);
-  if (object->IsLayoutNGText()) {
-    ToLayoutNGText(object)->InvalidateInlineItems();
+  if (object->IsText()) {
+    ToLayoutText(object)->InvalidateInlineItems();
   } else if (object->IsLayoutInline()) {
     // When moving without |notify_layout_object|, only top-level objects are
     // moved. Ensure to invalidate all LayoutNGText in this inline formatting

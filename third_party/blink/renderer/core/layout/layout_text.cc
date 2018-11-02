@@ -2432,4 +2432,25 @@ LayoutRect LayoutText::DebugRect() const {
   return rect;
 }
 
+void LayoutText::AddInlineItem(NGInlineItem* item) {
+  DCHECK_EQ(this, item->GetLayoutObject());
+  NGInlineItems* items = GetNGInlineItems();
+  if (!items)
+    return;
+  valid_ng_items_ = true;
+  items->Add(item);
+}
+
+void LayoutText::ClearInlineItems() {
+  valid_ng_items_ = false;
+  if (NGInlineItems* items = GetNGInlineItems())
+    items->Clear();
+}
+
+const Vector<NGInlineItem*>& LayoutText::InlineItems() const {
+  DCHECK(valid_ng_items_);
+  DCHECK(!GetNGInlineItems()->Items().IsEmpty());
+  return GetNGInlineItems()->Items();
+}
+
 }  // namespace blink
