@@ -119,6 +119,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(PowerMeasurementIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option("--duration", default=60, type="int",
                       help="specify how many seconds Intel Power Gadget "
                       "measures. By default, 60 seconds is selected.")
