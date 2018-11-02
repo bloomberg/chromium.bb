@@ -128,9 +128,10 @@ StartOfWord(const VisiblePositionInFlatTree&,
             EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition EndOfWord(const VisiblePosition&,
                                       EWordSide = kNextWordIfOnBoundary);
+CORE_EXPORT Position EndOfWordPosition(const Position&,
+                                       EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
-EndOfWordPosition(const VisiblePositionInFlatTree&,
-                  EWordSide = kNextWordIfOnBoundary);
+EndOfWordPosition(const PositionInFlatTree&, EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kNextWordIfOnBoundary);
 // TODO(crbug.com/657237): Change all callers to use non-canonical versions.

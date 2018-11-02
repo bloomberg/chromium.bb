@@ -27,16 +27,15 @@ const int kHotModeCheckAllThreshold = 128;
 const int kHotModeChunkSize = 1024;
 
 EphemeralRange AdjacentWordIfExists(const Position& pos) {
-  const VisiblePosition& visible_pos = CreateVisiblePosition(pos);
-  const VisiblePosition& word_start = PreviousWordPosition(visible_pos);
+  const Position word_start = PreviousWordPosition(pos).GetPosition();
   if (word_start.IsNull())
     return EphemeralRange();
-  const VisiblePosition& word_end = EndOfWord(word_start);
+  const Position word_end = EndOfWordPosition(word_start);
   if (word_end.IsNull())
     return EphemeralRange();
-  if (ComparePositions(visible_pos, word_end) > 0)
+  if (ComparePositions(pos, word_end) > 0)
     return EphemeralRange();
-  return EphemeralRange(word_start.DeepEquivalent(), word_end.DeepEquivalent());
+  return EphemeralRange(word_start, word_end);
 }
 
 EphemeralRange CurrentWordIfTypingInPartialWord(const Element& editable) {
