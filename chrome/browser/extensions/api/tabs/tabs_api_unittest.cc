@@ -43,6 +43,34 @@ std::unique_ptr<base::ListValue> RunTabsQueryFunction(
   return base::ListValue::From(std::move(value));
 }
 
+// Creates an extension with "tabs" permission.
+scoped_refptr<const Extension> CreateTabsExtension() {
+  return ExtensionBuilder("Extension with tabs permission")
+      .AddPermission("tabs")
+      .Build();
+}
+
+// Creates an WebContents with |urls| as history.
+std::unique_ptr<content::WebContents> CreateWebContentsWithHistory(
+    Profile* profile,
+    const std::vector<GURL>& urls) {
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile, nullptr);
+
+  for (const auto& url : urls) {
+    web_contents->GetController().LoadURL(
+        url, content::Referrer(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK), std::string());
+
+    content::RenderFrameHostTester::CommitPendingLoad(
+        &web_contents->GetController());
+    EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+    EXPECT_EQ(url, web_contents->GetVisibleURL());
+  }
+
+  return web_contents;
+}
+
 }  // namespace
 
 class TabsApiUnitTest : public ExtensionServiceTestBase {
@@ -51,6 +79,8 @@ class TabsApiUnitTest : public ExtensionServiceTestBase {
   ~TabsApiUnitTest() override {}
 
   Browser* browser() { return browser_.get(); }
+
+  TabStripModel* GetTabStripModel() { return browser_->tab_strip_model(); }
 
  private:
   // ExtensionServiceTestBase:
@@ -293,20 +323,11 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
 // not bad_message.
 // Regression test for https://crbug.com/642794.
 TEST_F(TabsApiUnitTest, ExecuteScriptNoTabIsNonFatalError) {
-  // An extension with "tabs" permission.
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(
-              DictionaryBuilder()
-                  .Set("name", "Extension with tabs permission")
-                  .Set("version", "1.0")
-                  .Set("manifest_version", 2)
-                  .Set("permissions", ListBuilder().Append("tabs").Build())
-                  .Build())
-          .Build();
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
   scoped_refptr<TabsExecuteScriptFunction> function(
       new TabsExecuteScriptFunction());
-  function->set_extension(extension);
+  function->set_extension(extension_with_tabs_permission);
   const char* kArgs = R"(["", {"code": ""}])";
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
       function.get(), kArgs,
@@ -354,6 +375,167 @@ TEST_F(TabsApiUnitTest, TabsUpdateJavaScriptUrlNotAllowed) {
 
   // Clean up.
   browser()->tab_strip_model()->CloseAllTabs();
+}
+
+TEST_F(TabsApiUnitTest, TabsGoForwardNoSelectedTabError) {
+  scoped_refptr<const Extension> extension = CreateTabsExtension();
+  auto function = base::MakeRefCounted<TabsGoForwardFunction>();
+  function->set_extension(extension);
+  // No active tab results in an error.
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]",
+      browser(),  // browser() doesn't have any tabs.
+      api_test_utils::NONE);
+  EXPECT_EQ(tabs_constants::kNoSelectedTabError, error);
+}
+
+TEST_F(TabsApiUnitTest, TabsGoForwardAndBack) {
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
+
+  const std::vector<GURL> urls = {GURL("http://www.foo.com"),
+                                  GURL("http://www.bar.com")};
+  std::unique_ptr<content::WebContents> web_contents =
+      CreateWebContentsWithHistory(profile(), urls);
+  content::WebContents* raw_web_contents = web_contents.get();
+  ASSERT_TRUE(raw_web_contents);
+
+  SessionTabHelper::CreateForWebContents(raw_web_contents);
+  const int tab_id = SessionTabHelper::IdForTab(raw_web_contents).id();
+  browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                  true);
+  // Go back with chrome.tabs.goBack.
+  auto goback_function = base::MakeRefCounted<TabsGoBackFunction>();
+  goback_function->set_extension(extension_with_tabs_permission.get());
+  extension_function_test_utils::RunFunction(
+      goback_function.get(), base::StringPrintf("[%d]", tab_id), browser(),
+      api_test_utils::INCLUDE_INCOGNITO);
+
+  content::WebContents* active_webcontent =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationController& controller =
+      active_webcontent->GetController();
+  content::RenderFrameHostTester::CommitPendingLoad(&controller);
+  EXPECT_EQ(urls[0], raw_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(urls[0], raw_web_contents->GetVisibleURL());
+  EXPECT_TRUE(ui::PAGE_TRANSITION_FORWARD_BACK &
+              controller.GetLastCommittedEntry()->GetTransitionType());
+
+  // Go forward with chrome.tabs.goForward.
+  auto goforward_function = base::MakeRefCounted<TabsGoForwardFunction>();
+  goforward_function->set_extension(extension_with_tabs_permission.get());
+  extension_function_test_utils::RunFunction(
+      goforward_function.get(), base::StringPrintf("[%d]", tab_id), browser(),
+      api_test_utils::INCLUDE_INCOGNITO);
+
+  content::RenderFrameHostTester::CommitPendingLoad(
+      &active_webcontent->GetController());
+  EXPECT_EQ(urls[1], raw_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(urls[1], raw_web_contents->GetVisibleURL());
+  EXPECT_TRUE(ui::PAGE_TRANSITION_FORWARD_BACK &
+              controller.GetLastCommittedEntry()->GetTransitionType());
+
+  // If there's no next page, chrome.tabs.goForward should return an error.
+  auto goforward_function2 = base::MakeRefCounted<TabsGoForwardFunction>();
+  goforward_function2->set_extension(extension_with_tabs_permission.get());
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      goforward_function2.get(), base::StringPrintf("[%d]", tab_id), browser(),
+      api_test_utils::NONE);
+  EXPECT_EQ(tabs_constants::kNotFoundNextPageError, error);
+  EXPECT_EQ(urls[1], raw_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(urls[1], raw_web_contents->GetVisibleURL());
+
+  // Clean up.
+  while (!browser()->tab_strip_model()->empty())
+    browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
+
+  // Create first tab with history.
+  const std::vector<GURL> tab1_urls = {GURL("http://www.foo.com"),
+                                       GURL("http://www.bar.com")};
+  std::unique_ptr<content::WebContents> tab1_webcontents =
+      CreateWebContentsWithHistory(profile(), tab1_urls);
+  content::WebContents* tab1_raw_webcontents = tab1_webcontents.get();
+  ASSERT_TRUE(tab1_raw_webcontents);
+  EXPECT_EQ(tab1_urls[1], tab1_raw_webcontents->GetLastCommittedURL());
+  EXPECT_EQ(tab1_urls[1], tab1_raw_webcontents->GetVisibleURL());
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  tab_strip_model->AppendWebContents(std::move(tab1_webcontents), true);
+  const int tab1_index =
+      tab_strip_model->GetIndexOfWebContents(tab1_raw_webcontents);
+
+  // Create second tab with history.
+  const std::vector<GURL> tab2_urls = {GURL("http://www.chrome.com"),
+                                       GURL("http://www.google.com")};
+  std::unique_ptr<content::WebContents> tab2_webcontents =
+      CreateWebContentsWithHistory(profile(), tab2_urls);
+  content::WebContents* tab2_raw_webcontents = tab2_webcontents.get();
+  ASSERT_TRUE(tab2_raw_webcontents);
+  EXPECT_EQ(tab2_urls[1], tab2_raw_webcontents->GetLastCommittedURL());
+  EXPECT_EQ(tab2_urls[1], tab2_raw_webcontents->GetVisibleURL());
+  tab_strip_model->AppendWebContents(std::move(tab2_webcontents), true);
+  const int tab2_index =
+      tab_strip_model->GetIndexOfWebContents(tab2_raw_webcontents);
+  ASSERT_EQ(2, tab_strip_model->count());
+
+  // Activate first tab.
+  tab_strip_model->ActivateTabAt(tab1_index, true);
+
+  // Go back without tab_id. But first tab should be navigated since it's
+  // activated.
+  auto goback_function = base::MakeRefCounted<TabsGoBackFunction>();
+  goback_function->set_extension(extension_with_tabs_permission.get());
+  extension_function_test_utils::RunFunction(goback_function.get(), "[]",
+                                             browser(),
+                                             api_test_utils::INCLUDE_INCOGNITO);
+
+  content::NavigationController& controller =
+      tab1_raw_webcontents->GetController();
+  content::RenderFrameHostTester::CommitPendingLoad(&controller);
+  EXPECT_EQ(tab1_urls[0], tab1_raw_webcontents->GetLastCommittedURL());
+  EXPECT_EQ(tab1_urls[0], tab1_raw_webcontents->GetVisibleURL());
+  EXPECT_TRUE(ui::PAGE_TRANSITION_FORWARD_BACK &
+              controller.GetLastCommittedEntry()->GetTransitionType());
+
+  // Go forward without tab_id.
+  auto goforward_function = base::MakeRefCounted<TabsGoForwardFunction>();
+  goforward_function->set_extension(extension_with_tabs_permission.get());
+  extension_function_test_utils::RunFunction(goforward_function.get(), "[]",
+                                             browser(),
+                                             api_test_utils::INCLUDE_INCOGNITO);
+
+  content::RenderFrameHostTester::CommitPendingLoad(&controller);
+  EXPECT_EQ(tab1_urls[1], tab1_raw_webcontents->GetLastCommittedURL());
+  EXPECT_EQ(tab1_urls[1], tab1_raw_webcontents->GetVisibleURL());
+  EXPECT_TRUE(ui::PAGE_TRANSITION_FORWARD_BACK &
+              controller.GetLastCommittedEntry()->GetTransitionType());
+
+  // Activate second tab.
+  tab_strip_model->ActivateTabAt(tab2_index, true);
+
+  auto goback_function2 = base::MakeRefCounted<TabsGoBackFunction>();
+  goback_function2->set_extension(extension_with_tabs_permission.get());
+  extension_function_test_utils::RunFunction(goback_function2.get(), "[]",
+                                             browser(),
+                                             api_test_utils::INCLUDE_INCOGNITO);
+
+  content::NavigationController& controller2 =
+      tab2_raw_webcontents->GetController();
+  content::RenderFrameHostTester::CommitPendingLoad(&controller2);
+  EXPECT_EQ(tab2_urls[0], tab2_raw_webcontents->GetLastCommittedURL());
+  EXPECT_EQ(tab2_urls[0], tab2_raw_webcontents->GetVisibleURL());
+  EXPECT_TRUE(ui::PAGE_TRANSITION_FORWARD_BACK &
+              controller2.GetLastCommittedEntry()->GetTransitionType());
+
+  // Clean up.
+  while (!browser()->tab_strip_model()->empty())
+    browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace extensions

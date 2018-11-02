@@ -86,6 +86,7 @@ extern const char kNoTabInBrowserWindowError[];
 extern const char kPerOriginOnlyInAutomaticError[];
 extern const char kWindowNotFoundError[];
 extern const char kTabIndexNotFoundError[];
+extern const char kNotFoundNextPageError[];
 extern const char kTabNotFoundError[];
 extern const char kCannotDiscardTab[];
 extern const char kCannotFindTabToDiscard[];
