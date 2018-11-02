@@ -62,15 +62,6 @@ namespace download {
 
 namespace {
 
-bool DeleteDownloadedFile(const base::FilePath& path) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-
-  // Make sure we only delete files.
-  if (base::DirectoryExists(path))
-    return true;
-  return base::DeleteFile(path, false);
-}
-
 void DeleteDownloadedFileDone(base::WeakPtr<DownloadItemImpl> item,
                               const base::Callback<void(bool)>& callback,
                               bool success) {

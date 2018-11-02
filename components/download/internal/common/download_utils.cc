@@ -4,6 +4,7 @@
 
 #include "components/download/public/common/download_utils.h"
 
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,6 +13,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stats.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -507,6 +509,15 @@ ResumeMode GetDownloadResumeMode(DownloadInterruptReason reason,
     return ResumeMode::USER_CONTINUE;
 
   return ResumeMode::IMMEDIATE_CONTINUE;
+}
+
+bool DeleteDownloadedFile(const base::FilePath& path) {
+  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+
+  // Make sure we only delete files.
+  if (base::DirectoryExists(path))
+    return true;
+  return base::DeleteFile(path, false);
 }
 
 }  // namespace download
