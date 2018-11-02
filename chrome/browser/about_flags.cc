@@ -4343,7 +4343,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
-    {"happiness-tarcking-surveys-for-desktop",
+    {"happiness-tracking-surveys-for-desktop",
      flag_descriptions::kHappinessTrackingSurveysForDesktopName,
      flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
      kOsDesktop,
