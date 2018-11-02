@@ -30,15 +30,15 @@ everything is huge, while it's negligible for instrument what-is-needed.
 
 ## How to use the coverage wrapper?
 To get the coverage wrapper hook into your build, add the following flags to
-your `args.gn` file.
+your `args.gn` file, assuming build directory is `out/Release`.
 
 ```
 use_clang_coverage = true
-coverage_instrumentation_input_file = "coverage_instrumentation_input.txt"
+coverage_instrumentation_input_file = "//out/Release/coverage_instrumentation_input.txt"
 ```
 
-The path to the coverage instrumentation input file should be relative to the
-root build directory, and the file consists of multiple lines where each line
+The path to the coverage instrumentation input file should be a source root
+absolute path, and the file consists of multiple lines where each line
 represents a path to a source file, and the specified paths must be relative to
 the root build directory. e.g. `../../base/task/post_task.cc` for build
 directory `out/Release`.

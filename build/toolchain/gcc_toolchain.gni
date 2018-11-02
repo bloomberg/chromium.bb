@@ -4,6 +4,7 @@
 
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/coverage/coverage.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -191,6 +192,28 @@ template("gcc_toolchain") {
         (!defined(invoker.is_clang_analysis_supported) ||
          invoker.is_clang_analysis_supported)) {
       compiler_prefix = "${analyzer_wrapper} " + compiler_prefix
+    }
+
+    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+      toolchain_coverage_instrumentation_input_file =
+          toolchain_args.coverage_instrumentation_input_file
+    } else {
+      toolchain_coverage_instrumentation_input_file =
+          coverage_instrumentation_input_file
+    }
+    _use_clang_coverage_wrapper =
+        toolchain_coverage_instrumentation_input_file != ""
+    if (_use_clang_coverage_wrapper) {
+      assert(!use_clang_static_analyzer,
+             "Clang static analyzer wrapper and Clang code coverage wrapper " +
+                 "cannot be used together.")
+
+      _coverage_wrapper =
+          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
+                      root_build_dir) + " --files-to-instrument=" +
+          rebase_path(toolchain_coverage_instrumentation_input_file,
+                      root_build_dir)
+      compiler_prefix = "${_coverage_wrapper} " + compiler_prefix
     }
 
     cc = compiler_prefix + invoker.cc
