@@ -224,6 +224,15 @@ class ASH_EXPORT AppListControllerImpl
   // Performs the 'back' action for the active page.
   void Back();
 
+  // Handles app list button press event. (Search key should trigger the same
+  // behavior.) All three parameters are only used in clamshell mode.
+  // |display_id| is the id of display where app list should toggle.
+  // |show_source| is the source of the event. |event_time_stamp| records the
+  // event timestamp.
+  void OnAppListButtonPressed(int64_t display_id,
+                              app_list::AppListShowSource show_source,
+                              base::TimeTicks event_time_stamp);
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
