@@ -4,9 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import in_generator
-import sys
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+import in_generator
 
 module_basename = os.path.basename(__file__)
 module_pyname = os.path.splitext(module_basename)[0] + '.py'

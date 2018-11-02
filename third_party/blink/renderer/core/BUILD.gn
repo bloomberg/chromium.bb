@@ -1415,15 +1415,15 @@ action("make_core_generated_html_entity_table") {
 action("make_core_generated_css_tokenizer_codepoints") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
-  script = "../build/scripts/make_css_tokenizer_codepoints.py"
+  script = "../build/scripts/core/css/make_css_tokenizer_codepoints.py"
 
   outputs = [
-    "$blink_core_output_dir/css_tokenizer_codepoints.cc",
+    "$blink_core_output_dir/css/css_tokenizer_codepoints.cc",
   ]
 
   args = [
     "--output_dir",
-    rel_blink_core_gen_dir,
+    "$rel_blink_core_gen_dir/css",
   ]
   if (is_mac && !use_system_xcode) {
     args += [
