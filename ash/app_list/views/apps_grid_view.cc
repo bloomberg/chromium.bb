@@ -1945,9 +1945,11 @@ void AppsGridView::UpdateOpacity() {
   // changes from 0.f to 1.0f.
   const float peeking_to_fullscreen_height =
       app_list_view->GetFullscreenStateHeight() - peeking_height;
-  DCHECK_GT(peeking_to_fullscreen_height, 0);
   const float drag_amount = current_height - peeking_height;
-  fraction = std::max(drag_amount / peeking_to_fullscreen_height, 0.f);
+  fraction = std::max(peeking_to_fullscreen_height > 0
+                          ? drag_amount / peeking_to_fullscreen_height
+                          : 1.0f,
+                      0.f);
   opacity = std::min(std::max((fraction + kAllAppsIndicatorOpacityEndFraction -
                                kAllAppsIndicatorOpacityStartFraction - 1.0f) /
                                   (kAllAppsIndicatorOpacityEndFraction -
