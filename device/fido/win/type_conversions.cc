@@ -20,7 +20,6 @@
 #include "device/fido/opaque_attestation_statement.h"
 
 namespace device {
-namespace fido {
 
 base::Optional<AuthenticatorMakeCredentialResponse>
 ToAuthenticatorMakeCredentialResponse(
@@ -68,10 +67,22 @@ ToAuthenticatorGetAssertionResponse(const WEBAUTHN_ASSERTION& assertion) {
                                    assertion.cbAuthenticatorData);
     return base::nullopt;
   }
-  return AuthenticatorGetAssertionResponse(
+  AuthenticatorGetAssertionResponse response(
       std::move(*authenticator_data),
       std::vector<uint8_t>(assertion.pbSignature,
                            assertion.pbSignature + assertion.cbSignature));
+  if (assertion.Credential.cbId > 0) {
+    response.SetCredential(PublicKeyCredentialDescriptor(
+        CredentialType::kPublicKey,
+        std::vector<uint8_t>(
+            assertion.Credential.pbId,
+            assertion.Credential.pbId + assertion.Credential.cbId)));
+  }
+  if (assertion.cbUserId > 0) {
+    response.SetUserEntity(PublicKeyCredentialUserEntity(std::vector<uint8_t>(
+        assertion.pbUserId, assertion.pbUserId + assertion.cbUserId)));
+  }
+  return response;
 }
 
 uint32_t ToWinUserVerificationRequirement(
@@ -116,5 +127,4 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
              : CtapDeviceResponseCode::kCtap2ErrOther;
 }
 
-}  // namespace fido
 }  // namespace device

@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 
 namespace device {
-namespace fido {
 
 // WinWebAuthnApiImpl is the default implementation of WinWebAuthnApi, which
 // attempts to load webauthn.dll on intialization.
@@ -125,5 +124,4 @@ WinWebAuthnApi* WinWebAuthnApi::GetDefault() {
 
 WinWebAuthnApi::~WinWebAuthnApi() = default;
 
-}  // namespace fido
 }  // namespace device

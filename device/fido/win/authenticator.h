@@ -19,7 +19,6 @@
 #include "device/fido/win/webauthn_api.h"
 
 namespace device {
-namespace fido {
 
 // WinNativeCrossPlatformAuthenticator forwards WebAuthn requests to external
 // authenticators via the native Windows WebAuthentication API
@@ -88,7 +87,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinNativeCrossPlatformAuthenticator
   DISALLOW_COPY_AND_ASSIGN(WinNativeCrossPlatformAuthenticator);
 };
 
-}  // namespace fido
 }  // namespace device
 
 #endif  // DEVICE_FIDO_WIN_AUTHENTICATOR_H_
