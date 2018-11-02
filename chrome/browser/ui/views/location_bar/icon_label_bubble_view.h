@@ -132,6 +132,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // views::Button:
   gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -229,6 +230,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Disables highlights and calls Hide on the slide animation, should not be
   // called directly, use AnimateOut() instead, which handles label visibility.
   void HideAnimation();
+
+  gfx::Rect CalculateInkDropContainerBounds() const;
 
   // The contents of the bubble.
   views::ImageView* image_;

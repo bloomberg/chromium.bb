@@ -66,7 +66,6 @@ class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
   ~FloodFillInkDropRipple() override;
 
   // InkDropRipple:
-  void HostSizeChanged(const gfx::Size& new_size) override;
   void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
 
