@@ -8,7 +8,6 @@ from test_results import analysis
 from test_results import frames
 
 
-@unittest.skipIf(frames.pandas is None, 'pandas module not available')
 class TestAnalysis(unittest.TestCase):
   def testFilterBy(self):
     builders = frames.pandas.DataFrame.from_records([

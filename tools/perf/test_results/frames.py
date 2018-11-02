@@ -7,10 +7,7 @@
 import datetime
 import os
 
-try:
-  import pandas
-except ImportError:
-  pandas = None
+import pandas  # pylint: disable=import-error
 
 
 CACHE_DIR = os.path.normpath(
