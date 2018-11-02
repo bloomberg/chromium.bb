@@ -50,6 +50,14 @@ function getSourcePath(fileEntry) {
 }
 
 /**
+ * @param {Meta} meta
+ * @param {FileEntry} fileEntry
+ */
+function getComponent(meta, fileEntry) {
+  return meta.components[fileEntry[_KEYS.COMPONENT_INDEX]];
+}
+
+/**
  * Find the last index of either '/' or `sep` in the given path.
  * @param {string} path
  * @param {string} sep
@@ -91,6 +99,8 @@ function _compareFunc(a, b) {
 function createNode(options) {
   const {
     idPath,
+    srcPath,
+    component,
     type,
     shortNameIndex,
     size = 0,
@@ -102,6 +112,8 @@ function createNode(options) {
     children: [],
     parent: null,
     idPath,
+    srcPath,
+    component,
     type,
     shortNameIndex,
     size,
@@ -128,13 +140,16 @@ class TreeBuilder {
    * @param {(symbolNode: TreeNode) => boolean} options.highlightTest Called to
    * see if a symbol should be highlighted.
    * @param {string} options.sep Path seperator used to find parent names.
+   * @param {Meta} options.meta Metadata associated with this tree.
    */
   constructor(options) {
     this._getPath = options.getPath;
     this._filterTest = options.filterTest;
     this._highlightTest = options.highlightTest;
     this._sep = options.sep || _PATH_SEP;
+    this._meta = options.meta;
 
+    // srcPath and component don't make sense for the root node.
     this.rootNode = createNode({
       idPath: this._sep,
       shortNameIndex: 0,
@@ -234,6 +249,8 @@ class TreeBuilder {
           if (classNode == null) {
             classNode = createNode({
               idPath: classIdPath,
+              srcPath: node.srcPath,
+              component: node.component,
               shortNameIndex: childNode.shortNameIndex,
               type: _CONTAINER_TYPES.JAVA_CLASS,
             });
@@ -341,6 +358,9 @@ class TreeBuilder {
       // get parent from cache if it exists, otherwise create it
       parentNode = this._parents.get(parentPath);
       if (parentNode == null) {
+        // srcPath and component are not available for parent nodes, since they
+        // are stored alongside FileEntry. We could extract srcPath from idPath,
+        // but it doesn't really add enough value to warrent doing so.
         parentNode = createNode({
           idPath: parentPath,
           shortNameIndex: lastIndexOf(parentPath, this._sep) + 1,
@@ -365,9 +385,13 @@ class TreeBuilder {
    */
   addFileEntry(fileEntry, diffMode) {
     const idPath = this._getPath(fileEntry);
+    const srcPath = getSourcePath(fileEntry);
+    const component = getComponent(this._meta, fileEntry);
     // make node for this
     const fileNode = createNode({
       idPath,
+      srcPath,
+      component,
       shortNameIndex: lastIndexOf(idPath, this._sep) + 1,
       type: _CONTAINER_TYPES.FILE,
     });
@@ -384,6 +408,8 @@ class TreeBuilder {
       const symbolNode = createNode({
         // Join file path to symbol name with a ":"
         idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
+        srcPath,
+        component,
         shortNameIndex: idPath.length + 1,
         size,
         type,
@@ -707,19 +733,12 @@ async function buildTree(groupBy, filterTest, highlightTest, onProgress) {
   /** @type {{ [gropyBy: string]: (fileEntry: FileEntry) => string }} */
   const getPathMap = {
     component(fileEntry) {
-      const component = meta.components[fileEntry[_KEYS.COMPONENT_INDEX]];
+      const component = getComponent(meta, fileEntry);
       const path = getSourcePath(fileEntry);
       return `${component || '(No component)'}>${path}`;
     },
     source_path: getSourcePath,
   };
-
-  builder = new TreeBuilder({
-    sep: groupBy === 'component' ? '>' : _PATH_SEP,
-    getPath: getPathMap[groupBy],
-    filterTest,
-    highlightTest,
-  });
 
   /**
    * Creates data to post to the UI thread. Defaults will be used for the root
@@ -767,6 +786,15 @@ async function buildTree(groupBy, filterTest, highlightTest, onProgress) {
         // First line of data is used to store meta information.
         meta = /** @type {Meta} */ (dataObj);
         diffMode = meta.diff_mode;
+
+        builder = new TreeBuilder({
+          getPath: getPathMap[groupBy],
+          filterTest,
+          highlightTest,
+          sep: groupBy === 'component' ? '>' : _PATH_SEP,
+          meta,
+        });
+
         postToUi();
       } else {
         builder.addFileEntry(/** @type {FileEntry} */ (dataObj), diffMode);
