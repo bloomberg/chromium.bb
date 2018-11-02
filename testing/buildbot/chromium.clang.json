@@ -7336,6 +7336,9 @@
         "test": "webapk_client_junit_tests"
       },
       {
+        "test": "webapk_shell_apk_h2o_junit_tests"
+      },
+      {
         "test": "webapk_shell_apk_junit_tests"
       }
     ]
