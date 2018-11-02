@@ -543,9 +543,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Virtual for testing.
   virtual void StartUpSlowEngineComponents();
 
-  // Collects preferred sync data types from |preference_providers_|.
-  syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
-
   // Update UMA for syncing engine.
   void UpdateEngineInitUMA(bool success) const;
 

@@ -1417,9 +1417,8 @@ bool ProfileSyncService::HasObserver(
 
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   syncer::ModelTypeSet preferred_types =
-      Union(sync_prefs_.GetPreferredDataTypes(registered_types,
+      Union(sync_prefs_.GetPreferredDataTypes(GetRegisteredDataTypes(),
                                               user_events_separate_pref_group_),
             syncer::ControlTypes());
   if (IsLocalSyncEnabled()) {
@@ -1427,23 +1426,23 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
     preferred_types.Remove(syncer::USER_CONSENTS);
     preferred_types.Remove(syncer::USER_EVENTS);
   }
-  const syncer::ModelTypeSet enforced_types =
-      Intersection(GetDataTypesFromPreferenceProviders(), registered_types);
-  return Union(preferred_types, enforced_types);
+  return Union(preferred_types, GetForcedDataTypes());
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(treib,zea): When SyncPrefs also implements SyncTypePreferenceProvider,
-  // we'll need another way to distinguish user-choosable types from
-  // programmatically-enabled types.
-  return GetDataTypesFromPreferenceProviders();
+  syncer::ModelTypeSet forced_types;
+  for (const syncer::SyncTypePreferenceProvider* provider :
+       preference_providers_) {
+    forced_types.PutAll(provider->GetPreferredDataTypes());
+  }
+  return Intersection(forced_types, GetRegisteredDataTypes());
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncer::ModelTypeSet registered_types;
-  // The data_type_controllers_ are determined by command-line flags;
+  // The |data_type_controllers_| are determined by command-line flags;
   // that's effectively what controls the values returned here.
   for (const std::pair<const syncer::ModelType,
                        std::unique_ptr<DataTypeController>>&
@@ -2062,16 +2061,6 @@ void ProfileSyncService::ReconfigureDatatypeManager(
     DVLOG(0) << "ConfigureDataTypeManager not invoked because engine is not "
              << "initialized";
   }
-}
-
-syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
-    const {
-  syncer::ModelTypeSet types;
-  for (const syncer::SyncTypePreferenceProvider* provider :
-       preference_providers_) {
-    types.PutAll(provider->GetPreferredDataTypes());
-  }
-  return types;
 }
 
 bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
