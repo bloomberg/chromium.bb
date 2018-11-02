@@ -359,10 +359,6 @@ shell_destroy(struct wl_listener *listener, void *data)
 	struct ivi_shell_surface *ivisurf, *next;
 
 	wl_list_remove(&shell->destroy_listener.link);
-
-	text_backend_destroy(shell->text_backend);
-	input_panel_destroy(shell);
-
 	wl_list_remove(&shell->wake_listener.link);
 
 	wl_list_for_each_safe(ivisurf, next, &shell->ivi_surface_list, link) {
@@ -403,8 +399,6 @@ init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell)
 	shell->compositor = compositor;
 
 	wl_list_init(&shell->ivi_surface_list);
-
-	weston_layer_init(&shell->input_panel_layer, compositor);
 
 	section = weston_config_get_section(config, "ivi-shell", NULL, NULL);
 
@@ -497,13 +491,6 @@ wet_shell_init(struct weston_compositor *compositor,
 
 	shell->wake_listener.notify = wake_handler;
 	wl_signal_add(&compositor->wake_signal, &shell->wake_listener);
-
-	if (input_panel_setup(shell) < 0)
-		goto out;
-
-	shell->text_backend = text_backend_init(compositor);
-	if (!shell->text_backend)
-		goto out;
 
 	if (wl_global_create(compositor->wl_display,
 			     &ivi_application_interface, 1,
