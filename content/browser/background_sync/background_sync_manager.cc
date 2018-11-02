@@ -175,16 +175,13 @@ void DidStartWorkerForSyncEvent(
 }  // namespace
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
-    BackgroundSyncRegistrations()
-    : next_id(BackgroundSyncRegistration::kInitialId) {
-}
+    BackgroundSyncRegistrations() = default;
 
 BackgroundSyncManager::BackgroundSyncRegistrations::BackgroundSyncRegistrations(
     const BackgroundSyncRegistrations& other) = default;
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
-    ~BackgroundSyncRegistrations() {
-}
+    ~BackgroundSyncRegistrations() = default;
 
 // static
 std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
@@ -391,18 +388,12 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     if (registrations_proto.ParseFromString(data.second)) {
       BackgroundSyncRegistrations* registrations =
           &active_registrations_[data.first];
-      registrations->next_id = registrations_proto.next_registration_id();
       registrations->origin = GURL(registrations_proto.origin());
 
       for (int i = 0, max = registrations_proto.registration_size(); i < max;
            ++i) {
         const BackgroundSyncRegistrationProto& registration_proto =
             registrations_proto.registration(i);
-
-        if (registration_proto.id() >= registrations->next_id) {
-          corruption_detected = true;
-          break;
-        }
 
         BackgroundSyncRegistration* registration =
             &registrations->registration_map[registration_proto.tag()];
@@ -411,7 +402,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         options->tag = registration_proto.tag();
         options->network_state = registration_proto.network_state();
 
-        registration->set_id(registration_proto.id());
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
@@ -564,10 +554,6 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
   *new_registration.options() = options;
 
-  BackgroundSyncRegistrations* registrations =
-      &active_registrations_[sw_registration_id];
-  new_registration.set_id(registrations->next_id++);
-
   AddActiveRegistration(sw_registration_id,
                         sw_registration->scope().GetOrigin(), new_registration);
 
@@ -643,7 +629,6 @@ BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
     return nullptr;
 
   BackgroundSyncRegistrations& registrations = it->second;
-  DCHECK_LE(BackgroundSyncRegistration::kInitialId, registrations.next_id);
   DCHECK(!registrations.origin.is_empty());
 
   auto key_and_registration_iter = registrations.registration_map.find(tag);
@@ -662,7 +647,6 @@ void BackgroundSyncManager::StoreRegistrations(
   const BackgroundSyncRegistrations& registrations =
       active_registrations_[sw_registration_id];
   BackgroundSyncRegistrationsProto registrations_proto;
-  registrations_proto.set_next_registration_id(registrations.next_id);
   registrations_proto.set_origin(registrations.origin.spec());
 
   for (const auto& key_and_registration : registrations.registration_map) {
@@ -670,7 +654,6 @@ void BackgroundSyncManager::StoreRegistrations(
         key_and_registration.second;
     BackgroundSyncRegistrationProto* registration_proto =
         registrations_proto.add_registration();
-    registration_proto->set_id(registration.id());
     registration_proto->set_tag(registration.options()->tag);
     registration_proto->set_network_state(
         registration.options()->network_state);
@@ -744,7 +727,6 @@ void BackgroundSyncManager::AddActiveRegistration(
     const GURL& origin,
     const BackgroundSyncRegistration& sync_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(sync_registration.IsValid());
 
   BackgroundSyncRegistrations* registrations =
       &active_registrations_[sw_registration_id];
@@ -996,14 +978,12 @@ void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
         base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
             weak_ptr_factory_.GetWeakPtr(), sw_id_and_tag.second,
-            registration->id(), events_fired_barrier_closure,
-            events_completed_barrier_closure));
+            events_fired_barrier_closure, events_completed_barrier_closure));
   }
 }
 
 void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     const std::string& tag,
-    BackgroundSyncRegistration::RegistrationId registration_id,
     base::OnceClosure event_fired_callback,
     base::OnceClosure event_completed_callback,
     blink::ServiceWorkerStatusCode service_worker_status,
@@ -1134,8 +1114,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     const std::string& registration_tag = registration->options()->tag;
     BackgroundSyncRegistration* active_registration =
         LookupActiveRegistration(service_worker_id, registration_tag);
-    if (active_registration &&
-        active_registration->id() == registration->id()) {
+    if (active_registration) {
       RemoveActiveRegistration(service_worker_id, registration_tag);
     }
   }

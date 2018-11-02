@@ -15,7 +15,7 @@ enum SyncNetworkState {
 }
 
 message BackgroundSyncRegistrationProto {
-  required int64 id = 1;
+  // required int64 id = 1;
   required string tag = 2;
   // required SyncPeriodicity periodicity = 3;
   // required int64 min_period = 4;
@@ -27,6 +27,6 @@ message BackgroundSyncRegistrationProto {
 
 message BackgroundSyncRegistrationsProto {
   repeated BackgroundSyncRegistrationProto registration = 1;
-  required int64 next_registration_id = 2;
+  // required int64 next_registration_id = 2;
   required string origin = 3;
 }

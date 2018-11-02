@@ -30,7 +30,6 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
 blink::mojom::SyncRegistrationPtr ToMojoRegistration(
     const BackgroundSyncRegistration& in) {
   blink::mojom::SyncRegistrationPtr out(blink::mojom::SyncRegistration::New());
-  out->id = in.id();
   out->tag = in.options()->tag;
   out->network_state = static_cast<blink::mojom::BackgroundSyncNetworkState>(
       in.options()->network_state);

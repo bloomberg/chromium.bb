@@ -12,7 +12,6 @@ enum BackgroundSyncNetworkState {
 };
 
 struct SyncRegistration {
-  int64 id = -1;
   string tag = "";
   BackgroundSyncNetworkState network_state = ONLINE;
 };
