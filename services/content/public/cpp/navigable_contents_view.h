@@ -79,6 +79,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
  private:
+  friend class FakeNavigableContents;
   friend class NavigableContents;
   friend class NavigableContentsImpl;
 
