@@ -5033,26 +5033,28 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   EXPECT_NE(popup->web_contents()->GetSiteInstance(),
             shell()->web_contents()->GetSiteInstance());
 
-  // From the opener, navigate the popup to a file:/// URL.  This should be
-  // disallowed and result in an about:blank navigation.
+  ConsoleObserverDelegate console_delegate(
+      web_contents(), "Not allowed to load local resource:*");
+  web_contents()->SetDelegate(&console_delegate);
+
+  // From the opener, navigate the popup to a file:/// URL.  This should result
+  // in a console error and stay on the old page.
   GURL file_url("file:///");
   NavigateNamedFrame(shell(), file_url, "foo");
   EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
-  EXPECT_EQ(GURL(url::kAboutBlankURL),
-            popup->web_contents()->GetLastCommittedURL());
-
-  // Navigate popup back to a cross-site URL.
-  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
-  EXPECT_NE(popup->web_contents()->GetSiteInstance(),
-            shell()->web_contents()->GetSiteInstance());
+  EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
+  EXPECT_TRUE(base::MatchPattern(console_delegate.message(),
+                                 "Not allowed to load local resource: file:*"));
 
   // Now try the same test with a chrome:// URL.
   GURL chrome_url(std::string(kChromeUIScheme) + "://" +
                   std::string(kChromeUIGpuHost));
   NavigateNamedFrame(shell(), chrome_url, "foo");
   EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
-  EXPECT_EQ(GURL(url::kAboutBlankURL),
-            popup->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
+  EXPECT_TRUE(
+      base::MatchPattern(console_delegate.message(),
+                         "Not allowed to load local resource: chrome:*"));
 }
 
 // Verify that named frames are discoverable from their opener's ancestors.
@@ -13363,6 +13365,34 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
   EXPECT_NE(nullptr, a_view);
   EXPECT_NE(nullptr, b_view);
   EXPECT_NE(a_view, b_view);
+}
+
+// Check that a web frame can't navigate a remote subframe to a file: URL.  The
+// frame should stay at the old URL, and the navigation attempt should produce
+// a console error message.  See https://crbug.com/894399.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FileURLBlockedWithConsoleErrorInRemoteFrameNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* child = web_contents()->GetFrameTree()->root()->child_at(0);
+  GURL original_frame_url(child->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ("b.com", original_frame_url.host());
+
+  ConsoleObserverDelegate console_delegate(
+      web_contents(), "Not allowed to load local resource: file:*");
+  web_contents()->SetDelegate(&console_delegate);
+
+  GURL file_url("file:///");
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("document.querySelector('iframe').src = $1", file_url)));
+  console_delegate.Wait();
+
+  // The iframe should've stayed at the original URL.
+  EXPECT_EQ(original_frame_url,
+            child->current_frame_host()->GetLastCommittedURL());
 }
 
 }  // namespace content
