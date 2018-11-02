@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
@@ -84,6 +85,9 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
 
   if (hints.empty())
     return;
+
+  hints_ptr->ukm_source_id = ukm::ConvertToSourceId(
+      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   for (const std::string& hint : hints)
     hints_ptr->subresources_to_block.push_back(hint);
 

@@ -9,6 +9,9 @@ module blink.mojom;
 // hints are provided to the renderer and aid in optimizing the loading of
 // resources.
 struct PreviewsResourceLoadingHints {
+    // SourceId to use when recording UKM for the resource loading hints. This
+    // is based on the browser NavigationHandle's navigation id.
+    int64 ukm_source_id;
     // List of subresources to block. The list contains the URL patterns of
     // subresources to block.
     // TODO(tbansal): https://crbug.com/856243. Update the mojom message below

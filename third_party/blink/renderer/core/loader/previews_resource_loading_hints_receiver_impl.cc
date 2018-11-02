@@ -37,8 +37,9 @@ void PreviewsResourceLoadingHintsReceiverImpl::SetResourceLoadingHints(
   }
 
   document_->Loader()->SetPreviewsResourceLoadingHints(
-      PreviewsResourceLoadingHints::Create(*(document_.Get()),
-                                           subresource_patterns_to_block));
+      PreviewsResourceLoadingHints::Create(
+          *(document_.Get()), resource_loading_hints->ukm_source_id,
+          subresource_patterns_to_block));
 }
 
 }  // namespace blink
