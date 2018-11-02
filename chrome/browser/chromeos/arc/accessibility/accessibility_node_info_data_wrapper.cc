@@ -422,8 +422,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   }
 }
 
-const std::vector<int32_t>* AccessibilityNodeInfoDataWrapper::GetChildren()
-    const {
+const std::vector<int32_t>* AccessibilityNodeInfoDataWrapper::GetChildren() {
   if (!node_ptr_->int_list_properties)
     return nullptr;
   auto it =

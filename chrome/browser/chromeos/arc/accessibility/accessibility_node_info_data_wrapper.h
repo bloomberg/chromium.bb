@@ -32,7 +32,7 @@ class AccessibilityNodeInfoDataWrapper : public ArcAccessibilityInfoData {
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;
-  const std::vector<int32_t>* GetChildren() const override;
+  const std::vector<int32_t>* GetChildren() override;
 
   mojom::AccessibilityNodeInfoData* node() { return node_ptr_; }
 

@@ -263,6 +263,8 @@ void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
 
   int32_t id = info_data->GetId();
   out_data->id = id;
+  // TODO(katie): this may not hold true with Windows. it's probably the root
+  // window's root node which is a kRootWebArea.
   if (id == root_id_)
     out_data->role = ax::mojom::Role::kRootWebArea;
   else
