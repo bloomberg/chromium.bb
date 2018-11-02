@@ -72,7 +72,7 @@
     Sign in and turn on sync to get your bookmarks, passwords and more on all devices
   </message>
   <message name="IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN" desc="The label for a button to let users sign in to chrome.">
-    Sign in
+    Continue
   </message>
 
   <!-- Email interstitial view -->
