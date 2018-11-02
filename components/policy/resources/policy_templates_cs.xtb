@@ -569,6 +569,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2529880111512635313">Konfigurace seznamu aplikací a rozšíření, jejichž instalace je vynucena</translation>
 <translation id="253135976343875019">Prodleva upozornění na nečinnost při napájení ze sítě</translation>
 <translation id="2536525645274582300">O povolení služeb určování polohy Google rozhoduje uživatel</translation>
+<translation id="254653220329944566">Aktivuje cloudové hlášení prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Pouze jednostranný tisk</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2562339630163277285">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />. Tento řetězec bude během dotazování nahrazen textem, který do daného okamžiku zadal uživatel.
@@ -1909,6 +1910,15 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="614662973812186053">Tato zásada ovládá také shromažďování údajů o využití a diagnostických údajů systému Android.</translation>
+<translation id="6153048425064249648">Tato zásada ovládá cloudové hlášení prohlížeče <ph name="PRODUCT_NAME" />, které nahrává informace o provozu prohlížeče do administrátorské konzole Google.
+
+      Když je tato zásada ponechána nenastavená nebo je nastavená na hodnotu False, neshromažďují ani nenahrávají se žádná data.
+      Když je tato zásada nastavená na hodnotu True, data se shromažďují a nahrávají do administrátorské konzole Google.
+      Nahrávaná data můžete ovládat pomocí zásad ve skupině Rozšíření Chrome Reporting.
+
+      Tato zásada je účinná jen v případě, že je zařízení zaregistrováno pomocí zásady <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Tato zásada vynutí instalaci rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> k hlášení a přepíše případné zásady, které se ho týkají.</translation>
 <translation id="6155936611791017817">Nastavení výchozího stavu velkého kurzoru na přihlašovací obrazovce</translation>
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
@@ -2949,14 +2959,6 @@ Uživatelé toto nastavení nemohou změnit ani přepsat.</translation>
 Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
-<translation id="8669669491594628013">Umožňuje ovládat spouštění upozornění ohledně ochrany hesla. Upozornění ohledně ochrany hesla se uživatelům zobrazí, pokud své chráněné heslo použijí na potenciálně podezřelých webech.
-
-      Pomocí zásad PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL můžete nakonfigurovat, která hesla mají být chráněna.
-
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOff, upozornění ohledně ochrany hesla se zobrazovat nebude.
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPasswordReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na webu, který není uveden na seznamu povolených.
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPhishingReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na phishingovém webu.
-      Pokud tuto zásadu ponecháte nenastavenou, bude služba pro ochranu hesel chránit pouze hesla Google, ale uživatel toto nastavení bude moci změnit.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Umožňuje nastavit dobu v milisekundách, po kterou se uživatelům bude zobrazovat oznámení, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo zařízení se systémem <ph name="PRODUCT_OS_NAME" /> restartovat, aby bylo možné nainstalovat čekající aktualizaci.

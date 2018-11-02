@@ -114,9 +114,9 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="1821253160463689938">Twoje ustawienia będą zapisywane w plikach cookie, nawet jeśli nie odwiedzisz tych stron</translation>
 <translation id="1829244130665387512">Znajdź na stronie</translation>
-<translation id="1832521218263067499">Incydenty dotyczące zabezpieczeń</translation>
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="1868024384445905608">Chrome pobiera pliki jeszcze szybciej</translation>
+<translation id="187628348035757895">Opcje programisty</translation>
 <translation id="1878302395768190018">Możesz w dowolnym momencie zmienić tę opcję w Ustawieniach Chrome</translation>
 <translation id="1880072593381090678">Popularne strony z Chrome</translation>
 <translation id="1883903952484604915">Moje pliki</translation>
@@ -791,7 +791,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6985347914332179298">Brak pobranych plików</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach</translation>
 <translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7021515813996758557">Plik <ph name="FILE_NAME" /> został pobrany</translation>
@@ -937,6 +936,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8084114998886531721">Zapisane hasło</translation>
 <translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
+<translation id="8087980556724996220">Asystent autouzupełniania przestanie działać za <ph name="DURATION_SECONDS" /> s…</translation>
 <translation id="8103578431304235997">Karta incognito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sugeruj powiązane strony</translation>

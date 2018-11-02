@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Last inn bildet</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ber om å lagre store datamengder permanent på enheten din</translation>
+<translation id="1030889518049751641">Se aktivitetsloggen</translation>
 <translation id="1031362278801463162">Laster inn forhåndsvisning</translation>
 <translation id="103279545524624934">Frigjør lagringsplass for å starte Android-apper.</translation>
 <translation id="1033780634303702874">bruke de seriekoblede enhetene dine</translation>
@@ -163,6 +164,7 @@
     Du må konfigurere profilen din på nytt.<ph name="BR" />
     <ph name="BR" />
     Gå til neste skjermbilde, og send tilbakemelding for å hjelpe oss med å løse problemet.</translation>
+<translation id="1217668622537098248">Gå tilbake til venstreklikk etter handling</translation>
 <translation id="121783623783282548">Passordene stemmer ikke overens.</translation>
 <translation id="1218860753635451122">Ved å klikke på «Godta»-knappen godtar du behandlingen som beskrives ovenfor, for disse Google-tjenestene.</translation>
 <translation id="122082903575839559">Signaturalgoritme for sertifikat</translation>
@@ -1176,6 +1178,7 @@
 <translation id="2755628026949580719">Hvis sikkerhetsnøkkelen din ikke er oppført, trykker du på knappen på nøkkelen i minst fem sekunder.</translation>
 <translation id="275662540872599901">skjerm av</translation>
 <translation id="2761898608071930085">Bruk en annen konto</translation>
+<translation id="276233135255363312">{0,plural, =1{Du har ett inkognitovindu.}other{Du har # inkognitovinduer.}}</translation>
 <translation id="2762441749940182211">Kameraet er blokkert</translation>
 <translation id="2765217105034171413">Liten</translation>
 <translation id="2766006623206032690">&amp;Lim inn og gå til</translation>
@@ -1549,6 +1552,7 @@
 <translation id="3350117557200012647">Start tilkoblingsmodus</translation>
 <translation id="3353984535370177728">Velg mappen du vil laste opp</translation>
 <translation id="3355936511340229503">Tilkoblingsfeil</translation>
+<translation id="3356580349448036450">Fullført</translation>
 <translation id="3356797067524893661">Du er klar for å fortsette til Hangouts Meet</translation>
 <translation id="3358935496594837302">Finner ikke telefonen. Sørg for at du bruker en kompatibel Android-telefon som er slått på og i nærheten. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Retningslinjebegrensninger for sertifikat</translation>
@@ -2179,6 +2183,7 @@
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4316850752623536204">Utviklernettsted</translation>
 <translation id="4320177379694898372">Ingen Internett-tilkobling</translation>
+<translation id="4320948194796820126">Legg til et bokmerke til e-posten din</translation>
 <translation id="4322394346347055525">Lukk andre faner</translation>
 <translation id="4324577459193912240">Filen er ufullstendig</translation>
 <translation id="4330387663455830245">Oversett aldri <ph name="LANGUAGE" /></translation>
@@ -2199,6 +2204,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindu.</translation>
 <translation id="4364830672918311045">Vis varsler</translation>
 <translation id="4365673000813822030">Beklager, synkroniseringen har sluttet å fungere.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> med <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">E-posten og passordet du skrev inn, stemmer ikke overens.</translation>
 <translation id="437184764829821926">Avanserte innstillinger for skrifttype</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -3063,6 +3069,7 @@
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5669691691057771421">Skriv inn en ny PIN-kode</translation>
 <translation id="5671641761787789573">Bilder er blokkert</translation>
+<translation id="567643736130151854">Logg på og slå på synkronisering for å få blant annet bokmerker og passord på alle enheter</translation>
 <translation id="5677503058916217575">Sidespråk:</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5678550637669481956">Lese- og skrivetilgang til <ph name="VOLUME_NAME" /> er innvilget.</translation>
@@ -3934,6 +3941,7 @@
 <translation id="7007648447224463482">Åpne alt i et nytt vindu</translation>
 <translation id="701080569351381435">Se kilde</translation>
 <translation id="7014174261166285193">Installeringen mislyktes.</translation>
+<translation id="7017004637493394352">Si «Ok Google» igjen</translation>
 <translation id="7017219178341817193">Legg til en ny side</translation>
 <translation id="7017354871202642555">Kan ikke angi modus etter at vinduet er opprettet.</translation>
 <translation id="7017480957358237747">tillate eller nekte bestemte nettsteder,</translation>
@@ -4261,6 +4269,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Du kan slå av Posisjon ved å slå av hovedinnstillingen for Posisjon på enheten. Du kan også slå av bruken av Wi-Fi, mobilnettverk og sensorer for posisjon fra posisjonsinnstillingene.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Lag et passord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Si «Ok Google»</translation>
 <translation id="7525067979554623046">Opprett</translation>
 <translation id="7529411698175791732">Sjekk Internett-tilkoblingen din. Hvis problemet vedvarer, bør du prøve å logge av og så logge på igjen.</translation>
 <translation id="7530016656428373557">Utladningshastighet i watt</translation>
@@ -4949,6 +4958,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8571213806525832805">Siste 4 uker</translation>
 <translation id="8574990355410201600">Tillat alltid lyd på <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Hold inne <ph name="KEY_EQUIVALENT" /> for å avslutte.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Lukk dette vinduet}other{Lukk alle inkognitovinduer}}</translation>
 <translation id="8578639784464423491">Kan ikke overstige 99 bokstaver</translation>
 <translation id="8579285237314169903">Synkroniserer <ph name="NUMBER_OF_FILES" /> elementer …</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
@@ -5302,7 +5312,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9112748030372401671">endre bakgrunnen din</translation>
 <translation id="9112987648460918699">Finn</translation>
 <translation id="9114663181201435112">Logg på enkelt</translation>
-<translation id="9115487443206954631">Administrer Cast-enheter</translation>
 <translation id="9115675100829699941">&amp;Bokmerker</translation>
 <translation id="9116465289595958864">Sist endret</translation>
 <translation id="9116799625073598554">Notatapper</translation>

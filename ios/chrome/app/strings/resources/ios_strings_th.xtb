@@ -235,10 +235,12 @@
 หากต้องการเปลี่ยนแปลงการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">บทความในรายการเรื่องรออ่านที่ยังไม่อ่าน 1 รายการ</translation>
 <translation id="481968316161811770">คุกกี้ ข้อมูลเว็บไซต์</translation>
+<translation id="4840495572919996524">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และอื่นๆ จะไม่ซิงค์กับบัญชี Google อีกต่อไป</translation>
 <translation id="4854345657858711387">ตั้งพาสโค้ด</translation>
 <translation id="4860895144060829044">โทร</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4882831918239250449">ควบคุมการใช้ประวัติการท่องเว็บเพื่อปรับเปลี่ยน Search, โฆษณา และบริการอื่นๆ ในแบบของคุณ</translation>
+<translation id="4895709476292058519">เปลี่ยนบัญชี</translation>
 <translation id="4904877109095351937">ทำเครื่องหมายว่าอ่านแล้ว</translation>
 <translation id="4930268273022498155">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลได้ด้วยการเปลี่ยนกลับเป็น <ph name="USER_EMAIL1" /></translation>
 <translation id="4941089862236492464">ขออภัย เกิดปัญหาในการแชร์รายการของคุณ</translation>
@@ -482,6 +484,7 @@
 <translation id="9079935439869366234">ทำเครื่องหมายทั้งหมดว่ายังไม่ได้อ่าน</translation>
 <translation id="9081058212938299310">อัปเดตรหัสผ่านของ <ph name="USERNAME" /> ไหม</translation>
 <translation id="9083392325882095631">1 รายการ</translation>
+<translation id="9083838294503912307">หากต้องการซิงค์และเห็นข้อมูลซึ่งปรับเปลี่ยนในแบบของคุณในทุกอุปกรณ์ ให้เปิดการซิงค์</translation>
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9148126808321036104">ลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="9157836665414082580">ระงับกล่องโต้ตอบ</translation>

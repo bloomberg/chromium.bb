@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">載入圖片</translation>
 <translation id="1029317248976101138">縮放</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 要求在你的裝置上永久儲存大量資料</translation>
+<translation id="1030889518049751641">查看活動記錄</translation>
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
 <translation id="103279545524624934">請釋出磁碟空間以啟動 Android 應用程式。</translation>
 <translation id="1033780634303702874">存取你的序列裝置</translation>
@@ -163,6 +164,7 @@
     您必須重新建立設定檔。<ph name="BR" />
     <ph name="BR" />
     請在下一個畫面中提供您的寶貴意見，協助我們修正這個問題。</translation>
+<translation id="1217668622537098248">完成動作後還原至先前的按左鍵動作</translation>
 <translation id="121783623783282548">密碼不相符。</translation>
 <translation id="1218860753635451122">點選 [我同意] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="122082903575839559">憑證簽章演算法</translation>
@@ -1179,6 +1181,7 @@
 <translation id="2755628026949580719">如果畫面上未列出你的安全金鑰，請按住金鑰上的按鈕至少 5 秒。</translation>
 <translation id="275662540872599901">螢幕已關閉</translation>
 <translation id="2761898608071930085">使用其他帳戶</translation>
+<translation id="276233135255363312">{0,plural, =1{你已開啟 1 個無痕式視窗。}other{你已開啟 # 個無痕式視窗。}}</translation>
 <translation id="2762441749940182211">無法使用攝影機</translation>
 <translation id="2765217105034171413">小</translation>
 <translation id="2766006623206032690">貼上及前往(&amp;S)</translation>
@@ -1553,6 +1556,7 @@
 <translation id="3350117557200012647">進入配對模式</translation>
 <translation id="3353984535370177728">選取要上傳的資料夾</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
+<translation id="3356580349448036450">完成</translation>
 <translation id="3356797067524893661">設定程序已完成，現在可以開始使用 Hangouts Meet 了</translation>
 <translation id="3358935496594837302">找不到你的手機。請確定你使用的是相容的 Android 手機並已開機，且手機在適當距離範圍內。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3359256513598016054">憑證原則限制</translation>
@@ -2093,7 +2097,7 @@
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
 <translation id="4147897805161313378">Google 相簿</translation>
-<translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的支援代表聯絡。</translation>
+<translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
@@ -2184,6 +2188,7 @@
 <translation id="4312866146174492540">封鎖 (預設)</translation>
 <translation id="4316850752623536204">開發人員網站</translation>
 <translation id="4320177379694898372">沒有網際網路連線</translation>
+<translation id="4320948194796820126">為電子郵件服務加上書籤</translation>
 <translation id="4322394346347055525">關閉其他分頁</translation>
 <translation id="4324577459193912240">檔案未完成下載</translation>
 <translation id="4330387663455830245">一律不翻譯<ph name="LANGUAGE" />內容</translation>
@@ -2204,6 +2209,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
 <translation id="4365673000813822030">糟糕，同步處理已停止運作。</translation>
+<translation id="4366956553771076218">使用「<ph name="APP_NAME" />」<ph name="ACTION_NAME" />。</translation>
 <translation id="4370975561335139969">您所輸入的電子郵件和密碼不相符</translation>
 <translation id="437184764829821926">進階字型設定</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3068,6 +3074,7 @@
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5669691691057771421">輸入新的 PIN 碼</translation>
 <translation id="5671641761787789573">已封鎖圖片</translation>
+<translation id="567643736130151854">登入並開啟同步功能，讓書籤、密碼等資料在所有裝置上保持同步</translation>
 <translation id="5677503058916217575">網頁語言：</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5678550637669481956">已授予 <ph name="VOLUME_NAME" /> 的讀取及寫入權限。</translation>
@@ -3258,7 +3265,7 @@
 <translation id="5946591249682680882">報表 ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">無法剖析檔案</translation>
 <translation id="5955282598396714173">你的密碼已過期。如要變更密碼，請先登出然後重新登入。</translation>
-<translation id="5955809630138889698">這個裝置可能只能使用線上示範模式。如需詳情，請與你的支援代表聯絡。</translation>
+<translation id="5955809630138889698">這個裝置可能只能使用線上示範模式。如需詳情，請與你的產品支援代表聯絡。</translation>
 <translation id="5956585768868398362">這是你想要的搜尋頁面嗎？</translation>
 <translation id="5957613098218939406">更多選項</translation>
 <translation id="5957987129450536192">輕觸靠近設定檔圖片的「隨選朗讀」圖示，然後選取你要聆聽的內容。</translation>
@@ -3939,6 +3946,7 @@
 <translation id="7007648447224463482">在新視窗中開啟所有書籤</translation>
 <translation id="701080569351381435">檢視原始碼</translation>
 <translation id="7014174261166285193">安裝失敗。</translation>
+<translation id="7017004637493394352">再說一次「Ok Google」</translation>
 <translation id="7017219178341817193">新增網頁</translation>
 <translation id="7017354871202642555">無法在視窗建立之後再設定模式。</translation>
 <translation id="7017480957358237747">允許/禁止特定網站；</translation>
@@ -4266,6 +4274,7 @@
     <ph name="BEGIN_PARAGRAPH3" />關閉裝置的主要位置資訊設定即可關閉定位功能。你也可以前往位置資訊設定，將使用 Wi‑Fi、行動網路和感應器的定位功能關閉。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">建立密碼 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">說出「Ok Google」</translation>
 <translation id="7525067979554623046">建立</translation>
 <translation id="7529411698175791732">檢查你的網際網路連線。如果問題持續發生，請嘗試登出，然後再次登入。</translation>
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
@@ -4954,6 +4963,7 @@
 <translation id="8571213806525832805">過去 4 週</translation>
 <translation id="8574990355410201600">一律允許 <ph name="HOST" /> 播放聲音</translation>
 <translation id="8575286410928791436">按住 <ph name="KEY_EQUIVALENT" /> 鍵即可結束</translation>
+<translation id="8578421807258988326">{0,plural, =1{關閉這個視窗}other{關閉所有無痕式視窗}}</translation>
 <translation id="8578639784464423491">不可超過 99 個英文字母</translation>
 <translation id="8579285237314169903">正在同步處理 <ph name="NUMBER_OF_FILES" /> 個項目...</translation>
 <translation id="857943718398505171">已允許 (建議)</translation>
@@ -5307,7 +5317,6 @@
 <translation id="9112748030372401671">變更你的桌布</translation>
 <translation id="9112987648460918699">尋找...</translation>
 <translation id="9114663181201435112">輕鬆登入</translation>
-<translation id="9115487443206954631">管理投放裝置</translation>
 <translation id="9115675100829699941">書籤(&amp;B)</translation>
 <translation id="9116465289595958864">上次修改時間</translation>
 <translation id="9116799625073598554">筆記應用程式</translation>

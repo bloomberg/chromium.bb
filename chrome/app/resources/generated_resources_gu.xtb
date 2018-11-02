@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">છબી લોડ કરો</translation>
 <translation id="1029317248976101138">ઝૂમ કરો</translation>
 <translation id="1030706264415084469"><ph name="URL" /> તમારા ઉપકરણ પર કાયમી ધોરણે વિશાળ ડેટા સ્ટોર કરવા માગે છે</translation>
+<translation id="1030889518049751641">પ્રવૃત્તિ લૉગ જુઓ</translation>
 <translation id="1031362278801463162">પ્રીવ્યૂ લોડ થાય છે</translation>
 <translation id="103279545524624934">Android ઍપ્લિકેશનો લોંચ કરવા માટે ડિસ્ક સ્થાન ખાલી કરો.</translation>
 <translation id="1033780634303702874">તમારા સીરિયલ ઉપકરણોને ઍક્સેસ કરો</translation>
@@ -163,6 +164,7 @@
     તમારે ફરીથી તમારી પ્રોફાઇલ સેટ કરવાની જરૂર પડશે.<ph name="BR" />
     <ph name="BR" />
     આગલી સ્ક્રીન પર, આ સમસ્યાને ઠીક કરવામાં અમારી સહાય કરવા માટે કૃપા કરીને પ્રતિસાદ મોકલો.</translation>
+<translation id="1217668622537098248">ક્રિયા કર્યા પછી ડાબી ક્લિક પર પાછા ફરો</translation>
 <translation id="121783623783282548">પાસવર્ડ્સ મેળ ખાતા નથી.</translation>
 <translation id="1218860753635451122">"હું સંમત છું" બટનને ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલ પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="122082903575839559">પ્રમાણપત્ર સહી ઍલ્ગોરિધમ</translation>
@@ -1176,6 +1178,7 @@
 <translation id="2755628026949580719">તમારી સુરક્ષા કી સૂચિબદ્ધ ન કરવામાં આવી હોય, તો કીનું બટન ઓછામાં ઓછી 5 સેકન્ડ સુધી દબાવો.</translation>
 <translation id="275662540872599901">સ્ક્રીન બંધ છે</translation>
 <translation id="2761898608071930085">બીજા એકાઉન્ટનો ઉપયોગ કરો</translation>
+<translation id="276233135255363312">{0,plural, =1{તમારી પાસે એક છુપી વિન્ડો છે.}one{તમારી પાસે # છુપી વિન્ડો છે.}other{તમારી પાસે # છુપા વિન્ડો છે.}}</translation>
 <translation id="2762441749940182211">કૅમેરા અવરોધિત</translation>
 <translation id="2765217105034171413">નાનું</translation>
 <translation id="2766006623206032690">પે&amp;સ્ટ કરો અને જાઓ</translation>
@@ -1550,6 +1553,7 @@
 <translation id="3350117557200012647">જોડાણ કરવાના મોડમાં જાઓ</translation>
 <translation id="3353984535370177728">અપલોડ કરવા માટે એક ફોલ્ડર પસંદ કરો</translation>
 <translation id="3355936511340229503">કનેક્શન ભૂલ</translation>
+<translation id="3356580349448036450">પૂર્ણ</translation>
 <translation id="3356797067524893661">તમે Hangouts Meet પર ચાલુ રાખવા માટે તૈયાર છો</translation>
 <translation id="3358935496594837302">તમારો ફોન શોધી શકાતો નથી. ખાતરી કરો કે તમે સુસંગત Android ફોનનો ઉપયોગ કરી રહ્યા છો જે ચાલુ છે અને હાથવગો છે. &lt;a&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="3359256513598016054">પ્રમાણપત્ર નીતિની મર્યાદાઓ</translation>
@@ -2182,6 +2186,7 @@
 <translation id="4312866146174492540">અવરોધિત કરો (ડિફૉલ્ટ)</translation>
 <translation id="4316850752623536204">વિકાસકર્તા વેબસાઇટ</translation>
 <translation id="4320177379694898372">કોઈ ઇન્ટરનેટ કનેક્શન નથી</translation>
+<translation id="4320948194796820126">તમારા ઇમેઇલમાં બુકમાર્ક ઉમેરો</translation>
 <translation id="4322394346347055525">અન્ય ટૅબ્સને બંધ કરો</translation>
 <translation id="4324577459193912240">ફાઇલ અધૂરી છે</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> નો ક્યારેય અનુવાદ કરશો નહીં</translation>
@@ -2202,6 +2207,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" />, એક વિંડો શેર કરી રહી છે.</translation>
 <translation id="4364830672918311045">નોટિફિકેશન બતાવો</translation>
 <translation id="4365673000813822030">ઊફ્ફ, સમન્વયન કામ કરતું બંધ થઈ ગયું છે. </translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" /> સાથે <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">તમે દાખલ કરેલ ઇમેઇલ અને પાસવર્ડ મેળ ખાતા નથી</translation>
 <translation id="437184764829821926">વિગતવાર ફોન્ટ સેટિંગ્સ</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3067,6 +3073,7 @@
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5669691691057771421">નવો PIN દાખલ કરો</translation>
 <translation id="5671641761787789573">છબીઓ અવરોધિત</translation>
+<translation id="567643736130151854">બધા ડિવાઇસ પર તમારા બુકમાર્ક, પાસવર્ડ અને વધુ મેળવવા માટે સાઇન ઇન કરો અને સિંક ચાલુ કરો</translation>
 <translation id="5677503058916217575">પૃષ્ઠ ભાષા:</translation>
 <translation id="5677928146339483299">અવરોધિત</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> ને વાંચવા લખવાની ઍક્સેસ મંજૂર કરવામાં આવી છે.</translation>
@@ -3938,6 +3945,7 @@
 <translation id="7007648447224463482">બધું નવી વિંડોમાં ખોલો</translation>
 <translation id="701080569351381435">સ્રોત જુઓ</translation>
 <translation id="7014174261166285193">ઇન્સ્ટોલેશન નિષ્ફળ થયું.</translation>
+<translation id="7017004637493394352">ફરીથી "Ok Google" કહો</translation>
 <translation id="7017219178341817193">નવું પૃષ્ઠ ઉમેરો</translation>
 <translation id="7017354871202642555">વિંડો સેટ થઈ જાય પછી મોડને સેટ કરી શકાતો નથી.</translation>
 <translation id="7017480957358237747">અમુક વેબસાઇટ્સને મંજૂરી આપો અથવા પ્રતિબંધિત કરો,</translation>
@@ -4265,6 +4273,7 @@
     <ph name="BEGIN_PARAGRAPH3" />તમે તમારા ડિવાઇસમાં મુખ્ય સ્થાન સેટિંગ બંધ કરીને સ્થાન બંધ કરી શકો છો. તમે સ્થાન સેટિંગમાં સ્થાન માટે વાઇ-ફાઇ, મોબાઇલ નેટવર્ક અને સેન્સરનો ઉપયોગ પણ બંધ કરી શકો છો.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">એક પાસવર્ડ બનાવો -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">"Ok Google" કહો</translation>
 <translation id="7525067979554623046">બનાવો</translation>
 <translation id="7529411698175791732">તમારું ઇન્ટરનેટ કનેક્શન તપાસો. જો સમસ્યા ચાલુ રહે, તો સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરવાનો પ્રયાસ કરો.</translation>
 <translation id="7530016656428373557">ડિસ્ચાર્જ દર વોટ્સમાં</translation>
@@ -4947,6 +4956,7 @@
 <translation id="8571213806525832805">છેલ્લા 4 અઠવાડિયા</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> પર હંમેશાં અવાજને મંજૂરી આપો</translation>
 <translation id="8575286410928791436">છોડવા માટે <ph name="KEY_EQUIVALENT" /> દબાવી રાખો</translation>
+<translation id="8578421807258988326">{0,plural, =1{આ વિંડો બંધ કરો}one{છુપી વિન્ડો બંધ કરો}other{બધા છુપા વિન્ડો બંધ કરો}}</translation>
 <translation id="8578639784464423491">99 અક્ષરો કરતાં વધુ હોઈ શકતો નથી</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> આઇટમ્સ સમન્વયિત કરી રહ્યાં છે...</translation>
 <translation id="857943718398505171">મંજૂર (ભલામણ કરેલ)</translation>
@@ -5300,7 +5310,6 @@
 <translation id="9112748030372401671">તમારું વોલપેપર બદલો</translation>
 <translation id="9112987648460918699">શોધો...</translation>
 <translation id="9114663181201435112">સરળતાથી સાઇન ઇન કરો</translation>
-<translation id="9115487443206954631">કાસ્ટ ઉપકરણોને સંચાલિત કરો</translation>
 <translation id="9115675100829699941">&amp;બુકમાર્ક્સ</translation>
 <translation id="9116465289595958864">છેલ્લે સંશોધિત</translation>
 <translation id="9116799625073598554">નોંધ લેતી અ‍ૅપ્લિકેશન</translation>

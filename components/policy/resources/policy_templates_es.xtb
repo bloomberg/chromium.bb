@@ -600,6 +600,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2529880111512635313">Configura la lista de aplicaciones y extensiones de instalación forzada</translation>
 <translation id="253135976343875019">Tiempo de espera de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2536525645274582300">El usuario decide si quiere habilitar los servicios de ubicación de Google</translation>
+<translation id="254653220329944566">Activa los informes en la nube de <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Solo impresión por una cara</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2562339630163277285">Especifica la URL del motor de búsqueda utilizada para proporcionar resultados instantáneos. La URL debe contener la cadena <ph name="SEARCH_TERM_MARKER" />, que se sustituirá en el momento de la consulta por el texto que el usuario haya introducido hasta el momento.
@@ -1959,6 +1960,15 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de los datos de uso y diagnóstico de Android.</translation>
+<translation id="6153048425064249648">Esta política regula los informes en la nube de <ph name="PRODUCT_NAME" />, que envían información sobre el funcionamiento del navegador a la consola de administración de Google.
+
+      Cuando esta política está desactivada o con valor "False", no se recopila ni envía ningún dato.
+      Cuando esta política tiene un valor "True", se recopilan los datos y se envían a la consola de administración de Google.
+      Para regular los datos que se envían, utiliza las políticas del grupo Chrome Reporting Extension.
+
+      Esta política solo es efectiva si el equipo está registrado en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Esta política realiza la instalación forzada de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para los informes y anula las políticas relacionadas con esa extensión.</translation>
 <translation id="6155936611791017817">Establecer el estado predeterminado del cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="6158324314836466367">Nombre de la tienda online de la empresa (política obsoleta)</translation>
@@ -3021,14 +3031,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá a las solicitudes de IWA. Si se detecta Internet como servidor, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que procedan de él.</translation>
-<translation id="8669669491594628013">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a utilizar la contraseña protegida en sitios web potencialmente sospechosos.
-
-      Las políticas "PasswordProtectionLoginURLs" y "PasswordProtectionChangePasswordURL" sirven para configurar qué contraseñas se protegen.
-
-      Si se le asigna el valor "PasswordProtectionWarningOff" a esta política, no se mostrará ninguna advertencia de protección de contraseña.
-      Si se le asigna el valor "PasswordProtectionWarningOnPasswordReuse", se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en cualquier sitio web que no esté incluido en la lista blanca.
-      Si se le asigna el valor "PasswordProtectionWarningOnPhishingReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar la contraseña protegida en los sitios web de phishing.
-      Si no se le asigna ningún valor a esta política, el servicio de protección de contraseña solo protegerá las contraseñas de Google, pero el usuario podrá cambiar esta opción.</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Permite establecer el periodo de tiempo (en milisegundos) durante el que los usuarios recibirán una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">ምስል አክል</translation>
 <translation id="1029317248976101138">ማጉሊያ</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ትልቅ ውሂብ በእርስዎ መሣሪያ ላይ እስከ መጨረሻው ማከማቸት ይፈልጋል</translation>
+<translation id="1030889518049751641">የእንቅስቃሴ ምዝግብ ማስታወሻን አሳይ</translation>
 <translation id="1031362278801463162">ቅድመ-እይታን በመጫን ላይ</translation>
 <translation id="103279545524624934">የAndroid መተግበሪያዎችን ለማስጀመር የዲስክ ቦታ ያስለቅቁ።</translation>
 <translation id="1033780634303702874">ተከታታይ መሣሪያዎችዎን ይደርሳል</translation>
@@ -163,6 +164,7 @@
     መገለጫዎን እንደገና ማዋቀር ይኖርብዎታል።<ph name="BR" />
     <ph name="BR" />
     ችግሩን እንድንፈታው እኛን ለማገዝ እባክዎ በሚቀጥለው ማያ ገጽ ላይ ግብረመልስ ይላኩ።</translation>
+<translation id="1217668622537098248">ከእርምጃ በኋላ ወደ ግራ ጠቅታ አድህር</translation>
 <translation id="121783623783282548">የይለፍ ቃላትዎ አይዛመዱም።</translation>
 <translation id="1218860753635451122">የ«እስማማለሁ» አዝራርን ጠቅ በማድረግ ለእነዚህ የGoogle አገልግሎቶች ከላይ በተብራራው ማስሄድ መስማማትዎን ያረጋግጣሉ።</translation>
 <translation id="122082903575839559">የሰርቲፊኬት ፊርማ አልጎሪዝም</translation>
@@ -1179,6 +1181,7 @@
 <translation id="2755628026949580719">የደህንነት ቁልፍዎ ካልተዘረዘረ የቁልፍ አዝራሩን ቢያንስ ለ5 ሰከንዶች ይጫኑት።</translation>
 <translation id="275662540872599901">ማያ ገጽ ጠፍቷል</translation>
 <translation id="2761898608071930085">ሌላ መለያ ተጠቀም</translation>
+<translation id="276233135255363312">{0,plural, =1{አንድ ማንነትን የማያሳውቅ መስኮት አለዎት።}one{# ማንነትን የማያሳውቁ መስኮቶች አለዎት።}other{# ማንነትን የማያሳውቁ መስኮቶች አለዎት።}}</translation>
 <translation id="2762441749940182211">ካሜራ ታግዷል</translation>
 <translation id="2765217105034171413">ትንሽ</translation>
 <translation id="2766006623206032690">ለ&amp;ጥፍና እና ሂድ</translation>
@@ -1553,6 +1556,7 @@
 <translation id="3350117557200012647">ወደ የማጣመር ሁኔታ ሂድ</translation>
 <translation id="3353984535370177728">የሚሰቅሉትን አቃፊ ይምረጡ</translation>
 <translation id="3355936511340229503">የግንኙነት ስህተት</translation>
+<translation id="3356580349448036450">ተጠናቅቋል</translation>
 <translation id="3356797067524893661">ወደ Hangouts Meet ለመቀጠል ሙሉ በሙሉ ተዘጋጅተዋል</translation>
 <translation id="3358935496594837302">የእርስዎን ስልክ ማግኘት አልተቻለም። የበራ እና በቅርብ ርቀት የሚገኝ ተኳሃኝ የሆነ የAndroid ስልክ እየተጠቀሙ መሆንዎን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="3359256513598016054">የሰርቲፊኬት መመሪያ እገዳዎች</translation>
@@ -2183,6 +2187,7 @@
 <translation id="4312866146174492540">አግድ (ነባሪ)</translation>
 <translation id="4316850752623536204">የገንቢ ድር ጣቢያ</translation>
 <translation id="4320177379694898372">ምንም የበይነመረብ ግንኙነት የለም</translation>
+<translation id="4320948194796820126">አንድ ዕልባት ወደ የእርስዎ ኢሜይል ያክሉ</translation>
 <translation id="4322394346347055525">ሌሎች ትሮችን ዝጋ</translation>
 <translation id="4324577459193912240">ፋይል ያልተሟላ ነው</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" />ን በጭራሽ አትተርጉም</translation>
@@ -2203,6 +2208,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> አንድ መስኮት እያጋራ ነው።</translation>
 <translation id="4364830672918311045">ማሳወቂያዎችን አሳይ</translation>
 <translation id="4365673000813822030">ውይ፣ ማመሳሰል መስራት አቁሟል።</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> ከ<ph name="APP_NAME" /> ጋር።</translation>
 <translation id="4370975561335139969">ያስገቧቸው ኢሜይል እና የይለፍ ቃል አይዛመዱም።</translation>
 <translation id="437184764829821926">የላቁ የቅርጸ-ቁምፊ ቅንብሮች</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3067,6 +3073,7 @@
 <translation id="5669267381087807207">በማግበር ላይ</translation>
 <translation id="5669691691057771421">አዲስ ፒን ያስገቡ</translation>
 <translation id="5671641761787789573">ምስሎች ታግደዋል</translation>
+<translation id="567643736130151854">በመለያ ይግቡ እና የእርስዎን ዕልባቶች፣ የይለፍ ቃላት እና ተጨማሪ ነገሮች በሁሉም መሣሪያዎች ላይ ለማግኘት ስምረትን ያብሩ</translation>
 <translation id="5677503058916217575">የገጽ ቋንቋ፦</translation>
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5678550637669481956">ወደ <ph name="VOLUME_NAME" /> የማንበብ እና የመጻፍ መዳረሻ ተሰጥቷል።</translation>
@@ -3937,6 +3944,7 @@
 <translation id="7007648447224463482">ሁሉንም በአዲስ መስኮት ውስጥ ክፈት</translation>
 <translation id="701080569351381435">ሶርስ አሳይ</translation>
 <translation id="7014174261166285193">መጫን አልተሳካም።</translation>
+<translation id="7017004637493394352">እንደገና «Ok Google» ይበሉ</translation>
 <translation id="7017219178341817193">አዲስ ገጽ ያክሉ</translation>
 <translation id="7017354871202642555">መስኮት ከተዋቀረ በኋላ ሁነታውን ማስቀመጥ አልተቻለም።</translation>
 <translation id="7017480957358237747">የተወሰኑ ድር ጣቢያዎችን ይፍቀዱ ወይም ይከልክሉ።</translation>
@@ -4264,6 +4272,7 @@
     <ph name="BEGIN_PARAGRAPH3" />በመሣሪያዎ ላይ ያለውን ዋና የአካባቢ ቅንብርን በማጥፋት አካባቢን ማጥፋት ይችላሉ። እርስዎ እንዲሁም በአካባቢ ቅንብሮች ውስጥ Wi-Fiን፣ የተንቀሳቃሽ ስልክ አውታረ መረቦችን እና ዳሳሾችን ለአካባቢ መጠቀም ማጥፋት ይችላሉ።<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">አንድ የይለፍ ቃል ይፍጠሩ -</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
+<translation id="7522255036471229694">«Ok Google» ይብሉ</translation>
 <translation id="7525067979554623046">ፍጠር</translation>
 <translation id="7529411698175791732">የበይነመረብ ግንኙነትዎን ይፈትሹ። ችግሩ ከቀጠለ ዘግተው ወጥተው እንደገና ለመግባት ይሞክሩ።</translation>
 <translation id="7530016656428373557">የትፋት ፍጥነት በዋት</translation>
@@ -4958,6 +4967,7 @@ nil</translation>
 <translation id="8571213806525832805">ባለፉት 4 ሳምንቶች</translation>
 <translation id="8574990355410201600">ሁልጊዜ በ<ph name="HOST" /> ላይ ድምጽን ፍቀድ</translation>
 <translation id="8575286410928791436">ለመተው <ph name="KEY_EQUIVALENT" />ን ይያዙ</translation>
+<translation id="8578421807258988326">{0,plural, =1{ይህን መስኮት ዝጋ}one{ሁሉንም ማንነት የማያሳውቁ መስኮቶች ዝጋ}other{ሁሉንም ማንነት የማያሳውቁ መስኮቶች ዝጋ}}</translation>
 <translation id="8578639784464423491">ከ99 ፊደላት መብለጥ አይችልም</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> ንጥሎችን በማመሳሰል ላይ...</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
@@ -5311,7 +5321,6 @@ nil</translation>
 <translation id="9112748030372401671">የእርስዎን ግድግዳ ወረቀት ይቀይራል</translation>
 <translation id="9112987648460918699">አግኝ…</translation>
 <translation id="9114663181201435112">በቀላሉ በመለያ ይግቡ</translation>
-<translation id="9115487443206954631">የCast መሣሪያዎችን ያስተዳድሩ</translation>
 <translation id="9115675100829699941">&amp;እልባቶች</translation>
 <translation id="9116465289595958864">መጨረሻ ላይ የተቀየሩ</translation>
 <translation id="9116799625073598554">ማስታወሻ የሚወስድ መተግበሪያ</translation>

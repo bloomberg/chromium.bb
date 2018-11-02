@@ -235,10 +235,12 @@
 Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 neprečítaný článok v čitateľskom zozname.</translation>
 <translation id="481968316161811770">Súbory cookie, údaje webu</translation>
+<translation id="4840495572919996524">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať do vášho účtu Google.</translation>
 <translation id="4854345657858711387">Nastavenie vstupného kódu</translation>
 <translation id="4860895144060829044">Volajte</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4882831918239250449">Ovládajte, ako sa pomocou histórie prehliadania prispôsobuje Vyhľadávanie, reklamy a ďalší obsah</translation>
+<translation id="4895709476292058519">Zmeniť účty</translation>
 <translation id="4904877109095351937">Označiť ako prečítané</translation>
 <translation id="4930268273022498155">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Je nám ľúto, pri zdieľaní položky sa vyskytol problém.</translation>
@@ -482,6 +484,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9079935439869366234">Označiť všetko ako neprečítané</translation>
 <translation id="9081058212938299310">Chcete aktualizovať heslo používateľa <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 položka</translation>
+<translation id="9083838294503912307">Ak chcete synchronizovať a prispôsobovať viaceré zariadenia, zapnite synchronizáciu.</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9148126808321036104">Znova sa prihlásiť</translation>
 <translation id="9157836665414082580">Obmedziť dialógové okná</translation>

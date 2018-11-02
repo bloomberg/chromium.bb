@@ -586,6 +586,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2536525645274582300">Brukeren avgjør om Googles posisjonstjenester skal aktiveres</translation>
+<translation id="254653220329944566">Slår på skyrapportering for <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Bare utskrift på én side</translation>
 <translation id="2552966063069741410">Tidssone</translation>
 <translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
@@ -1927,6 +1928,15 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis denne er angitt, eller fra brukerens egen konfigurasjoner hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="614662973812186053">Denne regelen kontrollerer også innsamling av bruks- og diagnostikkdata fra Android.</translation>
+<translation id="6153048425064249648">Denne regelen kontrollerer skyrapportering for <ph name="PRODUCT_NAME" /> der informasjon om nettleserbruk lastes opp til Google Administrasjonskonsoll.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «false» (usant), blir ikke data samlet inn eller lastet opp.
+      Hvis denne regelen er angitt som «true» (sant), blir dataene samlet inn og lastet opp til Google Administrasjonskonsoll.
+      For å kontrollere hvilke data som lastes opp, bruk reglene i gruppen «Chrome Reporting Extension».
+
+      Denne regelen gjelder bare når maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Denne regelen fører til administratorinstallering av <ph name="CHROME_REPORTING_EXTENSION_NAME" /> for rapporteringen, og den overstyrer eventuelle andre utvidelsesregler som er knyttet til utvidelsen.</translation>
 <translation id="6155936611791017817">Angi standard tilstand for stor musepeker på påloggingssiden</translation>
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
@@ -2995,14 +3005,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Adskill tjenernavn med komma. Jokertegn (*) er tillatt.
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
-<translation id="8669669491594628013">Lar deg kontrollere utløseren for advarselen om passordsbeskyttelse. Passordbeskyttelsen varsler brukere når de har brukt et beskyttet passord på potensielt mistenkelige sider.
-
-      Du kan bruke PasswordProtectionLoginURLs og PasswordProtectionChangePasswordURL til å konfigurere hvilke passord som skal beskyttes.
-
-      Hvis regelen er satt til PasswordProtectionWarningOff, vises ingen advarsler om passordbeskyttelse.
-      Hvis regelen er satt til PasswordProtectionWarningOnPasswordReuse, vises advarselen om passordbeskyttelse når brukeren gjenbruker det beskyttede passordet på en ikke-godkjent side.
-      Hvis regelen er satt til PasswordProtectionWarningOnPhishingReuse, vises advarselen om passordbeskyttelse når brukeren gjenbruker det beskyttede passordet på en nettfiskingsside.
-      Hvis regelen ikke er angitt, beskytter passordbeskyttelsestjenesten bare Google-passord, men brukeren kan endre denne innstillingen.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
 <translation id="8682611302223077049">Du kan spesifisere tidsperioden (i millisekunder) før brukere blir varslet om at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt på grunn av en ventende oppdatering.

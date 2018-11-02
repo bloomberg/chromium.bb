@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="257708665678654955">Dorești ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE_NAME" /> de pe acest site?</translation>
 <translation id="2943166482989655199">Poți îmbunătăți browserul Chrome și securitatea acestuia dacă trimiți la Google date despre sistem și utilizare</translation>
+<translation id="3030414234702425231">Deoarece te deconectezi de la un cont gestionat de <ph name="SIGNOUT_MANAGED_DOMAIN" />, datele tale Chrome de pe acest dispozitiv vor fi șterse. Datele tale vor rămâne în Contul Google.</translation>
 <translation id="3148434565183091099">Pentru a accesa marcajele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="3148688391461398285">Beneficiați de o experiență mai bună în Chrome pe baza locației dvs.</translation>
 <translation id="3167189358072330585">Contul nu funcționează pe Google Chrome. Contactează administratorul domeniului sau folosește un Cont Google obișnuit pentru a te conecta.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">Filele deschise în Chrome pe alte dispozitive vor apărea aici.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6648150602980899529">Te conectezi cu un cont gestionat de <ph name="DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele vor fi șterse de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
+<translation id="6676840375528380067">Ștergi datele tale Chrome de pe acest dispozitiv?</translation>
 <translation id="690638524486313356">Termenii și condițiile Google Chrome</translation>
 <translation id="7165736900384873061">Începe să folosești scanerul QR din Google Chrome</translation>
 <translation id="7172660552945675509">Sfat: <ph name="BEGIN_LINK" />mută Chrome în bara de andocare<ph name="END_LINK" /></translation>

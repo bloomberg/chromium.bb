@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">তাক</translation>
 <translation id="2844169650293029770">USB-C ডিভাইস (বাঁ দিকের সামনের পোর্ট)</translation>
 <translation id="2865888419503095837">নেটওয়ার্ক তথ্য</translation>
+<translation id="287224423103674444">স্ক্রিন ঘোরানোর জন্য আপনি শর্টকাট প্রেস করেছেন। আপনি কি স্ক্রিন ঘোরাতে চান?</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
 <translation id="2878884018241093801">কোনও সাম্প্রতিক আইটেম নেই</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> এর সাথে সংযুক্ত আছে, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">সক্রিয় করা হচ্ছে</translation>
 <translation id="5673434351075758678">সেটিংস সিঙ্ক করার পরে "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" সেট করা হয়েছে।</translation>
 <translation id="5691772641933328258">আঙ্গুলের ছাপ শনাক্ত করা যায়নি</translation>
+<translation id="5710450975648804523">'বিরক্ত করবেন না' মোড চালু আছে</translation>
 <translation id="574392208103952083">মাঝারি</translation>
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5750765938512549687">ব্লুটুথ বন্ধ আছে</translation>
@@ -378,7 +380,9 @@
 <translation id="7654687942625752712">পড়ে শোনানো বিকল্প চালু করতে পাঁচ সেকেন্ডের জন্য ভলিউম কীগুলি প্রেস করে ধরে রাখুন।</translation>
 <translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{১টি বিজ্ঞপ্তি}one{#টি বিজ্ঞপ্তি}other{#টি বিজ্ঞপ্তি}}</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
+<translation id="7780159184141939021">স্ক্রিন ঘোরান</translation>
 <translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google সহায়ক, লেজার পয়েন্টার, বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>

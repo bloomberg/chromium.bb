@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">શેલ્ફ</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
 <translation id="2865888419503095837">નેટવર્ક માહિતી</translation>
+<translation id="287224423103674444">તમે સ્ક્રીનને ફેરવવા માટે શૉર્ટકટ દબાવેલ છે. શું તમે સ્ક્રીનને ફેરવવા માગો છો?</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
 <translation id="2878884018241093801">કોઈ તાજેતરની આઇટમ નથી</translation>
 <translation id="2903844815300039659"><ph name="NAME" />, <ph name="STRENGTH" /> સાથે કનેક્ટ થયેલ</translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5673434351075758678">તમારી સેટિંગને સિંક કર્યા પછી "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />"માં ફેરવો.</translation>
 <translation id="5691772641933328258">ફિંગરપ્રિન્ટ ઓળખી શકાઈ નથી</translation>
+<translation id="5710450975648804523">ખલેલ પાડશો નહીં ચાલુ છે</translation>
 <translation id="574392208103952083">મધ્યમ</translation>
 <translation id="5744083938413354016">ખેંચવાને ટૅપ કરો</translation>
 <translation id="5750765938512549687">બ્લૂટૂથ બંધ છે</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">બોલાયેલ પ્રતિસાદ બંધ કરવા પાંચ સેકન્ડ માટે બન્ને વૉલ્યૂમ કીને દબાવી રાખો.</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 નોટિફિકેશન}one{# નોટિફિકેશન}other{# નોટિફિકેશન}}</translation>
 <translation id="776344839111254542">અપડેટની વિગતો જોવા માટે ક્લિક કરો</translation>
+<translation id="7780159184141939021">સ્ક્રીનને ફેરવો</translation>
 <translation id="7796353162336583443">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, Google સહાયક, લૅઝર પૉઇન્ટર અથવા બૃહદદર્શક કાચનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટનને ટૅપ કરો.</translation>
 <translation id="7798302898096527229">રદ કરવા માટે શોધો અથવા Shift દબાવો.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>

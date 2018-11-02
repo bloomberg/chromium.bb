@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Cargar imagen</translation>
 <translation id="1029317248976101138">Acercar</translation>
 <translation id="1030706264415084469"><ph name="URL" /> quiere almacenar datos de gran tamaño de forma permanente en tu dispositivo</translation>
+<translation id="1030889518049751641">Ver Registro de actividad</translation>
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="103279545524624934">Libera espacio del disco para iniciar aplicaciones de Android.</translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
@@ -163,6 +164,7 @@
     Debes volver a configurar tu perfil.<ph name="BR" />
     <ph name="BR" />
     Envíanos tus comentarios a través de la siguiente pantalla para ayudarnos a solucionar el problema.</translation>
+<translation id="1217668622537098248">Volver al clic izquierdo después de una acción</translation>
 <translation id="121783623783282548">Las contraseñas no coinciden.</translation>
 <translation id="1218860753635451122">Al hacer clic en el botón "Acepto", declaras que estás conforme con el proceso descrito anteriormente de estos servicios de Google.</translation>
 <translation id="122082903575839559">Algoritmo de firma de certificado</translation>
@@ -1180,6 +1182,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2755628026949580719">Si tu llave de seguridad no aparece en la lista, pulsa el botón de la llave durante 5 segundos como mínimo.</translation>
 <translation id="275662540872599901">pantalla apagada</translation>
 <translation id="2761898608071930085">Usar otra cuenta</translation>
+<translation id="276233135255363312">{0,plural, =1{Tienes una ventana de incógnito.}other{Tienes # ventanas de incógnito.}}</translation>
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2765217105034171413">Pequeño</translation>
 <translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
@@ -1552,6 +1555,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3350117557200012647">Acceder al modo de vinculación</translation>
 <translation id="3353984535370177728">Seleccionar una carpeta para subirla</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
+<translation id="3356580349448036450">Completo</translation>
 <translation id="3356797067524893661">Ya puedes utilizar Hangouts Meet</translation>
 <translation id="3358935496594837302">No se encuentra tu teléfono. Asegúrate de que estás utilizando un teléfono Android compatible que esté encendido y que tengas cerca. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restricciones de políticas de certificados</translation>
@@ -2183,6 +2187,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
 <translation id="4316850752623536204">Sitio web del desarrollador</translation>
 <translation id="4320177379694898372">No hay conexión a Internet</translation>
+<translation id="4320948194796820126">Añade un marcador a tu correo electrónico</translation>
 <translation id="4322394346347055525">Cerrar las demás pestañas</translation>
 <translation id="4324577459193912240">Archivo incompleto</translation>
 <translation id="4330387663455830245">No traducir nunca del <ph name="LANGUAGE" /></translation>
@@ -2203,6 +2208,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está compartiendo una ventana.</translation>
 <translation id="4364830672918311045">Mostrar notificaciones</translation>
 <translation id="4365673000813822030">¡Ups! La sincronización ha dejado de funcionar.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> con <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">La dirección de correo electrónico y la contraseña que has introducido no coinciden</translation>
 <translation id="437184764829821926">Configuración de fuentes avanzada</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3067,6 +3073,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5669691691057771421">Introducir el nuevo PIN</translation>
 <translation id="5671641761787789573">Imágenes bloqueadas</translation>
+<translation id="567643736130151854">Inicia sesión y activa la sincronización para obtener tus marcadores, contraseñas y mucho más en todos tus dispositivos</translation>
 <translation id="5677503058916217575">Idioma de la página:</translation>
 <translation id="5677928146339483299">Con bloqueo</translation>
 <translation id="5678550637669481956">Se ha concedido acceso de lectura y escritura a <ph name="VOLUME_NAME" />.</translation>
@@ -3938,6 +3945,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7007648447224463482">Abrir todo en una ventana nueva</translation>
 <translation id="701080569351381435">Ver código fuente</translation>
 <translation id="7014174261166285193">Error de instalación</translation>
+<translation id="7017004637493394352">Di otra vez "Ok Google"</translation>
 <translation id="7017219178341817193">Añadir una nueva página</translation>
 <translation id="7017354871202642555">No se puede establecer un modo después de crear una ventana.</translation>
 <translation id="7017480957358237747">permitir o prohibir determinados sitios web,</translation>
@@ -4265,6 +4273,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
     <ph name="BEGIN_PARAGRAPH3" />Para inhabilitar la ubicación, desactiva la opción Ubicación del dispositivo.  También puedes inhabilitar el uso de sensores y redes Wi‑Fi o móviles para determinar la ubicación en los ajustes de ubicación.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Crear una contraseña:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Di "Ok Google"</translation>
 <translation id="7525067979554623046">Crear</translation>
 <translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, prueba a cerrar sesión y volver a iniciarla.</translation>
 <translation id="7530016656428373557">Tasa de descarga en vatios</translation>
@@ -4955,6 +4964,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8571213806525832805">Últimas cuatro semanas</translation>
 <translation id="8574990355410201600">Permitir siempre el sonido en <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Mantén pulsado <ph name="KEY_EQUIVALENT" /> para salir</translation>
+<translation id="8578421807258988326">{0,plural, =1{Cerrar esta ventana}other{Cerrar todas las ventanas de incógnito}}</translation>
 <translation id="8578639784464423491">No puede tener más de 99 caracteres</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES" /> elementos...</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
@@ -5308,7 +5318,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9112748030372401671">Cambia tu fondo de pantalla</translation>
 <translation id="9112987648460918699">Buscar...</translation>
 <translation id="9114663181201435112">Iniciar sesión fácilmente</translation>
-<translation id="9115487443206954631">Administrar dispositivos Google Cast</translation>
 <translation id="9115675100829699941">&amp;Marcadores</translation>
 <translation id="9116465289595958864">Última modificación</translation>
 <translation id="9116799625073598554">Aplicación para tomar notas</translation>

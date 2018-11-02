@@ -1558,6 +1558,7 @@
 <translation id="3350117557200012647">Siirry laiteparin muodostustilaan</translation>
 <translation id="3353984535370177728">Valitse lähetettävä kansio</translation>
 <translation id="3355936511340229503">Yhteysvirhe</translation>
+<translation id="3356580349448036450">Valmis</translation>
 <translation id="3356797067524893661">Olet valmis jatkamaan Hangouts Meetiin</translation>
 <translation id="3358935496594837302">Puhelintasi ei löydy. Varmista, että käytät yhteensopivaa Android-laitetta ja että se on käden ulottuvilla. &lt;a&gt;Lisätietoja&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Varmennekäytännön rajoitteet</translation>
@@ -3947,6 +3948,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7007648447224463482">Avaa kaikki uudessa ikkunassa</translation>
 <translation id="701080569351381435">Näytä lähdekoodi</translation>
 <translation id="7014174261166285193">Asennus epäonnistui.</translation>
+<translation id="7017004637493394352">Sano ”Ok Google” uudelleen</translation>
 <translation id="7017219178341817193">Lisää uusi sivu</translation>
 <translation id="7017354871202642555">Tilaa ei voi asettaa ikkunan asettamisen jälkeen.</translation>
 <translation id="7017480957358237747">sallia tai estää tietyt verkkosivustot,</translation>
@@ -4274,6 +4276,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
     <ph name="BEGIN_PARAGRAPH3" />Voit poistaa palvelun käytöstä poistamalla laitteen sijaintiasetuksen käytöstä. Voit myös poistaa käytöstä Wi-Fi- ja mobiiliverkkojen sekä anturien käytön sijainnin määrityksessä.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Luo salasana –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Sano ”Ok Google”.</translation>
 <translation id="7525067979554623046">Luo</translation>
 <translation id="7529411698175791732">Tarkista internetyhteytesi. Jos ongelma jatkuu, kirjaudu ulos ja sitten takaisin sisään.</translation>
 <translation id="7530016656428373557">Purkautumisnopeus watteina</translation>
@@ -5317,7 +5320,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9112748030372401671">Vaihda taustakuva</translation>
 <translation id="9112987648460918699">Haku...</translation>
 <translation id="9114663181201435112">Kirjaudu sisään helposti</translation>
-<translation id="9115487443206954631">Hallinnoi Cast-laitteita</translation>
 <translation id="9115675100829699941">&amp;Kirjanmerkit</translation>
 <translation id="9116465289595958864">Muokattu viimeksi</translation>
 <translation id="9116799625073598554">Muistiinpanosovellus</translation>

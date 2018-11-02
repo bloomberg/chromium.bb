@@ -601,6 +601,7 @@
 <translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
 <translation id="2536525645274582300">Ang user ang magpapasya kung ie-enable ang mga serbisyo ng lokasyon ng Google</translation>
+<translation id="254653220329944566">Ine-enable ang pag-uulat sa cloud ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Simplex na pag-print lang</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Ang URL ay dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" />, na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
@@ -1952,6 +1953,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="614662973812186053">Kinokontrol din ng patakarang ito ang pagkolekta ng data ng paggamit at diagnostic sa Android.</translation>
+<translation id="6153048425064249648">Kinokontrol ng patakarang ito ang pag-uulat sa cloud ng <ph name="PRODUCT_NAME" />, na nag-a-upload ng impormasyon tungkol sa pagpapatakbo ng browser sa Google Admin console.
+
+      Kapag ang patakarang ito ay hinayaang hindi nakatakda o nakatakda sa False, walang kokolektahin o ia-upload na data.
+      Kapag ang patakarang ito ay nakatakda sa True, kokolektahin at ia-upload ang data sa Google Admin console.
+      Para makontrol kung anong data ang ina-upload, pakigamit ang mga patakaran sa panggrupong Chrome Reporting Extension.
+
+      May bisa lang ang patakarang ito kapag naka-enroll ang machine sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Dahil sa patakarang ito, sapilitang ii-install ang <ph name="CHROME_REPORTING_EXTENSION_NAME" /> para sa pag-uulat, at ino-override ang anumang patakaran ng extension na nauugnay sa extension na iyon.</translation>
 <translation id="6155936611791017817">Itakda ang default na katayuan ng malaking cursor sa screen ng pag-login</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="6158324314836466367">Pangalan ng web store na enterprise (hindi na ginagamit)</translation>
@@ -3033,14 +3043,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na i-detect kung nasa Intranet ang server, at kung oo ay doon lang ito tutugon sa mga kahilingan ng IWA.  Kung na-detect ang server bilang Internet, babalewalain ng <ph name="PRODUCT_NAME" /> ang mga kahilingan ng IWA mula dito.</translation>
-<translation id="8669669491594628013">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Aalertuhan ng pagprotekta ng password ang mga user kapag muli nilang ginamit ang kanilang pinoprotektahang password sa mga potensyal na kahina-hinalang site.
-
-      Maaari mong gamitin ang patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure ang poprotektahang password.
-
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala sa pagprotekta ng password.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala sa pagprotekta ng password kapag muling ginamit ng user ang kanyang pinoprotektahang password sa isang hindi naka-whitelist na site.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala sa pagprotekta ng password kapag muling ginamit ng user ang kanyang pinoprotektahang password sa isang phishing site.
-      Kung iiwang hindi nakatakda ang patakarang ito, ang mga password lang sa Google ang poprotektahan ng serbisyo sa pagprotekta ng password ngunit mababago ng user ang setting na ito.</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Nagbibigay-daan sa iyong itakda ang yugto ng panahon, sa millisecond, kung kailan aabisuhan ang mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o dapat i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.

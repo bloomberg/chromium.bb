@@ -852,7 +852,7 @@
 <translation id="225240747099314620">Дозволи идентификаторе за заштићени садржај (можда ће бити потребно да поново покренете рачунар)</translation>
 <translation id="2255077166240162850">Овај уређај је закључан на неки други домен или режим.</translation>
 <translation id="2255317897038918278">Microsoft означавање времена</translation>
-<translation id="2256115617011615191">Поново покрени одмах</translation>
+<translation id="2256115617011615191">Рестартуј одмах</translation>
 <translation id="225614027745146050">Добро дошли</translation>
 <translation id="225692081236532131">Статус активације</translation>
 <translation id="2261323523305321874">Администратор је унео промену која се односи на цео систем и која је онемогућила неке старе профиле.</translation>
@@ -1553,6 +1553,7 @@
 <translation id="3350117557200012647">Активирајте режим упаривања</translation>
 <translation id="3353984535370177728">Избор директоријума за отпремање</translation>
 <translation id="3355936511340229503">Грешка при повезивању</translation>
+<translation id="3356580349448036450">Завршено</translation>
 <translation id="3356797067524893661">Спремни сте да наставите на Hangouts Meet</translation>
 <translation id="3358935496594837302">Не можемо да пронађемо телефон. Проверите да ли користите компатибилни и укључени Android телефон који је у близини. &lt;a&gt;Сазнајте више&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ограничења смерница сертификата</translation>
@@ -3195,7 +3196,7 @@
 <translation id="5851063901794976166">Овде нема ничега...</translation>
 <translation id="5851868085455377790">Издавалац</translation>
 <translation id="5852112051279473187">Упс! Дошло је до озбиљног проблема док смо пријављивали овај уређај. Пробајте поново или контактирајте представника подршке.</translation>
-<translation id="5852137567692933493">Поново покрени и обави Powerwash</translation>
+<translation id="5852137567692933493">Рестартуј и обави Powerwash</translation>
 <translation id="5854912040170951372">Парче</translation>
 <translation id="5855773610748894548">Упс, грешка са безбедносним модулом.</translation>
 <translation id="5856721540245522153">Омогућавање функција за отклањање грешака</translation>
@@ -3945,6 +3946,7 @@
 <translation id="7007648447224463482">Отвори све у новом прозору</translation>
 <translation id="701080569351381435">Прикажи извор</translation>
 <translation id="7014174261166285193">Инсталација није успела.</translation>
+<translation id="7017004637493394352">Кажите поново „Ок Google“</translation>
 <translation id="7017219178341817193">Додајте нову страницу</translation>
 <translation id="7017354871202642555">Није могуће подесити режим након подешавања прозора.</translation>
 <translation id="7017480957358237747">да дозволите или забраните одређене веб-сајтове,</translation>
@@ -4272,6 +4274,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Можете да искључите локацију ако искључите главно подешавање локације на уређају. У подешавањима локације можете да искључите и коришћење Wi-Fi мреже, мобилних мрежа и сензора за локацију.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Прављење лозинке –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Реците „Ок Google“</translation>
 <translation id="7525067979554623046">Направи</translation>
 <translation id="7529411698175791732">Проверите интернет везу. Ако се проблем и даље јавља, пробајте да се одјавите и поново пријавите.</translation>
 <translation id="7530016656428373557">Ниво потрошње у ватима</translation>
@@ -4317,7 +4320,7 @@
 <translation id="7591957897535945411">Ова страница је преведена.</translation>
 <translation id="7595453277607160340">Да бисте користили Android и да би <ph name="DEVICE_TYPE" /> уређај радио правилно, пријавите се поново и ажурирајте.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (кôд грешке <ph name="ERROR_CODE" />).</translation>
-<translation id="7598466960084663009">Поново покрени рачунар</translation>
+<translation id="7598466960084663009">Рестартуј рачунар</translation>
 <translation id="7599527631045201165">Назив уређаја је предугачак. Унесите краћи и пробајте поново.</translation>
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE" /></translation>
 <translation id="760197030861754408">Идите на <ph name="LANDING_PAGE" /> да бисте се повезали.</translation>
@@ -5316,7 +5319,6 @@
 <translation id="9112748030372401671">Промена позадине</translation>
 <translation id="9112987648460918699">Пронађи...</translation>
 <translation id="9114663181201435112">Лако се пријављујте</translation>
-<translation id="9115487443206954631">Управљај Cast уређајима</translation>
 <translation id="9115675100829699941">&amp;Обележивачи</translation>
 <translation id="9116465289595958864">Последња измена</translation>
 <translation id="9116799625073598554">Апликација за прављење белешки</translation>

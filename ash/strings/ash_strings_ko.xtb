@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="2844169650293029770">USB-C 기기(좌측 전면 포트)</translation>
 <translation id="2865888419503095837">네트워크 정보</translation>
+<translation id="287224423103674444">화면 회전 단축키를 누르셨습니다. 화면을 회전하시겠습니까?</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="2878884018241093801">최근 항목이 없습니다.</translation>
 <translation id="2903844815300039659"><ph name="NAME" />에 연결됨, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
 <translation id="5691772641933328258">지문을 인식할 수 없음</translation>
+<translation id="5710450975648804523">알림 일시중지 사용 중</translation>
 <translation id="574392208103952083">보통</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
 <translation id="5750765938512549687">블루투스가 사용 중지됨</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">음성 피드백을 사용 중지하려면 두 볼륨 키를 5초 동안 길게 누르세요.</translation>
 <translation id="7692480393933218409">연결된 USB-C 기기 충전 중</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{알림 1개}other{알림 #개}}</translation>
 <translation id="776344839111254542">업데이트 세부정보를 보려면 클릭하세요.</translation>
+<translation id="7780159184141939021">화면 회전</translation>
 <translation id="7796353162336583443">실행기에서 스타일러스 버튼을 탭하여 메모를 작성하거나, 스크린샷을 찍거나, Google 어시스턴트, 레이저 포인터, 돋보기를 활용할 수 있습니다.</translation>
 <translation id="7798302898096527229">취소하려면 검색 또는 Shift 키를 누르세요.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>

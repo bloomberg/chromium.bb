@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">इमेज लोड करा</translation>
 <translation id="1029317248976101138">झूम करा</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ला तुमच्या डिव्हाइसवर मोठ्या प्रमाणावर डेटा कायमचा स्टोअर करायचा आहे</translation>
+<translation id="1030889518049751641">अॅक्टिव्हिटी लॉग पाहा</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड करत आहे</translation>
 <translation id="103279545524624934">Android अॅप्स लाँच करण्यासाठी डिस्क स्थान मोकळे करा.</translation>
 <translation id="1033780634303702874">आपल्या अनुक्रमिक डिव्हाइसेसवर प्रवेश करा</translation>
@@ -163,6 +164,7 @@
     तुम्हाला तुमचे प्रोफाईल पुन्हा सेट करावे लागेल.<ph name="BR" />
     <ph name="BR" />
     पुढील स्क्रीनवर, कृपया समस्येचे निराकरण करण्यात आम्हाला मदत करण्यासाठी अभिप्राय पाठवा.</translation>
+<translation id="1217668622537098248">क्रिया केल्यानंतर डाव्या क्लिकवर परत जा</translation>
 <translation id="121783623783282548">पासवर्ड जुळत नाहीत.</translation>
 <translation id="1218860753635451122">"मी सहमती दर्शवतो" या बटणावर क्लिक करून तुम्ही या Google सेवांसाठी वर वर्णन केलेल्या प्रक्रियांना सहमती दर्शवता.</translation>
 <translation id="122082903575839559">सर्टिफिकेट स्वाक्षरी अल्गोरिदम</translation>
@@ -1179,6 +1181,7 @@
 <translation id="2755628026949580719">तुमची सिक्युरिटी की सूचीबद्ध नसल्यास, कीचे बटण किमान पाच सेकंद दाबून ठेवा.</translation>
 <translation id="275662540872599901">स्क्रीन बंद</translation>
 <translation id="2761898608071930085">दुसरे खाते वापरा</translation>
+<translation id="276233135255363312">{0,plural, =1{तुमच्याकडे एक गुप्त विंडो आहे.}one{तुमच्याकडे # गुप्त विंडो आहे.}other{तुमच्याकडे # गुप्त विंडो आहेत.}}</translation>
 <translation id="2762441749940182211">कॅमेरा ब्लॉक केला आहे</translation>
 <translation id="2765217105034171413">लहान</translation>
 <translation id="2766006623206032690">पे&amp;स्ट करा आणि जा</translation>
@@ -1554,6 +1557,7 @@
 <translation id="3350117557200012647">पेअरींग मोड मध्ये जा</translation>
 <translation id="3353984535370177728">अपलोड करण्यासाठी एक फोल्डर निवडा</translation>
 <translation id="3355936511340229503">कनेक्शन एरर</translation>
+<translation id="3356580349448036450">पूर्ण</translation>
 <translation id="3356797067524893661">Hangouts Meetवर सुरू ठेवण्यासाठी तुम्ही पूर्ण सज्ज आहात</translation>
 <translation id="3358935496594837302">तुमचा फोन आढळला नाही. तुम्ही सुसंगत Android फोन वापरत असल्याची आणि तो चालू व सोयीस्कर असल्याची खात्री करा. &lt;a&gt;आणखी जाणून घ्या&lt;/a&gt;</translation>
 <translation id="3359256513598016054">सर्टिफिकेट धोरण प्रतिबंध</translation>
@@ -2185,6 +2189,7 @@
 <translation id="4312866146174492540">अवरोधित करा (डीफॉल्ट)</translation>
 <translation id="4316850752623536204">विकसक वेबसाइट</translation>
 <translation id="4320177379694898372">कोणतेही इंटरनेट कनेक्शन नाही</translation>
+<translation id="4320948194796820126">तुमच्या ईमेलवर बुकमार्क जोडा</translation>
 <translation id="4322394346347055525">अन्य टॅब बंद करा</translation>
 <translation id="4324577459193912240">फाइल अपूर्ण आहे</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> कधीही भाषांतरित करू नका</translation>
@@ -2205,6 +2210,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> विंडो शेअर करीत आहे.</translation>
 <translation id="4364830672918311045">सूचना डिस्प्ले करा</translation>
 <translation id="4365673000813822030">अरेरे, समक्रमणाने काम करणे थांबवले आहे.</translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" /> सह <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">तुम्ही एंटर केलेला ईमेल आणि पासवर्ड जुळत नाही</translation>
 <translation id="437184764829821926">प्रगत फॉन्ट सेटिंग्ज</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3069,6 +3075,7 @@
 <translation id="5669267381087807207">सक्रिय करीत आहे </translation>
 <translation id="5669691691057771421">नवीन पिन एंटर करा</translation>
 <translation id="5671641761787789573">इमेज ब्लॉक केल्या</translation>
+<translation id="567643736130151854">सर्व डिव्हाइसवर तुमचे बुकमार्क, पासवर्ड आणि बरेच काही मिळविण्यासाठी साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="5677503058916217575">पृष्ठ भाषा:</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> ला मंजूर केला गेलेला प्रवेश वाचा आणि लिहा.</translation>
@@ -3941,6 +3948,7 @@
 <translation id="7007648447224463482">सर्व नवीन विंडोमध्ये उघडा</translation>
 <translation id="701080569351381435">स्त्रोत पहा</translation>
 <translation id="7014174261166285193">स्थापना अयशस्वी.</translation>
+<translation id="7017004637493394352">पुन्हा "Ok Google" म्हणा</translation>
 <translation id="7017219178341817193">एक नवीन पृष्ठ जोडा</translation>
 <translation id="7017354871202642555">विंडो सेट केल्यानंतर मोड सेट करणे शक्य नाही.</translation>
 <translation id="7017480957358237747">विशिष्ट वेबसाइटला अनुमती द्या किंवा प्रतिबंध करा,</translation>
@@ -4268,6 +4276,7 @@
     <ph name="BEGIN_PARAGRAPH3" />तुमच्या डिव्हाइसवर मुख्य स्थान सेटिंग बंद करून तुम्ही स्थान बंद करू शकता. तुम्ही स्थान सेटिंग्जमध्ये वाय फाय, मोबाईल नेटवर्क आणि स्थानासाठी सेन्सरचा वापर देखील बंद करू शकता.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">एक पासवर्ड तयार करा -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">"Ok Google" म्हणा</translation>
 <translation id="7525067979554623046">तयार करा</translation>
 <translation id="7529411698175791732">तुमचे इंटरनेट कनेक्शन तपासा. समस्या कायम राहिल्यास, साइन आउट करून आणि पुन्हा साइन इन करून पहा.</translation>
 <translation id="7530016656428373557">डिस्चार्ज रेट वॉट्स मध्ये</translation>
@@ -4956,6 +4965,7 @@
 <translation id="8571213806525832805">मागील 4 आठवड्यांमधील</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> वर आवाज नेहमी चालू ठेवा</translation>
 <translation id="8575286410928791436">बाहेर पडण्यासाठी <ph name="KEY_EQUIVALENT" /> धरून ठेवा</translation>
+<translation id="8578421807258988326">{0,plural, =1{ही विंडो बंद करा}one{सर्व गुप्त विंडो बंद करा}other{सर्व गुप्त विंडो बंद करा}}</translation>
 <translation id="8578639784464423491">९९ पेक्षा जास्‍त अक्षरे असू शकत नाहीत</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> आयटम संकालित करीत आहे...</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
@@ -5310,7 +5320,6 @@
 <translation id="9112748030372401671">तुमचा वॉलपेपर बदला</translation>
 <translation id="9112987648460918699">शोधा...</translation>
 <translation id="9114663181201435112">सहजपणे साइन इन करा</translation>
-<translation id="9115487443206954631">कास्ट डिव्हाइसेस व्यवस्थापित करा</translation>
 <translation id="9115675100829699941">&amp;बुकमार्क</translation>
 <translation id="9116465289595958864">अखेरचे सुधारित केले</translation>
 <translation id="9116799625073598554">टीप-घेणारा अॅप</translation>

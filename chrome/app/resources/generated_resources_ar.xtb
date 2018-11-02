@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">تحميل صورة</translation>
 <translation id="1029317248976101138">تكبير/تصغير</translation>
 <translation id="1030706264415084469">يريد <ph name="URL" /> تخزين حجم كبير من البيانات بشكل دائم على جهازك.</translation>
+<translation id="1030889518049751641">عرض سجلّ الأنشطة</translation>
 <translation id="1031362278801463162">تحميل المعاينة</translation>
 <translation id="103279545524624934">‏احرص على تفريغ مساحة على القرص لتشغيل تطبيقات Android.</translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
@@ -163,6 +164,7 @@
     سيلزمك إعداد ملفك الشخصي مرةً أخرى.<ph name="BR" />
     <ph name="BR" />
     في الشاشة التالية، يُرجى إرسال تعليقات لمساعدتنا في حل هذه المشكلة.</translation>
+<translation id="1217668622537098248">إعادة ميزة النقر بزر الماوس الأيسر بعد اتخاذ إجراء</translation>
 <translation id="121783623783282548">كلمتا المرور غير متطابقتين.</translation>
 <translation id="1218860753635451122">‏بالنقر على الزر "أوافق"، أنت توافق بذلك على المعالجة الواردة أعلاه لخدمات Google هذه.</translation>
 <translation id="122082903575839559">خوارزمية التوقيع على الشهادة</translation>
@@ -1179,6 +1181,7 @@
 <translation id="2755628026949580719">في حال لم يكن مفتاح الأمان مدرجًا، يُرجى الضغط على زر المفتاح لمدة لا تقل عن 5 ثوانٍ.</translation>
 <translation id="275662540872599901">الشاشة متوقفة</translation>
 <translation id="2761898608071930085">استخدام حساب آخر</translation>
+<translation id="276233135255363312">{0,plural, =1{توجد نافذة تصفُّح متخفٍ واحدة.}zero{توجد # نافذة تصفُّح متخفٍ}two{توجد نافذتي تصفُّح متخفٍ (#)}few{توجد # نوافذ تصفُّح متخفٍ}many{توجد # نافذة تصفُّح متخفٍ}other{توجد # نافذة تصفُّح متخفٍ}}</translation>
 <translation id="2762441749940182211">تم حظر استخدام الكاميرا</translation>
 <translation id="2765217105034171413">صغير</translation>
 <translation id="2766006623206032690">‏&amp;لصق عنوان URL والدخول إليه</translation>
@@ -1552,6 +1555,7 @@
 <translation id="3350117557200012647">الدخول في وضع الإقران</translation>
 <translation id="3353984535370177728">حدد مجلدًا لتحميله</translation>
 <translation id="3355936511340229503">خطأ الاتصال</translation>
+<translation id="3356580349448036450">مكتمل</translation>
 <translation id="3356797067524893661">‏الآن أنت جاهز تمامًا للمتابعة إلى Hangouts Meet</translation>
 <translation id="3358935496594837302">‏تعذّر العثور على هاتفك. تأكد من أنك تستخدم هاتف Android متوافقًا وأنه قيد التشغيل وفي متناول يديك. &lt;a&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="3359256513598016054">القيود على سياسة الشهادة</translation>
@@ -2181,6 +2185,7 @@
 <translation id="4312866146174492540">حظر (تلقائي)</translation>
 <translation id="4316850752623536204">موقع الويب لمطوّر البرامج</translation>
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
+<translation id="4320948194796820126">إضافة إشارة مرجعية إلى بريدك الإلكتروني</translation>
 <translation id="4322394346347055525">إغلاق علامات التبويب الأخرى</translation>
 <translation id="4324577459193912240">ملف غير مكتمل</translation>
 <translation id="4330387663455830245">عدم ترجمة <ph name="LANGUAGE" /> مطلقًا</translation>
@@ -2201,6 +2206,7 @@
 <translation id="4364567974334641491">يشارك <ph name="APP_NAME" /> نافذة.</translation>
 <translation id="4364830672918311045">عرض الإشعارات</translation>
 <translation id="4365673000813822030">عذرًا، توقفت المزامنة.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> مع <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">البريد الإلكتروني وكلمة المرور اللذان أدخلتهما غير متطابقين</translation>
 <translation id="437184764829821926">الإعدادات المتقدمة للخط</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3065,6 +3071,7 @@
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5669691691057771421">إدخال رقم التعريف الشخصي الجديد</translation>
 <translation id="5671641761787789573">تم حظر الصور</translation>
+<translation id="567643736130151854">سجّل الدخول وفعِّل المزامنة للحصول على الإشارات المرجعية وكلمات المرور والمزيد على جميع الأجهزة</translation>
 <translation id="5677503058916217575">لغة الصفحة:</translation>
 <translation id="5677928146339483299">تم المنع</translation>
 <translation id="5678550637669481956">تم منح إذن دخول للقراءة والكتابة إلى <ph name="VOLUME_NAME" />.</translation>
@@ -3937,6 +3944,7 @@
 <translation id="7007648447224463482">فتح الكل في نافذة جديدة</translation>
 <translation id="701080569351381435">عرض المصدر</translation>
 <translation id="7014174261166285193">تعذّر التثبيت.</translation>
+<translation id="7017004637493394352">‏قل "Ok Google" مرة أخرى</translation>
 <translation id="7017219178341817193">إضافة صفحة جديدة</translation>
 <translation id="7017354871202642555">لا يمكن تعيين الوضع بعد تعيين النافذة.</translation>
 <translation id="7017480957358237747">السماح ببعض المواقع أو حظرها،</translation>
@@ -4265,6 +4273,7 @@
     <ph name="BEGIN_PARAGRAPH3" />يمكنك إيقاف ميزة "الموقع الجغرافي" من خلال إيقاف الإعداد الرئيسي للموقع الجغرافي على جهازك. ويمكنك أيضًا إيقاف استخدام شبكة Wi-Fi وشبكات الجوَّال وأجهزة الاستشعار للموقع الجغرافي في إعدادات الموقع الجغرافي.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">إنشاء كلمة مرور -</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
+<translation id="7522255036471229694">‏قل "Ok Google".</translation>
 <translation id="7525067979554623046">إنشاء</translation>
 <translation id="7529411698175791732">تحقق من اتصالك بالإنترنت. وإذا استمرت المشكلة، فحاول الخروج ثم تسجيل الدخول مرة أخرى.</translation>
 <translation id="7530016656428373557">معدل التفريغ بوحدة الوات</translation>
@@ -4955,6 +4964,7 @@
 <translation id="8571213806525832805">الأسابيع الـ4 الأخيرة</translation>
 <translation id="8574990355410201600">السماح دومًا بتشغيل الصوت على <ph name="HOST" /></translation>
 <translation id="8575286410928791436">يُرجى الضغط مع الاستمرار على <ph name="KEY_EQUIVALENT" /> للإنهاء</translation>
+<translation id="8578421807258988326">{0,plural, =1{إغلاق هذه النافذة}zero{إغلاق جميع نوافذ التصفُّح المتخفي}two{إغلاق جميع نوافذ التصفُّح المتخفي}few{إغلاق جميع نوافذ التصفُّح المتخفي}many{إغلاق جميع نوافذ التصفُّح المتخفي}other{إغلاق جميع نوافذ التصفُّح المتخفي}}</translation>
 <translation id="8578639784464423491">لا يمكن أن تتجاوز الكلمة 99 حرفًا.</translation>
 <translation id="8579285237314169903">جارٍ مزامنة <ph name="NUMBER_OF_FILES" /> من البنود...</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
@@ -5308,7 +5318,6 @@
 <translation id="9112748030372401671">تغيير الخلفية</translation>
 <translation id="9112987648460918699">بحث...</translation>
 <translation id="9114663181201435112">تسجيل الدخول بسهولة</translation>
-<translation id="9115487443206954631">إدارة أجهزة الإرسال</translation>
 <translation id="9115675100829699941">إ&amp;شارات مرجعية</translation>
 <translation id="9116465289595958864">آخر تعديل</translation>
 <translation id="9116799625073598554">تطبيق تدوين الملاحظات</translation>

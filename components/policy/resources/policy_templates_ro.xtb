@@ -578,6 +578,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2536525645274582300">Utilizatorul decide dacă să activeze serviciile de localizare Google</translation>
+<translation id="254653220329944566">Activează raportarea în cloud <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Numai printare simplex</translation>
 <translation id="2552966063069741410">Fus orar</translation>
 <translation id="2562339630163277285">Specifică adresa URL a motorului de căutare folosit pentru a oferi rezultate instantanee. Adresa URL trebuie să conțină șirul <ph name="SEARCH_TERM_MARKER" />, care va fi înlocuit în momentul interogării cu textul pe care utilizatorul l-a introdus până atunci.
@@ -1881,6 +1882,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6133088669883929098">Permite tuturor site-urilor să folosească generarea cheilor</translation>
 <translation id="6145799962557135888">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula JavaScript. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="614662973812186053">Această politică controlează și culegerea datelor Android privind utilizarea și diagnosticarea.</translation>
+<translation id="6153048425064249648">Această politică stabilește raportarea în cloud <ph name="PRODUCT_NAME" />, care încarcă informații despre funcționarea browserului în consola Google Admin.
+
+      Când această politică nu este setată sau este dezactivată, nu se colectează și nu se încarcă date.
+      Când această politică este activată, datele sunt colectate și încărcate în consola Google Admin.
+      Pentru a stabili ce date sunt încărcate, folosește politicile din grupul Chrome Reporting Extension.
+
+      Această politică se aplică numai când dispozitivul este înregistrat la <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Această politică instalează automat <ph name="CHROME_REPORTING_EXTENSION_NAME" /> pentru raportare și modifică toate politicile privind extensiile care au legătură cu acea extensie.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
@@ -2916,14 +2926,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> va încerca să detecteze dacă un anumit server se află în intranet și numai după aceea va răspunde la solicitările IWA. Dacă un server este detectat ca fiind pe internet, <ph name="PRODUCT_NAME" /> va ignora solicitările IWA trimise de acesta.</translation>
-<translation id="8669669491594628013">Îți permite să controlezi declanșarea avertismentului privind protecția parolei. Protecția parolei îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
-
-      Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola de protejat.
-
-      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția parolei.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția parolei se va afișa când utilizatorul refolosește parola protejată pe un site care nu este trecut în lista albă.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția parolei se va afișa când utilizatorul refolosește parola protejată pe un site de phishing.
-      Dacă această politică nu este configurată, serviciul de protecție a parolei va proteja doar parolele Google, dar utilizatorul va putea modifica această setare.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.

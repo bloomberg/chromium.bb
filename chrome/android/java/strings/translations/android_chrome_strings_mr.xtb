@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">फिकट</translation>
 <translation id="1821253160463689938">तुम्ही त्या पेजना भेट दिली नसली तरीही, तुमची प्राधान्ये लक्षात ठेवण्यासाठी कुकीचा वापर करते</translation>
 <translation id="1829244130665387512">या पृष्ठामध्ये शोधा</translation>
-<translation id="1832521218263067499">सुरक्षितता घटना</translation>
 <translation id="1853692000353488670">नवीन गुप्त टॅब</translation>
 <translation id="1868024384445905608">Chrome आता फायली वेगाने डाउनलोड करते</translation>
+<translation id="187628348035757895">डेव्‍हलपर पर्याय</translation>
 <translation id="1878302395768190018">तुम्ही Chrome सेटिंग्जमध्ये हे कधीही कस्टमाइझ करू शकता</translation>
 <translation id="1880072593381090678">Chrome ची लोकप्रिय पेज</translation>
 <translation id="1883903952484604915">माझ्या फायली</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="6985347914332179298">येथे डाउनलोड नाहीत</translation>
 <translation id="6990079615885386641">Google Play Store मधून अॅप मिळवा: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांची ऑटोमॅटिक तक्रार करा</translation>
 <translation id="6992289844737586249">साइटना तुमचा मायक्रोफोन वापरण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>
 <translation id="7016516562562142042">वर्तमान शोध इंजिनसाठी अनुमती दिली</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> डाउनलोड केले</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="8084114998886531721">सेव्ह केलेले पासवर्ड</translation>
 <translation id="8087000398470557479">Google ने वितरित केलेली ही सामग्री, <ph name="DOMAIN_NAME" /> मधील आहे.</translation>
+<translation id="8087980556724996220">ऑटोफिल असिस्टंट <ph name="DURATION_SECONDS" />से मध्ये थांबेल…</translation>
 <translation id="8103578431304235997">गुप्त टॅब</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">संबंधित पेज सूचवा</translation>

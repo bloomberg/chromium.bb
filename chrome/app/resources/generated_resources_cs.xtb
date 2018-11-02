@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Načíst obrázek</translation>
 <translation id="1029317248976101138">Lupa</translation>
 <translation id="1030706264415084469">Stránka <ph name="URL" /> chce v zařízení trvale ukládat velké množství dat</translation>
+<translation id="1030889518049751641">Zobrazit protokol aktivity</translation>
 <translation id="1031362278801463162">Načítání náhledu</translation>
 <translation id="103279545524624934">Chcete-li spouštět aplikace pro Android, uvolněte místo na disku.</translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
@@ -163,6 +164,7 @@
 Profil bude třeba znovu nastavit.<ph name="BR" />
 <ph name="BR" />
 Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém pomůže vyřešit.</translation>
+<translation id="1217668622537098248">Po akci vrátit na kliknutí levým tlačítkem</translation>
 <translation id="121783623783282548">Hesla se neshodují.</translation>
 <translation id="1218860753635451122">Kliknutím na tlačítko Souhlasím vyjadřujete souhlas se zpracováním popsaným výše pro tyto služby Google.</translation>
 <translation id="122082903575839559">Algoritmus podpisu certifikátu</translation>
@@ -1179,6 +1181,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2755628026949580719">Pokud váš bezpečnostní klíč není uveden, alespoň 5 sekund podržte tlačítko na klíči.</translation>
 <translation id="275662540872599901">obrazovka je vypnutá</translation>
 <translation id="2761898608071930085">Použít jiný účet</translation>
+<translation id="276233135255363312">{0,plural, =1{Máte jedno anonymní okno.}few{Máte # anonymní okna.}many{Máte # anonymního okna.}other{Máte # anonymních oken.}}</translation>
 <translation id="2762441749940182211">Kamera je blokována</translation>
 <translation id="2765217105034171413">Malé</translation>
 <translation id="2766006623206032690">Vložit a rovnou otevřít</translation>
@@ -1551,6 +1554,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3350117557200012647">Zapněte režim párování</translation>
 <translation id="3353984535370177728">Vyberte složku pro nahrání</translation>
 <translation id="3355936511340229503">Chyba připojení</translation>
+<translation id="3356580349448036450">Dokončeno</translation>
 <translation id="3356797067524893661">Jste připraveni pokračovat do služby Hangouts Meet</translation>
 <translation id="3358935496594837302">Telefon nebyl nalezen. Zkontrolujte, zda používáte kompatibilní telefon Android, který je zapnutý a který máte u sebe. &lt;a&gt;Další informace&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Omezení zásad certifikátu</translation>
@@ -2182,6 +2186,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4312866146174492540">Blokovat (výchozí)</translation>
 <translation id="4316850752623536204">Webové stránky vývojáře</translation>
 <translation id="4320177379694898372">Žádné připojení k internetu</translation>
+<translation id="4320948194796820126">Přidejte si záložku pro e-mail</translation>
 <translation id="4322394346347055525">Zavřít ostatní karty</translation>
 <translation id="4324577459193912240">Soubor je neúplný</translation>
 <translation id="4330387663455830245">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
@@ -2202,6 +2207,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4364567974334641491"><ph name="APP_NAME" /> sdílí okno.</translation>
 <translation id="4364830672918311045">Zobrazování oznámení</translation>
 <translation id="4365673000813822030">Jejda, synchronizace přestala fungovat.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> pomocí aplikace <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Zadaný e-mail a heslo se neshodují.</translation>
 <translation id="437184764829821926">Rozšířené nastavení písma</translation>
 <translation id="4372884569765913867">1:1</translation>
@@ -3065,6 +3071,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5669267381087807207">Probíhá aktivace</translation>
 <translation id="5669691691057771421">Zadejte nový PIN</translation>
 <translation id="5671641761787789573">Byly zablokovány obrázky</translation>
+<translation id="567643736130151854">Chcete-li mít své záložky, hesla a další obsah na všech zařízeních, přihlaste se a zapněte synchronizaci</translation>
 <translation id="5677503058916217575">Jazyk stránky:</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5678550637669481956">Oprávnění ke čtení a zápisu na jednotku <ph name="VOLUME_NAME" /> bylo uděleno.</translation>
@@ -3936,6 +3943,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7007648447224463482">Otevřít vše v novém okně</translation>
 <translation id="701080569351381435">Zobrazit zdrojový kód</translation>
 <translation id="7014174261166285193">Instalace se nezdařila.</translation>
+<translation id="7017004637493394352">Řekněte „Ok Google“ ještě jednou</translation>
 <translation id="7017219178341817193">Přidat novou stránku</translation>
 <translation id="7017354871202642555">Po nastavení okna již nelze nastavit režim.</translation>
 <translation id="7017480957358237747">povolit nebo zakázat některé weby,</translation>
@@ -4263,6 +4271,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
     <ph name="BEGIN_PARAGRAPH3" />Určování polohy můžete vypnout tím, že v zařízení deaktivujete hlavní nastavení polohy. V nastavení polohy můžete také vypnout používání sítí Wi-Fi, mobilních sítí a senzorů k určování polohy.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Vytvořte heslo –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Řekněte „Ok Google“.</translation>
 <translation id="7525067979554623046">Vytvořit</translation>
 <translation id="7529411698175791732">Zkontrolujte připojení k internetu. Pokud problém přetrvává, zkuste se odhlásit a znovu přihlásit.</translation>
 <translation id="7530016656428373557">Rychlost vybíjení ve wattech</translation>
@@ -4950,6 +4959,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8571213806525832805">Poslední 4 týdny</translation>
 <translation id="8574990355410201600">Na webu <ph name="HOST" /> vždy povolit zvuk</translation>
 <translation id="8575286410928791436">Ukončíte podržením kláves <ph name="KEY_EQUIVALENT" /></translation>
+<translation id="8578421807258988326">{0,plural, =1{Zavřít toto okno}few{Zavřít všechna anonymní okna}many{Zavřít všechna anonymní okna}other{Zavřít všechna anonymní okna}}</translation>
 <translation id="8578639784464423491">Nesmí přesahovat 99 písmen</translation>
 <translation id="8579285237314169903">Synchronizace <ph name="NUMBER_OF_FILES" /> položek...</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>
@@ -5303,7 +5313,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9112748030372401671">Změňte tapetu</translation>
 <translation id="9112987648460918699">Najít...</translation>
 <translation id="9114663181201435112">Snadné přihlášení</translation>
-<translation id="9115487443206954631">Spravovat zařízení Cast</translation>
 <translation id="9115675100829699941">&amp;Záložky</translation>
 <translation id="9116465289595958864">Naposledy upraveno</translation>
 <translation id="9116799625073598554">Aplikace na psaní poznámek</translation>

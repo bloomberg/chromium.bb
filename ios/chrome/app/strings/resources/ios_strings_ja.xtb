@@ -235,10 +235,12 @@
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
 <translation id="4807020197310989387">1 件のリーディング リストの記事が未読です。</translation>
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
+<translation id="4840495572919996524">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります。</translation>
 <translation id="4854345657858711387">パスコードの設定</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4882831918239250449">検索、広告などのカスタマイズを目的とした閲覧履歴の使用方法を設定</translation>
+<translation id="4895709476292058519">アカウントを変更</translation>
 <translation id="4904877109095351937">既読にする</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
@@ -482,6 +484,7 @@
 <translation id="9079935439869366234">すべて未読にする</translation>
 <translation id="9081058212938299310"><ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="9083392325882095631">1個のアイテム</translation>
+<translation id="9083838294503912307">カスタマイズした設定を複数の端末で同期して使用するには、同期を有効にします。</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="9157836665414082580">ダイアログを表示しない</translation>

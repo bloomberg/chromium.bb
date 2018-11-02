@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Încarcă imaginea</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> dorește să stocheze permanent cantități mari de date pe dispozitiv</translation>
+<translation id="1030889518049751641">Vezi Jurnalul de activități</translation>
 <translation id="1031362278801463162">Se încarcă previzualizarea</translation>
 <translation id="103279545524624934">Eliberează spațiu pe disc pentru a lansa aplicații Android.</translation>
 <translation id="1033780634303702874">Accesează dispozitivele seriale</translation>
@@ -163,6 +164,7 @@
     Va trebui să îți configurezi profilul din nou.<ph name="BR" />
     <ph name="BR" />
     Pe următorul ecran, trimite-ne feedback pentru a ne ajuta să remediem problema.</translation>
+<translation id="1217668622537098248">Revino la clic stânga după acțiune</translation>
 <translation id="121783623783282548">Parolele nu se potrivesc.</translation>
 <translation id="1218860753635451122">Dacă dai clic pe butonul „Sunt de acord” înseamnă că ești de acord cu procesarea descrisă mai sus pentru aceste servicii Google.</translation>
 <translation id="122082903575839559">Algoritm de semnare a certificatului</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">Dacă cheia de securitate nu este afișată, apasă butonul cheii timp de cel puțin cinci secunde.</translation>
 <translation id="275662540872599901">ecran dezactivat</translation>
 <translation id="2761898608071930085">Folosește alt cont</translation>
+<translation id="276233135255363312">{0,plural, =1{Ai o fereastră incognito.}few{Ai # ferestre incognito.}other{Ai # de ferestre incognito.}}</translation>
 <translation id="2762441749940182211">Camera foto este blocată</translation>
 <translation id="2765217105034171413">Mic</translation>
 <translation id="2766006623206032690">In&amp;serează și accesează</translation>
@@ -1554,6 +1557,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3350117557200012647">Intră în modul de asociere</translation>
 <translation id="3353984535370177728">Selectați un dosar de încărcat</translation>
 <translation id="3355936511340229503">Eroare de conexiune</translation>
+<translation id="3356580349448036450">Finalizat</translation>
 <translation id="3356797067524893661">Ești gata să accesezi Hangouts Meet</translation>
 <translation id="3358935496594837302">Telefonul nu poate fi găsit. Asigură-te că folosești un telefon Android compatibil care este pornit și la îndemână. &lt;a&gt;Află mai multe&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Limitări ale politicii pentru certificate</translation>
@@ -2186,6 +2190,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
 <translation id="4316850752623536204">Site-ul dezvoltatorului</translation>
 <translation id="4320177379694898372">Fără conexiune la internet</translation>
+<translation id="4320948194796820126">Adaugă un marcaj la e-mail</translation>
 <translation id="4322394346347055525">Închide celelalte file</translation>
 <translation id="4324577459193912240">Fișier incomplet</translation>
 <translation id="4330387663455830245">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
@@ -2206,6 +2211,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> trimite conținutul unei ferestre.</translation>
 <translation id="4364830672918311045">Afișează notificările</translation>
 <translation id="4365673000813822030">Hopa, sincronizarea a încetat să funcționeze.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> cu <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Adresa de e-mail și parola pe care le-ai introdus nu se potrivesc</translation>
 <translation id="437184764829821926">Setări avansate pentru fonturi</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3070,6 +3076,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5669267381087807207">Se activează</translation>
 <translation id="5669691691057771421">Introdu noul cod PIN</translation>
 <translation id="5671641761787789573">Imagini blocate</translation>
+<translation id="567643736130151854">Conectează-te și activează sincronizarea pentru a accesa marcajele, parolele și altele pe toate dispozitivele tale</translation>
 <translation id="5677503058916217575">Limba paginii:</translation>
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5678550637669481956">A fost acordat accesul de citire și scriere la <ph name="VOLUME_NAME" />.</translation>
@@ -3941,6 +3948,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7007648447224463482">Deschide totul într-o fereastră nouă</translation>
 <translation id="701080569351381435">Afișează sursa</translation>
 <translation id="7014174261166285193">Instalarea nu a reușit.</translation>
+<translation id="7017004637493394352">Rostește din nou „Ok Google”</translation>
 <translation id="7017219178341817193">Adaugă o pagină nouă</translation>
 <translation id="7017354871202642555">Modul nu poate fi setat după setarea ferestrei.</translation>
 <translation id="7017480957358237747">permiteți sau interziceți anumite site-uri web,</translation>
@@ -4268,6 +4276,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
     <ph name="BEGIN_PARAGRAPH3" />Poți dezactiva locația dezactivând setarea principală Locație pe dispozitiv. De asemenea, poți dezactiva utilizarea rețelelor Wi-Fi, a rețelelor mobile și a senzorilor pentru locație din setările privind locația.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Creați o parolă –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Rostește „Ok Google”</translation>
 <translation id="7525067979554623046">Creați</translation>
 <translation id="7529411698175791732">Verifică conexiunea la internet. Dacă problema persistă, deconectează-te și conectează-te din nou.</translation>
 <translation id="7530016656428373557">Rata de descărcare în wați</translation>
@@ -4958,6 +4967,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8571213806525832805">Ultimele 4 săptămâni</translation>
 <translation id="8574990355410201600">Permite întotdeauna sunetul pe <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Pentru a ieși, ține apăsată tasta <ph name="KEY_EQUIVALENT" />.</translation>
+<translation id="8578421807258988326">{0,plural, =1{Închide această fereastră}few{Închide toate ferestrele incognito}other{Închide toate ferestrele incognito}}</translation>
 <translation id="8578639784464423491">Nu poate depăși 99 de litere</translation>
 <translation id="8579285237314169903">Se sincronizează <ph name="NUMBER_OF_FILES" /> elemente...</translation>
 <translation id="857943718398505171">Acordată (recomandat)</translation>
@@ -5311,7 +5321,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9112748030372401671">Schimbați imaginea de fundal</translation>
 <translation id="9112987648460918699">Caută...</translation>
 <translation id="9114663181201435112">Conectează-te cu ușurință</translation>
-<translation id="9115487443206954631">Gestionează dispozitivele Cast</translation>
 <translation id="9115675100829699941">&amp;Marcaje</translation>
 <translation id="9116465289595958864">Ultima modificare</translation>
 <translation id="9116799625073598554">Aplicație pentru scris note</translation>

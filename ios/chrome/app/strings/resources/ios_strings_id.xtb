@@ -235,10 +235,12 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 artikel yang belum dibaca di Daftar Bacaan.</translation>
 <translation id="481968316161811770">Cookie, Data Situs</translation>
+<translation id="4840495572919996524">Bookmark, histori, sandi, dan informasi Anda lainnya tidak akan lagi disinkronkan ke Akun Google Anda.</translation>
 <translation id="4854345657858711387">Setel Kode Sandi</translation>
 <translation id="4860895144060829044">Telepon</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4882831918239250449">Kontrol cara histori browsing digunakan untuk mempersonalisasi Penelusuran, iklan, dan lainnya</translation>
+<translation id="4895709476292058519">Ubah Akun</translation>
 <translation id="4904877109095351937">Tandai Sudah Dibaca</translation>
 <translation id="4930268273022498155">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih lagi ke <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terjadi masalah saat berbagi item Anda.</translation>
@@ -482,6 +484,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="9079935439869366234">Tandai Semua Belum Dibaca</translation>
 <translation id="9081058212938299310">Perbarui sandi untuk <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 item</translation>
+<translation id="9083838294503912307">Untuk menyinkronkan dan mempersonalisasi berbagai perangkat, aktifkan sinkronisasi.</translation>
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9148126808321036104">Masuk sekali lagi</translation>
 <translation id="9157836665414082580">Sembunyikan Dialog</translation>

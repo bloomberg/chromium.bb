@@ -1554,6 +1554,7 @@
 <translation id="3350117557200012647">Activa el mode de vinculació</translation>
 <translation id="3353984535370177728">Seleccioneu una carpeta per penjar</translation>
 <translation id="3355936511340229503">Error de connexió</translation>
+<translation id="3356580349448036450">Completada</translation>
 <translation id="3356797067524893661">Ja estàs a punt per accedir a Hangouts Meet</translation>
 <translation id="3358935496594837302">No es troba el telèfon. Comprova que estiguis utilitzant un telèfon Android compatible, que estigui encès i que sigui a prop. &lt;a&gt;Més informació&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restriccions de normes de certificats</translation>
@@ -3946,6 +3947,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7007648447224463482">Obre-ho tot en una finestra nova</translation>
 <translation id="701080569351381435">Visualitza l'origen</translation>
 <translation id="7014174261166285193">La instal·lació ha fallat.</translation>
+<translation id="7017004637493394352">Torneu a dir "Ok Google"</translation>
 <translation id="7017219178341817193">Afegeix una pàgina nova</translation>
 <translation id="7017354871202642555">No es pot configurar el mode després d'haver configurat la finestra.</translation>
 <translation id="7017480957358237747">permet o prohibeix llocs web determinats,</translation>
@@ -4273,6 +4275,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Pots desactivar la ubicació desactivant l'opció Ubicació principal del dispositiu. També pots desactivar l'ús de Wi-Fi, xarxes mòbils i sensors per calcular la ubicació a la configuració d'ubicació.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Crea una contrasenya</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Digueu "Ok Google"</translation>
 <translation id="7525067979554623046">Crea</translation>
 <translation id="7529411698175791732">Comprova la connexió a Internet. Si el problema continua, prova de tancar la sessió i tornar-la a iniciar.</translation>
 <translation id="7530016656428373557">Velocitat de descàrrega en watts</translation>
@@ -5314,7 +5317,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9112748030372401671">Canviar el fons de pantalla</translation>
 <translation id="9112987648460918699">Cerca...</translation>
 <translation id="9114663181201435112">Inicia la sessió fàcilment</translation>
-<translation id="9115487443206954631">Gestiona els dispositius d'emissió</translation>
 <translation id="9115675100829699941">&amp;Adreces d'interès</translation>
 <translation id="9116465289595958864">Última modificació</translation>
 <translation id="9116799625073598554">Aplicació per prendre notes</translation>

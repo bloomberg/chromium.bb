@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">Зареждане на изображението</translation>
 <translation id="1029317248976101138">Промяна на мащаба</translation>
 <translation id="1030706264415084469"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на устройството ви</translation>
+<translation id="1030889518049751641">Преглед на регистрационния файл за активността</translation>
 <translation id="1031362278801463162">Визуализацията се зарежда</translation>
 <translation id="103279545524624934">Освободете място на диска, за да стартирате приложения за Android.</translation>
 <translation id="1033780634303702874">Достъп до серийните ви устройства</translation>
@@ -163,6 +164,7 @@
 Ще се наложи да настроите отново потребителския си профил.<ph name="BR" />
 <ph name="BR" />
 Моля, изпратете отзиви от следващия екран, за да ни помогнете да отстраним проблема.</translation>
+<translation id="1217668622537098248">Връщане към кликване с ляв бутон след действието</translation>
 <translation id="121783623783282548">Паролите не са идентични.</translation>
 <translation id="1218860753635451122">С кликването си върху бутона „Приемам“ приемате описаното по-горе обработване за тези услуги на Google.</translation>
 <translation id="122082903575839559">Алгоритъм за подписа на сертификата</translation>
@@ -1177,6 +1179,7 @@
 <translation id="2755628026949580719">Ако не виждате ключа си за сигурност, натиснете бутона му и го задръжте поне 5 секунди.</translation>
 <translation id="275662540872599901">екранът е изключен</translation>
 <translation id="2761898608071930085">Използване на друг профил</translation>
+<translation id="276233135255363312">{0,plural, =1{Имате един прозорец в режим „инкогнито“.}other{Имате # прозореца в режим „инкогнито“.}}</translation>
 <translation id="2762441749940182211">Достъпът до камерата е блокиран</translation>
 <translation id="2765217105034171413">Малък</translation>
 <translation id="2766006623206032690">&amp;Поставяне и старт</translation>
@@ -1551,6 +1554,7 @@
 <translation id="3350117557200012647">Преминете в режим на сдвояване</translation>
 <translation id="3353984535370177728">Избиране на папка за качване</translation>
 <translation id="3355936511340229503">Грешка във връзката</translation>
+<translation id="3356580349448036450">Завършено</translation>
 <translation id="3356797067524893661">Готови сте да продължите към Hangouts Meet</translation>
 <translation id="3358935496594837302">Телефонът ви не може да бъде намерен. Уверете се, че използвате съвместим телефон с Android, който е включен и е подръка. &lt;a&gt;Научете повече&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ограничения на правилата за сертификата</translation>
@@ -2185,6 +2189,7 @@
 <translation id="4312866146174492540">Блокиране (по подразбиране)</translation>
 <translation id="4316850752623536204">Уебсайт на програмиста</translation>
 <translation id="4320177379694898372">Няма връзка с интернет</translation>
+<translation id="4320948194796820126">Добавете отметка към електронната си поща</translation>
 <translation id="4322394346347055525">Затваряне на другите раздели</translation>
 <translation id="4324577459193912240">Файлът е непълен</translation>
 <translation id="4330387663455830245">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
@@ -2205,6 +2210,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> споделя прозорец.</translation>
 <translation id="4364830672918311045">Показване на известия</translation>
 <translation id="4365673000813822030">Ами сега! Синхронизирането спря да работи.</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> чрез <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Въведените имейл адрес и парола не съвпадат</translation>
 <translation id="437184764829821926">Разширени настройки за шрифтовете</translation>
 <translation id="4372884569765913867">1 x 1</translation>
@@ -3070,6 +3076,7 @@
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5669691691057771421">Въведете новия ПИН</translation>
 <translation id="5671641761787789573">Изображенията са блокирани</translation>
+<translation id="567643736130151854">Влезте в профила си и включете синхронизирането, за да получите отметките, паролите и другите си неща на всичките си устройства</translation>
 <translation id="5677503058916217575">Език на страницата:</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5678550637669481956">Предоставен е достъп до „<ph name="VOLUME_NAME" />“ за четене и запис.</translation>
@@ -3941,6 +3948,7 @@
 <translation id="7007648447224463482">Отваряне на всички в нов прозорец</translation>
 <translation id="701080569351381435">Преглед на изходния код</translation>
 <translation id="7014174261166285193">Инсталацията не бе успешна.</translation>
+<translation id="7017004637493394352">Кажете „Ok Google“ отново</translation>
 <translation id="7017219178341817193">Добавяне на нова страница</translation>
 <translation id="7017354871202642555">Не може да се зададе режим, след като е настроен прозорец.</translation>
 <translation id="7017480957358237747">да разрешавате или забранявате определени уебсайтове;</translation>
@@ -4268,6 +4276,7 @@
 <ph name="BEGIN_PARAGRAPH3" />Можете да изключите местоположението, като деактивирате главната настройка за него на устройството си. Също така от настройките за местоположението сте в състояние да изключите използването на Wi-Fi, мобилни мрежи и сензори за определянето му.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Създаване на парола –</translation>
 <translation id="7521387064766892559">Javascript</translation>
+<translation id="7522255036471229694">Кажете „Ok Google“</translation>
 <translation id="7525067979554623046">Създаване</translation>
 <translation id="7529411698175791732">Проверете връзката си с интернет. Ако проблемът продължи, опитайте да излезете от профила си и отново да влезете в него.</translation>
 <translation id="7530016656428373557">Скорост на разреждане във ватове</translation>
@@ -4958,6 +4967,7 @@
 <translation id="8571213806525832805">Последните 4 седмици</translation>
 <translation id="8574990355410201600">Разрешаване винаги на звука от <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Натиснете и задръжте <ph name="KEY_EQUIVALENT" /> за изход</translation>
+<translation id="8578421807258988326">{0,plural, =1{Затваряне на този прозорец}other{Затваряне на всички прозорци в режим „инкогнито“}}</translation>
 <translation id="8578639784464423491">Не може да надхвърля 99 букви</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> елемента се синхронизират...</translation>
 <translation id="857943718398505171">Разрешено (препоръчително)</translation>
@@ -5311,7 +5321,6 @@
 <translation id="9112748030372401671">Промяна на тапета ви</translation>
 <translation id="9112987648460918699">Търсене...</translation>
 <translation id="9114663181201435112">Лесно влизане в профила ви</translation>
-<translation id="9115487443206954631">Управление на устройства Cast</translation>
 <translation id="9115675100829699941">&amp;Отметки</translation>
 <translation id="9116465289595958864">Последна промяна</translation>
 <translation id="9116799625073598554">Приложение за водене на бележки</translation>

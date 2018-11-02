@@ -946,7 +946,7 @@ Ulteriori dettagli:
 <translation id="7549584377607005141">Questa pagina web richiede dati che hai inserito in precedenza per poter essere visualizzata correttamente. Puoi inviare di nuovo i dati, ma in questo caso ripeterai l'azione precedentemente eseguita nella pagina.</translation>
 <translation id="7552846755917812628">Prova i seguenti suggerimenti:</translation>
 <translation id="7554791636758816595">Nuova scheda</translation>
-<translation id="7560085949372856518">Nel prossimo passaggio potrai scegliere le carte da salvare nel tuo Account Google.</translation>
+<translation id="7560085949372856518">Nel prossimo passaggio potrai scegliere le schede da salvare nel tuo Account Google.</translation>
 <translation id="7564049878696755256">Potresti non riuscire più ad accedere al tuo account <ph name="ORG_NAME" /> o subire un furto d'identità. Chrome ti consiglia di cambiare subito la password.</translation>
 <translation id="7567204685887185387">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere stato emesso in modo fraudolento. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="7569952961197462199">Rimuovere la carta di credito da Chrome?</translation>
@@ -963,7 +963,7 @@ Ulteriori dettagli:
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7662298039739062396">Impostazione controllata da un'estensione</translation>
 <translation id="7663736086183791259">Certificato <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vuoi salvare le tue carte su Google?</translation>
+<translation id="7665886282480776333">Vuoi salvare le tue schede su Google?</translation>
 <translation id="7667346355482952095">Il token della norma restituito è vuoto o non corrisponde al token corrente</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7669271284792375604">I malintenzionati su questo sito potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>

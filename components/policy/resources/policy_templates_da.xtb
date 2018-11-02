@@ -2931,14 +2931,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Adskil servernavne med kommaer. Jokertegn (*) er tilladt.
 
           Hvis denne politik ikke indstilles, prøver <ph name="PRODUCT_NAME" /> at registrere, om der er en server på intranettet, og kun i det tilfælde reageres der på IWA-anmodninger. Hvis en server registreres som internet, ignoreres IWA-anmodninger af <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8669669491594628013">Giver dig mulighed for at styre aktivering af advarsler om adgangskodebeskyttelse. Adgangskodebeskyttelse advarer brugerne, når de bruger deres beskyttede adgangskode på potentielt mistænkelige websites.
-
-      Du kan bruge politikkerne "PasswordProtectionLoginURLs" og "PasswordProtectionChangePasswordURL" til at konfigurere, hvilken adgangskode der skal beskyttes.
-
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOff", vises der ingen advarsel om adgangskodebeskyttelse.
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOnPasswordReuse", vises en advarsel om adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et website, der ikke er hvidlistet.
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOnPhishingReuse", vises en advarsel om adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et phishing-website.
-      Hvis politikken ikke er indstillet, beskytter adgangskodebeskyttelse kun Google-adgangskoder, men brugeren kan ændre denne indstilling.</translation>
 <translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne underrettes om, at <ph name="PRODUCT_NAME" /> eller en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for at anvende en afventende opdatering.

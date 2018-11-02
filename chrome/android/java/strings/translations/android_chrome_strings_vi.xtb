@@ -114,9 +114,9 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1821253160463689938">Sử dụng cookie để ghi nhớ tùy chọn của bạn, ngay cả khi bạn không truy cập vào các trang đó</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
-<translation id="1832521218263067499">Sự cố bảo mật</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="1868024384445905608">Giờ đây, Chrome tải tệp xuống còn nhanh hơn nữa</translation>
+<translation id="187628348035757895">Tùy chọn của nhà phát triển</translation>
 <translation id="1878302395768190018">Bạn có thể tùy chỉnh tùy chọn này bất cứ lúc nào trong mục Cài đặt Chrome</translation>
 <translation id="1880072593381090678">Trang phổ biến từ Chrome</translation>
 <translation id="1883903952484604915">Tệp của tôi</translation>
@@ -791,7 +791,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="6985347914332179298">Không có mục nào đã tải xuống tại đây</translation>
 <translation id="6990079615885386641">Tải ứng dụng từ Cửa hàng Google Play: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
 <translation id="6992289844737586249">Hỏi trước trước khi cho phép các trang web sử dụng micrô của bạn (được đề xuất)</translation>
 <translation id="7016516562562142042">Được cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7021515813996758557">Đã tải xuống <ph name="FILE_NAME" /></translation>
@@ -937,6 +936,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8084114998886531721">Mật khẩu đã lưu</translation>
 <translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
+<translation id="8087980556724996220">Autofill Assistant sẽ dừng sau <ph name="DURATION_SECONDS" /> giây nữa…</translation>
 <translation id="8103578431304235997">Tab ẩn danh</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Đề xuất các trang liên quan</translation>

@@ -1557,6 +1557,7 @@
 <translation id="3350117557200012647">Перейдите в режим подключения</translation>
 <translation id="3353984535370177728">Выберите папку для загрузки</translation>
 <translation id="3355936511340229503">Ошибка подключения</translation>
+<translation id="3356580349448036450">Готово</translation>
 <translation id="3356797067524893661">Все готово! Можно возвращаться в Hangouts Meet.</translation>
 <translation id="3358935496594837302">Телефон не обнаружен. Убедитесь, что вы используете совместимое устройство Android, которое включено и находится поблизости. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ограничения политики сертификатов</translation>
@@ -3947,6 +3948,7 @@
 <translation id="7007648447224463482">Открыть все в новом окне</translation>
 <translation id="701080569351381435">Просмотр исходного кода</translation>
 <translation id="7014174261166285193">Установка не выполнена.</translation>
+<translation id="7017004637493394352">Скажите "Окей, Google" ещё раз</translation>
 <translation id="7017219178341817193">Добавить страницу</translation>
 <translation id="7017354871202642555">Нельзя настроить режим после настройки окна.</translation>
 <translation id="7017480957358237747">контроль доступа к сайтам,</translation>
@@ -4274,6 +4276,7 @@
     <ph name="BEGIN_PARAGRAPH3" />Отключить геолокацию можно в настройках доступа к данным о местоположении. Там же вы можете запретить использование сетей Wi‑Fi, сотовой связи и датчиков для уточнения местоположения.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Придумайте пароль –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Скажите "Окей, Google"</translation>
 <translation id="7525067979554623046">Создать</translation>
 <translation id="7529411698175791732">Проверьте подключение к Интернету. Если оно установлено, попробуйте выйти из аккаунта и войти снова.</translation>
 <translation id="7530016656428373557">Скорость разрядки в ваттах</translation>
@@ -5317,7 +5320,6 @@
 <translation id="9112748030372401671">Изменение обоев</translation>
 <translation id="9112987648460918699">Найти...</translation>
 <translation id="9114663181201435112">Удобный вход</translation>
-<translation id="9115487443206954631">Устройства Google Cast</translation>
 <translation id="9115675100829699941">&amp;Закладки</translation>
 <translation id="9116465289595958864">Последнее изменение</translation>
 <translation id="9116799625073598554">Приложение для заметок</translation>

@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">加载图片</translation>
 <translation id="1029317248976101138">缩放</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 想在您的设备上永久存储大量数据</translation>
+<translation id="1030889518049751641">查看活动日志</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
@@ -163,6 +164,7 @@
     您必须重新设置个人资料。<ph name="BR" />
     <ph name="BR" />
     请在随即显示的屏幕上发送反馈，以协助我们解决此问题。</translation>
+<translation id="1217668622537098248">执行完其他操作后还原到左键点击</translation>
 <translation id="121783623783282548">密码不匹配。</translation>
 <translation id="1218860753635451122">点击“我同意”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="122082903575839559">证书签名算法</translation>
@@ -1175,6 +1177,7 @@
 <translation id="2755628026949580719">如果您的安全密钥未被列出，请按住安全密钥上的按钮至少 5 秒钟。</translation>
 <translation id="275662540872599901">已关闭屏幕</translation>
 <translation id="2761898608071930085">使用另一帐号</translation>
+<translation id="276233135255363312">{0,plural, =1{您打开了 1 个无痕式窗口。}other{您打开了 # 个无痕式窗口。}}</translation>
 <translation id="2762441749940182211">已禁止使用摄像头</translation>
 <translation id="2765217105034171413">小</translation>
 <translation id="2766006623206032690">粘贴并转到(&amp;S)</translation>
@@ -1547,6 +1550,7 @@
 <translation id="3350117557200012647">进入配对模式</translation>
 <translation id="3353984535370177728">选择要上传的文件夹</translation>
 <translation id="3355936511340229503">连接出错</translation>
+<translation id="3356580349448036450">已完成</translation>
 <translation id="3356797067524893661">大功告成！您现在便可开始使用 Hangouts Meet 了</translation>
 <translation id="3358935496594837302">找不到您的手机。请确保您使用的是兼容的 Android 手机，而且该手机正处于开机状态且就在您身边。&lt;a&gt;了解详情&lt;/a&gt;</translation>
 <translation id="3359256513598016054">证书政策约束</translation>
@@ -2178,6 +2182,7 @@
 <translation id="4312866146174492540">屏蔽（默认）</translation>
 <translation id="4316850752623536204">开发者网站</translation>
 <translation id="4320177379694898372">未连接到互联网</translation>
+<translation id="4320948194796820126">为您的电子邮件添加书签</translation>
 <translation id="4322394346347055525">关闭其他标签页</translation>
 <translation id="4324577459193912240">文件下载未完成</translation>
 <translation id="4330387663455830245">一律不翻译<ph name="LANGUAGE" />内容</translation>
@@ -2198,6 +2203,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
 <translation id="4365673000813822030">糟糕，同步已停止。</translation>
+<translation id="4366956553771076218">使用<ph name="APP_NAME" /><ph name="ACTION_NAME" />。</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
 <translation id="437184764829821926">高级字体设置</translation>
 <translation id="4372884569765913867">1x1</translation>
@@ -3057,6 +3063,7 @@
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
 <translation id="5671641761787789573">已拦截图片</translation>
+<translation id="567643736130151854">您只需登录帐号并开启同步功能，即可将您的书签和密码等信息同步到所有设备上</translation>
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5678550637669481956">已授予对 <ph name="VOLUME_NAME" />的读写权限。</translation>
@@ -3928,6 +3935,7 @@
 <translation id="7007648447224463482">在新窗口中打开所有网址</translation>
 <translation id="701080569351381435">显示源代码</translation>
 <translation id="7014174261166285193">安装失败。</translation>
+<translation id="7017004637493394352">再说一遍“Ok Google”</translation>
 <translation id="7017219178341817193">添加新网页</translation>
 <translation id="7017354871202642555">无法在创建窗口后设置模式。</translation>
 <translation id="7017480957358237747">允许或禁止访问某些网站；</translation>
@@ -4255,6 +4263,7 @@
     <ph name="BEGIN_PARAGRAPH3" />您可通过关闭设备上的主要“位置信息”设置来关闭位置信息服务。此外，您也可在“位置信息”设置中关闭使用 WLAN、移动网络和传感器来确定位置的功能。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">设置密码 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">说“Ok Google”</translation>
 <translation id="7525067979554623046">创建</translation>
 <translation id="7529411698175791732">请检查您的互联网连接。如果问题仍然存在，请尝试退出帐号并重新登录。</translation>
 <translation id="7530016656428373557">电池放电率（瓦）</translation>
@@ -4942,6 +4951,7 @@
 <translation id="8571213806525832805">近 4 周</translation>
 <translation id="8574990355410201600">始终允许 <ph name="HOST" /> 播放声音</translation>
 <translation id="8575286410928791436">按住 <ph name="KEY_EQUIVALENT" /> 键即可退出</translation>
+<translation id="8578421807258988326">{0,plural, =1{关闭这个窗口}other{关闭所有无痕式窗口}}</translation>
 <translation id="8578639784464423491">不能超过 99 个字母</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
@@ -5295,7 +5305,6 @@
 <translation id="9112748030372401671">更换您的壁纸</translation>
 <translation id="9112987648460918699">查找...</translation>
 <translation id="9114663181201435112">轻松登录</translation>
-<translation id="9115487443206954631">管理投射设备</translation>
 <translation id="9115675100829699941">书签(&amp;B)</translation>
 <translation id="9116465289595958864">上次修改时间</translation>
 <translation id="9116799625073598554">记事应用</translation>

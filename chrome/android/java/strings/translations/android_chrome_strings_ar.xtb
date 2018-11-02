@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
-<translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="1868024384445905608">‏يُنزِّل Chrome الآن الملفات بشكلٍ أسرع.</translation>
+<translation id="187628348035757895">خيارات المطوِّرين</translation>
 <translation id="1878302395768190018">‏يمكنك تخصيص هذا في أي وقت في إعدادات Chrome.</translation>
 <translation id="1880072593381090678">‏الصفحات الشائعة من Chrome</translation>
 <translation id="1883903952484604915">ملفاتي</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="6985347914332179298">لا توجد تنزيلات هنا</translation>
 <translation id="6990079615885386641">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">‏إبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة</translation>
 <translation id="6992289844737586249">السؤال أولاً قبل السماح للمواقع باستخدام الميكروفون (موصى به)</translation>
 <translation id="7016516562562142042">تم السماح به لمحرك البحث الحالي</translation>
 <translation id="7021515813996758557">تم تنزيل <ph name="FILE_NAME" /></translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084114998886531721">كلمة مرور محفوظة</translation>
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
+<translation id="8087980556724996220">سيتم إيقاف مساعد الملء التلقائي خلال <ph name="DURATION_SECONDS" /> من الثواني...</translation>
 <translation id="8103578431304235997">علامة تبويب للتصفح المتخفي</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">اقتراح الصفحات ذات الصلة</translation>

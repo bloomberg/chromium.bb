@@ -19,6 +19,7 @@
 <translation id="1026822031284433028">ছবি লোড করুন</translation>
 <translation id="1029317248976101138">জুম</translation>
 <translation id="1030706264415084469"><ph name="URL" /> আপনার ডিভাইসে স্থায়ীভাবে বেশি ডেটা স্টোর করে রাখতে চায়</translation>
+<translation id="1030889518049751641">অ্যাক্টিভিটি লগ দেখুন</translation>
 <translation id="1031362278801463162">পূর্বরূপ লোড হচ্ছে</translation>
 <translation id="103279545524624934">Android অ্যাপ্লিকেশান লঞ্চ করার জন্য ডিস্কে জায়গা খালি করুন।</translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
@@ -163,6 +164,7 @@
     আপনাকে আপনার প্রোফাইল আবার সেট আপ করতে হবে।<ph name="BR" />
     <ph name="BR" />
     পরবর্তী স্ক্রীনে, আমাদেরকে সমস্যাটি সমাধানে সাহায্য করতে দয়া করে প্রতিক্রিয়া পাঠান।</translation>
+<translation id="1217668622537098248">অ্যাকশনের পরে লেফট ক্লিকে ফিরে যান</translation>
 <translation id="121783623783282548">পাসওয়ার্ডগুলি মেলে না৷</translation>
 <translation id="1218860753635451122">“আমি সম্মত” বোতামে ক্লিক করার অর্থ আপনি এই Google পরিষেবাগুলির জন্য উপরে বর্ণিত প্রক্রিয়াগুলিতে আপনি সম্মতি দেন।</translation>
 <translation id="122082903575839559">শংসাপত্র স্বাক্ষর অ্যালগরিদম</translation>
@@ -1180,6 +1182,7 @@
 <translation id="2755628026949580719">আপনার নিরাপত্তা কী সূচিবদ্ধ করা না থাকলে, তার বোতামটি কমপক্ষে ৫ সেকেন্ডের জন্য টিপে ধরে থাকুন।</translation>
 <translation id="275662540872599901">স্ক্রিন বন্ধ</translation>
 <translation id="2761898608071930085">অন্য অ্যাকাউন্ট ব্যবহার করুন</translation>
+<translation id="276233135255363312">{0,plural, =1{আপনার একটি ছদ্মবেশী উইন্ডো আছে।}one{আপনার #টি ছদ্মবেশী উইন্ডো আছে।}other{আপনার #টি ছদ্মবেশী উইন্ডো আছে।}}</translation>
 <translation id="2762441749940182211">ক্যামেরার ব্যবহার ব্লক করা হয়েছে</translation>
 <translation id="2765217105034171413">ক্ষুদ্র</translation>
 <translation id="2766006623206032690">প্র&amp;তিলেপন করুন ও যান</translation>
@@ -1551,6 +1554,7 @@
 <translation id="3350117557200012647">যুক্ত করার মোডে যান</translation>
 <translation id="3353984535370177728">আপলোড করতে একটি ফোল্ডার বেছে নিন</translation>
 <translation id="3355936511340229503">সংযোগ ত্রুটি</translation>
+<translation id="3356580349448036450">সম্পূর্ণ</translation>
 <translation id="3356797067524893661">Hangouts Meet ব্যবহার চালিয়ে যেতে আপনি প্রস্তুত</translation>
 <translation id="3358935496594837302">আপনার ফোন খুঁজে পাওয়া যায়নি৷ নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়।&lt;a&gt;আরও জানুন/a&gt;</translation>
 <translation id="3359256513598016054">শংসাপত্র নীতি বাধ্যবাধকতা</translation>
@@ -2182,6 +2186,7 @@
 <translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
 <translation id="4316850752623536204">ডেভেলপার ওয়েবসাইট</translation>
 <translation id="4320177379694898372">কোনো ইন্টারনেট সংযোগ নেই</translation>
+<translation id="4320948194796820126">আপনার ইমেলে একটি বুকমার্ক যোগ করুন</translation>
 <translation id="4322394346347055525">অন্যান্য ট্যাব বন্ধ করুন</translation>
 <translation id="4324577459193912240">ফাইলটি অসম্পূর্ণ</translation>
 <translation id="4330387663455830245">কখনও <ph name="LANGUAGE" /> অনুবাদ করবেন না</translation>
@@ -2202,6 +2207,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> একটি উইন্ডো শেয়ার করছে।</translation>
 <translation id="4364830672918311045">বিজ্ঞপ্তিগুলি প্রদর্শন করুন</translation>
 <translation id="4365673000813822030">উপস, সিঙ্ক কাজ করা বন্ধ করে দিয়েছে৷</translation>
+<translation id="4366956553771076218"><ph name="ACTION_NAME" /> সহ <ph name="APP_NAME" />।</translation>
 <translation id="4370975561335139969">আপনার লেখা ইমেল আইডি এবং পাসওয়ার্ড মিলছে না</translation>
 <translation id="437184764829821926">উন্নত ফন্ট সেটিংস</translation>
 <translation id="4372884569765913867">১x১</translation>
@@ -3066,6 +3072,7 @@
 <translation id="5669267381087807207">সক্রিয় করা হচ্ছে</translation>
 <translation id="5669691691057771421">নতুন পিন লিখুন</translation>
 <translation id="5671641761787789573">চিত্রগুলি ব্লক করা হয়েছে</translation>
+<translation id="567643736130151854">সমস্ত ডিভাইসে আপনার বুকমার্ক, পাসওয়ার্ড এবং আরও অনেক কিছু পাওয়ার জন্য সাইন-ইন করে সিঙ্ক বিকল্পটি চালু করুন</translation>
 <translation id="5677503058916217575">পৃষ্ঠার ভাষা:</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />-এর পড়া এবং লেখার অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
@@ -3938,6 +3945,7 @@
 <translation id="7007648447224463482">সবগুলি নতুন উইন্ডোতে খুলুন</translation>
 <translation id="701080569351381435">উৎস দেখান</translation>
 <translation id="7014174261166285193">ইনস্টলেশান ব্যর্থ হয়েছে৷</translation>
+<translation id="7017004637493394352">আবার "Ok Google" বলুন</translation>
 <translation id="7017219178341817193">একটি নতুন পৃষ্ঠা যুক্ত করুন</translation>
 <translation id="7017354871202642555">উইন্ডো সেট করার পরে মোড সেট করা যায় না৷</translation>
 <translation id="7017480957358237747">নির্দিষ্ট কিছু ওয়েবসাইটকে অনুমতি দিন বা নিষিদ্ধ করুন</translation>
@@ -4265,6 +4273,7 @@
     <ph name="BEGIN_PARAGRAPH3" />আপনি আপনার ডিভাইসের প্রধান লোকেশন সেটিংস বন্ধ করে লোকেশনটি বন্ধ করতে পারেন। আপনি লোকেশন সেটিংসে অবস্থানের জন্য ওয়াই-ফাই, মোবাইল নেটওয়ার্ক এবং সেন্সর ব্যবহার বন্ধ করতে পারেন।<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">একটি পাসওয়ার্ড তৈরি করুন -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">"Ok Google" বলুন</translation>
 <translation id="7525067979554623046">তৈরি করুন</translation>
 <translation id="7529411698175791732">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন। সমস্যাটি থেকে গেলে, সাইন আউট করে আবার প্রবেশ করার চেষ্টা করুন।</translation>
 <translation id="7530016656428373557">ওয়াটে ডিসচার্জের হার</translation>
@@ -4954,6 +4963,7 @@
 <translation id="8571213806525832805">গত ৪ সপ্তাহ</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> এ সবসময় সাউন্ড চালু রাখুন</translation>
 <translation id="8575286410928791436">ছেড়ে যাওয়ার জন্য <ph name="KEY_EQUIVALENT" /> ধরে থাকুন</translation>
+<translation id="8578421807258988326">{0,plural, =1{এই উইন্ডোটি বন্ধ করুন}one{সমস্ত ছদ্মবেশী উইন্ডো বন্ধ করুন}other{সমস্ত ছদ্মবেশী উইন্ডো বন্ধ করুন}}</translation>
 <translation id="8578639784464423491">৯৯টি অক্ষরের বেশি রাখা যাবে না</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />টি আইটেম সিঙ্ক করা হচ্ছে...</translation>
 <translation id="857943718398505171">অনুমোদিত (প্রস্তাবিত)</translation>
@@ -5307,7 +5317,6 @@
 <translation id="9112748030372401671">আপনার ওয়ালপেপার পরিবর্তন করুন</translation>
 <translation id="9112987648460918699">খুঁজুন...</translation>
 <translation id="9114663181201435112">সহজেই সাইন ইন করুন</translation>
-<translation id="9115487443206954631">Cast ডিভাইসগুলি পরিচালনা করুন</translation>
 <translation id="9115675100829699941">&amp;বুকমার্ক</translation>
 <translation id="9116465289595958864">শেষবার সংশোধন করা হয়েছে</translation>
 <translation id="9116799625073598554">টিকা-লেখার অ্যাপ</translation>

@@ -31,6 +31,7 @@
 <translation id="4555020257205549924">हे वैशिष्ट्य चालू केल्यावर, Chromium Google भाषांतर वापरून अन्य भाषामध्ये लिहिलेल्या पृष्ठांचा भाषांतर ऑफर करेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">आपल्या अन्य डिव्हाइसवर तुम्ही Chromium मध्ये उघडलेले टॅब येथे दिसतील.</translation>
 <translation id="495292094137889840">Chromium QR स्कॅनर वापण्यास प्रारंभ करा</translation>
+<translation id="4999538639245140991">तुम्ही <ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यातून साइन आउट केले आहे, तुमचा Chromium डेटा या डिव्हाइसवरून हटवला जाईल. तुमचा डेटा तुमच्या Google खाते मध्ये असेल.</translation>
 <translation id="5231355151045086930">Chromium मधून साइन आउट करा</translation>
 <translation id="5862307444128926510">Chromium वर तुमचे स्‍वागत आहे</translation>
 <translation id="5945387852661427312"><ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यासह तुम्ही साइन इन करीत आहात आणि त्याच्या प्रशासकास आपल्या Chromium डेटाचे नियंत्रण देत आहात. तुमचा डेटा कायमचा या खात्यामध्ये असेल. Chromium मधून साइन आउट केल्याने तुमचा डेटा या डिव्हाइस वरून हटवला जाईल परंतु तो आपल्या Google खात्यामध्ये संचयित केलेला असेल.</translation>
@@ -50,6 +51,7 @@
 <translation id="7674213385180944843">सेटिंग्ज &gt; गोपनीयता &gt; कॅमेरा &gt; Chromium उघडा आणि कॅमेरा चालू करा.</translation>
 <translation id="7746854981345936341">Chromium टीप. काही बटणे आता तुमच्या स्क्रीनच्या तळाशी आहेत, जसे की मागे, पुढे आणि शोध.</translation>
 <translation id="786327964234957808">तुम्ही संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. तुमचा विद्यमान Chromium डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे तुमचा डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
+<translation id="8073677936375100957">या डिव्हाइसवरून तुमचा Chromium डेटा साफ करायचा?</translation>
 <translation id="8175055321229419309">टीप: <ph name="BEGIN_LINK" />Chromium आपल्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">आपल्या स्थानावर आधारित Chromium मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> कधीही कस्टमाइझ केली जाऊ शकतात. Chromium आणि भाषांतर, शोध आणि जाहिरातींसारख्या Google सेवा पर्सनलाइझ करण्यासाठी Google तुम्ही भेट देत असलेल्या साइटवरील आशय, ब्राउझर परस्परसंवाद आणि अॅक्टिव्हिटी वापरू शकते.</translation>

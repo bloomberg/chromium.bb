@@ -114,7 +114,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
-<translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
 <translation id="187628348035757895">Entwickleroptionen</translation>
@@ -690,7 +689,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
-<translation id="6316139424528454185">Android-Version nicht unterst.</translation>
+<translation id="6316139424528454185">Android-Version nicht unterstützt</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6324034347079777476">Android-Systemsynchronisierung deaktiviert</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
@@ -710,7 +709,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
-<translation id="6436016483175965362">Blick hineinwerfen</translation>
+<translation id="6436016483175965362">Vorschau</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Such- und URL-Vorschläge</translation>
@@ -792,7 +791,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6985347914332179298">Keine Downloads vorhanden</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
@@ -973,7 +971,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8441146129660941386">Zurück navigieren</translation>
-<translation id="8443209985646068659">Chrome-Update nicht mögl.</translation>
+<translation id="8443209985646068659">Update nicht möglich</translation>
 <translation id="8445448999790540984">Passwörter können nicht exportiert werden</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
 <translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>

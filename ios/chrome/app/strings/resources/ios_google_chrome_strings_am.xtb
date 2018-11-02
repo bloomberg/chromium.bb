@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">Chrome አሁን ተሻሽሏል! አዲስ ስሪት አለ።</translation>
 <translation id="257708665678654955">Google Chrome በሚቀጥለው ጊዜ ከዚህ ጣቢያ የመጡ የ<ph name="LANGUAGE_NAME" /> ገጾች እንዲተረጎምልዎ ይፈልጋሉ?</translation>
 <translation id="2943166482989655199">የሥርዓት እና አጠቃቀም ውሂብ ወደ Google በመላክ Chrome እና ደህንነቱን ያሻሽሉ</translation>
+<translation id="3030414234702425231">እርስዎ በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ Chrome ውሂብዎ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በእርስዎ Google መለያ ውስጥ ይቆያል።</translation>
 <translation id="3148434565183091099">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="3148688391461398285">Chrome ውስጥ በአካባቢዎ ላይ የተመሠረተ የተሻለ ተሞክሮ ያግኙ።</translation>
 <translation id="3167189358072330585">መለያዎ በGoogle Chrome ላይ አይሠራም። እባክዎ የጎራዎ አስተዳዳሪውን ያነጋግሩ ወይም ለመግባት መደበኛ የሆነ የGoogle መለያ ይጠቀሙ።</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
 <translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
 <translation id="6648150602980899529">በ<ph name="DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡና ለአስተዳዳሪው ሙሉውን በChrome ውሂብዎ ቁጥጥር እየሰጡ ነው። የእርስዎ ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር ይተሳሰራል። ከChrome ዘግቶ መውጣት ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን በእርስዎ Google መለያ ላይ እንደተከማቸ ይቆያል።</translation>
+<translation id="6676840375528380067">የChrome ውሂብዎ ከዚህ መሣሪያ ላይ ይጽዳ?</translation>
 <translation id="690638524486313356">የGoogle Chrome አገልግሎት ውል</translation>
 <translation id="7165736900384873061">የGoogle Chrome QR መቃኛን መጠቀም ይጀምሩ</translation>
 <translation id="7172660552945675509">ጠቃሚ ምክር፦ <ph name="BEGIN_LINK" />Chromeን ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>

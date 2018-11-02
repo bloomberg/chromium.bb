@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">መደርደሪያ</translation>
 <translation id="2844169650293029770">USB-C መሣሪያ (የግራ ጎን የፊት ወደብ)</translation>
 <translation id="2865888419503095837">የአውታረ መረብ መረጃ</translation>
+<translation id="287224423103674444">ለማያ ገጽ ማሽከርከር አቋራጩን ተጭነውታል። ማያ ገጹን ማሽከርከር ይፈልጋሉ?</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
 <translation id="2878884018241093801">ምንም የቅርብ ጊዜ ንጥሎች የሉም</translation>
 <translation id="2903844815300039659">ከ<ph name="NAME" /> ጋር ተገናኝቷል፣ <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">በማግበር ላይ</translation>
 <translation id="5673434351075758678">ከ«<ph name="FROM_LOCALE" />» ወደ «<ph name="TO_LOCALE" />» የእርስዎን ቅንብሮች ከማመሳሰል በኋላ።</translation>
 <translation id="5691772641933328258">የጣት አሻራ አልታወቀም</translation>
+<translation id="5710450975648804523">አትረብሽ በርቷል</translation>
 <translation id="574392208103952083">መካከለኛ</translation>
 <translation id="5744083938413354016">መታ አድርጎ መጎተት</translation>
 <translation id="5750765938512549687">ብሉቱዝ ጠፍቷል</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">የሚነገር ግብረመልስን ለማሰናከል ለአምስት ሰከንዶች ሁለቱንም የድምፅ ቁልፎች ተጭነው ያይዙ።</translation>
 <translation id="7692480393933218409">የተገናኙ የUSB-C መሣሪያዎችን ኃይል በመሙላት ላይ</translation>
 <translation id="7705524343798198388">ቪ ፒ ኤን</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ማሳወቂያ}one{# ማሳወቂያዎች}other{# ማሳወቂያዎች}}</translation>
 <translation id="776344839111254542">የዝማኔ ዝርዝሮችን ለማየት ጠቅ ያድርጉ</translation>
+<translation id="7780159184141939021">ማያ ገጹን አሽከርክር</translation>
 <translation id="7796353162336583443">ማስታወሻ ለመያዝ፣ ቅጽበታዊ ገጽ እይታን ለማንሳት፣ Google ረዳቱን፣ ሌዘር ጠቋሚውን ወይም ማጉያ መነጽሩን ለመጠቀም በመደርደሪያው ላይ ያለውን የስታይለስ አዝራሩን መታ ያድርጉ።</translation>
 <translation id="7798302898096527229">ለመሰረዝ Search ወይም Shift ይጫኑ።</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> እና <ph name="MINUTE" /></translation>

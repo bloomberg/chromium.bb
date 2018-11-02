@@ -389,7 +389,7 @@
 <translation id="3467763166455606212">카드 소유자 이름을 입력해야 합니다.</translation>
 <translation id="3479539252931486093">예기치 않은 문제가 발생했나요? <ph name="BEGIN_LINK" />Google에 알리기<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">나중에</translation>
-<translation id="3484560055331845446">Google 계정에 액세스할 수 없게 될 수 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다. 로그인하라는 메시지가 표시됩니다.</translation>
+<translation id="3484560055331845446">Google 계정에 액세스하지 못할 수 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다. 로그인하라는 메시지가 표시됩니다.</translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
@@ -1075,7 +1075,7 @@
 <translation id="8364627913115013041">설정 안됨</translation>
 <translation id="8368476060205742148">Google Play 서비스</translation>
 <translation id="8380941800586852976">위험</translation>
-<translation id="8381674639488873545">이러한 청구는 일회성일 수도 있고 반복적일 수도 있으며 명확하지 않을 수도 있습니다. <ph name="BEGIN_LINK" />사이트 표시하기<ph name="END_LINK" /></translation>
+<translation id="8381674639488873545">이러한 청구는 일회성이거나 반복적일 수 있으며 명확하지 않을 수도 있습니다. <ph name="BEGIN_LINK" />사이트 표시하기<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">최근에 방문한 북마크가 여기에 표시됩니다.</translation>
 <translation id="8398259832188219207">비정상 종료 보고서가 <ph name="UPLOAD_TIME" />에 업로드됨</translation>
 <translation id="8412145213513410671">비정상 종료(<ph name="CRASH_COUNT" />회)</translation>
@@ -1199,7 +1199,7 @@
 <translation id="9219103736887031265">이미지</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">양식 지우기</translation>
-<translation id="936602727769022409">Google 계정에 액세스할 수 없게 될 수 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다. 로그인하라는 메시지가 표시됩니다.</translation>
+<translation id="936602727769022409">Google 계정에 액세스하지 못할 수 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다. 로그인하라는 메시지가 표시됩니다.</translation>
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="951104842009476243">사용 가능한 직불카드 및 선불카드</translation>
 <translation id="962484866189421427">이 콘텐츠에서 다른 앱인 것처럼 가장하거나 사용자를 추적하는 데 사용될 수 있는 데이터를 수집하는 사기성 앱을 설치할 수도 있습니다. <ph name="BEGIN_LINK" />그래도 표시하기<ph name="END_LINK" /></translation>

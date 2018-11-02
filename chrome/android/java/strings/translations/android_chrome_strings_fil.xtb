@@ -114,9 +114,9 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1821253160463689938">Gumamit ng mga cookie para matandaan ang iyong mga kagustuhan, kahit na hindi mo binibisita ang mga page na iyon</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
-<translation id="1832521218263067499">Mga insidenteng nauugnay sa seguridad</translation>
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="1868024384445905608">Mas mabilis nang mag-download ng mga file ang Chrome</translation>
+<translation id="187628348035757895">Mga opsyon ng developer</translation>
 <translation id="1878302395768190018">Mako-customize mo ito anumang oras sa Mga Setting ng Chrome</translation>
 <translation id="1880072593381090678">Mga sikat na page mula sa Chrome</translation>
 <translation id="1883903952484604915">Aking Mga File</translation>
@@ -791,7 +791,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="6985347914332179298">Walang mga download dito</translation>
 <translation id="6990079615885386641">Kunin ang app mula sa Google Play Store: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Awtomatikong iulat sa Google ang mga detalye ng mga posibleng isyu sa seguridad</translation>
 <translation id="6992289844737586249">Magtanong muna bago payagan ang mga site na gamitin ang iyong mikropono (inirerekomenda)</translation>
 <translation id="7016516562562142042">Pinapayagan para sa kasalukuyang search engine</translation>
 <translation id="7021515813996758557">Na-download na ang <ph name="FILE_NAME" /></translation>
@@ -937,6 +936,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="8084114998886531721">Naka-save na password</translation>
 <translation id="8087000398470557479">Ang content na ito ay mula sa <ph name="DOMAIN_NAME" />, na ipinadala ng Google.</translation>
+<translation id="8087980556724996220">Hihinto ang Autofill Assistant pagkalipas ng <ph name="DURATION_SECONDS" />…</translation>
 <translation id="8103578431304235997">Tab na Incognito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Magmungkahi ng mga nauugnay na page</translation>

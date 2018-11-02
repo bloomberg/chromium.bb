@@ -16,6 +16,7 @@
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
 <translation id="257708665678654955">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE_NAME" /> 페이지를 번역하시겠습니까?</translation>
 <translation id="2943166482989655199">시스템 정보와 사용 데이터를 Google에 전송하여 Chrome 및 보안을 개선합니다.</translation>
+<translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃하면 Chrome 데이터가 기기에서 삭제됩니다. Google 계정에 저장된 데이터는 그대로 유지됩니다.</translation>
 <translation id="3148434565183091099">어느 기기에서나 내 북마크를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="3148688391461398285">위치 정보를 기반으로 Chrome에서 더 나은 환경을 이용할 수 있습니다.</translation>
 <translation id="3167189358072330585">계정이 Chrome에서 작동하지 않습니다. 도메인 관리자에게 문의하거나 일반 Google 계정으로 로그인하세요.</translation>
@@ -43,6 +44,7 @@
 <translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
+<translation id="6676840375528380067">기기에서 Chrome 데이터를 삭제하시겠습니까?</translation>
 <translation id="690638524486313356">Chrome 서비스 약관</translation>
 <translation id="7165736900384873061">Chrome QR 스캐너 사용 시작</translation>
 <translation id="7172660552945675509">도움말: <ph name="BEGIN_LINK" />Chrome을 내 Dock에 추가하세요.<ph name="END_LINK" /></translation>

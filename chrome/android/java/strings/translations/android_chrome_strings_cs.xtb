@@ -114,9 +114,9 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="1821253160463689938">Používá soubory cookie k uložení vašeho nastavení i v případě, že stránky nenavštívíte</translation>
 <translation id="1829244130665387512">Najít na stránce</translation>
-<translation id="1832521218263067499">Narušení zabezpečení</translation>
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1868024384445905608">Chrome teď stahuje soubory rychleji</translation>
+<translation id="187628348035757895">Možnosti pro vývojáře</translation>
 <translation id="1878302395768190018">Toto nastavení můžete kdykoliv upravit v nastavení Chromu</translation>
 <translation id="1880072593381090678">Oblíbené stránky z Chromu</translation>
 <translation id="1883903952484604915">Moje soubory</translation>
@@ -303,7 +303,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="3341058695485821946">Podívejte se, kolik dat jste ušetřili</translation>
 <translation id="3350687908700087792">Zavřít všechny anonymní karty</translation>
-<translation id="3353615205017136254">Zjednodušená stránka je poskytována společností Google. Původní stránku načtete klepnutím na tlačítko k načtení původní verze.</translation>
+<translation id="3353615205017136254">Zjednodušenou stránku poskytuje Google. Klepnutím na tlačítko k načtení originálu zobrazíte původní verzi.</translation>
 <translation id="3365671512111106261">Není k dispozici, když je zapnut Spořič dat</translation>
 <translation id="3367813778245106622">Chcete-li zahájit synchronizaci, znovu se přihlaste.</translation>
 <translation id="3377025655491224618">Soukromá karta</translation>
@@ -429,9 +429,9 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4409723563706114196">Předvídat stránky</translation>
 <translation id="4419556793104466535">Ovládání synchronizace, personalizace apod.</translation>
 <translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Zjednodušená stránka je poskytována společností Google</translation>
+<translation id="4433925000917964731">Zjednodušenou stránku poskytuje Google</translation>
 <translation id="4434045419905280838">Vyskakovací okna a přesměrování</translation>
-<translation id="4440958355523780886">Zjednodušená stránka je poskytována společností Google. Klepnutím načtete původní stránku.</translation>
+<translation id="4440958355523780886">Zjednodušenou stránku poskytuje Google. Klepnutím načtete originál.</translation>
 <translation id="4452411734226507615">Zavřít kartu <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Záložka přidána do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Soubor <ph name="FILE_NAME" /> byl stažen v prohlížeči <ph name="PRODUCT_NAME" /></translation>
@@ -557,7 +557,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5327248766486351172">Název</translation>
 <translation id="5335288049665977812">Povolit webům spouštět JavaScript (doporučeno)</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE" /> byla smazána</translation>
-<translation id="5363230136052241468">Klepnutím na tlačítko plochy načtete stránku Nová karta</translation>
+<translation id="5363230136052241468">Klepnutím na tlačítko plochy načtete stránku nové karty</translation>
 <translation id="5372829067651257087">Adresa byla zkopírována.</translation>
 <translation id="5391532827096253100">Spojení s tímto webem není zabezpečené. Informace o webu</translation>
 <translation id="5400569084694353794">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />zásadami ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome.</translation>
@@ -780,7 +780,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6912998170423641340">Blokovat webům přístup k textu a obrázkům zkopírovaným do schránky</translation>
 <translation id="6914783257214138813">Vaše hesla uvidí každý, kdo může zobrazit exportovaný soubor.</translation>
 <translation id="6942665639005891494">Výchozí umístění pro stažené soubory můžete kdykoliv změnit pomocí možnosti v nabídce Nastavení.</translation>
-<translation id="6944102653068653326">Klepnutím načtete stránku nová karta</translation>
+<translation id="6944102653068653326">Klepnutím načtete stránku nové karty</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6963642900430330478">Tato stránka je nebezpečná. Informace o webu</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
@@ -791,7 +791,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="6985347914332179298">Nejsou k dispozici žádné stažené soubory</translation>
 <translation id="6990079615885386641">Získat aplikaci z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Automaticky Googlu hlásit podrobnosti možných bezpečnostních incidentů</translation>
 <translation id="6992289844737586249">Pokud web bude chtít použít váš mikrofon, zobrazit dotaz (doporučeno)</translation>
 <translation id="7016516562562142042">Pro aktuální vyhledávač povoleno</translation>
 <translation id="7021515813996758557">Soubor <ph name="FILE_NAME" /> byl stažen</translation>
@@ -937,6 +936,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8073388330009372546">Otevřít na nové kartě</translation>
 <translation id="8084114998886531721">Uložené heslo</translation>
 <translation id="8087000398470557479">Tento obsah pochází z domény <ph name="DOMAIN_NAME" />. Poskytováno společností Google.</translation>
+<translation id="8087980556724996220">Asistent automatického vyplňování bude ukončen za <ph name="DURATION_SECONDS" /> s…</translation>
 <translation id="8103578431304235997">Anonymní karta</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Navrhovat související stránky</translation>

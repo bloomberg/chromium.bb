@@ -587,6 +587,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2536525645274582300">Użytkownik decyduje, czy włączyć usługi lokalizacyjne Google</translation>
+<translation id="254653220329944566">Włącza raportowanie w chmurze <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Tylko drukowanie jednostronne</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
 <translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
@@ -1887,6 +1888,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="614662973812186053">Ta zasada kontroluje też zbieranie danych o użytkowaniu i danych diagnostycznych Androida.</translation>
+<translation id="6153048425064249648">Ta zasada steruje raportowaniem w chmurze <ph name="PRODUCT_NAME" />, które umożliwia przesyłanie informacji o działaniu przeglądarki do konsoli administracyjnej Google.
+
+      Gdy ta zasada jest nieustawiona lub ma wartość Fałsz, dane nie są zbierane ani przesyłane.
+      Gdy ta zasada ma wartość Prawda, dane są zbierane i przesyłane do konsoli administracyjnej Google.
+      Aby określić, które dane chcesz przesyłać, użyj zasad w grupie Rozszerzenie zgłaszające informacje o Chrome.
+
+      Ta zasada działa tylko wtedy, gdy komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Ta zasada wymusza instalację rozszerzenia <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na potrzeby raportowania i zastępuje związane z nim zasady rozszerzeń.</translation>
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
@@ -2932,15 +2942,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
           Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> próbuje wykryć, czy serwer jest w intranecie, i tylko wtedy odpowiada na żądania IWA. W przypadku serwera internetowego <ph name="PRODUCT_NAME" /> ignoruje żądania IWA.</translation>
-<translation id="8669669491594628013">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasła. 
-Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swojego chronionego hasła na potencjalnie niebezpiecznych stronach.
-
-      Zasady „PasswordProtectionLoginURLs” i „PasswordProtectionChangePasswordURL” umożliwiają wskazanie hasła, które ma być chronione.
-
-      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOff”, nie będą wyświetlane żadne ostrzeżenia dotyczące ochrony hasła.
-      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPasswordReuse”, ostrzeżenie dotyczące ochrony hasła wyświetli się, gdy użytkownik użyje swojego chronionego hasła na stronie, której nie ma na białej liście.
-      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPhishingReuse”, ostrzeżenie dotyczące ochrony hasła wyświetli się, gdy użytkownik użyje chronionego hasła na stronie wyłudzającej informacje.
-      Jeśli zasada nie jest skonfigurowana, usługa ochrony haseł będzie chronić tylko hasła do kont Google, a użytkownik może zmienić to ustawienie.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="867410340948518937">U2F (Uniwersalne uwierzytelnianie dwuskładnikowe)</translation>
 <translation id="8682611302223077049">Umożliwia określenie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.

@@ -235,10 +235,12 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4807020197310989387">1 artículo de la lista de lectura no leído.</translation>
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
+<translation id="4840495572919996524">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
 <translation id="4854345657858711387">Establecer una contraseña</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
+<translation id="4895709476292058519">Cambiar cuenta</translation>
 <translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4930268273022498155">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Error al compartir tu elemento</translation>
@@ -482,6 +484,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9079935439869366234">Marcar todo como no leído</translation>
 <translation id="9081058212938299310">¿Quieres actualizar la contraseña de <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 elemento</translation>
+<translation id="9083838294503912307">Activa la sincronización para sincronizar y personalizar todos tus dispositivos.</translation>
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>

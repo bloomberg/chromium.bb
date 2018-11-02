@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
+<translation id="1938451708255335766">要调整窗口显示密度，请重启该应用。</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2168039046890040389">向上翻页</translation>
 <translation id="2190355936436201913">（空）</translation>
+<translation id="2192232475740621500">使用低密度</translation>
 <translation id="219905428774326614">启动器，所有应用</translation>
 <translation id="2267918077332197517">屏蔽来自此网站的所有通知</translation>
 <translation id="2289052229480071835">点按您屏幕上的触摸目标。</translation>
 <translation id="2295140143284145483">调查问卷</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">展开通知</translation>
+<translation id="2445449901874883781">使用高密度</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">所有文件</translation>
 <translation id="2515586267016047495">Alt</translation>

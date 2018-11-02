@@ -581,6 +581,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
 <translation id="2536525645274582300">O povolení služieb na určovanie polohy od Googlu rozhoduje používateľ</translation>
+<translation id="254653220329944566">Umožňuje cloudové nahlasovanie údajov o prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Tlačiť iba na jednu stranu</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2562339630163277285">Určuje webovú adresu vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
@@ -1932,6 +1933,24 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="614662973812186053">Toto pravidlo tiež ovláda zhromažďovanie údajov o používaní a diagnostike Androidu.</translation>
+<translation id="6153048425064249648">Toto pravidlo umožňuje ovládať cloudové nahlasovanie údajov o prehliadači <ph name="PRODUCT_NAME" />, ktoré nahráva informácie o operáciách v prehliadači do konzoly Google Admin.
+
+
+
+
+      Keď toto pravidlo ponecháte nenastavené alebo nastavené na možnosť false, nezhromažďujú sa ani sa nenahrávajú žiadne údaje.
+      Keď ho nastavíte na hodnotu true, údaje sa zhromažďujú a nahrávajú do konzoly Google Admin.
+      Ak chcete ovládať, ktoré údaje sa nahrávajú, použite pravidlá pre rozšírenie nahlasovania údajov o Chrome skupiny.
+
+
+
+
+      Toto pravidlo je účinné iba vtedy, keď je počítač zaregistrovaný prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+
+
+
+      Toto pravidlo presadzuje inštaláciu rozšírenia <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na nahlasovanie údajov a prepíše všetky pravidlá pre rozšírenia súvisiace s týmto rozšírením.</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
@@ -2997,14 +3016,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
           Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
 
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
-<translation id="8669669491594628013">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
-
-      Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
-
-      Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
-      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo na webe, ktorý nebol pridaný na zoznam povolených webov.
-      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPhishingReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije chránené heslo na phishingovom webe.
-      Ak toto pravidlo nenastavíte, služba ochrany heslom bude chrániť iba heslá Google. Používateľ však bude môcť toto nastavenie zmeniť.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
 <translation id="8682611302223077049">Umožňuje nastaviť časové obdobie v milisekundách, po uplynutí ktorého budú používatelia upozornení, že <ph name="PRODUCT_NAME" /> sa musí znova spustiť alebo že zariadenie <ph name="PRODUCT_OS_NAME" /> musí byť reštartované, aby sa použila čakajúca aktualizácia.

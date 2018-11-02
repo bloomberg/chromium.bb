@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">밝게</translation>
 <translation id="1821253160463689938">페이지를 방문하지 않더라도 쿠키를 사용하여 환경설정 저장</translation>
 <translation id="1829244130665387512">페이지에서 찾기</translation>
-<translation id="1832521218263067499">보안 사고</translation>
 <translation id="1853692000353488670">새 시크릿 탭</translation>
 <translation id="1868024384445905608">이제 Chrome에서 파일을 더 빠르게 다운로드합니다.</translation>
+<translation id="187628348035757895">개발자 옵션</translation>
 <translation id="1878302395768190018">Chrome 설정에서 언제든지 맞춤설정할 수 있습니다.</translation>
 <translation id="1880072593381090678">Chrome 인기 페이지</translation>
 <translation id="1883903952484604915">내 파일</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">접근성</translation>
 <translation id="6985347914332179298">다운로드 항목 없음</translation>
 <translation id="6990079615885386641">Google Play 스토어에서 앱 다운로드: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 신고합니다.</translation>
 <translation id="6992289844737586249">사이트에서 마이크를 사용하기 전에 확인(권장)</translation>
 <translation id="7016516562562142042">현재 검색 엔진에 허용됨</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" />(이)가 다운로드됨</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084114998886531721">저장된 비밀번호</translation>
 <translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
+<translation id="8087980556724996220">자동 완성 도우미가 <ph name="DURATION_SECONDS" />초 후 중지됩니다…</translation>
 <translation id="8103578431304235997">시크릿 탭</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">관련 페이지 추천</translation>

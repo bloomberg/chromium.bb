@@ -603,6 +603,7 @@
 <translation id="2529880111512635313">Định cấu hình danh sách các ứng dụng và tiện ích buộc phải cài đặt</translation>
 <translation id="253135976343875019">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2536525645274582300">Người dùng quyết định có bật dịch vụ vị trí của Google hay không</translation>
+<translation id="254653220329944566">Bật tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" /></translation>
 <translation id="2550593661567988768">Chỉ in một mặt</translation>
 <translation id="2552966063069741410">Múi giờ</translation>
 <translation id="2562339630163277285">Chỉ định URL của công cụ tìm kiếm được sử dụng để cung cấp kết quả tức thì. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng văn bản mà người dùng đã nhập từ trước tới nay.
@@ -1957,6 +1958,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="614662973812186053">Chính sách này cũng kiểm soát việc thu thập dữ liệu chẩn đoán và sử dụng Android.</translation>
+<translation id="6153048425064249648">Chính sách này kiểm soát tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" />. Tính năng này tải thông tin về hoạt động của trình duyệt lên Bảng điều khiển dành cho quản trị viên của Google.
+
+      Khi không đặt chính sách này hoặc đặt thành False, không có dữ liệu nào được thu thập hoặc tải lên.
+      Khi đặt chính sách này thành True, dữ liệu sẽ được thu thập và tải lên Bảng điều khiển dành cho quản trị viên của Google.
+      Để kiểm soát loại dữ liệu nào được tải lên, hãy sử dụng các chính sách trong nhóm Tiện ích báo cáo của Chrome.
+
+      Chính sách này chỉ có hiệu lực khi máy được đăng ký với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+
+      Chính sách này sẽ buộc cài đặt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> để sử dụng tính năng báo cáo, cũng như sẽ ghi đè mọi chính sách về tiện ích liên quan đến tiện ích đó.</translation>
 <translation id="6155936611791017817">Đặt trạng thái của con trỏ lớn mặc định trên màn hình đăng nhập</translation>
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="6158324314836466367">Tên cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
@@ -3025,14 +3035,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Phân tách tên của nhiều máy chủ bằng dấu phẩy. Cho phép ký tự đại diện (*).
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
-<translation id="8669669491594628013">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Dịch vụ bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
-
-      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.
-
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì sẽ không có cảnh báo bảo vệ mật khẩu nào hiển thị.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ trên trang web nằm ngoài danh sách cho phép.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ trên trang web lừa đảo.
-      Nếu bạn không đặt chính sách này, thì dịch vụ bảo vệ mật khẩu sẽ chỉ bảo vệ mật khẩu của Google nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
 <translation id="8682611302223077049">Cho phép đặt khoảng thời gian tính bằng mili giây mà người dùng nhận được thông báo phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị chạy <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.

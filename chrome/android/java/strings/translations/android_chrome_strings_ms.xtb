@@ -114,9 +114,9 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="1807246157184219062">Cahaya</translation>
 <translation id="1821253160463689938">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
 <translation id="1829244130665387512">Cari dalam halaman</translation>
-<translation id="1832521218263067499">Insiden keselamatan</translation>
 <translation id="1853692000353488670">Tab inkognito baharu</translation>
 <translation id="1868024384445905608">Chrome kini memuat turun fail dengan lebih pantas</translation>
+<translation id="187628348035757895">Pilihan pembangun</translation>
 <translation id="1878302395768190018">Anda boleh menyesuaikan pilihan ini pada bila-bila masa dalam Tetapan Chrome</translation>
 <translation id="1880072593381090678">Halaman popular daripada Chrome</translation>
 <translation id="1883903952484604915">Fail Saya</translation>
@@ -133,7 +133,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="1946005195648379376">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian dan perkhidmatan Google yang lain.</translation>
 <translation id="1952172573699511566">Tapak web akan menunjukkan teks dalam bahasa pilihan anda, jika boleh.</translation>
 <translation id="195283394249132567">Perkhidmatan Google diperibadikan</translation>
-<translation id="1960290143419248813">Kemas kini Chrome tidak disokong untuk versi Android ini lagi.</translation>
+<translation id="1960290143419248813">Kemas kini Chrome tidak disokong untuk versi Android ini lagi</translation>
 <translation id="1966710179511230534">Sila kemas kini butiran log masuk anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1984937141057606926">Dibenarkan, kecuali pihak ketiga</translation>
@@ -431,7 +431,7 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4432792777822557199">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang</translation>
 <translation id="4433925000917964731">Halaman Lite disediakan oleh Google</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
-<translation id="4440958355523780886">Halaman Lite yang disediakan oleh Google. Ketik untuk memuatkan halaman asal.</translation>
+<translation id="4440958355523780886">Halaman Lite disediakan oleh Google. Ketik untuk memuatkan halaman asal.</translation>
 <translation id="4452411734226507615">Tutup tab <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Ditandai halaman ke <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> dimuat turun dalam <ph name="PRODUCT_NAME" /></translation>
@@ -791,7 +791,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="6985347914332179298">Tiada muat turun di sini</translation>
 <translation id="6990079615885386641">Dapatkan apl daripada Gedung Play Google: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Laporkan butiran kemungkinan insiden keselamatan kepada Google secara automatik</translation>
 <translation id="6992289844737586249">Tanya dahulu sebelum membenarkan tapak menggunakan mikrofon anda (disyorkan)</translation>
 <translation id="7016516562562142042">Dibenarkan untuk enjin carian semasa</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> dimuat turun</translation>
@@ -937,6 +936,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8073388330009372546">Buka imej dalam tab baharu</translation>
 <translation id="8084114998886531721">Kata laluan disimpan</translation>
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
+<translation id="8087980556724996220">Pembantu Autolengkap akan berhenti dalam masa <ph name="DURATION_SECONDS" />s…</translation>
 <translation id="8103578431304235997">Tab Inkognito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Cadangkan halaman yang berkaitan</translation>

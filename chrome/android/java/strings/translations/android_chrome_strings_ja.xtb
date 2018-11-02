@@ -114,9 +114,9 @@
 <translation id="1807246157184219062">明</translation>
 <translation id="1821253160463689938">Cookie を使って設定を保存します（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
-<translation id="1832521218263067499">セキュリティに関する事象</translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
+<translation id="187628348035757895">開発者向けオプション</translation>
 <translation id="1878302395768190018">この設定は Chrome の [設定] ページでいつでもカスタマイズできます</translation>
 <translation id="1880072593381090678">Chrome でよくアクセスするページ</translation>
 <translation id="1883903952484604915">マイファイル</translation>
@@ -791,7 +791,6 @@
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6985347914332179298">ここにダウンロードしたアイテムはありません</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
 <translation id="7016516562562142042">現在の検索エンジンに対しては許可</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> をダウンロードしました</translation>
@@ -937,6 +936,7 @@
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8084114998886531721">保存したパスワード</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
+<translation id="8087980556724996220">自動入力アシスタントはあと <ph name="DURATION_SECONDS" /> 秒で停止します…</translation>
 <translation id="8103578431304235997">シークレット タブ</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">関連ページを表示する</translation>

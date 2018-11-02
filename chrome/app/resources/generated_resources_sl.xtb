@@ -1557,6 +1557,7 @@
 <translation id="3350117557200012647">Vklopite način za seznanjanje</translation>
 <translation id="3353984535370177728">Izberite mapo za prenos</translation>
 <translation id="3355936511340229503">Napaka povezave</translation>
+<translation id="3356580349448036450">Dokončano</translation>
 <translation id="3356797067524893661">Pripravljeni ste za nadaljevanje v Hangouts Meet</translation>
 <translation id="3358935496594837302">Vašega telefona ni mogoče najti. Uporabljati morate združljiv telefon Android, ki je vklopljen in pri roki. &lt;a&gt;Več o tem&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Omejitve pravilnika potrdila</translation>
@@ -3948,6 +3949,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7007648447224463482">Odpri vse v novem oknu</translation>
 <translation id="701080569351381435">Ogled izvorne kode</translation>
 <translation id="7014174261166285193">Namestitev ni uspela.</translation>
+<translation id="7017004637493394352">Znova izgovorite »Ok Google«</translation>
 <translation id="7017219178341817193">Dodaj novo stran</translation>
 <translation id="7017354871202642555">Ko enkrat nastavite okno, ni mogoče nastaviti načina.</translation>
 <translation id="7017480957358237747">dovoljevanje ali prepoved nekaterih spletnih mest,</translation>
@@ -4275,6 +4277,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Zaznavanje lokacije lahko izklopite tako, da v napravi izklopite glavno lokacijsko nastavitev. V lokacijskih nastavitvah lahko izklopite tudi uporabo omrežij Wi‑Fi, mobilnih omrežij in tipal za zaznavanje lokacije.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Ustvarjanje gesla –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7522255036471229694">Izgovorite »Ok Google«</translation>
 <translation id="7525067979554623046">Ustvari</translation>
 <translation id="7529411698175791732">Preverite internetno povezavo. Če težave ne odpravite, se poskusite odjaviti in znova prijaviti.</translation>
 <translation id="7530016656428373557">Hitrost praznjenja v vatih</translation>
@@ -5319,7 +5322,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9112748030372401671">Spreminjanje ozadja</translation>
 <translation id="9112987648460918699">Iskanje ...</translation>
 <translation id="9114663181201435112">Preprosta prijava</translation>
-<translation id="9115487443206954631">Upravljanje naprav Cast</translation>
 <translation id="9115675100829699941">&amp;Zaznamki</translation>
 <translation id="9116465289595958864">Nazadnje spremenjeno</translation>
 <translation id="9116799625073598554">Aplikacija za ustvarjanje zapiskov</translation>

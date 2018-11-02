@@ -235,10 +235,12 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 hindi pa nababasang artikulo sa Listahan ng Babasahin.</translation>
 <translation id="481968316161811770">Cookies, Data ng Site</translation>
+<translation id="4840495572919996524">Ang iyong mga bookmark, history, mga password, at higit pa ay hindi na masi-sync sa Google Account mo.</translation>
 <translation id="4854345657858711387">Magtakda ng Passcode</translation>
 <translation id="4860895144060829044">Tawagan</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4882831918239250449">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at iba pa</translation>
+<translation id="4895709476292058519">Magpalit ng Account</translation>
 <translation id="4904877109095351937">Markahan Bilang Nabasa Na</translation>
 <translation id="4930268273022498155">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Paumanhin, nagkaroon ng problema sa pagbabahagi ng item mo.</translation>
@@ -482,6 +484,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="9079935439869366234">Markahan ang Lahat bilang Hindi pa Nababasa</translation>
 <translation id="9081058212938299310">I-update ang password para sa <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 item</translation>
+<translation id="9083838294503912307">Para mag-sync at mag-personalize sa mga device, i-on ang pag-sync.</translation>
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
 <translation id="9157836665414082580">Pigilan ang Mga Dialog</translation>

@@ -3049,14 +3049,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Avgränsa flera servernamn med kommatecken. Jokertecken (*) tillåts.
 
           Om du inte ställer in den här principen kommer <ph name="PRODUCT_NAME" /> att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar. Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8669669491594628013">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
-
-      Du kan konfigurera vilket lösenord som ska skyddas med principerna PasswordProtectionLoginURLs och PasswordProtectionChangePasswordURL.
-
-      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
-      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som inte står med på vitlistan.
-      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske.
-      Om principen har lämnats utan inställning skyddas endast lösenord på Google av lösenordsskyddet, men användaren kan ändra inställningen.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8682611302223077049">Gör att du kan ställa in i millisekunder under hur lång tid in som användare aviseras om att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om när en uppdatering väntar.

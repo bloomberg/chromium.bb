@@ -235,10 +235,12 @@
 ይህን ቅንብር ለመቀየር <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 ያልተነበበ የንባብ ዝርዝር ጽሑፍ።</translation>
 <translation id="481968316161811770">ኩኪዎች፣ የጣቢያ ውሂብ</translation>
+<translation id="4840495572919996524">የእርስዎ እልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ተጨማሪ ነገሮች ከእንግዲህ ከGoogle መለያዎ ጋር አይሰምሩም።</translation>
 <translation id="4854345657858711387">የይለፍ ኮድ ያዘጋጁ</translation>
 <translation id="4860895144060829044">ደውል</translation>
 <translation id="4881695831933465202">ክፈት</translation>
 <translation id="4882831918239250449">ፍለጋን፣ ማስታወቂያዎችን እና ተጨማሪ ነገሮችን ግላዊነት ለማላበስ የእርስዎ የአሰሳ ታሪክ እንዴት ጥቅም ላይ እንደሚውል ይቆጣጠሩ</translation>
+<translation id="4895709476292058519">መለያዎችን ለውጥ</translation>
 <translation id="4904877109095351937">እንደተነበበ ምልክት አድርግ</translation>
 <translation id="4930268273022498155">ነባሩን ውሂብ ይሰርዙ። ወደ <ph name="USER_EMAIL1" /> መልሰው በመቀየር ሰርስረው ሊያወጡት ይችላሉ።</translation>
 <translation id="4941089862236492464">ይቅርታ፣ ንጥልዎን ማጋራት ላይ ችግር ነበር።</translation>
@@ -482,6 +484,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="9079935439869366234">ሁሉም እንዳልተነበቡ ምልክት አድርግባቸው</translation>
 <translation id="9081058212938299310">የ<ph name="USERNAME" /> ይለፍ ቃል ይዘመን?</translation>
 <translation id="9083392325882095631">1 ንጥል</translation>
+<translation id="9083838294503912307">በመላ መሣሪያዎች ላይ ለማስመር እና ግላዊነትን ለማላበስ ስምረትን ያብሩ።</translation>
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>
 <translation id="9157836665414082580">መገናኛዎችን አፍን</translation>

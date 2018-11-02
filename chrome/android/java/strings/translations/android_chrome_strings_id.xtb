@@ -114,9 +114,9 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1821253160463689938">Menggunakan cookie untuk mengingat preferensi, meski Anda tidak membuka halaman tersebut</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
-<translation id="1832521218263067499">Insiden keamanan</translation>
 <translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="1868024384445905608">Chrome sekarang mendownload file lebih cepat</translation>
+<translation id="187628348035757895">Opsi developer</translation>
 <translation id="1878302395768190018">Anda dapat menyesuaikan ini kapan saja di Setelan Chrome</translation>
 <translation id="1880072593381090678">Halaman populer dari Chrome</translation>
 <translation id="1883903952484604915">File Saya</translation>
@@ -791,7 +791,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6985347914332179298">Tidak ada download di sini</translation>
 <translation id="6990079615885386641">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google</translation>
 <translation id="6992289844737586249">Tanya terlebih dahulu sebelum mengizinkan situs menggunakan mikrofon Anda (disarankan)</translation>
 <translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> didownload</translation>
@@ -937,6 +936,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084114998886531721">Sandi tersimpan</translation>
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
+<translation id="8087980556724996220">Asisten IsiOtomatis akan berhenti dalam <ph name="DURATION_SECONDS" />d…</translation>
 <translation id="8103578431304235997">Tab Penyamaran</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sarankan halaman terkait</translation>

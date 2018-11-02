@@ -117,6 +117,7 @@
 <translation id="2825619548187458965">Raft</translation>
 <translation id="2844169650293029770">Dispozitiv USB-C (portul din stânga față)</translation>
 <translation id="2865888419503095837">Informații despre rețea</translation>
+<translation id="287224423103674444">Ai apăsat comanda rapidă pentru rotirea ecranului. Vrei să rotești ecranul?</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2878884018241093801">Niciun element recent</translation>
 <translation id="2903844815300039659">Conectat la <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -259,6 +260,7 @@
 <translation id="5669267381087807207">Se activează</translation>
 <translation id="5673434351075758678">Din „<ph name="FROM_LOCALE" />” în „<ph name="TO_LOCALE" />” după sincronizarea setărilor.</translation>
 <translation id="5691772641933328258">Amprenta nu a fost recunoscută</translation>
+<translation id="5710450975648804523">Funcția Nu deranja este activată</translation>
 <translation id="574392208103952083">Medie</translation>
 <translation id="5744083938413354016">Tragere prin atingere</translation>
 <translation id="5750765938512549687">Bluetooth este dezactivat</translation>
@@ -377,7 +379,9 @@
 <translation id="7654687942625752712">Apasă lung ambele taste de volum timp de cinci secunde ca să dezactivezi feedbackul rostit.</translation>
 <translation id="7692480393933218409">Se încarcă dispozitivele USB-C conectate</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{O notificare}few{# notificări}other{# de notificări}}</translation>
 <translation id="776344839111254542">Dă clic pentru a vedea detaliile actualizării</translation>
+<translation id="7780159184141939021">Rotește ecranul</translation>
 <translation id="7796353162336583443">Atinge butonul creion de pe raft ca să creezi note și capturi de ecran, să folosești Asistentul Google, indicatorul laser sau lupa.</translation>
 <translation id="7798302898096527229">Apasă pe tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>

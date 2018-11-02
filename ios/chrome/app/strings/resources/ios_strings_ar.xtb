@@ -235,10 +235,12 @@
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">مقالة "قائمة قراءة" واحدة غير مقروءة.</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
+<translation id="4840495572919996524">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور وغيرها مع حسابك على Google بعد الآن.</translation>
 <translation id="4854345657858711387">تعيين رمز المرور</translation>
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4882831918239250449">التحكُّم في كيفية استخدامنا لسِجل التصفُّح الخاص بك لتخصيص البحث والإعلانات والمزيد</translation>
+<translation id="4895709476292058519">تغيير الحسابات</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
@@ -482,6 +484,7 @@
 <translation id="9079935439869366234">وضع علامة كغير مقروءة على الكل</translation>
 <translation id="9081058212938299310">هل تريد تحديث كلمة مرور <ph name="USERNAME" />؟</translation>
 <translation id="9083392325882095631">عنصر واحد</translation>
+<translation id="9083838294503912307">للمزامنة والتخصيص على جميع الأجهزة، يمكنك تفعيل المزامنة.</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
