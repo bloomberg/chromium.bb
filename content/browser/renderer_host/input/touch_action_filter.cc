@@ -188,7 +188,10 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       gesture_sequence_in_progress_ = true;
       // If the gesture is hitting a region that has a non-blocking (such as a
       // passive) event listener.
-      if (gesture_event->is_source_touch_event_set_non_blocking)
+      // In theory, the num_of_active_touches_ should be > 0 at this point. But
+      // crash reports suggest otherwise.
+      if (gesture_event->is_source_touch_event_set_non_blocking ||
+          num_of_active_touches_ <= 0)
         SetTouchAction(cc::kTouchActionAuto);
       active_touch_action_ = allowed_touch_action_;
       if (active_touch_action_.has_value())
@@ -266,9 +269,12 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   active_touch_action_ = allowed_touch_action_;
 }
 
-void TouchActionFilter::SetTouchSequenceInProgress(
-    bool touch_sequence_in_progress) {
-  touch_sequence_in_progress_ = touch_sequence_in_progress;
+void TouchActionFilter::IncreaseActiveTouches() {
+  num_of_active_touches_++;
+}
+
+void TouchActionFilter::DecreaseActiveTouches() {
+  num_of_active_touches_--;
 }
 
 void TouchActionFilter::ReportAndResetTouchAction() {
@@ -277,8 +283,8 @@ void TouchActionFilter::ReportAndResetTouchAction() {
   else
     gesture_sequence_.append("RN");
   ReportTouchAction();
-  DCHECK(!touch_sequence_in_progress_);
-  ResetTouchAction();
+  if (num_of_active_touches_ <= 0)
+    ResetTouchAction();
 }
 
 void TouchActionFilter::ReportTouchAction() {
@@ -390,7 +396,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   // We have set the associated touch action if the touch start already happened
   // or there is a gesture in progress. In these cases, we should not reset the
   // associated touch action.
-  if (!gesture_sequence_in_progress_ && !touch_sequence_in_progress_) {
+  if (!gesture_sequence_in_progress_ && num_of_active_touches_ <= 0) {
     ResetTouchAction();
     if (has_touch_event_handler_)
       active_touch_action_.reset();
