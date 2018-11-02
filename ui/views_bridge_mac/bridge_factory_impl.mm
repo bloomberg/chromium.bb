@@ -37,9 +37,22 @@ class Bridge : public BridgedNativeWidgetHostHelper {
 
   // BridgedNativeWidgetHostHelper:
   NSView* GetNativeViewAccessible() override { return nil; }
-  void DispatchKeyEvent(ui::KeyEvent* event) override {}
+  void DispatchKeyEvent(ui::KeyEvent* event) override {
+    bool event_handled = false;
+    host_ptr_->DispatchKeyEventRemote(std::make_unique<ui::KeyEvent>(*event),
+                                      &event_handled);
+    if (event_handled)
+      event->SetHandled();
+  }
   bool DispatchKeyEventToMenuController(ui::KeyEvent* event) override {
-    return false;
+    bool event_swallowed = false;
+    bool event_handled = false;
+    host_ptr_->DispatchKeyEventToMenuControllerRemote(
+        std::make_unique<ui::KeyEvent>(*event), &event_swallowed,
+        &event_handled);
+    if (event_handled)
+      event->SetHandled();
+    return event_swallowed;
   }
   void GetWordAt(const gfx::Point& location_in_content,
                  bool* found_word,
