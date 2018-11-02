@@ -10,8 +10,9 @@ mojom("mojom") {
     "device_manager.mojom",
   ]
 
-  deps = [
+  public_deps = [
     "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
   ]
 
   # USB Mojom interfaces are exposed publicly to layout tests which use

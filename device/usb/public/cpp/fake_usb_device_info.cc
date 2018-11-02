@@ -33,13 +33,27 @@ FakeUsbDeviceInfo::FakeUsbDeviceInfo(uint16_t vendor_id,
                                      uint16_t product_id,
                                      const std::string& manufacturer_string,
                                      const std::string& product_string,
-                                     const std::string& serial_number) {
+                                     const std::string& serial_number)
+    : FakeUsbDeviceInfo(vendor_id,
+                        product_id,
+                        manufacturer_string,
+                        product_string,
+                        serial_number,
+                        GURL()) {}
+
+FakeUsbDeviceInfo::FakeUsbDeviceInfo(uint16_t vendor_id,
+                                     uint16_t product_id,
+                                     const std::string& manufacturer_string,
+                                     const std::string& product_string,
+                                     const std::string& serial_number,
+                                     const GURL& webusb_landing_page) {
   SetDefault();
   device_info_.vendor_id = vendor_id;
   device_info_.product_id = product_id;
   device_info_.manufacturer_name = base::UTF8ToUTF16(manufacturer_string);
   device_info_.product_name = base::UTF8ToUTF16(product_string),
   device_info_.serial_number = base::UTF8ToUTF16(serial_number);
+  device_info_.webusb_landing_page = webusb_landing_page;
 }
 
 FakeUsbDeviceInfo::~FakeUsbDeviceInfo() = default;
