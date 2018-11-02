@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 237 tests; 233 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 239 tests; 236 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -178,6 +178,8 @@ PASS Newlines around table ("<div>abc<table><td>def</table>ghi")
 PASS Tab-separated table cells in a border-collapse table ("<div><table style='border-collapse:collapse'><tr><td>abc<td>def</table>")
 PASS tfoot not reordered ("<div><table><tfoot>x</tfoot><tbody>y</tbody></table>")
 PASS  ("<table><tfoot><tr><td>footer</tfoot><thead><tr><td style='visibility:collapse'>thead</thead><tbody><tr><td>tbody</tbody></table>")
+PASS No tab on table-cell itself ("<table><tr><td id=target>abc</td><td>def</td>")
+PASS No newline on table-row itself ("<table><tr id=target><td>abc</td><td>def</td></tr><tr id=target><td>ghi</td><td>jkl</td></tr>")
 PASS Newline between cells and caption ("<div><table><tr><td>abc<caption>def</caption></table>")
 PASS Tab-separated table cells ("<div><div class='table'><span class='cell'>abc</span>\n<span class='cell'>def</span></div>")
 PASS Newline-separated table rows ("<div><div class='table'><span class='row'><span class='cell'>abc</span></span>\n<span class='row'><span class='cell'>def</span></span></div>")
@@ -203,7 +205,7 @@ PASS <hr><hr> induces just one line break ("<div>abc<hr><hr>def")
 PASS <hr><hr><hr> induces just one line break ("<div>abc<hr><hr><hr>def")
 PASS <hr> content rendered ("<div><hr class='poke'>")
 PASS comment ignored ("<div>abc<!--comment-->def")
-FAIL <br> ("<br>") assert_equals: expected "" but got "\n"
+PASS <br> ("<br>")
 PASS empty <p> ("<p>")
 PASS empty <div> ("<div>")
 PASS text-transform is applied ("<div><div style='text-transform:uppercase'>abc")
