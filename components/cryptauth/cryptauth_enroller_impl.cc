@@ -52,6 +52,10 @@ std::string CreateEnrollmentPublicMetadata() {
   return metadata.SerializeAsString();
 }
 
+void RecordEnrollmentResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("CryptAuth.Enrollment.Result", success);
+}
+
 }  // namespace
 
 CryptAuthEnrollerImpl::CryptAuthEnrollerImpl(
@@ -220,13 +224,14 @@ void CryptAuthEnrollerImpl::OnFinishEnrollmentSuccess(
                     << response.status();
   }
 
-  UMA_HISTOGRAM_BOOLEAN("CryptAuth.Enrollment.Result", success);
+  RecordEnrollmentResult(success);
   callback_.Run(success);
 }
 
 void CryptAuthEnrollerImpl::OnFinishEnrollmentFailure(
     NetworkRequestError error) {
   PA_LOG(WARNING) << "FinishEnrollment API failed with error: " << error;
+  RecordEnrollmentResult(false /* success */);
   callback_.Run(false);
 }
 
