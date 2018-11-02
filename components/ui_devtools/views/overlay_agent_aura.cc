@@ -503,16 +503,18 @@ Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
 
   highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
   show_size_on_canvas_ = show_size;
-  UpdateHighlight(element->GetNodeWindowAndBounds());
-
-  if (!layer_for_highlighting_->visible())
-    layer_for_highlighting_->SetVisible(true);
-
+  layer_for_highlighting_->SetVisible(
+      UpdateHighlight(element->GetNodeWindowAndBounds()));
   return Response::OK();
 }
 
-void OverlayAgentAura::UpdateHighlight(
+bool OverlayAgentAura::UpdateHighlight(
     const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
+  if (window_and_bounds.second.IsEmpty()) {
+    hovered_rect_.SetRect(0, 0, 0, 0);
+    return false;
+  }
+
   gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
   layer_for_highlighting_->SetBounds(root->bounds());
   layer_for_highlighting_->SchedulePaint(root->bounds());
@@ -528,6 +530,7 @@ void OverlayAgentAura::UpdateHighlight(
   gfx::Point origin = hovered_rect_.origin();
   screen_position_client->ConvertPointFromScreen(root, &origin);
   hovered_rect_.set_origin(origin);
+  return true;
 }
 
 void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
