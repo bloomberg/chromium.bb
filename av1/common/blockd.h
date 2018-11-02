@@ -1140,6 +1140,7 @@ typedef struct {
   int plane_height;
   uint8_t *color_map;
   MapCdf map_cdf;
+  MapCdf map_pb_cdf;
   ColorCost color_cost;
 } Av1ColorMapParam;
 

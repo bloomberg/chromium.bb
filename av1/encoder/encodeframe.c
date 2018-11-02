@@ -5121,6 +5121,7 @@ static void encode_tiles(AV1_COMP *cpi) {
           &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
       cpi->td.intrabc_used = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+      cpi->td.mb.tile_pb_ctx = &this_tile->tctx;
       cpi->td.mb.backup_tile_ctx = &this_tile->backup_tctx;
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
       cpi->intrabc_used |= cpi->td.intrabc_used;

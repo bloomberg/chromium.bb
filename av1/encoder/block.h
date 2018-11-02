@@ -280,6 +280,12 @@ struct macroblock {
   uint8_t *tmp_obmc_bufs[2];
 
   FRAME_CONTEXT *backup_tile_ctx;
+  // This context will be used to update color_map_cdf pointer which would be
+  // used during pack bitstream. For single thread and tile-multithreading case
+  // this ponter will be same as xd->tile_ctx, but for the case of row-mt:
+  // xd->tile_ctx will point to a temporary context while tile_pb_ctx will point
+  // to the accurate tile context.
+  FRAME_CONTEXT *tile_pb_ctx;
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   struct inter_modes_info *inter_modes_info;
