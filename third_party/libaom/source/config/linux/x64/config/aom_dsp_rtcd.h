@@ -1419,7 +1419,48 @@ void aom_highbd_blend_a64_d16_mask_c(uint8_t* dst,
                                      int suby,
                                      ConvolveParams* conv_params,
                                      const int bd);
-#define aom_highbd_blend_a64_d16_mask aom_highbd_blend_a64_d16_mask_c
+void aom_highbd_blend_a64_d16_mask_sse4_1(uint8_t* dst,
+                                          uint32_t dst_stride,
+                                          const CONV_BUF_TYPE* src0,
+                                          uint32_t src0_stride,
+                                          const CONV_BUF_TYPE* src1,
+                                          uint32_t src1_stride,
+                                          const uint8_t* mask,
+                                          uint32_t mask_stride,
+                                          int w,
+                                          int h,
+                                          int subx,
+                                          int suby,
+                                          ConvolveParams* conv_params,
+                                          const int bd);
+void aom_highbd_blend_a64_d16_mask_avx2(uint8_t* dst,
+                                        uint32_t dst_stride,
+                                        const CONV_BUF_TYPE* src0,
+                                        uint32_t src0_stride,
+                                        const CONV_BUF_TYPE* src1,
+                                        uint32_t src1_stride,
+                                        const uint8_t* mask,
+                                        uint32_t mask_stride,
+                                        int w,
+                                        int h,
+                                        int subx,
+                                        int suby,
+                                        ConvolveParams* conv_params,
+                                        const int bd);
+RTCD_EXTERN void (*aom_highbd_blend_a64_d16_mask)(uint8_t* dst,
+                                                  uint32_t dst_stride,
+                                                  const CONV_BUF_TYPE* src0,
+                                                  uint32_t src0_stride,
+                                                  const CONV_BUF_TYPE* src1,
+                                                  uint32_t src1_stride,
+                                                  const uint8_t* mask,
+                                                  uint32_t mask_stride,
+                                                  int w,
+                                                  int h,
+                                                  int subx,
+                                                  int suby,
+                                                  ConvolveParams* conv_params,
+                                                  const int bd);
 
 void aom_highbd_blend_a64_hmask_c(uint8_t* dst,
                                   uint32_t dst_stride,
@@ -5446,6 +5487,11 @@ static void setup_rtcd_internal(void) {
   aom_h_predictor_32x32 = aom_h_predictor_32x32_sse2;
   if (flags & HAS_AVX2)
     aom_h_predictor_32x32 = aom_h_predictor_32x32_avx2;
+  aom_highbd_blend_a64_d16_mask = aom_highbd_blend_a64_d16_mask_c;
+  if (flags & HAS_SSE4_1)
+    aom_highbd_blend_a64_d16_mask = aom_highbd_blend_a64_d16_mask_sse4_1;
+  if (flags & HAS_AVX2)
+    aom_highbd_blend_a64_d16_mask = aom_highbd_blend_a64_d16_mask_avx2;
   aom_highbd_blend_a64_hmask = aom_highbd_blend_a64_hmask_c;
   if (flags & HAS_SSE4_1)
     aom_highbd_blend_a64_hmask = aom_highbd_blend_a64_hmask_sse4_1;
