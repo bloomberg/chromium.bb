@@ -190,6 +190,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *this;
   }
 
+  // Either this function or SetBoxType must be called before ToBoxFragment().
+  NGBoxFragmentBuilder& SetIsNewFormattingContext(bool is_new_fc) {
+    is_new_fc_ = is_new_fc;
+    return *this;
+  }
+
   // Layout algorithms should call this function for each baseline request in
   // the constraint space.
   //
@@ -240,6 +246,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool needs_finished_break_token_ = false;
   bool did_break_;
   bool has_forced_break_ = false;
+  bool is_new_fc_ = false;
   LayoutUnit used_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();

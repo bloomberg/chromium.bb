@@ -105,9 +105,12 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   const ComputedStyle* parent_style = Parent()->Style();
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
+  NGBlockNode container_node(container);
   NGBoxFragmentBuilder container_builder(
-      container, scoped_refptr<const ComputedStyle>(container_style),
+      container_node, scoped_refptr<const ComputedStyle>(container_style),
       container_style->GetWritingMode(), container_style->Direction());
+  container_builder.SetIsNewFormattingContext(
+      container_node.CreatesNewFormattingContext());
 
   // Compute ContainingBlock logical size.
   // OverrideContainingBlockContentLogicalWidth/Height are used by e.g. grid
