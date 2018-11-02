@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 
 namespace blink {
-#include "third_party/blink/renderer/core/css_tokenizer_codepoints.cc"
+#include "third_party/blink/renderer/core/css/css_tokenizer_codepoints.cc"
 }
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
