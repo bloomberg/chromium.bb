@@ -297,6 +297,15 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
 
   WebUsbServicePtr web_usb_service;
   ConnectToService(mojo::MakeRequest(&web_usb_service));
+  base::RunLoop().RunUntilIdle();
+  {
+    std::set<std::string> guids;
+    base::RunLoop loop;
+    web_usb_service->GetDevices(
+        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+    loop.Run();
+  }
+
   context->GrantDevicePermission(origin, origin, *device_info);
 
   device::mojom::UsbDevicePtr device_ptr;

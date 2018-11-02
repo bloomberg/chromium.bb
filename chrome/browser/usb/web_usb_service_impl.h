@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_USB_WEB_USB_SERVICE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"

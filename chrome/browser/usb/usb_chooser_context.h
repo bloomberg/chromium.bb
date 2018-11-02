@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
@@ -91,8 +92,11 @@ class UsbChooserContext : public ChooserContextBase,
   void SetUpDeviceManagerConnection();
 
   bool is_incognito_;
+  bool is_initialized_ = false;
+  base::queue<device::mojom::UsbDeviceManager::GetDevicesCallback>
+      pending_get_devices_requests_;
+
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
-  std::map<std::string, base::DictionaryValue> ephemeral_dicts_;
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
 
   std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;
