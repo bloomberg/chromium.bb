@@ -23,17 +23,12 @@ MediaSessionUmaHelper::~MediaSessionUmaHelper()
 // static
 void MediaSessionUmaHelper::RecordMediaSessionUserAction(
     MediaSessionUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.Session.UserAction", static_cast<HistogramBase::Sample>(action),
-      static_cast<HistogramBase::Sample>(MediaSessionUserAction::Count));
+  UMA_HISTOGRAM_ENUMERATION("Media.Session.UserAction", action);
 }
 
 void MediaSessionUmaHelper::RecordSessionSuspended(
     MediaSessionSuspendedSource source) const {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.Session.Suspended",
-      static_cast<HistogramBase::Sample>(source),
-      static_cast<HistogramBase::Sample>(MediaSessionSuspendedSource::Count));
+  UMA_HISTOGRAM_ENUMERATION("Media.Session.Suspended", source);
 }
 
 void MediaSessionUmaHelper::RecordRequestAudioFocusResult(bool result) const {

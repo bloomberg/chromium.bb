@@ -80,7 +80,7 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::SeekForward;
   }
   NOTREACHED();
-  return MediaSessionUserAction::Count;
+  return MediaSessionUserAction::Play;
 }
 
 // If the string is not empty then push it to the back of a vector.
