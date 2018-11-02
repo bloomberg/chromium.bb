@@ -1010,7 +1010,7 @@ safe_browsing::ClientSideDetectionService*
   return NULL;
 }
 
-subresource_filter::ContentRulesetService*
+subresource_filter::RulesetService*
 BrowserProcessImpl::subresource_filter_ruleset_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!created_subresource_filter_ruleset_service_)
@@ -1337,12 +1337,9 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
       user_data_dir.Append(subresource_filter::kTopLevelDirectoryName)
           .Append(subresource_filter::kIndexedRulesetBaseDirectoryName);
   subresource_filter_ruleset_service_ =
-      std::make_unique<subresource_filter::ContentRulesetService>(
-          blocking_task_runner);
-  subresource_filter_ruleset_service_->SetAndInitializeRulesetService(
       std::make_unique<subresource_filter::RulesetService>(
-          local_state(), background_task_runner,
-          subresource_filter_ruleset_service_.get(), indexed_ruleset_base_dir));
+          local_state(), background_task_runner, indexed_ruleset_base_dir,
+          blocking_task_runner);
 }
 
 void BrowserProcessImpl::CreateOptimizationGuideService() {

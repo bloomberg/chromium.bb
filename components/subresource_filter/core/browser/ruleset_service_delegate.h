@@ -13,6 +13,8 @@
 
 namespace subresource_filter {
 
+class VerifiedRulesetDealer;
+
 // Interface for a delegate that implements RulesetService operations that
 // depend on content/, thus allowing the service to not directly depend on it.
 class RulesetServiceDelegate {
@@ -37,6 +39,13 @@ class RulesetServiceDelegate {
   // interfere with startup.  Runs in the UI thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   BestEffortTaskRunner() = 0;
+
+  // Gets the ruleset dealer associated with the RulesetServiceDelegate.
+  virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
+
+  // Set the callback on publish associated with the RulesetServiceDelegate.
+  virtual void SetRulesetPublishedCallbackForTesting(
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace subresource_filter

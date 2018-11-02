@@ -49,7 +49,7 @@ class SafeBrowsingService;
 }
 
 namespace subresource_filter {
-class ContentRulesetService;
+class RulesetService;
 }
 
 namespace variations {
@@ -244,7 +244,7 @@ class BrowserProcess {
 
   // Returns the service providing versioned storage for rules used by the Safe
   // Browsing subresource filter.
-  virtual subresource_filter::ContentRulesetService*
+  virtual subresource_filter::RulesetService*
   subresource_filter_ruleset_service() = 0;
 
   // Returns the service used to provide hints for what optimizations can be

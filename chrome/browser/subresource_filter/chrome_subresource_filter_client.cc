@@ -46,10 +46,10 @@ ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   settings_manager_ = context->settings_manager();
 
-  subresource_filter::ContentRulesetService* ruleset_service =
+  subresource_filter::RulesetService* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
   subresource_filter::VerifiedRulesetDealer::Handle* dealer =
-      ruleset_service ? ruleset_service->ruleset_dealer() : nullptr;
+      ruleset_service ? ruleset_service->GetRulesetDealer() : nullptr;
   throttle_manager_ = std::make_unique<
       subresource_filter::ContentSubresourceFilterThrottleManager>(
       this, dealer, web_contents);

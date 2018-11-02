@@ -272,7 +272,7 @@ TestingBrowserProcess::safe_browsing_detection_service() {
   return nullptr;
 }
 
-subresource_filter::ContentRulesetService*
+subresource_filter::RulesetService*
 TestingBrowserProcess::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
 }
@@ -507,9 +507,8 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 }
 
 void TestingBrowserProcess::SetRulesetService(
-    std::unique_ptr<subresource_filter::ContentRulesetService>
-        content_ruleset_service) {
-  subresource_filter_ruleset_service_.swap(content_ruleset_service);
+    std::unique_ptr<subresource_filter::RulesetService> ruleset_service) {
+  subresource_filter_ruleset_service_.swap(ruleset_service);
 }
 
 void TestingBrowserProcess::SetOptimizationGuideService(
