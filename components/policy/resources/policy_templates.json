@@ -12199,7 +12199,7 @@
       'id': 411,
       'caption': '''Password protection warning trigger''',
       'tags': [],
-      'desc': '''Allows you to control the triggering of passwore protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+      'desc': '''Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
 
       You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
 
