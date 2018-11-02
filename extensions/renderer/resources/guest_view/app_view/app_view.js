@@ -45,7 +45,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
   this.app = app;
   this.data = data;
 
-  this.guest.destroy($Function.bind(this.prepareForReattach_, this));
+  this.guest.destroy($Function.bind(this.prepareForReattach$, this));
   this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {
       var errorMsg = 'Unable to connect to app "' + app + '".';

@@ -5,6 +5,10 @@
 // This module implements the shared functionality for different guestview
 // containers, such as web_view, app_view, etc.
 
+// Methods ending with $ will be overwritten by guest_view_iframe_container.js.
+// TODO(mcnee): When BrowserPlugin is removed, merge
+// guest_view_iframe_container.js into this file.
+
 var GuestView = require('guestView').GuestView;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
@@ -69,7 +73,7 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   return browserPluginElement;
 };
 
-GuestViewContainer.prototype.prepareForReattach_ = function() {};
+GuestViewContainer.prototype.prepareForReattach$ = function() {};
 
 GuestViewContainer.prototype.focus = function() {
   // Focus the internal element when focus() is called on the GuestView element.
@@ -156,9 +160,10 @@ GuestViewContainer.prototype.weakWrapper = function(func) {
   };
 };
 
+GuestViewContainer.prototype.willAttachElement$ = function() {};
+
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
-GuestViewContainer.prototype.willAttachElement = function() {};
 GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {};
 GuestViewContainer.prototype.setupAttributes = function() {};
