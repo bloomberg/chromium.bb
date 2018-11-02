@@ -78,7 +78,7 @@ void BroadcastChannel::close() {
 }
 
 const AtomicString& BroadcastChannel::InterfaceName() const {
-  return EventTargetNames::BroadcastChannel;
+  return event_target_names::kBroadcastChannel;
 }
 
 bool BroadcastChannel::HasPendingActivity() const {

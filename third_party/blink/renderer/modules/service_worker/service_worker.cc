@@ -49,7 +49,7 @@
 namespace blink {
 
 const AtomicString& ServiceWorker::InterfaceName() const {
-  return EventTargetNames::ServiceWorker;
+  return event_target_names::kServiceWorker;
 }
 
 void ServiceWorker::postMessage(ScriptState* script_state,

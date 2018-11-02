@@ -696,7 +696,7 @@ void MediaStreamTrack::UnregisterMediaStream(MediaStream* media_stream) {
 }
 
 const AtomicString& MediaStreamTrack::InterfaceName() const {
-  return EventTargetNames::MediaStreamTrack;
+  return event_target_names::kMediaStreamTrack;
 }
 
 ExecutionContext* MediaStreamTrack::GetExecutionContext() const {

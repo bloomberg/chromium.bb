@@ -1056,7 +1056,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation,
 }
 
 const AtomicString& AudioNode::InterfaceName() const {
-  return EventTargetNames::AudioNode;
+  return event_target_names::kAudioNode;
 }
 
 ExecutionContext* AudioNode::GetExecutionContext() const {

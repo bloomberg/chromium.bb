@@ -383,7 +383,7 @@ void CookieStore::ContextDestroyed(ExecutionContext* execution_context) {
 }
 
 const AtomicString& CookieStore::InterfaceName() const {
-  return EventTargetNames::CookieStore;
+  return event_target_names::kCookieStore;
 }
 
 ExecutionContext* CookieStore::GetExecutionContext() const {

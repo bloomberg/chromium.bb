@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "EventTarget",
+    namespace: "event_target_names",
     export: "CORE_EXPORT",
   },
 

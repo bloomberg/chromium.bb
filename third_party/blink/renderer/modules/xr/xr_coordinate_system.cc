@@ -35,7 +35,7 @@ ExecutionContext* XRCoordinateSystem::GetExecutionContext() const {
 }
 
 const AtomicString& XRCoordinateSystem::InterfaceName() const {
-  return EventTargetNames::XRCoordinateSystem;
+  return event_target_names::kXRCoordinateSystem;
 }
 
 void XRCoordinateSystem::Trace(blink::Visitor* visitor) {

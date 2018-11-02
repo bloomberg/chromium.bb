@@ -39,7 +39,7 @@ XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xml_http_request)
       last_total_bytes_to_be_sent_(0) {}
 
 const AtomicString& XMLHttpRequestUpload::InterfaceName() const {
-  return EventTargetNames::XMLHttpRequestUpload;
+  return event_target_names::kXMLHttpRequestUpload;
 }
 
 ExecutionContext* XMLHttpRequestUpload::GetExecutionContext() const {

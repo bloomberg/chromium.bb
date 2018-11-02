@@ -52,7 +52,7 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
 
 const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
-  return EventTargetNames::SharedWorkerGlobalScope;
+  return event_target_names::kSharedWorkerGlobalScope;
 }
 
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model

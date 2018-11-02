@@ -30,6 +30,7 @@
 import os
 import sys
 
+from blinkbuild.name_style_converter import NameStyleConverter
 import hasher
 import json5_generator
 import template_expander
@@ -48,7 +49,10 @@ def _legacy_symbol(entry):
 def _symbol(entry):
     if entry['Symbol'] is not None:
         return entry['Symbol']
-    return 'k' + entry['name'].to_upper_camel_case()
+    # TODO(tkent): Separate path information and interface name in
+    # event_target_names.json5.
+    name = os.path.basename(entry['name'].original)
+    return 'k' + NameStyleConverter(name).to_upper_camel_case()
 
 
 class MakeNamesWriter(json5_generator.Writer):

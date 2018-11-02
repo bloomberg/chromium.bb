@@ -211,7 +211,7 @@ void EventSource::close() {
 }
 
 const AtomicString& EventSource::InterfaceName() const {
-  return EventTargetNames::EventSource;
+  return event_target_names::kEventSource;
 }
 
 ExecutionContext* EventSource::GetExecutionContext() const {

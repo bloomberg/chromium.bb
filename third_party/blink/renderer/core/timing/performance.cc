@@ -103,7 +103,7 @@ Performance::Performance(
 Performance::~Performance() = default;
 
 const AtomicString& Performance::InterfaceName() const {
-  return EventTargetNames::Performance;
+  return event_target_names::kPerformance;
 }
 
 PerformanceTiming* Performance::timing() const {

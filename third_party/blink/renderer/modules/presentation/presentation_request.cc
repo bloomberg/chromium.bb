@@ -99,7 +99,7 @@ PresentationRequest* PresentationRequest::Create(
 }
 
 const AtomicString& PresentationRequest::InterfaceName() const {
-  return EventTargetNames::PresentationRequest;
+  return event_target_names::kPresentationRequest;
 }
 
 ExecutionContext* PresentationRequest::GetExecutionContext() const {

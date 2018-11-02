@@ -236,7 +236,7 @@ bool TextTrackList::Contains(TextTrack* track) const {
 }
 
 const AtomicString& TextTrackList::InterfaceName() const {
-  return EventTargetNames::TextTrackList;
+  return event_target_names::kTextTrackList;
 }
 
 ExecutionContext* TextTrackList::GetExecutionContext() const {

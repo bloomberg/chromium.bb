@@ -175,7 +175,7 @@ bool ServiceWorkerRegistration::HasPendingActivity() const {
 }
 
 const AtomicString& ServiceWorkerRegistration::InterfaceName() const {
-  return EventTargetNames::ServiceWorkerRegistration;
+  return event_target_names::kServiceWorkerRegistration;
 }
 
 NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {

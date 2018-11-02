@@ -19,7 +19,7 @@ VideoTrackList::VideoTrackList(HTMLMediaElement& media_element)
     : TrackListBase<VideoTrack>(&media_element) {}
 
 const AtomicString& VideoTrackList::InterfaceName() const {
-  return EventTargetNames::VideoTrackList;
+  return event_target_names::kVideoTrackList;
 }
 
 int VideoTrackList::selectedIndex() const {

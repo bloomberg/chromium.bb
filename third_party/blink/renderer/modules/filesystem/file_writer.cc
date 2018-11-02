@@ -65,7 +65,7 @@ FileWriter::~FileWriter() {
 }
 
 const AtomicString& FileWriter::InterfaceName() const {
-  return EventTargetNames::FileWriter;
+  return event_target_names::kFileWriter;
 }
 
 void FileWriter::ContextDestroyed(ExecutionContext*) {

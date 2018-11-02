@@ -495,7 +495,7 @@ DOMStringList* IDBTransaction::objectStoreNames() const {
 }
 
 const AtomicString& IDBTransaction::InterfaceName() const {
-  return EventTargetNames::IDBTransaction;
+  return event_target_names::kIDBTransaction;
 }
 
 ExecutionContext* IDBTransaction::GetExecutionContext() const {

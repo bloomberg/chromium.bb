@@ -177,7 +177,7 @@ void MessagePort::Entangle(MessagePortChannel channel) {
 }
 
 const AtomicString& MessagePort::InterfaceName() const {
-  return EventTargetNames::MessagePort;
+  return event_target_names::kMessagePort;
 }
 
 bool MessagePort::HasPendingActivity() const {

@@ -11,7 +11,7 @@ EventTargetImpl* EventTargetImpl::Create(ScriptState* script_state) {
 }
 
 const AtomicString& EventTargetImpl::InterfaceName() const {
-  return EventTargetNames::EventTargetImpl;
+  return event_target_names::kEventTargetImpl;
 }
 
 ExecutionContext* EventTargetImpl::GetExecutionContext() const {

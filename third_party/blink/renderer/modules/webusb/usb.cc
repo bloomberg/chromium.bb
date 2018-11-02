@@ -181,7 +181,7 @@ ExecutionContext* USB::GetExecutionContext() const {
 }
 
 const AtomicString& USB::InterfaceName() const {
-  return EventTargetNames::USB;
+  return event_target_names::kUSB;
 }
 
 void USB::ContextDestroyed(ExecutionContext*) {

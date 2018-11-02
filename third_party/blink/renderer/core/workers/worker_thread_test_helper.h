@@ -53,7 +53,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::DedicatedWorkerGlobalScope;
+    return event_target_names::kDedicatedWorkerGlobalScope;
   }
 
   // WorkerGlobalScope

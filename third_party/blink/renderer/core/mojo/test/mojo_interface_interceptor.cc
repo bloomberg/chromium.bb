@@ -125,7 +125,7 @@ void MojoInterfaceInterceptor::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& MojoInterfaceInterceptor::InterfaceName() const {
-  return EventTargetNames::MojoInterfaceInterceptor;
+  return event_target_names::kMojoInterfaceInterceptor;
 }
 
 ExecutionContext* MojoInterfaceInterceptor::GetExecutionContext() const {

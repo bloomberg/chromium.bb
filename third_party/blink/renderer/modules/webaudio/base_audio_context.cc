@@ -875,7 +875,7 @@ void BaseAudioContext::RejectPendingResolvers() {
 }
 
 const AtomicString& BaseAudioContext::InterfaceName() const {
-  return EventTargetNames::AudioContext;
+  return event_target_names::kAudioContext;
 }
 
 ExecutionContext* BaseAudioContext::GetExecutionContext() const {

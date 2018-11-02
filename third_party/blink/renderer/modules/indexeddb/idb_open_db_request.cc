@@ -80,7 +80,7 @@ void IDBOpenDBRequest::ContextDestroyed(ExecutionContext* destroyed_context) {
 }
 
 const AtomicString& IDBOpenDBRequest::InterfaceName() const {
-  return EventTargetNames::IDBOpenDBRequest;
+  return event_target_names::kIDBOpenDBRequest;
 }
 
 void IDBOpenDBRequest::EnqueueBlocked(int64_t old_version) {

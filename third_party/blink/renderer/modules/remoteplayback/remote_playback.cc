@@ -87,7 +87,7 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
       presentation_connection_binding_(this) {}
 
 const AtomicString& RemotePlayback::InterfaceName() const {
-  return EventTargetNames::RemotePlayback;
+  return event_target_names::kRemotePlayback;
 }
 
 ExecutionContext* RemotePlayback::GetExecutionContext() const {

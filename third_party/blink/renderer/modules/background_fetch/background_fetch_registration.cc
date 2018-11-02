@@ -124,7 +124,7 @@ bool BackgroundFetchRegistration::recordsAvailable() const {
 }
 
 const AtomicString& BackgroundFetchRegistration::InterfaceName() const {
-  return EventTargetNames::BackgroundFetchRegistration;
+  return event_target_names::kBackgroundFetchRegistration;
 }
 
 ExecutionContext* BackgroundFetchRegistration::GetExecutionContext() const {

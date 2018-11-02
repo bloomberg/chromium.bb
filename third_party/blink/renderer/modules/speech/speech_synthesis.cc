@@ -283,7 +283,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::CurrentSpeechUtterance() const {
 }
 
 const AtomicString& SpeechSynthesis::InterfaceName() const {
-  return EventTargetNames::SpeechSynthesis;
+  return event_target_names::kSpeechSynthesis;
 }
 
 void SpeechSynthesis::Trace(blink::Visitor* visitor) {

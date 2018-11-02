@@ -64,7 +64,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   }
 
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::FontFaceSet;
+    return event_target_names::kFontFaceSet;
   }
 
   FontFaceSet* addForBinding(ScriptState*, FontFace*, ExceptionState&);

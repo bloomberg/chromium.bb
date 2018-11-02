@@ -54,7 +54,7 @@ ExecutionContext* XR::GetExecutionContext() const {
 }
 
 const AtomicString& XR::InterfaceName() const {
-  return EventTargetNames::XR;
+  return event_target_names::kXR;
 }
 
 ScriptPromise XR::requestDevice(ScriptState* script_state) {

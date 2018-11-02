@@ -57,7 +57,7 @@ class MIDIInput final : public MIDIPort {
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::MIDIInput;
+    return event_target_names::kMIDIInput;
   }
 
   void DidReceiveMIDIData(unsigned port_index,

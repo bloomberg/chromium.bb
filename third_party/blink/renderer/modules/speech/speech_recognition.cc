@@ -173,7 +173,7 @@ void SpeechRecognition::Ended() {
 }
 
 const AtomicString& SpeechRecognition::InterfaceName() const {
-  return EventTargetNames::SpeechRecognition;
+  return event_target_names::kSpeechRecognition;
 }
 
 ExecutionContext* SpeechRecognition::GetExecutionContext() const {

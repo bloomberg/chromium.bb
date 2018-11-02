@@ -16,7 +16,7 @@ PresentationConnectionList::PresentationConnectionList(
     : ContextClient(context) {}
 
 const AtomicString& PresentationConnectionList::InterfaceName() const {
-  return EventTargetNames::PresentationConnectionList;
+  return event_target_names::kPresentationConnectionList;
 }
 
 const HeapVector<Member<ReceiverPresentationConnection>>&

@@ -45,7 +45,7 @@ SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
 SpeechSynthesisUtterance::~SpeechSynthesisUtterance() = default;
 
 const AtomicString& SpeechSynthesisUtterance::InterfaceName() const {
-  return EventTargetNames::SpeechSynthesisUtterance;
+  return event_target_names::kSpeechSynthesisUtterance;
 }
 
 SpeechSynthesisVoice* SpeechSynthesisUtterance::voice() const {

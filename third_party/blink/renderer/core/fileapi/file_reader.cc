@@ -208,7 +208,7 @@ FileReader::~FileReader() {
 }
 
 const AtomicString& FileReader::InterfaceName() const {
-  return EventTargetNames::FileReader;
+  return event_target_names::kFileReader;
 }
 
 void FileReader::ContextDestroyed(ExecutionContext* destroyed_context) {

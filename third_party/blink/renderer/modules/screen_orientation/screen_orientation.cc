@@ -119,7 +119,7 @@ ScreenOrientation::ScreenOrientation(LocalFrame* frame)
 ScreenOrientation::~ScreenOrientation() = default;
 
 const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
-  return EventTargetNames::ScreenOrientation;
+  return event_target_names::kScreenOrientation;
 }
 
 ExecutionContext* ScreenOrientation::GetExecutionContext() const {

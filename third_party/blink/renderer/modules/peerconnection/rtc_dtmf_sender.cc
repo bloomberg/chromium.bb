@@ -168,7 +168,7 @@ void RTCDTMFSender::DidPlayTone(const WebString& tone) {
 }
 
 const AtomicString& RTCDTMFSender::InterfaceName() const {
-  return EventTargetNames::RTCDTMFSender;
+  return event_target_names::kRTCDTMFSender;
 }
 
 ExecutionContext* RTCDTMFSender::GetExecutionContext() const {

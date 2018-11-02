@@ -32,7 +32,7 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override {
     // TODO(japhet): Replaces this with
     // EventTargetNames::ThreadPoolWorkerGlobalScope.
-    return EventTargetNames::DedicatedWorkerGlobalScope;
+    return event_target_names::kDedicatedWorkerGlobalScope;
   }
 
   // WorkerGlobalScope
