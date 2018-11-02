@@ -13,7 +13,7 @@
             },
             {
                 "domain": "Browser",
-                "include": [ "getWindowForTarget", "getWindowBounds", "setWindowBounds", "close" ],
+                "include": [ "getWindowForTarget", "getWindowBounds", "setWindowBounds", "close", "grantPermissions", "resetPermissions" ],
                 "include_events": []
             },
             {

@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_PROTOCOL_BROWSER_HANDLER_H_
 #define CHROME_BROWSER_DEVTOOLS_PROTOCOL_BROWSER_HANDLER_H_
 
+#include "base/containers/flat_set.h"
 #include "chrome/browser/devtools/protocol/browser.h"
+
+class Profile;
 
 class BrowserHandler : public protocol::Browser::Backend {
  public:
@@ -24,8 +27,22 @@ class BrowserHandler : public protocol::Browser::Backend {
   protocol::Response SetWindowBounds(
       int window_id,
       std::unique_ptr<protocol::Browser::Bounds> out_bounds) override;
+  protocol::Response Disable() override;
+  protocol::Response GrantPermissions(
+      const std::string& origin,
+      std::unique_ptr<protocol::Array<protocol::Browser::PermissionType>>
+          permissions,
+      protocol::Maybe<std::string> browser_context_id) override;
+  protocol::Response ResetPermissions(
+      protocol::Maybe<std::string> browser_context_id) override;
 
  private:
+  protocol::Response FindProfile(
+      const protocol::Maybe<std::string>& browser_context_id,
+      Profile** profile);
+
+  base::flat_set<std::string> contexts_with_overridden_permissions_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };
 
