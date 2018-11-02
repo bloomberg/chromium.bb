@@ -1,11 +1,7 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/877118
 
-# --------------------------------------------------
-# Tests that are also blacklisted for Mash.
-# --------------------------------------------------
-
-# Virtual keyboard not supported.
+# Virtual keyboard not supported. https://crbug.com/646565
 -DefaultKeyboardExtensionBrowserTest.*
 -KeyboardEndToEndFocusTest.*
 -KeyboardEndToEndFormTest.*
@@ -18,8 +14,12 @@
 # Also depends on keyboard. Test hangs in single process mash crbug.com/897012
 -SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode
 
+# Also depends on keyboard. https://crbug.com/899862
+-ShutdownPolicyLockerTest.*
+
 # AutomationManagerAura::Enable() uses ash to get active window. More generally,
 # chrome a11y code directly accesses ash system UI widgets and views.
+# https://crbug.com/888145
 -AutomationApiTest.*
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
@@ -28,40 +28,18 @@
 -ChromeVox*
 -SelectToSpeak*
 
-# RefCounted check failed: CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
--CheckSystemTokenAvailability/EnterprisePlatformKeysTest.*
-
 # Viz hit testing not supported with Mash https://crbug.com/879308
 -PDFExtensionHitTestTest.MouseLeave/1
 
-# JS failure: hasAccessToCurrentWindow: FAIL (no message)
+# https://crbug.com/899055
 -LockScreenNoteTakingTest.*
 
-# --------------------------------------------------
-# Tests failing only for SingleProcessMash.
-# --------------------------------------------------
-
-# Crashes on exit, even without SingleProcessMash.
--AffiliationCheck/EnterpriseDeviceAttributesTest.Success/*
-
-# Flaky.  crbug.com/888188.
+# Flaky. https://crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
 
 # Flaky (regardless of Mash). https://crbug.com/873884
 -CrSettingsResetPageTest.All
-
-# Encrypted media tests are failing on Asan/Lsan bot due to memory leak. crbug.com/889993
--ECKEncryptedMediaTest.*
--EncryptedMediaTest.*
--CDM_9/ECKEncryptedMediaTest.*
--CDM_10/ECKEncryptedMediaTest.*
--CDM_11/ECKEncryptedMediaTest.*
--MSE_ClearKey/EncryptedMediaTest.*
--MSE_ExternalClearKey/EncryptedMediaTest.*
--MSE_Widevine/EncryptedMediaTest.*
--SRC_ClearKey/EncryptedMediaTest.*
--SRC_ExternalClearKey/EncryptedMediaTest.*
 
 # Failing on ASAN bot. crbug.com/882631
 -ExtensionWebRequestApiTest.WebRequestTypes
@@ -72,19 +50,8 @@
 # Flaky on ASAN bot. crbug.com/884216
 -KeyboardOverlayUIBrowserTest.*
 
-# Lock screen tests.
--LockScreenNoteTakingTest.Launch
-
-# PRE steps crash on shutdown.
-# FATAL:ref_counted.h(85)] Check failed: CalledOnValidSequence()
--ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
--ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
-
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs
-
-# Uses ash::LockWindow. https://crbug.com/899862
--ShutdownPolicyLockerTest.*
 
 # Flaky tests. crbug.com/833144
 -GetAuthTokenFunctionPublicSessionTest.NonWhitelisted
