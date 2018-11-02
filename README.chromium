@@ -243,3 +243,13 @@ D. Local Modifications
   - upstream bugs:
     https://unicode-org.atlassian.net/browse/ICU-20222
   - Fix: https://github.com/unicode-org/icu/pull/228
+
+8. Fix an integer overflow in the number parsing
+
+  - patches/numparse_overflow.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20246
+  - Fix:
+    https://github.com/unicode-org/icu/pull/253
+           
+
