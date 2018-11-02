@@ -133,7 +133,10 @@ EndOfWordPosition(const VisiblePositionInFlatTree&,
                   EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kNextWordIfOnBoundary);
+// TODO(crbug.com/657237): Change all callers to use non-canonical versions.
+CORE_EXPORT PositionWithAffinity PreviousWordPosition(const Position&);
 CORE_EXPORT VisiblePosition PreviousWordPosition(const VisiblePosition&);
+CORE_EXPORT PositionWithAffinity NextWordPosition(const Position&);
 CORE_EXPORT VisiblePosition NextWordPosition(const VisiblePosition&);
 
 // sentences
