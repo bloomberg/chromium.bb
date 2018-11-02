@@ -24,6 +24,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -256,7 +257,7 @@ void AwSettings::UpdateRendererPreferencesLocked(
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(aw_browser_context);
     storage_partition->GetNetworkContext()->SetAcceptLanguage(
-        prefs->accept_languages);
+        net::HttpUtil::ExpandLanguageList(prefs->accept_languages));
   }
 }
 
