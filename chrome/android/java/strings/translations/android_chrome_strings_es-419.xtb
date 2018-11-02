@@ -690,7 +690,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6303969859164067831">Salir y desactivar la sincronización</translation>
-<translation id="6316139424528454185">La versión de Android no es compatible</translation>
+<translation id="6316139424528454185">Versión Android no compatible</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION" /></translation>
@@ -971,7 +971,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8441146129660941386">Buscar más atrás</translation>
-<translation id="8443209985646068659">No se puede actualizar Chrome</translation>
+<translation id="8443209985646068659">No se actualiza Chrome</translation>
 <translation id="8445448999790540984">No se pueden exportar las contraseñas</translation>
 <translation id="8447861592752582886">Revocar permiso para el dispositivo</translation>
 <translation id="8461694314515752532">Encriptar los datos sincronizados con tu propia frase de contraseña de sincronización</translation>

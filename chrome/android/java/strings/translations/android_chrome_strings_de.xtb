@@ -690,7 +690,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
-<translation id="6316139424528454185">Android-Version nicht unterst.</translation>
+<translation id="6316139424528454185">Android-Version nicht unterstützt</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6324034347079777476">Android-Systemsynchronisierung deaktiviert</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
@@ -971,7 +971,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8441146129660941386">Zurück navigieren</translation>
-<translation id="8443209985646068659">Chrome-Update nicht mögl.</translation>
+<translation id="8443209985646068659">Update nicht möglich</translation>
 <translation id="8445448999790540984">Passwörter können nicht exportiert werden</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
 <translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>

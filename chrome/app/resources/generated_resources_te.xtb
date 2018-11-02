@@ -75,7 +75,7 @@
 <translation id="1112420131909513020">నేపథ్య ట్యాబ్ బ్లూటూత్‌ని ఉపయోగిస్తోంది</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">చతుర్భుజం</translation>
-<translation id="1114335938027186412">మీ కంప్యూటర్ ట్రస్టెడ్ ప్లాట్‌ఫారమ్ మాడ్యూల్ (TPM) భద్రతా పరికరాన్ని కలిగి ఉంది, ఇది Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్‌లను అమలు చేయడానికి ఉపయోగించబడుతుంది. మరింత తెలుసుకోవడానికి Chromebook సహాయ కేంద్రాన్ని సందర్శించండి: https://support.google.com/chromebook/?p=tpm</translation>
+<translation id="1114335938027186412">మీ కంప్యూటర్ ట్రస్టెడ్ ప్లాట్‌ఫామ్ మాడ్యూల్ (TPM) భద్రతా పరికరాన్ని కలిగి ఉంది, ఇది Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్‌లను అమలు చేయడానికి ఉపయోగించబడుతుంది. మరింత తెలుసుకోవడానికి Chromebook సహాయ కేంద్రాన్ని సందర్శించండి: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">మూత మూసి ఉన్నప్పుడు స్లీప్ స్థితికి వెళ్లు</translation>
 <translation id="1116639326869298217">మీ గుర్తింపును ధృవీకరించడం సాధ్యపడలేదు</translation>
 <translation id="1116694919640316211">గురించి</translation>
@@ -574,7 +574,7 @@
 <translation id="1812631533912615985">టాబ్‌లను అన్‌పిన్ చెయ్యండి</translation>
 <translation id="1813278315230285598">సేవలు</translation>
 <translation id="18139523105317219">EDI వేడుక పేరు</translation>
-<translation id="1815083418640426271">సాదా వచనం వలె అతికించు</translation>
+<translation id="1815083418640426271">సాదా వచనం లాగా అతికించు</translation>
 <translation id="1815579292149538864">CUPS ప్రింటర్‌లను సెటప్ చేయండి లేదా నిర్వహించండి.</translation>
 <translation id="181577467034453336">మరో <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />హెచ్చరిక:<ph name="END_BOLD" /> ఈ ఫైల్‌లు తాత్కాలికమైనవి, డిస్క్ స్పేస్‌ను పెంచడం కోసం స్వయంచాలకంగా తొలగించబడవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
@@ -792,7 +792,7 @@
 <translation id="2149850907588596975">పాస్‌వర్డ్‌లు మరియు ఫారమ్‌లు</translation>
 <translation id="2150139952286079145">శోధించాల్సిన గమ్యస్థానాలు</translation>
 <translation id="2150661552845026580">"<ph name="EXTENSION_NAME" />"ను జోడించాలా?</translation>
-<translation id="2151576029659734873">చెల్లని టాబ్ సూచిక ఎంటర్ చెయ్యబడింది.</translation>
+<translation id="2151576029659734873">చెల్లని ట్యాబ్ సూచిక నమోదు చేయబడింది.</translation>
 <translation id="2154484045852737596">కార్డ్‌ను సవరించండి</translation>
 <translation id="2154710561487035718">URLను కాపీ చెయ్యి</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది</translation>
@@ -835,7 +835,7 @@
 <translation id="2217501013957346740">పేరును సృష్టించండి -</translation>
 <translation id="2218019600945559112">మౌస్ మరియు టచ్‌ప్యాడ్</translation>
 <translation id="2218320521449013367">Chrome హానికరమైన సాఫ్ట్‌వేర్‌ని తీసివేస్తున్నప్పుడు ఎర్రర్ సంభవించింది</translation>
-<translation id="2218515861914035131">సాధారణ వచనం వలె అతికించండి</translation>
+<translation id="2218515861914035131">సాధారణ వచనం లాగా అతికించండి</translation>
 <translation id="221872881068107022">రివర్స్ స్క్రోలింగ్</translation>
 <translation id="2220409419896228519">మీకు ఇష్టమైన Google యాప్‌లకు బుక్‌మార్క్‌లను జోడించండి</translation>
 <translation id="2220529011494928058">సమస్యను నివేదించు</translation>
@@ -1167,7 +1167,7 @@
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2714393097308983682">Google Play స్టోర్</translation>
-<translation id="2715751256863167692">ఈ అప్‌గ్రేడ్ మీ Chromebookని రీసెట్ చేస్తుంది మరియు ప్రస్తుత వినియోగదారు డేటాను తీసివేస్తుంది.</translation>
+<translation id="2715751256863167692">ఈ అప్‌గ్రేడ్ మీ Chromebookని రీసెట్ చేసి ప్రస్తుత వినియోగదారు డేటాను తీసివేస్తుంది.</translation>
 <translation id="2718395828230677721">రాత్రి కాంతి</translation>
 <translation id="2718998670920917754">యాంటీ-వైరస్ సాఫ్ట్‌వేర్ వైరస్‌ను కనుగొంది.</translation>
 <translation id="2719936478972253983">కింది కుక్కీలు బ్లాక్ చేయబడ్డాయి</translation>
@@ -1210,7 +1210,7 @@
 <translation id="2772936498786524345">స్నీకీ</translation>
 <translation id="2773802008104670137">ఈ రకమైన ఫైల్ మీ కంప్యూటర్‌కు హాని కలిగించవచ్చు.</translation>
 <translation id="2775104091073479743">వేలిముద్రలను సవరించండి</translation>
-<translation id="2776441542064982094">నెట్‌వర్క్‌లో నమోదు చేయడానికి పరికరాలు అందుబాటులో లేనట్లుగా కనిపిస్తోంది. మీ పరికరం ఆన్‌లో ఉండి, ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉంటే, దాని యొక్క సూచన మాన్యువల్‌లోని సూచనలని పాటించి దాన్ని నమోదు చేయడానికి ప్రయత్నించండి.</translation>
+<translation id="2776441542064982094">నెట్‌వర్క్‌లో నమోదు చేయడానికి పరికరాలు అందుబాటులో లేనట్లుగా కనిపిస్తోంది. మీ పరికరం ఆన్‌లో ఉండి, ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉంటే, దాని సూచన మాన్యువల్‌లోని సూచనలని పాటించి దాన్ని నమోదు చేయడానికి ప్రయత్నించండి.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Linux అప్లికేషన్‌ను ఇన్‌స్టాల్ చేయడంలో ఎర్రర్</translation>
 <translation id="2783298271312924866">డౌన్‌లోడ్ చేయబడింది</translation>
@@ -1952,7 +1952,7 @@
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> గల ప్యాక్</translation>
 <translation id="3866249974567520381">వివరణ</translation>
 <translation id="3867944738977021751">సర్టిఫికెట్ ఫీల్డ్‌లు</translation>
-<translation id="3869917919960562512">తప్పుడు సూచిక.</translation>
+<translation id="3869917919960562512">తప్పు సూచిక.</translation>
 <translation id="3870931306085184145"><ph name="DOMAIN" /> కోసం సేవ్ చేసిన పాస్‌వర్డ్‌లు లేవు</translation>
 <translation id="3871092408932389764">అతి తక్కువ</translation>
 <translation id="3872220884670338524">మరిన్ని చర్యలు, <ph name="DOMAIN" />లో <ph name="USERNAME" /> కోసం సేవ్ చేయబడిన ఖాతా</translation>
@@ -2330,7 +2330,7 @@
 <translation id="4514542542275172126">కొత్త పర్యవేక్షించబడే వినియోగదారుని సెటప్ చేయండి</translation>
 <translation id="4514610446763173167">ప్లే లేదా పాజ్ చేయడానికి వీడియోని టోగుల్ చేయండి</translation>
 <translation id="451515744433878153">తీసివేయి</translation>
-<translation id="4518677423782794009">Chrome క్రాష్ అవుతోందా, అసాధారణ రీతిలో ప్రారంభ పేజీలు, సాధన పట్టీలు లేదా మీరు తొలగించలేని రీతిలో ఊహించని ప్రకటనలను చూపుతోందా లేదా మీ బ్రౌజర్ అనుభవాన్ని మారుస్తోందా? మీరు Chrome శుభ్రత సాధనాన్ని అమలు చేయడం ద్వారా సమస్యను పరిష్కరించవచ్చు.</translation>
+<translation id="4518677423782794009">Chrome క్రాష్ అవుతోందా, లేక అసాధారణ రీతిలో ప్రారంభ పేజీలు, సాధన పట్టీలు లేదా మీరు తొలగించలేని రీతిలో ఊహించని ప్రకటనలను చూపుతోందా, లేక మీ బ్రౌజర్ అనుభవాన్ని మారుస్తోందా? మీరు Chrome క్లీన్‌అప్ సాధనం అమలు చేయడం ద్వారా సమస్యను పరిష్కరించగలుగుతారు.</translation>
 <translation id="4519935350946509010">కనెక్షన్ ఎర్రర్.</translation>
 <translation id="4520385623207007473">ఉపయోగంలో ఉన్న కుక్కీలు</translation>
 <translation id="452039078290142656"><ph name="VENDOR_NAME" /> అందించిన తెలియని పరికరాలు</translation>
@@ -2453,7 +2453,7 @@
 <translation id="4699357559218762027">(స్వయంచాలకంగా ప్రారంభించబడింది)</translation>
 <translation id="4707302005824653064">chrome.comలో నిర్వాహకుడు (<ph name="CUSTODIAN_EMAIL" />) వినియోగాన్ని మరియు చరిత్రను సమీక్షించవచ్చు.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + వినియోగదారు ప్రమాణపత్రం</translation>
-<translation id="4707934200082538898">దయచేసి తదుపరి సూచనల కోసం <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" />లో మీ ఇమెయిల్‌ను తనిఖీ చేయండి.</translation>
+<translation id="4707934200082538898">తర్వాతి సూచనల కోసం <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" />లో మీ ఇమెయిల్‌ను దయచేసి తనిఖీ చేయండి.</translation>
 <translation id="4708794300267213770">నిద్రావస్థ నుండి సక్రియం అవుతున్నప్పుడు లాక్ స్క్రీన్‌ని చూపు</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME" /> నిష్క్రమించు</translation>
 <translation id="4711638718396952945">సెట్టింగ్‌లను పునరుద్ధరించు</translation>
@@ -2652,7 +2652,7 @@
 <translation id="4988526792673242964">పేజీలు</translation>
 <translation id="49896407730300355">అ&amp;పసవ్యదిశలో తిప్పు</translation>
 <translation id="4989966318180235467">&amp;నేపథ్య పేజీని పర్యవేక్షించు</translation>
-<translation id="4990343175649730969">Chrome శుభ్రత సాధనాన్ని డౌన్‌లోడ్ చేయి</translation>
+<translation id="4990343175649730969">Chrome క్లీన్‌అప్ సాధనాన్ని డౌన్‌లోడ్ చేయి</translation>
 <translation id="4991420928586866460">ఎగువ-అడ్డు వరుస కీలను ఫంక్షన్ కీల వలె పరిగణించు</translation>
 <translation id="499165176004408815">అధిక కాంట్రాస్ట్ మోడ్‌ను ఉపయోగించు</translation>
 <translation id="4992066212339426712">అన్‌మ్యూట్ చేయి</translation>
@@ -2978,7 +2978,7 @@
 <translation id="5457459357461771897">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు తొలగించడం</translation>
 <translation id="5457599981699367932">అతిథి వలె బ్రౌజ్ చెయ్యండి</translation>
 <translation id="5458998536542739734">లాక్ స్క్రీన్ గమనికలు</translation>
-<translation id="5463275305984126951"><ph name="LOCATION" /> యొక్క స్థానం</translation>
+<translation id="5463275305984126951"><ph name="LOCATION" /> యొక్క సూచిక</translation>
 <translation id="5463856536939868464">దాచిపెట్టిన బుక్‌మార్క్‌లు ఉన్న మెను</translation>
 <translation id="5464632865477611176">ఈ సమయాన్ని అమలు చేయి</translation>
 <translation id="5465662442746197494">సహాయం కావాలా?</translation>
@@ -4390,7 +4390,7 @@
 <translation id="7576690715254076113">పోగు చేయు</translation>
 <translation id="7579149537961810247">సైట్‌లను మ్యూట్ చేయండి</translation>
 <translation id="7580671184200851182">అన్ని స్పీకర్‌ల్లో ఒకే ఆడియోను ప్లే చేయి (మోనో ఆడియో)</translation>
-<translation id="7581462281756524039">శుభ్రత సాధనం</translation>
+<translation id="7581462281756524039">క్లీన్‌అప్ సాధనం</translation>
 <translation id="7582582252461552277">ఈ నెట్‌వర్క్‌ను ప్రాధాన్యపరచు</translation>
 <translation id="7586498138629385861">Chrome అనువర్తనాలు తెరవబడి ఉన్నప్పుడు Chrome నిరంతరాయంగా అమలులో ఉంటుంది.</translation>
 <translation id="7589461650300748890">అయ్యో, అక్కడ. జాగ్రత్తగా ఉండండి.</translation>
@@ -5076,7 +5076,7 @@
 <translation id="8627795981664801467">సురక్షిత కనెక్షన్‌ల మాత్రమే</translation>
 <translation id="8630903300770275248">పర్యవేక్షించబడే వినియోగదారుని దిగుమతి చేయి</translation>
 <translation id="8631032106121706562">పూరేకులు</translation>
-<translation id="8637542770513281060">మీ కంప్యూటర్‌లో ఒక సురక్షిత మాడ్యూల్ ఉంది, అది Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్‌లను అమలు చేయడానికి ఉపయోగించబడుతుంది. Chromebook సహాయ కేంద్రంలో దీని గురించి మరింత తెలుసుకోవడానికి, ఇక్కడికి వెళ్లండి: https://support.google.com/chromebook/?p=sm</translation>
+<translation id="8637542770513281060">మీ కంప్యూటర్‌లో ఒక సురక్షిత మాడ్యూల్ ఉంది, Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్‌లను అమలు చేయడానికి ఇది ఉపయోగించబడుతుంది. Chromebook సహాయ కేంద్రంలో దీని గురించి మరింత తెలుసుకోండి, ఇక్కడికి వెళ్లండి: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">సిస్టమ్ నవీకరణ అందుబాటులో ఉంది. డౌన్‌లోడ్ చెయ్యడానికి సిద్ధం చేస్తోంది...</translation>
 <translation id="8639047128869322042">హానికరమైన సాఫ్ట్‌వేర్‌ కోసం తనిఖీ చేస్తోంది...</translation>
 <translation id="8639963783467694461">స్వీయపూర్తి సెట్టింగ్‌లు</translation>

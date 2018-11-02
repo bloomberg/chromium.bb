@@ -862,7 +862,7 @@
 <translation id="225163402930830576">Освежи мреже</translation>
 <translation id="225240747099314620">Дозволи идентификаторе за заштићени садржај (можда ће бити потребно да поново покренете рачунар)</translation>
 <translation id="2255317897038918278">Microsoft означавање времена</translation>
-<translation id="2256115617011615191">Поново покрени одмах</translation>
+<translation id="2256115617011615191">Рестартуј одмах</translation>
 <translation id="225614027745146050">Добро дошли</translation>
 <translation id="225692081236532131">Статус активације</translation>
 <translation id="2261323523305321874">Администратор је унео промену која се односи на цео систем и која је онемогућила неке старе профиле.</translation>
@@ -3247,7 +3247,7 @@
 <translation id="5851063901794976166">Овде нема ничега...</translation>
 <translation id="5851868085455377790">Издавалац</translation>
 <translation id="5852112051279473187">Упс! Дошло је до озбиљног проблема док смо пријављивали овај уређај. Пробајте поново или контактирајте представника подршке.</translation>
-<translation id="5852137567692933493">Поново покрени и обави Powerwash</translation>
+<translation id="5852137567692933493">Рестартуј и обави Powerwash</translation>
 <translation id="5854912040170951372">Парче</translation>
 <translation id="5855119960719984315">промена прозора</translation>
 <translation id="5855773610748894548">Упс, грешка са безбедносним модулом.</translation>
@@ -4396,7 +4396,7 @@
 <translation id="7591957897535945411">Ова страница је преведена.</translation>
 <translation id="7595453277607160340">Да бисте користили Android и да би <ph name="DEVICE_TYPE" /> уређај радио правилно, пријавите се поново и ажурирајте.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (кôд грешке <ph name="ERROR_CODE" />).</translation>
-<translation id="7598466960084663009">Поново покрени рачунар</translation>
+<translation id="7598466960084663009">Рестартуј рачунар</translation>
 <translation id="7599527631045201165">Назив уређаја је предугачак. Унесите краћи и пробајте поново.</translation>
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE" /></translation>
 <translation id="760197030861754408">Идите на <ph name="LANDING_PAGE" /> да бисте се повезали.</translation>
