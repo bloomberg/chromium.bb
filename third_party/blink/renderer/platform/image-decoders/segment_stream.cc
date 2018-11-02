@@ -31,7 +31,8 @@ bool SegmentStream::IsCleared() const {
 }
 
 size_t SegmentStream::read(void* buffer, size_t size) {
-  DCHECK(!IsCleared());
+  if (IsCleared())
+    return 0;
 
   size = std::min(size, reader_->size() - position_);
 
@@ -48,7 +49,8 @@ size_t SegmentStream::read(void* buffer, size_t size) {
 }
 
 size_t SegmentStream::peek(void* buffer, size_t size) const {
-  DCHECK(!IsCleared());
+  if (IsCleared())
+    return 0;
 
   size = std::min(size, reader_->size() - position_);
 
