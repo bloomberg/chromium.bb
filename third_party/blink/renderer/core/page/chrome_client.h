@@ -151,12 +151,12 @@ class CORE_EXPORT ChromeClient
   // created Page has its show method called.
   // The FrameLoadRequest parameter is only for ChromeClient to check if the
   // request could be fulfilled. The ChromeClient should not load the request.
-  virtual Page* CreateWindow(LocalFrame*,
-                             const FrameLoadRequest&,
-                             const WebWindowFeatures&,
-                             NavigationPolicy,
-                             SandboxFlags,
-                             const SessionStorageNamespaceId&) = 0;
+  Page* CreateWindow(LocalFrame*,
+                     const FrameLoadRequest&,
+                     const WebWindowFeatures&,
+                     NavigationPolicy,
+                     SandboxFlags,
+                     const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
 
   // All the parameters should be in viewport space. That is, if an event
@@ -310,19 +310,19 @@ class CORE_EXPORT ChromeClient
 
   virtual String AcceptLanguages() = 0;
 
-  enum DialogType {
+  enum class UIElementType {
     kAlertDialog = 0,
     kConfirmDialog = 1,
     kPromptDialog = 2,
-    kHTMLDialog = 3,
-    kPrintDialog = 4
+    kPrintDialog = 3,
+    kPopup = 4
   };
-  virtual bool ShouldOpenModalDialogDuringPageDismissal(
+  virtual bool ShouldOpenUIElementDuringPageDismissal(
       LocalFrame&,
-      DialogType,
+      UIElementType,
       const String&,
       Document::PageDismissalType) const {
-    return true;
+    return false;
   }
 
   virtual bool IsSVGImageChromeClient() const { return false; }
@@ -387,11 +387,17 @@ class CORE_EXPORT ChromeClient
                                             const String& default_value,
                                             String& result) = 0;
   virtual void PrintDelegate(LocalFrame*) = 0;
+  virtual Page* CreateWindowDelegate(LocalFrame*,
+                                     const FrameLoadRequest&,
+                                     const WebWindowFeatures&,
+                                     NavigationPolicy,
+                                     SandboxFlags,
+                                     const SessionStorageNamespaceId&) = 0;
 
  private:
-  bool CanOpenModalIfDuringPageDismissal(Frame& main_frame,
-                                         DialogType,
-                                         const String& message);
+  bool CanOpenUIElementIfDuringPageDismissal(Frame& main_frame,
+                                             UIElementType,
+                                             const String& message);
   void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;

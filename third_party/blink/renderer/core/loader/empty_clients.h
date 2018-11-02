@@ -93,14 +93,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void TakeFocus(WebFocusType) override {}
 
   void FocusedNodeChanged(Node*, Node*) override {}
-  Page* CreateWindow(LocalFrame*,
-                     const FrameLoadRequest&,
-                     const WebWindowFeatures&,
-                     NavigationPolicy,
-                     SandboxFlags,
-                     const SessionStorageNamespaceId&) override {
-    return nullptr;
-  }
   void Show(NavigationPolicy) override {}
 
   void DidOverscroll(const FloatSize&,
@@ -138,6 +130,15 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   }
 
   void CloseWindowSoon() override {}
+
+  Page* CreateWindowDelegate(LocalFrame*,
+                             const FrameLoadRequest&,
+                             const WebWindowFeatures&,
+                             NavigationPolicy,
+                             SandboxFlags,
+                             const SessionStorageNamespaceId&) override {
+    return nullptr;
+  }
 
   bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) override {
     return false;
