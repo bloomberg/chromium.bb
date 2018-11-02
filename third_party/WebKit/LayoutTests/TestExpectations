@@ -5517,3 +5517,6 @@ crbug.com/900326 [ Win7 Mac10.12 ] http/tests/devtools/network/preview-searchabl
 crbug.com/900641 [ Linux ] compositing/transitions/transform-on-large-layer.html [ Timeout Pass ]
 crbug.com/900703 external/wpt/cors/origin.htm [ Failure Pass ]
 crbug.com/900730 [ Mac ] rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
+
+# ecosystem-infra sheriff 2018-11-02
+crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.html [ Pass Failure ]
