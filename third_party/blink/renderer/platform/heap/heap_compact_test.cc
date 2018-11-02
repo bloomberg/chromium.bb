@@ -384,7 +384,7 @@ TEST(HeapCompactTest, CompactDequeVectors) {
 
 TEST(HeapCompactTest, CompactLinkedHashSet) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
-  Persistent<OrderedHashSet> set = new OrderedHashSet;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i, HashTablesAreCompacted);
     set->insert(value);
@@ -409,7 +409,7 @@ TEST(HeapCompactTest, CompactLinkedHashSet) {
 
 TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntVector>>;
-  Persistent<OrderedHashSet> set = new OrderedHashSet;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i);
     IntVector* vector = MakeGarbageCollected<IntVector>(19, value);
@@ -437,10 +437,10 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
   using Inner = HeapHashSet<Member<IntWrapper>>;
   using OrderedHashSet = HeapLinkedHashSet<Member<Inner>>;
 
-  Persistent<OrderedHashSet> set = new OrderedHashSet;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i);
-    Inner* inner = new Inner;
+    Inner* inner = MakeGarbageCollected<Inner>();
     inner->insert(value);
     set->insert(inner);
   }
@@ -468,10 +468,10 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   using Inner = HeapLinkedHashSet<Member<IntWrapper>>;
   using OrderedHashSet = HeapLinkedHashSet<Member<Inner>>;
 
-  Persistent<OrderedHashSet> set = new OrderedHashSet;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i);
-    Inner* inner = new Inner;
+    Inner* inner = MakeGarbageCollected<Inner>();
     inner->insert(value);
     set->insert(inner);
   }

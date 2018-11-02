@@ -45,7 +45,7 @@ void IdTargetObserverRegistry::AddObserver(const AtomicString& id,
 
   IdToObserverSetMap::AddResult result = registry_.insert(id.Impl(), nullptr);
   if (result.is_new_entry)
-    result.stored_value->value = new ObserverSet();
+    result.stored_value->value = MakeGarbageCollected<ObserverSet>();
 
   result.stored_value->value->insert(observer);
 }

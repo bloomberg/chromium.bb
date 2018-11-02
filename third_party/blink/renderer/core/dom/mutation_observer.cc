@@ -222,7 +222,7 @@ void MutationObserver::ObservationEnded(
 
 static MutationObserverSet& ActiveMutationObservers() {
   DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, active_observers,
-                      (new MutationObserverSet));
+                      (MakeGarbageCollected<MutationObserverSet>()));
   return *active_observers;
 }
 
@@ -239,7 +239,7 @@ static SlotChangeList& ActiveSlotChangeList() {
 
 static MutationObserverSet& SuspendedMutationObservers() {
   DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspended_observers,
-                      (new MutationObserverSet));
+                      (MakeGarbageCollected<MutationObserverSet>()));
   return *suspended_observers;
 }
 

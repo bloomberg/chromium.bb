@@ -806,7 +806,8 @@ void InspectorCSSAgent::SetActiveStyleSheets(
   HeapHashSet<Member<CSSStyleSheet>>* document_css_style_sheets =
       document_to_css_style_sheets_.at(document);
   if (!document_css_style_sheets) {
-    document_css_style_sheets = new HeapHashSet<Member<CSSStyleSheet>>();
+    document_css_style_sheets =
+        MakeGarbageCollected<HeapHashSet<Member<CSSStyleSheet>>>();
     document_to_css_style_sheets_.Set(document, document_css_style_sheets);
   }
 

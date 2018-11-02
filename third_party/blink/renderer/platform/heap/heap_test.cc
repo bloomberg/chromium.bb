@@ -2629,8 +2629,8 @@ TEST(HeapTest, HeapCollectionTypes) {
       MakeGarbageCollected<MemberPrimitive>();
   Persistent<PrimitiveMember> primitive_member =
       MakeGarbageCollected<PrimitiveMember>();
-  Persistent<MemberSet> set = new MemberSet();
-  Persistent<MemberSet> set2 = new MemberSet();
+  Persistent<MemberSet> set = MakeGarbageCollected<MemberSet>();
+  Persistent<MemberSet> set2 = MakeGarbageCollected<MemberSet>();
   Persistent<MemberCountedSet> set3 = new MemberCountedSet();
   Persistent<MemberVector> vector = MakeGarbageCollected<MemberVector>();
   Persistent<MemberVector> vector2 = MakeGarbageCollected<MemberVector>();
@@ -3208,7 +3208,7 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   Persistent<WeakStrong> weak_strong = MakeGarbageCollected<WeakStrong>();
   Persistent<StrongWeak> strong_weak = MakeGarbageCollected<StrongWeak>();
   Persistent<WeakWeak> weak_weak = MakeGarbageCollected<WeakWeak>();
-  Persistent<WeakSet> weak_set = new WeakSet();
+  Persistent<WeakSet> weak_set = MakeGarbageCollected<WeakSet>();
   Persistent<WeakCountedSet> weak_counted_set = new WeakCountedSet();
 
   Persistent<IntWrapper> two = IntWrapper::Create(2);
@@ -3260,8 +3260,8 @@ void OrderedSetHelper(bool strong) {
   Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
       MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
 
-  Persistent<Set> set1 = new Set();
-  Persistent<Set> set2 = new Set();
+  Persistent<Set> set1 = MakeGarbageCollected<Set>();
+  Persistent<Set> set2 = MakeGarbageCollected<Set>();
 
   const Set& const_set = *set1.Get();
 
@@ -3568,10 +3568,10 @@ void WeakPairsHelper() {
   Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
       MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
 
-  Persistent<WSSet> weak_strong = new WSSet();
-  Persistent<SWSet> strong_weak = new SWSet();
-  Persistent<WUSet> weak_unwrapped = new WUSet();
-  Persistent<UWSet> unwrapped_weak = new UWSet();
+  Persistent<WSSet> weak_strong = MakeGarbageCollected<WSSet>();
+  Persistent<SWSet> strong_weak = MakeGarbageCollected<SWSet>();
+  Persistent<WUSet> weak_unwrapped = MakeGarbageCollected<WUSet>();
+  Persistent<UWSet> unwrapped_weak = MakeGarbageCollected<UWSet>();
 
   Persistent<IntWrapper> two = IntWrapper::Create(2);
 
@@ -3658,8 +3658,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       Persistent<StrongWeak> strong_weak = MakeGarbageCollected<StrongWeak>();
       Persistent<WeakWeak> weak_weak = MakeGarbageCollected<WeakWeak>();
 
-      Persistent<WeakSet> weak_set = new WeakSet();
-      Persistent<WeakOrderedSet> weak_ordered_set = new WeakOrderedSet();
+      Persistent<WeakSet> weak_set = MakeGarbageCollected<WeakSet>();
+      Persistent<WeakOrderedSet> weak_ordered_set =
+          MakeGarbageCollected<WeakOrderedSet>();
 
       Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
           MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
@@ -4167,7 +4168,7 @@ TEST(HeapTest, GarbageCollectedMixin) {
   EXPECT_EQ(2, UseMixin::trace_count_);
 
   Persistent<HeapHashSet<WeakMember<Mixin>>> weak_map =
-      new HeapHashSet<WeakMember<Mixin>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<Mixin>>>();
   weak_map->insert(UseMixin::Create());
   PreciselyCollectGarbage();
   EXPECT_EQ(0u, weak_map->size());
@@ -4838,10 +4839,10 @@ template <typename Set>
 void SetWithCustomWeaknessHandling() {
   typedef typename Set::iterator Iterator;
   Persistent<IntWrapper> living_int(IntWrapper::Create(42));
-  Persistent<Set> set1(new Set());
+  Persistent<Set> set1(MakeGarbageCollected<Set>());
   {
     Set set2;
-    Set* set3 = new Set();
+    Set* set3 = MakeGarbageCollected<Set>();
     set2.insert(
         PairWithWeakHandling(IntWrapper::Create(0), IntWrapper::Create(1)));
     set3->insert(
@@ -5313,7 +5314,7 @@ TEST(HeapTest, Ephemeron) {
   Persistent<PairWeakMap> pair_weak_map = MakeGarbageCollected<PairWeakMap>();
   Persistent<PairWeakMap> pair_weak_map2 = MakeGarbageCollected<PairWeakMap>();
 
-  Persistent<Set> set = new Set();
+  Persistent<Set> set = MakeGarbageCollected<Set>();
 
   Persistent<IntWrapper> wp1 = IntWrapper::Create(1);
   Persistent<IntWrapper> wp2 = IntWrapper::Create(2);
@@ -6557,7 +6558,7 @@ ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
                                   singleton, ());
   Persistent<WeakHeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
-    singleton_persistent = new WeakHeapObjectSet();
+    singleton_persistent = MakeGarbageCollected<WeakHeapObjectSet>();
     singleton_persistent.RegisterAsStaticReference();
   }
   return *singleton_persistent;
@@ -6569,7 +6570,7 @@ ThreadedClearOnShutdownTester::GetHeapObjectSet() {
                                   singleton, ());
   Persistent<HeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
-    singleton_persistent = new HeapObjectSet();
+    singleton_persistent = MakeGarbageCollected<HeapObjectSet>();
     singleton_persistent.RegisterAsStaticReference();
   }
   return *singleton_persistent;

@@ -737,8 +737,10 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   destination->Handler()
       .Input(input_index)
       .Connect(Handler().Output(output_index));
-  if (!connected_nodes_[output_index])
-    connected_nodes_[output_index] = new HeapHashSet<Member<AudioNode>>();
+  if (!connected_nodes_[output_index]) {
+    connected_nodes_[output_index] =
+        MakeGarbageCollected<HeapHashSet<Member<AudioNode>>>();
+  }
   connected_nodes_[output_index]->insert(destination);
 
   Handler().UpdatePullStatusIfNeeded();
@@ -783,8 +785,10 @@ void AudioNode::connect(AudioParam* param,
   }
 
   param->Handler().Connect(Handler().Output(output_index));
-  if (!connected_params_[output_index])
-    connected_params_[output_index] = new HeapHashSet<Member<AudioParam>>();
+  if (!connected_params_[output_index]) {
+    connected_params_[output_index] =
+        MakeGarbageCollected<HeapHashSet<Member<AudioParam>>>();
+  }
   connected_params_[output_index]->insert(param);
 
   Handler().UpdatePullStatusIfNeeded();

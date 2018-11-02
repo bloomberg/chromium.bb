@@ -54,7 +54,8 @@ namespace {
 
 using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
 PluginSet& PluginsPendingDispose() {
-  DEFINE_STATIC_LOCAL(Persistent<PluginSet>, set, (new PluginSet));
+  DEFINE_STATIC_LOCAL(Persistent<PluginSet>, set,
+                      (MakeGarbageCollected<PluginSet>()));
   return *set;
 }
 

@@ -65,7 +65,7 @@ std::unique_ptr<FullscreenController> FullscreenController::Create(
 
 FullscreenController::FullscreenController(WebViewImpl* web_view_base)
     : web_view_base_(web_view_base),
-      pending_frames_(new PendingFullscreenSet) {}
+      pending_frames_(MakeGarbageCollected<PendingFullscreenSet>()) {}
 
 void FullscreenController::DidEnterFullscreen() {
   // |Browser::EnterFullscreenModeForTab()| can enter fullscreen without going

@@ -71,9 +71,10 @@ HitTestResult::HitTestResult(const HitTestResult& other)
       is_over_embedded_content_view_(other.IsOverEmbeddedContentView()),
       canvas_region_id_(other.CanvasRegionId()) {
   // Only copy the NodeSet in case of list hit test.
-  list_based_test_result_ = other.list_based_test_result_
-                                ? new NodeSet(*other.list_based_test_result_)
-                                : nullptr;
+  list_based_test_result_ =
+      other.list_based_test_result_
+          ? MakeGarbageCollected<NodeSet>(*other.list_based_test_result_)
+          : nullptr;
 }
 
 HitTestResult::~HitTestResult() = default;
@@ -113,9 +114,10 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   canvas_region_id_ = other.CanvasRegionId();
 
   // Only copy the NodeSet in case of list hit test.
-  list_based_test_result_ = other.list_based_test_result_
-                                ? new NodeSet(*other.list_based_test_result_)
-                                : nullptr;
+  list_based_test_result_ =
+      other.list_based_test_result_
+          ? MakeGarbageCollected<NodeSet>(*other.list_based_test_result_)
+          : nullptr;
 }
 
 void HitTestResult::Trace(blink::Visitor* visitor) {
@@ -438,13 +440,13 @@ void HitTestResult::Append(const HitTestResult& other) {
 
 const HitTestResult::NodeSet& HitTestResult::ListBasedTestResult() const {
   if (!list_based_test_result_)
-    list_based_test_result_ = new NodeSet;
+    list_based_test_result_ = MakeGarbageCollected<NodeSet>();
   return *list_based_test_result_;
 }
 
 HitTestResult::NodeSet& HitTestResult::MutableListBasedTestResult() {
   if (!list_based_test_result_)
-    list_based_test_result_ = new NodeSet;
+    list_based_test_result_ = MakeGarbageCollected<NodeSet>();
   return *list_based_test_result_;
 }
 

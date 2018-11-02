@@ -112,7 +112,8 @@ static bool s_jump_on_track_click = false;
 typedef HeapHashSet<WeakMember<Scrollbar>> ScrollbarSet;
 
 static ScrollbarSet& GetScrollbarSet() {
-  DEFINE_STATIC_LOCAL(Persistent<ScrollbarSet>, set, (new ScrollbarSet));
+  DEFINE_STATIC_LOCAL(Persistent<ScrollbarSet>, set,
+                      (MakeGarbageCollected<ScrollbarSet>()));
   return *set;
 }
 
