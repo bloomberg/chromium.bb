@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -602,6 +603,32 @@ ChromeContentBrowserClientExtensionsPart::ShouldTryToUseExistingProcessHost(
 
   return (process_ids.size() >
           (max_process_count * chrome::kMaxShareOfExtensionProcesses));
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::
+    ShouldSubframesTryToReuseExistingProcess(
+        content::RenderFrameHost* main_frame) {
+  DCHECK(!main_frame->GetParent());
+
+  // Most out-of-process iframes aggressively look for a random same-site
+  // process to reuse if possible, to keep the process count low. Skip this for
+  // web iframes inside extensions (not including hosted apps), since the
+  // workload here tends to be different and we want to avoid slowing down
+  // normal web pages with misbehaving extension-related content.
+  //
+  // Note that this does not prevent process sharing with tabs when over the
+  // process limit, and OOPIFs from tabs (which will aggressively look for
+  // existing processes) may still join the process of an extension's web
+  // iframe.  This mainly reduces the likelihood of problems with main frames
+  // and makes it more likely that the subframe process will be shown near the
+  // extension in Chrome's task manager for blame purposes. See
+  // https://crbug.com/899418.
+  const Extension* extension =
+      ExtensionRegistry::Get(main_frame->GetSiteInstance()->GetBrowserContext())
+          ->enabled_extensions()
+          .GetExtensionOrAppByURL(main_frame->GetSiteInstance()->GetSiteURL());
+  return !extension || !extension->is_extension();
 }
 
 // static

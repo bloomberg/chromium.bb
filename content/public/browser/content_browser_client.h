@@ -419,6 +419,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldTryToUseExistingProcessHost(
       BrowserContext* browser_context, const GURL& url);
 
+  // Returns whether or not subframes of |main_frame| should try to
+  // aggressively reuse existing processes, even when below process limit.
+  // This gets called when navigating a subframe to a URL that requires a
+  // dedicated process and defaults to true, which minimizes the process count.
+  // The embedder can choose to override this if there is a reason to avoid the
+  // reuse.
+  virtual bool ShouldSubframesTryToReuseExistingProcess(
+      RenderFrameHost* main_frame);
+
   // Called when a site instance is first associated with a process.
   virtual void SiteInstanceGotProcess(SiteInstance* site_instance) {}
 
