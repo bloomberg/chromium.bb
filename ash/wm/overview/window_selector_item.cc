@@ -586,7 +586,6 @@ void WindowSelectorItem::SlideWindowIn() {
   // called if we see the home launcher on enter (all windows are minimized).
   DCHECK(item_widget_);
   DCHECK(transform_window_.minimized_widget());
-
   FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true);
@@ -1177,7 +1176,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   caption_container_view_ = new CaptionContainerView(
       this, image_view, label_view_, cannot_snap_label_view_, close_button_);
   UpdateCannotSnapWarningVisibility();
-
   item_widget_->SetContentsView(caption_container_view_);
   item_widget_->Show();
   item_widget_->SetOpacity(0);
