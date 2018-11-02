@@ -171,9 +171,12 @@ def _RewriteLanguageAssetPath(src_path):
   This will rewrite paths that look like locales/<locale>.pak into
   locales#<language>/<locale>.pak, where <language> is the language code
   from the locale.
+
+  Returns a list of paths. The language split should be duplicated at all the
+  returned paths.
   """
   if not src_path.startswith(_LOCALES_SUBDIR) or not src_path.endswith('.pak'):
-    return src_path
+    return [src_path]
 
   locale = src_path[len(_LOCALES_SUBDIR):-4]
   android_locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(
@@ -186,10 +189,11 @@ def _RewriteLanguageAssetPath(src_path):
   else:
     android_language = android_locale
 
+  result_paths = ['assets/locales#lang_%s/%s.pak' % (android_language, locale)]
   if android_language == _FALLBACK_LANGUAGE:
-    return 'assets/locales/%s.pak' % locale
+    result_paths.append('assets/locales/%s.pak' % locale)
 
-  return 'assets/locales#lang_%s/%s.pak' % (android_language, locale)
+  return result_paths
 
 
 def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
@@ -226,13 +230,16 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
         src_path = info.filename
         is_compressed = info.compress_type != zipfile.ZIP_STORED
 
-        dst_path = src_path
+        dst_paths = [src_path]
         if src_path in language_files:
-          dst_path = _RewriteLanguageAssetPath(src_path)
+          dst_paths = _RewriteLanguageAssetPath(src_path)
 
-        build_utils.AddToZipHermetic(dst_zip, dst_path,
-                                     data=src_zip.read(src_path),
-                                     compress=is_compressed)
+        for dst_path in dst_paths:
+          build_utils.AddToZipHermetic(
+              dst_zip,
+              dst_path,
+              data=src_zip.read(src_path),
+              compress=is_compressed)
 
     return tmp_zip
 
