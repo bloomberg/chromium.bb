@@ -107,7 +107,8 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
     mojom::blink::BlobURLTokenPtr,
-    base::TimeTicks) {
+    base::TimeTicks,
+    const String&) {
   return kNavigationPolicyIgnore;
 }
 

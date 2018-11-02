@@ -125,7 +125,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
       mojom::blink::BlobURLTokenPtr,
-      base::TimeTicks input_start_time) override;
+      base::TimeTicks input_start_time,
+      const String& href_translate) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;

@@ -694,7 +694,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(), has_started_from_context_menu(),
-      has_user_gesture(), InitiatorCSPInfo(), input_start);
+      has_user_gesture(), InitiatorCSPInfo(), std::string(), input_start);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(

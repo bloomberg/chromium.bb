@@ -280,7 +280,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                              HTMLFormElement*,
                                              ContentSecurityPolicyDisposition,
                                              mojom::blink::BlobURLTokenPtr,
-                                             base::TimeTicks) override;
+                                             base::TimeTicks,
+                                             const String&) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 

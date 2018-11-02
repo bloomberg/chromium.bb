@@ -3911,7 +3911,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false, GURL(), GURL(),
       PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
-      false /* has_user_gesture */, InitiatorCSPInfo());
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   CommitNavigation(0, nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    common_params, RequestNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,

@@ -279,6 +279,10 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns the proxy server used for this navigation, if any.
   virtual const net::ProxyServer& GetProxyServer() = 0;
 
+  // Returns the value of the hrefTranslate attribute if this navigation was
+  // initiated from a link that had that attribute set.
+  virtual const std::string& GetHrefTranslate() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

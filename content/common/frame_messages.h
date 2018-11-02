@@ -488,6 +488,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(started_from_context_menu)
   IPC_STRUCT_TRAITS_MEMBER(initiator_csp_info)
   IPC_STRUCT_TRAITS_MEMBER(origin_policy)
+  IPC_STRUCT_TRAITS_MEMBER(href_translate)
   IPC_STRUCT_TRAITS_MEMBER(input_start)
 IPC_STRUCT_TRAITS_END()
 

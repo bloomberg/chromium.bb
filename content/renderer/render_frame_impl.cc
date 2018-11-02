@@ -545,7 +545,7 @@ CommonNavigationParams MakeCommonNavigationParams(
               ? base::Optional<CSPSource>(BuildCSPSource(
                     info.url_request.GetInitiatorCSP().self_source.value()))
               : base::nullopt),
-      input_start);
+      info.href_translate.Latin1(), input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
@@ -4254,6 +4254,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     info.blob_url_token =
         pending_navigation_info_->blob_url_token.PassInterface().PassHandle();
     info.input_start = pending_navigation_info_->input_start;
+    info.href_translate = pending_navigation_info_->href_translate;
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info, std::move(navigation_initiator_handle));
@@ -7285,7 +7286,8 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       source_location(info.source_location),
       devtools_initiator_info(info.devtools_initiator_info),
       blob_url_token(CloneBlobURLToken(info.blob_url_token.get())),
-      input_start(info.input_start) {}
+      input_start(info.input_start),
+      href_translate(info.href_translate) {}
 
 RenderFrameImpl::PendingNavigationInfo::~PendingNavigationInfo() = default;
 
