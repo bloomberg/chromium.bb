@@ -193,6 +193,32 @@ bool GetTabById(int tab_id,
   return false;
 }
 
+// Gets the WebContents for |tab_id| if it is specified. Otherwise get the
+// WebContents for the active tab in the |function|'s current window.
+// Returns nullptr and fills |error| if failed.
+content::WebContents* GetTabsAPIDefaultWebContents(
+    UIThreadExtensionFunction* function,
+    int tab_id,
+    std::string* error) {
+  content::WebContents* web_contents = nullptr;
+  if (tab_id != -1) {
+    // We assume this call leaves web_contents unchanged if it is unsuccessful.
+    GetTabById(tab_id, function->browser_context(),
+               function->include_incognito_information(),
+               nullptr /* ignore Browser* output */,
+               nullptr /* ignore TabStripModel* output */, &web_contents,
+               nullptr /* ignore int tab_index output */, error);
+  } else {
+    Browser* browser =
+        ChromeExtensionFunctionDetails(function).GetCurrentBrowser();
+    if (!browser)
+      *error = tabs_constants::kNoCurrentWindowError;
+    else if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, nullptr))
+      *error = tabs_constants::kNoSelectedTabError;
+  }
+  return web_contents;
+}
+
 // Returns true if either |boolean| is a null pointer, or if |*boolean| and
 // |value| are equal. This function is used to check if a tab's parameters match
 // those of the browser.
@@ -1992,25 +2018,6 @@ bool TabsInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }
 
-content::WebContents* ZoomAPIFunction::GetWebContents(int tab_id,
-                                                      std::string* error) {
-  content::WebContents* web_contents = NULL;
-  if (tab_id != -1) {
-    // We assume this call leaves web_contents unchanged if it is unsuccessful.
-    GetTabById(tab_id, browser_context(), include_incognito_information(),
-               nullptr /* ignore Browser* output */,
-               nullptr /* ignore TabStripModel* output */, &web_contents,
-               nullptr /* ignore int tab_index output */, error);
-  } else {
-    Browser* browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
-    if (!browser)
-      *error = tabs_constants::kNoCurrentWindowError;
-    else if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, NULL))
-      *error = tabs_constants::kNoSelectedTabError;
-  }
-  return web_contents;
-}
-
 ExtensionFunction::ResponseAction TabsSetZoomFunction::Run() {
   std::unique_ptr<tabs::SetZoom::Params> params(
       tabs::SetZoom::Params::Create(*args_));
@@ -2018,7 +2025,8 @@ ExtensionFunction::ResponseAction TabsSetZoomFunction::Run() {
 
   int tab_id = params->tab_id ? *params->tab_id : -1;
   std::string error;
-  WebContents* web_contents = GetWebContents(tab_id, &error);
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
     return RespondNow(Error(error));
 
@@ -2049,7 +2057,8 @@ ExtensionFunction::ResponseAction TabsGetZoomFunction::Run() {
 
   int tab_id = params->tab_id ? *params->tab_id : -1;
   std::string error;
-  WebContents* web_contents = GetWebContents(tab_id, &error);
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
     return RespondNow(Error(error));
 
@@ -2069,7 +2078,8 @@ ExtensionFunction::ResponseAction TabsSetZoomSettingsFunction::Run() {
 
   int tab_id = params->tab_id ? *params->tab_id : -1;
   std::string error;
-  WebContents* web_contents = GetWebContents(tab_id, &error);
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
     return RespondNow(Error(error));
 
@@ -2118,7 +2128,8 @@ ExtensionFunction::ResponseAction TabsGetZoomSettingsFunction::Run() {
 
   int tab_id = params->tab_id ? *params->tab_id : -1;
   std::string error;
-  WebContents* web_contents = GetWebContents(tab_id, &error);
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
     return RespondNow(Error(error));
   ZoomController* zoom_controller =
@@ -2172,5 +2183,45 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
 
 TabsDiscardFunction::TabsDiscardFunction() {}
 TabsDiscardFunction::~TabsDiscardFunction() {}
+
+ExtensionFunction::ResponseAction TabsGoForwardFunction::Run() {
+  std::unique_ptr<tabs::GoForward::Params> params(
+      tabs::GoForward::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  int tab_id = params->tab_id ? *params->tab_id : -1;
+  std::string error;
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
+  if (!web_contents)
+    return RespondNow(Error(error));
+
+  NavigationController& controller = web_contents->GetController();
+  if (!controller.CanGoForward())
+    return RespondNow(Error(tabs_constants::kNotFoundNextPageError));
+
+  controller.GoForward();
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction TabsGoBackFunction::Run() {
+  std::unique_ptr<tabs::GoBack::Params> params(
+      tabs::GoBack::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  int tab_id = params->tab_id ? *params->tab_id : -1;
+  std::string error;
+  WebContents* web_contents =
+      GetTabsAPIDefaultWebContents(this, tab_id, &error);
+  if (!web_contents)
+    return RespondNow(Error(error));
+
+  NavigationController& controller = web_contents->GetController();
+  if (!controller.CanGoBack())
+    return RespondNow(Error(tabs_constants::kNotFoundNextPageError));
+
+  controller.GoBack();
+  return RespondNow(NoArguments());
+}
 
 }  // namespace extensions

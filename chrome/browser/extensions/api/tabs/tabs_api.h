@@ -268,20 +268,7 @@ class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.insertCSS", TABS_INSERTCSS)
 };
 
-class ZoomAPIFunction : public UIThreadExtensionFunction {
- protected:
-  ~ZoomAPIFunction() override {}
-
-  // Gets the WebContents for |tab_id| if it is specified. Otherwise get the
-  // WebContents for the active tab in the current window. Calling this function
-  // may set error_.
-  //
-  // TODO(...) many other tabs API functions use similar behavior. There should
-  // be a way to share this implementation somehow.
-  content::WebContents* GetWebContents(int tab_id, std::string* error);
-};
-
-class TabsSetZoomFunction : public ZoomAPIFunction {
+class TabsSetZoomFunction : public UIThreadExtensionFunction {
  private:
   ~TabsSetZoomFunction() override {}
 
@@ -290,7 +277,7 @@ class TabsSetZoomFunction : public ZoomAPIFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.setZoom", TABS_SETZOOM)
 };
 
-class TabsGetZoomFunction : public ZoomAPIFunction {
+class TabsGetZoomFunction : public UIThreadExtensionFunction {
  private:
   ~TabsGetZoomFunction() override {}
 
@@ -299,7 +286,7 @@ class TabsGetZoomFunction : public ZoomAPIFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.getZoom", TABS_GETZOOM)
 };
 
-class TabsSetZoomSettingsFunction : public ZoomAPIFunction {
+class TabsSetZoomSettingsFunction : public UIThreadExtensionFunction {
  private:
   ~TabsSetZoomSettingsFunction() override {}
 
@@ -308,7 +295,7 @@ class TabsSetZoomSettingsFunction : public ZoomAPIFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.setZoomSettings", TABS_SETZOOMSETTINGS)
 };
 
-class TabsGetZoomSettingsFunction : public ZoomAPIFunction {
+class TabsGetZoomSettingsFunction : public UIThreadExtensionFunction {
  private:
   ~TabsGetZoomSettingsFunction() override {}
 
@@ -330,6 +317,36 @@ class TabsDiscardFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(TabsDiscardFunction);
+};
+
+class TabsGoForwardFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("tabs.goForward", TABS_GOFORWARD)
+
+  TabsGoForwardFunction() {}
+
+ private:
+  ~TabsGoForwardFunction() override {}
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(TabsGoForwardFunction);
+};
+
+class TabsGoBackFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("tabs.goBack", TABS_GOBACK)
+
+  TabsGoBackFunction() {}
+
+ private:
+  ~TabsGoBackFunction() override {}
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(TabsGoBackFunction);
 };
 
 }  // namespace extensions

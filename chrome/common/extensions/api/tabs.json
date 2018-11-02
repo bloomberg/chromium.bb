@@ -946,6 +946,46 @@
             ]
           }
         ]
+      },
+      {
+        "name": "goForward",
+        "type": "function",
+        "description": "Go foward to the next page, if one is available.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "optional": true,
+            "minimum": 0,
+            "description": "The ID of the tab to navigate forward; defaults to the selected tab of the current window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "goBack",
+        "type": "function",
+        "description": "Go back to the previous page, if one is available.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "optional": true,
+            "minimum": 0,
+            "description": "The ID of the tab to navigate back; defaults to the selected tab of the current window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

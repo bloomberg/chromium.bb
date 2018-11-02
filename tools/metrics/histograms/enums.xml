@@ -17183,6 +17183,8 @@ Called by update_net_error_codes.py.-->
   <int value="1286" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICMOUSEEVENT"/>
   <int value="1287" label="FILEMANAGERPRIVATE_DETECTCHARACTERENCODING"/>
   <int value="1288" label="FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO"/>
+  <int value="1289" label="TABS_GOFORWARD"/>
+  <int value="1290" label="TABS_GOBACK"/>
 </enum>
 
 <enum name="ExtensionIconState">
