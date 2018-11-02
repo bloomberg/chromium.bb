@@ -90,34 +90,35 @@ uint8_t BuildRequestFlags(UsbTransferDirection direction,
 // Encapsulates waiting for the completion of an overlapped event.
 class UsbDeviceHandleWin::Request : public base::win::ObjectWatcher::Delegate {
  public:
-  explicit Request(HANDLE handle)
-      : handle_(handle), event_(CreateEvent(nullptr, false, false, nullptr)) {
+  Request(HANDLE handle, bool winusb_handle)
+      : handle_(handle),
+        winusb_handle_(winusb_handle),
+        event_(CreateEvent(nullptr, false, false, nullptr)) {
     memset(&overlapped_, 0, sizeof(overlapped_));
     overlapped_.hEvent = event_.Get();
   }
 
-  ~Request() override {
-    if (callback_) {
-      SetLastError(ERROR_REQUEST_ABORTED);
-      std::move(callback_).Run(this, false, 0);
-    }
-  }
+  ~Request() override = default;
 
   // Starts watching for completion of the overlapped event.
   void MaybeStartWatching(
       BOOL success,
+      DWORD last_error,
       base::OnceCallback<void(Request*, DWORD, size_t)> callback) {
     callback_ = std::move(callback);
     if (success) {
       OnObjectSignaled(event_.Get());
     } else {
-      DWORD error = GetLastError();
-      if (error == ERROR_IO_PENDING) {
+      if (last_error == ERROR_IO_PENDING)
         watcher_.StartWatchingOnce(event_.Get(), this);
-      } else {
-        std::move(callback_).Run(this, error, 0);
-      }
+      else
+        std::move(callback_).Run(this, last_error, 0);
     }
+  }
+
+  void Abort() {
+    watcher_.StopWatching();
+    std::move(callback_).Run(this, ERROR_REQUEST_ABORTED, 0);
   }
 
   OVERLAPPED* overlapped() { return &overlapped_; }
@@ -126,14 +127,24 @@ class UsbDeviceHandleWin::Request : public base::win::ObjectWatcher::Delegate {
   void OnObjectSignaled(HANDLE object) override {
     DCHECK_EQ(object, event_.Get());
     DWORD size;
-    if (GetOverlappedResult(handle_, &overlapped_, &size, true))
+    BOOL result;
+    if (winusb_handle_)
+      result = WinUsb_GetOverlappedResult(handle_, &overlapped_, &size, true);
+    else
+      result = GetOverlappedResult(handle_, &overlapped_, &size, true);
+    DWORD last_error = GetLastError();
+
+    if (result)
       std::move(callback_).Run(this, ERROR_SUCCESS, size);
     else
-      std::move(callback_).Run(this, GetLastError(), 0);
+      std::move(callback_).Run(this, last_error, 0);
   }
 
  private:
   HANDLE handle_;
+  // Records whether |handle_| above is a true HANDLE or a
+  // WINUSB_INTERFACE_HANDLE.
+  bool winusb_handle_;
   OVERLAPPED overlapped_;
   base::win::ScopedHandle event_;
   base::win::ObjectWatcher watcher_;
@@ -163,7 +174,17 @@ void UsbDeviceHandleWin::Close() {
     hub_handle_.Close();
   }
 
-  requests_.clear();
+  if (function_handle_.IsValid()) {
+    CancelIo(function_handle_.Get());
+    function_handle_.Close();
+    first_interface_handle_ = INVALID_HANDLE_VALUE;
+  }
+
+  // Aborting requests may run or destroy callbacks holding the last reference
+  // to this object so hold a reference for the rest of this method.
+  scoped_refptr<UsbDeviceHandleWin> self(this);
+  while (!requests_.empty())
+    requests_.begin()->second->Abort();
 }
 
 void UsbDeviceHandleWin::SetConfiguration(int configuration_value,
@@ -285,13 +306,15 @@ void UsbDeviceHandleWin::ControlTransfer(
         auto* node_connection_info = new USB_NODE_CONNECTION_INFORMATION_EX;
         node_connection_info->ConnectionIndex = device_->port_number();
 
-        Request* request = MakeRequest(hub_handle_.Get());
+        Request* request = MakeRequest(false /* winusb_handle */);
+        BOOL result = DeviceIoControl(
+            hub_handle_.Get(), IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX,
+            node_connection_info, sizeof(*node_connection_info),
+            node_connection_info, sizeof(*node_connection_info), nullptr,
+            request->overlapped());
+        DWORD last_error = GetLastError();
         request->MaybeStartWatching(
-            DeviceIoControl(hub_handle_.Get(),
-                            IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX,
-                            node_connection_info, sizeof(*node_connection_info),
-                            node_connection_info, sizeof(*node_connection_info),
-                            nullptr, request->overlapped()),
+            result, last_error,
             base::BindOnce(&UsbDeviceHandleWin::GotNodeConnectionInformation,
                            weak_factory_.GetWeakPtr(), std::move(callback),
                            base::Owned(node_connection_info), buffer));
@@ -309,13 +332,14 @@ void UsbDeviceHandleWin::ControlTransfer(
         descriptor_request->SetupPacket.wIndex = index;
         descriptor_request->SetupPacket.wLength = buffer->size();
 
-        Request* request = MakeRequest(hub_handle_.Get());
+        Request* request = MakeRequest(false /* winusb_handle */);
+        BOOL result = DeviceIoControl(
+            hub_handle_.Get(), IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
+            request_buffer->front(), size, request_buffer->front(), size,
+            nullptr, request->overlapped());
+        DWORD last_error = GetLastError();
         request->MaybeStartWatching(
-            DeviceIoControl(hub_handle_.Get(),
-                            IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
-                            request_buffer->front(), size,
-                            request_buffer->front(), size, nullptr,
-                            request->overlapped()),
+            result, last_error,
             base::BindOnce(&UsbDeviceHandleWin::GotDescriptorFromNodeConnection,
                            weak_factory_.GetWeakPtr(), std::move(callback),
                            request_buffer, buffer));
@@ -350,12 +374,16 @@ void UsbDeviceHandleWin::ControlTransfer(
   setup.Index = index;
   setup.Length = buffer->size();
 
-  Request* control_request = MakeRequest(handle);
-  control_request->MaybeStartWatching(
+  Request* control_request = MakeRequest(true /* winusb_handle */);
+  BOOL result =
       WinUsb_ControlTransfer(handle, setup, buffer->front(), buffer->size(),
-                             nullptr, control_request->overlapped()),
+                             nullptr, control_request->overlapped());
+  DWORD last_error = GetLastError();
+  control_request->MaybeStartWatching(
+      result, last_error,
       base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback), buffer));
+                     weak_factory_.GetWeakPtr(), nullptr, std::move(callback),
+                     buffer));
 }
 
 void UsbDeviceHandleWin::IsochronousTransferIn(
@@ -465,6 +493,8 @@ bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
       USB_PLOG(ERROR) << "Failed to initialize WinUSB handle";
       return false;
     }
+
+    first_interface_handle_ = handle;
   } else {
     auto first_interface_it = interfaces_.find(interface->first_interface);
     DCHECK(first_interface_it != interfaces_.end());
@@ -532,8 +562,11 @@ WINUSB_INTERFACE_HANDLE UsbDeviceHandleWin::GetInterfaceForControlTransfer(
   return interface->handle.Get();
 }
 
-UsbDeviceHandleWin::Request* UsbDeviceHandleWin::MakeRequest(HANDLE handle) {
-  auto request = std::make_unique<Request>(hub_handle_.Get());
+UsbDeviceHandleWin::Request* UsbDeviceHandleWin::MakeRequest(
+    bool winusb_handle) {
+  auto request = std::make_unique<Request>(
+      winusb_handle ? first_interface_handle_ : hub_handle_.Get(),
+      winusb_handle);
   Request* request_ptr = request.get();
   requests_[request_ptr] = std::move(request);
   return request_ptr;
@@ -602,22 +635,32 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
 }
 
 void UsbDeviceHandleWin::TransferComplete(
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     TransferCallback callback,
     scoped_refptr<base::RefCountedBytes> buffer,
     Request* request_ptr,
     DWORD win32_result,
     size_t bytes_transferred) {
   std::unique_ptr<Request> request = UnlinkRequest(request_ptr);
+  UsbTransferStatus status = UsbTransferStatus::COMPLETED;
 
   if (win32_result != ERROR_SUCCESS) {
     SetLastError(win32_result);
     USB_PLOG(ERROR) << "Transfer failed";
-    std::move(callback).Run(UsbTransferStatus::TRANSFER_ERROR, nullptr, 0);
-    return;
+
+    buffer = nullptr;
+    bytes_transferred = 0;
+    status = UsbTransferStatus::TRANSFER_ERROR;
   }
 
-  std::move(callback).Run(UsbTransferStatus::COMPLETED, std::move(buffer),
-                          bytes_transferred);
+  if (!callback_task_runner ||
+      callback_task_runner->RunsTasksInCurrentSequence()) {
+    std::move(callback).Run(status, std::move(buffer), bytes_transferred);
+  } else {
+    callback_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), status,
+                                  std::move(buffer), bytes_transferred));
+  }
 }
 
 void UsbDeviceHandleWin::GenericTransferInternal(
@@ -654,7 +697,7 @@ void UsbDeviceHandleWin::GenericTransferInternal(
   }
 
   DCHECK(interface->handle.IsValid());
-  Request* request = MakeRequest(interface->handle.Get());
+  Request* request = MakeRequest(true /* winusb_handle */);
   BOOL result;
   if (direction == UsbTransferDirection::INBOUND) {
     result = WinUsb_ReadPipe(interface->handle.Get(), endpoint_address,
@@ -665,10 +708,13 @@ void UsbDeviceHandleWin::GenericTransferInternal(
                               buffer->front(), buffer->size(), nullptr,
                               request->overlapped());
   }
+  DWORD last_error = GetLastError();
   request->MaybeStartWatching(
-      result, base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
-                             weak_factory_.GetWeakPtr(), std::move(callback),
-                             std::move(buffer)));
+      result, last_error,
+      base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(callback_task_runner), std::move(callback),
+                     std::move(buffer)));
 }
 
 void UsbDeviceHandleWin::ReportIsochronousError(
