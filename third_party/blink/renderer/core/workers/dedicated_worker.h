@@ -104,7 +104,7 @@ class CORE_EXPORT DedicatedWorker final
   Member<const WorkerOptions> options_;
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
-  scoped_refptr<WorkerClassicScriptLoader> classic_script_loader_;
+  Member<WorkerClassicScriptLoader> classic_script_loader_;
 };
 
 }  // namespace blink

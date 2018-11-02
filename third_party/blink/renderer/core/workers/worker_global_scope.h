@@ -212,10 +212,9 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsScriptFetchedOnMainThread();
 
   void DidReceiveResponseForClassicScript(
-      scoped_refptr<WorkerClassicScriptLoader> classic_script_loader);
-  void DidImportClassicScript(
-      scoped_refptr<WorkerClassicScriptLoader> classic_script_loader,
-      const v8_inspector::V8StackTraceId& stack_id);
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                              const v8_inspector::V8StackTraceId& stack_id);
 
   // |kNotHandled| is used when the script was not in
   // InstalledScriptsManager, which means it was not an installed script.

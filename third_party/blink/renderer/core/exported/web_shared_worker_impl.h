@@ -141,7 +141,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   bool is_paused_on_start_ = false;
 
   // Kept around only while main script loading is ongoing.
-  scoped_refptr<WorkerClassicScriptLoader> main_script_loader_;
+  Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
   WebURL script_request_url_;
   WebString name_;

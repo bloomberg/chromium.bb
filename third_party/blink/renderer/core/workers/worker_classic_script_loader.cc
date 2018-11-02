@@ -51,15 +51,6 @@ WorkerClassicScriptLoader::WorkerClassicScriptLoader()
     : response_address_space_(mojom::IPAddressSpace::kPublic),
       mime_type_check_mode_(AllowedByNosniff::MimeTypeCheck::kStrict) {}
 
-WorkerClassicScriptLoader::~WorkerClassicScriptLoader() {
-  // If |threadable_loader_| is still working, we have to cancel it here.
-  // Otherwise DidFail() of the deleted |this| will be called from
-  // ThreadableLoader::NotifyFinished() when the frame will be
-  // destroyed.
-  if (need_to_cancel_)
-    Cancel();
-}
-
 void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
@@ -139,16 +130,9 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   request.SetFetchRequestMode(fetch_request_mode);
   request.SetFetchCredentialsMode(fetch_credentials_mode);
 
-  ResourceLoaderOptions resource_loader_options;
-
-  // During create, callbacks may happen which could remove the last reference
-  // to this object, while some of the callchain assumes that the client and
-  // loader wouldn't be deleted within callbacks.
-  // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
-  scoped_refptr<WorkerClassicScriptLoader> protect(this);
   need_to_cancel_ = true;
-  threadable_loader_ = new ThreadableLoader(
-      execution_context, this, resource_loader_options);
+  threadable_loader_ =
+      new ThreadableLoader(execution_context, this, ResourceLoaderOptions());
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();
@@ -255,7 +239,15 @@ void WorkerClassicScriptLoader::DidFailRedirectCheck() {
   NotifyError();
 }
 
+void WorkerClassicScriptLoader::Trace(Visitor* visitor) {
+  visitor->Trace(threadable_loader_);
+  visitor->Trace(content_security_policy_);
+  visitor->Trace(execution_context_);
+}
+
 void WorkerClassicScriptLoader::Cancel() {
+  if (!need_to_cancel_)
+    return;
   need_to_cancel_ = false;
   if (threadable_loader_)
     threadable_loader_->Cancel();

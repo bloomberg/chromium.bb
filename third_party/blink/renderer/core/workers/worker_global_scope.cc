@@ -253,8 +253,8 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
     String* out_source_code,
     std::unique_ptr<Vector<char>>* out_cached_meta_data) {
   ExecutionContext* execution_context = GetExecutionContext();
-  scoped_refptr<WorkerClassicScriptLoader> classic_script_loader(
-      WorkerClassicScriptLoader::Create());
+  WorkerClassicScriptLoader* classic_script_loader =
+      MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadSynchronously(
       *execution_context, script_url, mojom::RequestContextType::SCRIPT,
       execution_context->GetSecurityContext().AddressSpace());
@@ -367,21 +367,23 @@ void WorkerGlobalScope::ImportClassicScriptPausable(
   // Step 12.2. "Fetch request, and asynchronously wait to run the remaining
   // steps as part of fetch's process response for the response response."
   ExecutionContext* execution_context = GetExecutionContext();
-  scoped_refptr<WorkerClassicScriptLoader> classic_script_loader(
-      WorkerClassicScriptLoader::Create());
+  WorkerClassicScriptLoader* classic_script_loader =
+      MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
       *execution_context, script_url, mojom::RequestContextType::WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       GetSecurityContext().AddressSpace(), IsNestedWorker(),
       WTF::Bind(&WorkerGlobalScope::DidReceiveResponseForClassicScript,
-                WrapWeakPersistent(this), classic_script_loader),
+                WrapWeakPersistent(this),
+                WrapPersistent(classic_script_loader)),
       WTF::Bind(&WorkerGlobalScope::DidImportClassicScript,
-                WrapWeakPersistent(this), classic_script_loader, stack_id));
+                WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
+                stack_id));
 }
 
 void WorkerGlobalScope::DidReceiveResponseForClassicScript(
-    scoped_refptr<WorkerClassicScriptLoader> classic_script_loader) {
+    WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
   DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
   probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
@@ -389,7 +391,7 @@ void WorkerGlobalScope::DidReceiveResponseForClassicScript(
 
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void WorkerGlobalScope::DidImportClassicScript(
-    scoped_refptr<WorkerClassicScriptLoader> classic_script_loader,
+    WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
   DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
