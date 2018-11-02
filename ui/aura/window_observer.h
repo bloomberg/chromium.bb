@@ -5,7 +5,7 @@
 #ifndef UI_AURA_WINDOW_OBSERVER_H_
 #define UI_AURA_WINDOW_OBSERVER_H_
 
-#include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/compositor/property_change_reason.h"
@@ -19,7 +19,7 @@ namespace aura {
 
 class Window;
 
-class AURA_EXPORT WindowObserver {
+class AURA_EXPORT WindowObserver : public base::CheckedObserver {
  public:
   struct HierarchyChangeParams {
     enum HierarchyChangePhase {
@@ -172,25 +172,10 @@ class AURA_EXPORT WindowObserver {
 
   // Called when the app embedded in |window| disconnects (is no longer
   // embedded).
-  virtual void OnEmbeddedAppDisconnected(Window* window);
+  virtual void OnEmbeddedAppDisconnected(Window* window) {}
 
  protected:
-  virtual ~WindowObserver();
-
- private:
-  friend class Window;
-
-  // Called when this is added as an observer on |window|.
-  void OnObservingWindow(Window* window);
-
-  // Called when this is removed from the observers on |window|.
-  void OnUnobservingWindow(Window* window);
-
-  // Tracks the number of windows being observed to track down
-  // http://crbug.com/365364.
-  int observing_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+  ~WindowObserver() override;
 };
 
 }  // namespace aura

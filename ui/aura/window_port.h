@@ -146,8 +146,7 @@ class AURA_EXPORT WindowPort {
   static WindowPort* Get(Window* window);
 
   // Returns the ObserverList of a Window.
-  static base::ObserverList<WindowObserver, true>::Unchecked* GetObservers(
-      Window* window);
+  static base::ObserverList<WindowObserver, true>* GetObservers(Window* window);
 
  private:
   const Type type_;
