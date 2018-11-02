@@ -55,6 +55,14 @@ class FakeFrame : public chromium::web::Frame {
 
   chromium::web::NavigationEventObserver* observer() { return observer_.get(); }
 
+  // chromium::web::Frame implementation.
+  void SetNavigationEventObserver(
+      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
+      override {
+    observer_.Bind(std::move(observer));
+    std::move(on_set_observer_callback_).Run();
+  }
+
   void CreateView(
       fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override {
@@ -64,12 +72,10 @@ class FakeFrame : public chromium::web::Frame {
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override {}
 
-  void SetNavigationEventObserver(
-      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
-      override {
-    observer_.Bind(std::move(observer));
-    std::move(on_set_observer_callback_).Run();
-  }
+  void ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+                         fuchsia::mem::Buffer script,
+                         chromium::web::ExecuteMode mode,
+                         ExecuteJavaScriptCallback callback) override {}
 
  private:
   fidl::Binding<chromium::web::Frame> binding_;

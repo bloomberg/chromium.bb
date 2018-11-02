@@ -118,7 +118,7 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   AwBrowserContext* context = browser_client_->InitBrowserContext();
   context->PreMainMessageLoopRun(browser_client_->GetNetLog());
 
-  content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+  content::RenderFrameHost::AllowInjectingJavaScript();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

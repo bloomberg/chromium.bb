@@ -20,6 +20,7 @@ class ContentClient;
 namespace webrunner {
 
 class WebRunnerContentBrowserClient;
+class WebRunnerContentRendererClient;
 
 class WEBRUNNER_EXPORT WebRunnerMainDelegate
     : public content::ContentMainDelegate {
@@ -40,10 +41,12 @@ class WEBRUNNER_EXPORT WebRunnerMainDelegate
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
+  content::ContentRendererClient* CreateContentRendererClient() override;
 
  private:
   std::unique_ptr<content::ContentClient> content_client_;
   std::unique_ptr<WebRunnerContentBrowserClient> browser_client_;
+  std::unique_ptr<WebRunnerContentRendererClient> renderer_client_;
 
   zx::channel context_channel_;
 

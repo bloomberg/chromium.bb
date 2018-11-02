@@ -4,6 +4,7 @@
 
 #include <lib/fidl/cpp/binding.h>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -15,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 #include "webrunner/browser/frame_impl.h"
+#include "webrunner/browser/run_with_timeout.h"
 #include "webrunner/browser/test_common.h"
 #include "webrunner/browser/webrunner_browser_test.h"
 #include "webrunner/service/common.h"
@@ -33,6 +35,7 @@ using NavigationDetails = chromium::web::NavigationEvent;
 
 const char kPage1Path[] = "/title1.html";
 const char kPage2Path[] = "/title2.html";
+const char kDynamicTitlePath[] = "/dynamic_title.html";
 const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
 const char kDataUrl[] =
@@ -69,7 +72,7 @@ class FrameImplTest : public WebRunnerBrowserTest {
                     Field(&NavigationDetails::url, url))))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(url, nullptr);
-    run_loop.Run();
+    CheckRunWithTimeout(&run_loop);
     Mock::VerifyAndClearExpectations(this);
     navigation_observer_.Acknowledge();
   }
@@ -370,6 +373,212 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
     controller->LoadUrl(title2.spec(), nullptr);
     run_loop.Run();
   }
+}
+
+fuchsia::mem::Buffer CreateBuffer(base::StringPiece data) {
+  fuchsia::mem::Buffer output;
+  output.size = data.size();
+
+  zx_status_t status = zx::vmo::create(data.size(), 0, &output.vmo);
+  ZX_CHECK(status == ZX_OK, ZX_OK) << "zx_vmo_create";
+
+  status = output.vmo.write(data.data(), 0, data.size());
+  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_write";
+
+  return output;
+}
+
+// Test JS injection by using Javascript to trigger document navigation.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title1(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2(embedded_test_server()->GetURL(kPage2Path));
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(title1.spec(), kPage1Title, controller.get());
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(title1.GetOrigin().spec());
+
+  frame->ExecuteJavaScript(
+      std::move(origins),
+      CreateBuffer("window.location.href = \"" + title2.spec() + "\";"),
+      chromium::web::ExecuteMode::IMMEDIATE_ONCE,
+      [](bool success) { EXPECT_TRUE(success); });
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(navigation_observer_,
+              MockableOnNavigationStateChanged(
+                  testing::AllOf(Field(&NavigationDetails::title, kPage2Title),
+                                 Field(&NavigationDetails::url, IsSet()))))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  CheckRunWithTimeout(&run_loop);
+
+  frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(url.GetOrigin().spec());
+
+  frame->ExecuteJavaScript(std::move(origins),
+                           CreateBuffer("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", controller.get());
+
+  frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back("http://example.com");
+
+  frame->ExecuteJavaScript(std::move(origins),
+                           CreateBuffer("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // Expect that the original HTML title is used, because we didn't inject a
+  // script with a replacement title.
+  CheckLoadUrl(url.spec(), "Welcome to Stan the Offline Dino's Homepage",
+               controller.get());
+
+  frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back("*");
+
+  frame->ExecuteJavaScript(std::move(origins),
+                           CreateBuffer("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  // Test script injection for the origin 127.0.0.1.
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", controller.get());
+
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
+
+  // Test script injection using a different origin ("localhost"), which should
+  // still be picked up by the wildcard.
+  GURL alt_url = embedded_test_server()->GetURL("localhost", kDynamicTitlePath);
+  CheckLoadUrl(alt_url.spec(), "hello", controller.get());
+
+  frame.Unbind();
+}
+
+// Test that consecutive scripts are executed in order by computing a cumulative
+// result.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(url.GetOrigin().spec());
+  frame->ExecuteJavaScript(origins.Clone(),
+                           CreateBuffer("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+  frame->ExecuteJavaScript(std::move(origins),
+                           CreateBuffer("stashed_title += ' there';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello there", controller.get());
+
+  frame.Unbind();
+}
+
+// Test that we can inject scripts before and after RenderFrame creation.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(url.GetOrigin().spec());
+
+  frame->ExecuteJavaScript(origins.Clone(),
+                           CreateBuffer("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", controller.get());
+
+  frame->ExecuteJavaScript(std::move(origins),
+                           CreateBuffer("stashed_title += ' there';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  // Navigate away to clean the slate.
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
+
+  // Navigate back and see if both scripts are working.
+  CheckLoadUrl(url.spec(), "hello there", controller.get());
+
+  frame.Unbind();
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kPage1Path));
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), kPage1Title, controller.get());
+
+  base::RunLoop run_loop;
+
+  // 0xFE is an illegal UTF-8 byte; it should cause UTF-8 conversion to fail.
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(url.host());
+  frame->ExecuteJavaScript(std::move(origins), CreateBuffer("true;\xfe"),
+                           chromium::web::ExecuteMode::IMMEDIATE_ONCE,
+                           [&run_loop](bool success) {
+                             EXPECT_FALSE(success);
+                             run_loop.Quit();
+                           });
+  CheckRunWithTimeout(&run_loop);
+
+  frame.Unbind();
 }
 
 // Verifies that a Frame will handle navigation observer disconnection events

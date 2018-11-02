@@ -7,6 +7,7 @@ assert(is_fuchsia)
 import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/rules.gni")
 import("//build/util/process_version.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -110,8 +111,19 @@ fuchsia_package_runner("service_runner") {
   install_only = true
 }
 
+mojom("mojo_bindings") {
+  sources = [
+    "common/on_load_script_injector.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+}
+
 component("service_lib") {
   deps = [
+    ":mojo_bindings",
     ":service_pak",
     "//base",
     "//components/version_info",
@@ -162,6 +174,10 @@ component("service_lib") {
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
     "common/webrunner_export.h",
+    "renderer/on_load_script_injector.cc",
+    "renderer/on_load_script_injector.h",
+    "renderer/webrunner_content_renderer_client.cc",
+    "renderer/webrunner_content_renderer_client.h",
     "service/common.cc",
     "service/common.h",
     "service/context_provider_impl.cc",
@@ -215,6 +231,8 @@ test("webrunner_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
+    "browser/run_with_timeout.cc",
+    "browser/run_with_timeout.h",
     "browser/test_common.cc",
     "browser/test_common.h",
     "browser/webrunner_browser_test.cc",

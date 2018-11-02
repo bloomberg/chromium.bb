@@ -32,6 +32,10 @@ void ContextImpl::DestroyFrame(FrameImpl* frame) {
   frames_.erase(frames_.find(frame));
 }
 
+bool ContextImpl::IsJavaScriptInjectionAllowed() {
+  return allow_javascript_injection_;
+}
+
 FrameImpl* ContextImpl::GetFrameImplForTest(
     chromium::web::FramePtr* frame_ptr) {
   DCHECK(frame_ptr);

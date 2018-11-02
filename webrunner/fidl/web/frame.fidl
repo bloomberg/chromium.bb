@@ -4,8 +4,14 @@
 
 library chromium.web;
 
+using fuchsia.mem;
 using fuchsia.sys;
 using fuchsia.ui.viewsv1token;
+
+enum ExecuteMode {
+  IMMEDIATE_ONCE = 1;  // Will evaluate the script immediately.
+  ON_PAGE_LOAD = 2;    // Will evaluate the script on all subsequent page loads.
+};
 
 interface Frame {
   // Creates and registers a view with the view manager and returns its
@@ -24,6 +30,30 @@ interface Frame {
   // NavigationController.
   2: GetNavigationController(request<NavigationController> controller);
 
+  // Executes |script| in the frame if the frame's URL has an origin which
+  // matches entries in |origins|.
+  // At least one |origins| entry must be specified.
+  // If a wildcard "*" is specified in |origins|, then the script will be
+  // evaluated for all documents.
+  // If |mode| is NOW, then the script is evaluated immediately.
+  // If |mode| is ON_PAGE_LOAD, then the script is evaluated on every future
+  // document load prior to the page's script's execution.
+  //
+  // Multiple scripts can be registered by calling ExecuteJavascript()
+  // repeatedly.
+  //
+  // Note that scripts share the same execution context as the document,
+  // meaning that document may modify variables, classes, or objects set by the
+  // script in arbitrary or unpredictable ways.
+  // TODO(crbug.com/900391): Investigate if we can run the scripts in isolated
+  // JS worlds.
+  //
+  // Returns |true| if the script was executed, |false| if the script was
+  // rejected due to injection being blocked by the parent Context, or because
+  // the script's text encoding was invalid.
+  3: ExecuteJavaScript(
+     vector<string> origins, fuchsia.mem.Buffer script, ExecuteMode mode) ->
+     (bool success);
 
   // Sets the observer for handling page navigation events.
   //
