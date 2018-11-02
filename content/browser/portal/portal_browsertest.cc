@@ -344,13 +344,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortal) {
 }
 
 // Tests that a portal can be activated in content_shell.
-// Disabled due to flakiness on Android.  See https://crbug.com/892669.
-#if defined(OS_ANDROID)
-#define MAYBE_ActivatePortalInShell DISABLED_ActivatePortalInShell
-#else
-#define MAYBE_ActivatePortalInShell ActivatePortalInShell
-#endif
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortalInShell) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortalInShell) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
