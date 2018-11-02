@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
@@ -986,10 +985,5 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void changeIconToNTPIcon(AppCompatImageButton ntpButton) {
         if (FeatureUtilities.isNewTabPageButtonEnabled())
             ntpButton.setImageResource(R.drawable.ic_home);
-    }
-
-    @Override
-    public void setScrim(ScrimView scrim) {
-        getLocationBar().setScrim(scrim);
     }
 }

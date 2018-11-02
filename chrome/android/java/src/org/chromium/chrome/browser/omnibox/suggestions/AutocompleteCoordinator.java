@@ -181,8 +181,6 @@ public class AutocompleteCoordinator
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
-            // TODO(mdjones): Move init into visibility update method as it's only caller.
-            initOmniboxResultsContainer();
             if (mNativeInitialized) {
                 startZeroSuggest();
             } else {
@@ -287,13 +285,6 @@ public class AutocompleteCoordinator
      */
     public boolean isSuggestionModalShown() {
         return mSuggestionModalShown;
-    }
-
-    /**
-     * @return The view containing the suggestions list.
-     */
-    public View getSuggestionContainerView() {
-        return mOmniboxResultsContainer;
     }
 
     /**
@@ -468,7 +459,8 @@ public class AutocompleteCoordinator
      * Update whether the omnibox suggestions are visible.
      */
     private void updateOmniboxSuggestionsVisibility() {
-        if (mOmniboxResultsContainer == null || mSuggestionList == null) return;
+        initOmniboxResultsContainer();
+        if (mSuggestionList == null) return;
 
         boolean isContainerVisible = mOmniboxResultsContainer.getVisibility() == View.VISIBLE;
         boolean shouldBeVisible = mCanShowSuggestions && getSuggestionCount() > 0;
