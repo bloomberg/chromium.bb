@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -396,8 +395,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     const KURL js_url("https://example.com/worklet.js");
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), kSharableCrossOrigin,
-        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+        ScriptFetchOptions(), TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);
     EXPECT_TRUE(exception.IsEmpty());

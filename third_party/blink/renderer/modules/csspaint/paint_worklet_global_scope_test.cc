@@ -161,8 +161,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     const KURL js_url("https://example.com/worklet.js");
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), kSharableCrossOrigin,
-        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+        ScriptFetchOptions(), TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);
     EXPECT_TRUE(exception.IsEmpty());

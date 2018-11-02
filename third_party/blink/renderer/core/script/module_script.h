@@ -32,7 +32,6 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
       const KURL& source_url,
       const KURL& base_url,
       const ScriptFetchOptions&,
-      AccessControlStatus,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
   // Mostly corresponds to Create() but accepts ScriptModule as the argument

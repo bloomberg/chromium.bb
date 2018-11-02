@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
@@ -102,8 +101,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
     const KURL js_url("https://example.com/foo.js");
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), "var counter = 0; ++counter;", js_url,
-        js_url, ScriptFetchOptions(), kSharableCrossOrigin,
-        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+        js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);
     EXPECT_TRUE(exception.IsEmpty());
