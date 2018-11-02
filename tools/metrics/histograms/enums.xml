@@ -20640,6 +20640,7 @@ Called by update_net_error_codes.py.-->
   <int value="2612" label="V8OptimizedFunctionWithOneShotBytecode"/>
   <int value="2613" label="SVGGeometryPropertyHasNonZeroUnitlessValue"/>
   <int value="2614" label="CSSValueAppearanceNoImplementationSkipBorder"/>
+  <int value="2615" label="InstantiateModuleScript"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
