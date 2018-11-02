@@ -88,6 +88,17 @@
 namespace content {
 namespace {
 
+#if defined(OS_ANDROID)
+void DeleteDownloadedFileOnUIThread(const base::FilePath& file_path) {
+  if (!file_path.empty()) {
+    download::GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&download::DeleteDownloadedFile),
+                       file_path));
+  }
+}
+#endif
+
 StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
                                           int render_process_id,
                                           int render_frame_id) {
@@ -566,6 +577,7 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
     if (ShouldClearDownloadFromDB(download->GetState(),
                                   download->GetLastReason())) {
       cleared_download_guids_on_startup_.insert(download->GetGuid());
+      DeleteDownloadedFileOnUIThread(download->GetFullPath());
       continue;
     }
 #endif  // defined(OS_ANDROID)
@@ -970,8 +982,11 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   // download. Simply returning null and don't store them in this class to
   // reduce memory usage.
   if (cleared_download_guids_on_startup_.find(guid) !=
-          cleared_download_guids_on_startup_.end() ||
-      ShouldClearDownloadFromDB(state, interrupt_reason)) {
+      cleared_download_guids_on_startup_.end()) {
+    return nullptr;
+  }
+  if (ShouldClearDownloadFromDB(state, interrupt_reason)) {
+    DeleteDownloadedFileOnUIThread(current_path);
     return nullptr;
   }
 #endif

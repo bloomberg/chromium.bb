@@ -91,6 +91,8 @@ GetDownloadResumeMode(DownloadInterruptReason reason,
                       bool restart_required,
                       bool user_action_required);
 
+COMPONENTS_DOWNLOAD_EXPORT bool DeleteDownloadedFile(
+    const base::FilePath& path);
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
