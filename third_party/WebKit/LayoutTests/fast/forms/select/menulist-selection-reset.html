@@ -1,14 +1,13 @@
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <select id="select">
     <option>FAIL</option>
     <option>PASS</option>
     <option selected="true">Did not run</option>
 </select>
-<p id="result">
-</p>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
+test(() => {
     select.selectedIndex = 1;
-    result.innerText = select.selectedIndex == 1 ? "PASS" : "FAIL";
+    assert_equals(select.selectedIndex, 1);
+});
 </script>
