@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -294,7 +295,8 @@ String TextCodecUTF8::Decode(const char* bytes,
   // Each input byte might turn into a character.
   // That includes all bytes in the partial-sequence buffer because
   // each byte in an invalid sequence will turn into a replacement character.
-  StringBuffer<LChar> buffer(partial_sequence_size_ + length);
+  StringBuffer<LChar> buffer(
+      base::CheckAdd(partial_sequence_size_, length).ValueOrDie());
 
   const uint8_t* source = reinterpret_cast<const uint8_t*>(bytes);
   const uint8_t* end = source + length;
@@ -377,7 +379,8 @@ String TextCodecUTF8::Decode(const char* bytes,
   return String::Adopt(buffer);
 
 upConvertTo16Bit:
-  StringBuffer<UChar> buffer16(partial_sequence_size_ + length);
+  StringBuffer<UChar> buffer16(
+      base::CheckAdd(partial_sequence_size_, length).ValueOrDie());
 
   UChar* destination16 = buffer16.Characters();
 
