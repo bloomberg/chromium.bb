@@ -739,7 +739,8 @@ class PersonalDataManager : public KeyedService,
   // |profile_validities_need_update| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
 
-  AutofillProfileValidator* client_profile_validator_;
+  // The client side profile validator.
+  AutofillProfileValidator* client_profile_validator_ = nullptr;
 
   // The identity manager that this instance uses. Must outlive this instance.
   identity::IdentityManager* identity_manager_ = nullptr;
