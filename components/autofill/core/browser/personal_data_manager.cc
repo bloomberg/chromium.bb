@@ -501,6 +501,8 @@ void PersonalDataManager::Init(
   if (!is_off_the_record_)
     AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
+  client_profile_validator_ = client_profile_validator;
+
   // WebDataService may not be available in tests.
   if (!database_helper_->GetLocalDatabase()) {
     return;
@@ -509,7 +511,6 @@ void PersonalDataManager::Init(
   LoadCreditCards();
   LoadPaymentsCustomerData();
 
-  client_profile_validator_ = client_profile_validator;
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
       pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
