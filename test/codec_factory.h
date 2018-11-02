@@ -11,6 +11,8 @@
 #ifndef AOM_TEST_CODEC_FACTORY_H_
 #define AOM_TEST_CODEC_FACTORY_H_
 
+#include <tuple>
+
 #include "config/aom_config.h"
 
 #include "aom/aom_decoder.h"
@@ -54,27 +56,28 @@ class CodecFactory {
 template <class T1>
 class CodecTestWithParam
     : public ::testing::TestWithParam<
-          ::testing::tuple<const libaom_test::CodecFactory *, T1> > {};
+          std::tuple<const libaom_test::CodecFactory *, T1> > {};
 
 template <class T1, class T2>
 class CodecTestWith2Params
     : public ::testing::TestWithParam<
-          ::testing::tuple<const libaom_test::CodecFactory *, T1, T2> > {};
+          std::tuple<const libaom_test::CodecFactory *, T1, T2> > {};
 
 template <class T1, class T2, class T3>
 class CodecTestWith3Params
     : public ::testing::TestWithParam<
-          ::testing::tuple<const libaom_test::CodecFactory *, T1, T2, T3> > {};
+          std::tuple<const libaom_test::CodecFactory *, T1, T2, T3> > {};
 
 template <class T1, class T2, class T3, class T4>
 class CodecTestWith4Params
-    : public ::testing::TestWithParam< ::testing::tuple<
-          const libaom_test::CodecFactory *, T1, T2, T3, T4> > {};
+    : public ::testing::TestWithParam<
+          std::tuple<const libaom_test::CodecFactory *, T1, T2, T3, T4> > {};
 
 template <class T1, class T2, class T3, class T4, class T5>
 class CodecTestWith5Params
-    : public ::testing::TestWithParam< ::testing::tuple<
-          const libaom_test::CodecFactory *, T1, T2, T3, T4, T5> > {};
+    : public ::testing::TestWithParam<
+          std::tuple<const libaom_test::CodecFactory *, T1, T2, T3, T4, T5> > {
+};
 
 /*
  * AV1 Codec Definitions

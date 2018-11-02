@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/aom_config.h"
@@ -110,9 +112,9 @@ typedef void (*HBDSubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                                 ptrdiff_t src_stride, const uint8_t *pred_ptr,
                                 ptrdiff_t pred_stride, int bd);
 
-using ::testing::get;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::get;
+using std::make_tuple;
+using std::tuple;
 
 // <width, height, bit_dpeth, subtract>
 typedef tuple<int, int, int, HBDSubtractFunc> Params;

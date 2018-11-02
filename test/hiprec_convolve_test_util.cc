@@ -13,8 +13,8 @@
 
 #include "av1/common/restoration.h"
 
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 namespace libaom_test {
 

@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
@@ -37,7 +38,7 @@ typedef unsigned int (*MaskedSubPixelVarianceFunc)(
     const uint8_t *ref, int ref_stride, const uint8_t *second_pred,
     const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse);
 
-typedef ::testing::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc>
+typedef std::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc>
     MaskedSubPixelVarianceParam;
 
 class MaskedSubPixelVarianceTest
@@ -171,8 +172,8 @@ TEST_P(MaskedSubPixelVarianceTest, ExtremeValues) {
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-typedef ::testing::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc,
-                         aom_bit_depth_t>
+typedef std::tuple<MaskedSubPixelVarianceFunc, MaskedSubPixelVarianceFunc,
+                   aom_bit_depth_t>
     HighbdMaskedSubPixelVarianceParam;
 
 class HighbdMaskedSubPixelVarianceTest
@@ -314,7 +315,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, ExtremeValues) {
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if HAVE_SSSE3
 

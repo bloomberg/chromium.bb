@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -185,7 +186,7 @@ typedef void (*av1_txb_init_levels_func)(const tran_low_t *const coeff,
                                          const int width, const int height,
                                          uint8_t *const levels);
 
-typedef ::testing::tuple<av1_txb_init_levels_func, int> TxbInitLevelParam;
+typedef std::tuple<av1_txb_init_levels_func, int> TxbInitLevelParam;
 
 class EncodeTxbInitLevelTest
     : public ::testing::TestWithParam<TxbInitLevelParam> {

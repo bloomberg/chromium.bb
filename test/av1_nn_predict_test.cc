@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "aom/aom_integer.h"
@@ -27,7 +29,7 @@ typedef void (*NnPredict_Func)(const float *const input_nodes,
                                const NN_CONFIG *const nn_config,
                                int reduce_prec, float *const output);
 
-typedef ::testing::tuple<const NnPredict_Func> NnPredictTestParam;
+typedef std::tuple<const NnPredict_Func> NnPredictTestParam;
 
 const float epsilon = 1e-3f;  // Error threshold for functional equivalence
 

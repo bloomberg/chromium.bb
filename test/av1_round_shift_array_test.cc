@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tuple>
 
 #include "config/av1_rtcd.h"
 
@@ -33,7 +34,7 @@ const int kValidBitCheck[] = {
 };
 #endif  // HAVE_SSE4_1 || HAVE_NEON
 
-typedef ::testing::tuple<comp_round_shift_array_func, BLOCK_SIZE, int>
+typedef std::tuple<comp_round_shift_array_func, BLOCK_SIZE, int>
     CompRoundShiftParam;
 
 class AV1CompRoundShiftTest

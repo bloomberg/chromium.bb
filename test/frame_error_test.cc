@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tuple>
 
 #include "config/av1_rtcd.h"
 
@@ -35,7 +36,7 @@ const int kBlockHeight[] = {
   480, 482, 360, 720, 1080,
 };
 #endif
-typedef ::testing::tuple<frame_error_func, int, int> FrameErrorParam;
+typedef std::tuple<frame_error_func, int, int> FrameErrorParam;
 
 class AV1FrameErrorTest : public ::testing::TestWithParam<FrameErrorParam> {
  public:

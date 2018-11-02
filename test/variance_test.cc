@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <new>
 #include <ostream>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -658,9 +659,9 @@ void MainTestClass<FunctionType>::MaxTestSse() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using ::testing::get;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::get;
+using std::make_tuple;
+using std::tuple;
 
 template <typename FunctionType>
 class SubpelVarianceTest

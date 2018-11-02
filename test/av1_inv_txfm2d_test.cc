@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tuple>
 #include <vector>
 
 #include "config/av1_rtcd.h"
@@ -62,7 +63,7 @@ static const char *tx_type_name[] = {
 
 // AV1InvTxfm2dParam argument list:
 // tx_type_, tx_size_, max_error_, max_avg_error_
-typedef ::testing::tuple<TxType, TxSize, int, double> AV1InvTxfm2dParam;
+typedef std::tuple<TxType, TxSize, int, double> AV1InvTxfm2dParam;
 
 class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
  public:
@@ -261,7 +262,7 @@ TEST(AV1InvTxfm2d, CfgTest) {
   }
 }
 
-typedef ::testing::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
+typedef std::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
 class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  public:
   virtual void SetUp() { target_func_ = GET_PARAM(0); }

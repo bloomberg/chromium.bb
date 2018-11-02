@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -39,7 +40,7 @@ typedef int64_t (*ErrorBlockFunc8Bits)(const tran_low_t *coeff,
                                        const tran_low_t *dqcoeff,
                                        intptr_t block_size, int64_t *ssz);
 
-typedef ::testing::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
+typedef std::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
     ErrorBlockParam;
 
 template <ErrorBlockFunc8Bits fn>
@@ -232,7 +233,7 @@ TEST_P(ErrorBlockTest, DISABLED_Speed) {
   }
 }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if (HAVE_SSE2)
 const ErrorBlockParam kErrorBlockTestParamsSse2[] = {

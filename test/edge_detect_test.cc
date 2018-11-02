@@ -11,6 +11,7 @@
 
 #include <stdbool.h>
 #include <memory>
+#include <tuple>
 #include "aom_mem/aom_mem.h"
 #include "av1/encoder/rdopt.h"
 #include "test/util.h"
@@ -18,8 +19,8 @@
 
 namespace {
 
-using ::testing::get;
-using ::testing::tuple;
+using std::get;
+using std::tuple;
 
 static int get_pix(uint8_t *buf, int i, bool high_bd) {
   if (high_bd) {

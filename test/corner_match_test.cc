@@ -8,6 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#include <tuple>
+
 #include "config/av1_rtcd.h"
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -28,8 +30,8 @@ typedef double (*ComputeCrossCorrFunc)(unsigned char *im1, int stride1, int x1,
                                        int y1, unsigned char *im2, int stride2,
                                        int x2, int y2);
 
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 typedef tuple<int, ComputeCrossCorrFunc> CornerMatchParam;
 
 class AV1CornerMatchTest : public ::testing::TestWithParam<CornerMatchParam> {

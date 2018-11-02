@@ -12,6 +12,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stdio.h>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -28,37 +29,36 @@
 
 typedef unsigned int (*SadMxNFunc)(const uint8_t *src_ptr, int src_stride,
                                    const uint8_t *ref_ptr, int ref_stride);
-typedef ::testing::tuple<int, int, SadMxNFunc, int> SadMxNParam;
+typedef std::tuple<int, int, SadMxNFunc, int> SadMxNParam;
 
 typedef uint32_t (*SadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                   const uint8_t *ref_ptr, int ref_stride,
                                   const uint8_t *second_pred);
-typedef ::testing::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
+typedef std::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
 
 typedef void (*DistWtdCompAvgFunc)(uint8_t *comp_pred, const uint8_t *pred,
                                    int width, int height, const uint8_t *ref,
                                    int ref_stride,
                                    const DIST_WTD_COMP_PARAMS *jcp_param);
-typedef ::testing::tuple<int, int, DistWtdCompAvgFunc, int> DistWtdCompAvgParam;
+typedef std::tuple<int, int, DistWtdCompAvgFunc, int> DistWtdCompAvgParam;
 
 typedef unsigned int (*DistWtdSadMxhFunc)(const uint8_t *src_ptr,
                                           int src_stride,
                                           const uint8_t *ref_ptr,
                                           int ref_stride, int width,
                                           int height);
-typedef ::testing::tuple<int, int, DistWtdSadMxhFunc, int> DistWtdSadMxhParam;
+typedef std::tuple<int, int, DistWtdSadMxhFunc, int> DistWtdSadMxhParam;
 
 typedef uint32_t (*DistWtdSadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                          const uint8_t *ref_ptr, int ref_stride,
                                          const uint8_t *second_pred,
                                          const DIST_WTD_COMP_PARAMS *jcp_param);
-typedef ::testing::tuple<int, int, DistWtdSadMxNAvgFunc, int>
-    DistWtdSadMxNAvgParam;
+typedef std::tuple<int, int, DistWtdSadMxNAvgFunc, int> DistWtdSadMxNAvgParam;
 
 typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
                              const uint8_t *const ref_ptr[], int ref_stride,
                              uint32_t *sad_array);
-typedef ::testing::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
+typedef std::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
 
 using libaom_test::ACMRandom;
 
@@ -812,7 +812,7 @@ TEST_P(SADx4Test, SrcAlignedByWidth) {
   source_data_ = tmp_source_data;
 }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 //------------------------------------------------------------------------------
 // C functions

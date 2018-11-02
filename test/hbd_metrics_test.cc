@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <new>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
@@ -173,7 +174,7 @@ class HBDMetricsTestBase {
   HBDMetricFunc hbd_metric_;
 };
 
-typedef ::testing::tuple<LBDMetricFunc, HBDMetricFunc, int, int, double>
+typedef std::tuple<LBDMetricFunc, HBDMetricFunc, int, int, double>
     MetricTestTParam;
 class HBDMetricsTest : public HBDMetricsTestBase,
                        public ::testing::TestWithParam<MetricTestTParam> {

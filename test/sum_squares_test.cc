@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -234,7 +235,7 @@ typedef int64_t (*sse_func)(const uint8_t *a, int a_stride, const uint8_t *b,
                             int b_stride, int width, int height);
 typedef libaom_test::FuncParam<sse_func> TestSSEFuncs;
 
-typedef ::testing::tuple<TestSSEFuncs, int> SSETestParam;
+typedef std::tuple<TestSSEFuncs, int> SSETestParam;
 
 class SSETest : public ::testing::TestWithParam<SSETestParam> {
  public:
@@ -415,7 +416,7 @@ typedef void (*sse_sum_func)(const int16_t *data, int stride, int bw, int bh,
                              int *x_sum, int64_t *x2_sum);
 typedef libaom_test::FuncParam<sse_sum_func> TestSSE_SumFuncs;
 
-typedef ::testing::tuple<TestSSE_SumFuncs, int> SSE_SumTestParam;
+typedef std::tuple<TestSSE_SumFuncs, int> SSE_SumTestParam;
 
 class SSE_Sum_Test : public ::testing::TestWithParam<SSE_SumTestParam> {
  public:

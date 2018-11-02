@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -33,8 +34,8 @@ const int kXStepQn = 16;
 const int kYStepQn = 20;
 
 using libaom_test::ACMRandom;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 enum NTaps { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
 int NTapsToInt(NTaps ntaps) { return 8 + static_cast<int>(ntaps) * 2; }
@@ -269,8 +270,8 @@ class ConvolveScaleTestBase : public ::testing::Test {
 
  protected:
   void SetParams(const BaseParams &params, int bd) {
-    width_ = ::testing::get<0>(params.dims);
-    height_ = ::testing::get<1>(params.dims);
+    width_ = std::get<0>(params.dims);
+    height_ = std::get<1>(params.dims);
     ntaps_x_ = params.ntaps_x;
     ntaps_y_ = params.ntaps_y;
     bd_ = bd;

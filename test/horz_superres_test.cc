@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <ostream>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -24,8 +25,8 @@
 
 namespace {
 
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 /* TESTING PARAMETERS */
 
@@ -193,8 +194,8 @@ class HorzSuperresFixedEndToEndTest
       : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
         superres_mode_(SUPERRES_FIXED), psnr_(0.0), frame_count_(0) {
     SuperresDenominatorPair denoms = GET_PARAM(2);
-    superres_denom_ = ::testing::get<0>(denoms);
-    superres_kf_denom_ = ::testing::get<1>(denoms);
+    superres_denom_ = std::get<0>(denoms);
+    superres_kf_denom_ = std::get<1>(denoms);
   }
 
   virtual ~HorzSuperresFixedEndToEndTest() {}
@@ -304,8 +305,8 @@ class HorzSuperresQThreshEndToEndTest
       : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
         superres_mode_(SUPERRES_QTHRESH), psnr_(0.0), frame_count_(0) {
     SuperresQThresholdPair qthresholds = GET_PARAM(2);
-    superres_qthresh_ = ::testing::get<0>(qthresholds);
-    superres_kf_qthresh_ = ::testing::get<1>(qthresholds);
+    superres_qthresh_ = std::get<0>(qthresholds);
+    superres_kf_qthresh_ = std::get<1>(qthresholds);
   }
 
   virtual ~HorzSuperresQThreshEndToEndTest() {}

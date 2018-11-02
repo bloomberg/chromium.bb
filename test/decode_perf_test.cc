@@ -10,6 +10,7 @@
  */
 
 #include <string>
+#include <tuple>
 
 #include "config/aom_version.h"
 
@@ -24,7 +25,7 @@
 #include "test/util.h"
 #include "test/webm_video_source.h"
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 namespace {
 
@@ -37,7 +38,7 @@ const char kNewEncodeOutputFile[] = "new_encode.ivf";
 /*
  DecodePerfTest takes a tuple of filename + number of threads to decode with
  */
-typedef ::testing::tuple<const char *, unsigned> DecodePerfParam;
+typedef std::tuple<const char *, unsigned> DecodePerfParam;
 
 // TODO(jimbankoski): Add actual test vectors here when available.
 // const DecodePerfParam kAV1DecodePerfVectors[] = {};

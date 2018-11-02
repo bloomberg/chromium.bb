@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -44,7 +45,7 @@ typedef void (*TemporalFilterPlanewiseFunc)(
 typedef libaom_test::FuncParam<TemporalFilterPlanewiseFunc>
     TemporalFilterPlanewiseFuncParam;
 
-typedef ::testing::tuple<TemporalFilterPlanewiseFuncParam, int>
+typedef std::tuple<TemporalFilterPlanewiseFuncParam, int>
     TemporalFilterPlanewiseWithParam;
 
 class TemporalFilterPlanewiseTest

@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/aom_config.h"
@@ -65,7 +67,7 @@ void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
 
 enum QuantType { TYPE_B, TYPE_DC, TYPE_FP };
 
-using ::testing::tuple;
+using std::tuple;
 typedef tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType, aom_bit_depth_t>
     QuantizeParam;
 
@@ -323,7 +325,7 @@ TEST_P(QuantizeTest, DISABLED_Speed) {
   }
 }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if HAVE_AVX2
 const QuantizeParam kQParamArrayAvx2[] = {

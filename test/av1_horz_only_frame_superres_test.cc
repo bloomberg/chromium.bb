@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -31,8 +32,8 @@ const int kVPad = 32;
 const int kHPad = 32;
 
 using libaom_test::ACMRandom;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 template <typename Pixel>
 class TestImage {

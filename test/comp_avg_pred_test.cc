@@ -18,8 +18,8 @@ using libaom_test::AV1DISTWTDCOMPAVG::AV1DISTWTDCOMPAVGUPSAMPLEDTest;
 using libaom_test::AV1DISTWTDCOMPAVG::AV1HighBDDISTWTDCOMPAVGTest;
 using libaom_test::AV1DISTWTDCOMPAVG::AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest;
 #endif
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 namespace {
 

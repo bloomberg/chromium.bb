@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/register_state_check.h"
@@ -36,8 +38,7 @@ typedef int64_t (*lowbd_pixel_proj_error_func)(
 // 8 bit
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef ::testing::tuple<const lowbd_pixel_proj_error_func>
-    PixelProjErrorTestParam;
+typedef std::tuple<const lowbd_pixel_proj_error_func> PixelProjErrorTestParam;
 
 class PixelProjErrorTest
     : public ::testing::TestWithParam<PixelProjErrorTestParam> {
@@ -202,8 +203,7 @@ typedef int64_t (*highbd_pixel_proj_error_func)(
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef ::testing::tuple<const highbd_pixel_proj_error_func>
-    PixelProjErrorTestParam;
+typedef std::tuple<const highbd_pixel_proj_error_func> PixelProjErrorTestParam;
 
 class PixelProjHighbdErrorTest
     : public ::testing::TestWithParam<PixelProjErrorTestParam> {
@@ -372,7 +372,7 @@ typedef void (*set_get_proj_subspace)(const uint8_t *src8, int width,
                                       int64_t H[2][2], int64_t C[2],
                                       const sgr_params_type *params);
 
-typedef ::testing::tuple<const set_get_proj_subspace> GetProjSubspaceTestParam;
+typedef std::tuple<const set_get_proj_subspace> GetProjSubspaceTestParam;
 
 class GetProjSubspaceTest
     : public ::testing::TestWithParam<GetProjSubspaceTestParam> {

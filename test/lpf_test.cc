@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -50,11 +51,11 @@ typedef void (*dual_loop_op_t)(uint8_t *s, DUAL_LOOP_PARAM);
 typedef void (*hbdloop_op_t)(uint16_t *s, LOOP_PARAM, int bd);
 typedef void (*hbddual_loop_op_t)(uint16_t *s, DUAL_LOOP_PARAM, int bd);
 
-typedef ::testing::tuple<hbdloop_op_t, hbdloop_op_t, int> hbdloop_param_t;
-typedef ::testing::tuple<hbddual_loop_op_t, hbddual_loop_op_t, int>
+typedef std::tuple<hbdloop_op_t, hbdloop_op_t, int> hbdloop_param_t;
+typedef std::tuple<hbddual_loop_op_t, hbddual_loop_op_t, int>
     hbddual_loop_param_t;
-typedef ::testing::tuple<loop_op_t, loop_op_t, int> loop_param_t;
-typedef ::testing::tuple<dual_loop_op_t, dual_loop_op_t, int> dual_loop_param_t;
+typedef std::tuple<loop_op_t, loop_op_t, int> loop_param_t;
+typedef std::tuple<dual_loop_op_t, dual_loop_op_t, int> dual_loop_param_t;
 
 template <typename Pixel_t, int PIXEL_WIDTH_t>
 void InitInput(Pixel_t *s, Pixel_t *ref_s, ACMRandom *rnd, const uint8_t limit,
@@ -129,9 +130,9 @@ class LoopTestParam : public ::testing::TestWithParam<params_t> {
  public:
   virtual ~LoopTestParam() {}
   virtual void SetUp() {
-    loopfilter_op_ = ::testing::get<0>(this->GetParam());
-    ref_loopfilter_op_ = ::testing::get<1>(this->GetParam());
-    bit_depth_ = ::testing::get<2>(this->GetParam());
+    loopfilter_op_ = std::get<0>(this->GetParam());
+    ref_loopfilter_op_ = std::get<1>(this->GetParam());
+    bit_depth_ = std::get<2>(this->GetParam());
     mask_ = (1 << bit_depth_) - 1;
   }
 
@@ -455,7 +456,7 @@ TEST_P(Loop8Test9Param_hbd, DISABLED_Speed) { SPEEDCHECKd(uint16_t, 16); }
 #endif
 TEST_P(Loop8Test9Param_lbd, DISABLED_Speed) { SPEEDCHECKd(uint8_t, 8); }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if HAVE_SSE2
 #if CONFIG_AV1_HIGHBITDEPTH

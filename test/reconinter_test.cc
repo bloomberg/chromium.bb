@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <tuple>
 
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
@@ -34,7 +35,7 @@ typedef void (*buildcompdiffwtdmaskd_func)(uint8_t *mask,
                                            const uint8_t *src1, int src1_stride,
                                            int h, int w);
 
-typedef ::testing::tuple<BLOCK_SIZE, buildcompdiffwtdmaskd_func>
+typedef std::tuple<BLOCK_SIZE, buildcompdiffwtdmaskd_func>
     BuildCompDiffwtdMaskDParam;
 
 #if HAVE_SSE4_1
@@ -63,7 +64,7 @@ typedef void (*buildcompdiffwtdmaskd16_func)(
     int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride, int h, int w,
     ConvolveParams *conv_params, int bd);
 
-typedef ::testing::tuple<int, buildcompdiffwtdmaskd16_func, BLOCK_SIZE>
+typedef std::tuple<int, buildcompdiffwtdmaskd16_func, BLOCK_SIZE>
     BuildCompDiffwtdMaskD16Param;
 
 #if HAVE_SSE4_1 || HAVE_NEON

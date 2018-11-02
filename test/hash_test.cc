@@ -11,6 +11,7 @@
 
 #include <cstdlib>
 #include <new>
+#include <tuple>
 
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
@@ -26,7 +27,7 @@ namespace {
 typedef uint32_t (*get_crc32c_value_func)(void *calculator, uint8_t *p,
                                           size_t length);
 
-typedef ::testing::tuple<get_crc32c_value_func, int> HashParam;
+typedef std::tuple<get_crc32c_value_func, int> HashParam;
 
 class AV1Crc32cHashTest : public ::testing::TestWithParam<HashParam> {
  public:

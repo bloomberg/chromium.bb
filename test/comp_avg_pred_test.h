@@ -12,6 +12,8 @@
 #ifndef AOM_TEST_COMP_AVG_PRED_TEST_H_
 #define AOM_TEST_COMP_AVG_PRED_TEST_H_
 
+#include <tuple>
+
 #include "config/aom_dsp_rtcd.h"
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -38,9 +40,9 @@ typedef void (*distwtdcompavgupsampled_func)(
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
     int ref_stride, const DIST_WTD_COMP_PARAMS *jcp_param, int subpel_search);
 
-typedef ::testing::tuple<distwtdcompavg_func, BLOCK_SIZE> DISTWTDCOMPAVGParam;
+typedef std::tuple<distwtdcompavg_func, BLOCK_SIZE> DISTWTDCOMPAVGParam;
 
-typedef ::testing::tuple<distwtdcompavgupsampled_func, BLOCK_SIZE>
+typedef std::tuple<distwtdcompavgupsampled_func, BLOCK_SIZE>
     DISTWTDCOMPAVGUPSAMPLEDParam;
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -51,10 +53,10 @@ typedef void (*highbddistwtdcompavgupsampled_func)(
     int ref_stride, int bd, const DIST_WTD_COMP_PARAMS *jcp_param,
     int subpel_search);
 
-typedef ::testing::tuple<int, highbddistwtdcompavgupsampled_func, BLOCK_SIZE>
+typedef std::tuple<int, highbddistwtdcompavgupsampled_func, BLOCK_SIZE>
     HighbdDISTWTDCOMPAVGUPSAMPLEDParam;
 
-typedef ::testing::tuple<int, distwtdcompavg_func, BLOCK_SIZE>
+typedef std::tuple<int, distwtdcompavg_func, BLOCK_SIZE>
     HighbdDISTWTDCOMPAVGParam;
 
 ::testing::internal::ParamGenerator<HighbdDISTWTDCOMPAVGParam> BuildParams(

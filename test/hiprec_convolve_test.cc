@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/hiprec_convolve_test_util.h"
 
@@ -17,8 +19,8 @@ using libaom_test::ACMRandom;
 using libaom_test::AV1HighbdHiprecConvolve::AV1HighbdHiprecConvolveTest;
 #endif
 using libaom_test::AV1HiprecConvolve::AV1HiprecConvolveTest;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 namespace {
 

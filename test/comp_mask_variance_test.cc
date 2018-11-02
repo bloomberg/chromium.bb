@@ -11,6 +11,7 @@
 
 #include <cstdlib>
 #include <new>
+#include <tuple>
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
@@ -40,7 +41,7 @@ const BLOCK_SIZE kValidBlockSize[] = {
   BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,
 };
 #endif
-typedef ::testing::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
+typedef std::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
 
 class AV1CompMaskVarianceTest
     : public ::testing::TestWithParam<CompMaskPredParam> {
@@ -281,7 +282,7 @@ typedef void (*highbd_comp_mask_pred_func)(uint8_t *comp_pred8,
                                            int ref_stride, const uint8_t *mask,
                                            int mask_stride, int invert_mask);
 
-typedef ::testing::tuple<highbd_comp_mask_pred_func, BLOCK_SIZE, int>
+typedef std::tuple<highbd_comp_mask_pred_func, BLOCK_SIZE, int>
     HighbdCompMaskPredParam;
 
 class AV1HighbdCompMaskVarianceTest

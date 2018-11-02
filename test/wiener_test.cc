@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -115,7 +116,7 @@ typedef void (*compute_stats_Func)(int wiener_win, const uint8_t *dgd,
 // 8 bit
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
+typedef std::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTest : public ::testing::TestWithParam<WienerTestParam> {
  public:
@@ -390,7 +391,7 @@ typedef void (*compute_stats_Func)(int wiener_win, const uint8_t *dgd,
                                    int src_stride, int64_t *M, int64_t *H,
                                    aom_bit_depth_t bit_depth);
 
-typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
+typedef std::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTestHighbd : public ::testing::TestWithParam<WienerTestParam> {
  public:

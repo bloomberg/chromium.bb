@@ -10,6 +10,7 @@
  */
 
 #include <assert.h>
+#include <tuple>
 
 #include "config/av1_rtcd.h"
 
@@ -52,7 +53,7 @@ void highbd_convolve_rounding_12(CONVOLVE_ROUNDING_PARAM) {
 
 typedef enum { LOWBITDEPTH_TEST, HIGHBITDEPTH_TEST } DataPathType;
 
-using ::testing::tuple;
+using std::tuple;
 
 typedef tuple<ConvolveRoundFunc, ConvolveRoundFunc, DataPathType>
     ConvolveRoundParam;
@@ -162,7 +163,7 @@ class ConvolveRoundTest : public ::testing::TestWithParam<ConvolveRoundParam> {
 
 TEST_P(ConvolveRoundTest, BitExactCheck) { ConvolveRoundingRun(); }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 #if HAVE_AVX2
 const ConvolveRoundParam kConvRndParamArray[] = {
   make_tuple(&av1_convolve_rounding_c, &av1_convolve_rounding_avx2,

@@ -14,6 +14,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "common/tools_common.h"
 #include "config/aom_config.h"
@@ -33,7 +34,7 @@ const int kThreads = 0;
 const int kFileName = 1;
 const int kRowMT = 2;
 
-typedef ::testing::tuple<int, const char *, int> DecodeParam;
+typedef std::tuple<int, const char *, int> DecodeParam;
 
 class TestVectorTest : public ::libaom_test::DecoderTest,
                        public ::libaom_test::CodecTestWithParam<DecodeParam> {
@@ -104,13 +105,13 @@ class TestVectorTest : public ::libaom_test::DecoderTest,
 // the test failed.
 TEST_P(TestVectorTest, MD5Match) {
   const DecodeParam input = GET_PARAM(1);
-  const std::string filename = ::testing::get<kFileName>(input);
+  const std::string filename = std::get<kFileName>(input);
   aom_codec_flags_t flags = 0;
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   char str[256];
 
-  cfg.threads = ::testing::get<kThreads>(input);
-  row_mt_ = ::testing::get<kRowMT>(input);
+  cfg.threads = std::get<kThreads>(input);
+  row_mt_ = std::get<kRowMT>(input);
 
   snprintf(str, sizeof(str) / sizeof(str[0]) - 1, "file: %s threads: %d",
            filename.c_str(), cfg.threads);
