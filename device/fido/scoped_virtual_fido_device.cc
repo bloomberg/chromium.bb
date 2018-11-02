@@ -65,8 +65,7 @@ VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
   return state_.get();
 }
 
-std::unique_ptr<FidoDeviceDiscovery>
-ScopedVirtualFidoDevice::CreateFidoDiscovery(
+std::unique_ptr<FidoDiscoveryBase> ScopedVirtualFidoDevice::CreateFidoDiscovery(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
   if (transport != FidoTransportProtocol::kUsbHumanInterfaceDevice) {

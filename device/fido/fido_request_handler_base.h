@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "device/fido/fido_device_authenticator.h"
-#include "device/fido/fido_device_discovery.h"
+#include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {

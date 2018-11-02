@@ -13,6 +13,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/get_assertion_task.h"
 
 namespace device {
@@ -176,7 +177,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension());
     auto discovery =
-        FidoDeviceDiscovery::CreateCable(*request_.cable_extension());
+        FidoDiscoveryFactory::CreateCable(*request_.cable_extension());
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }
