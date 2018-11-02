@@ -24,6 +24,8 @@ public final class FeatureConstants {
 
     public static final String MEDIA_DOWNLOAD_FEATURE = "IPH_MediaDownload";
 
+    public static final String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
+
     /**
      * An IPH feature that encourages users who search a query from a web page in a new tab, to use
      * Contextual Search instead.
