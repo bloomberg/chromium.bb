@@ -4,12 +4,8 @@
 
 import fnmatch
 
-try:
-  import numpy
-  import pandas
-except ImportError:
-  numpy = None
-  pandas = None
+import numpy  # pylint: disable=import-error
+import pandas  # pylint: disable=import-error
 
 
 SECONDS_IN_A_DAY = 60 * 60 * 24
