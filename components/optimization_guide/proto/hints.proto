@@ -120,9 +120,10 @@ message PageHint {
   // The maximum effective connection type threshold for triggering the
   // optimization associated with this hint.
   optional EffectiveConnectionType max_ect_trigger = 2;
-  // An ordered list of optimizations that should be whitelisted for this page
-  // pattern. The client uses the first optimization in this list that is
-  // enabled for it.
+  // An ordered set of optimizations that should be whitelisted for this page
+  // pattern.
+  //
+  // The client will use the first optimization that it supports.
   repeated Optimization whitelisted_optimizations = 3;
 }
 
