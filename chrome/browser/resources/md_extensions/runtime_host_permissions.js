@@ -11,7 +11,7 @@ cr.define('extensions', function() {
     properties: {
       /**
        * The underlying permissions data.
-       * @type {chrome.developerPrivate.Permissions}
+       * @type {chrome.developerPrivate.RuntimeHostPermissions}
        */
       permissions: Object,
 
@@ -101,7 +101,8 @@ cr.define('extensions', function() {
           /** @type {chrome.developerPrivate.HostAccess} */ (select.value);
 
       if (access == chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
-          !this.permissions.specificSiteControls) {
+          this.permissions.hostAccess !=
+              chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES) {
         // If the user is transitioning to the "on specific sites" option, show
         // the "add host" dialog. This serves two purposes:
         // - The user is prompted to add a host immediately, since otherwise
@@ -110,7 +111,7 @@ cr.define('extensions', function() {
         //   specific sites" is by checking if there are any specific sites.
         //   This ensures there will be at least one, so that the host access
         //   is properly calculated.
-        this.oldHostAccess_ = assert(this.permissions.hostAccess);
+        this.oldHostAccess_ = this.permissions.hostAccess;
         this.doShowHostDialog_(select, null);
       } else {
         this.delegate.setItemHostAccess(this.itemId, access);
@@ -122,8 +123,7 @@ cr.define('extensions', function() {
      * @private
      */
     showSpecificSites_: function() {
-      return this.permissions &&
-          this.permissions.hostAccess ==
+      return this.permissions.hostAccess ==
           chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
     },
 
@@ -133,14 +133,13 @@ cr.define('extensions', function() {
      * @private
      */
     getRuntimeHosts_: function() {
-      if (!this.permissions.specificSiteControls)
+      if (!this.permissions.hosts)
         return [];
 
       // Only show granted hosts in the list.
       // TODO(devlin): For extensions that request a finite set of hosts,
       // display them in a toggle list. https://crbug.com/891803.
-      return this.permissions.specificSiteControls.hosts
-          .filter(control => control.granted)
+      return this.permissions.hosts.filter(control => control.granted)
           .map(control => control.host)
           .sort();
     },

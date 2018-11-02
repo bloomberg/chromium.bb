@@ -329,9 +329,9 @@
                 </li>
               </template>
             </ul>
-            <template is="dom-if" if="[[showRuntimeHostPermissions_(data.*)]]">
+            <template is="dom-if" if="[[hasRuntimeHostPermissions_(data.*)]]">
               <extensions-runtime-host-permissions
-                  permissions="[[data.permissions]]"
+                  permissions="[[data.permissions.runtimeHostPermissions]]"
                   delegate="[[delegate]]"
                   item-id="[[data.id]]">
               </extensions-runtime-host-permissions>
