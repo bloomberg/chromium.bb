@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.download.home.toolbar;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.download.R;
 
@@ -19,6 +21,7 @@ import java.util.List;
  * Handles toolbar functionality for the download home.
  */
 public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
+    private UiConfig mUiConfig;
     private View mTitleBar;
 
     public DownloadHomeToolbar(Context context, AttributeSet attrs) {
@@ -30,6 +33,16 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTitleBar = findViewById(R.id.title_bar);
+        post(() -> {
+            mUiConfig = new UiConfig(this);
+            configureWideDisplayStyle(mUiConfig);
+        });
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mUiConfig != null) mUiConfig.updateDisplayStyle();
     }
 
     /**
