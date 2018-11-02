@@ -641,6 +641,22 @@ def _PopulateComponents(raw_symbols, knobs):
       symbol.component = _FindComponentRoot(folder_path, seen_paths, knobs)
 
 
+def _UpdateSymbolNamesFromNm(raw_symbols, names_by_address):
+  """Updates raw_symbols names with extra information from nm."""
+  logging.debug('Update symbol names')
+  # linker_map_parser extracts '** outlined function' without knowing how many
+  # such symbols exist at each address. nm has this information, and stores the
+  # value as, e.g., '** outlined function * 5'. Copy the information over.
+  for s in raw_symbols:
+    if s.full_name.startswith('** outlined function'):
+      name_list = names_by_address.get(s.address)
+      if name_list:
+        for name in name_list:
+          if name.startswith('** outlined function'):
+            s.full_name = name
+            break
+
+
 def _AddNmAliases(raw_symbols, names_by_address):
   """Adds symbols that were removed by identical code folding."""
   # Step 1: Create list of (index_of_symbol, name_list).
@@ -845,6 +861,8 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
         'Adding symbols removed by identical code folding (as reported by nm)')
     # This normally does not block (it's finished by this time).
     names_by_address = elf_nm_result.get()
+    _UpdateSymbolNamesFromNm(raw_symbols, names_by_address)
+
     raw_symbols = _AddNmAliases(raw_symbols, names_by_address)
 
     if outdir_context:
@@ -853,7 +871,6 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
           'Fetched path information for %d symbols from %d files',
           len(object_paths_by_name),
           len(outdir_context.elf_object_paths) + len(missed_object_paths))
-
       # For aliases, this provides path information where there wasn't any.
       logging.info('Creating aliases for symbols shared by multiple paths')
       raw_symbols = _AssignNmAliasPathsAndCreatePathAliases(

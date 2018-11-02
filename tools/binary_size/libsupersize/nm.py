@@ -76,6 +76,19 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # Constructors often show up twice, so use sets to ensure no duplicates.
   names_by_address = collections.defaultdict(set)
 
+  # Many OUTLINED_FUNCTION_* entries can coexist on a single address, possibly
+  # mixed with regular symbols. However, naively keeping these is bad because:
+  # * OUTLINED_FUNCTION_* can have many duplicates. Keeping them would cause
+  #   false associations downstream, when looking up object_paths from names.
+  # * For addresses with multiple OUTLINED_FUNCTION_* entries, we can't get the
+  #   associated object_path (exception: the one entry in the .map file, for LLD
+  #   without ThinLTO). So keeping copies around is rather useless.
+  # Our solution is to merge OUTLINED_FUNCTION_* entries at the same address
+  # into a single symbol. We'd also like to keep track of the number of copies
+  # (although it will not be used to compute PSS computation). This is done by
+  # writing the count in the name, e.g., '** outlined function * 5'.
+  num_outlined_functions_at_address = collections.Counter()
+
   # About 60mb of output, but piping takes ~30s, and loading it into RAM
   # directly takes 3s.
   args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only',
@@ -100,7 +113,15 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
     address = int(address_str, 16)
     if not address:
       continue
-    names_by_address[address].add(mangled_name)
+    if mangled_name.startswith('OUTLINED_FUNCTION_'):
+      num_outlined_functions_at_address[address] += 1
+    else:
+      names_by_address[address].add(mangled_name)
+
+  # Need to add before demangling because |names_by_address| changes type.
+  for address, count in num_outlined_functions_at_address.iteritems():
+    name = '** outlined function' + (' * %d' % count if count > 1 else '')
+    names_by_address[address].add(name)
 
   # Demangle all names.
   names_by_address = demangle.DemangleSetsInDicts(names_by_address, tool_prefix)
@@ -108,7 +129,12 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # Since this is run in a separate process, minimize data passing by returning
   # only aliased symbols.
   # Also: Sort to ensure stable ordering.
-  return {k: sorted(v) for k, v in names_by_address.iteritems() if len(v) > 1}
+  return {
+      addr: sorted(names)
+      for addr, names in names_by_address.iteritems()
+      if len(names) > 1 or num_outlined_functions_at_address.get(addr, 0) > 1
+  }
+
 
 
 def _CollectAliasesByAddressAsyncHelper(elf_path, tool_prefix):

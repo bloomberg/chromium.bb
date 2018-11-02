@@ -167,6 +167,11 @@ as `size=0, padding=$size` (padding-only symbols) to de-emphasize them in diffs.
      * `template_name`: Name without argument parameters.
      * `full_name`: Name with all parameters.
 
+1. Special cases:
+   * LLVM function outlining creates many OUTLINED_FUNCTION_* symbols. These
+     renamed to '** outlined functions' or '** outlined functions * (count)',
+     and are deduped so an address can have at most one such symbol.
+
 1. Clustering:
    * Compiler & linker optimizations can cause symbols to be broken into
      multiple parts to become candidates for inlining ("partial inlining").
