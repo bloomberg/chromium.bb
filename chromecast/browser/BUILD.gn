@@ -33,6 +33,8 @@ cast_source_set("browser") {
     "cast_content_gesture_handler.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
+    "cast_feature_list_creator.cc",
+    "cast_feature_list_creator.h",
     "cast_http_user_agent_settings.cc",
     "cast_http_user_agent_settings.h",
     "cast_media_blocker.cc",

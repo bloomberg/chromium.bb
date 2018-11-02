@@ -14,6 +14,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
@@ -21,6 +22,7 @@
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_content_browser_client.h"
+#include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
@@ -196,10 +198,19 @@ void CastMainDelegate::ZygoteForked() {
 #endif  // defined(OS_LINUX)
 
 bool CastMainDelegate::ShouldCreateFeatureList() {
-  // TODO(https://crbug.com/887459): Move the creation of FeatureList from
-  // CastBrowserMainParts::PreCreateThreads() to
-  // CastMainDelegate::PostEarlyInitialization().
   return false;
+}
+
+void CastMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+  DCHECK(cast_feature_list_creator_);
+
+  // The |FieldTrialList| is a dependency of the feature list.
+  field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+
+  // Initialize the base::FeatureList and the PrefService (which it depends on),
+  // so objects initialized after this point can use features from
+  // base::FeatureList.
+  cast_feature_list_creator_->CreatePrefServiceAndFeatureList();
 }
 
 void CastMainDelegate::InitializeResourceBundle() {
@@ -250,7 +261,10 @@ void CastMainDelegate::InitializeResourceBundle() {
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {
-  browser_client_ = CastContentBrowserClient::Create();
+  DCHECK(!cast_feature_list_creator_);
+  cast_feature_list_creator_ = std::make_unique<CastFeatureListCreator>();
+  browser_client_ =
+      CastContentBrowserClient::Create(cast_feature_list_creator_.get());
   return browser_client_.get();
 }
 

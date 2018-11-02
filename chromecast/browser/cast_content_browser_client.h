@@ -47,6 +47,7 @@ class X509Certificate;
 namespace chromecast {
 class CastService;
 class CastWindowManager;
+class CastFeatureListCreator;
 class MemoryPressureControllerImpl;
 
 namespace media {
@@ -68,7 +69,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  public:
   // Creates an implementation of CastContentBrowserClient. Platform should
   // link in an implementation as needed.
-  static std::unique_ptr<CastContentBrowserClient> Create();
+  static std::unique_ptr<CastContentBrowserClient> Create(
+      CastFeatureListCreator* cast_feature_list_creator);
 
   ~CastContentBrowserClient() override;
 
@@ -197,13 +199,17 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldEnableStrictSiteIsolation() override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
+  CastFeatureListCreator* GetCastFeatureListCreator() {
+    return cast_feature_list_creator_;
+  }
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory();
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
  protected:
-  CastContentBrowserClient();
+  explicit CastContentBrowserClient(
+      CastFeatureListCreator* cast_feature_list_creator);
 
   URLRequestContextFactory* url_request_context_factory() const {
     return url_request_context_factory_.get();
@@ -257,6 +263,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
+
+  CastFeatureListCreator* cast_feature_list_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };
