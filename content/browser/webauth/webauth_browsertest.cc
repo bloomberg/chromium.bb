@@ -32,6 +32,7 @@
 #include "content/test/did_commit_provisional_load_interceptor.h"
 #include "device/base/features.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
@@ -591,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   // factory as one of the first steps. Here, the request should not have been
   // serviced at all, so the fake request should still be pending on the fake
   // factory.
-  auto hid_discovery = ::device::FidoDeviceDiscovery::Create(
+  auto hid_discovery = ::device::FidoDiscoveryFactory::Create(
       ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
   ASSERT_TRUE(!!hid_discovery);
 

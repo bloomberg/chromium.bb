@@ -1162,6 +1162,7 @@ test("content_browsertests") {
     sources += [ "../browser/webauth/webauth_browsertest.cc" ]
     deps += [
       "//device/base",
+      "//device/fido:fido",
       "//device/fido:mocks",
       "//device/fido:test_support",
     ]

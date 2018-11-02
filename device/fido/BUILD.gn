@@ -84,6 +84,8 @@ component("fido") {
     "fido_device_discovery.h",
     "fido_discovery_base.cc",
     "fido_discovery_base.h",
+    "fido_discovery_factory.cc",
+    "fido_discovery_factory.h",
     "fido_parsing_utils.cc",
     "fido_parsing_utils.h",
     "fido_request_handler.h",
