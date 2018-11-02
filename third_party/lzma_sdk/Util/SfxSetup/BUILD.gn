@@ -4,8 +4,8 @@
 
 source_set("7zS2_source") {
   sources = [
+    "Precomp.h",
     "SfxSetup.c",
-    "precomp.h",
   ]
   defines = [
     "_LZMA_PROB32",
