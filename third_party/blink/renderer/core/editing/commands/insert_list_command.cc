@@ -378,11 +378,13 @@ bool InsertListCommand::DoApplyForSingleParagraph(
         IsNodeVisiblyContainedWithin(*list_element,
                                      EphemeralRange(&current_selection))) {
       bool range_start_is_in_list =
-          VisiblePositionBeforeNode(*list_element).DeepEquivalent() ==
+          CreateVisiblePosition(PositionBeforeNode(*list_element))
+              .DeepEquivalent() ==
           CreateVisiblePosition(current_selection.StartPosition())
               .DeepEquivalent();
       bool range_end_is_in_list =
-          VisiblePositionAfterNode(*list_element).DeepEquivalent() ==
+          CreateVisiblePosition(PositionAfterNode(*list_element))
+              .DeepEquivalent() ==
           CreateVisiblePosition(current_selection.EndPosition())
               .DeepEquivalent();
 

@@ -2430,7 +2430,8 @@ static VisiblePosition ToVisiblePosition(AXObject* obj, int offset) {
   if (!parent)
     return VisiblePosition();
 
-  VisiblePosition node_position = blink::VisiblePositionBeforeNode(*node);
+  VisiblePosition node_position =
+      CreateVisiblePosition(blink::PositionBeforeNode(*node));
   int node_index = blink::IndexForVisiblePosition(node_position, parent);
   return blink::VisiblePositionForIndex(node_index + offset, parent);
 }
