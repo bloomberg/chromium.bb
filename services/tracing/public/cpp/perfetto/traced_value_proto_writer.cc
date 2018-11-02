@@ -258,8 +258,8 @@ std::unique_ptr<TracedValue::Writer> CreateProtoWriter(size_t capacity) {
 
 }  // namespace
 
-void RegisterTracedValueProtoWriter() {
-  TracedValue::SetWriterFactoryCallback(&CreateProtoWriter);
+void RegisterTracedValueProtoWriter(bool enable) {
+  TracedValue::SetWriterFactoryCallback(enable ? &CreateProtoWriter : nullptr);
 }
 
 }  // namespace tracing

@@ -128,6 +128,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  private:
   void CommitDataOnSequence(mojom::CommitDataRequestPtr request);
   void AddDataSourceOnSequence(DataSourceBase*);
+  void RegisterDataSourceWithHost(DataSourceBase* data_source);
 
   // The callback will be run on the |origin_task_runner|, meaning
   // the same sequence as CreateMojoMessagePipes() got called on.

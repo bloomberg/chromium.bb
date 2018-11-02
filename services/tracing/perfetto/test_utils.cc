@@ -233,8 +233,10 @@ void MockProducerHost::OnMessagepipesReadyCallback(
     perfetto::TracingService* perfetto_service,
     mojom::ProducerClientPtr producer_client_pipe,
     mojom::ProducerHostRequest producer_host_pipe) {
-  Initialize(std::move(producer_client_pipe), std::move(producer_host_pipe),
-             perfetto_service, kPerfettoProducerName);
+  Initialize(std::move(producer_client_pipe), perfetto_service,
+             kPerfettoProducerName);
+  binding_ = std::make_unique<mojo::Binding<mojom::ProducerHost>>(
+      this, std::move(producer_host_pipe));
 }
 
 MockProducer::MockProducer(const std::string& data_source_name,
