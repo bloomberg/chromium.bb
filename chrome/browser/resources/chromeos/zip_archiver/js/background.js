@@ -30,13 +30,13 @@ function setupZipArchiver() {
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       unpacker.app.onReadFileRequested);
 
-  // Load translations
-  unpacker.app.loadStringData();
-
   // Clean all temporary files inside the work directory, just in case the
   // extension aborted previously without removing ones.
   unpacker.app.cleanWorkDirectory();
 }
+
+// Load translations
+unpacker.app.loadStringData();
 
 // Event called on opening a file with the extension or mime type
 // declared in the manifest file.

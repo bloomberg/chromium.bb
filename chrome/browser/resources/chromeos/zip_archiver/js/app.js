@@ -110,6 +110,12 @@ unpacker.app = {
   mountProcessCounter: 0,
 
   /**
+   * The number of pack requests received with no inputs.
+   * @type {number}
+   */
+  invalidPackInputs_: 0,
+
+  /**
    * Function called on receiving a message from NaCl module. Registered by
    * common.js.
    * Process pack message by getting compressor and passing the message to it.
@@ -871,6 +877,20 @@ unpacker.app = {
    */
   onLaunched: function(launchData, opt_onSuccess, opt_onError) {
     if (launchData.items == null) {
+      if (launchData.id === 'pack' || launchData.id === 'pack_using_tmp') {
+        unpacker.app.stringDataLoadedPromise.then((stringData) => {
+          chrome.notifications.create(
+              'invalid-pack-' + unpacker.app.invalidPackInputs_++, {
+                type: 'basic',
+                iconUrl: chrome.runtime.getManifest().icons[128],
+                title: unpacker.Compressor.DEFAULT_ARCHIVE_NAME,
+                message: stringData['ZIP_ARCHIVER_PACKING_ERROR_MESSAGE']
+              },
+              function() {});
+        });
+        return;
+      }
+
       // The user tried to launch us directly.
       console.log('Ignoring launch request w/out items field', {launchData});
       return;
