@@ -41,6 +41,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
  public:
   UIControlsOzone(WindowTreeHost* host) : host_(host) {}
 
+ private:
+  // ui_controls::UIControlsAura:
   bool SendKeyPress(gfx::NativeWindow window,
                     ui::KeyboardCode key,
                     bool control,
@@ -124,18 +126,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   bool SendMouseMoveNotifyWhenDone(long screen_x,
                                    long screen_y,
                                    base::OnceClosure closure) override {
-    // The location needs to be in display's coordinate.
-    gfx::Point display_location(screen_x, screen_y);
-    display::Display display;
-    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
-            host_->GetDisplayId(), &display)) {
-      LOG(ERROR) << "Failed to see the display for " << host_->GetDisplayId();
+    gfx::Point host_location(screen_x, screen_y);
+    if (!ScreenDIPToHostPixels(&host_location))
       return false;
-    }
-    display_location -= display.bounds().OffsetFromOrigin();
-
-    gfx::Point host_location = display_location;
-    host_->ConvertDIPToPixels(&host_location);
     last_mouse_location_ = host_location;
 
     ui::EventType event_type;
@@ -164,19 +157,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     if (last_mouse_location_.has_value()) {
       host_location = last_mouse_location_.value();
     } else {
-      // The location needs to be in display's coordinate.
-      gfx::Point display_location =
-          host_->window()->env()->last_mouse_location();
-      display::Display display;
-      if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
-              host_->GetDisplayId(), &display)) {
-        LOG(ERROR) << "Failed to see the display for " << host_->GetDisplayId();
+      host_location = host_->window()->env()->last_mouse_location();
+      if (!ScreenDIPToHostPixels(&host_location))
         return false;
-      }
-      display_location -= display.bounds().OffsetFromOrigin();
-
-      host_location = display_location;
-      host_->ConvertDIPToPixels(&host_location);
     }
 
     int changed_button_flag = 0;
@@ -228,8 +211,44 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN,
                            ui_controls::kNoAccelerator);
   }
+#if defined(OS_CHROMEOS)
+  bool SendTouchEvents(int action, int id, int x, int y) override {
+    return SendTouchEventsNotifyWhenDone(action, id, x, y, base::OnceClosure());
+  }
+  bool SendTouchEventsNotifyWhenDone(int action,
+                                     int id,
+                                     int x,
+                                     int y,
+                                     base::OnceClosure task) override {
+    DCHECK_NE(0, action);
+    gfx::Point host_location(x, y);
+    if (!ScreenDIPToHostPixels(&host_location))
+      return false;
+    bool has_move = action & ui_controls::MOVE;
+    bool has_release = action & ui_controls::RELEASE;
+    ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
+                               1.0f, 1.0f, 0.0f);
+    if (action & ui_controls::PRESS) {
+      ui::TouchEvent event(ui::ET_TOUCH_PRESSED, host_location,
+                           base::TimeTicks::Now(), details);
+      SendEventToSink(&event, (has_move || has_release) ? base::OnceClosure()
+                                                        : std::move(task));
+    }
+    if (has_move) {
+      ui::TouchEvent event(ui::ET_TOUCH_MOVED, host_location,
+                           base::TimeTicks::Now(), details);
+      SendEventToSink(&event,
+                      has_release ? base::OnceClosure() : std::move(task));
+    }
+    if (has_release) {
+      ui::TouchEvent event(ui::ET_TOUCH_RELEASED, host_location,
+                           base::TimeTicks::Now(), details);
+      SendEventToSink(&event, std::move(task));
+    }
+    return true;
+  }
+#endif
 
- private:
   void SendEventToSink(ui::Event* event, base::OnceClosure closure) {
     if (host_->window()->env()->mode() == aura::Env::Mode::MUS) {
       GetEventInjector()->InjectEvent(
@@ -309,6 +328,19 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
           ->BindInterface(ws::mojom::kServiceName, &event_injector_);
     }
     return event_injector_.get();
+  }
+
+  bool ScreenDIPToHostPixels(gfx::Point* location) {
+    // The location needs to be in display's coordinate.
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
+            host_->GetDisplayId(), &display)) {
+      LOG(ERROR) << "Failed to find the display for " << host_->GetDisplayId();
+      return false;
+    }
+    *location -= display.bounds().OffsetFromOrigin();
+    host_->ConvertDIPToPixels(location);
+    return true;
   }
 
   WindowTreeHost* host_;

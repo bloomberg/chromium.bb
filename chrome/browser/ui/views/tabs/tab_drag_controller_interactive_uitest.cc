@@ -76,13 +76,11 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/events/test/event_generator.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -280,32 +278,6 @@ bool GetIsDragged(Browser* browser) {
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
-class ScreenEventGeneratorDelegate
-    : public aura::test::EventGeneratorDelegateAura {
- public:
-  explicit ScreenEventGeneratorDelegate(aura::Window* root_window)
-      : root_window_(root_window) {}
-  ~ScreenEventGeneratorDelegate() override {}
-
-  // EventGeneratorDelegateAura overrides:
-  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
-    return root_window_->GetHost()->window();
-  }
-
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(root_window_);
-  }
-
- private:
-  aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenEventGeneratorDelegate);
-};
-
-#endif
-
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
 
 // Following classes verify a crash scenario. Specifically on Windows when focus
@@ -422,7 +394,6 @@ class DetachToBrowserTabDragControllerTest
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
     root_ = browser()->window()->GetNativeWindow()->GetRootWindow();
-    event_generator_ = std::make_unique<ui::test::EventGenerator>(root_);
     // Disable flings which might otherwise inadvertently be generated from
     // tests' touch events.
     ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
@@ -442,27 +413,13 @@ class DetachToBrowserTabDragControllerTest
   }
 
 #if defined(OS_CHROMEOS)
-  // Converts the location in screen coordinate's to the location which event
-  // generator expects (i.e. its root window's coordinate).
-  gfx::Point GetLocationForEventGenerator(
-      const gfx::Point& location_in_screen) {
-    gfx::Point location_in_root = location_in_screen;
-    aura::client::GetScreenPositionClient(root_)->ConvertPointFromScreen(
-        root_, &location_in_root);
-    return location_in_root;
+  void SendTouchEventsSync(int action, int id, const gfx::Point& location) {
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    ui_controls::SendTouchEventsNotifyWhenDone(
+        action, id, location.x(), location.y(), run_loop.QuitClosure());
+    run_loop.Run();
   }
 #endif
-
-  // Set root window from a point in screen coordinates
-  void SetEventGeneratorRootWindow(const gfx::Point& point) {
-    if (input_source() == INPUT_SOURCE_MOUSE)
-      return;
-#if defined(OS_CHROMEOS)
-    event_generator_ = std::make_unique<ui::test::EventGenerator>(
-        std::make_unique<ScreenEventGeneratorDelegate>(
-            ash::wm::GetRootWindowAt(point)));
-#endif
-  }
 
   // The following methods update one of the mouse or touch input depending upon
   // the InputSource.
@@ -473,9 +430,7 @@ class DetachToBrowserTabDragControllerTest
               ui_controls::LEFT, ui_controls::DOWN);
     }
 #if defined(OS_CHROMEOS)
-    event_generator_->set_current_location(
-        GetLocationForEventGenerator(location));
-    event_generator_->PressTouch();
+    SendTouchEventsSync(ui_controls::PRESS, 0, location);
 #else
     NOTREACHED();
 #endif
@@ -486,9 +441,7 @@ class DetachToBrowserTabDragControllerTest
     // Second touch input is only used for touch sequence tests.
     EXPECT_EQ(INPUT_SOURCE_TOUCH, input_source());
 #if defined(OS_CHROMEOS)
-    event_generator_->set_current_location(
-        event_generator_->current_location());
-    event_generator_->PressTouchId(1);
+    SendTouchEventsSync(ui_controls::PRESS, 1, gfx::Point());
 #else
     NOTREACHED();
 #endif
@@ -499,7 +452,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_test_utils::SendMouseMoveSync(location);
 #if defined(OS_CHROMEOS)
-    event_generator_->MoveTouch(GetLocationForEventGenerator(location));
+    SendTouchEventsSync(ui_controls::MOVE, 0, location);
 #else
     NOTREACHED();
 #endif
@@ -510,7 +463,8 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMove(location.x(), location.y());
 #if defined(OS_CHROMEOS)
-    event_generator_->MoveTouch(GetLocationForEventGenerator(location));
+    ui_controls::SendTouchEvents(ui_controls::MOVE, 0, location.x(),
+                                 location.y());
 #else
     NOTREACHED();
 #endif
@@ -521,8 +475,8 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, std::move(task));
 #if defined(OS_CHROMEOS)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
-    event_generator_->MoveTouch(GetLocationForEventGenerator(gfx::Point(x, y)));
+    ui_controls::SendTouchEventsNotifyWhenDone(ui_controls::MOVE, 0, x, y,
+                                               std::move(task));
 #else
     NOTREACHED();
 #endif
@@ -535,9 +489,8 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(OS_CHROMEOS)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
-    event_generator_->MoveTouchId(
-        GetLocationForEventGenerator(gfx::Point(x, y)), 1);
+    ui_controls::SendTouchEventsNotifyWhenDone(ui_controls::MOVE, 1, x, y,
+                                               std::move(task));
 #else
     NOTREACHED();
 #endif
@@ -550,7 +503,7 @@ class DetachToBrowserTabDragControllerTest
               ui_controls::LEFT, ui_controls::UP);
     }
 #if defined(OS_CHROMEOS)
-    event_generator_->ReleaseTouch();
+    SendTouchEventsSync(ui_controls::RELEASE, 0, gfx::Point());
 #else
     NOTREACHED();
 #endif
@@ -563,7 +516,7 @@ class DetachToBrowserTabDragControllerTest
               ui_controls::LEFT, ui_controls::UP);
     }
 #if defined(OS_CHROMEOS)
-    event_generator_->ReleaseTouchId(1);
+    SendTouchEventsSync(ui_controls::RELEASE, 1, gfx::Point());
 #else
     NOTREACHED();
 #endif
@@ -598,8 +551,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_test_utils::SendMouseMoveSync(location);
 #if defined(OS_CHROMEOS)
-    event_generator_->set_current_location(
-        GetLocationForEventGenerator(location));
+    SendTouchEventsSync(ui_controls::MOVE, 0, location);
 #else
     NOTREACHED();
 #endif
@@ -666,8 +618,6 @@ class DetachToBrowserTabDragControllerTest
 #if defined(OS_CHROMEOS)
   // The root window for the event generator.
   aura::Window* root_ = nullptr;
-
-  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
@@ -1147,10 +1097,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(DragInputToNotifyWhenDone(
                   tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
                   base::Bind(&DetachToOwnWindowStep2, this)));
-  if (input_source() == INPUT_SOURCE_MOUSE) {
+  if (input_source() == INPUT_SOURCE_MOUSE)
     ReleaseMouseAfterWindowDetached();
-    QuitWhenNotDragging();
-  }
+  QuitWhenNotDragging();
 
   // Should no longer be dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -2126,9 +2075,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
-  // SetEventGeneratorRootWindow sets correct (second) RootWindow
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  SetEventGeneratorRootWindow(tab_0_center);
   ASSERT_TRUE(PressInput(tab_0_center));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
                   tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),

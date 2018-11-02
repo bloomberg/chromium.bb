@@ -53,6 +53,13 @@ class UIControlsAura {
 
 #if defined(OS_WIN)
   virtual bool SendTouchEvents(int action, int num, int x, int y) = 0;
+#elif defined(OS_CHROMEOS)
+  virtual bool SendTouchEvents(int action, int id, int x, int y) = 0;
+  virtual bool SendTouchEventsNotifyWhenDone(int action,
+                                             int id,
+                                             int x,
+                                             int y,
+                                             base::OnceClosure task) = 0;
 #endif
 };
 

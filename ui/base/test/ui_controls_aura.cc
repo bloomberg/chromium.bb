@@ -84,6 +84,23 @@ bool SendTouchEvents(int action, int num, int x, int y) {
   CHECK(g_ui_controls_enabled);
   return instance_->SendTouchEvents(action, num, x, y);
 }
+#elif defined(OS_CHROMEOS)
+// static
+bool SendTouchEvents(int action, int id, int x, int y) {
+  CHECK(g_ui_controls_enabled);
+  return instance_->SendTouchEvents(action, id, x, y);
+}
+
+// static
+bool SendTouchEventsNotifyWhenDone(int action,
+                                   int id,
+                                   int x,
+                                   int y,
+                                   base::OnceClosure task) {
+  CHECK(g_ui_controls_enabled);
+  return instance_->SendTouchEventsNotifyWhenDone(action, id, x, y,
+                                                  std::move(task));
+}
 #endif
 
 UIControlsAura::UIControlsAura() {
