@@ -26,32 +26,32 @@
 using libaom_test::FunctionEquivalenceTest;
 
 namespace {
-typedef void (*horver_Func)(const int16_t *diff, int stride, int w, int h,
-                            float *hcorr, float *vcorr);
+typedef void (*HorverFunc)(const int16_t *diff, int stride, int w, int h,
+                           float *hcorr, float *vcorr);
 
-typedef libaom_test::FuncParam<horver_Func> TestFuncs;
+typedef libaom_test::FuncParam<HorverFunc> TestFuncs;
 
-typedef ::testing::tuple<const horver_Func> HorverTestParam;
+typedef ::testing::tuple<const HorverFunc> HorverTestParam;
 
 class HorverTest : public ::testing::TestWithParam<HorverTestParam> {
  public:
   virtual void SetUp() {
-    data_buf = (int16_t *)aom_malloc(MAX_SB_SQUARE * sizeof(int16_t));
-    ASSERT_NE(data_buf, nullptr);
+    data_buf_ = (int16_t *)aom_malloc(MAX_SB_SQUARE * sizeof(int16_t));
+    ASSERT_NE(data_buf_, nullptr);
     target_func_ = GET_PARAM(0);
   }
-  virtual void TearDown() { aom_free(data_buf); }
-  void runHorverTest(void);
-  void runHorverTest_ExtremeValues(void);
-  void runHorverSpeedTest(int run_times);
+  virtual void TearDown() { aom_free(data_buf_); }
+  void RunHorverTest(void);
+  void RunHorverTest_ExtremeValues(void);
+  void RunHorverSpeedTest(int run_times);
 
  private:
-  horver_Func target_func_;
+  HorverFunc target_func_;
   ACMRandom rng_;
-  int16_t *data_buf;
+  int16_t *data_buf_;
 };
 
-void HorverTest::runHorverTest(void) {
+void HorverTest::RunHorverTest(void) {
   for (int block_size = 0; block_size < BLOCK_SIZES_ALL; block_size++) {
     const int w = block_size_wide[block_size];
     const int h = block_size_high[block_size];
@@ -60,13 +60,13 @@ void HorverTest::runHorverTest(void) {
       float hcorr_test = 0.0, vcorr_test = 0.0;
 
       for (int i = 0; i < MAX_SB_SQUARE; ++i) {
-        data_buf[i] = (rng_.Rand16() % (1 << 12)) - (1 << 11);
+        data_buf_[i] = (rng_.Rand16() % (1 << 12)) - (1 << 11);
       }
 
-      av1_get_horver_correlation_full_c(data_buf, MAX_SB_SIZE, w, h, &hcorr_ref,
-                                        &vcorr_ref);
+      av1_get_horver_correlation_full_c(data_buf_, MAX_SB_SIZE, w, h,
+                                        &hcorr_ref, &vcorr_ref);
 
-      target_func_(data_buf, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
+      target_func_(data_buf_, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
 
       ASSERT_LE(fabs(hcorr_ref - hcorr_test), 1e-6)
           << "hcorr incorrect (" << w << "x" << h << ")";
@@ -77,9 +77,9 @@ void HorverTest::runHorverTest(void) {
   }
 }
 
-void HorverTest::runHorverSpeedTest(int run_times) {
+void HorverTest::RunHorverSpeedTest(int run_times) {
   for (int i = 0; i < MAX_SB_SQUARE; ++i) {
-    data_buf[i] = rng_.Rand16() % (1 << 12);
+    data_buf_[i] = rng_.Rand16() % (1 << 12);
   }
 
   for (int block_size = 0; block_size < BLOCK_SIZES_ALL; block_size++) {
@@ -91,14 +91,14 @@ void HorverTest::runHorverSpeedTest(int run_times) {
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
-      av1_get_horver_correlation_full_c(data_buf, MAX_SB_SIZE, w, h, &hcorr_ref,
-                                        &vcorr_ref);
+      av1_get_horver_correlation_full_c(data_buf_, MAX_SB_SIZE, w, h,
+                                        &hcorr_ref, &vcorr_ref);
     }
     aom_usec_timer_mark(&timer);
     const double time1 = static_cast<double>(aom_usec_timer_elapsed(&timer));
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
-      target_func_(data_buf, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
+      target_func_(data_buf_, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
     }
     aom_usec_timer_mark(&timer);
     const double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
@@ -108,11 +108,11 @@ void HorverTest::runHorverSpeedTest(int run_times) {
   }
 }
 
-void HorverTest::runHorverTest_ExtremeValues(void) {
+void HorverTest::RunHorverTest_ExtremeValues(void) {
   for (int i = 0; i < MAX_SB_SQUARE; ++i) {
     // Most of get_horver_test is squaring and summing, so simply saturating
     // the whole buffer is mostly likely to cause an overflow.
-    data_buf[i] = (1 << 12) - 1;
+    data_buf_[i] = (1 << 12) - 1;
   }
 
   for (int block_size = 0; block_size < BLOCK_SIZES_ALL; block_size++) {
@@ -121,20 +121,20 @@ void HorverTest::runHorverTest_ExtremeValues(void) {
     float hcorr_ref = 0.0, vcorr_ref = 0.0;
     float hcorr_test = 0.0, vcorr_test = 0.0;
 
-    av1_get_horver_correlation_full_c(data_buf, MAX_SB_SIZE, w, h, &hcorr_ref,
+    av1_get_horver_correlation_full_c(data_buf_, MAX_SB_SIZE, w, h, &hcorr_ref,
                                       &vcorr_ref);
-    target_func_(data_buf, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
+    target_func_(data_buf_, MAX_SB_SIZE, w, h, &hcorr_test, &vcorr_test);
 
     ASSERT_LE(fabs(hcorr_ref - hcorr_test), 1e-6) << "hcorr incorrect";
     ASSERT_LE(fabs(vcorr_ref - vcorr_test), 1e-6) << "vcorr incorrect";
   }
 }
 
-TEST_P(HorverTest, RandomValues) { runHorverTest(); }
+TEST_P(HorverTest, RandomValues) { RunHorverTest(); }
 
-TEST_P(HorverTest, ExtremeValues) { runHorverTest_ExtremeValues(); }
+TEST_P(HorverTest, ExtremeValues) { RunHorverTest_ExtremeValues(); }
 
-TEST_P(HorverTest, DISABLED_Speed) { runHorverSpeedTest(100000); }
+TEST_P(HorverTest, DISABLED_Speed) { RunHorverSpeedTest(100000); }
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
