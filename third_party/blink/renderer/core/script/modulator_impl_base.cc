@@ -169,6 +169,8 @@ void ModulatorImplBase::ResolveDynamically(
         GetScriptState()->GetIsolate(), reason));
     return;
   }
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kDynamicImportModuleScript);
   dynamic_module_resolver_->ResolveDynamically(specifier, referrer_url,
                                                referrer_info, resolver);
 }
