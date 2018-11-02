@@ -1318,9 +1318,50 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
   intersection = set.Intersection(BoolSet({false}));
   EXPECT_TRUE(intersection.IsEmpty());
 
-  // Explicit universal set.
+  // Explicit universal set with true as the first element.
+  // This cannot result from a boolean constraint because they can only specify
+  // one exact value.
   set = BoolSet({true, false});
   EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  intersection = set.Intersection(BoolSet());
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  intersection = BoolSet().Intersection(set);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+
+  // Explicit universal set with false as the first element.
+  // This cannot result from a boolean constraint because they can only specify
+  // one exact value.
+  set = BoolSet({false, true});
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+  intersection = set.Intersection(BoolSet());
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+  intersection = BoolSet().Intersection(set);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+
+  // Intersection of explicit universal sets with different first elements.
+  // This cannot result from boolean constraints because they can only specify
+  // one exact value. The first element of the left-hand side is selected as the
+  // first element of the intersection.
+  set = BoolSet({true, false}).Intersection(BoolSet({false, true}));
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  set = BoolSet({false, true}).Intersection(BoolSet({true, false}));
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
 }
 
 }  // namespace media_constraints
