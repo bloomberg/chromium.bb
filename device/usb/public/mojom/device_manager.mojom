@@ -32,6 +32,11 @@ struct UsbEnumerationOptions {
 
 interface UsbDeviceManager {
   // Retrieves information about all devices available to the DeviceManager
+  // implementation and set client for device added/removed events.
+  EnumerateDevicesAndSetClient(associated UsbDeviceManagerClient client)
+      => (array<UsbDeviceInfo> results);
+
+  // Retrieves devices information filtered by |options| to the DeviceManager
   // implementation.
   GetDevices(UsbEnumerationOptions? options) => (array<UsbDeviceInfo> results);
 

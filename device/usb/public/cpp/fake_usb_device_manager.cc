@@ -19,6 +19,13 @@ FakeUsbDeviceManager::FakeUsbDeviceManager() : weak_factory_(this) {}
 
 FakeUsbDeviceManager::~FakeUsbDeviceManager() {}
 
+void FakeUsbDeviceManager::EnumerateDevicesAndSetClient(
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+    EnumerateDevicesAndSetClientCallback callback) {
+  GetDevices(nullptr, std::move(callback));
+  SetClient(std::move(client));
+}
+
 // mojom::UsbDeviceManager implementation:
 void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                       GetDevicesCallback callback) {
