@@ -44,7 +44,7 @@ const int kControlPopulationSamplingRate = 100;
 const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
 const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
 const size_t kRendererProcessMallocTriggerKb = 500 * 1024;   // 500 MB
-const size_t kUtilityProcessMallocTriggerKb = 400 * 1024;    // 400 MB
+const size_t kUtilityProcessMallocTriggerKb = 250 * 1024;    // 250 MB
 
 // If memory usage has increased by 500MB since the last report, send another.
 const uint32_t kHighWaterMarkThresholdKb = 500 * 1024;  // 500 MB
