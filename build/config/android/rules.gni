@@ -1884,6 +1884,7 @@ if (enable_java_templates) {
   #   uncompress_shared_libraries: True if shared libraries should be stored
   #     uncompressed in the APK. Must be unset or true if load_library_from_apk
   #     is set to true.
+  #   uncompress_dex: Store final .dex files uncompressed in the apk.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2570,6 +2571,7 @@ if (enable_java_templates) {
                                  "public_deps",
                                  "shared_resources",
                                  "write_asset_list",
+                                 "uncompress_dex",
                                ])
         packaged_resources_path = _packaged_resources_path
         apk_path = _final_apk_path
@@ -2879,6 +2881,7 @@ if (enable_java_templates) {
                                "support_zh_hk",
                                "testonly",
                                "uncompress_shared_libraries",
+                               "uncompress_dex",
                                "use_chromium_linker",
                                "version_code",
                                "version_name",
