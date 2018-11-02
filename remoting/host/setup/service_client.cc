@@ -100,6 +100,7 @@ void ServiceClient::Core::MakeChromotingRequest(
     const std::string& request_body,
     const std::string& oauth_access_token,
     ServiceClient::Delegate* delegate) {
+  delegate_ = delegate;
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(chromoting_hosts_url_ + url_suffix);
   resource_request->method = request_type;
