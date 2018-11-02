@@ -53,6 +53,12 @@ void TurnButtonBlue(GtkWidget* button);
 // it above |parent|. Do nothing if |parent| is nullptr.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
 
+// Gets the transient parent aura window for |dialog|.
+aura::Window* GetAuraTransientParent(GtkWidget* dialog);
+
+// Clears the transient parent for |dialog|.
+void ClearAuraTransientParent(GtkWidget* dialog);
+
 // Parses |button_string| into |leading_buttons| and
 // |trailing_buttons|.  The string is of the format
 // "<button>*:<button*>", for example, "close:minimize:maximize".
