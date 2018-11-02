@@ -174,6 +174,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
     div {
       padding-left: 5px;
       padding-top: 10px;
+      display: flow-root;
     }
     </style>
     <div id=container>test</div>
@@ -436,6 +437,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
     <style>
       #container {
         font: 20px/.5 Ahem;
+        display: flow-root;
       }
     </style>
     <div id="container">Hello</div>

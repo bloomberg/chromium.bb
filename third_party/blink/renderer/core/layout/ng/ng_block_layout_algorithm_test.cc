@@ -847,7 +847,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFormattingContextAutoMargins) {
   SetBodyInnerHTML(R"HTML(
       <!DOCTYPE html>
       <style>
-        #container { width: 200px; direction: rtl; }
+        #container { width: 200px; direction: rtl; display: flow-root; }
         #float { width: 100px; height: 60px; background: hotpink; float: left; }
         #newfc { direction: rtl; width: 50px; height: 20px; background: green; overflow: hidden; }
       </style>
@@ -1664,8 +1664,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, NoFragmentation) {
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   // We should only have one 150x200 fragment with no fragmentation.
   scoped_refptr<const NGPhysicalFragment> fragment =
@@ -1692,8 +1692,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, SimpleFragmentation) {
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -1738,8 +1738,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentation) {
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -1806,8 +1806,8 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -1872,8 +1872,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -1915,6 +1915,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
       #container {
         width: 150px;
         height: 50px;
+        display: flow-root;
       }
       #float1 {
         width: 50px;
@@ -1939,8 +1940,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -1962,8 +1963,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
 
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
   fragment = NGBlockLayoutAlgorithm(node, space,
                                     ToNGBlockBreakToken(fragment->BreakToken()))
                  .Layout()
@@ -2046,6 +2047,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationZeroHeight) {
       #container {
         width: 150px;
         height: 50px;
+        display: flow-root;
       }
       #float {
         width: 75px;
@@ -2066,8 +2068,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationZeroHeight) {
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, space).Layout()->PhysicalFragment();
@@ -2086,8 +2088,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationZeroHeight) {
 
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
   fragment = NGBlockLayoutAlgorithm(node, space,
                                     ToNGBlockBreakToken(fragment->BreakToken()))
                  .Layout()

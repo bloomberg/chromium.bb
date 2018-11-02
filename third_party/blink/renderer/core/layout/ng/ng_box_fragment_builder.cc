@@ -20,27 +20,6 @@
 
 namespace blink {
 
-namespace {
-
-NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
-    const LayoutObject* layout_object) {
-  DCHECK(layout_object);
-  if (layout_object->IsFloating())
-    return NGPhysicalFragment::NGBoxType::kFloating;
-  if (layout_object->IsOutOfFlowPositioned())
-    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
-  if (layout_object->IsAtomicInlineLevel())
-    return NGPhysicalFragment::NGBoxType::kAtomicInline;
-  if (layout_object->IsInline())
-    return NGPhysicalFragment::NGBoxType::kInlineBox;
-  if (layout_object->IsLayoutBlock() &&
-      ToLayoutBlock(layout_object)->CreatesNewFormattingContext())
-    return NGPhysicalFragment::NGBoxType::kBlockFlowRoot;
-  return NGPhysicalFragment::NGBoxType::kNormalBox;
-}
-
-}  // namespace
-
 void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
   inline_break_tokens_.resize(0);
@@ -163,7 +142,21 @@ NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
     return box_type_;
 
   // When implicit, compute from LayoutObject.
-  return BoxTypeFromLayoutObject(layout_object_);
+  DCHECK(layout_object_);
+  if (layout_object_->IsFloating())
+    return NGPhysicalFragment::NGBoxType::kFloating;
+  if (layout_object_->IsOutOfFlowPositioned())
+    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
+  if (layout_object_->IsAtomicInlineLevel())
+    return NGPhysicalFragment::NGBoxType::kAtomicInline;
+  if (layout_object_->IsInline())
+    return NGPhysicalFragment::NGBoxType::kInlineBox;
+  DCHECK(node_) << "Must call SetBoxType if there is no node";
+  DCHECK_EQ(is_new_fc_, node_.CreatesNewFormattingContext())
+      << "Forgot to call builder.SetIsNewFormattingContext";
+  if (is_new_fc_)
+    return NGPhysicalFragment::NGBoxType::kBlockFlowRoot;
+  return NGPhysicalFragment::NGBoxType::kNormalBox;
 }
 
 void NGBoxFragmentBuilder::AddBaseline(NGBaselineRequest request,

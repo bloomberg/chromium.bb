@@ -167,7 +167,9 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     const NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
       is_resuming_(break_token && !break_token->IsBreakBefore()),
-      exclusion_space_(space.ExclusionSpace()) {}
+      exclusion_space_(space.ExclusionSpace()) {
+  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+}
 
 // Define the destructor here, so that we can forward-declare more in the
 // header.

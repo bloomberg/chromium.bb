@@ -859,6 +859,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   // TODO(kojii): Implement use_first_line_style.
   NGBoxFragmentBuilder builder(*this, box_->Style(), writing_mode,
                                box_->StyleRef().Direction());
+  builder.SetIsNewFormattingContext(constraint_space.IsNewFormattingContext());
   builder.SetIsOldLayoutRoot();
   builder.SetInlineSize(box_size.inline_size);
   builder.SetBlockSize(box_size.block_size);

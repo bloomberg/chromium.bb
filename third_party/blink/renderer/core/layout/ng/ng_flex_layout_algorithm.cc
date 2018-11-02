@@ -19,7 +19,9 @@ namespace blink {
 NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+}
 
 scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   DCHECK(!Style().IsColumnFlexDirection())
@@ -49,6 +51,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         NGConstraintSpaceBuilder(ConstraintSpace())
             .SetAvailableSize(flex_container_content_box_size)
             .SetPercentageResolutionSize(flex_container_content_box_size)
+            .SetIsNewFormattingContext(true)
             .ToConstraintSpace(child.Style().GetWritingMode());
 
     LayoutUnit main_axis_border_and_padding =
@@ -126,6 +129,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       space_builder.SetPercentageResolutionSize(
           flex_container_content_box_size);
       space_builder.SetIsFixedSizeInline(true);
+      space_builder.SetIsNewFormattingContext(true);
       NGConstraintSpace child_space = space_builder.ToConstraintSpace(
           flex_item.box->Style()->GetWritingMode());
       flex_item.layout_result =
@@ -177,6 +181,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
             flex_container_content_box_size);
         space_builder.SetIsFixedSizeInline(true);
         space_builder.SetIsFixedSizeBlock(true);
+        space_builder.SetIsNewFormattingContext(true);
         NGConstraintSpace child_space = space_builder.ToConstraintSpace(
             flex_item.box->Style()->GetWritingMode());
         flex_item.layout_result =
