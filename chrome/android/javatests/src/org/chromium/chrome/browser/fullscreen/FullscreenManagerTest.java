@@ -231,8 +231,9 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    @LargeTest
-    @Feature({"Fullscreen"})
+    //@LargeTest
+    //@Feature({"Fullscreen"})
+    @DisabledTest(message = "crbug.com/901280")
     public void testManualHidingShowingBrowserControls() throws InterruptedException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
@@ -251,8 +252,9 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    @LargeTest
-    @RetryOnFailure
+    //@LargeTest
+    //@RetryOnFailure
+    @DisabledTest(message = "crbug.com/901280")
     public void testHideBrowserControlsAfterFlingBoosting() throws InterruptedException {
         // Test that fling boosting doesn't break the scroll state management
         // that's used by the FullscreenManager to dispatch URL bar based
