@@ -204,7 +204,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
 
   // If |follow_cross_origin_redirects| is true, we will follow cross origin
   // redirects while downloading, otherwise, we'll attempt to navigate to the
-  // URL.
+  // URL or cancel the download.
   void set_follow_cross_origin_redirects(bool follow_cross_origin_redirects) {
     follow_cross_origin_redirects_ = follow_cross_origin_redirects;
   }
