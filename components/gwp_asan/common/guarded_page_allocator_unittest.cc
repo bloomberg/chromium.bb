@@ -24,9 +24,9 @@ class GuardedPageAllocatorTest : public testing::Test {
       : gpa_(num_pages) {}
 
   // Get a left- or right- aligned allocation (or nullptr on error.)
-  char* GetAlignedAllocation(bool left_aligned, size_t sz) {
+  char* GetAlignedAllocation(bool left_aligned, size_t sz, size_t align = 0) {
     for (size_t i = 0; i < 100; i++) {
-      void* alloc = gpa_.Allocate(sz);
+      void* alloc = gpa_.Allocate(sz, align);
       if (!alloc)
         return nullptr;
 
@@ -40,6 +40,18 @@ class GuardedPageAllocatorTest : public testing::Test {
     }
 
     return nullptr;
+  }
+
+  // Helper that returns the offset of a right-aligned allocation in the
+  // allocation's page.
+  uintptr_t GetRightAlignedAllocationOffset(size_t size, size_t align) {
+    const uintptr_t page_mask = base::GetPageSize() - 1;
+
+    void* buf = GetAlignedAllocation(false, size, align);
+    CHECK(buf);
+    gpa_.Deallocate(buf);
+
+    return reinterpret_cast<uintptr_t>(buf) & page_mask;
   }
 
   GuardedPageAllocator gpa_;
@@ -84,6 +96,26 @@ TEST_F(GuardedPageAllocatorTest, RightAlignedAllocation) {
   buf[0] = 'A';
   EXPECT_DEATH(buf[GuardedPageAllocator::kGpaAllocAlignment] = 'A', "");
   gpa_.Deallocate(buf);
+}
+
+TEST_F(GuardedPageAllocatorTest, AllocationAlignment) {
+  const uintptr_t page_size = base::GetPageSize();
+
+  EXPECT_EQ(GetRightAlignedAllocationOffset(9, 1), page_size - 9);
+  EXPECT_EQ(GetRightAlignedAllocationOffset(9, 2), page_size - 10);
+  EXPECT_EQ(GetRightAlignedAllocationOffset(9, 4), page_size - 12);
+  EXPECT_EQ(GetRightAlignedAllocationOffset(9, 8), page_size - 16);
+
+  EXPECT_EQ(GetRightAlignedAllocationOffset(513, 512), page_size - 1024);
+
+  // Default alignment aligns up to the next lowest power of two.
+  EXPECT_EQ(GetRightAlignedAllocationOffset(5, 0), page_size - 8);
+  EXPECT_EQ(GetRightAlignedAllocationOffset(9, 0), page_size - 16);
+  // But only up to 16 bytes.
+  EXPECT_EQ(GetRightAlignedAllocationOffset(513, 0), page_size - (512 + 16));
+
+  EXPECT_DEATH(GetRightAlignedAllocationOffset(5, 8), "");
+  EXPECT_DEATH(GetRightAlignedAllocationOffset(5, 3), "");
 }
 
 TEST_F(GuardedPageAllocatorTest, GetNearestValidPageEdgeCases) {
