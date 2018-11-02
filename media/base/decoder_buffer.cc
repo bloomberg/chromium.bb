@@ -70,6 +70,11 @@ DecoderBuffer::~DecoderBuffer() {
   void* data_at_initialize = data_at_initialize_;
   base::debug::Alias(&data_at_initialize);
 
+  uint32_t destruction = destruction_;
+  base::debug::Alias(&destruction);
+  CHECK_NE(destruction_, 0xAAAAAAAA);
+  destruction_ = 0xAAAAAAAA;
+
   CHECK_EQ(!!side_data_size_, !!side_data_);
   data_.reset();
   side_data_.reset();
