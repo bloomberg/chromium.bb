@@ -68,10 +68,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
   void replaceState(scoped_refptr<SerializedScriptValue> data,
                     const String& title,
                     const String& url,
-                    ExceptionState& exception_state) {
-    StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
-                     WebFrameLoadType::kReplaceCurrentItem, exception_state);
-  }
+                    ExceptionState& exception_state);
 
   void setScrollRestoration(const String& value, ExceptionState&);
   String scrollRestoration(ExceptionState&);
