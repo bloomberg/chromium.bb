@@ -5861,6 +5861,14 @@
           "shards": 2
         },
         "test": "base_unittests"
+      },
+      {
+        "isolate_coverage_data": true,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "url_unittests"
       }
     ]
   },
