@@ -206,6 +206,14 @@ jumbo_source_set("filters") {
       "h264_bitstream_buffer.h",
     ]
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/fuchsia_video_decoder.cc",
+      "fuchsia/fuchsia_video_decoder.h",
+    ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:mediacodec" ]
+  }
 }
 
 source_set("perftests") {
@@ -281,10 +289,6 @@ source_set("unit_tests") {
     "vp9_raw_bits_reader_unittest.cc",
   ]
 
-  if (is_android) {
-    sources += [ "android/video_frame_extractor_unittest.cc" ]
-  }
-
   deps = [
     "//base/test:test_support",
     "//media:test_support",
@@ -299,12 +303,17 @@ source_set("unit_tests") {
   ]
 
   if (is_android) {
+    sources += [ "android/video_frame_extractor_unittest.cc" ]
     sources -= [
       "decrypting_audio_decoder_unittest.cc",
       "decrypting_video_decoder_unittest.cc",
     ]
 
     deps += [ "//ui/gl" ]
+  }
+
+  if (is_fuchsia) {
+    sources += [ "fuchsia/fuchsia_video_decoder_unittest.cc" ]
   }
 
   # libvpx for running vpx test on chromecast doesn't support high bit depth.
