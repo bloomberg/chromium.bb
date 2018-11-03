@@ -91,6 +91,7 @@ class TestWindowService : public service_manager::Service,
   void OnGpuServiceInitialized() override;
 
   // test_ws::mojom::TestWs:
+  void MaximizeNextWindow(MaximizeNextWindowCallback cb) override;
   void Shutdown(test_ws::mojom::TestWs::ShutdownCallback callback) override;
 
   void BindServiceFactory(
@@ -127,6 +128,7 @@ class TestWindowService : public service_manager::Service,
 
   bool started_ = false;
   bool ui_service_created_ = false;
+  bool maximize_next_window_ = false;
 
   base::OnceClosure pending_create_service_;
 

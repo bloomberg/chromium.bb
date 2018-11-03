@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "services/ws/test_ws/test_ws.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -101,6 +102,29 @@ class ExpectsNullCursorClientDuringTearDown : public aura::WindowObserver {
   aura::Window* window_;
   DISALLOW_COPY_AND_ASSIGN(ExpectsNullCursorClientDuringTearDown);
 };
+
+// Tests that the window service can set the initial show state for a window.
+// https://crbug.com/899055
+TEST_F(DesktopWindowTreeHostMusTest, ShowStateFromWindowService) {
+  // Configure the window service to maximize the next top-level window.
+  test_ws::mojom::TestWsPtr test_ws_ptr;
+  MusClient::Get()->window_tree_client()->connector()->BindInterface(
+      test_ws::mojom::kServiceName, &test_ws_ptr);
+  test_ws::mojom::TestWsAsyncWaiter wait_for(test_ws_ptr.get());
+  wait_for.MaximizeNextWindow();
+
+  // Create a widget with the default show state.
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, params.show_state);
+  widget.Init(params);
+  aura::test::WaitForAllChangesToComplete();
+
+  // Window service provided the show state.
+  EXPECT_TRUE(widget.IsMaximized());
+}
 
 TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
   std::unique_ptr<Widget> widget(CreateWidget());

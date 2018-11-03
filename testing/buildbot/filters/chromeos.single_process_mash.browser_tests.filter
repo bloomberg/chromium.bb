@@ -31,9 +31,6 @@
 # Viz hit testing not supported with Mash https://crbug.com/879308
 -PDFExtensionHitTestTest.MouseLeave/1
 
-# https://crbug.com/899055
--LockScreenNoteTakingTest.*
-
 # Flaky. https://crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
