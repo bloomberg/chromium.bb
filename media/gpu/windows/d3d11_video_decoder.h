@@ -103,7 +103,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   void DoDecode();
 
   // instantiate |accelerated_video_decoder_| based on the video profile
-  void InitializeAcceleratedDecoder(
+  HRESULT InitializeAcceleratedDecoder(
       const VideoDecoderConfig& config,
       CdmProxyContext* proxy_context,
       Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder);
@@ -198,7 +198,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   Microsoft::WRL::ComPtr<ID3D11Device> device_;
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context_;
+
+  D3D_FEATURE_LEVEL usable_feature_level_;
 
   std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
 

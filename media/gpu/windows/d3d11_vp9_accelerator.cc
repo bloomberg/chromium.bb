@@ -40,7 +40,7 @@ D3D11VP9Accelerator::D3D11VP9Accelerator(
     CdmProxyContext* cdm_proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-    Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context)
+    std::unique_ptr<VideoContextWrapper> video_context)
     : client_(client),
       media_log_(media_log),
       cdm_proxy_context_(cdm_proxy_context),
@@ -315,7 +315,7 @@ bool D3D11VP9Accelerator::SubmitDecoderBuffer(
     RELEASE_BUFFER(D3D11_VIDEO_DECODER_BUFFER_SLICE_CONTROL);
 
     constexpr int buffers_count = 3;
-    D3D11_VIDEO_DECODER_BUFFER_DESC1 buffers[buffers_count] = {};
+    VideoContextWrapper::VideoBufferWrapper buffers[buffers_count] = {};
     buffers[0].BufferType = D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS;
     buffers[0].DataOffset = 0;
     buffers[0].DataSize = sizeof(pic_params);
@@ -338,8 +338,8 @@ bool D3D11VP9Accelerator::SubmitDecoderBuffer(
       }
     }
 
-    RETURN_ON_HR_FAILURE(SubmitDecoderBuffers1,
-                         video_context_->SubmitDecoderBuffers1(
+    RETURN_ON_HR_FAILURE(SubmitDecoderBuffers,
+                         video_context_->SubmitDecoderBuffers(
                              video_decoder_.Get(), buffers_count, buffers));
     buffer_offset += copy_size;
   }

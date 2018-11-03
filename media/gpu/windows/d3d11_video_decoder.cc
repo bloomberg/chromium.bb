@@ -21,6 +21,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
+#include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "ui/gl/gl_angle_util_win.h"
 
@@ -108,30 +109,41 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
   return "D3D11VideoDecoder";
 }
 
-void D3D11VideoDecoder::InitializeAcceleratedDecoder(
+HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
     CdmProxyContext* proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
+  // If we got an 11.1 D3D11 Device, we can use a |ID3D11VideoContext1|,
+  // otherwise we have to make sure we only use a |ID3D11VideoContext|.
+  HRESULT hr;
+
+  // |device_context_| is the primary display context, but currently
+  // we share it for decoding purposes.
+  auto video_context = VideoContextWrapper::CreateWrapper(usable_feature_level_,
+                                                          device_context_, &hr);
+
+  if (!SUCCEEDED(hr))
+    return hr;
+
   if (IsVP9(config)) {
     accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
-        std::make_unique<D3D11VP9Accelerator>(this, media_log_.get(),
-                                              proxy_context, video_decoder,
-                                              video_device_, video_context_),
+        std::make_unique<D3D11VP9Accelerator>(
+            this, media_log_.get(), proxy_context, video_decoder, video_device_,
+            std::move(video_context)),
         config.color_space_info());
-    return;
+    return hr;
   }
 
   if (IsH264(config)) {
     accelerated_video_decoder_ = std::make_unique<H264Decoder>(
-        std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
-                                               proxy_context, video_decoder,
-                                               video_device_, video_context_),
+        std::make_unique<D3D11H264Accelerator>(
+            this, media_log_.get(), proxy_context, video_decoder, video_device_,
+            std::move(video_context)),
         config.color_space_info());
-    return;
+    return hr;
   }
 
-  // No other type of config should make it this far due to earlier checks.
-  NOTREACHED();
+  return E_FAIL;
 }
 
 bool D3D11VideoDecoder::DeviceHasDecoderID(GUID decoder_guid) {
@@ -203,11 +215,6 @@ void D3D11VideoDecoder::Initialize(
 
   // TODO(liberato): Handle cleanup better.  Also consider being less chatty in
   // the logs, since this will fall back.
-  hr = device_context_.CopyTo(video_context_.ReleaseAndGetAddressOf());
-  if (!SUCCEEDED(hr)) {
-    NotifyError("Failed to get device context");
-    return;
-  }
 
   hr = device_.CopyTo(video_device_.ReleaseAndGetAddressOf());
   if (!SUCCEEDED(hr)) {
@@ -285,7 +292,12 @@ void D3D11VideoDecoder::Initialize(
     return;
   }
 
-  InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
+  hr = InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
+
+  if (!SUCCEEDED(hr)) {
+    NotifyError("Failed to get device context");
+    return;
+  }
 
   // |cdm_context| could be null for clear playback.
   // TODO(liberato): On re-init, should this still happen?
@@ -654,30 +666,17 @@ void D3D11VideoDecoder::SetWasSupportedReason(
 bool D3D11VideoDecoder::IsPotentiallySupported(
     const VideoDecoderConfig& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
   // it could run on the client side and save the IPC hop.
 
-  if (config.is_encrypted() &&
-      !base::FeatureList::IsEnabled(kD3D11EncryptedMedia)) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kEncryptedMedia);
+  // Must allow zero-copy of nv12 textures.
+  if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyNv12Required);
     return false;
   }
 
-  // TODO(liberato): It would be nice to QueryD3D11DeviceObjectFromANGLE, but
-  // we don't know what thread we're on.
-
-  // Make sure that we support at least 11.0.
-  D3D_FEATURE_LEVEL levels[] = {
-      D3D_FEATURE_LEVEL_11_0,
-  };
-  HRESULT hr = create_device_func_.Run(
-      nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, levels, ARRAYSIZE(levels),
-      D3D11_SDK_VERSION, nullptr, nullptr, nullptr);
-
-  if (FAILED(hr)) {
-    SetWasSupportedReason(
-        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
+  if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyVideoRequired);
     return false;
   }
 
@@ -692,6 +691,13 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     return false;
   }
 
+  bool encrypted_stream = config.is_encrypted();
+
+  if (encrypted_stream && !base::FeatureList::IsEnabled(kD3D11EncryptedMedia)) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kEncryptedMedia);
+    return false;
+  }
+
   // Converts one of chromium's VideoCodecProfile options to a dxguid value.
   // If this GUID comes back empty then the profile is not supported.
   GUID decoder_GUID = GetD3D11DecoderGUID(config);
@@ -703,21 +709,33 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     return false;
   }
 
+  // TODO(liberato): It would be nice to QueryD3D11DeviceObjectFromANGLE, but
+  // we don't know what thread we're on.
+  D3D_FEATURE_LEVEL levels[] = {
+      D3D_FEATURE_LEVEL_11_1,  // We need 11.1 for encrypted playback,
+      D3D_FEATURE_LEVEL_11_0,  // but make sure we have at least 11.0 for clear.
+  };
+
+  // This is also the most expensive check, so make sure it is last.
+  HRESULT hr = create_device_func_.Run(
+      nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, levels, ARRAYSIZE(levels),
+      D3D11_SDK_VERSION, nullptr, &usable_feature_level_, nullptr);
+
+  if (FAILED(hr)) {
+    SetWasSupportedReason(
+        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
+    return false;
+  }
+
+  if (encrypted_stream && usable_feature_level_ == D3D_FEATURE_LEVEL_11_0) {
+    SetWasSupportedReason(
+        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
+    return false;
+  }
+
   // TODO(liberato): dxva checks IsHDR() in the target colorspace, but we don't
   // have the target colorspace.  It's commented as being for vpx, though, so
   // we skip it here for now.
-
-  // Must allow zero-copy of nv12 textures.
-  if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyNv12Required);
-    return false;
-  }
-
-  if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyVideoRequired);
-    return false;
-  }
-
   SetWasSupportedReason(D3D11VideoNotSupportedReason::kVideoIsSupported);
   return true;
 }

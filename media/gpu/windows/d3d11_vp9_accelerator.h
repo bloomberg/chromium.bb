@@ -12,6 +12,7 @@
 
 #include "media/base/media_log.h"
 #include "media/gpu/vp9_decoder.h"
+#include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/d3d11_vp9_picture.h"
 
@@ -20,13 +21,12 @@ class CdmProxyContext;
 
 class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
  public:
-  D3D11VP9Accelerator(
-      D3D11VideoDecoderClient* client,
-      MediaLog* media_log,
-      CdmProxyContext* cdm_proxy_context,
-      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
-      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-      Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context);
+  D3D11VP9Accelerator(D3D11VideoDecoderClient* client,
+                      MediaLog* media_log,
+                      CdmProxyContext* cdm_proxy_context,
+                      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
+                      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+                      std::unique_ptr<VideoContextWrapper> video_context);
   ~D3D11VP9Accelerator() override;
 
   scoped_refptr<VP9Picture> CreateVP9Picture() override;
@@ -78,7 +78,7 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
   UINT status_feedback_;
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context_;
+  std::unique_ptr<VideoContextWrapper> video_context_;
 
   DISALLOW_COPY_AND_ASSIGN(D3D11VP9Accelerator);
 };

@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/return_on_failure.h"
 #include "media/video/picture.h"
@@ -32,13 +33,12 @@ class MediaLog;
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
   // |cdm_proxy_context| may be null for clear content.
-  D3D11H264Accelerator(
-      D3D11VideoDecoderClient* client,
-      MediaLog* media_log,
-      CdmProxyContext* cdm_proxy_context,
-      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
-      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-      Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context);
+  D3D11H264Accelerator(D3D11VideoDecoderClient* client,
+                       MediaLog* media_log,
+                       CdmProxyContext* cdm_proxy_context,
+                       Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
+                       Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+                       std::unique_ptr<VideoContextWrapper> video_context);
   ~D3D11H264Accelerator() override;
 
   // H264Decoder::H264Accelerator implementation.
@@ -75,7 +75,7 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context_;
+  std::unique_ptr<VideoContextWrapper> video_context_;
 
   // This information set at the beginning of a frame and saved for processing
   // all the slices.
