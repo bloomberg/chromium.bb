@@ -328,6 +328,7 @@ public final class DownloadInfo {
         offlineItem.pendingState = downloadInfo.getPendingState();
         offlineItem.failState = downloadInfo.getFailState();
         offlineItem.promoteOrigin = downloadInfo.getShouldPromoteOrigin();
+        offlineItem.lastAccessedTimeMs = downloadInfo.getLastAccessTime();
 
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:

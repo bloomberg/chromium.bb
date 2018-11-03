@@ -1589,6 +1589,27 @@ should be able to be added at any place in this file.
   <description>User opened a download from download home.</description>
 </action>
 
+<action name="Android.DownloadManager.List.Selection.Menu.Images.Action">
+  <owner>dtrainor@chromium.org</owner>
+  <description>
+    User triggered a menu action on the images section header of download home.
+  </description>
+</action>
+
+<action name="Android.DownloadManager.List.View.Action">
+  <owner>dtrainor@chromium.org</owner>
+  <description>
+    User triggered actions on an offline item in download home.
+  </description>
+</action>
+
+<action name="Android.DownloadManager.Menu.Action">
+  <owner>dtrainor@chromium.org</owner>
+  <description>
+    User triggered actions on the top level menu in download home.
+  </description>
+</action>
+
 <action name="Android.DownloadManager.Open">
   <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -1606,6 +1627,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.RemoveItem">
+  <obsolete>
+    Deprecated in favor of Android.DownloadManager.List.View.Action.
+  </obsolete>
   <owner>dtrainor@chromium.org</owner>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -1616,6 +1640,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Search">
+  <obsolete>
+    Deprecated in favor of Android.DownloadManager.Menu.Action.
+  </obsolete>
   <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User initiated a search of their downloads.</description>
@@ -1631,6 +1658,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Settings">
+  <obsolete>
+    Deprecated in favor of Android.DownloadManager.Menu.Action.
+  </obsolete>
   <owner>jming@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -20514,6 +20544,37 @@ should be able to be added at any place in this file.
   <affected-action name="ContextualSuggestions.ContextMenu"/>
   <affected-action name="ExploreSites.ContextMenu"/>
   <affected-action name="Suggestions.ContextMenu"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="DeleteAll" label="Delete all items in a section."/>
+  <suffix name="ShareAll" label="Share all items in a section."/>
+  <suffix name="StartSelecting"
+      label="Enter multi-select mode from the section menu."/>
+  <affected-action
+      name="Android.DownloadManager.List.Selection.Menu.Images.Action"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Cancel" label="User canceled downloading an offline item."/>
+  <suffix name="MenuDelete" label="User deleted a specific offline item."/>
+  <suffix name="MenuShare" label="User shared a specific offline item."/>
+  <suffix name="Open" label="User opened an offline item."/>
+  <suffix name="Pause" label="User paused downloading an offline item."/>
+  <suffix name="Resume" label="User resumed downloading an offline item."/>
+  <affected-action name="Android.DownloadManager.List.View.Action"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Close"
+      label="User closed the download manager from the top menu."/>
+  <suffix name="MultiDelete"
+      label="User deleted multiple files from the top menu."/>
+  <suffix name="MultiShare"
+      label="User shared multiple files from the top menu."/>
+  <suffix name="Search" label="User started searching from the top menu."/>
+  <suffix name="Settings" label="User entered settings from the top menu."/>
+  <affected-action name="Android.DownloadManager.Menu.Action"/>
 </action-suffix>
 
 </actions>

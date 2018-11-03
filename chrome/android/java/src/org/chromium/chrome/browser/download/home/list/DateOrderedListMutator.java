@@ -214,7 +214,8 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
          * Filters.FilterType}.
          */
         public Map<Integer, Section> sections = new TreeMap<>((lhs, rhs) -> {
-            return Filters.fromOfflineItem(lhs).compareTo(Filters.fromOfflineItem(rhs));
+            return ListUtils.compareFilterTypesTo(
+                    Filters.fromOfflineItem(lhs), Filters.fromOfflineItem(rhs));
         });
 
         public void addItem(OfflineItem item) {

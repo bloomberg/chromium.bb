@@ -128,8 +128,23 @@ public final class UiUtils {
 
     /** @return A drawable resource id representing an icon for {@code item}. */
     public static @DrawableRes int getIconForItem(OfflineItem item) {
-        return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
-                DownloadUtils.IconSize.DP_24);
+        switch (Filters.fromOfflineItem(item)) {
+            case Filters.FilterType.NONE:
+                return R.drawable.ic_file_download_24dp;
+            case Filters.FilterType.SITES:
+                return R.drawable.ic_globe_24dp;
+            case Filters.FilterType.VIDEOS:
+                return R.drawable.ic_videocam_24dp;
+            case Filters.FilterType.MUSIC:
+                return R.drawable.ic_music_note_24dp;
+            case Filters.FilterType.IMAGES:
+                return R.drawable.ic_drive_image_24dp;
+            case Filters.FilterType.DOCUMENT:
+                return R.drawable.ic_drive_document_24dp;
+            case Filters.FilterType.OTHER: // Intentional fallthrough.
+            default:
+                return R.drawable.ic_drive_file_24dp;
+        }
     }
 
     /**

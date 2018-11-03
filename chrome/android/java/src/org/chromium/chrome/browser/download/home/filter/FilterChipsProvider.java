@@ -158,12 +158,7 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
         Set</* @FilterType */ Integer> filters = new HashSet<>();
         filters.add(Filters.FilterType.NONE);
         for (OfflineItem item : mSource.getItems()) {
-            if (item.isSuggested) {
-                // All suggested content is considered prefetched and is not included in the chips.
-                filters.add(FilterType.PREFETCHED);
-            } else {
-                filters.add(Filters.fromOfflineItem(item.filter));
-            }
+            filters.add(Filters.fromOfflineItem(item));
         }
 
         // Set the enabled states correctly for all chips.

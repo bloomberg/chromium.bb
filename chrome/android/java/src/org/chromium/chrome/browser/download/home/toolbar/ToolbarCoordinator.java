@@ -11,10 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.download.home.UmaUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -35,13 +34,15 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
     public interface ToolbarListActionDelegate {
         /**
          * Invoked when user taps on the delete button to delete the currently selected items.
+         * @return The number of items that were deleted.
          */
-        void deleteSelectedItems();
+        int deleteSelectedItems();
 
         /**
          * Invoked when user taps on the share button to share the currently selected items.
+         * @return The number of items that were shared.
          */
-        void shareSelectedItems();
+        int shareSelectedItems();
 
         /**
          * Invoked when user starts a search on download home.
@@ -187,28 +188,26 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
     }
 
     private boolean onMenuItemClick(MenuItem item) {
+        UmaUtils.recordTopMenuAction(item.getItemId());
+
         if (item.getItemId() == R.id.close_menu_id
                 || item.getItemId() == R.id.with_settings_close_menu_id) {
-            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.CLOSE);
             mDelegate.close();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
-            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.MULTI_DELETE);
-            mListActionDelegate.deleteSelectedItems();
+            int itemsDeleted = mListActionDelegate.deleteSelectedItems();
+            UmaUtils.recordTopMenuDeleteCount(itemsDeleted);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
-            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.MULTI_SHARE);
-            mListActionDelegate.shareSelectedItems();
+            int itemsShared = mListActionDelegate.shareSelectedItems();
+            UmaUtils.recordTopMenuShareCount(itemsShared);
             return true;
         } else if (item.getItemId() == R.id.with_settings_search_menu_id
                 || item.getItemId() == R.id.search_menu_id) {
-            RecordUserAction.record("Android.DownloadManager.Search");
-            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.SEARCH);
             mToolbar.showSearchView();
             updateShadowVisibility();
             return true;
         } else if (item.getItemId() == R.id.settings_menu_id) {
-            // TODO(shaktisahu) : Add UMA for settings menu action.
             mDelegate.openSettings();
             return true;
         } else {

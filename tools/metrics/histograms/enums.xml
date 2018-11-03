@@ -678,6 +678,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="Has waived has moderate has strong"/>
 </enum>
 
+<enum name="Android.DownloadManager.List.Section.Menu.Actions">
+  <int value="0" label="START_SELECTING"/>
+  <int value="1" label="SHARE_ALL"/>
+  <int value="2" label="DELETE_ALL"/>
+</enum>
+
 <enum name="Android.DownloadManager.List.View.Actions">
   <int value="0" label="OPEN"/>
   <int value="1" label="RESUME"/>
@@ -694,6 +700,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="SHOW_INFO"/>
   <int value="4" label="HIDE_INFO"/>
   <int value="5" label="SEARCH"/>
+  <int value="6" label="SETTINGS"/>
 </enum>
 
 <enum name="Android.MemoryPressureNotification">
@@ -800,6 +807,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Image"/>
   <int value="5" label="Document"/>
   <int value="6" label="Other"/>
+  <int value="7" label="Prefetched"/>
 </enum>
 
 <enum name="AndroidDownloadOpenSource">
