@@ -66,9 +66,8 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
     gfx::BufferFormat format,
     int client_id,
     SurfaceHandle surface_handle) {
-  // We should only end up in this code path if the memory buffer has a valid
-  // AHardwareBuffer.
-  DCHECK_EQ(handle.type, gfx::ANDROID_HARDWARE_BUFFER);
+  if (handle.type != gfx::ANDROID_HARDWARE_BUFFER)
+    return nullptr;
 
   base::android::ScopedHardwareBufferHandle& buffer =
       handle.android_hardware_buffer;

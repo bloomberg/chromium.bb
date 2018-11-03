@@ -85,7 +85,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
     gfx::BufferFormat format,
     int client_id,
     SurfaceHandle surface_handle) {
-  DCHECK_EQ(handle.type, gfx::NATIVE_PIXMAP);
+  if (handle.type != gfx::NATIVE_PIXMAP)
+    return nullptr;
 
   scoped_refptr<gfx::NativePixmap> pixmap;
 
