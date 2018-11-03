@@ -15,6 +15,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/base/request_priority.h"
+#include "net/filter/filter_source_stream_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -183,6 +184,7 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/false,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   consumer->ArmOrNotify();
 
@@ -200,6 +202,77 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
   EXPECT_EQ("hello", context.data);
 }
 
+TEST_F(URLResponseBodyConsumerTest, ReceiveValidGzipData) {
+  TestRequestPeer::Context context;
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
+  int request_id = SetUpRequestPeer(std::move(request), &context);
+  mojo::DataPipe data_pipe(CreateDataPipeOptions());
+
+  scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
+      request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/true,
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+  consumer->ArmOrNotify();
+
+  mojo::ScopedDataPipeProducerHandle writer =
+      std::move(data_pipe.producer_handle);
+  const std::string uncompressed_data = "hello";
+
+  size_t compressed_data_len = 2048;
+  auto compressed_data = std::make_unique<char[]>(compressed_data_len);
+  net::CompressGzip(uncompressed_data.data(), uncompressed_data.size(),
+                    compressed_data.get(), &compressed_data_len,
+                    /*gzip_framing=*/true);
+
+  uint32_t num_bytes = compressed_data_len;
+  MojoResult result =
+      writer->WriteData(compressed_data.get(), &num_bytes, kNone);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  ASSERT_EQ(compressed_data_len, num_bytes);
+
+  Run(&context);
+
+  EXPECT_FALSE(context.complete);
+  EXPECT_EQ(uncompressed_data, context.data);
+}
+
+TEST_F(URLResponseBodyConsumerTest, ReceiveInvalidGzipData) {
+  TestRequestPeer::Context context;
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
+  int request_id = SetUpRequestPeer(std::move(request), &context);
+  mojo::DataPipe data_pipe(CreateDataPipeOptions());
+
+  scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
+      request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/true,
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+  consumer->ArmOrNotify();
+
+  mojo::ScopedDataPipeProducerHandle writer =
+      std::move(data_pipe.producer_handle);
+  const std::string uncompressed_data = "hello";
+
+  size_t compressed_data_len = 2048;
+  auto compressed_data = std::make_unique<char[]>(compressed_data_len);
+  net::CompressGzip(uncompressed_data.data(), uncompressed_data.size(),
+                    compressed_data.get(), &compressed_data_len,
+                    /*gzip_framing=*/true);
+
+  // Corrupt the Gzip data stream.
+  compressed_data[1] = 'A';
+
+  uint32_t num_bytes = compressed_data_len;
+  MojoResult result =
+      writer->WriteData(compressed_data.get(), &num_bytes, kNone);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  ASSERT_EQ(compressed_data_len, num_bytes);
+
+  Run(&context);
+
+  EXPECT_TRUE(context.complete);
+  EXPECT_EQ("", context.data);
+}
+
 TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
   TestRequestPeer::Context context;
   std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
@@ -208,6 +281,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/false,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   consumer->ArmOrNotify();
 
@@ -243,6 +317,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/false,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   consumer->ArmOrNotify();
 
@@ -275,6 +350,7 @@ TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/false,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   consumer->ArmOrNotify();
 
@@ -318,6 +394,7 @@ TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      /*inflate_response=*/false,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   consumer->ArmOrNotify();
 

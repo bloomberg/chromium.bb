@@ -615,7 +615,11 @@ class FileURLLoader : public network::mojom::URLLoader {
       total_bytes_to_send -= write_size;
     }
 
-    if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
+    if (path.MatchesExtension(FILE_PATH_LITERAL(".svgz"))) {
+      head.mime_type = "image/svg+xml";
+      // Don't know what the uncompressed content length will be.
+      head.content_length = -1;
+    } else if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
       net::SniffMimeType(
           initial_read_buffer, initial_read_result, request.url, head.mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
@@ -624,7 +628,7 @@ class FileURLLoader : public network::mojom::URLLoader {
           &head.mime_type);
       head.did_mime_sniff = true;
     }
-    if (head.headers) {
+    if (head.headers && !head.mime_type.empty()) {
       head.headers->AddHeader(
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
                              head.mime_type.c_str()));

@@ -13,6 +13,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/url_response_body_consumer.h"
+#include "net/base/filename_util.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
 
@@ -308,8 +309,14 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
     return;
   }
 
+  // Special handling for *.svgz files loaded from the file scheme.
+  base::FilePath file_path;
+  bool inflate_response =
+      net::FileURLToFilePath(last_loaded_url_, &file_path) &&
+      file_path.MatchesExtension(FILE_PATH_LITERAL(".svgz"));
   body_consumer_ = new URLResponseBodyConsumer(
-      request_id_, resource_dispatcher_, std::move(body), task_runner_);
+      request_id_, resource_dispatcher_, std::move(body), inflate_response,
+      task_runner_);
 
   if (NeedsStoringMessage()) {
     body_consumer_->SetDefersLoading();
