@@ -233,6 +233,9 @@ if (is_chromeos || is_linux || is_android || is_win) {
   }
 
   config("export_only_thunks_api") {
+    inputs = [
+      "export_only_thunks_api.lst",
+    ]
     ldflags = [ "-Wl,--version-script=" +
                 rebase_path("//mojo/core/export_only_thunks_api.lst",
                             root_build_dir) ]
@@ -249,6 +252,8 @@ if (is_chromeos || is_linux || is_android || is_win) {
         "//base",
         "//base/test:test_support",
         "//mojo/public/c/system",
+        "//mojo/public/cpp/platform",
+        "//mojo/public/cpp/system",
         "//testing/gtest",
       ]
 

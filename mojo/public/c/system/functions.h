@@ -27,13 +27,33 @@ extern "C" {
 // |options| may be null.
 //
 // Returns:
-//   |MOJO_RESULT_OK| if Mojo intiailization was successful.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |options| was null or invalid.
+//   |MOJO_RESULT_OK| if Mojo initialization was successful.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |options| was non-null and invalid.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if |MojoInitialize()| was already called
 //       once or if the application already explicitly initialized a Mojo Core
 //       environment as an embedder.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoInitialize(const struct MojoInitializeOptions* options);
+
+// Shuts down Mojo in the calling application.
+//
+// This should only be called if |MojoInitialize()| was also called at some
+// point in the calling process. It therefore only applies to consumers of Mojo
+// as a shared library, not Mojo Core embedders.
+//
+// |options| may be null.
+//
+// NOTE: It is NOT safe to attempt to call |MojoInitialize()| again (or any
+// other Mojo APIs, for that matter) after calling |MojoShutdown()|.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if shutdown was successful.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |options| was non-null and invalid.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |MojoInitialize()| was never called.
+//   |MOJO_RESULT_UNIMPLEMENTED| if the caller is a Mojo Core embedder and is
+//       therefore not loading Mojo Core as a shared library.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoShutdown(const struct MojoShutdownOptions* options);
 
 // Returns the time, in microseconds, since some undefined point in the past.
 // The values are only meaningful relative to other values that were obtained
