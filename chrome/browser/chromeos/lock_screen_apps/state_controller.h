@@ -108,6 +108,7 @@ class StateController : public ash::mojom::TrayActionClient,
   // |SetPrimaryProfile|
   void SetLockScreenLockScreenProfileCreatorForTesting(
       std::unique_ptr<LockScreenProfileCreator> profile_creator);
+  extensions::AppWindow* note_app_window_for_test() { return note_app_window_; }
 
   // Initializes mojo bindings for the StateController - it creates binding to
   // ash's tray action interface and sets this object as the interface's client.

@@ -28,7 +28,6 @@ namespace lock_screen_apps {
 // dialog informing the user about the app that's been launched from the lock
 // screen.
 class FirstAppRunToastManager : public extensions::AppWindowRegistry::Observer,
-                                public aura::WindowObserver,
                                 public views::WidgetObserver {
  public:
   explicit FirstAppRunToastManager(Profile* profile);
@@ -47,12 +46,6 @@ class FirstAppRunToastManager : public extensions::AppWindowRegistry::Observer,
 
   // views::WidgetObserver:
   void OnWidgetDestroyed(views::Widget* widget) override;
-
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
 
   // extensions::AppWindowRegistry::Observer:
   void OnAppWindowActivated(extensions::AppWindow* app_window) override;
@@ -88,8 +81,9 @@ class FirstAppRunToastManager : public extensions::AppWindowRegistry::Observer,
   ScopedObserver<extensions::AppWindowRegistry,
                  extensions::AppWindowRegistry::Observer>
       app_window_observer_;
-  ScopedObserver<aura::Window, aura::WindowObserver>
-      native_app_window_observer_;
+
+  class AppWidgetObserver;
+  std::unique_ptr<AppWidgetObserver> app_widget_observer_;
 
   base::WeakPtrFactory<FirstAppRunToastManager> weak_ptr_factory_;
 

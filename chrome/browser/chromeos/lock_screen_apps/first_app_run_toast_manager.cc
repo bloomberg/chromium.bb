@@ -30,11 +30,42 @@ constexpr int kToastDialogVerticalOffset = 20;
 
 }  // namespace
 
+// Observes the note taking app widget so bounds changes can update the toast
+// position.
+class FirstAppRunToastManager::AppWidgetObserver
+    : public views::WidgetObserver {
+ public:
+  AppWidgetObserver(FirstAppRunToastManager* manager, views::Widget* widget)
+      : manager_(manager), widget_(widget) {
+    widget_->AddObserver(this);
+  }
+
+  ~AppWidgetObserver() override {
+    // This is a no-op of the observer was previously removed.
+    widget_->RemoveObserver(this);
+  }
+
+  // views::WidgetObserver:
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override {
+    manager_->AdjustToastWidgetBounds();
+  }
+
+  void OnWidgetDestroying(views::Widget* widget) override {
+    widget_->RemoveObserver(this);
+  }
+
+ private:
+  FirstAppRunToastManager* manager_;
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppWidgetObserver);
+};
+
 FirstAppRunToastManager::FirstAppRunToastManager(Profile* profile)
     : profile_(profile),
       toast_widget_observer_(this),
       app_window_observer_(this),
-      native_app_window_observer_(this),
       weak_ptr_factory_(this) {}
 
 FirstAppRunToastManager::~FirstAppRunToastManager() {
@@ -59,7 +90,10 @@ void FirstAppRunToastManager::RunForAppWindow(
   }
 
   app_window_ = app_window;
-  native_app_window_observer_.Add(app_window_->GetNativeWindow());
+  views::Widget* app_widget =
+      views::Widget::GetWidgetForNativeWindow(app_window_->GetNativeWindow());
+  DCHECK(app_widget);
+  app_widget_observer_ = std::make_unique<AppWidgetObserver>(this, app_widget);
 
   if (app_window_->GetNativeWindow()->HasFocus()) {
     CreateAndShowToastDialog();
@@ -70,7 +104,7 @@ void FirstAppRunToastManager::RunForAppWindow(
 }
 
 void FirstAppRunToastManager::Reset() {
-  native_app_window_observer_.RemoveAll();
+  app_widget_observer_.reset();
   app_window_observer_.RemoveAll();
   toast_widget_observer_.RemoveAll();
 
@@ -101,15 +135,6 @@ void FirstAppRunToastManager::OnAppWindowActivated(
   }
 }
 
-void FirstAppRunToastManager::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
-  if (toast_widget_ && window == app_window_->GetNativeWindow())
-    AdjustToastWidgetBounds();
-}
-
 void FirstAppRunToastManager::CreateAndShowToastDialog() {
   auto* toast_dialog = new ToastDialogView(
       base::UTF8ToUTF16(app_window_->GetExtension()->short_name()),
@@ -132,7 +157,9 @@ void FirstAppRunToastManager::ToastDialogDismissed() {
 }
 
 void FirstAppRunToastManager::AdjustToastWidgetBounds() {
-  DCHECK(toast_widget_);
+  if (!toast_widget_)
+    return;
+
   DCHECK(app_window_);
 
   const gfx::Rect app_window_bounds =

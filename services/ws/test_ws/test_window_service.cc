@@ -16,6 +16,7 @@
 #include "services/ws/test_host_event_dispatcher.h"
 #include "services/ws/test_ws/test_gpu_interface_provider.h"
 #include "services/ws/window_service.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -73,6 +74,11 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
   for (auto property : properties) {
     property_converter->SetPropertyFromTransportValue(
         top_level.get(), property.first, &property.second);
+  }
+  if (maximize_next_window_) {
+    top_level->SetProperty(aura::client::kShowStateKey,
+                           ui::SHOW_STATE_MAXIMIZED);
+    maximize_next_window_ = false;
   }
   return top_level;
 }
@@ -162,6 +168,11 @@ void TestWindowService::OnGpuServiceInitialized() {
 
   if (pending_create_service_)
     std::move(pending_create_service_).Run();
+}
+
+void TestWindowService::MaximizeNextWindow(MaximizeNextWindowCallback cb) {
+  maximize_next_window_ = true;
+  std::move(cb).Run();
 }
 
 void TestWindowService::Shutdown(

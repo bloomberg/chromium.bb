@@ -17,10 +17,13 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 
 namespace {
 
@@ -143,6 +146,20 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
 
     if (!ready_to_close.WaitUntilSatisfied()) {
       *error = "Failed waiting for readyToClose message.";
+      return false;
+    }
+
+    // By this point the app window is created on the lock screen. Ensure the
+    // asynchronous window maximize from ash completes.
+    aura::test::WaitForAllChangesToComplete();
+    extensions::AppWindow* app_window =
+        lock_screen_apps::StateController::Get()->note_app_window_for_test();
+    if (!app_window) {
+      *error = "No app window";
+      return false;
+    }
+    if (!app_window->GetBaseWindow()->IsMaximized()) {
+      *error = "App window not maximized";
       return false;
     }
 
