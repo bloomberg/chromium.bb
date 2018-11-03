@@ -133,6 +133,7 @@ void BlobURLLoader::DidReadSideData(net::IOBufferWithSize* data) {
 void BlobURLLoader::DidRead(int num_bytes) {
   if (response_body_consumer_handle_.is_valid()) {
     // Send the data pipe on the first OnReadCompleted call.
+    CHECK(on_receive_response_sent_);
     client_->OnStartLoadingResponseBody(
         std::move(response_body_consumer_handle_));
   }
@@ -165,7 +166,7 @@ void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h
   client_->OnReceiveResponse(response);
-  sent_headers_ = true;
+  on_receive_response_sent_ = true;
 
   if (metadata) {
     const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());

@@ -68,10 +68,12 @@ class STORAGE_EXPORT BlobURLLoader : public storage::MojoBlobReader::Delegate,
   net::HttpByteRange byte_range_;
 
   uint64_t total_size_ = 0;
-  bool sent_headers_ = false;
 
   std::unique_ptr<BlobDataHandle> blob_handle_;
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
+
+  // TODO(https://crbug.com/882661): Remove this as soon as the bug is fixed.
+  bool on_receive_response_sent_ = false;
 
   base::WeakPtrFactory<BlobURLLoader> weak_factory_;
 
