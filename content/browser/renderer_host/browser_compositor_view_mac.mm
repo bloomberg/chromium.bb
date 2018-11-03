@@ -63,7 +63,6 @@ BrowserCompositorMac::BrowserCompositorMac(
       frame_sink_id, this, true /* should_register_frame_sink_id */));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
-  SetNSViewAttachedToWindow(false);
 }
 
 BrowserCompositorMac::~BrowserCompositorMac() {
@@ -215,11 +214,6 @@ void BrowserCompositorMac::UpdateVSyncParameters(
 
 void BrowserCompositorMac::SetRenderWidgetHostIsHidden(bool hidden) {
   render_widget_host_is_hidden_ = hidden;
-  UpdateState();
-}
-
-void BrowserCompositorMac::SetNSViewAttachedToWindow(bool attached) {
-  ns_view_attached_to_window_ = attached;
   UpdateState();
 }
 
@@ -385,21 +379,6 @@ void BrowserCompositorMac::DidNavigate() {
       local_surface_id, dfh_local_surface_id_allocator_.allocation_time());
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
-}
-
-bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
-  if (state_ == UseParentLayerCompositor)
-    return false;
-
-  // The renderer won't produce a frame if its frame sink hasn't been created
-  // yet.
-  if (!renderer_compositor_frame_sink_)
-    return false;
-
-  if (!recyclable_compositor_)
-    return false;
-
-  return !recyclable_compositor_->widget()->HasFrameOfSize(dfh_size_dip_);
 }
 
 void BrowserCompositorMac::SetParentUiLayer(ui::Layer* new_parent_ui_layer) {
