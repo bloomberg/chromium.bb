@@ -20639,6 +20639,8 @@ Called by update_net_error_codes.py.-->
   <int value="2614" label="CSSValueAppearanceNoImplementationSkipBorder"/>
   <int value="2615" label="InstantiateModuleScript"/>
   <int value="2616" label="DynamicImportModuleScript"/>
+  <int value="2617" label="HistoryPushState"/>
+  <int value="2618" label="HistoryReplaceState"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

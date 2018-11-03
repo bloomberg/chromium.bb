@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -212,6 +213,16 @@ void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
                    WebFrameLoadType::kStandard, exception_state);
+  UseCounter::Count(GetFrame(), WebFeature::kHistoryPushState);
+}
+
+void History::replaceState(scoped_refptr<SerializedScriptValue> data,
+                           const String& title,
+                           const String& url,
+                           ExceptionState& exception_state) {
+  StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
+                   WebFrameLoadType::kReplaceCurrentItem, exception_state);
+  UseCounter::Count(GetFrame(), WebFeature::kHistoryReplaceState);
 }
 
 KURL History::UrlForState(const String& url_string) {
