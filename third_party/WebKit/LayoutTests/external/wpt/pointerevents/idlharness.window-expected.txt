@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 85 tests; 79 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface GlobalEventHandlers: original interface defined
@@ -31,6 +32,16 @@ PASS PointerEvent interface: new PointerEvent("type") must inherit property "til
 PASS PointerEvent interface: new PointerEvent("type") must inherit property "twist" with the proper type
 PASS PointerEvent interface: new PointerEvent("type") must inherit property "pointerType" with the proper type
 PASS PointerEvent interface: new PointerEvent("type") must inherit property "isPrimary" with the proper type
+PASS Document interface: attribute ongotpointercapture
+PASS Document interface: attribute onlostpointercapture
+PASS Document interface: attribute onpointerdown
+PASS Document interface: attribute onpointermove
+PASS Document interface: attribute onpointerup
+PASS Document interface: attribute onpointercancel
+PASS Document interface: attribute onpointerover
+PASS Document interface: attribute onpointerout
+PASS Document interface: attribute onpointerenter
+PASS Document interface: attribute onpointerleave
 PASS Element interface: operation setPointerCapture(long)
 PASS Element interface: operation releasePointerCapture(long)
 PASS Element interface: operation hasPointerCapture(long)
@@ -40,7 +51,39 @@ FAIL Element interface: document must inherit property "releasePointerCapture(lo
 FAIL Element interface: calling releasePointerCapture(long) on document with too few arguments must throw TypeError assert_inherits: property "releasePointerCapture" not found in prototype chain
 FAIL Element interface: document must inherit property "hasPointerCapture(long)" with the proper type assert_inherits: property "hasPointerCapture" not found in prototype chain
 FAIL Element interface: calling hasPointerCapture(long) on document with too few arguments must throw TypeError assert_inherits: property "hasPointerCapture" not found in prototype chain
+PASS HTMLElement interface: attribute ongotpointercapture
+PASS HTMLElement interface: attribute onlostpointercapture
+PASS HTMLElement interface: attribute onpointerdown
+PASS HTMLElement interface: attribute onpointermove
+PASS HTMLElement interface: attribute onpointerup
+PASS HTMLElement interface: attribute onpointercancel
+PASS HTMLElement interface: attribute onpointerover
+PASS HTMLElement interface: attribute onpointerout
+PASS HTMLElement interface: attribute onpointerenter
+PASS HTMLElement interface: attribute onpointerleave
+PASS Window interface: attribute ongotpointercapture
+PASS Window interface: attribute onlostpointercapture
+PASS Window interface: attribute onpointerdown
+PASS Window interface: attribute onpointermove
+PASS Window interface: attribute onpointerup
+PASS Window interface: attribute onpointercancel
+PASS Window interface: attribute onpointerover
+PASS Window interface: attribute onpointerout
+PASS Window interface: attribute onpointerenter
+PASS Window interface: attribute onpointerleave
+PASS Window interface: window must inherit property "ongotpointercapture" with the proper type
+PASS Window interface: window must inherit property "onlostpointercapture" with the proper type
+PASS Window interface: window must inherit property "onpointerdown" with the proper type
+PASS Window interface: window must inherit property "onpointermove" with the proper type
+PASS Window interface: window must inherit property "onpointerup" with the proper type
+PASS Window interface: window must inherit property "onpointercancel" with the proper type
+PASS Window interface: window must inherit property "onpointerover" with the proper type
+PASS Window interface: window must inherit property "onpointerout" with the proper type
+PASS Window interface: window must inherit property "onpointerenter" with the proper type
+PASS Window interface: window must inherit property "onpointerleave" with the proper type
 PASS Navigator interface: attribute maxTouchPoints
 PASS Navigator interface: navigator must inherit property "maxTouchPoints" with the proper type
+PASS WorkerGlobalScope interface: existence and properties of interface object
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

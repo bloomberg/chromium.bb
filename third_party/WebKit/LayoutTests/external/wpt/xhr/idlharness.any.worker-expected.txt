@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 164 tests; 162 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 170 tests; 168 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS XMLHttpRequestEventTarget interface: existence and properties of interface object
 PASS XMLHttpRequestEventTarget interface object length
@@ -164,5 +164,11 @@ PASS ProgressEvent interface: new ProgressEvent("type") must inherit property "l
 PASS ProgressEvent interface: new ProgressEvent("type") must inherit property "total" with the proper type
 PASS Node interface: existence and properties of interface object
 PASS Document interface: existence and properties of interface object
+PASS DocumentType interface: existence and properties of interface object
+PASS DocumentFragment interface: existence and properties of interface object
+PASS ShadowRoot interface: existence and properties of interface object
+PASS Element interface: existence and properties of interface object
+PASS CharacterData interface: existence and properties of interface object
+PASS Text interface: existence and properties of interface object
 Harness: the test ran to completion.
 
