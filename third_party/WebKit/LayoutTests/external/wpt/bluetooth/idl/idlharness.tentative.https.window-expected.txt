@@ -179,5 +179,6 @@ PASS BluetoothUUID interface: operation getDescriptor([object Object],[object Ob
 PASS BluetoothUUID interface: operation canonicalUUID(unsigned long)
 PASS Navigator interface: attribute bluetooth
 PASS Navigator interface: navigator must inherit property "bluetooth" with the proper type
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

@@ -36,5 +36,6 @@ PASS Stringification of new GamepadEvent("gamepad")
 PASS GamepadEvent interface: new GamepadEvent("gamepad") must inherit property "gamepad" with the proper type
 PASS Navigator interface: operation getGamepads()
 PASS Navigator interface: navigator must inherit property "getGamepads()" with the proper type
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

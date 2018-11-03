@@ -20,6 +20,7 @@ FAIL FeaturePolicyViolationReportBody interface: attribute lineNumber assert_own
 FAIL FeaturePolicyViolationReportBody interface: attribute columnNumber assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
 FAIL FeaturePolicyViolationReportBody interface: attribute disposition assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
 PASS HTMLIFrameElement interface: attribute policy
+PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS Document interface: attribute policy
 PASS Document interface: document must inherit property "policy" with the proper type
 Harness: the test ran to completion.

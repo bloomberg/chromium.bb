@@ -5,7 +5,7 @@ FAIL new RTCIceCandidate({ ... }) with manually filled default values assert_thr
         candidate: '',
         sdpMid: null,
         sdpMLineIndex: null,
-        ufrag: undefined
+        usernameFragment: undefined
       })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
 FAIL new RTCIceCandidate({ sdpMid: null, sdpMLineIndex: null }) assert_throws: function "() => new RTCIceCandidate({
         sdpMid: null,

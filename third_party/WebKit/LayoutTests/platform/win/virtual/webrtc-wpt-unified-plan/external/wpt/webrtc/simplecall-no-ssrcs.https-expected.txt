@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+TIMEOUT Can set up a basic WebRTC call without announcing ssrcs. Test timed out
+Harness: the test ran to completion.
+

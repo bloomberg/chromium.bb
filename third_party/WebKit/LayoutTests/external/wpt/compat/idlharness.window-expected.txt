@@ -8,5 +8,6 @@ FAIL Window interface: attribute orientation assert_own_property: The global obj
 FAIL Window interface: attribute onorientationchange assert_own_property: The global object must have a property "onorientationchange" expected property "onorientationchange" missing
 FAIL Window interface: window must inherit property "orientation" with the proper type assert_own_property: expected property "orientation" missing
 FAIL Window interface: window must inherit property "onorientationchange" with the proper type assert_own_property: expected property "onorientationchange" missing
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

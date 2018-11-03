@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 376 tests; 321 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 377 tests; 322 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface Window: original interface defined
@@ -371,6 +371,7 @@ PASS HTMLElement interface: document.createElement("unknownelement") must inheri
 PASS Window interface: operation getComputedStyle(Element, CSSOMString)
 PASS Window interface: window must inherit property "getComputedStyle(Element, CSSOMString)" with the proper type
 PASS Window interface: calling getComputedStyle(Element, CSSOMString) on window with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS Document interface: attribute styleSheets
 PASS Document interface: document must inherit property "styleSheets" with the proper type
 PASS Document interface: new Document() must inherit property "styleSheets" with the proper type
