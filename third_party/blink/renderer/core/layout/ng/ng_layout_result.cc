@@ -29,6 +29,7 @@ NGLayoutResult::NGLayoutResult(
       has_forced_break_(builder->has_forced_break_),
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
+      has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
       status_(kSuccess) {
   DCHECK(physical_fragment) << "Use the other constructor for aborting layout";
   root_fragment_.fragment_ = std::move(physical_fragment);
@@ -45,6 +46,7 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
       has_forced_break_(false),
       is_pushed_by_floats_(false),
       adjoining_floats_(kFloatTypeNone),
+      has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
       status_(status) {
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
@@ -64,6 +66,7 @@ NGLayoutResult::NGLayoutResult(
       has_forced_break_(false),
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
+      has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
       status_(kSuccess) {
   root_fragment_.fragment_ = std::move(physical_fragment);
   oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
@@ -87,6 +90,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other)
       has_forced_break_(other.has_forced_break_),
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
+      has_orthogonal_flow_roots_(other.has_orthogonal_flow_roots_),
       status_(other.status_) {}
 
 // Define the destructor here, so that we can forward-declare more in the

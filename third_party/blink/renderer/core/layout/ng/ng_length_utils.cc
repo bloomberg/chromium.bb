@@ -51,6 +51,49 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
   }
 }
 
+inline bool InlineLengthMayChange(Length length,
+                                  const NGConstraintSpace& new_space,
+                                  const NGConstraintSpace& old_space) {
+  // Percentage inline margins will affect the size if the size is unspecified
+  // (auto and similar). So we need to check both available size and the
+  // percentage resolution size in that case.
+  bool is_unspecified =
+      length.IsAuto() || length.IsFitContent() || length.IsFillAvailable();
+  if (is_unspecified) {
+    if (new_space.AvailableSize().inline_size !=
+        old_space.AvailableSize().inline_size)
+      return true;
+  }
+  if (is_unspecified || length.IsPercentOrCalc()) {
+    if (new_space.PercentageResolutionSize().inline_size !=
+        old_space.PercentageResolutionSize().inline_size)
+      return true;
+  }
+  return false;
+}
+
+inline bool BlockLengthMayChange(Length length,
+                                 const NGConstraintSpace& new_space,
+                                 const NGConstraintSpace& old_space) {
+  if (length.IsFillAvailable()) {
+    if (new_space.AvailableSize().block_size !=
+        old_space.AvailableSize().block_size)
+      return true;
+  } else if (length.IsAuto() || length.IsPercentOrCalc()) {
+    // Note that we check percentage resolution changes for 'auto' values here
+    // (in addition to percent values). The reason is that percentage resolution
+    // block sizes may be passed through auto-sized blocks, in some cases,
+    // e.g. for anonymous blocks, and also in quirks mode.
+    if (new_space.PercentageResolutionSize().block_size !=
+        old_space.PercentageResolutionSize().block_size)
+      return true;
+    if (new_space.ReplacedPercentageResolutionSize().block_size !=
+        old_space.ReplacedPercentageResolutionSize().block_size)
+      return true;
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 bool NeedMinMaxSizeForContentContribution(WritingMode mode,
@@ -615,6 +658,58 @@ NGLogicalSize ComputeReplacedSize(
         LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
   }
   return replaced_size;
+}
+
+bool SizeMayChange(const ComputedStyle& style,
+                   const NGConstraintSpace& new_space,
+                   const NGConstraintSpace& old_space) {
+  DCHECK_EQ(new_space.IsFixedSizeInline(), old_space.IsFixedSizeInline());
+  DCHECK_EQ(new_space.IsFixedSizeBlock(), old_space.IsFixedSizeBlock());
+
+  // Go through all length properties, and, depending on length type
+  // (percentages, auto, etc.), check whether the constraint spaces differ in
+  // such a way that the resulting size *may* change. There are currently many
+  // possible false-positive situations here, as we don't rule out length
+  // changes that won't have any effect on the final size (e.g. if inline-size
+  // is 100px, max-inline-size is 50%, and percentage resolution inline size
+  // changes from 1000px to 500px). If the constraint space has "fixed" size in
+  // a dimension, we can skip checking properties in that dimension and just
+  // look for available size changes, since that's how a "fixed" constraint
+  // space works.
+  if (new_space.IsFixedSizeInline()) {
+    if (new_space.AvailableSize().inline_size !=
+        old_space.AvailableSize().inline_size)
+      return true;
+  } else {
+    if (InlineLengthMayChange(style.LogicalWidth(), new_space, old_space) ||
+        InlineLengthMayChange(style.LogicalMaxWidth(), new_space, old_space) ||
+        InlineLengthMayChange(style.LogicalMaxWidth(), new_space, old_space))
+      return true;
+  }
+
+  if (new_space.IsFixedSizeBlock()) {
+    if (new_space.AvailableSize().block_size !=
+        old_space.AvailableSize().block_size)
+      return true;
+  } else {
+    if (BlockLengthMayChange(style.LogicalHeight(), new_space, old_space) ||
+        BlockLengthMayChange(style.LogicalMinHeight(), new_space, old_space) ||
+        BlockLengthMayChange(style.LogicalMaxHeight(), new_space, old_space))
+      return true;
+  }
+
+  if (new_space.PercentageResolutionSize().inline_size !=
+      old_space.PercentageResolutionSize().inline_size) {
+    // Percentage-based padding is resolved against the inline content box size
+    // of the containing block.
+    if (style.PaddingTop().IsPercentOrCalc() ||
+        style.PaddingRight().IsPercentOrCalc() ||
+        style.PaddingBottom().IsPercentOrCalc() ||
+        style.PaddingLeft().IsPercentOrCalc())
+      return true;
+  }
+
+  return false;
 }
 
 int ResolveUsedColumnCount(int computed_count,

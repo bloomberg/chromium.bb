@@ -244,29 +244,10 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  return available_size_ == other.available_size_ &&
-         percentage_resolution_size_ == other.percentage_resolution_size_ &&
-         replaced_percentage_resolution_size_ ==
-             other.replaced_percentage_resolution_size_ &&
+  return AreSizesEqual(other) &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
-         fragmentainer_block_size_ == other.fragmentainer_block_size_ &&
-         fragmentainer_space_at_bfc_start_ ==
-             other.fragmentainer_space_at_bfc_start_ &&
-         block_direction_fragmentation_type_ ==
-             other.block_direction_fragmentation_type_ &&
-         table_cell_child_layout_phase_ ==
-             other.table_cell_child_layout_phase_ &&
-         flags_ == other.flags_ &&
-         adjoining_floats_ == other.adjoining_floats_ &&
-         writing_mode_ == other.writing_mode_ &&
-         direction_ == other.direction_ &&
-         margin_strut_ == other.margin_strut_ &&
-         bfc_offset_ == other.bfc_offset_ &&
-         floats_bfc_block_offset_ == other.floats_bfc_block_offset_ &&
-         exclusion_space_ == other.exclusion_space_ &&
-         clearance_offset_ == other.clearance_offset_ &&
-         baseline_requests_ == other.baseline_requests_;
+         MaySkipLayout(other);
 }
 
 String NGConstraintSpace::ToString() const {

@@ -219,19 +219,14 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
 
 template <typename Base>
 scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
-    const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token) const {
+    const NGConstraintSpace& new_space,
+    const NGBreakToken* break_token) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
   if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
       Base::NeedsLayout())
     return nullptr;
-  if (constraint_space != *Base::cached_constraint_space_)
-    return nullptr;
-  // The checks above should be enough to bail if layout is incomplete, but
-  // let's verify:
-  DCHECK(
-      IsBlockLayoutComplete(*Base::cached_constraint_space_, *cached_result_));
+  const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
   // If we used to contain abspos items, we can't reuse the fragment, because
   // we can't be sure that the list of items hasn't changed (as we bubble them
   // up during layout). In the case of newly-added abspos items to this
@@ -240,6 +235,32 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // TODO(layout-ng): Come up with a better solution for this
   if (cached_result_->OutOfFlowPositionedDescendants().size())
     return nullptr;
+  if (!new_space.MaySkipLayout(old_space))
+    return nullptr;
+
+  // We won't attempt to guess how initial containing block changes might affect
+  // orthogonal flow root descendants. In that case, just bail if the size has
+  // changed.
+  if (cached_result_->HasOrthogonalFlowRoots() &&
+      new_space.InitialContainingBlockSize() !=
+          old_space.InitialContainingBlockSize())
+    return nullptr;
+
+  if (!new_space.AreSizesEqual(old_space)) {
+    // We need to descend all the way down into BODY if we're in quirks mode,
+    // since it magically follows the viewport size.
+    if (NGBlockNode(this).IsQuirkyAndFillsViewport())
+      return nullptr;
+
+    // If the available / percentage sizes have changed in a way that may affect
+    // layout, we cannot re-use the previous result.
+    if (SizeMayChange(Base::StyleRef(), new_space, old_space))
+      return nullptr;
+  }
+
+  // The checks above should be enough to bail if layout is incomplete, but
+  // let's verify:
+  DCHECK(IsBlockLayoutComplete(old_space, *cached_result_));
   return base::AdoptRef(new NGLayoutResult(*cached_result_));
 }
 

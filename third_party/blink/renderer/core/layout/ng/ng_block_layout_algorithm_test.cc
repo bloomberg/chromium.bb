@@ -95,12 +95,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 
   SetBodyInnerHTML(R"HTML(
-    <div id="box" style="width:30px; height:40px"></div>
+    <div id="box" style="width:30px; height:40%;"></div>
   )HTML");
 
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
 
   LayoutBlockFlow* block_flow =
       ToLayoutBlockFlow(GetLayoutObjectByElementId("box"));
@@ -117,14 +117,22 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
   // Test identical, but not pointer-equal, constraint space
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
   result = block_flow->CachedLayoutResult(space, nullptr);
   EXPECT_NE(result.get(), nullptr);
 
   // Test different constraint space
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(200), NGSizeIndefinite));
+      NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
+  result = block_flow->CachedLayoutResult(space, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Test a different constraint space that will actually result in a different
+  // size.
+  space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(200), LayoutUnit(200)));
   result = block_flow->CachedLayoutResult(space, nullptr);
   EXPECT_EQ(result.get(), nullptr);
 

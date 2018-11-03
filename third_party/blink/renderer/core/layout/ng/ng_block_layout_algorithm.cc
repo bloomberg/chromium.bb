@@ -2278,11 +2278,7 @@ void NGBlockLayoutAlgorithm::AddPositionedFloats(const Vec& positioned_floats) {
 // containing block. Percentage resolution size is minimal size
 // that would fill the ICB.
 LayoutUnit NGBlockLayoutAlgorithm::CalculateDefaultBlockSize() {
-  if (!Node().GetDocument().InQuirksMode())
-    return NGSizeIndefinite;
-
-  bool is_quirky_element = Node().IsDocumentElement() || Node().IsBody();
-  if (is_quirky_element && !Style().HasOutOfFlowPosition()) {
+  if (Node().IsQuirkyAndFillsViewport()) {
     LayoutUnit block_size = ConstraintSpace().AvailableSize().block_size;
     block_size -= ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
     return block_size.ClampNegativeToZero();

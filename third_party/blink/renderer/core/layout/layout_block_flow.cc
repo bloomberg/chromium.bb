@@ -2539,7 +2539,7 @@ void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
 
 scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
     const NGConstraintSpace&,
-    const NGBreakToken*) const {
+    const NGBreakToken*) {
   return nullptr;
 }
 

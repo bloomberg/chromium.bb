@@ -113,6 +113,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // the block, and the block will fail to clear).
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
+  bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
@@ -146,6 +148,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   unsigned is_pushed_by_floats_ : 1;
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
+
+  unsigned has_orthogonal_flow_roots_ : 1;
 
   unsigned status_ : 1;
 };

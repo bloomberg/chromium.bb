@@ -229,6 +229,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool is_pushed_by_floats_ = false;
 
+  bool has_orthogonal_flow_roots_ = false;
+
   friend class NGPhysicalContainerFragment;
 };
 
