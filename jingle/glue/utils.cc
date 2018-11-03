@@ -51,6 +51,13 @@ rtc::IPAddress NetIPAddressToRtcIPAddress(const net::IPAddress& ip_address) {
   return rtc::IPAddress();
 }
 
+net::IPAddress RtcIPAddressToNetIPAddress(const rtc::IPAddress& ip_address) {
+  rtc::SocketAddress socket_address(ip_address, 0);
+  net::IPEndPoint ip_endpoint;
+  jingle_glue::SocketAddressToIPEndPoint(socket_address, &ip_endpoint);
+  return ip_endpoint.address();
+}
+
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   // TODO(sergeyu): Use SDP to format candidates?
   base::DictionaryValue value;
