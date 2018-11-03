@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
+#include "base/task/task_scheduler/scheduler_task_runner_delegate.h"
 
 #include "base/task/task_scheduler/sequence.h"
 
@@ -24,13 +25,26 @@ bool SchedulerParallelTaskRunner::PostDelayedTask(const Location& from_here,
     return false;
 
   // Post the task as part of a one-off single-task Sequence.
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits_, this);
+
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    sequences_.insert(sequence.get());
+  }
+
   return scheduler_task_runner_delegate_->PostTaskWithSequence(
-      Task(from_here, std::move(closure), delay),
-      MakeRefCounted<Sequence>(traits_));
+      Task(from_here, std::move(closure), delay), std::move(sequence));
 }
 
 bool SchedulerParallelTaskRunner::RunsTasksInCurrentSequence() const {
   return scheduler_task_runner_delegate_->IsRunningPoolWithTraits(traits_);
+}
+
+void SchedulerParallelTaskRunner::UnregisterSequence(Sequence* sequence) {
+  DCHECK(sequence);
+
+  AutoSchedulerLock auto_lock(lock_);
+  sequences_.erase(sequence);
 }
 
 }  // namespace internal

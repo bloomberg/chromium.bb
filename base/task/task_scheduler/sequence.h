@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequence_token.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
+#include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task/task_traits.h"
@@ -43,7 +44,11 @@ namespace internal {
 class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
  public:
   // |traits| is metadata that applies to all Tasks in the Sequence.
-  explicit Sequence(const TaskTraits& traits);
+  // |scheduler_parallel_task_runner| is a reference to the
+  // SchedulerParallelTaskRunner that created this Sequence, if any.
+  Sequence(const TaskTraits& traits,
+           scoped_refptr<SchedulerParallelTaskRunner>
+               scheduler_parallel_task_runner = nullptr);
 
   // Adds |task| in a new slot at the end of the Sequence. Returns true if the
   // Sequence was empty before this operation.
@@ -96,6 +101,12 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
 
   // The TaskTraits of all Tasks in the Sequence.
   const TaskTraits traits_;
+
+  // A reference to the SchedulerParallelTaskRunner that created this Sequence,
+  // if any. Used to remove Sequence from the TaskRunner's list of Sequence
+  // references when Sequence is deleted.
+  const scoped_refptr<SchedulerParallelTaskRunner>
+      scheduler_parallel_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Sequence);
 };
