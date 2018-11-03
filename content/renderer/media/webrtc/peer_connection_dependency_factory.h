@@ -42,6 +42,7 @@ namespace content {
 
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
+class MdnsResponderAdapter;
 class P2PPortAllocator;
 class WebRtcAudioDeviceImpl;
 
@@ -49,8 +50,7 @@ class WebRtcAudioDeviceImpl;
 class CONTENT_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
-  PeerConnectionDependencyFactory(
-      P2PSocketDispatcher* p2p_socket_dispatcher);
+  PeerConnectionDependencyFactory(P2PSocketDispatcher* p2p_socket_dispatcher);
   ~PeerConnectionDependencyFactory() override;
 
   // Create a RTCPeerConnectionHandler object that implements the
@@ -146,13 +146,15 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   void InitializeWorkerThread(rtc::Thread** thread,
                               base::WaitableEvent* event);
 
-  void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
+  void CreateIpcNetworkManagerOnWorkerThread(
+      base::WaitableEvent* event,
+      std::unique_ptr<MdnsResponderAdapter> mdns_responder);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
 
-  // We own network_manager_, must be deleted on the worker thread.
-  // The network manager uses |p2p_socket_dispatcher_|.
-  IpcNetworkManager* network_manager_;
+  // network_manager_ must be deleted on the worker thread. The network manager
+  // uses |p2p_socket_dispatcher_|.
+  std::unique_ptr<IpcNetworkManager> network_manager_;
   std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
