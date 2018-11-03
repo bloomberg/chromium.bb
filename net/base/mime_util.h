@@ -80,11 +80,12 @@ NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
 // this method.
 NET_EXPORT bool IsValidTopLevelMimeType(const std::string& type_string);
 
-// Get the extensions associated with the given mime type. There could be
-// multiple extensions for a given mime type, like "html,htm" for "text/html",
-// or "txt,text,html,..." for "text/*".
-// Note that we do not erase the existing elements in the the provided vector.
-// Instead, we append the result to it.
+// Get the extensions associated with the given mime type.
+//
+// There could be multiple extensions for a given mime type, like "html,htm" for
+// "text/html", or "txt,text,html,..." for "text/*".  Note that we do not erase
+// the existing elements in the the provided vector.  Instead, we append the
+// result to it.  The new extensions are returned in no particular order.
 NET_EXPORT void GetExtensionsForMimeType(
     const std::string& mime_type,
     std::vector<base::FilePath::StringType>* extensions);
