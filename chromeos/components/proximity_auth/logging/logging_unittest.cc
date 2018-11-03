@@ -19,6 +19,7 @@ namespace {
 const char kLog1[] = "Mahogony destined to make a sturdy table";
 const char kLog2[] = "Construction grade cedar";
 const char kLog3[] = "Pine infested by hungry beetles";
+const char kLog4[] = "Unremarkable maple";
 
 // Called for every log message added to the standard logging system. The new
 // log is saved in |g_standard_logs| and consumed so it does not flood stdout.
@@ -58,9 +59,10 @@ TEST_F(ProximityAuthLoggingTest, LogsSavedToBuffer) {
   PA_LOG(INFO) << kLog1;
   PA_LOG(WARNING) << kLog2;
   PA_LOG(ERROR) << kLog3;
+  PA_LOG(VERBOSE) << kLog3;
 
   auto* logs = LogBuffer::GetInstance()->logs();
-  ASSERT_EQ(3u, logs->size());
+  ASSERT_EQ(4u, logs->size());
 
   auto iterator = logs->begin();
   const LogBuffer::LogMessage& log_message1 = *iterator;
@@ -82,6 +84,13 @@ TEST_F(ProximityAuthLoggingTest, LogsSavedToBuffer) {
   EXPECT_EQ(__FILE__, log_message3.file);
   EXPECT_EQ(base_line_number + 3, log_message3.line);
   EXPECT_EQ(logging::LOG_ERROR, log_message3.severity);
+
+  ++iterator;
+  const LogBuffer::LogMessage& log_message4 = *iterator;
+  EXPECT_EQ(kLog3, log_message4.text);
+  EXPECT_EQ(__FILE__, log_message4.file);
+  EXPECT_EQ(base_line_number + 4, log_message4.line);
+  EXPECT_EQ(logging::LOG_VERBOSE, log_message4.severity);
 }
 
 TEST_F(ProximityAuthLoggingTest, LogWhenBufferIsFull) {
@@ -109,6 +118,7 @@ TEST_F(ProximityAuthLoggingTest, StandardLogsCreated) {
   PA_LOG(INFO) << kLog1;
   PA_LOG(WARNING) << kLog2;
   PA_LOG(ERROR) << kLog3;
+  PA_LOG(VERBOSE) << kLog4;
 
   ASSERT_EQ(3u, g_standard_logs.Get().size());
   EXPECT_NE(std::string::npos, g_standard_logs.Get()[0].find(kLog1));
