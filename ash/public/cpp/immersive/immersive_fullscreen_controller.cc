@@ -297,7 +297,9 @@ void ImmersiveFullscreenController::UnlockRevealedState() {
 // static
 void ImmersiveFullscreenController::EnableForWidget(views::Widget* widget,
                                                     bool enabled) {
-  widget->GetNativeWindow()->SetProperty(kImmersiveIsActive, enabled);
+  auto* window = widget->GetNativeWindow();
+  if (window->GetProperty(kImmersiveIsActive) != enabled)
+    widget->GetNativeWindow()->SetProperty(kImmersiveIsActive, enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
