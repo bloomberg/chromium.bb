@@ -36,9 +36,7 @@ class BASE_EXPORT CFIBacktraceAndroid {
   static CFIBacktraceAndroid* GetInitializedInstance();
 
   // Returns true if the given program counter |pc| is mapped in chrome library.
-  static bool is_chrome_address(uintptr_t pc) {
-    return pc >= executable_start_addr() && pc < executable_end_addr();
-  }
+  static bool is_chrome_address(uintptr_t pc);
 
   // Returns the start and end address of the current library.
   static uintptr_t executable_start_addr();

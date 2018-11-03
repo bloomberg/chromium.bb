@@ -100,6 +100,7 @@ size_t TraceStackWithContext(
     const size_t max_depth) {
   size_t depth = 0;
   unw_word_t ip = 0, sp = 0;
+  bool try_stack_search = true;
   unw_get_reg(cursor, UNW_REG_SP, &sp);
   const uintptr_t initial_sp = sp;
   uintptr_t previous_sp = 0;
@@ -138,6 +139,7 @@ size_t TraceStackWithContext(
     unw_get_reg(cursor, UNW_ARM_LR, &lr);
     depth +=
         cfi_unwinder->Unwind(ip, sp, lr, out_trace + depth, max_depth - depth);
+    try_stack_search = false;
   }
   if (depth >= max_depth)
     return depth;
@@ -151,8 +153,29 @@ size_t TraceStackWithContext(
       continue;
     depth += cfi_unwinder->Unwind(marker->pc, marker->sp, /*lr=*/0,
                                   out_trace + depth, max_depth - depth);
+    try_stack_search = false;
     if (depth >= max_depth)
       break;
+  }
+
+  // We tried all possible ways to unwind and failed. So, scan the stack to find
+  // all chrome address and add them to stack trace. This would give us a lot of
+  // false frames on the trace. The idea is to try to sanitize the trace on
+  // server side or try unwinding after each search. The current version just
+  // sends back all PCs untill we figure out what is the best way to sanitize
+  // the stack trace.
+  if (try_stack_search) {
+    uintptr_t* stack = reinterpret_cast<uintptr_t*>(sp);
+    // Add a nullptr to differentiate addresses found by unwinding and scanning.
+    out_trace[depth++] = nullptr;
+    while (depth < max_depth &&
+           reinterpret_cast<uintptr_t>(stack) < stack_segment_base) {
+      if (CFIBacktraceAndroid::is_chrome_address(
+              reinterpret_cast<uintptr_t>(*stack))) {
+        out_trace[depth++] = reinterpret_cast<void*>(*stack);
+      }
+      ++stack;
+    }
   }
 
   if (depth == 0)

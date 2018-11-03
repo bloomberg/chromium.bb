@@ -71,10 +71,14 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
     size_t result =
         unwinder->TraceStack(tid, stack_buffer.get(), frames, kMaxStackFrames);
     EXPECT_GT(result, 0u);
+    bool current_function_found = false;
     for (size_t i = 0; i < result; ++i) {
       uintptr_t addr = reinterpret_cast<uintptr_t>(frames[i]);
       EXPECT_TRUE(unwinder->IsAddressMapped(addr));
+      if (addr >= test_pc && addr < test_pc + 100)
+        current_function_found = true;
     }
+    EXPECT_TRUE(current_function_found);
 
     unwind_finished_event->Signal();
   };
@@ -88,8 +92,6 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
   // While the background thread is trying to unwind make some slow framework
   // calls (malloc) so that the current thread can be stopped in framework
   // library functions on stack.
-  // TODO(ssid): Test for reliable unwinding through non-chrome and chrome
-  // frames.
   while (true) {
     std::vector<int> temp;
     temp.reserve(kMaxStackFrames);

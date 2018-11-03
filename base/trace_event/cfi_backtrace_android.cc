@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include "base/android/apk_assets.h"
+#include "base/android/library_loader/anchor_functions.h"
 
 #if !defined(ARCH_CPU_ARMEL)
 #error This file should not be built for this architecture.
@@ -63,10 +64,6 @@ extern "C" {
 // of the instruction in binary from PC.
 extern char __executable_start;
 
-// The address |_etext| gives the end of the .text section in the binary. This
-// value is more accurate than parsing the memory map since the mapped
-// regions are usualy larger than the .text section.
-extern char _etext;
 }
 
 namespace base {
@@ -128,13 +125,18 @@ CFIBacktraceAndroid* CFIBacktraceAndroid::GetInitializedInstance() {
 }
 
 // static
+bool CFIBacktraceAndroid::is_chrome_address(uintptr_t pc) {
+  return pc >= base::android::kStartOfText && pc < executable_end_addr();
+}
+
+// static
 uintptr_t CFIBacktraceAndroid::executable_start_addr() {
   return reinterpret_cast<uintptr_t>(&__executable_start);
 }
 
 // static
 uintptr_t CFIBacktraceAndroid::executable_end_addr() {
-  return reinterpret_cast<uintptr_t>(&_etext);
+  return base::android::kEndOfText;
 }
 
 CFIBacktraceAndroid::CFIBacktraceAndroid()
