@@ -975,9 +975,13 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
            !GetLayoutBox()->IsHorizontalWritingMode())) {
         GetLayoutBox()->SetPreferredLogicalWidthsDirty();
       }
-      // If the box is managed by LayoutNG, don't go here. We don't want to
-      // re-enter the NG layout algorithm for this box from here.
-      if (!IsManagedByLayoutNG(*GetLayoutBox())) {
+      if (IsManagedByLayoutNG(*GetLayoutBox())) {
+        // If the box is managed by LayoutNG, don't go here. We don't want to
+        // re-enter the NG layout algorithm for this box from here. Just update
+        // the rectangles, in case scrollbars were added or removed. LayoutNG
+        // has its own scrollbar change detection mechanism.
+        UpdateScrollDimensions();
+      } else {
         if (PreventRelayoutScope::RelayoutIsPrevented()) {
           // We're not doing re-layout right now, but we still want to
           // add the scrollbar to the logical width now, to facilitate parent
