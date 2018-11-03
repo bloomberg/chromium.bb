@@ -58,6 +58,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // within a timeout, or a GREYAssert is induced.
 + (void)goForward;
 
+// Opens a new tab and waits for the new tab animation to complete.
++ (void)openNewTab;
+
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
 + (void)waitForPageToFinishLoading;

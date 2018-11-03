@@ -131,6 +131,11 @@ id ExecuteJavaScript(NSString* javascript,
   [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
++ (void)openNewTab {
+  chrome_test_util::OpenNewTab();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 + (void)waitForPageToFinishLoading {
   GREYAssert(chrome_test_util::WaitForPageToFinishLoading(),
              @"Page did not complete loading.");
