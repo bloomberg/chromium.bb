@@ -125,7 +125,7 @@ void MessagePumpFuchsia::FdWatchController::OnZxHandleSignalled(
   bool* was_stopped = was_stopped_;
   if (events & FDIO_EVT_WRITABLE)
     watcher_->OnFileCanWriteWithoutBlocking(fd_);
-  if (!*was_stopped && (events & FDIO_EVT_READABLE))
+  if (!*was_stopped && (events & (FDIO_EVT_READABLE | FDIO_EVT_PEER_CLOSED)))
     watcher_->OnFileCanReadWithoutBlocking(fd_);
 
   // Don't add additional work here without checking |*was_stopped_| again.
@@ -192,13 +192,14 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
 
   switch (mode) {
     case WATCH_READ:
-      controller->desired_events_ = FDIO_EVT_READABLE;
+      controller->desired_events_ = FDIO_EVT_READABLE | FDIO_EVT_PEER_CLOSED;
       break;
     case WATCH_WRITE:
       controller->desired_events_ = FDIO_EVT_WRITABLE;
       break;
     case WATCH_READ_WRITE:
-      controller->desired_events_ = FDIO_EVT_READABLE | FDIO_EVT_WRITABLE;
+      controller->desired_events_ =
+          FDIO_EVT_READABLE | FDIO_EVT_PEER_CLOSED | FDIO_EVT_WRITABLE;
       break;
     default:
       NOTREACHED() << "unexpected mode: " << mode;
