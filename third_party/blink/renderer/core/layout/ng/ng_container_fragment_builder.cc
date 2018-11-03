@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 
@@ -56,6 +57,9 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
+  if (child.HasOrthogonalFlowRoots())
+    has_orthogonal_flow_roots_ = true;
+
   return AddChild(child.PhysicalFragment(), child_offset);
 }
 
@@ -81,6 +85,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
         break;
     }
   }
+
+  if (!IsParallelWritingMode(child->Style().GetWritingMode(),
+                             Style().GetWritingMode()))
+    has_orthogonal_flow_roots_ = true;
 
   if (!has_last_resort_break_) {
     if (const auto* token = child->BreakToken()) {

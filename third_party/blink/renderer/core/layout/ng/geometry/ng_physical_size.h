@@ -34,6 +34,9 @@ struct CORE_EXPORT NGPhysicalSize {
   bool operator==(const NGPhysicalSize& other) const {
     return std::tie(other.width, other.height) == std::tie(width, height);
   }
+  bool operator!=(const NGPhysicalSize& other) const {
+    return !(*this == other);
+  }
 
   bool IsEmpty() const {
     return width == LayoutUnit() || height == LayoutUnit();
