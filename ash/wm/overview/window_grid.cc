@@ -509,6 +509,9 @@ void WindowGrid::RemoveItem(WindowSelectorItem* selector_item,
     window_observer_.Remove(selector_item->GetWindow());
     window_state_observer_.Remove(
         wm::GetWindowState(selector_item->GetWindow()));
+    // Erase from the list first because deleting WindowSelectorItem can
+    // lead to iterating through the |window_list_|.
+    std::unique_ptr<WindowSelectorItem> tmp = std::move(*iter);
     window_list_.erase(iter);
   }
 
@@ -734,7 +737,11 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
   const bool needs_repositioning = !((*iter)->animating_to_close());
 
   size_t removed_index = iter - window_list_.begin();
+  // Erase from the list first because deleting WindowSelectorItem can
+  // lead to iterating through the |window_list_|.
+  std::unique_ptr<WindowSelectorItem> tmp = std::move(*iter);
   window_list_.erase(iter);
+  tmp.reset();
 
   if (empty()) {
     selection_widget_.reset();
@@ -1101,7 +1108,6 @@ void WindowGrid::InitShieldWidget() {
   aura::Window* parent_window = widget_window->parent();
   const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
       parent_window->bounds(), parent_window);
-  parent_window->SetBounds(bounds);
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
 
