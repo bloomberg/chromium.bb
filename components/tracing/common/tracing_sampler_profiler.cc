@@ -72,8 +72,10 @@ class TracingProfileBuilder
       // For chrome address we do not have symbols on the binary. So, just write
       // the offset address. For addresses on framework libraries, symbolize
       // and write the function name.
-      if (base::trace_event::CFIBacktraceAndroid::is_chrome_address(
-              frame.instruction_pointer)) {
+      if (frame.instruction_pointer == 0) {
+        frame_name = "Scanned";
+      } else if (base::trace_event::CFIBacktraceAndroid::is_chrome_address(
+                     frame.instruction_pointer)) {
         frame_name = GetFrameNameFromOffsetAddr(
             frame.instruction_pointer -
             base::trace_event::CFIBacktraceAndroid::executable_start_addr());
