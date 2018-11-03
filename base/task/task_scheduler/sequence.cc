@@ -13,7 +13,11 @@
 namespace base {
 namespace internal {
 
-Sequence::Sequence(const TaskTraits& traits) : traits_(traits) {}
+Sequence::Sequence(
+    const TaskTraits& traits,
+    scoped_refptr<SchedulerParallelTaskRunner> scheduler_parallel_task_runner)
+    : traits_(traits),
+      scheduler_parallel_task_runner_(scheduler_parallel_task_runner) {}
 
 bool Sequence::PushTask(Task task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
@@ -64,7 +68,11 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), next_task_sequenced_time);
 }
 
-Sequence::~Sequence() = default;
+Sequence::~Sequence() {
+  if (scheduler_parallel_task_runner_) {
+    scheduler_parallel_task_runner_->UnregisterSequence(this);
+  }
+}
 
 }  // namespace internal
 }  // namespace base

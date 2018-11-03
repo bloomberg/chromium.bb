@@ -56,7 +56,7 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, RunTask) {
   Task task(FROM_HERE,
             Bind([](bool* did_run) { *did_run = true; }, Unretained(&did_run)),
             TimeDelta());
-  TaskTraits default_traits = {};
+  constexpr TaskTraits default_traits = {};
 
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
@@ -78,7 +78,7 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, FileDescriptorWatcher) {
             Bind(IgnoreResult(&FileDescriptorWatcher::WatchReadable), fds[0],
                  DoNothing()),
             TimeDelta());
-  TaskTraits default_traits = {};
+  constexpr TaskTraits default_traits = {};
   // FileDescriptorWatcher::WatchReadable needs a SequencedTaskRunnerHandle.
   task.sequenced_task_runner_ref = MakeRefCounted<NullTaskRunner>();
 
