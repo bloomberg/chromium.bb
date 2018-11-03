@@ -62,10 +62,6 @@ using blink::WebMouseEvent;
 using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
-namespace {
-constexpr auto kContentPaintTimeout = base::TimeDelta::FromMilliseconds(167);
-}  // namespace
-
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -626,14 +622,6 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
     return;
   ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
                                     selection->range());
-}
-
-bool RenderWidgetHostViewMac::ShouldWaitInPreCommit() {
-  return browser_compositor_->ShouldContinueToPauseForFrame();
-}
-
-base::TimeDelta RenderWidgetHostViewMac::PreCommitTimeout() {
-  return kContentPaintTimeout;
 }
 
 void RenderWidgetHostViewMac::OnGestureEvent(
@@ -1460,8 +1448,6 @@ void RenderWidgetHostViewMac::OnBoundsInWindowChanged(
     bool attached_to_window) {
   bool view_size_changed =
       view_bounds_in_window_dip_.size() != view_bounds_in_window_dip.size();
-
-  browser_compositor_->SetNSViewAttachedToWindow(attached_to_window);
 
   if (attached_to_window) {
     view_bounds_in_window_dip_ = view_bounds_in_window_dip;
