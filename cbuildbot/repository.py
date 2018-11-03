@@ -373,7 +373,7 @@ class RepoRepository(object):
       source_repo = constants.SOURCE_ROOT
 
     # If target already exist, or source is invalid, don't copy.
-    if os.path.exists(self.directory) or not IsARepoRoot(source_repo):
+    if IsARepoRoot(self.directory) or not IsARepoRoot(source_repo):
       return
 
     osutils.SafeMakedirs(self.directory)
