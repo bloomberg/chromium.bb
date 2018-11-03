@@ -5,6 +5,7 @@
 #include "ui/base/test/view_tree_validator.h"
 
 #include <Cocoa/Cocoa.h>
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace {
@@ -28,6 +29,15 @@ bool IsLocalizable(NSView* view) {
          [view isKindOfClass:[NSText class]];
 }
 
+// Returns whether to expect children of |view| to perhaps not fit within its
+// bounds.
+bool IgnoreChildBoundsChecks(NSView* view) {
+  // On macOS 10.14, NSButton has a subview of a private helper class whose
+  // bounds extend a bit outside the NSButton itself. We don't care about this
+  // helper class's bounds being outside the button.
+  return base::mac::IsOS10_14() && [view isKindOfClass:[NSButton class]];
+}
+
 }  // namespace
 
 namespace ui {
@@ -39,7 +49,8 @@ base::Optional<ViewTreeProblemDetails> ValidateViewTree(NSView* root) {
     // 1: Check that every subview's frame lies entirely inside this view's
     // bounds.
     for (NSView* child in view.subviews) {
-      if (!NSContainsRect(view.bounds, child.frame)) {
+      if (!NSContainsRect(view.bounds, child.frame) &&
+          !IgnoreChildBoundsChecks(view)) {
         return base::Optional<ViewTreeProblemDetails>(
             {ViewTreeProblemDetails::VIEW_OUTSIDE_PARENT, child, view});
       }
