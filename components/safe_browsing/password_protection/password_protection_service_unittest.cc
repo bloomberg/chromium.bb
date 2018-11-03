@@ -1273,6 +1273,12 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
+  LoginReputationClientResponse response =
+      CreateVerdictProto(LoginReputationClientResponse::SAFE, 10 * kMinute,
+                         GURL(kTargetUrl).host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       response.SerializeAsString());
+
   content::WebContents* web_contents = GetWebContents();
 
   content::WebContentsTester::For(web_contents)
