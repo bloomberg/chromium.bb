@@ -278,6 +278,9 @@ class CreditCard : public AutofillDataModel {
   // name fields.
   bool HasFirstAndLastName() const;
 
+  // Returns whether the card has a cardholder name.
+  bool HasNameOnCard() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);

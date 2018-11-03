@@ -607,17 +607,15 @@ TEST(CreditCardTest, IconResourceId) {
             CreditCard::IconResourceId(kVisaCard));
 }
 
-TEST(CreditCardTest, UpdateFromImportedCard) {
+TEST(CreditCardTest, UpdateFromImportedCard_UpdatedWithNameAndExpirationDate) {
   CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
                           "09", "2017", "1");
-
   CreditCard a = original_card;
 
-  // The new card has a different name, expiration date, and origin.
+  // The new card has a different name, expiration date.
   CreditCard b = a;
   b.set_guid(base::GenerateGUID());
-  b.set_origin(test::kEmptyOrigin);
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
@@ -628,12 +626,73 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, but with no name set for |b|.
+TEST(CreditCardTest,
+     UpdateFromImportedCard_UpdatedWithNameAndInvalidExpirationDateMonth) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // The new card has a different name and empty origin and invalid expiration
+  // date month
+  // |a| should be updated with |b|'s name and keep its original expiration
+  // date.
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("0"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ(test::kEmptyOrigin, a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST(CreditCardTest,
+     UpdateFromImportedCard_UpdatedWithNameAndInvalidExpirationDateYear) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+
+  CreditCard a = original_card;
+
+  // The new card has a different name and empty origin and invalid expiration
+  // date year
+  // |a| should be updated with |b|'s name and keep its original expiration
+  // date.
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("09"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ(test::kEmptyOrigin, a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST(CreditCardTest,
+     UpdateFromImportedCard_UpdatedWithEmptyNameAndValidExpirationDate) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // A valid new expiration date and no name set for |b|.
   // |a| should be updated with |b|'s expiration date and keep its original
   // name.
-  a = original_card;
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, base::string16());
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ(test::kEmptyOrigin, a.origin());
@@ -641,12 +700,76 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, but with only the original card having a verified origin.
+TEST(
+    CreditCardTest,
+    UpdateFromImportedCard_VerifiedCardNotUpdatedWithEmptyExpirationDateMonth) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+
+  CreditCard a = original_card;
+
+  // Empty expiration date month set for |b| and original card verified.
   // |a| should be unchanged.
-  a = original_card;
-  a.set_origin(kSettingsOrigin);
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  a.set_origin("Chrome settings");
+  b.set_origin(test::kEmptyOrigin);
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("0"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST(CreditCardTest,
+     UpdateFromImportedCard_VerifiedCardNotUpdatedWithEmptyExpirationDateYear) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // Empty expiration date year set for |b| and original card verified.
+  // |a| should be unchanged.
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  a.set_origin("Chrome settings");
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("09"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("0"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST(CreditCardTest,
+     UpdateFromImportedCard_VerifiedCardNotUpdatedWithDifferentName) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // New card is from empty origin and has an different name.
+  // |a| should be unchanged.
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  a.set_origin(kSettingsOrigin);
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2017"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ(kSettingsOrigin, a.origin());
@@ -654,12 +777,26 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, but with using an expired verified original card.
-  // |a| should not be updated because the name on the cards are not identical.
-  a = original_card;
+TEST(CreditCardTest,
+     UpdateFromImportedCard_ExpiredVerifiedCardNotUpdatedWithDifferentName) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // New card is from empty origin and has a different name.
+  // |a| is an expired verified original card and should not be updated because
+  // the name on the cards are not identical with |b|.
+  CreditCard b = a;
   a.set_origin("Chrome settings");
   a.SetExpirationYear(2010);
+  b.set_guid(base::GenerateGUID());
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ("Chrome settings", a.origin());
@@ -667,67 +804,109 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2010"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, but with using identical name on the cards.
+TEST(CreditCardTest,
+     UpdateFromImportedCard_ExpiredVerifiedCardUpdatedWithSameName) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // New card is from empty origin and has a same name.
+  // |a| is an expired verified original card.
   // |a|'s expiration date should be updated.
-  a = original_card;
+  CreditCard b = a;
   a.set_origin("Chrome settings");
   a.SetExpirationYear(2010);
-  a.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.set_guid(base::GenerateGUID());
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ("Chrome settings", a.origin());
-  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, but with |b| being expired.
+TEST(CreditCardTest,
+     UpdateFromImportedCard_ExpiredOriginalCardVerifiedUpdatedWithExpiredCard) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // New card is expired and from empty origin.
+  // |a| is an expired verified original card.
   // |a|'s expiration date should not be updated.
-  a = original_card;
+  CreditCard b = a;
   a.set_origin("Chrome settings");
   a.SetExpirationYear(2010);
-  a.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
-  b.SetExpirationYear(2009);
+  b.set_guid(base::GenerateGUID());
+  b.set_origin(test::kEmptyOrigin);
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2009"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ("Chrome settings", a.origin());
-  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2010"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Put back |b|'s initial expiration date.
-  b.SetExpirationYear(2019);
+TEST(CreditCardTest,
+     UpdateFromImportedCard_VerifiedCardUpdatedWithVerifiedCard) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
 
-  // Try again, but with only the new card having a verified origin.
-  // |a| should be updated.
-  a = original_card;
+  // New card is verified.
+  // |a| is an expired verified original card.
+  // |a|'s expiration date should be updated.
+  CreditCard b = a;
+  a.set_origin("Chrome settings");
+  b.set_guid(base::GenerateGUID());
   b.set_origin(kSettingsOrigin);
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ(kSettingsOrigin, a.origin());
-  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
 
-  // Try again, with both cards having a verified origin.
-  // |a| should be updated.
-  a = original_card;
-  a.set_origin("Chrome Autofill dialog");
+TEST(CreditCardTest,
+     UpdateFromImportedCard_VerifiedCardNotUpdatedWithDifferentCard) {
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
+  CreditCard a = original_card;
+
+  // New card has diffenrent card number.
+  // |a| is an expired verified original card.
+  // |a|'s expiration date should be updated.
+  CreditCard b = a;
+  a.set_origin("Chrome settings");
+  b.set_guid(base::GenerateGUID());
   b.set_origin(kSettingsOrigin);
-
-  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ(kSettingsOrigin, a.origin());
-  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
-  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-
-  // Try again, but with |b| having a different card number.
-  // |a| should be unchanged.
-  a = original_card;
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   EXPECT_FALSE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ(original_card, a);
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {

@@ -180,6 +180,27 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     should_request_name_from_user_ = true;
   }
 
+  // If the user must provide expiration month or expration year, log it and set
+  // |should_request_expiration_date_from_user_| so the offer-to-save dialog
+  // knows to ask for it.
+  should_request_expiration_date_from_user_ = false;
+  if (upload_request_.detected_values &
+      DetectedValue::USER_PROVIDED_EXPIRATION_DATE) {
+    // TODO(crbug.com/899057): Update |upload_decision_metrics_| with
+    //                         USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE.
+    should_request_expiration_date_from_user_ = true;
+  }
+
+  // The cardholder name and expiration date fix flows cannot both be
+  // active at the same time.  If they are, abort offering upload.
+  if (should_request_name_from_user_ &&
+      should_request_expiration_date_from_user_) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kAutofillUpstreamEditableExpirationDate));
+    LogCardUploadDecisions(upload_decision_metrics_);
+    pending_upload_request_origin_ = url::Origin();
+    return;
+  }
   // If the relevant feature is enabled, only send the country of the
   // recently-used addresses. We make a copy here to avoid modifying
   // |upload_request_.profiles|, which should always have full addresses even
@@ -648,6 +669,33 @@ int CreditCardSaveManager::GetDetectedValues() const {
   if (payments::GetBillingCustomerId(personal_data_manager_,
                                      payments_client_->GetPrefService()) != 0) {
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
+  }
+
+  // If we are missing expiration date month or expiration year, signal that
+  // expiration date will be explicitly requested in the offer-to-save bubble.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUpstreamEditableExpirationDate)) {
+    if (!upload_request_.card
+             .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
+             .empty()) {
+      detected_values |= DetectedValue::CARD_EXPIRATION_MONTH;
+    }
+    // Set |USER_PROVIDED_EXPIRATION_DATE| if any of
+    // |CREDIT_CARD_EXP_4_DIGIT_YEAR| or |CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR| is
+    // set.
+    if (!(upload_request_.card
+              .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
+              .empty()) ||
+        !(upload_request_.card
+              .GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR),
+                       app_locale_)
+              .empty())) {
+      detected_values |= DetectedValue::CARD_EXPIRATION_YEAR;
+    }
+    if (!(detected_values & DetectedValue::CARD_EXPIRATION_MONTH) ||
+        !(detected_values & DetectedValue::CARD_EXPIRATION_YEAR)) {
+      detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
+    }
   }
 
   // If one of the following is true, signal that cardholder name will be

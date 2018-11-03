@@ -403,6 +403,13 @@ const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
     "offer-to-save dialog, which is prefilled with the name from the signed-in "
     "Google Account.";
 
+const char kEnableAutofillCreditCardUploadEditableExpirationDateName[] =
+    "Make expiration date editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
+    "If enabled, if a credit card's expiration date was not detected when "
+    "offering card upload to Google Payments, the offer-to-save dialog "
+    "displays an expiration date selector.";
+
 const char kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[] =
     "Enable Google Pay branding when offering credit card upload on Android";
 const char

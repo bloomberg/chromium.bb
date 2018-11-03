@@ -29814,6 +29814,8 @@ from previous Chrome versions.
   <int value="-471405972" label="ViewsProfileChooser:disabled"/>
   <int value="-471085510" label="MultiDeviceApi:enabled"/>
   <int value="-470948890" label="OfflinePagesDescriptivePendingStatus:enabled"/>
+  <int value="-470247915"
+      label="AutofillUpstreamEditableExpirationDate:enabled"/>
   <int value="-468697885" label="ArcInputMethod:enabled"/>
   <int value="-462205750" label="enable-service-worker-sync"/>
   <int value="-461292699" label="ContentSuggestionsCategoryOrder:enabled"/>
@@ -31081,6 +31083,8 @@ from previous Chrome versions.
   <int value="1955677113" label="trace-export-events-to-etw"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
+  <int value="1957472162"
+      label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
