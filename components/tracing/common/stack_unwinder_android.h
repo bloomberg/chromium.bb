@@ -5,12 +5,20 @@
 #ifndef COMPONENTS_TRACING_COMMON_STACK_UNWINDER_ANDROID_H_
 #define COMPONENTS_TRACING_COMMON_STACK_UNWINDER_ANDROID_H_
 
+#include <ucontext.h>
+
 #include <map>
+#include <vector>
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/profiler/native_stack_sampler.h"
 #include "base/threading/platform_thread.h"
 #include "components/tracing/tracing_export.h"
+
+namespace jni_generator {
+struct JniJavaCallContextUnchecked;
+}
+struct unw_context_t;
 
 namespace tracing {
 
@@ -24,6 +32,8 @@ namespace tracing {
 // instances of this class.
 class TRACING_EXPORT StackUnwinderAndroid {
  public:
+  using JniMarker = jni_generator::JniJavaCallContextUnchecked;
+
   StackUnwinderAndroid();
   ~StackUnwinderAndroid();
 
@@ -53,6 +63,24 @@ class TRACING_EXPORT StackUnwinderAndroid {
   bool is_initialized() const { return is_initialized_; }
 
  private:
+  // Sends a SIGURG signal to the thread with id |tid| and copies the stack
+  // segment of the thread, along with register context. Returns true on
+  // success.
+  bool SuspendThreadAndRecordStack(
+      base::PlatformThreadId tid,
+      base::NativeStackSampler::StackBuffer* stack_buffer,
+      uintptr_t* sp,
+      size_t* stack_size,
+      unw_context_t* context,
+      ucontext_t* signal_context) const;
+
+  // Replaces any pointers to the old stack to point to the new stack segment.
+  // Returns the jni markers found on stack while scanning stack for pointers.
+  std::vector<const JniMarker*> RewritePointersAndGetMarkers(
+      base::NativeStackSampler::StackBuffer* stack_buffer,
+      uintptr_t sp,
+      size_t stack_size) const;
+
   bool is_initialized_ = false;
 
   // Stores all the memory mapped regions in the current process, including all
