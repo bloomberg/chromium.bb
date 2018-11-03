@@ -310,6 +310,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       LayoutObject*,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
 
+  void RemoveChildren();
+
   // Helps for PositionForPoint() when |this| falls in different categories.
   PositionWithAffinity PositionForPointInText(const NGPhysicalOffset&) const;
   PositionWithAffinity PositionForPointInInlineFormattingContext(
