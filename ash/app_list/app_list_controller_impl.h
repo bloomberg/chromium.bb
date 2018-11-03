@@ -37,10 +37,6 @@ namespace ui {
 class MouseWheelEvent;
 }  // namespace ui
 
-namespace ws {
-class WindowService;
-}  // namespace ws
-
 namespace ash {
 
 class HomeLauncherGestureHandler;
@@ -61,7 +57,7 @@ class ASH_EXPORT AppListControllerImpl
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
-  explicit AppListControllerImpl(ws::WindowService* window_service);
+  AppListControllerImpl();
   ~AppListControllerImpl() override;
 
   // Binds the mojom::AppListController interface request to this object.
@@ -185,7 +181,8 @@ class ASH_EXPORT AppListControllerImpl
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
-  ws::WindowService* GetWindowService() override;
+  void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request) override;
 
   void OnVisibilityChanged(bool visible);
   void OnTargetVisibilityChanged(bool visible);
@@ -248,8 +245,6 @@ class ASH_EXPORT AppListControllerImpl
 
   int64_t GetDisplayIdToShowAppListOn();
 
-  ws::WindowService* window_service_;
-
   base::string16 last_raw_query_;
 
   mojom::AppListClientPtr client_;
@@ -264,7 +259,9 @@ class ASH_EXPORT AppListControllerImpl
   // Bindings for the AppListController interface.
   mojo::BindingSet<mojom::AppListController> bindings_;
 
-  // Token to view map for classic/mus ash (i.e. non-mash).
+  // TODO(https://crbug.com/894987): Remove this once assistant UI is converted
+  // to use Content Service, as there will then be no more consumers of
+  // AnswerCardContentsRegistry.
   std::unique_ptr<app_list::AnswerCardContentsRegistry>
       answer_card_contents_registry_;
 

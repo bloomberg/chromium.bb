@@ -62,12 +62,10 @@ void SearchModel::PublishResults(
   // Add items back to |results_| in the order of |new_results|.
   for (auto&& new_result : new_results) {
     auto ui_result_it = results_map.find(new_result->id());
-    if (ui_result_it != results_map.end() &&
-        new_result->answer_card_contents_token() ==
-            ui_result_it->second->answer_card_contents_token()) {
+    if (ui_result_it != results_map.end()) {
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
-      ui_result->SetMetadata(new_result->CloneMetadata());
+      ui_result->SetMetadata(new_result->TakeMetadata());
       results_->Add(std::move(ui_result));
 
       // Remove the item from the map so that it ends up only with unused

@@ -4,45 +4,27 @@
 
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 
-#include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 
 namespace app_list {
 
 AnswerCardResult::AnswerCardResult(Profile* profile,
                                    AppListControllerDelegate* list_controller,
-                                   const std::string& result_url,
-                                   const std::string& stripped_result_url,
-                                   const base::string16& result_title,
-                                   AnswerCardContents* contents)
-    : profile_(profile),
-      list_controller_(list_controller),
-      contents_(contents) {
-  DCHECK(!stripped_result_url.empty());
+                                   const GURL& potential_card_url,
+                                   const GURL& search_result_url,
+                                   const GURL& stripped_search_result_url)
+    : profile_(profile), list_controller_(list_controller) {
+  DCHECK(!stripped_search_result_url.is_empty());
   SetDisplayType(ash::SearchResultDisplayType::kCard);
   SetResultType(ash::SearchResultType::kAnswerCard);
-  set_id(result_url);
-  set_comparable_id(stripped_result_url);
+  SetQueryUrl(potential_card_url);
+  set_id(search_result_url.spec());
+  set_comparable_id(stripped_search_result_url.spec());
   set_relevance(1);
-  SetAnswerCardContentsToken(contents ? contents->GetToken()
-                                      : base::UnguessableToken());
-  SetAnswerCardSize(contents ? contents->GetPreferredSize() : gfx::Size());
-  SetTitle(result_title);
-
-  if (contents)
-    contents->RegisterResult(this);
 }
 
-AnswerCardResult::~AnswerCardResult() {
-  if (contents_)
-    contents_->UnregisterResult(this);
-}
-
-void AnswerCardResult::OnContentsDestroying() {
-  contents_ = nullptr;
-}
+AnswerCardResult::~AnswerCardResult() = default;
 
 void AnswerCardResult::Open(int event_flags) {
   list_controller_->OpenURL(profile_, GURL(id()), ui::PAGE_TRANSITION_GENERATED,

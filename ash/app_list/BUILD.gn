@@ -110,6 +110,7 @@ component("app_list") {
     "//components/keyed_service/core",
     "//components/sync",
     "//mojo/public/cpp/bindings",
+    "//services/content/public/cpp",
     "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//services/ws/remote_view_host",
@@ -137,11 +138,14 @@ component("app_list") {
   public_deps = [
     "//ash/app_list/model:app_list_model",
     "//ash/app_list/model:search_model",
-    "//ash/public/cpp:cpp",
+    "//ash/public/cpp",
+    "//services/content/public/mojom",
   ]
 }
 
 static_library("test_support") {
+  testonly = true
+
   sources = [
     "test/app_list_test_model.cc",
     "test/app_list_test_model.h",
@@ -156,6 +160,7 @@ static_library("test_support") {
   deps = [
     ":app_list",
     "//base",
+    "//services/content/public/cpp/test:test_support",
     "//ui/base:base",
     "//ui/events",
     "//ui/gfx",
@@ -215,6 +220,10 @@ test("app_list_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/core/embedder",
+    "//mojo/public/cpp/bindings",
+    "//services/content/public/cpp",
+    "//services/content/public/cpp/test:test_support",
+    "//services/content/public/mojom",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",

@@ -80,18 +80,8 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   }
   void SetFormattedPrice(const base::string16& formatted_price);
 
-  const base::Optional<base::UnguessableToken>& answer_card_contents_token()
-      const {
-    return metadata_->answer_card_contents_token;
-  }
-  void set_answer_card_contents_token(
-      const base::Optional<base::UnguessableToken>& token) {
-    metadata_->answer_card_contents_token = token;
-  }
-
-  gfx::Size answer_card_size() const {
-    return metadata_->answer_card_size.value_or(gfx::Size());
-  }
+  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
+  void set_query_url(const GURL& url) { metadata_->query_url = url; }
 
   const std::string& id() const { return metadata_->id; }
 
@@ -138,8 +128,8 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   virtual void InvokeAction(int action_index, int event_flags);
 
   void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata);
-  ash::mojom::SearchResultMetadataPtr CloneMetadata() const {
-    return metadata_.Clone();
+  ash::mojom::SearchResultMetadataPtr TakeMetadata() {
+    return std::move(metadata_);
   }
 
  protected:

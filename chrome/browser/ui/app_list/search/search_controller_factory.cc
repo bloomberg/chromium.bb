@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
-#include "chrome/browser/ui/app_list/search/answer_card/answer_card_web_contents.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
@@ -87,12 +86,9 @@ std::unique_ptr<SearchController> CreateSearchController(
   controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                 profile, list_controller));
   if (app_list_features::IsAnswerCardEnabled()) {
-    controller->AddProvider(
-        answer_card_group_id,
-        std::make_unique<AnswerCardSearchProvider>(
-            profile, model_updater, list_controller,
-            std::make_unique<AnswerCardWebContents>(profile),
-            std::make_unique<AnswerCardWebContents>(profile)));
+    controller->AddProvider(answer_card_group_id,
+                            std::make_unique<AnswerCardSearchProvider>(
+                                profile, model_updater, list_controller));
   }
 
   // LauncherSearchProvider is added only when flag is enabled, not in guest
