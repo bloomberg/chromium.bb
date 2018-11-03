@@ -61,6 +61,16 @@ enum class DeviceSyncRequestFailureReason {
   kMaxValue = kUnknown
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
+enum class ForceCryptAuthOperationResult {
+  kSuccess = 0,
+  kServiceNotReady = 1,
+  kMaxValue = kServiceNotReady
+};
+
 DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
     mojom::NetworkRequestResult failure_reason) {
   switch (failure_reason) {
@@ -113,6 +123,16 @@ void RecordFindEligibleDevicesResultFailureReason(
       "MultiDevice.DeviceSyncService.FindEligibleDevices.Result."
       "FailureReason",
       failure_reason);
+}
+
+void RecordForceEnrollmentNowResult(ForceCryptAuthOperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "MultiDevice.DeviceSyncService.ForceEnrollmentNow.Result", result);
+}
+
+void RecordForceSyncNowResult(ForceCryptAuthOperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION("MultiDevice.DeviceSyncService.ForceSyncNow.Result",
+                            result);
 }
 
 }  // namespace
@@ -253,12 +273,16 @@ void DeviceSyncImpl::ForceEnrollmentNow(ForceEnrollmentNowCallback callback) {
     PA_LOG(WARNING) << "DeviceSyncImpl::ForceEnrollmentNow() invoked before "
                     << "initialization was complete. Cannot force enrollment.";
     std::move(callback).Run(false /* success */);
+    RecordForceEnrollmentNowResult(
+        ForceCryptAuthOperationResult::kServiceNotReady /* result */);
     return;
   }
 
   cryptauth_enrollment_manager_->ForceEnrollmentNow(
       cryptauth::INVOCATION_REASON_MANUAL);
   std::move(callback).Run(true /* success */);
+  RecordForceEnrollmentNowResult(
+      ForceCryptAuthOperationResult::kSuccess /* result */);
 }
 
 void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
@@ -266,11 +290,15 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
     PA_LOG(WARNING) << "DeviceSyncImpl::ForceSyncNow() invoked before "
                     << "initialization was complete. Cannot force sync.";
     std::move(callback).Run(false /* success */);
+    RecordForceSyncNowResult(
+        ForceCryptAuthOperationResult::kServiceNotReady /* result */);
     return;
   }
 
   cryptauth_device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
   std::move(callback).Run(true /* success */);
+  RecordForceSyncNowResult(
+      ForceCryptAuthOperationResult::kSuccess /* result */);
 }
 
 void DeviceSyncImpl::GetLocalDeviceMetadata(
