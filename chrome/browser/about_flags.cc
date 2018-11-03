@@ -3072,6 +3072,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableCardholderName)},
+    {"enable-autofill-credit-card-upload-editable-expiration-date",
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableExpirationDateName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableExpirationDateDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamEditableExpirationDate)},
     {"enable-autofill-credit-card-upload-google-pay-on-android-branding",
      flag_descriptions::
          kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName,
