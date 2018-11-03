@@ -39,6 +39,28 @@ viz_component("resource_format_utils") {
   ]
 }
 
+if (enable_vulkan) {
+  viz_component("vulkan_context_provider") {
+    output_name = "viz_vulkan_context_provider"
+
+    defines = [ "VIZ_VULKAN_CONTEXT_PROVIDER_IMPLEMENTATION" ]
+
+    sources = [
+      "gpu/vulkan_context_provider.h",
+      "gpu/vulkan_in_process_context_provider.cc",
+      "gpu/vulkan_in_process_context_provider.h",
+      "viz_vulkan_context_provider_export.h",
+    ]
+    configs = [ "//third_party/vulkan:vulkan_config" ]
+    deps = [
+      "//base",
+      "//gpu/vulkan",
+      "//gpu/vulkan:buildflags",
+      "//skia",
+    ]
+  }
+}
+
 viz_component("common") {
   output_name = "viz_common"
 
@@ -184,16 +206,6 @@ viz_component("common") {
     "//ui/latency",
   ]
 
-  if (enable_vulkan) {
-    sources += [
-      "gpu/vulkan_context_provider.h",
-      "gpu/vulkan_in_process_context_provider.cc",
-      "gpu/vulkan_in_process_context_provider.h",
-    ]
-    configs = [ "//third_party/vulkan:vulkan_config" ]
-    deps += [ "//gpu/vulkan" ]
-  }
-
   if (is_win) {
     sources += [
       "display/use_layered_window.cc",
@@ -210,6 +222,9 @@ viz_component("common") {
     "//mojo/public/cpp/bindings",
     "//skia",
   ]
+  if (enable_vulkan) {
+    public_deps += [ ":vulkan_context_provider" ]
+  }
 }
 
 viz_source_set("unit_tests") {
