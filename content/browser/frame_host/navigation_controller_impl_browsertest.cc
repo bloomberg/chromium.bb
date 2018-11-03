@@ -4797,25 +4797,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_entry->redirect_chain()[1], frame_final_url);
 }
 
-// Support a set of tests that isolate only a subset of sites with
-// out-of-process iframes (OOPIFs).
-class NavigationControllerOopifBrowserTest
-    : public NavigationControllerBrowserTest {
- public:
-  NavigationControllerOopifBrowserTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Enable the OOPIF framework but only isolate sites from a single TLD.
-    command_line->AppendSwitchASCII(switches::kIsolateSitesForTesting, "*.is");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NavigationControllerOopifBrowserTest);
-};
-
 // Verify that restoring a NavigationEntry with cross-site subframes does not
 // create out-of-process iframes unless the current SiteIsolationPolicy says to.
-IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        RestoreWithoutExtraOopifs) {
   // 1. Start on a page with a data URL iframe.
   GURL main_url_a(embedded_test_server()->GetURL(

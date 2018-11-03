@@ -849,11 +849,15 @@ class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {
   IsolateIcelandFrameTreeBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // blink suppresses navigations to blob URLs of origins different from the
+    // Blink suppresses navigations to blob URLs of origins different from the
     // frame initiating the navigation. We disable those checks for this test,
     // to test what happens in a compromise scenario.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
-    command_line->AppendSwitchASCII(switches::kIsolateSitesForTesting, "*.is");
+
+    // ProcessSwitchForIsolatedBlob test below requires that one of URLs used in
+    // the test (blob:http://b.is:2932/) belongs to an isolated origin.
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins,
+                                    "http://b.is:2932/");
   }
 
   void SetUpOnMainThread() override {
@@ -879,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
 
   // The navigation targets an invalid blob url; that's intentional to trigger
   // an error response. The response should commit in a process dedicated to
-  // http://b.is.
+  // http://b.is:2932.
   EXPECT_EQ(
       "done",
       EvalJs(
@@ -896,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
       " Site A ------------ proxies for B\n"
       "   +--Site B ------- proxies for A\n"
       "Where A = http://a.com/\n"
-      "      B = http://b.is/",
+      "      B = http://b.is:2932/",
       FrameTreeVisualizer().DepictFrameTree(root));
 }
 

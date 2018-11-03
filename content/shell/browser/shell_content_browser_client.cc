@@ -15,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -161,30 +160,6 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
   return shell_browser_main_parts_;
 }
 
-bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kIsolateSitesForTesting))
-    return false;
-  std::string pattern =
-      command_line->GetSwitchValueASCII(switches::kIsolateSitesForTesting);
-
-  url::Origin origin = url::Origin::Create(effective_site_url);
-
-  if (!origin.opaque()) {
-    // Schemes like blob or filesystem, which have an embedded origin, should
-    // already have been canonicalized to the origin site.
-    CHECK_EQ(origin.scheme(), effective_site_url.scheme())
-        << "a site url should have the same scheme as its origin.";
-  }
-
-  // Practically |origin.Serialize()| is the same as
-  // |effective_site_url.spec()|, except Origin serialization strips the
-  // trailing "/", which makes for cleaner wildcard patterns.
-  return base::MatchPattern(origin.Serialize(), pattern);
-}
-
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
@@ -304,13 +279,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kCrashDumpsDir,
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir));
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateSitesForTesting)) {
-    command_line->AppendSwitchASCII(
-        switches::kIsolateSitesForTesting,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kIsolateSitesForTesting));
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRegisterFontFiles)) {

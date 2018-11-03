@@ -33,8 +33,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   // ContentBrowserClient overrides.
   BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
-  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                       const GURL& effective_site_url) override;
   bool IsHandledURL(const GURL& url) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
