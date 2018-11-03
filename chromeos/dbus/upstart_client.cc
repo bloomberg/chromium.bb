@@ -30,13 +30,18 @@ class UpstartClientImpl : public UpstartClient {
 
   ~UpstartClientImpl() override = default;
 
+  // UpstartClient overrides:
   void StartJob(const std::string& job,
                 const std::vector<std::string>& upstart_env,
                 VoidDBusMethodCallback callback) override {
     CallJobMethod(job, kStartMethod, upstart_env, std::move(callback));
   }
 
-  // UpstartClient override.
+  void StopJob(const std::string& job,
+               VoidDBusMethodCallback callback) override {
+    CallJobMethod(job, kStopMethod, {}, std::move(callback));
+  }
+
   void StartAuthPolicyService() override {
     StartJob(kAuthPolicyJob, {}, EmptyVoidDBusMethodCallback());
   }
@@ -56,12 +61,11 @@ class UpstartClientImpl : public UpstartClient {
   }
 
   void StopMediaAnalytics() override {
-    CallJobMethod(kMediaAnalyticsJob, kStopMethod, {},
-                  EmptyVoidDBusMethodCallback());
+    StopJob(kMediaAnalyticsJob, EmptyVoidDBusMethodCallback());
   }
 
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override {
-    CallJobMethod(kMediaAnalyticsJob, kStopMethod, {}, std::move(callback));
+    StopJob(kMediaAnalyticsJob, std::move(callback));
   }
  protected:
   void Init(dbus::Bus* bus) override {

@@ -74,6 +74,10 @@ namespace brailleDisplayPrivate {
     // parameters give the original 2D dimensions of the buffer. To access
     // an element cells[r][c], simply access cells[r * columns + c].
     static void writeDots(ArrayBuffer cells, long columns, long rows);
+
+    // Updates the single user-preferred braille device with the given bluetooth
+    // device address and starts or restarts the Brltty daemon.
+    static void updateBluetoothBrailleDisplayAddress(DOMString address);
   };
 
   interface Events {

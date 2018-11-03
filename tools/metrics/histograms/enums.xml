@@ -15742,7 +15742,7 @@ Called by update_net_error_codes.py.-->
   <int value="338" label="CAST_CHANNEL_ON_MESSAGE"/>
   <int value="339" label="CAST_CHANNEL_ON_ERROR"/>
   <int value="340" label="SCREENLOCK_PRIVATE_ON_CHANGED"/>
-  <int value="341" label="SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
+  <int value="341" label="DELETED_SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
   <int value="342" label="TYPES_CHROME_SETTING_ON_CHANGE"/>
   <int value="343"
       label="DELETED_TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
@@ -17182,6 +17182,8 @@ Called by update_net_error_codes.py.-->
   <int value="1288" label="FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO"/>
   <int value="1289" label="TABS_GOFORWARD"/>
   <int value="1290" label="TABS_GOBACK"/>
+  <int value="1291"
+      label="BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS"/>
 </enum>
 
 <enum name="ExtensionIconState">

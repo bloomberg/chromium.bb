@@ -28,6 +28,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
@@ -58,6 +59,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -110,6 +112,13 @@ const char kUserSpokenFeedbackEnabled[] = "UserSpokenFeedbackEnabled";
 // A key for the startup sound enabled boolean state for a known user.
 const char kUserStartupSoundEnabled[] = "UserStartupSoundEnabled";
 
+// A key for the bluetooth braille display for a user.
+const char kUserBluetoothBrailleDisplayAddress[] =
+    "UserBluetoothBrailleDisplayAddress";
+
+// The name of the Brltty upstart job.
+constexpr char kBrlttyUpstartJobName[] = "brltty";
+
 static chromeos::AccessibilityManager* g_accessibility_manager = nullptr;
 
 static BrailleController* g_braille_controller_for_test = nullptr;
@@ -131,6 +140,24 @@ void EnableChromeVoxAfterSwitchAccessMetric(bool val) {
 
 void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccessAfterChromeVox", val);
+}
+
+// Restarts (stops, then starts brltty). If |address| is empty, only stops.
+// In Upstart, sending an explicit restart command is a no-op if the job isn't
+// already started. Without knowledge regarding brltty's current job status,
+// stop followed by start ensures we both stop a started job, and also start
+// brltty.
+void RestartBrltty(const std::string& address) {
+  chromeos::UpstartClient* client =
+      chromeos::DBusThreadManager::Get()->GetUpstartClient();
+  client->StopJob(kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
+
+  std::vector<std::string> args;
+  if (address.empty())
+    return;
+
+  args.push_back(base::StringPrintf("ADDRESS=%s", address.c_str()));
+  client->StartJob(kBrlttyUpstartJobName, args, EmptyVoidDBusMethodCallback());
 }
 
 }  // namespace
@@ -1260,6 +1287,11 @@ void AccessibilityManager::PostLoadChromeVox() {
     return;
 
   // Do any setup work needed immediately after ChromeVox actually loads.
+  // Maybe start brltty, if we have a bluetooth device stored for connection.
+  const std::string& address = GetBluetoothBrailleDisplayAddress();
+  if (!address.empty())
+    RestartBrltty(address);
+
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
 
   extensions::EventRouter* event_router =
@@ -1291,6 +1323,10 @@ void AccessibilityManager::PostLoadChromeVox() {
 
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
+  // Stop brltty.
+  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StopJob(
+      kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
+
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 
   // Clear the accessibility focus ring.
@@ -1462,6 +1498,35 @@ void AccessibilityManager::SetStartupSoundEnabled(bool value) const {
   user_manager::known_user::SetBooleanPref(
       multi_user_util::GetAccountIdFromProfile(profile_),
       kUserStartupSoundEnabled, value);
+}
+
+const std::string AccessibilityManager::GetBluetoothBrailleDisplayAddress()
+    const {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::UserList& user_list = user_manager->GetUsers();
+  if (user_list.empty())
+    return std::string();
+
+  // |user_list| is sorted by last log in date. Take the most recent user to log
+  // in.
+  std::string val;
+  return user_manager::known_user::GetStringPref(
+             user_list[0]->GetAccountId(), kUserBluetoothBrailleDisplayAddress,
+             &val)
+             ? val
+             : std::string();
+}
+
+void AccessibilityManager::UpdateBluetoothBrailleDisplayAddress(
+    const std::string& address) {
+  CHECK(spoken_feedback_enabled_);
+  if (!profile_)
+    return;
+
+  user_manager::known_user::SetStringPref(
+      multi_user_util::GetAccountIdFromProfile(profile_),
+      kUserBluetoothBrailleDisplayAddress, address);
+  RestartBrltty(address);
 }
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {

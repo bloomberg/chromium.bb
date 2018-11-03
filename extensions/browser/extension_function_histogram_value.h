@@ -1351,6 +1351,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO = 1288,
   TABS_GOFORWARD = 1289,
   TABS_GOBACK = 1290,
+  BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS = 1291,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
