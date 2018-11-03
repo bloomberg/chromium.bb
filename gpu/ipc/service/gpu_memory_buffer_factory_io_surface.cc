@@ -111,9 +111,11 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     gfx::BufferFormat format,
     int client_id,
     SurfaceHandle surface_handle) {
+  if (handle.type != gfx::IO_SURFACE_BUFFER)
+    return nullptr;
+
   base::AutoLock lock(io_surfaces_lock_);
 
-  DCHECK_EQ(handle.type, gfx::IO_SURFACE_BUFFER);
   IOSurfaceMapKey key(handle.id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it == io_surfaces_.end()) {
