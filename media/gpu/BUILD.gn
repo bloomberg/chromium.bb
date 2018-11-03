@@ -214,14 +214,6 @@ component("gpu") {
     }
   }
 
-  if (is_fuchsia) {
-    sources += [
-      "fuchsia/fuchsia_video_decoder.cc",
-      "fuchsia/fuchsia_video_decoder.h",
-    ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:mediacodec" ]
-  }
-
   if (use_v4lplugin) {
     sources += get_target_outputs(":libv4l2_generate_stubs")
     deps += [ ":libv4l2_generate_stubs" ]
@@ -648,9 +640,6 @@ source_set("unit_tests") {
   }
   if (use_v4l2_codec || use_vaapi) {
     sources += [ "vp8_decoder_unittest.cc" ]
-  }
-  if (is_fuchsia) {
-    sources += [ "fuchsia/fuchsia_video_decoder_unittest.cc" ]
   }
   if (is_win && enable_library_cdms) {
     sources += [

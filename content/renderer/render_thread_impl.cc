@@ -2258,7 +2258,12 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
   DCHECK(main_thread_runner()->BelongsToCurrentThread());
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("Media"));
-    media_thread_->Start();
+    base::Thread::Options options;
+#if defined(OS_FUCHSIA)
+    // Start IO thread on Fuchsia to make that thread usable for FIDL.
+    options = base::Thread::Options(base::MessageLoop::TYPE_IO, 0);
+#endif
+    media_thread_->StartWithOptions(options);
   }
   return media_thread_->task_runner();
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/fuchsia/fuchsia_video_decoder.h"
+#include "media/filters/fuchsia/fuchsia_video_decoder.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"

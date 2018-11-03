@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/fuchsia/fuchsia_video_decoder.h"
+#include "media/filters/fuchsia/fuchsia_video_decoder.h"
 
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <zircon/rights.h>
@@ -643,8 +643,9 @@ void FuchsiaVideoDecoder::OnError() {
 
   auto weak_this = weak_this_;
 
-  // Call decode callback with DECODE_ERROR before clearing input_buffers_.
-  // Otherwise InputBuffer destructor would call it with ABORTED.
+  // Call all decode callback with DECODE_ERROR before clearing input_buffers_
+  // and pending_decodes_. Otherwise PendingDecode and InputBuffer destructors
+  // would the callbacks with ABORTED.
   for (auto& buffer : input_buffers_) {
     if (buffer.is_used()) {
       buffer.OnDoneDecoding(DecodeStatus::DECODE_ERROR);
@@ -656,7 +657,13 @@ void FuchsiaVideoDecoder::OnError() {
     }
   }
 
-  // Will call DecodeCB(ABORTED) for all pending decode requests.
+  for (auto& pending_decode : pending_decodes_) {
+    pending_decode.TakeDecodeCallback().Run(DecodeStatus::DECODE_ERROR);
+    if (!weak_this) {
+      return;
+    }
+  }
+
   pending_decodes_.clear();
 
   num_used_input_buffers_ = 0;

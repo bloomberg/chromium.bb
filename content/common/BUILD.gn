@@ -468,6 +468,7 @@ source_set("common") {
     deps += [
       "//third_party/fuchsia-sdk/sdk:fdio",
       "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:mediacodec",
       "//third_party/fuchsia-sdk/sdk:scenic",
     ]
   }
