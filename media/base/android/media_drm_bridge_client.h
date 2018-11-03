@@ -25,7 +25,7 @@ class MediaDrmBridgeDelegate;
 // media playback could occur.
 MEDIA_EXPORT void SetMediaDrmBridgeClient(MediaDrmBridgeClient* media_client);
 
-#if defined(MEDIA_IMPLEMENTATION)
+#if defined(IS_MEDIA_IMPL)
 // Getter for the client. Returns nullptr if no customized client is needed.
 MediaDrmBridgeClient* GetMediaDrmBridgeClient();
 #endif
