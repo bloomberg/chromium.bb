@@ -229,10 +229,6 @@ struct WebAuthBrowserTestState {
   // Set when |IsFocused| is called.
   bool focus_checked = false;
 
-  // If true, request a new render process for each site (i.e. site isolation).
-  // Otherwise have the default behaviour for |ContentBrowserClient|.
-  bool force_new_render_processes = false;
-
   // This is incremented when an |AuthenticatorRequestClientDelegate| is
   // created.
   int delegate_create_count = 0;
@@ -275,24 +271,6 @@ class WebAuthBrowserTestContentBrowserClient : public ContentBrowserClient {
       RenderFrameHost* render_frame_host) override {
     test_state_->delegate_create_count++;
     return std::make_unique<WebAuthBrowserTestClientDelegate>(test_state_);
-  }
-
-  bool ShouldUseProcessPerSite(BrowserContext* browser_context,
-                               const GURL& effective_url) override {
-    if (test_state_->force_new_render_processes) {
-      return true;
-    }
-    return ContentBrowserClient::ShouldUseProcessPerSite(browser_context,
-                                                         effective_url);
-  }
-
-  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                       const GURL& effective_url) override {
-    if (test_state_->force_new_render_processes) {
-      return true;
-    }
-    return ContentBrowserClient::DoesSiteRequireDedicatedProcess(
-        browser_context, effective_url);
   }
 
  private:
@@ -962,45 +940,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_EQ("webauth: OK", *result);
     ASSERT_TRUE(prompt_callback_was_invoked);
   }
-}
-
-IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
-                       RegisterDuringUnload) {
-  // Request new render processes for each site in order to test concurrent
-  // unloading with a different RenderFrame showing the new page.
-  test_state()->force_new_render_processes = true;
-
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-  const std::string script = base::ReplaceStringPlaceholders(
-      R"(
-        window.addEventListener('unload', function(e) {
-          $1
-        });
-
-        // Trigger a webauthn operation so that the bindings are established
-        // before unload.
-        navigator.credentials.get({ publicKey: {
-          challenge: new TextEncoder().encode('climb a mountain'),
-          timeout: 1,
-        }}).catch(c => window.location = '$2');
-      )",
-      {BuildCreateCallWithParameters(CreateParameters()),
-       GetHttpsURL("www.acme2.com", "/title2.html").spec()},
-      nullptr);
-
-  RenderFrameHost* render_frame_host = shell()->web_contents()->GetMainFrame();
-  RenderFrameDeletedObserver observer(render_frame_host);
-  render_frame_host->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
-  observer.WaitUntilDeleted();
-
-  // The |MakeCredential| call from the unload handler should not have reached
-  // the point where focus was checked.
-  EXPECT_FALSE(test_state()->focus_checked);
-
-  // Two delegates should have been created: one for the GetAssertion call that
-  // primes the binding and a second for the MakeCredential call in the unload
-  // handler.
-  ASSERT_EQ(2, test_state()->delegate_create_count);
 }
 
 // WebAuthBrowserCtapTest ----------------------------------------------
