@@ -40,15 +40,18 @@
 
 namespace ash {
 
-AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
-    : window_service_(window_service),
-      presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
+AppListControllerImpl::AppListControllerImpl()
+    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()),
       voice_interaction_binding_(this) {
   model_.AddObserver(this);
 
   // Create only for non-mash. Mash uses window tree embed API to get a
   // token to map answer card contents.
+  //
+  // TODO(https://crbug.com/894987): This is now only used (as a singleton) by
+  // assistant UI code to display its answer card contents. It can be removed
+  // once that code is ported to use Content Service.
   if (!::features::IsUsingWindowService()) {
     answer_card_contents_registry_ =
         std::make_unique<app_list::AnswerCardContentsRegistry>();
@@ -831,8 +834,10 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
          HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 
-ws::WindowService* AppListControllerImpl::GetWindowService() {
-  return window_service_;
+void AppListControllerImpl::GetNavigableContentsFactory(
+    content::mojom::NavigableContentsFactoryRequest request) {
+  if (client_)
+    client_->GetNavigableContentsFactory(std::move(request));
 }
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible) {

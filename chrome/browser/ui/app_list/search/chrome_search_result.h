@@ -12,7 +12,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
-#include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 namespace app_list {
@@ -50,9 +49,7 @@ class ChromeSearchResult {
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
   bool is_installing() const { return metadata_->is_installing; }
-  const base::UnguessableToken& answer_card_contents_token() const {
-    return metadata_->answer_card_contents_token.value();
-  }
+  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
   const gfx::ImageSkia& chip_icon() const { return metadata_->chip_icon; }
   const gfx::ImageSkia& badge_icon() const { return metadata_->badge_icon; }
@@ -73,9 +70,8 @@ class ChromeSearchResult {
   void SetDisplayScore(double display_score);
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);
-  void SetAnswerCardContentsToken(const base::UnguessableToken& token);
-  void SetAnswerCardSize(const gfx::Size& size);
   void SetIsInstalling(bool is_installing);
+  void SetQueryUrl(const GURL& url);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetChipIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);

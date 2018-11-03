@@ -98,8 +98,9 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
   return true;
 }
 
-ws::WindowService* AppListTestViewDelegate::GetWindowService() {
-  return nullptr;
+void AppListTestViewDelegate::GetNavigableContentsFactory(
+    content::mojom::NavigableContentsFactoryRequest request) {
+  fake_navigable_contents_factory_.BindRequest(std::move(request));
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(

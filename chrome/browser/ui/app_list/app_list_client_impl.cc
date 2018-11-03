@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
+#include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
@@ -201,22 +202,6 @@ void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
 }
 
-void AppListClientImpl::StartVoiceInteractionSession() {
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-          ChromeLauncherController::instance()->profile());
-  if (service)
-    service->StartSessionFromUserInteraction(gfx::Rect());
-}
-
-void AppListClientImpl::ToggleVoiceInteractionSession() {
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-          ChromeLauncherController::instance()->profile());
-  if (service)
-    service->ToggleSessionFromUserInteraction();
-}
-
 void AppListClientImpl::OnFolderCreated(
     ash::mojom::AppListItemMetadataPtr item) {
   if (!model_updater_)
@@ -251,6 +236,30 @@ void AppListClientImpl::OnPageBreakItemDeleted(const std::string& id) {
   if (!model_updater_)
     return;
   model_updater_->OnPageBreakItemDeleted(id);
+}
+
+void AppListClientImpl::StartVoiceInteractionSession() {
+  auto* service =
+      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
+          ChromeLauncherController::instance()->profile());
+  if (service)
+    service->StartSessionFromUserInteraction(gfx::Rect());
+}
+
+void AppListClientImpl::ToggleVoiceInteractionSession() {
+  auto* service =
+      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
+          ChromeLauncherController::instance()->profile());
+  if (service)
+    service->ToggleSessionFromUserInteraction();
+}
+
+void AppListClientImpl::GetNavigableContentsFactory(
+    content::mojom::NavigableContentsFactoryRequest request) {
+  if (profile_) {
+    content::BrowserContext::GetConnectorFor(profile_)->BindInterface(
+        content::mojom::kServiceName, std::move(request));
+  }
 }
 
 void AppListClientImpl::ActiveUserChanged(

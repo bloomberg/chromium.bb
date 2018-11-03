@@ -37,7 +37,6 @@
 #include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -47,6 +46,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -278,14 +278,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     views::ViewsTestBase::SetUp();
-    answer_card_contents_registry_ =
-        std::make_unique<AnswerCardContentsRegistry>();
-    fake_answer_card_view_ = std::make_unique<views::View>();
-    fake_answer_card_view_->set_owned_by_client();
-    fake_answer_card_token_ = answer_card_contents_registry_->Register(
-        fake_answer_card_view_.get(), /*contents_native_view=*/nullptr);
 
     // Initialize app list view.
+    fake_card_contents_.set_default_response_headers(
+        SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
+            "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
@@ -325,6 +322,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     // Disable animation timer.
     view_->GetWidget()->GetLayer()->GetAnimator()->set_disable_timer_for_test(
         true);
+
+    // The Update above will elicit a navigation. Wait for it.
+    delegate_->fake_navigable_contents_factory()
+        .WaitForAndBindNextContentsRequest(&fake_card_contents_);
   }
 
   void TearDown() override {
@@ -379,8 +380,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_display_score(display_score);
-        if (data.first == ash::SearchResultDisplayType::kCard)
-          result->set_answer_card_contents_token(fake_answer_card_token_);
+        if (data.first == ash::SearchResultDisplayType::kCard) {
+          const GURL kFakeCardUrl = GURL("https://www.google.com/coac?q=fake");
+          result->set_query_url(kFakeCardUrl);
+        }
         results->Add(std::move(result));
       }
     }
@@ -592,12 +595,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Restores the locale to default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
 
-  std::unique_ptr<AnswerCardContentsRegistry> answer_card_contents_registry_;
-  std::unique_ptr<views::View> fake_answer_card_view_;
-  base::UnguessableToken fake_answer_card_token_;
-
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
+
+  // A fake NavigableContents implementation to back card navigation requests.
+  content::FakeNavigableContents fake_card_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };

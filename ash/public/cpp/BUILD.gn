@@ -160,6 +160,7 @@ component("cpp") {
 # this after Deserialize(Serialize()) API works with handles.
 mojom("test_interfaces") {
   visibility = [ ":unit_tests" ]
+  disable_variants = true
 
   sources = [
     "shelf_struct_traits_test_service.mojom",

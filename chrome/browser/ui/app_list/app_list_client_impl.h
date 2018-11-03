@@ -65,18 +65,18 @@ class AppListClientImpl
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
-
   void OnAppListTargetVisibilityChanged(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
-  void StartVoiceInteractionSession() override;
-  void ToggleVoiceInteractionSession() override;
-
   void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) override;
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override;
   void OnPageBreakItemDeleted(const std::string& id) override;
+  void StartVoiceInteractionSession() override;
+  void ToggleVoiceInteractionSession() override;
+  void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
