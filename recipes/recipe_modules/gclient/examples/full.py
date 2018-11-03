@@ -18,6 +18,7 @@ TEST_CONFIGS = [
   'build_internal',
   'build_internal_scripts_slave',
   'catapult',
+  'celab',
   'crashpad',
   'custom_tabs_client',
   'dart',

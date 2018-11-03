@@ -418,3 +418,11 @@ def dawn(c):
   soln.name = 'dawn'
   soln.url = 'https://dawn.googlesource.com/dawn.git'
   c.got_revision_mapping['dawn'] = 'got_revision'
+
+@config_ctx()
+def celab(c):
+  soln = c.solutions.add()
+  # soln.name must match the repo name for `dep` to work properly
+  soln.name = 'cel'
+  soln.url = 'https://chromium.googlesource.com/enterprise/cel.git'
+  c.got_revision_mapping['cel'] = 'got_revision'
