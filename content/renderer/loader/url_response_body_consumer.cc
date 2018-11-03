@@ -9,30 +9,56 @@
 #include "base/macros.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "net/base/io_buffer.h"
+#include "net/filter/zlib_stream_wrapper.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 
 constexpr uint32_t URLResponseBodyConsumer::kMaxNumConsumedBytesInTask;
+const size_t kInflateBufferSize = 4 * 1024;
+
+class URLResponseBodyConsumer::ReclaimAccountant
+    : public base::RefCounted<URLResponseBodyConsumer::ReclaimAccountant> {
+ public:
+  explicit ReclaimAccountant(scoped_refptr<URLResponseBodyConsumer> consumer)
+      : consumer_(consumer) {}
+
+  void Reclaim(uint32_t reclaim_bytes) { reclaim_length_ += reclaim_bytes; }
+
+ private:
+  friend class base::RefCounted<URLResponseBodyConsumer::ReclaimAccountant>;
+
+  ~ReclaimAccountant() { consumer_->Reclaim(reclaim_length_); }
+
+  scoped_refptr<URLResponseBodyConsumer> consumer_;
+  uint32_t reclaim_length_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ReclaimAccountant);
+};
 
 class URLResponseBodyConsumer::ReceivedData final
     : public RequestPeer::ReceivedData {
  public:
   ReceivedData(const char* payload,
-               int length,
-               scoped_refptr<URLResponseBodyConsumer> consumer)
-      : payload_(payload), length_(length), consumer_(consumer) {}
+               int payload_length,
+               int reclaim_length,
+               scoped_refptr<ReclaimAccountant> reclaim_accountant)
+      : payload_(payload),
+        payload_length_(payload_length),
+        reclaim_length_(reclaim_length),
+        reclaim_accountant_(reclaim_accountant) {}
 
-  ~ReceivedData() override { consumer_->Reclaim(length_); }
+  ~ReceivedData() override { reclaim_accountant_->Reclaim(reclaim_length_); }
 
   const char* payload() const override { return payload_; }
-  int length() const override { return length_; }
+  int length() const override { return payload_length_; }
 
  private:
   const char* const payload_;
-  const uint32_t length_;
-
-  scoped_refptr<URLResponseBodyConsumer> consumer_;
+  const uint32_t payload_length_;
+  const uint32_t reclaim_length_;
+  scoped_refptr<ReclaimAccountant> reclaim_accountant_;
 
   DISALLOW_COPY_AND_ASSIGN(ReceivedData);
 };
@@ -41,6 +67,7 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
     int request_id,
     ResourceDispatcher* resource_dispatcher,
     mojo::ScopedDataPipeConsumerHandle handle,
+    bool inflate_response,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
@@ -49,7 +76,19 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       task_runner),
       task_runner_(task_runner),
+      zlib_wrapper_(inflate_response
+                        ? new net::ZLibStreamWrapper(
+                              net::ZLibStreamWrapper::SourceType::kGzip)
+                        : nullptr),
+      inflate_buffer_(inflate_response ? new net::IOBuffer(kInflateBufferSize)
+                                       : nullptr),
       has_seen_end_of_data_(!handle_.is_valid()) {
+  if (zlib_wrapper_ && !zlib_wrapper_->Init()) {
+    // If zlib can't be initialized then release the wrapper which will result
+    // in the compressed response being received and unable to be processed.
+    zlib_wrapper_.release();
+    inflate_buffer_.reset();
+  }
   handle_watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&URLResponseBodyConsumer::OnReadable, base::Unretained(this)));
@@ -146,8 +185,42 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
         resource_dispatcher_->GetPendingRequestInfo(request_id_);
     DCHECK(request_info);
 
-    request_info->peer->OnReceivedData(std::make_unique<ReceivedData>(
-        static_cast<const char*>(buffer), available, this));
+    scoped_refptr<ReclaimAccountant> reclaim_accountant =
+        new ReclaimAccountant(this);
+    if (zlib_wrapper_) {
+      const char* input_buffer_ptr = static_cast<const char*>(buffer);
+      int input_buffer_available = available;
+      while (input_buffer_available) {
+        scoped_refptr<net::WrappedIOBuffer> input_buffer =
+            new net::WrappedIOBuffer(input_buffer_ptr);
+        int consumed_bytes = 0;
+        int output_bytes_written = zlib_wrapper_->FilterData(
+            inflate_buffer_.get(), kInflateBufferSize, input_buffer.get(),
+            input_buffer_available, &consumed_bytes, has_seen_end_of_data_);
+        if (output_bytes_written < 0) {
+          status_.error_code = output_bytes_written;
+          has_seen_end_of_data_ = true;
+          has_received_completion_ = true;
+          NotifyCompletionIfAppropriate();
+          return;
+        }
+
+        input_buffer_ptr += consumed_bytes;
+        input_buffer_available -= consumed_bytes;
+        DCHECK_GE(input_buffer_available, 0);
+
+        if (output_bytes_written > 0) {
+          request_info->peer->OnReceivedData(std::make_unique<ReceivedData>(
+              inflate_buffer_->data(), output_bytes_written, consumed_bytes,
+              reclaim_accountant));
+        }
+      }
+    } else {
+      request_info->peer->OnReceivedData(std::make_unique<ReceivedData>(
+          static_cast<const char*>(buffer), available, available,
+          reclaim_accountant));
+    }
+    reclaim_accountant.reset();
   }
 }
 
