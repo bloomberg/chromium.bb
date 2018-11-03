@@ -6,7 +6,7 @@
 #define COMPONENTS_VIZ_COMMON_GPU_VULKAN_CONTEXT_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/viz_common_export.h"
+#include "components/viz/common/viz_vulkan_context_provider_export.h"
 
 class GrContext;
 
@@ -18,7 +18,7 @@ class VulkanImplementation;
 namespace viz {
 
 // The VulkanContextProvider groups sharing of vulkan objects synchronously.
-class VIZ_COMMON_EXPORT VulkanContextProvider
+class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
   virtual gpu::VulkanImplementation* GetVulkanImplementation() = 0;
