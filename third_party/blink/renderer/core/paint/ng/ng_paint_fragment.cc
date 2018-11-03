@@ -176,7 +176,20 @@ NGPaintFragment::NGPaintFragment(
   DCHECK(physical_fragment_);
 }
 
-NGPaintFragment::~NGPaintFragment() = default;
+NGPaintFragment::~NGPaintFragment() {
+  // The default destructor will deref |first_child_|, but because children are
+  // in a linked-list, it will call this destructor recursively. Remove children
+  // first non-recursively to avoid stack overflow when there are many chlidren.
+  RemoveChildren();
+}
+
+void NGPaintFragment::RemoveChildren() {
+  scoped_refptr<NGPaintFragment> child = std::move(first_child_);
+  DCHECK(!first_child_);
+  while (child) {
+    child = std::move(child->next_sibling_);
+  }
+}
 
 template <typename Traverse>
 NGPaintFragment& NGPaintFragment::List<Traverse>::front() const {
