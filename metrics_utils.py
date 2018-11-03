@@ -205,7 +205,7 @@ def extract_known_subcommand_args(args):
       arg = arg.split('=')[0]
       if arg in KNOWN_SUBCOMMAND_ARGS:
         known_args.append(arg)
-  return known_args
+  return sorted(known_args)
 
 
 def extract_http_metrics(request_uri, method, status, response_time):

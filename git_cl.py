@@ -188,6 +188,12 @@ def time_sleep(seconds):
   return time.sleep(seconds)
 
 
+def time_time():
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return time.time()
+
+
 def ask_for_data(prompt):
   try:
     return raw_input(prompt)
@@ -3008,7 +3014,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             GERRIT_ERR_LOGGER.info(line)
 
       filter_fn = FilterHeaders()
-      before_push = time.time()
+      before_push = time_time()
       push_returncode = 0
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
@@ -3026,7 +3032,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     finally:
       metrics.collector.add_repeated('sub_commands', {
         'command': 'git push',
-        'execution_time': time.time() - before_push,
+        'execution_time': time_time() - before_push,
         'exit_code': push_returncode,
         'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
       })

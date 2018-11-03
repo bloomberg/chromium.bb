@@ -622,6 +622,10 @@ class TestGitCl(TestCase):
     super(TestGitCl, self).setUp()
     self.calls = []
     self._calls_done = []
+    self.mock(git_cl, 'time_time',
+              lambda: self._mocked_call('time.time'))
+    self.mock(git_cl.metrics.collector, 'add_repeated',
+              lambda *a: self._mocked_call('add_repeated', *a))
     self.mock(subprocess2, 'call', self._mocked_call)
     self.mock(subprocess2, 'check_call', self._mocked_call)
     self.mock(subprocess2, 'check_output', self._mocked_call)
@@ -1007,16 +1011,22 @@ class TestGitCl(TestCase):
       '1hashPerLine\n'),
     ]
 
+    metrics_arguments = []
+
     if notify:
       ref_suffix = '%ready,notify=ALL'
+      metrics_arguments += ['ready', 'notify=ALL']
     else:
       if not issue and squash:
         ref_suffix = '%wip'
+        metrics_arguments.append('wip')
       else:
         ref_suffix = '%notify=NONE'
+        metrics_arguments.append('notify=NONE')
 
     if title:
       ref_suffix += ',m=' + title
+      metrics_arguments.append('m')
 
     calls += [
       ((['git', 'config', 'rietveld.cc'],), ''),
@@ -1025,9 +1035,11 @@ class TestGitCl(TestCase):
       # All reviwers and ccs get into ref_suffix.
       for r in sorted(reviewers):
         ref_suffix += ',r=%s' % r
+        metrics_arguments.append('r')
       for c in sorted(['chromium-reviews+test-more-cc@chromium.org',
                       'joe@example.com'] + cc):
         ref_suffix += ',cc=%s' % c
+        metrics_arguments.append('cc')
       reviewers, cc = [], []
     else:
       # TODO(crbug/877717): remove this case.
@@ -1043,36 +1055,51 @@ class TestGitCl(TestCase):
       for r in sorted(reviewers):
         if r != 'bad-account-or-email':
           ref_suffix  += ',r=%s' % r
+          metrics_arguments.append('r')
           reviewers.remove(r)
       for c in sorted(['joe@example.com'] + cc):
         ref_suffix += ',cc=%s' % c
+        metrics_arguments.append('cc')
         if c in cc:
           cc.remove(c)
 
     if not tbr:
       for k, v in sorted((labels or {}).items()):
         ref_suffix += ',l=%s+%d' % (k, v)
+        metrics_arguments.append('l=%s+%d' % (k, v))
 
-    calls.append((
-      (['git', 'push',
-        'https://%s.googlesource.com/my/repo' % short_hostname,
-        ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
-      (('remote:\n'
-        'remote: Processing changes: (\)\n'
-        'remote: Processing changes: (|)\n'
-        'remote: Processing changes: (/)\n'
-        'remote: Processing changes: (-)\n'
-        'remote: Processing changes: new: 1 (/)\n'
-        'remote: Processing changes: new: 1, done\n'
-        'remote:\n'
-        'remote: New Changes:\n'
-        'remote:   https://%s-review.googlesource.com/#/c/my/repo/+/123456'
-            ' XXX\n'
-        'remote:\n'
-        'To https://%s.googlesource.com/my/repo\n'
-        ' * [new branch]      hhhh -> refs/for/refs/heads/master\n'
-       ) % (short_hostname, short_hostname))
-    ))
+    calls += [
+      (('time.time',), 1000,),
+      ((['git', 'push',
+         'https://%s.googlesource.com/my/repo' % short_hostname,
+         ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
+       (('remote:\n'
+         'remote: Processing changes: (\)\n'
+         'remote: Processing changes: (|)\n'
+         'remote: Processing changes: (/)\n'
+         'remote: Processing changes: (-)\n'
+         'remote: Processing changes: new: 1 (/)\n'
+         'remote: Processing changes: new: 1, done\n'
+         'remote:\n'
+         'remote: New Changes:\n'
+         'remote:   https://%s-review.googlesource.com/#/c/my/repo/+/123456'
+             ' XXX\n'
+         'remote:\n'
+         'To https://%s.googlesource.com/my/repo\n'
+         ' * [new branch]      hhhh -> refs/for/refs/heads/master\n'
+         ) % (short_hostname, short_hostname)),),
+      (('time.time',), 2000,),
+      (('add_repeated',
+        'sub_commands',
+        {
+          'execution_time': 1000,
+          'command': 'git push',
+          'exit_code': 0,
+          'arguments': sorted(metrics_arguments),
+        }),
+        None,),
+    ]
+
     if squash:
       calls += [
           ((['git', 'config', 'branch.master.gerritissue', '123456'],),
