@@ -96,6 +96,7 @@ std::string ProtocolSerializerXml::Serialize(
 #endif
 
   for (const auto& app : request.apps) {
+    // Begin <app> attributes.
     base::StringAppendF(&msg, "<app appid=\"%s\"", app.app_id.c_str());
     base::StringAppendF(&msg, " version=\"%s\"", app.version.c_str());
     if (!app.brand_code.empty())
@@ -118,15 +119,15 @@ std::string ProtocolSerializerXml::Serialize(
       base::StringAppendF(&msg, " cohortname=\"%s\"", app.cohort_name.c_str());
     if (!app.cohort_hint.empty())
       base::StringAppendF(&msg, " cohorthint=\"%s\"", app.cohort_hint.c_str());
-
     if (app.enabled)
       base::StringAppendF(&msg, " enabled=\"%d\"", *app.enabled ? 1 : 0);
+    base::StringAppendF(&msg, ">");
+    // End <app> attributes.
+
     if (app.disabled_reasons) {
       for (const int disabled_reason : *app.disabled_reasons)
         base::StringAppendF(&msg, "<disabled reason=\"%d\"/>", disabled_reason);
     }
-
-    base::StringAppendF(&msg, ">");
 
     if (app.update_check) {
       base::StringAppendF(&msg, "<updatecheck");
@@ -186,6 +187,7 @@ std::string ProtocolSerializerXml::Serialize(
         base::StringAppendF(&msg, "/>");
       }
     }
+
     base::StringAppendF(&msg, "</app>");
   }
 
