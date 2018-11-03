@@ -10,7 +10,7 @@
 
 namespace gfx {
 class Image;
-}
+}  // namespace gfx
 
 // A mock NotificationImageRetainer class for use with unit tests. Returns
 // predictable paths to callers wanting to register temporary files.
