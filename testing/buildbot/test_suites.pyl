@@ -679,6 +679,11 @@
           'shards': 2,
         },
       },
+      'url_unittests': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
 
     'chromium_linux_scripts': {
