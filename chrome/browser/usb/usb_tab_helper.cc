@@ -98,19 +98,26 @@ UsbTabHelper::UsbTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
 void UsbTabHelper::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  frame_usb_services_.erase(render_frame_host);
-  NotifyTabStateChanged();
+  // This method handles the simple case of a frame closing.
+  DeleteFrameServices(render_frame_host);
+}
+
+void UsbTabHelper::RenderFrameHostChanged(RenderFrameHost* old_host,
+                                          RenderFrameHost* new_host) {
+  // This method handles the case where a frame swaps its RenderFrameHost for a
+  // new one on navigation.
+  DeleteFrameServices(old_host);
 }
 
 void UsbTabHelper::DidFinishNavigation(content::NavigationHandle* handle) {
-  if (handle->HasCommitted() && !handle->IsSameDocument()) {
-    frame_usb_services_.erase(handle->GetRenderFrameHost());
-    NotifyTabStateChanged();
-  }
+  // This method handles the case where a frame navigates without swapping its
+  // RenderFrameHost for a new one.
+  if (handle->HasCommitted() && !handle->IsSameDocument())
+    DeleteFrameServices(handle->GetRenderFrameHost());
 }
 
 FrameUsbServices* UsbTabHelper::GetFrameUsbService(
-    content::RenderFrameHost* render_frame_host) {
+    RenderFrameHost* render_frame_host) {
   FrameUsbServicesMap::const_iterator it =
       frame_usb_services_.find(render_frame_host);
   if (it == frame_usb_services_.end()) {
@@ -123,8 +130,13 @@ FrameUsbServices* UsbTabHelper::GetFrameUsbService(
   return it->second.get();
 }
 
+void UsbTabHelper::DeleteFrameServices(RenderFrameHost* render_frame_host) {
+  frame_usb_services_.erase(render_frame_host);
+  NotifyTabStateChanged();
+}
+
 base::WeakPtr<WebUsbChooser> UsbTabHelper::GetUsbChooser(
-    content::RenderFrameHost* render_frame_host) {
+    RenderFrameHost* render_frame_host) {
   FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
   if (!frame_usb_services->usb_chooser) {
     frame_usb_services->usb_chooser.reset(
