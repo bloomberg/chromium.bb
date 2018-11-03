@@ -302,6 +302,24 @@ cr.define('extensions', function() {
     hasRuntimeHostPermissions_: function() {
       return !!this.data.permissions.runtimeHostPermissions;
     },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    showFreeformRuntimeHostPermissions_: function() {
+      return this.hasRuntimeHostPermissions_() &&
+          this.data.permissions.runtimeHostPermissions.hasAllHosts;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    showHostPermissionsToggleList_: function() {
+      return this.hasRuntimeHostPermissions_() &&
+          !this.data.permissions.runtimeHostPermissions.hasAllHosts;
+    },
   });
 
   return {DetailView: DetailView};

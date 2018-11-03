@@ -15,6 +15,8 @@ cr.define('extensions', function() {
 
     properties: {
       checked: Boolean,
+
+      disabled: Boolean,
     },
 
     /**
