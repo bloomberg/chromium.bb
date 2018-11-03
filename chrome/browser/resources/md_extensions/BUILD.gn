@@ -56,6 +56,7 @@ js_type_check("closure_compile") {
     ":drag_and_drop_handler",
     ":drop_overlay",
     ":error_page",
+    ":host_permissions_toggle_list",
     ":install_warnings_dialog",
     ":item",
     ":item_behavior",
@@ -143,6 +144,13 @@ js_library("error_page") {
     "$externs_path/developer_private.js",
     "$externs_path/metrics_private.js",
   ]
+}
+
+js_library("host_permissions_toggle_list") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/developer_private.js" ]
 }
 
 js_library("install_warnings_dialog") {

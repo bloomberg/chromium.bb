@@ -7,10 +7,7 @@
   <template>
     <style>
       :host {
-        @apply --cr-section;
         flex-direction: column;
-        padding-left: 0;
-        padding-right: 0;
         touch-action: none;
       }
 
@@ -24,7 +21,7 @@
         cursor: pointer;
         display: flex;
         flex: 1;
-        padding: 0 var(--cr-section-padding);
+        padding: 0 var(--toggle-row-label-padding, 0);
         width: 100%;
       }
 
@@ -39,10 +36,11 @@
     </style>
     <label id="label">
       <input id="native" type="checkbox" checked="[[checked]]"
-          on-change="onNativeChange_" on-click="onNativeClick_">
+          on-change="onNativeChange_" on-click="onNativeClick_"
+          disabled="[[disabled]]">
       <slot></slot>
       <cr-toggle id="crToggle" checked="{{checked}}" aria-labelledby="label"
-          on-change="onCrToggleChange_"></cr-toggle>
+          on-change="onCrToggleChange_" disabled="[[disabled]]"></cr-toggle>
     </label>
   </template>
   <script src="toggle_row.js"></script>

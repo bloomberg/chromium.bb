@@ -20,6 +20,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="item_util.html">
+<link rel="import" href="host_permissions_toggle_list.html">
 <link rel="import" href="navigation_helper.html">
 <link rel="import" href="runtime_host_permissions.html">
 <link rel="import" href="strings.html">
@@ -164,6 +165,13 @@
 
       #options-section .control-line:first-child {
         border-top: var(--cr-separator-line);
+      }
+
+      extensions-toggle-row {
+        @apply --cr-section;
+        padding-inline-end: 0;
+        padding-inline-start: 0;
+        --toggle-row-label-padding: var(--cr-section-padding);
       }
 
       #load-path {
@@ -329,12 +337,21 @@
                 </li>
               </template>
             </ul>
-            <template is="dom-if" if="[[hasRuntimeHostPermissions_(data.*)]]">
+            <template is="dom-if"
+                if="[[showFreeformRuntimeHostPermissions_(data.*)]]">
               <extensions-runtime-host-permissions
                   permissions="[[data.permissions.runtimeHostPermissions]]"
                   delegate="[[delegate]]"
                   item-id="[[data.id]]">
               </extensions-runtime-host-permissions>
+            </template>
+            <template is="dom-if"
+                if="[[showHostPermissionsToggleList_(data.*)]]">
+              <extensions-host-permissions-toggle-list
+                  permissions="[[data.permissions.runtimeHostPermissions]]"
+                  delegate="[[delegate]]"
+                  item-id="[[data.id]]">
+              </extensions-host-permissions-toggle-list>
             </template>
           </div>
         </div>

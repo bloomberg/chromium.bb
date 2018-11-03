@@ -123,6 +123,12 @@
       <structure name="IDR_MD_EXTENSIONS_LOAD_ERROR_JS"
                  file="load_error.js"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_HOST_PERMISSIONS_TOGGLE_LIST_HMTL"
+                 file="host_permissions_toggle_list.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_HOST_PERMISSIONS_TOGGLE_LIST_JS"
+                 file="host_permissions_toggle_list.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_NAVIGATION_HELPER_HTML"
                  file="navigation_helper.html"
                  type="chrome_html" />

@@ -872,3 +872,24 @@ CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
 TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
   mocha.run();
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// HostPermissionsToggleList tests
+
+CrExtensionsHostPermissionsToggleListTest =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browserPreload() {
+    return 'chrome://extensions/host_permissions_toggle_list.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'host_permissions_toggle_list_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsHostPermissionsToggleListTest', 'All', () => {
+  mocha.run();
+});

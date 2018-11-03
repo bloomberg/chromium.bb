@@ -165,6 +165,11 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       expectTrue(testIsVisible('.warning-icon'));
 
+      // Ensure that without runtimeHostPermissions data, the sections are
+      // hidden.
+      expectFalse(testIsVisible('extensions-runtime-host-permissions'));
+      expectFalse(testIsVisible('extensions-host-permissions-toggle-list'));
+
       // Adding any runtime host permissions should result in the runtime host
       // controls becoming visible.
       const allSitesPermissions = {
@@ -178,6 +183,23 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.permissions', allSitesPermissions);
       Polymer.dom.flush();
       expectTrue(testIsVisible('extensions-runtime-host-permissions'));
+      expectFalse(testIsVisible('extensions-host-permissions-toggle-list'));
+
+      const someSitesPermissions = {
+        simplePermissions: [],
+        runtimeHostPermissions: {
+          hosts: [
+            {granted: true, host: 'https://chromium.org/*'},
+            {granted: false, host: 'https://example.com/*'}
+          ],
+          hasAllHosts: false,
+          hostAccess: chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES,
+        },
+      };
+      item.set('data.permissions', someSitesPermissions);
+      Polymer.dom.flush();
+      expectFalse(testIsVisible('extensions-runtime-host-permissions'));
+      expectTrue(testIsVisible('extensions-host-permissions-toggle-list'));
     });
 
     test(assert(TestNames.LayoutSource), function() {
