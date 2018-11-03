@@ -113,6 +113,10 @@ void RecordDeviceSyncSoftwareFeaturesResult(
   }
 }
 
+void RecordDeviceSyncResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("CryptAuth.DeviceSync.Result", success);
+}
+
 // Converts supported and enabled SoftwareFeature protos to a single dictionary
 // value that can be stored in user prefs.
 std::unique_ptr<base::DictionaryValue>
@@ -646,8 +650,12 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesSuccess(
   // Update the synced devices stored in the user's prefs.
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
 
-  if (!response.devices().empty())
+  if (!response.devices().empty()) {
     PA_LOG(VERBOSE) << "Devices were successfully synced.";
+    RecordDeviceSyncResult(true /* success */);
+  } else {
+    RecordDeviceSyncResult(false /* success */);
+  }
 
   for (const auto& device : response.devices()) {
     std::unique_ptr<base::DictionaryValue> device_dictionary =
@@ -695,6 +703,7 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesFailure(
   cryptauth_client_.reset();
   sync_request_.reset();
   NotifySyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
+  RecordDeviceSyncResult(false /* success */);
 }
 
 void CryptAuthDeviceManagerImpl::OnResyncMessage() {
