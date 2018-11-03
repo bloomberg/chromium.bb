@@ -341,45 +341,6 @@ is_version_ge() {
   return 0
 }
 
-# Prints the OS version, as reported by sw_vers -productVersion, to stdout.
-# This function operates with "static" variables: it will only check the OS
-# version once per script run.
-g_checked_os_version=
-g_os_version=
-os_version() {
-  if [[ -z "${g_checked_os_version}" ]]; then
-    g_checked_os_version="y"
-    g_os_version="$(sw_vers -productVersion)"
-    note "g_os_version = ${g_os_version}"
-  fi
-  echo "${g_os_version}"
-  return 0
-}
-
-# Compares the running OS version against a supplied version number,
-# |check_version|, and returns 0 (true) if the running OS version is greater
-# than or equal to |check_version| according to a piece-wise comparison.
-# Returns 1 (false) if the running OS version number cannot be determined or
-# if |check_version| is greater than the running OS version. |check_version|
-# should be a string of the form "major.minor" or "major.minor.micro".
-is_os_version_ge() {
-  local check_version="${1}"
-
-  local os_version="$(os_version)"
-  is_version_ge "${os_version}" "${check_version}"
-
-  # The return value of is_version_ge is used as this function's return value.
-}
-
-# Returns 0 (true) if xattr supports -r for recursive operation.
-os_xattr_supports_r() {
-  # xattr -r is supported in Mac OS X 10.6.
-  is_os_version_ge 10.6
-
-  # The return value of is_os_version_ge is used as this function's return
-  # value.
-}
-
 # Prints the version of ksadmin, as reported by ksadmin --ksadmin-version, to
 # stdout.  This function operates with "static" variables: it will only check
 # the ksadmin version once per script run.  If ksadmin is old enough to not
@@ -1484,14 +1445,7 @@ main() {
   # the application.
   note "lifting quarantine"
 
-  if os_xattr_supports_r; then
-    # On 10.6, xattr supports -r for recursive operation.
-    xattr -d -r "${QUARANTINE_ATTR}" "${installed_app}" 2> /dev/null
-  else
-    # On earlier systems, xattr doesn't support -r, so run xattr via find.
-    find "${installed_app}" -exec xattr -d "${QUARANTINE_ATTR}" {} + \
-        2> /dev/null
-  fi
+  xattr -d -r "${QUARANTINE_ATTR}" "${installed_app}" 2> /dev/null
 
   # Do Keychain reauthorization. This involves running a stub executable on
   # the dmg that loads the newly-updated framework and jumps to it to perform
