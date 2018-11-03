@@ -9,11 +9,16 @@
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#endif
 
 namespace gpu {
 namespace raster {
@@ -22,14 +27,32 @@ RasterDecoderContextState::RasterDecoderContextState(
     scoped_refptr<gl::GLShareGroup> share_group,
     scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gl::GLContext> context,
-    bool use_virtualized_gl_contexts,
-    GrContext* vulkan_gr_context)
+    bool use_virtualized_gl_contexts)
     : share_group(std::move(share_group)),
       surface(std::move(surface)),
       context(std::move(context)),
-      gr_context(vulkan_gr_context),
-      use_vulkan_gr_context(!!gr_context),
       use_virtualized_gl_contexts(use_virtualized_gl_contexts) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
+  }
+}
+
+RasterDecoderContextState::RasterDecoderContextState(
+    viz::VulkanContextProvider* vulkan_context_provider)
+#if BUILDFLAG(ENABLE_VULKAN)
+    : vk_context_provider(vulkan_context_provider),
+      gr_context(vk_context_provider->GetGrContext()),
+      use_vulkan_gr_context(true)
+#endif
+{
+// This constructor should not be called if Vulkan is not enabled.
+#if !BUILDFLAG(ENABLE_VULKAN)
+  DCHECK(false);
+#endif
+
+  // gr_context should not be null.
+  DCHECK(gr_context);
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());

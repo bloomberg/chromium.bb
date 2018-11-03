@@ -19,6 +19,10 @@ class GLShareGroup;
 class GLSurface;
 }  // namespace gl
 
+namespace viz {
+class VulkanContextProvider;
+}  // namespace viz
+
 namespace gpu {
 class GpuDriverBugWorkarounds;
 class GpuProcessActivityFlags;
@@ -30,11 +34,16 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
     : public base::RefCounted<RasterDecoderContextState>,
       public base::trace_event::MemoryDumpProvider {
  public:
+  // Used for GL.
   RasterDecoderContextState(scoped_refptr<gl::GLShareGroup> share_group,
                             scoped_refptr<gl::GLSurface> surface,
                             scoped_refptr<gl::GLContext> context,
-                            bool use_virtualized_gl_contexts,
-                            GrContext* vulkan_gr_context = nullptr);
+                            bool use_virtualized_gl_contexts);
+
+  // Used for Vulkan.
+  RasterDecoderContextState(
+      viz::VulkanContextProvider* vulkan_context_provider);
+
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
@@ -42,10 +51,14 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  // These should be null for Vulkan mode.
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
   scoped_refptr<gl::GLContext> context;
-  GrContext* gr_context;
+
+  // Should be null for GL mode.
+  viz::VulkanContextProvider* vk_context_provider = nullptr;
+  GrContext* gr_context = nullptr;
   sk_sp<GrContext> owned_gr_context;
   std::unique_ptr<ServiceTransferCache> transfer_cache;
   const bool use_vulkan_gr_context = false;
