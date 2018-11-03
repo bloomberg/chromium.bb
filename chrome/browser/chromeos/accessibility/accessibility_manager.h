@@ -313,6 +313,12 @@ class AccessibilityManager
   // Sets the startup sound user preference.
   void SetStartupSoundEnabled(bool value) const;
 
+  // Gets the bluetooth braille display device address for the current user.
+  const std::string GetBluetoothBrailleDisplayAddress() const;
+
+  // Sets the bluetooth braille display device address for the current user.
+  void UpdateBluetoothBrailleDisplayAddress(const std::string& address);
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(

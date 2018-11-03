@@ -31,9 +31,16 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // |job|: Name of Upstart job.
   // |upstart_env|: List of upstart environment variables to be passed to the
   // upstart service.
+  // |callback|: Called with a response.
   virtual void StartJob(const std::string& job,
                         const std::vector<std::string>& upstart_env,
                         VoidDBusMethodCallback callback) = 0;
+
+  // Stops an Upstart job.
+  // |job|: Name of Upstart job.
+  // |callback|: Called with a response.
+  virtual void StopJob(const std::string& job,
+                       VoidDBusMethodCallback callback) = 0;
 
   // Starts authpolicyd.
   virtual void StartAuthPolicyService() = 0;

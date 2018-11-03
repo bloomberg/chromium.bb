@@ -24,6 +24,12 @@ void FakeUpstartClient::StartJob(const std::string& job,
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeUpstartClient::StopJob(const std::string& job,
+                                VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeUpstartClient::StartAuthPolicyService() {
   static_cast<FakeAuthPolicyClient*>(
       DBusThreadManager::Get()->GetAuthPolicyClient())

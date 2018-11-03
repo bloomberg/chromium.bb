@@ -19,10 +19,12 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   // DBusClient overrides.
   void Init(dbus::Bus* bus) override;
 
+  // UpstartClient overrides:
   void StartJob(const std::string& job,
                 const std::vector<std::string>& upstart_env,
                 VoidDBusMethodCallback callback) override;
-  // UpstartClient overrides.
+  void StopJob(const std::string& job,
+               VoidDBusMethodCallback callback) override;
   void StartAuthPolicyService() override;
   void RestartAuthPolicyService() override;
   void StartMediaAnalytics(const std::vector<std::string>& upstart_env,
