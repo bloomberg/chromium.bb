@@ -63,7 +63,7 @@ GpuChannelManager::GpuChannelManager(
     const GpuFeatureInfo& gpu_feature_info,
     GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
-    GrContext* vulkan_gr_context)
+    viz::VulkanContextProvider* vulkan_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -84,7 +84,7 @@ GpuChannelManager::GpuChannelManager(
       memory_pressure_listener_(
           base::Bind(&GpuChannelManager::HandleMemoryPressure,
                      base::Unretained(this))),
-      vulkan_gr_context_(vulkan_gr_context),
+      vulkan_context_provider_(vulkan_context_provider),
       weak_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
@@ -432,9 +432,15 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   }
 
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
-  raster_decoder_context_state_ = new raster::RasterDecoderContextState(
-      std::move(share_group), std::move(surface), std::move(context),
-      use_virtualized_gl_contexts, vulkan_gr_context_);
+  if (vulkan_context_provider_) {
+    raster_decoder_context_state_ =
+        new raster::RasterDecoderContextState(vulkan_context_provider_);
+  } else {
+    raster_decoder_context_state_ = new raster::RasterDecoderContextState(
+        std::move(share_group), std::move(surface), std::move(context),
+        use_virtualized_gl_contexts);
+  }
+
   const bool enable_raster_transport =
       gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
       gpu::kGpuFeatureStatusEnabled;
