@@ -349,7 +349,6 @@ String StringForSkPaintFlags(const SkPaint& paint) {
   AppendFlagToString(&flags_string, paint.isFakeBoldText(), "FakeBoldText");
   AppendFlagToString(&flags_string, paint.isLinearText(), "LinearText");
   AppendFlagToString(&flags_string, paint.isSubpixelText(), "SubpixelText");
-  AppendFlagToString(&flags_string, paint.isDevKernText(), "DevKernText");
   AppendFlagToString(&flags_string, paint.isLCDRenderText(), "LCDRenderText");
   AppendFlagToString(&flags_string, paint.isEmbeddedBitmapText(),
                      "EmbeddedBitmapText");
