@@ -33,13 +33,10 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                                   public InputEventDispatcherDelegate {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
-  // |view_owner_request| is passed to the view managed when creating the
-  // underlying view. In order for the View to be displayed the ViewOwner must
-  // be used to add the view to a ViewContainer.
+  // |view_token| is passed to Scenic to attach the view to the view tree.
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner>
-                   view_owner_request);
+               zx::eventpair view_token);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }

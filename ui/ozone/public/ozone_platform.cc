@@ -38,12 +38,12 @@ base::Lock& GetOzoneInstanceLock() {
 OzonePlatform::PlatformProperties::PlatformProperties() = default;
 
 OzonePlatform::PlatformProperties::PlatformProperties(
-    bool needs_request,
+    bool needs_view_token,
     bool custom_frame_default,
     bool can_use_system_title_bar,
     bool requires_mojo_for_ipc,
     std::vector<gfx::BufferFormat> buffer_formats)
-    : needs_view_owner_request(needs_request),
+    : needs_view_token(needs_view_token),
       custom_frame_pref_default(custom_frame_default),
       use_system_title_bar(can_use_system_title_bar),
       requires_mojo(requires_mojo_for_ipc),

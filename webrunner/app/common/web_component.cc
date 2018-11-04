@@ -81,13 +81,26 @@ void WebComponent::Detach() {
 }
 
 void WebComponent::CreateView(
-    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
+    zx::eventpair view_token,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
   DCHECK(frame_);
   DCHECK(!view_is_bound_);
 
-  frame_->CreateView(std::move(view_owner), std::move(services));
+  frame_->CreateView2(std::move(view_token), std::move(incoming_services),
+                      std::move(outgoing_services));
+
   view_is_bound_ = true;
+}
+
+void WebComponent::CreateView(
+    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
+  // Cast the ViewOwner request to view_token. This is temporary hack for
+  // ViewsV2 transition. This version of CreateView() will be removed in the
+  // future.
+  CreateView(zx::eventpair(view_owner.TakeChannel().release()),
+             std::move(services), nullptr);
 }
 
 void WebComponent::DestroyComponent(int termination_exit_code,

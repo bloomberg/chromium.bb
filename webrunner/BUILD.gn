@@ -71,6 +71,8 @@ source_set("webrunner_common") {
   deps = [
     ":web_fidl",
     "//base",
+    "//third_party/fuchsia-sdk/sdk:app",
+    "//third_party/fuchsia-sdk/sdk:viewsv1",
     "//url",
   ]
 }
@@ -284,7 +286,7 @@ fidl_library("web_fidl") {
   public_deps = [
     "//third_party/fuchsia-sdk/sdk:gfx",
     "//third_party/fuchsia-sdk/sdk:sys",
-    "//third_party/fuchsia-sdk/sdk:viewsv1",
+    "//third_party/fuchsia-sdk/sdk:viewsv1token",
   ]
 }
 
