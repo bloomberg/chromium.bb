@@ -37,7 +37,7 @@ enum class LengthResolvePhase { kIntrinsic, kLayout };
 // kContentSize - width / height
 enum class LengthResolveType { kMinSize, kMaxSize, kContentSize };
 
-CORE_EXPORT inline bool NeedMinMaxSize(const ComputedStyle& style) {
+inline bool NeedMinMaxSize(const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
   // size computation) but that's a rare case and only affects performance, not
   // correctness.
@@ -50,9 +50,8 @@ CORE_EXPORT inline bool NeedMinMaxSize(const ComputedStyle& style) {
 // pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
 // If this function returns false, it is safe to pass an empty
 // MinMaxSize struct to those functions.
-CORE_EXPORT inline bool NeedMinMaxSize(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style) {
+inline bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
+                           const ComputedStyle& style) {
   return constraint_space.IsShrinkToFit() || NeedMinMaxSize(style);
 }
 
@@ -95,7 +94,7 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(
 // given constraint space.
 LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
                                       const Length&);
-CORE_EXPORT inline LayoutUnit ResolveMarginPaddingLength(
+inline LayoutUnit ResolveMarginPaddingLength(
     const NGConstraintSpace& constraint_space,
     const Length& length) {
   LayoutUnit percentage_resolution_size =
@@ -191,7 +190,7 @@ CORE_EXPORT NGPhysicalBoxStrut
 ComputePhysicalMargins(const ComputedStyle&,
                        LayoutUnit percentage_resolution_size);
 
-CORE_EXPORT inline NGPhysicalBoxStrut ComputePhysicalMargins(
+inline NGPhysicalBoxStrut ComputePhysicalMargins(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   LayoutUnit percentage_resolution_size =
@@ -213,7 +212,7 @@ inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
 }
 
 // Compute margins for the style owner.
-CORE_EXPORT inline NGBoxStrut ComputeMarginsForSelf(
+inline NGBoxStrut ComputeMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   if (constraint_space.IsAnonymous())
@@ -228,7 +227,7 @@ CORE_EXPORT inline NGBoxStrut ComputeMarginsForSelf(
 //
 // The "line" versions compute line-relative logical values. See NGLineBoxStrut
 // for more details.
-CORE_EXPORT inline NGLineBoxStrut ComputeLineMarginsForSelf(
+inline NGLineBoxStrut ComputeLineMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   if (constraint_space.IsAnonymous())
@@ -241,7 +240,7 @@ CORE_EXPORT inline NGLineBoxStrut ComputeLineMarginsForSelf(
 
 // Compute line logical margins for the constraint space, in the visual order
 // (always assumes LTR, ignoring the direction) for inline layout algorithm.
-CORE_EXPORT inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
+inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   if (constraint_space.IsAnonymous())
@@ -263,7 +262,7 @@ CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
                                       const NGLayoutInputNode);
 
-CORE_EXPORT inline NGLineBoxStrut ComputeLineBorders(
+inline NGLineBoxStrut ComputeLineBorders(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   return NGLineBoxStrut(ComputeBorders(constraint_space, style),
@@ -276,7 +275,7 @@ CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
-CORE_EXPORT inline NGLineBoxStrut ComputeLinePadding(
+inline NGLineBoxStrut ComputeLinePadding(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   return NGLineBoxStrut(ComputePadding(constraint_space, style),
@@ -316,9 +315,9 @@ CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
 CORE_EXPORT LayoutUnit InlineOffsetForTextAlign(const ComputedStyle&,
                                                 LayoutUnit space_left);
 
-CORE_EXPORT inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
-                                                LayoutUnit min,
-                                                LayoutUnit max) {
+inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
+                                    LayoutUnit min,
+                                    LayoutUnit max) {
   return std::max(min, std::min(length, max));
 }
 
