@@ -79,6 +79,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
@@ -132,6 +133,18 @@ std::unique_ptr<net::test_server::HttpResponse> SendReportHttpResponse(
   }
 
   return nullptr;
+}
+
+void StoreBool(bool* result, const base::Closure& callback, bool value) {
+  *result = value;
+  callback.Run();
+}
+
+void StoreValue(base::Value* result,
+                const base::Closure& callback,
+                base::Value value) {
+  *result = std::move(value);
+  callback.Run();
 }
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
@@ -276,7 +289,7 @@ class NetworkContextTest : public testing::Test,
   // Looks up a value with the given name from the NetworkContext's
   // TransportSocketPool info dictionary.
   int GetSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
-    int value;
+    int value = -1;
     context->url_request_context()
         ->http_transaction_factory()
         ->GetSession()
@@ -3187,7 +3200,7 @@ class ConnectionListener
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was read from.
   void ReadFromSocket(const net::StreamSocket& connection, int rv) override {
-    EXPECT_EQ(net::OK, rv);
+    EXPECT_GE(rv, net::OK);
   }
 
   // Wait for exactly |n| items in |sockets_|. |n| must be greater than 0.
@@ -3425,6 +3438,172 @@ TEST_F(NetworkContextTest, CloseAllConnections) {
   EXPECT_EQ(num_sockets, 0);
 }
 
+TEST_F(NetworkContextTest, CloseIdleConnections) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  // Create a hung (i.e. non-idle) socket.
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request =
+      network_context->url_request_context()->CreateRequest(
+          test_server.GetURL("/hung"), net::DEFAULT_PRIORITY, &delegate,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  connection_listener.WaitForAcceptedConnections(1u);
+  EXPECT_EQ(0, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+  EXPECT_EQ(
+      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
+  EXPECT_EQ(
+      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+
+  // Create an idle socket.
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  connection_listener.WaitForAcceptedConnections(2u);
+  EXPECT_EQ(2, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+  EXPECT_EQ(
+      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
+  EXPECT_EQ(
+      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+
+  base::RunLoop run_loop;
+  network_context->CloseIdleConnections(run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(0, GetSocketPoolInfo(network_context.get(), "idle_socket_count"));
+  EXPECT_EQ(
+      0, GetSocketPoolInfo(network_context.get(), "connecting_socket_count"));
+  EXPECT_EQ(
+      1, GetSocketPoolInfo(network_context.get(), "handed_out_socket_count"));
+}
+
+TEST_F(NetworkContextTest, ExpectCT) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  const char kTestDomain[] = "example.com";
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  const bool enforce = true;
+  const GURL report_uri = GURL("https://example.com/foo/bar");
+
+  // Assert we start with no data for the test host.
+  {
+    base::Value state;
+    base::RunLoop run_loop;
+    network_context->GetExpectCTState(
+        kTestDomain,
+        base::BindOnce(&StoreValue, &state, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(state.is_dict());
+
+    const base::Value* result =
+        state.FindKeyOfType("result", base::Value::Type::BOOLEAN);
+    ASSERT_TRUE(result != nullptr);
+    EXPECT_FALSE(result->GetBool());
+  }
+
+  // Add the host data.
+  {
+    base::RunLoop run_loop;
+    bool result = false;
+    network_context->AddExpectCT(
+        kTestDomain, expiry, enforce, report_uri,
+        base::BindOnce(&StoreBool, &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(result);
+  }
+
+  // Assert added host data is returned.
+  {
+    base::Value state;
+    base::RunLoop run_loop;
+    network_context->GetExpectCTState(
+        kTestDomain,
+        base::BindOnce(&StoreValue, &state, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(state.is_dict());
+
+    const base::Value* value = state.FindKeyOfType("dynamic_expect_ct_domain",
+                                                   base::Value::Type::STRING);
+    ASSERT_TRUE(value != nullptr);
+    EXPECT_EQ(kTestDomain, value->GetString());
+
+    value = state.FindKeyOfType("dynamic_expect_ct_expiry",
+                                base::Value::Type::DOUBLE);
+    ASSERT_TRUE(value != nullptr);
+    EXPECT_EQ(expiry.ToDoubleT(), value->GetDouble());
+
+    value = state.FindKeyOfType("dynamic_expect_ct_enforce",
+                                base::Value::Type::BOOLEAN);
+    ASSERT_TRUE(value != nullptr);
+    EXPECT_EQ(enforce, value->GetBool());
+
+    value = state.FindKeyOfType("dynamic_expect_ct_report_uri",
+                                base::Value::Type::STRING);
+    ASSERT_TRUE(value != nullptr);
+    EXPECT_EQ(report_uri, value->GetString());
+  }
+
+  // Delete host data.
+  {
+    bool result;
+    base::RunLoop run_loop;
+    network_context->DeleteDynamicDataForHost(
+        kTestDomain,
+        base::BindOnce(&StoreBool, &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(result);
+  }
+
+  // Assert data is removed.
+  {
+    base::Value state;
+    base::RunLoop run_loop;
+    network_context->GetExpectCTState(
+        kTestDomain,
+        base::BindOnce(&StoreValue, &state, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(state.is_dict());
+
+    const base::Value* result =
+        state.FindKeyOfType("result", base::Value::Type::BOOLEAN);
+    ASSERT_TRUE(result != nullptr);
+    EXPECT_FALSE(result->GetBool());
+  }
+}
+
+TEST_F(NetworkContextTest, SetExpectCTTestReport) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::EmbeddedTestServer test_server;
+
+  std::set<GURL> requested_urls;
+  auto monitor_callback = base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        requested_urls.insert(request.GetURL());
+      });
+  test_server.RegisterRequestMonitor(monitor_callback);
+  ASSERT_TRUE(test_server.Start());
+  const GURL kReportURL = test_server.base_url().Resolve("/report/path");
+
+  base::RunLoop run_loop;
+  bool result = false;
+  network_context->SetExpectCTTestReport(
+      kReportURL, base::BindOnce(&StoreBool, &result, run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_FALSE(result);
+
+  EXPECT_TRUE(base::ContainsKey(requested_urls, kReportURL));
+}
+
 TEST_F(NetworkContextTest, QueryHSTS) {
   const char kTestDomain[] = "example.com";
 
@@ -3440,9 +3619,11 @@ TEST_F(NetworkContextTest, QueryHSTS) {
   EXPECT_TRUE(got_result);
   EXPECT_FALSE(result);
 
-  network_context->AddHSTSForTesting(
+  base::RunLoop run_loop;
+  network_context->AddHSTS(
       kTestDomain, base::Time::Now() + base::TimeDelta::FromDays(1000),
-      false /*include_subdomains*/, base::DoNothing());
+      false /*include_subdomains*/, run_loop.QuitClosure());
+  run_loop.Run();
 
   bool result2 = false, got_result2 = false;
   network_context->IsHSTSActiveForHost(
@@ -3452,6 +3633,150 @@ TEST_F(NetworkContextTest, QueryHSTS) {
       }));
   EXPECT_TRUE(got_result2);
   EXPECT_TRUE(result2);
+}
+
+TEST_F(NetworkContextTest, GetHSTSState) {
+  const char kTestDomain[] = "example.com";
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  const GURL report_uri = GURL("https://example.com/foo/bar");
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  base::Value state;
+  {
+    base::RunLoop run_loop;
+    network_context->GetHSTSState(
+        kTestDomain,
+        base::BindOnce(&StoreValue, &state, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(state.is_dict());
+
+  const base::Value* result =
+      state.FindKeyOfType("result", base::Value::Type::BOOLEAN);
+  ASSERT_TRUE(result != nullptr);
+  EXPECT_FALSE(result->GetBool());
+
+  {
+    base::RunLoop run_loop;
+    network_context->AddHSTS(kTestDomain, expiry, false /*include_subdomains*/,
+                             run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    network_context->GetHSTSState(
+        kTestDomain,
+        base::BindOnce(&StoreValue, &state, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(state.is_dict());
+
+  result = state.FindKeyOfType("result", base::Value::Type::BOOLEAN);
+  ASSERT_TRUE(result != nullptr);
+  EXPECT_TRUE(result->GetBool());
+
+  // Not checking all values - only enough to ensure the underlying call
+  // was made.
+  const base::Value* value =
+      state.FindKeyOfType("dynamic_sts_domain", base::Value::Type::STRING);
+  ASSERT_TRUE(value != nullptr);
+  EXPECT_EQ(kTestDomain, value->GetString());
+
+  value = state.FindKeyOfType("dynamic_sts_expiry", base::Value::Type::DOUBLE);
+  ASSERT_TRUE(value != nullptr);
+  EXPECT_EQ(expiry.ToDoubleT(), value->GetDouble());
+}
+
+TEST_F(NetworkContextTest, ForceReloadProxyConfig) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto net_log_exporter =
+      std::make_unique<network::NetLogExporter>(network_context.get());
+  base::FilePath net_log_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&net_log_path));
+
+  {
+    base::File net_log_file(
+        net_log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    EXPECT_TRUE(net_log_file.IsValid());
+    base::RunLoop run_loop;
+    int32_t start_param = 0;
+    auto start_callback = base::BindLambdaForTesting([&](int32_t result) {
+      start_param = result;
+      run_loop.Quit();
+    });
+    net_log_exporter->Start(
+        std::move(net_log_file),
+        /*extra_constants=*/base::Value(base::Value::Type::DICTIONARY),
+        network::mojom::NetLogCaptureMode::DEFAULT,
+        network::mojom::NetLogExporter::kUnlimitedFileSize, start_callback);
+    run_loop.Run();
+    EXPECT_EQ(net::OK, start_param);
+  }
+
+  {
+    base::RunLoop run_loop;
+    network_context->ForceReloadProxyConfig(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    int32_t stop_param = 0;
+    auto stop_callback = base::BindLambdaForTesting([&](int32_t result) {
+      stop_param = result;
+      run_loop.Quit();
+    });
+    net_log_exporter->Stop(
+        /*polled_data=*/base::Value(base::Value::Type::DICTIONARY),
+        stop_callback);
+    run_loop.Run();
+    EXPECT_EQ(net::OK, stop_param);
+  }
+
+  std::string log_contents;
+  EXPECT_TRUE(base::ReadFileToString(net_log_path, &log_contents));
+
+  EXPECT_NE(std::string::npos, log_contents.find("\"new_config\""))
+      << log_contents;
+  base::DeleteFile(net_log_path, false);
+}
+
+TEST_F(NetworkContextTest, ClearBadProxiesCache) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ProxyResolutionService* proxy_resolution_service =
+      network_context->url_request_context()->proxy_resolution_service();
+
+  // Very starting conditions: zero bad proxies.
+  EXPECT_EQ(0UL, proxy_resolution_service->proxy_retry_info().size());
+
+  // Simulate network error to add one proxy to the bad proxy list.
+  net::ProxyInfo proxy_info;
+  proxy_info.UseNamedProxy("http://foo1.com");
+  proxy_resolution_service->ReportSuccess(proxy_info);
+  std::vector<net::ProxyServer> proxies;
+  proxies.push_back(net::ProxyServer::FromURI("http://foo1.com",
+                                              net::ProxyServer::SCHEME_HTTP));
+  proxy_resolution_service->MarkProxiesAsBadUntil(
+      proxy_info, base::TimeDelta::FromDays(1), proxies,
+      net::NetLogWithSource());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1UL, proxy_resolution_service->proxy_retry_info().size());
+
+  // Clear the bad proxies.
+  base::RunLoop run_loop;
+  network_context->ClearBadProxiesCache(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Verify all cleared.
+  EXPECT_EQ(0UL, proxy_resolution_service->proxy_retry_info().size());
 }
 
 // This is a test ProxyErrorClient that records the sequence of calls made to

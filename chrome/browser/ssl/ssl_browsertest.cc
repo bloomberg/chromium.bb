@@ -378,8 +378,10 @@ void SetHSTSForHostName(Profile* profile) {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     content::StoragePartition* partition =
         content::BrowserContext::GetDefaultStoragePartition(profile);
-    partition->GetNetworkContext()->AddHSTSForTesting(hostname, expiry,
-                                                      include_subdomains);
+    base::RunLoop run_loop;
+    partition->GetNetworkContext()->AddHSTS(
+        hostname, expiry, include_subdomains, run_loop.QuitClosure());
+    run_loop.Run();
     return;
   }
 

@@ -185,6 +185,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override;
   void CloseAllConnections(CloseAllConnectionsCallback callback) override;
+  void CloseIdleConnections(CloseIdleConnectionsCallback callback) override;
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
@@ -194,6 +195,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override;
+  void AddExpectCT(const std::string& domain,
+                   base::Time expiry,
+                   bool enforce,
+                   const GURL& report_uri,
+                   AddExpectCTCallback callback) override;
+  void SetExpectCTTestReport(const GURL& report_uri,
+                             SetExpectCTTestReportCallback callback) override;
+  void GetExpectCTState(const std::string& domain,
+                        GetExpectCTStateCallback callback) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
   void CreateTCPServerSocket(
@@ -225,6 +235,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void LookUpProxyForURL(
       const GURL& url,
       mojom::ProxyLookupClientPtr proxy_lookup_client) override;
+  void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
+  void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
@@ -242,15 +254,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       VerifyCertForSignedExchangeCallback callback) override;
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override;
+  void AddHSTS(const std::string& host,
+               base::Time expiry,
+               bool include_subdomains,
+               AddHSTSCallback callback) override;
+  void GetHSTSState(const std::string& domain,
+                    GetHSTSStateCallback callback) override;
+  void DeleteDynamicDataForHost(
+      const std::string& host,
+      DeleteDynamicDataForHostCallback callback) override;
   void SetCorsOriginAccessListsForOrigin(
       const url::Origin& source_origin,
       std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<mojom::CorsOriginPatternPtr> block_patterns,
       SetCorsOriginAccessListsForOriginCallback callback) override;
-  void AddHSTSForTesting(const std::string& host,
-                         base::Time expiry,
-                         bool include_subdomains,
-                         AddHSTSForTestingCallback callback) override;
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;
@@ -315,6 +332,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void DestroySocketManager(P2PSocketManager* socket_manager);
 
   void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
+
+  void OnSetExpectCTTestReportSuccess();
+
+  void LazyCreateExpectCTReporter(net::URLRequestContext* url_request_context);
+
+  void OnSetExpectCTTestReportFailure();
 
   NetworkService* const network_service_;
 
@@ -420,6 +443,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
+
+  std::queue<SetExpectCTTestReportCallback>
+      outstanding_set_expect_ct_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
