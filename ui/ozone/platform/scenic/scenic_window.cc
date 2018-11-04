@@ -22,11 +22,9 @@
 
 namespace ui {
 
-ScenicWindow::ScenicWindow(
-    ScenicWindowManager* window_manager,
-    PlatformWindowDelegate* delegate,
-    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner>
-        view_owner_request)
+ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
+                           PlatformWindowDelegate* delegate,
+                           zx::eventpair view_token)
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
@@ -57,8 +55,8 @@ ScenicWindow::ScenicWindow(
   parent_node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
 
   // Create the view.
-  manager_->GetViewManager()->CreateView(
-      view_.NewRequest(), std::move(view_owner_request),
+  manager_->GetViewManager()->CreateView2(
+      view_.NewRequest(), std::move(view_token),
       view_listener_binding_.NewBinding(), std::move(parent_export_token),
       "Chromium");
   view_.set_error_handler(fit::bind_member(this, &ScenicWindow::OnViewError));

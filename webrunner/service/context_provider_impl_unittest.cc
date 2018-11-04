@@ -68,6 +68,12 @@ class FakeFrame : public chromium::web::Frame {
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override {
   }
 
+  void CreateView2(
+      zx::eventpair view_token,
+      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+      fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
+      override {}
+
   void GetNavigationController(
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override {}

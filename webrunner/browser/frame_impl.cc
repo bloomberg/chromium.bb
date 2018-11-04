@@ -208,8 +208,17 @@ bool FrameImpl::ShouldCreateWebContents(
 void FrameImpl::CreateView(
     fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
+  // Cast |view_owner| request to a eventpair.
+  CreateView2(zx::eventpair(view_owner.TakeChannel().release()),
+              std::move(services), nullptr);
+}
+
+void FrameImpl::CreateView2(
+    zx::eventpair view_token,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
   ui::PlatformWindowInitProperties properties;
-  properties.view_owner_request = std::move(view_owner);
+  properties.view_token = std::move(view_token);
 
   window_tree_host_ =
       std::make_unique<aura::WindowTreeHostPlatform>(std::move(properties));

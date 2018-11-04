@@ -33,7 +33,8 @@ fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
 
 fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
   if (!scenic_) {
-    GetViewManager()->GetScenic(scenic_.NewRequest());
+    scenic_ = base::fuchsia::ComponentContext::GetDefault()
+                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
     scenic_.set_error_handler([]() {
       LOG(ERROR) << "The Scenic channel was unexpectedly terminated.";
     });
