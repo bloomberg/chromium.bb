@@ -254,12 +254,6 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const LayoutPoint& paint_offset,
                                    const LayoutRect& paint_rect,
                                    const DisplayItemClient& background_client) {
-  // TODO(sunxd): ReplacedPainter only record hit test data for svg root which
-  // skips clip. We should move the conditions and ReplacedPainter's
-  // RecordHitTestData here.
-  if (layout_box_.IsLayoutReplaced())
-    return;
-
   // Hit test display items are only needed for compositing. This flag is used
   // for for printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)

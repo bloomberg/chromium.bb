@@ -138,10 +138,6 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   if (skip_clip || !layout_replaced_.PhysicalContentBoxRect().IsEmpty()) {
     ScopedReplacedContentPaintState content_paint_state(paint_state,
                                                         layout_replaced_);
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-      RecordHitTestData(content_paint_state.GetPaintInfo(),
-                        content_paint_state.PaintOffset());
-    }
     layout_replaced_.PaintReplaced(content_paint_state.GetPaintInfo(),
                                    content_paint_state.PaintOffset());
   }
@@ -174,30 +170,6 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     local_paint_info.context.FillRect(selection_painting_int_rect,
                                       selection_bg);
   }
-}
-
-void ReplacedPainter::RecordHitTestData(const PaintInfo& paint_info,
-                                        const LayoutPoint& paint_offset) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return;
-
-  if (paint_info.phase != PaintPhase::kForeground)
-    return;
-
-  // If an object is not visible, it does not participate in hit testing.
-  if (layout_replaced_.StyleRef().Visibility() != EVisibility::kVisible)
-    return;
-
-  auto touch_action = layout_replaced_.EffectiveWhitelistedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
-    return;
-
-  auto rect = layout_replaced_.VisualOverflowRect();
-  rect.MoveBy(paint_offset);
-  HitTestData::RecordHitTestRect(paint_info.context, layout_replaced_,
-                                 HitTestRect(rect, touch_action));
 }
 
 bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
