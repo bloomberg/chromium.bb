@@ -37,6 +37,10 @@ class SecurityPolicyViolationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static SecurityPolicyViolationEvent* Create(const AtomicString& type) {
+    return new SecurityPolicyViolationEvent(type);
+  }
+
   static SecurityPolicyViolationEvent* Create(
       const AtomicString& type,
       const SecurityPolicyViolationEventInit* initializer) {
@@ -63,6 +67,7 @@ class SecurityPolicyViolationEvent final : public Event {
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
+  explicit SecurityPolicyViolationEvent(const AtomicString& type);
   SecurityPolicyViolationEvent(
       const AtomicString& type,
       const SecurityPolicyViolationEventInit* initializer);
