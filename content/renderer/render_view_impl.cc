@@ -1091,6 +1091,12 @@ void RenderViewImpl::DidHandleGestureEventForWidget(
 
 void RenderViewImpl::OverrideCloseForWidget() {
   DCHECK(frame_widget_);
+  // The RenderWidget isn't actually closed here because we might need to use it
+  // again since it can't be recreated as it is part of |this|. So instead just
+  // stop the compositor.
+  // TODO(crbug.com/419087): The RenderWidget should be destroyed here along
+  // with the WebFrameWidget, then we won't have to do this.
+  GetWidget()->StopCompositor();
   frame_widget_->Close();
   frame_widget_ = nullptr;
 }
@@ -1537,6 +1543,12 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
+  // In CloseForFrame() the RenderWidget's compositor was stopped instead of
+  // deleting the RenderWidget. So here we can start it again. For the first
+  // main frame, it would already be started by default so this does nothing.
+  // TODO(crbug.com/419087): The RenderWidget should be newly created here along
+  // with the WebFrameWidget, then we won't have to do this.
+  GetWidget()->StartCompositor();
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {

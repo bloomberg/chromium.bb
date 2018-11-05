@@ -757,4 +757,8 @@ void LayerTreeView::SetURLForUkm(const GURL& url) {
   layer_tree_host_->SetURLForUkm(url);
 }
 
+void LayerTreeView::ReleaseLayerTreeFrameSink() {
+  layer_tree_host_->ReleaseLayerTreeFrameSink();
+}
+
 }  // namespace content

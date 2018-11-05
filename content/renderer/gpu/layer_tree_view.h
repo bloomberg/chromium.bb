@@ -117,6 +117,12 @@ class CONTENT_EXPORT LayerTreeView
   void RequestNewLocalSurfaceId();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);
+  // Call this if the compositor is becoming non-visible in a way that it won't
+  // be used any longer. In this case, becoming visible is longer but this
+  // releases more resources (such as its use of the GpuChannel).
+  // TODO(crbug.com/419087): This is to support a swapped out RenderWidget which
+  // should just be destroyed instead.
+  void ReleaseLayerTreeFrameSink();
 
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;

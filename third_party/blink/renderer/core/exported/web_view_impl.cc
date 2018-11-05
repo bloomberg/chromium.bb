@@ -332,8 +332,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       should_dispatch_first_layout_after_finished_loading_(false),
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
-      mutator_dispatcher_(nullptr),
-      override_compositor_visibility_(false) {
+      mutator_dispatcher_(nullptr) {
   DCHECK_EQ(!!client_, !!widget_client_);
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
@@ -3323,21 +3322,27 @@ void WebViewImpl::SetVisibilityState(
     mojom::PageVisibilityState visibility_state,
     bool is_initial_state) {
   DCHECK(GetPage());
+  const bool visible = visibility_state == mojom::PageVisibilityState::kVisible;
+
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
 
-  bool visible = visibility_state == mojom::PageVisibilityState::kVisible;
-  if (layer_tree_view_ && !override_compositor_visibility_)
-    layer_tree_view_->SetVisible(visible);
-  GetPage()->GetPageScheduler()->SetPageVisible(visible);
-}
+  // There is no frame yet during creation, but we set visibility on the page.
+  // The creator of the LayerTreeView is responsible for setting up its
+  // visibility.
+  if (GetPage()->MainFrame()) {
+    // The compositor for the main frame should be marked as visible or not only
+    // when the main frame is local. A remote main frame is not composited from
+    // this WebView, it would never be visible even if the Page is.
+    if (GetPage()->MainFrame()->IsLocalFrame()) {
+      // TODO(danakj): We shouldn't be changing visibility after closing, so why
+      // do we need to null check here - only for the DoDeferredClose case which
+      // does close out of order, starting with blink before IPCs are closed.
+      if (layer_tree_view_)
+        layer_tree_view_->SetVisible(visible);
+    }
+  }
 
-void WebViewImpl::SetCompositorVisibility(bool is_visible) {
-  if (!is_visible)
-    override_compositor_visibility_ = true;
-  else
-    override_compositor_visibility_ = false;
-  if (layer_tree_view_)
-    layer_tree_view_->SetVisible(is_visible);
+  GetPage()->GetPageScheduler()->SetPageVisible(visible);
 }
 
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {
