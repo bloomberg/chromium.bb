@@ -231,9 +231,8 @@ class BASE_EXPORT TaskQueueImpl {
   bool RequiresTaskTiming() const;
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();
-  SequenceManagerImpl* sequence_manager() {
-    return main_thread_only().sequence_manager;
-  }
+
+  SequenceManagerImpl* sequence_manager() const { return sequence_manager_; }
 
   // Returns true if this queue is unregistered or task queue manager is deleted
   // and this queue can be safely deleted on any thread.
@@ -250,9 +249,6 @@ class BASE_EXPORT TaskQueueImpl {
   // constructed due to not having TaskQueue.
   void SetQueueEnabledForTest(bool enabled);
 
-  // TODO(alexclarke): Remove when possible.
-  void ClearSequenceManagerForTesting();
-
  protected:
   void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
 
@@ -261,17 +257,17 @@ class BASE_EXPORT TaskQueueImpl {
   friend class WorkQueueTest;
 
   struct AnyThread {
-    AnyThread(SequenceManagerImpl* sequence_manager, TimeDomain* time_domain);
+    explicit AnyThread(TimeDomain* time_domain);
     ~AnyThread();
 
-    // SequenceManagerImpl, TimeDomain and Observer are maintained in two
-    // copies: inside AnyThread and inside MainThreadOnly. They can be changed
-    // only from main thread, so it should be locked before accessing from other
-    // threads.
-    SequenceManagerImpl* sequence_manager;
+    // TimeDomain and Observer are maintained in two copies: inside AnyThread
+    // and inside MainThreadOnly. They can be changed only from main thread, so
+    // it should be locked before accessing from other threads.
     TimeDomain* time_domain;
     // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
+
+    bool unregistered = false;
   };
 
   // A queue for holding delayed tasks before their delay has expired.
@@ -304,15 +300,12 @@ class BASE_EXPORT TaskQueueImpl {
   };
 
   struct MainThreadOnly {
-    MainThreadOnly(SequenceManagerImpl* sequence_manager,
-                   TaskQueueImpl* task_queue,
-                   TimeDomain* time_domain);
+    MainThreadOnly(TaskQueueImpl* task_queue, TimeDomain* time_domain);
     ~MainThreadOnly();
 
     // Another copy of SequenceManagerImpl, TimeDomain and Observer
     // for lock-free access from the main thread.
     // See description inside struct AnyThread for details.
-    SequenceManagerImpl* sequence_manager;
     TimeDomain* time_domain;
     // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
@@ -390,6 +383,7 @@ class BASE_EXPORT TaskQueueImpl {
   void ActivateDelayedFenceIfNeeded(TimeTicks now);
 
   const char* name_;
+  SequenceManagerImpl* const sequence_manager_;
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
