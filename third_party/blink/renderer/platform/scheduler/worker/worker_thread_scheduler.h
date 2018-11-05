@@ -54,7 +54,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   ~WorkerThreadScheduler() override;
 
   // WebThreadScheduler implementation:
-  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -65,6 +64,9 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       base::MessageLoop::TaskObserver* task_observer) override;
   void AddRAILModeObserver(WebRAILModeObserver*) override {}
   void Shutdown() override;
+
+  // ThreadSchedulerImpl implementation:
+  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
 
   // NonMainThreadSchedulerImpl implementation:
   scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;

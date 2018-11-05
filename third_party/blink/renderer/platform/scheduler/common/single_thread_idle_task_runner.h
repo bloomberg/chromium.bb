@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 
 #include <map>
 
@@ -31,6 +31,13 @@ class IdleHelper;
 // tasks have an unbound argument which is bound to a deadline
 // (in base::TimeTicks) when they are run. The idle task is expected to
 // complete by this deadline.
+//
+// This class uses base::RefCountedThreadSafe instead of WTF::ThreadSafe-
+// RefCounted, which is against the general rule for code in platform/
+// (see audit_non_blink_usage.py). This is because SingleThreadIdleTaskRunner
+// is held by MainThreadSchedulerImpl and MainThreadSchedulerImpl is created
+// before WTF (and PartitionAlloc) is initialized.
+// TODO(yutak): Fix this.
 class SingleThreadIdleTaskRunner
     : public base::RefCountedThreadSafe<SingleThreadIdleTaskRunner> {
  public:
@@ -109,4 +116,4 @@ class SingleThreadIdleTaskRunner
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SINGLE_THREAD_IDLE_TASK_RUNNER_H_

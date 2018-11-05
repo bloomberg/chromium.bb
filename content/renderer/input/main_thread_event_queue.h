@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/timer.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_dispatch_type.h"

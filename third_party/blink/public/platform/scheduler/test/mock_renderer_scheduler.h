@@ -28,8 +28,6 @@ class MockRendererScheduler : public WebThreadScheduler {
   MOCK_METHOD0(InputTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(LoadingTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
-  MOCK_METHOD0(IdleTaskRunner,
-               scoped_refptr<blink::scheduler::SingleThreadIdleTaskRunner>());
   MOCK_METHOD0(IPCTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
                std::unique_ptr<WebRenderWidgetSchedulingState>());

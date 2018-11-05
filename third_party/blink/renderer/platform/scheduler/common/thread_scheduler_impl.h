@@ -11,6 +11,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/single_thread_idle_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace base {
@@ -35,6 +36,11 @@ class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
   // so the use of this type causes ambiguous lookup. Redefine this again
   // to hide the base classes' ones.
   using RendererPauseHandle = WebThreadScheduler::RendererPauseHandle;
+
+  // Returns the idle task runner. Tasks posted to this runner may be reordered
+  // relative to other task types and may be starved for an arbitrarily long
+  // time if no idle time is available.
+  virtual scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() = 0;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() = 0;
 
