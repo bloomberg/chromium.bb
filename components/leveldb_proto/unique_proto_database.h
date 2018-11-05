@@ -19,32 +19,78 @@ template <typename T>
 class UniqueProtoDatabase : public ProtoDatabase<T> {
  public:
   UniqueProtoDatabase(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : ProtoDatabase<T>(task_runner) {}
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
+  UniqueProtoDatabase(
+      const base::FilePath& database_dir,
+      const leveldb_env::Options& options,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+
+  // This version of Init is for compatibility, since many of the current
+  // proto database still use this.
   virtual void Init(const char* client_name,
                     const base::FilePath& database_dir,
                     const leveldb_env::Options& options,
-                    typename ProtoDatabase<T>::InitCallback callback) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    db_ = std::make_unique<LevelDB>(client_name);
-    ProtoDatabase<T>::InitWithDatabase(db_.get(), database_dir, options,
-                                       std::move(callback));
-  }
+                    typename ProtoDatabase<T>::InitCallback callback) override;
 
-  virtual ~UniqueProtoDatabase() {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    if (db_.get() &&
-        !this->db_wrapper_->task_runner()->DeleteSoon(FROM_HERE, db_.release()))
-      DLOG(WARNING) << "Proto database will not be deleted.";
-  }
+  virtual void Init(const std::string& client_name,
+                    typename ProtoDatabase<T>::InitCallback callback) override;
+
+  virtual ~UniqueProtoDatabase();
 
  private:
   THREAD_CHECKER(thread_checker_);
 
+  base::FilePath database_dir_;
+  leveldb_env::Options options_;
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<LevelDB> db_;
 };
+
+template <typename T>
+UniqueProtoDatabase<T>::UniqueProtoDatabase(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : ProtoDatabase<T>(task_runner) {}
+
+template <typename T>
+UniqueProtoDatabase<T>::UniqueProtoDatabase(
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : ProtoDatabase<T>(task_runner) {
+  database_dir_ = database_dir;
+  options_ = options;
+}
+
+template <typename T>
+UniqueProtoDatabase<T>::~UniqueProtoDatabase() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (db_.get() &&
+      !this->db_wrapper_->task_runner()->DeleteSoon(FROM_HERE, db_.release()))
+    DLOG(WARNING) << "Proto database will not be deleted.";
+}
+
+template <typename T>
+void UniqueProtoDatabase<T>::Init(
+    const std::string& client_name,
+    typename ProtoDatabase<T>::InitCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  db_ = std::make_unique<LevelDB>(client_name.c_str());
+  ProtoDatabase<T>::InitWithDatabase(db_.get(), database_dir_, options_,
+                                     std::move(callback));
+}
+
+template <typename T>
+void UniqueProtoDatabase<T>::Init(
+    const char* client_name,
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
+    typename ProtoDatabase<T>::InitCallback callback) {
+  database_dir_ = database_dir;
+  options_ = options;
+  Init(std::string(client_name), std::move(callback));
+}
 
 }  // namespace leveldb_proto
 

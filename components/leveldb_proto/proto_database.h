@@ -44,6 +44,10 @@ class ProtoDatabase {
 
   // Asynchronously initializes the object with the specified |options|.
   // |callback| will be invoked on the calling thread when complete.
+  virtual void Init(const std::string& client_name,
+                    typename ProtoDatabase<T>::InitCallback callback) = 0;
+  // This version of Init is for compatibility, since many of the current
+  // proto database clients still use this.
   virtual void Init(const char* client_name,
                     const base::FilePath& database_dir,
                     const leveldb_env::Options& options,
