@@ -30,7 +30,7 @@ js_type_check("closure_compile_module") {
     ":mock_entry",
     ":progress_center_common",
     ":util",
-    ":volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -63,15 +63,15 @@ js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
     ":util",
-    ":volume_manager_common",
     "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
 js_library("file_type") {
   deps = [
     ":files_app_entry_types",
-    ":volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -83,8 +83,8 @@ js_library("importer_common") {
   visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     ":file_type",
-    ":volume_manager_common",
     "../../../externs:volume_manager",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
   externs_list = [
     "//third_party/analytics/externs.js",
@@ -172,8 +172,8 @@ js_unittest("unittest_util") {
 js_library("util") {
   deps = [
     ":files_app_entry_types",
-    ":volume_manager_common",
     "../../../externs:file_manager_private",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
@@ -192,12 +192,6 @@ js_unittest("util_unittest") {
     ":mock_entry",
     ":util",
     "//ui/file_manager/base/js:test_error_reporting",
-  ]
-}
-
-js_library("volume_manager_common") {
-  deps = [
-    "//ui/webui/resources/js:assert",
   ]
 }
 

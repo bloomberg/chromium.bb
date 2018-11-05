@@ -193,8 +193,8 @@ js_library("app_state_controller") {
 js_library("column_visibility_controller") {
   deps = [
     ":directory_model",
-    "../../common/js:volume_manager_common",
     "ui:file_manager_ui",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -219,7 +219,7 @@ js_library("dialog_action_controller") {
 js_library("crostini") {
   deps = [
     "../../common/js:metrics",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/file_manager/externs:volume_manager",
   ]
 }
@@ -242,8 +242,8 @@ js_library("directory_contents") {
     "../../common/js:async_util",
     "../../common/js:metrics",
     "../../common/js:util",
-    "../../common/js:volume_manager_common",
     "metadata:metadata_model",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
@@ -366,9 +366,9 @@ js_library("file_selection") {
     ":directory_model",
     "../../common/js:file_type",
     "../../common/js:util",
-    "../../common/js:volume_manager_common",
     "metadata:metadata_model",
     "ui:list_container",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -405,7 +405,7 @@ js_library("file_watcher") {
   deps = [
     "../../common/js:async_util",
     "../../common/js:util",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -413,10 +413,10 @@ js_library("file_watcher") {
 js_library("folder_shortcuts_data_model") {
   deps = [
     "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/file_manager/file_manager/common/js:async_util",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/common/js:volume_manager_common",
   ]
 }
 
@@ -457,7 +457,7 @@ js_library("last_modified_controller") {
 js_library("launch_param") {
   deps = [
     ":dialog_type",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -466,8 +466,8 @@ js_library("list_thumbnail_loader") {
     ":directory_model",
     ":file_list_model",
     ":thumbnail_loader",
-    "../../common/js:volume_manager_common",
     "metadata:thumbnail_model",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 

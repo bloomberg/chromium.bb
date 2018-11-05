@@ -363,10 +363,10 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
 };
 
 /**
-  * An event name trigerred when a user tries to mount the volume which is
-  * already mounted. The event object must have a volumeId property.
-  * @const {string}
-  */
+ * An event name trigerred when a user tries to mount the volume which is
+ * already mounted. The event object must have a volumeId property.
+ * @const {string}
+ */
 VolumeManagerCommon.VOLUME_ALREADY_MOUNTED = 'volume_already_mounted';
 
 VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME = 'team_drives';

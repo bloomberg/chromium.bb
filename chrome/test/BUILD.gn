@@ -1638,6 +1638,7 @@ test("browser_tests") {
         "../browser/chromeos/extensions/wallpaper_private_apitest.cc",
         "../browser/chromeos/file_manager/audio_player_browsertest.cc",
         "../browser/chromeos/file_manager/external_filesystem_apitest.cc",
+        "../browser/chromeos/file_manager/file_manager_base_jstest.cc",
         "../browser/chromeos/file_manager/file_manager_browsertest.cc",
         "../browser/chromeos/file_manager/file_manager_browsertest_base.cc",
         "../browser/chromeos/file_manager/file_manager_browsertest_base.h",
