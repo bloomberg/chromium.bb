@@ -148,7 +148,7 @@ void SpinButtonElement::ForwardEvent(Event& event) {
   if (!GetLayoutBox())
     return;
 
-  if (!event.HasInterface(EventNames::WheelEvent))
+  if (!event.HasInterface(event_interface_names::kWheelEvent))
     return;
 
   if (!spin_button_owner_)

@@ -49,13 +49,14 @@ class PresentationConnectionAvailableEvent final : public Event {
   Member<PresentationConnection> connection_;
 };
 
-DEFINE_TYPE_CASTS(PresentationConnectionAvailableEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      EventNames::PresentationConnectionAvailableEvent,
-                  event.InterfaceName() ==
-                      EventNames::PresentationConnectionAvailableEvent);
+DEFINE_TYPE_CASTS(
+    PresentationConnectionAvailableEvent,
+    Event,
+    event,
+    event->InterfaceName() ==
+        event_interface_names::kPresentationConnectionAvailableEvent,
+    event.InterfaceName() ==
+        event_interface_names::kPresentationConnectionAvailableEvent);
 
 }  // namespace blink
 

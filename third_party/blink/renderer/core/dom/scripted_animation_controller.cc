@@ -66,7 +66,7 @@ void ScriptedAnimationController::Unpause() {
 }
 
 void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
-  DispatchEvents(EventNames::MediaQueryListEvent);
+  DispatchEvents(event_interface_names::kMediaQueryListEvent);
   CallMediaQueryListListeners();
 }
 

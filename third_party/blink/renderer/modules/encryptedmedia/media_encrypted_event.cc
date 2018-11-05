@@ -39,7 +39,7 @@ MediaEncryptedEvent::MediaEncryptedEvent(
 MediaEncryptedEvent::~MediaEncryptedEvent() = default;
 
 const AtomicString& MediaEncryptedEvent::InterfaceName() const {
-  return EventNames::MediaEncryptedEvent;
+  return event_interface_names::kMediaEncryptedEvent;
 }
 
 void MediaEncryptedEvent::Trace(blink::Visitor* visitor) {

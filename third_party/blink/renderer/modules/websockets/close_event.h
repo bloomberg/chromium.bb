@@ -65,7 +65,7 @@ class CloseEvent final : public Event {
 
   // Event function.
   const AtomicString& InterfaceName() const override {
-    return EventNames::CloseEvent;
+    return event_interface_names::kCloseEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }

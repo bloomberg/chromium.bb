@@ -93,7 +93,7 @@ def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
     lines = [
         '{',
         'metadata: {',
-        '  namespace: "Event",'
+        '  namespace: "event_interface_names",'
     ]
     if suffix:
         lines.append('  suffix: "' + suffix + '",')

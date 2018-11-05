@@ -97,7 +97,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
 }
 
 const AtomicString& BeforeInstallPromptEvent::InterfaceName() const {
-  return EventNames::BeforeInstallPromptEvent;
+  return event_interface_names::kBeforeInstallPromptEvent;
 }
 
 void BeforeInstallPromptEvent::preventDefault() {

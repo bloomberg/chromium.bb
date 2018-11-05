@@ -68,7 +68,7 @@ AudioProcessingEvent::AudioProcessingEvent(
 AudioProcessingEvent::~AudioProcessingEvent() = default;
 
 const AtomicString& AudioProcessingEvent::InterfaceName() const {
-  return EventNames::AudioProcessingEvent;
+  return event_interface_names::kAudioProcessingEvent;
 }
 
 void AudioProcessingEvent::Trace(blink::Visitor* visitor) {

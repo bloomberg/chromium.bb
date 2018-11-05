@@ -34,7 +34,7 @@ RTCQuicStream* RTCQuicStreamEvent::stream() const {
 }
 
 const AtomicString& RTCQuicStreamEvent::InterfaceName() const {
-  return EventNames::RTCQuicStreamEvent;
+  return event_interface_names::kRTCQuicStreamEvent;
 }
 
 void RTCQuicStreamEvent::Trace(blink::Visitor* visitor) {

@@ -49,7 +49,7 @@ ProgressEvent::ProgressEvent(const AtomicString& type,
       total_(total) {}
 
 const AtomicString& ProgressEvent::InterfaceName() const {
-  return EventNames::ProgressEvent;
+  return event_interface_names::kProgressEvent;
 }
 
 void ProgressEvent::Trace(blink::Visitor* visitor) {

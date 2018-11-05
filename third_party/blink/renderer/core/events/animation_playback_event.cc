@@ -38,7 +38,7 @@ double AnimationPlaybackEvent::timelineTime(bool& is_null) const {
 }
 
 const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
-  return EventNames::AnimationPlaybackEvent;
+  return event_interface_names::kAnimationPlaybackEvent;
 }
 
 void AnimationPlaybackEvent::Trace(blink::Visitor* visitor) {

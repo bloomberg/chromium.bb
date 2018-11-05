@@ -39,7 +39,7 @@ class ApplicationCacheErrorEvent final : public Event {
   const String& message() const { return message_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::ApplicationCacheErrorEvent;
+    return event_interface_names::kApplicationCacheErrorEvent;
   }
 
   void Trace(blink::Visitor*) override;

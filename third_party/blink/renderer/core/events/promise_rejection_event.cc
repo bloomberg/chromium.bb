@@ -52,7 +52,7 @@ ScriptValue PromiseRejectionEvent::reason(ScriptState* script_state) const {
 }
 
 const AtomicString& PromiseRejectionEvent::InterfaceName() const {
-  return EventNames::PromiseRejectionEvent;
+  return event_interface_names::kPromiseRejectionEvent;
 }
 
 bool PromiseRejectionEvent::CanBeDispatchedInWorld(

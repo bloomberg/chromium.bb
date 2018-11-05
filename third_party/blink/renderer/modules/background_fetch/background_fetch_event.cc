@@ -24,7 +24,7 @@ BackgroundFetchRegistration* BackgroundFetchEvent::registration() const {
 }
 
 const AtomicString& BackgroundFetchEvent::InterfaceName() const {
-  return EventNames::BackgroundFetchEvent;
+  return event_interface_names::kBackgroundFetchEvent;
 }
 
 void BackgroundFetchEvent::Trace(blink::Visitor* visitor) {

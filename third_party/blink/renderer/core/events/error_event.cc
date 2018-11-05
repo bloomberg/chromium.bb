@@ -80,7 +80,7 @@ void ErrorEvent::SetUnsanitizedMessage(const String& message) {
 ErrorEvent::~ErrorEvent() = default;
 
 const AtomicString& ErrorEvent::InterfaceName() const {
-  return EventNames::ErrorEvent;
+  return event_interface_names::kErrorEvent;
 }
 
 bool ErrorEvent::IsErrorEvent() const {

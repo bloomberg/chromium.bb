@@ -57,7 +57,7 @@ class SecurityPolicyViolationEvent final : public Event {
   uint16_t statusCode() const { return status_code_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::SecurityPolicyViolationEvent;
+    return event_interface_names::kSecurityPolicyViolationEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }

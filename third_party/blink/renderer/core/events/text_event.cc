@@ -115,7 +115,7 @@ void TextEvent::initTextEvent(const AtomicString& type,
 }
 
 const AtomicString& TextEvent::InterfaceName() const {
-  return EventNames::TextEvent;
+  return event_interface_names::kTextEvent;
 }
 
 void TextEvent::Trace(blink::Visitor* visitor) {

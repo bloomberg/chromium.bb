@@ -96,7 +96,7 @@ void CoreInitializer::Initialize() {
       xmlns_names::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
-      kQualifiedNamesCount + EventNames::kNamesCount +
+      kQualifiedNamesCount + event_interface_names::kNamesCount +
       event_target_names::kNamesCount + event_type_names::kNamesCount +
       fetch_initiator_type_names::kNamesCount + font_family_names::kNamesCount +
       html_tokenizer_names::kNamesCount + http_names::kNamesCount +
@@ -117,7 +117,7 @@ void CoreInitializer::Initialize() {
   xml_names::init();
   xmlns_names::init();
 
-  EventNames::init();
+  event_interface_names::init();
   event_target_names::init();
   event_type_names::init();
   fetch_initiator_type_names::init();

@@ -76,7 +76,7 @@ bool DeviceOrientationEvent::absolute() const {
 }
 
 const AtomicString& DeviceOrientationEvent::InterfaceName() const {
-  return EventNames::DeviceOrientationEvent;
+  return event_interface_names::kDeviceOrientationEvent;
 }
 
 void DeviceOrientationEvent::Trace(blink::Visitor* visitor) {

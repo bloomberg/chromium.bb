@@ -57,7 +57,7 @@ VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
 VRDisplayEvent::~VRDisplayEvent() = default;
 
 const AtomicString& VRDisplayEvent::InterfaceName() const {
-  return EventNames::VRDisplayEvent;
+  return event_interface_names::kVRDisplayEvent;
 }
 
 void VRDisplayEvent::Trace(blink::Visitor* visitor) {

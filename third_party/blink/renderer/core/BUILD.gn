@@ -367,6 +367,8 @@ generate_event_interfaces("core_event_interfaces") {
     "invisible_dom/activate_invisible_event.idl",
     "mojo/test/mojo_interface_request_event.idl",
   ]
+
+  # TODO(tkent): Rename event_names.json5 to event_interface_names.json5
   output_file = "core/event_names.json5"
 }
 

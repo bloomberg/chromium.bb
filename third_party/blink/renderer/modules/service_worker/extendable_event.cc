@@ -73,7 +73,7 @@ ExtendableEvent::ExtendableEvent(const AtomicString& type,
     : Event(type, initializer), observer_(observer) {}
 
 const AtomicString& ExtendableEvent::InterfaceName() const {
-  return EventNames::ExtendableEvent;
+  return event_interface_names::kExtendableEvent;
 }
 
 void ExtendableEvent::Trace(blink::Visitor* visitor) {

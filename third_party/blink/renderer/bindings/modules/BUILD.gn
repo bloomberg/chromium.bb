@@ -66,6 +66,9 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/xr/xr_input_source_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_session_event.idl",
   ]
+
+  # TODO(tkent): Rename event_modules_names.json5 to
+  # event_interface_modules_names.json5
   output_file = "event_modules_names.json5"
   suffix = "Modules"
 }

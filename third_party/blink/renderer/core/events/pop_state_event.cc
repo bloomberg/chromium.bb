@@ -93,7 +93,7 @@ void PopStateEvent::SetSerializedState(
 }
 
 const AtomicString& PopStateEvent::InterfaceName() const {
-  return EventNames::PopStateEvent;
+  return event_interface_names::kPopStateEvent;
 }
 
 void PopStateEvent::Trace(blink::Visitor* visitor) {

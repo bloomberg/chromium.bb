@@ -45,7 +45,7 @@ class SpeechSynthesisEvent : public Event {
   const String& name() const { return name_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::SpeechSynthesisEvent;
+    return event_interface_names::kSpeechSynthesisEvent;
   }
 
   void Trace(blink::Visitor*) override;

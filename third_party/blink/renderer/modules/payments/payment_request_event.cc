@@ -36,7 +36,7 @@ PaymentRequestEvent* PaymentRequestEvent::Create(
 PaymentRequestEvent::~PaymentRequestEvent() = default;
 
 const AtomicString& PaymentRequestEvent::InterfaceName() const {
-  return EventNames::PaymentRequestEvent;
+  return event_interface_names::kPaymentRequestEvent;
 }
 
 const String& PaymentRequestEvent::topOrigin() const {

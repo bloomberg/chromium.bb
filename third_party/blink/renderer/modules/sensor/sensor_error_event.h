@@ -45,8 +45,10 @@ class SensorErrorEvent : public Event {
 DEFINE_TYPE_CASTS(SensorErrorEvent,
                   Event,
                   event,
-                  event->InterfaceName() == EventNames::SensorErrorEvent,
-                  event.InterfaceName() == EventNames::SensorErrorEvent);
+                  event->InterfaceName() ==
+                      event_interface_names::kSensorErrorEvent,
+                  event.InterfaceName() ==
+                      event_interface_names::kSensorErrorEvent);
 
 }  // namepsace blink
 

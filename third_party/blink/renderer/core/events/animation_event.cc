@@ -62,7 +62,7 @@ const String& AnimationEvent::pseudoElement() const {
 }
 
 const AtomicString& AnimationEvent::InterfaceName() const {
-  return EventNames::AnimationEvent;
+  return event_interface_names::kAnimationEvent;
 }
 
 void AnimationEvent::Trace(blink::Visitor* visitor) {

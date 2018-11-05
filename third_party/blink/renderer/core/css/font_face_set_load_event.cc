@@ -44,7 +44,7 @@ FontFaceSetLoadEvent::FontFaceSetLoadEvent(
 FontFaceSetLoadEvent::~FontFaceSetLoadEvent() = default;
 
 const AtomicString& FontFaceSetLoadEvent::InterfaceName() const {
-  return EventNames::FontFaceSetLoadEvent;
+  return event_interface_names::kFontFaceSetLoadEvent;
 }
 
 void FontFaceSetLoadEvent::Trace(blink::Visitor* visitor) {

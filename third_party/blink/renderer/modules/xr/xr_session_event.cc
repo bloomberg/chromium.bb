@@ -21,7 +21,7 @@ XRSessionEvent::XRSessionEvent(const AtomicString& type,
 XRSessionEvent::~XRSessionEvent() = default;
 
 const AtomicString& XRSessionEvent::InterfaceName() const {
-  return EventNames::XRSessionEvent;
+  return event_interface_names::kXRSessionEvent;
 }
 
 void XRSessionEvent::Trace(blink::Visitor* visitor) {

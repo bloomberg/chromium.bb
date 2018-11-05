@@ -85,7 +85,7 @@ double DeviceMotionEvent::interval() const {
 }
 
 const AtomicString& DeviceMotionEvent::InterfaceName() const {
-  return EventNames::DeviceMotionEvent;
+  return event_interface_names::kDeviceMotionEvent;
 }
 
 void DeviceMotionEvent::Trace(blink::Visitor* visitor) {

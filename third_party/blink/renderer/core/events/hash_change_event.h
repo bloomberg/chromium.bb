@@ -45,7 +45,7 @@ class HashChangeEvent final : public Event {
   const String& newURL() const { return new_url_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::HashChangeEvent;
+    return event_interface_names::kHashChangeEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }

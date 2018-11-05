@@ -100,9 +100,9 @@ DEFINE_TYPE_CASTS(BeforeInstallPromptEvent,
                   Event,
                   event,
                   event->InterfaceName() ==
-                      EventNames::BeforeInstallPromptEvent,
+                      event_interface_names::kBeforeInstallPromptEvent,
                   event.InterfaceName() ==
-                      EventNames::BeforeInstallPromptEvent);
+                      event_interface_names::kBeforeInstallPromptEvent);
 
 }  // namespace blink
 

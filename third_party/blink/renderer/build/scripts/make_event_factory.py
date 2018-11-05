@@ -109,7 +109,7 @@ class EventFactoryWriter(json5_generator.Writer):
     def __init__(self, json5_file_path, output_dir):
         super(EventFactoryWriter, self).__init__(json5_file_path, output_dir)
         self.namespace = self.json5_file.metadata['namespace'].strip('"')
-        assert self.namespace == 'Event', 'namespace field should be "Event".'
+        assert self.namespace == 'event_interface_names', 'namespace field should be "event_interface_names".'
         self.suffix = self.json5_file.metadata['suffix'].strip('"')
         snake_suffix = (self.suffix.lower() + '_') if self.suffix else ''
         self._outputs = {

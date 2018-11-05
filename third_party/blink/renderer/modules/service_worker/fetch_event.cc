@@ -66,7 +66,7 @@ ScriptPromise FetchEvent::preloadResponse(ScriptState* script_state) {
 }
 
 const AtomicString& FetchEvent::InterfaceName() const {
-  return EventNames::FetchEvent;
+  return event_interface_names::kFetchEvent;
 }
 
 bool FetchEvent::HasPendingActivity() const {

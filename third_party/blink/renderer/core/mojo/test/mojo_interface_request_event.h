@@ -36,7 +36,7 @@ class MojoInterfaceRequestEvent final : public Event {
   MojoHandle* handle() const { return handle_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MojoInterfaceRequestEvent;
+    return event_interface_names::kMojoInterfaceRequestEvent;
   }
 
   void Trace(blink::Visitor*) override;

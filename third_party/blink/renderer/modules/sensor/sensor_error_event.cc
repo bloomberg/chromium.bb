@@ -24,7 +24,7 @@ SensorErrorEvent::SensorErrorEvent(const AtomicString& event_type,
 }
 
 const AtomicString& SensorErrorEvent::InterfaceName() const {
-  return EventNames::SensorErrorEvent;
+  return event_interface_names::kSensorErrorEvent;
 }
 
 void SensorErrorEvent::Trace(blink::Visitor* visitor) {

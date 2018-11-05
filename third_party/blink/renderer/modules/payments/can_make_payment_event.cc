@@ -33,7 +33,7 @@ CanMakePaymentEvent* CanMakePaymentEvent::Create(
 CanMakePaymentEvent::~CanMakePaymentEvent() = default;
 
 const AtomicString& CanMakePaymentEvent::InterfaceName() const {
-  return EventNames::CanMakePaymentEvent;
+  return event_interface_names::kCanMakePaymentEvent;
 }
 
 const String& CanMakePaymentEvent::topOrigin() const {

@@ -67,7 +67,7 @@ const String& TransitionEvent::pseudoElement() const {
 }
 
 const AtomicString& TransitionEvent::InterfaceName() const {
-  return EventNames::TransitionEvent;
+  return event_interface_names::kTransitionEvent;
 }
 
 void TransitionEvent::Trace(blink::Visitor* visitor) {

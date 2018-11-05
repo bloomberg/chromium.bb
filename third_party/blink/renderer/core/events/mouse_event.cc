@@ -329,7 +329,7 @@ void MouseEvent::InitMouseEventInternal(
 }
 
 const AtomicString& MouseEvent::InterfaceName() const {
-  return EventNames::MouseEvent;
+  return event_interface_names::kMouseEvent;
 }
 
 bool MouseEvent::IsMouseEvent() const {

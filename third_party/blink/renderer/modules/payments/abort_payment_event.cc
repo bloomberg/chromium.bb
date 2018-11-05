@@ -34,7 +34,7 @@ AbortPaymentEvent* AbortPaymentEvent::Create(
 AbortPaymentEvent::~AbortPaymentEvent() = default;
 
 const AtomicString& AbortPaymentEvent::InterfaceName() const {
-  return EventNames::AbortPaymentEvent;
+  return event_interface_names::kAbortPaymentEvent;
 }
 
 void AbortPaymentEvent::respondWith(ScriptState* script_state,

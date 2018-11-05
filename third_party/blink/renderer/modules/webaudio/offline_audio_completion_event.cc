@@ -61,7 +61,7 @@ OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
 OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent() = default;
 
 const AtomicString& OfflineAudioCompletionEvent::InterfaceName() const {
-  return EventNames::OfflineAudioCompletionEvent;
+  return event_interface_names::kOfflineAudioCompletionEvent;
 }
 
 void OfflineAudioCompletionEvent::Trace(blink::Visitor* visitor) {
