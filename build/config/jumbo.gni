@@ -86,7 +86,7 @@ template("internal_jumbo_target") {
 
   gen_target_dir = invoker.target_gen_dir
 
-  assert(gen_target_dir != "")  # Prevent "unused variable".
+  not_needed([ "gen_target_dir" ])  # Prevent "unused variable".
 
   if (use_jumbo_build_for_target) {
     jumbo_files = []
@@ -173,16 +173,14 @@ template("internal_jumbo_target") {
     # If the list subtraction triggers a gn error,
     # jumbo_excluded_sources lists a file that is not in sources.
     sources_after_exclusion = invoker_sources - excluded_sources
-    assert(sources_after_exclusion != [] || true)  # Prevent "unused variable".
+    not_needed([ "sources_after_exclusion" ])
   }
 
   target_type = invoker.target_type
   if (use_jumbo_build_for_target && target_type == "split_static_library") {
     # Meaningless and also impossible if split_count > len(jumbo_files)
     target_type = "static_library"
-
-    # Prevent "unused variable" warning.
-    assert(!defined(invoker.split_count) || invoker.split_count > 0)
+    not_needed(invoker, [ "split_count" ])
   }
 
   # Perform the actual operation, either on the original sources or
