@@ -98,7 +98,7 @@ class CORE_EXPORT SelectionModifier {
   VisiblePosition ModifyExtendingBackwardInternal(TextGranularity);
   VisiblePosition ModifyMovingLeft(TextGranularity);
   VisiblePosition ModifyMovingBackward(TextGranularity);
-  VisiblePosition NextWordPositionForPlatform(const VisiblePosition&);
+  Position NextWordPositionForPlatform(const Position&);
 
   // TODO(editing-dev): We should handle |skips_spaces_when_moving_right| in
   // another way, e.g. pass |EditingBehavior()|.

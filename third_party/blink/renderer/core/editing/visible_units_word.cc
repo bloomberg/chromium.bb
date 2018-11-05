@@ -223,13 +223,6 @@ PositionWithAffinity NextWordPosition(const Position& start) {
   return ToPositionInDOMTreeWithAffinity(next);
 }
 
-// TODO(yosin): This function will be removed by replacing call sites to use
-// |Position| version. since there are only two call sites, one is in test.
-VisiblePosition NextWordPosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(NextWordPosition(c.DeepEquivalent()));
-}
-
 PositionInFlatTreeWithAffinity PreviousWordPosition(
     const PositionInFlatTree& start) {
   const PositionInFlatTree prev = PreviousWordPositionInternal(start);
@@ -241,13 +234,6 @@ PositionWithAffinity PreviousWordPosition(const Position& start) {
   const PositionInFlatTreeWithAffinity& prev =
       PreviousWordPosition(ToPositionInFlatTree(start));
   return ToPositionInDOMTreeWithAffinity(prev);
-}
-
-// TODO(xiaochengh): Remove this function. Change callers to use the
-// Position version as it doesn't need canonical input position.
-VisiblePosition PreviousWordPosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(PreviousWordPosition(c.DeepEquivalent()));
 }
 
 Position StartOfWordPosition(const VisiblePosition& position, EWordSide side) {
