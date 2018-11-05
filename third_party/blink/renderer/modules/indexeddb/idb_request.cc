@@ -239,7 +239,7 @@ void IDBRequest::Abort() {
   request_aborted_ = true;
 }
 
-void IDBRequest::SetCursorDetails(IndexedDB::CursorType cursor_type,
+void IDBRequest::SetCursorDetails(indexed_db::CursorType cursor_type,
                                   WebIDBCursorDirection direction) {
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(!pending_cursor_);
@@ -460,11 +460,11 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
   DCHECK(!source.IsNull());
 
   switch (cursor_type_) {
-    case IndexedDB::kCursorKeyOnly:
+    case indexed_db::kCursorKeyOnly:
       cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
                                  source, transaction_.Get());
       break;
-    case IndexedDB::kCursorKeyAndValue:
+    case indexed_db::kCursorKeyAndValue:
       cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
                                           this, source, transaction_.Get());
       break;

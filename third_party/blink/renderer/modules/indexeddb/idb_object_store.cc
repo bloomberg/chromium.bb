@@ -990,7 +990,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
                                        IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyAndValue, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyAndValue, direction);
 
   BackendDB()->OpenCursor(transaction_->Id(), Id(),
                           IDBIndexMetadata::kInvalidId, range, direction, false,
@@ -1033,7 +1033,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
 
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyOnly, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyOnly, direction);
 
   BackendDB()->OpenCursor(transaction_->Id(), Id(),
                           IDBIndexMetadata::kInvalidId, key_range, direction,
