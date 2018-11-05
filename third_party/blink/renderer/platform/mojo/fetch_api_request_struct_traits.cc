@@ -10,7 +10,6 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/serialized_blob_struct_traits.h"
 #include "third_party/blink/renderer/platform/mojo/kurl_struct_traits.h"
-#include "third_party/blink/renderer/platform/mojo/referrer_struct_traits.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace mojo {
@@ -41,10 +40,17 @@ StructTraits<blink::mojom::FetchAPIRequestDataView,
 }
 
 // static
-const blink::Referrer& StructTraits<blink::mojom::FetchAPIRequestDataView,
-                                    blink::WebServiceWorkerRequest>::
+blink::mojom::blink::ReferrerPtr
+StructTraits<blink::mojom::FetchAPIRequestDataView,
+             blink::WebServiceWorkerRequest>::
     referrer(const blink::WebServiceWorkerRequest& request) {
-  return request.GetReferrer();
+  blink::KURL url;
+  const blink::Referrer& referrer = request.GetReferrer();
+  if (referrer.referrer != blink::Referrer::NoReferrer())
+    url = blink::KURL(blink::KURL(), referrer.referrer);
+  return blink::mojom::blink::Referrer::New(
+      url,
+      static_cast<network::mojom::ReferrerPolicy>(referrer.referrer_policy));
 }
 
 // static
@@ -81,7 +87,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   WTF::String method;
   WTF::HashMap<WTF::String, WTF::String> headers;
   scoped_refptr<blink::BlobDataHandle> blob;
-  blink::Referrer referrer;
+  blink::mojom::blink::ReferrerPtr referrer;
   network::mojom::FetchCredentialsMode credentialsMode;
   network::mojom::FetchRedirectMode redirectMode;
   WTF::String integrity;
@@ -106,9 +112,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   for (const auto& pair : headers)
     out->SetHeader(pair.key, pair.value);
   out->SetBlobDataHandle(blob);
-  out->SetReferrer(
-      referrer.referrer,
-      static_cast<network::mojom::ReferrerPolicy>(referrer.referrer_policy));
+  out->SetReferrer(referrer->url.GetString(), referrer->policy);
   out->SetCredentialsMode(credentialsMode);
   out->SetCacheMode(data.cache_mode());
   out->SetRedirectMode(redirectMode);
