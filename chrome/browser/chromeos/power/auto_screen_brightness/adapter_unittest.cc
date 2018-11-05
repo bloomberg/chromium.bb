@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -33,6 +34,14 @@ namespace power {
 namespace auto_screen_brightness {
 
 namespace {
+
+using SamplesCounts = std::vector<
+    std::pair<base::HistogramBase::Sample, base::HistogramBase::Count>>;
+
+constexpr auto kNoPriorModelAdjustment =
+    static_cast<int>(Adapter::UserAdjustment::kNoPriorModelAdjustment);
+constexpr auto kWithPriorModelAdjustment =
+    static_cast<int>(Adapter::UserAdjustment::kWithPriorModelAdjustment);
 
 // Testing modeller.
 class FakeModeller : public Modeller {
@@ -196,9 +205,24 @@ class AdapterTest : public testing::Test {
     scoped_task_environment_.RunUntilIdle();
   }
 
+  void VerifyHistogramCounts(
+      const std::map<std::string, SamplesCounts>& expected_values) {
+    for (const auto& histogram_samples : expected_values) {
+      const std::string& histogram_name = histogram_samples.first;
+      const SamplesCounts& samples_counts = histogram_samples.second;
+      for (const auto& sample_count : samples_counts) {
+        const base::HistogramBase::Sample& sample = sample_count.first;
+        const base::HistogramBase::Count& count = sample_count.second;
+        histogram_tester_.ExpectUniqueSample(histogram_name, sample, count);
+      }
+    }
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
+
+  base::HistogramTester histogram_tester_;
 
   TestObserver test_observer_;
 
@@ -385,6 +409,44 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+
+  VerifyHistogramCounts({{"AutoScreenBrightness.UserAdjustment",
+                          {{kWithPriorModelAdjustment, 1}}}});
+
+  // Another user manual adjustment came in.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+
+  VerifyHistogramCounts({{"AutoScreenBrightness.UserAdjustment",
+                          {{kWithPriorModelAdjustment, 2}}}});
+}
+
+TEST_F(AdapterTest, UserBrightnessRequestBeforeAnyModelUpdate) {
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, default_params_);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
+
+  // Adapter is disabled after a user manual adjustment.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+
+  VerifyHistogramCounts({{"AutoScreenBrightness.UserAdjustment",
+                          {{kNoPriorModelAdjustment, 1}}}});
+
+  // Another user manual adjustment came in.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+
+  VerifyHistogramCounts({{"AutoScreenBrightness.UserAdjustment",
+                          {{kNoPriorModelAdjustment, 2}}}});
 }
 
 TEST_F(AdapterTest, BrightnessLuxThresholds) {

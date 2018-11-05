@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -88,6 +89,11 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {}
 
 void Adapter::OnUserBrightnessChangeRequested() {
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustment",
+                            latest_brightness_change_time_.is_null()
+                                ? UserAdjustment::kNoPriorModelAdjustment
+                                : UserAdjustment::kWithPriorModelAdjustment);
+
   // This will disable |adapter_status_| so that the model will not make any
   // brightness adjustment.
   adapter_status_ = Status::kDisabled;

@@ -3243,6 +3243,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="dual source"/>
 </enum>
 
+<enum name="AutoScreenBrightnessUserAdjustment">
+  <int value="0" label="NoPriorModelAdjustment"/>
+  <int value="1" label="WithPriorModelAdjustment"/>
+</enum>
+
 <enum name="AutoSigninFirstRun">
   <int value="0" label="No action"/>
   <int value="1" label="Turn off"/>
