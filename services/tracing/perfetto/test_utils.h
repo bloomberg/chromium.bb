@@ -140,7 +140,6 @@ class MockProducerHost : public ProducerHost {
   base::OnceClosure datasource_registered_callback_;
   const std::string data_source_name_;
   std::string all_host_commit_data_requests_;
-  std::unique_ptr<mojo::Binding<mojom::ProducerHost>> binding_;
 };
 
 class MockProducer {

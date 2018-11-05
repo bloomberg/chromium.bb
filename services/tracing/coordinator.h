@@ -39,10 +39,6 @@ namespace tracing {
 //
 // If we see that the above-mentioned assumption does not hold in some cases, we
 // should guard against it using timeouts.
-//
-// Note that this class is only used when TraceLog is used as the tracing
-// backend; when Perfetto is used, PerfettoTracingCoordinator is used instead to
-// implement the same interface.
 class Coordinator : public mojom::Coordinator {
  public:
   explicit Coordinator(AgentRegistry* agent_registry);

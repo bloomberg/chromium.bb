@@ -68,9 +68,9 @@ class ProtoInputStream : public google::protobuf::io::ZeroCopyInputStream {
 
 class TracedValueProtoWriterTest : public testing::Test {
  public:
-  void SetUp() override { RegisterTracedValueProtoWriter(true); }
+  void SetUp() override { RegisterTracedValueProtoWriter(); }
 
-  void TearDown() override { RegisterTracedValueProtoWriter(false); }
+  void TearDown() override {}
 };
 
 const perfetto::protos::ChromeTracedValue* FindDictEntry(

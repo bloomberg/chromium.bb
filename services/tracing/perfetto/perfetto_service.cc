@@ -21,6 +21,10 @@ const char kPerfettoProducerName[] = "org.chromium.perfetto_producer";
 
 PerfettoService* g_perfetto_service;
 
+// Just used to destroy disconnected clients.
+template <typename T>
+void OnClientDisconnect(std::unique_ptr<T>) {}
+
 }  // namespace
 
 /*
@@ -99,13 +103,13 @@ void PerfettoService::BindOnSequence(
 
 void PerfettoService::ConnectToProducerHost(
     mojom::ProducerClientPtr producer_client,
-    mojom::ProducerHostRequest producer_host_request) {
+    mojom::ProducerHostRequest producer_host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto new_producer = std::make_unique<ProducerHost>();
-  new_producer->Initialize(std::move(producer_client), service_.get(),
-                           kPerfettoProducerName);
-  producer_bindings_.AddBinding(std::move(new_producer),
-                                std::move(producer_host_request));
+  new_producer->Initialize(std::move(producer_client), std::move(producer_host),
+                           service_.get(), kPerfettoProducerName);
+  new_producer->set_connection_error_handler(base::BindOnce(
+      &OnClientDisconnect<ProducerHost>, std::move(new_producer)));
 }
 
 }  // namespace tracing
