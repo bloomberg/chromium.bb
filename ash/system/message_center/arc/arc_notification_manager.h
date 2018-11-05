@@ -78,7 +78,7 @@ class ArcNotificationManager
 
   bool ShouldIgnoreNotification(arc::mojom::ArcNotificationData* data);
 
-  void PerformUserAction(uint32_t id);
+  void PerformUserAction(uint32_t id, bool open_message_center);
   void CancelUserAction(uint32_t id);
 
   // Invoked when |get_app_id_callback_| gets back the app id.
