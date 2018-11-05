@@ -4185,6 +4185,9 @@ crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Skip ]
 
+crbug.com/900431 [ Mac ] css3/blending/mix-blend-mode-isolated-group-1.html [ Pass Failure ]
+crbug.com/900431 [ Mac ] css3/blending/mix-blend-mode-isolated-group-3.html [ Pass Failure ]
+
 # ====== Random order flaky tests end here ======
 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
