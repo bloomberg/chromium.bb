@@ -28,5 +28,12 @@ message AssistantDeviceSettingsUpdate {
 }
 
 message AssistantDeviceSettings {
+  // Whether this device may display/read out personal info.
+  enum PersonalReadout {
+    // This device may display/read out personal info.
+    PERSONAL_READOUT_ENABLED = 1;
+  }
+  optional PersonalReadout personal_readout = 2;
+
   optional string locale = 5;
 }
