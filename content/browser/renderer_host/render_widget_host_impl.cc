@@ -408,6 +408,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_hidden_(hidden),
       visual_properties_ack_pending_(false),
       auto_resize_enabled_(false),
+      page_scale_factor_(1.f),
       waiting_for_screen_rects_ack_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -858,6 +859,8 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   visual_properties->min_size_for_auto_resize = min_size_for_auto_resize_;
   visual_properties->max_size_for_auto_resize = max_size_for_auto_resize_;
 
+  visual_properties->page_scale_factor = page_scale_factor_;
+
   if (view_) {
     visual_properties->new_size = view_->GetRequestedRendererSize();
     visual_properties->capture_sequence_number =
@@ -946,7 +949,9 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size ||
       old_visual_properties_->capture_sequence_number !=
-          visual_properties->capture_sequence_number;
+          visual_properties->capture_sequence_number ||
+      old_visual_properties_->page_scale_factor !=
+          visual_properties->page_scale_factor;
 
   // We should throttle sending updated VisualProperties to the renderer to
   // the rate of commit. This ensures we don't overwhelm the renderer with
@@ -2051,6 +2056,10 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   auto_resize_enabled_ = enable;
   min_size_for_auto_resize_ = min_size;
   max_size_for_auto_resize_ = max_size;
+}
+
+void RenderWidgetHostImpl::SetPageScaleFactor(float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {

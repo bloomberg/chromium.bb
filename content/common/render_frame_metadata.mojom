@@ -50,6 +50,11 @@ struct RenderFrameMetadata {
   // The page scale factor used on the content.
   float page_scale_factor;
 
+  // The subframe page scale factor used on the content. This value will match
+  // |page_scale_factor|, which is only ever set for the main frame, and it is
+  // only used for setting raster scale in child renderers.
+  float external_page_scale_factor;
+
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
   float top_controls_height;

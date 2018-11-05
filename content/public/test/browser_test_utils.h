@@ -1111,6 +1111,16 @@ class RenderFrameSubmissionObserver
   // OnRenderFrameMetadataChangedAfterActivation.
   void WaitForMetadataChange();
 
+  // Blocks the browser ui thread until RenderFrameMetadata arrives with
+  // page scale factor matching |expected_page_scale_factor|.
+  void WaitForPageScaleFactor(float expected_page_scale_factor,
+                              const float tolerance);
+
+  // Blocks the browser ui thread until RenderFrameMetadata arrives with
+  // external page scale factor matching |expected_external_page_scale_factor|.
+  void WaitForExternalPageScaleFactor(float expected_external_page_scale_factor,
+                                      const float tolerance);
+
   // Blocks the browser ui thread until RenderFrameMetadata arrives where its
   // scroll offset matches |expected_offset|.
   void WaitForScrollOffset(const gfx::Vector2dF& expected_offset);

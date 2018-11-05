@@ -435,6 +435,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return raster_color_space_;
   }
 
+  // This layer tree may be embedded in a hierarchy that has page scale
+  // factor controlled at the top level. We represent that scale here as
+  // 'external_page_scale_factor', a value that affects raster scale in the
+  // same way that page_scale_factor does, but doesn't affect any geometry
+  // calculations.
+  void SetExternalPageScaleFactor(float page_scale_factor);
+
   // Used externally by blink for setting the PropertyTrees when
   // UseLayerLists() is true, which also implies that Slimming Paint
   // v2 is enabled.
@@ -725,6 +732,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float page_scale_factor_ = 1.f;
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
+  float external_page_scale_factor_ = 1.f;
 
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;

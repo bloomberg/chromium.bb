@@ -109,13 +109,6 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     }
   }
 
-  void OnPageScaleFactorChanged(float page_scale_factor) override {
-    if (destroyed_)
-      return;
-
-    guest_->web_contents()->SetPageScale(page_scale_factor);
-  }
-
   void DidUpdateAudioMutingState(bool muted) override {
     if (destroyed_)
       return;

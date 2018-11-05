@@ -50,6 +50,7 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
   render_widget_host->SetAutoResize(resize_params.auto_resize_enabled,
                                     resize_params.min_size_for_auto_resize,
                                     resize_params.max_size_for_auto_resize);
+  render_widget_host->SetPageScaleFactor(resize_params.page_scale_factor);
 
   render_widget_host->SynchronizeVisualProperties();
 }

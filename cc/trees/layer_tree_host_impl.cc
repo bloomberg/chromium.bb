@@ -2004,6 +2004,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   metadata.viewport_size_in_pixels = active_tree_->GetDeviceViewport().size();
 
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
+  metadata.external_page_scale_factor =
+      active_tree_->external_page_scale_factor();
 
   metadata.top_controls_height =
       browser_controls_offset_manager_->TopControlsHeight();

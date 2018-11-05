@@ -62,6 +62,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
+  IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
 IPC_STRUCT_TRAITS_END()
 
 // Traits for WebDeviceEmulationParams.

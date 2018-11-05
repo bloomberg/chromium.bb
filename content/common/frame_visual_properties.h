@@ -43,6 +43,8 @@ struct CONTENT_EXPORT FrameVisualProperties {
   // (0 is the default value which results in 1.0 zoom factor.)
   double zoom_level = 0;
 
+  float page_scale_factor = 1.f;
+
   // The time at which the viz::LocalSurfaceId used to submit this was
   // allocated.
   base::Optional<base::TimeTicks> local_surface_id_allocation_time;

@@ -2341,6 +2341,26 @@ void RenderFrameSubmissionObserver::WaitForMetadataChange() {
   Wait();
 }
 
+void RenderFrameSubmissionObserver::WaitForPageScaleFactor(
+    float expected_page_scale_factor,
+    const float tolerance) {
+  while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
+                      .page_scale_factor -
+                  expected_page_scale_factor) < tolerance) {
+    WaitForMetadataChange();
+  }
+}
+
+void RenderFrameSubmissionObserver::WaitForExternalPageScaleFactor(
+    float expected_external_page_scale_factor,
+    const float tolerance) {
+  while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
+                      .external_page_scale_factor -
+                  expected_external_page_scale_factor) < tolerance) {
+    WaitForMetadataChange();
+  }
+}
+
 void RenderFrameSubmissionObserver::WaitForScrollOffset(
     const gfx::Vector2dF& expected_offset) {
   while (render_frame_metadata_provider_->LastRenderFrameMetadata()

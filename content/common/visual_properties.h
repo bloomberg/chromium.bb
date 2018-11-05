@@ -82,6 +82,10 @@ struct CONTENT_EXPORT VisualProperties {
   // This represents the page zoom level for a WebContents.
   // (0 is the default value which results in 1.0 zoom factor).
   double zoom_level = 0;
+
+  // This represents the page's scale factor, which changes during pinch zoom.
+  // It needs to be shared with subframes.
+  float page_scale_factor = 1.f;
 };
 
 }  // namespace content

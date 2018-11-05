@@ -510,6 +510,8 @@ class CONTENT_EXPORT RenderWidget
 
   bool IsSurfaceSynchronizationEnabled() const;
 
+  void PageScaleFactorChanged(float page_scale_factor);
+
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
@@ -943,6 +945,10 @@ class CONTENT_EXPORT RenderWidget
   float top_controls_height_ = 0.f;
   // The height of the browser bottom controls.
   float bottom_controls_height_ = 0.f;
+
+  // The page scale factor reported by the main-frame's RenderWidget, via
+  // SynchronizeVisualProperties.
+  float page_scale_factor_from_mainframe_ = 1.f;
 
   // This is initialized to zero and is incremented on each non-same-page
   // navigation commit by RenderFrameImpl. At that time it is sent to the

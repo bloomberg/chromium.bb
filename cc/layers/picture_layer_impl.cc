@@ -1559,13 +1559,30 @@ void PictureLayerImpl::UpdateIdealScales() {
   float min_contents_scale = MinimumContentsScale();
   DCHECK_GT(min_contents_scale, 0.f);
 
-  ideal_page_scale_ = IsAffectedByPageScale()
-                          ? layer_tree_impl()->current_page_scale_factor()
-                          : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
+  if (layer_tree_impl()->PageScaleLayer()) {
+    ideal_page_scale_ = IsAffectedByPageScale()
+                            ? layer_tree_impl()->current_page_scale_factor()
+                            : 1.f;
+    ideal_contents_scale_ = GetIdealContentsScale();
+  } else {
+    // This layer may be in a layer tree embedded in a hierarchy that has its
+    // own page scale factor. We represent that here as
+    // 'external_page_scale_factor', a value that affects raster scale in the
+    // same way that page_scale_factor does, but doesn't affect any geometry
+    // calculations.
+    float external_page_scale_factor =
+        layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor()
+                          : 1.f;
+    DCHECK(!layer_tree_impl() || external_page_scale_factor == 1.f ||
+           layer_tree_impl()->current_page_scale_factor() == 1.f);
+    ideal_page_scale_ = external_page_scale_factor;
+    ideal_contents_scale_ =
+        GetIdealContentsScale() * external_page_scale_factor;
+  }
   ideal_contents_scale_ =
       std::min(kMaxIdealContentsScale,
-               std::max(GetIdealContentsScale(), min_contents_scale));
+               std::max(ideal_contents_scale_, min_contents_scale));
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

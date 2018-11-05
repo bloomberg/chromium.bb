@@ -1255,6 +1255,14 @@ void LayerTreeHost::SetRasterColorSpace(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
 
+void LayerTreeHost::SetExternalPageScaleFactor(float page_scale_factor) {
+  if (external_page_scale_factor_ == page_scale_factor)
+    return;
+
+  external_page_scale_factor_ = page_scale_factor;
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::SetContentSourceId(uint32_t id) {
   content_source_id_ = id;
 }
@@ -1486,6 +1494,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
   tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
+  tree_impl->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   tree_impl->set_content_source_id(content_source_id_);
 
