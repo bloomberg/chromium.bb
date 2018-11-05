@@ -354,7 +354,7 @@ IDBTransaction* TransactionForDatabase(
     ScriptState* script_state,
     IDBDatabase* idb_database,
     const String& object_store_name,
-    const String& mode = IndexedDBNames::readonly) {
+    const String& mode = indexed_db_names::kReadonly) {
   DummyExceptionStateForTesting exception_state;
   StringOrStringSequence scope;
   scope.SetString(object_store_name);
@@ -911,7 +911,7 @@ class DeleteObjectStoreEntries final
   void Execute(IDBDatabase* idb_database, ScriptState* script_state) override {
     IDBTransaction* idb_transaction =
         TransactionForDatabase(script_state, idb_database, object_store_name_,
-                               IndexedDBNames::readwrite);
+                               indexed_db_names::kReadwrite);
     if (!idb_transaction) {
       request_callback_->sendFailure(
           Response::Error("Could not get transaction"));
@@ -1013,7 +1013,7 @@ class ClearObjectStore final
   void Execute(IDBDatabase* idb_database, ScriptState* script_state) override {
     IDBTransaction* idb_transaction =
         TransactionForDatabase(script_state, idb_database, object_store_name_,
-                               IndexedDBNames::readwrite);
+                               indexed_db_names::kReadwrite);
     if (!idb_transaction) {
       request_callback_->sendFailure(
           Response::Error("Could not get transaction"));

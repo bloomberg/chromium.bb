@@ -58,13 +58,13 @@ void IDBObserver::observe(IDBDatabase* database,
 
   std::bitset<kWebIDBOperationTypeCount> types;
   for (const auto& operation_type : options->operationTypes()) {
-    if (operation_type == IndexedDBNames::add) {
+    if (operation_type == indexed_db_names::kAdd) {
       types[kWebIDBAdd] = true;
-    } else if (operation_type == IndexedDBNames::put) {
+    } else if (operation_type == indexed_db_names::kPut) {
       types[kWebIDBPut] = true;
-    } else if (operation_type == IndexedDBNames::kDelete) {
+    } else if (operation_type == indexed_db_names::kDelete) {
       types[kWebIDBDelete] = true;
-    } else if (operation_type == IndexedDBNames::clear) {
+    } else if (operation_type == indexed_db_names::kClear) {
       types[kWebIDBClear] = true;
     } else {
       exception_state.ThrowTypeError(

@@ -76,7 +76,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
         ExecutionContext::From(promise_resolver_->GetScriptState()),
-        IndexedDBNames::IndexedDB, this);
+        indexed_db_names::kIndexedDB, this);
   }
 
   ~WebIDBGetDBNamesCallbacksImpl() override {

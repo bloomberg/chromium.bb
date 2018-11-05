@@ -485,13 +485,13 @@ bool IDBCursor::IsDeleted() const {
 
 WebIDBCursorDirection IDBCursor::StringToDirection(
     const String& direction_string) {
-  if (direction_string == IndexedDBNames::next)
+  if (direction_string == indexed_db_names::kNext)
     return kWebIDBCursorDirectionNext;
-  if (direction_string == IndexedDBNames::nextunique)
+  if (direction_string == indexed_db_names::kNextunique)
     return kWebIDBCursorDirectionNextNoDuplicate;
-  if (direction_string == IndexedDBNames::prev)
+  if (direction_string == indexed_db_names::kPrev)
     return kWebIDBCursorDirectionPrev;
-  if (direction_string == IndexedDBNames::prevunique)
+  if (direction_string == indexed_db_names::kPrevunique)
     return kWebIDBCursorDirectionPrevNoDuplicate;
 
   NOTREACHED();
@@ -501,20 +501,20 @@ WebIDBCursorDirection IDBCursor::StringToDirection(
 const String& IDBCursor::direction() const {
   switch (direction_) {
     case kWebIDBCursorDirectionNext:
-      return IndexedDBNames::next;
+      return indexed_db_names::kNext;
 
     case kWebIDBCursorDirectionNextNoDuplicate:
-      return IndexedDBNames::nextunique;
+      return indexed_db_names::kNextunique;
 
     case kWebIDBCursorDirectionPrev:
-      return IndexedDBNames::prev;
+      return indexed_db_names::kPrev;
 
     case kWebIDBCursorDirectionPrevNoDuplicate:
-      return IndexedDBNames::prevunique;
+      return indexed_db_names::kPrevunique;
 
     default:
       NOTREACHED();
-      return IndexedDBNames::next;
+      return indexed_db_names::kNext;
   }
 }
 
