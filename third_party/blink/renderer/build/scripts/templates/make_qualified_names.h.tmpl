@@ -6,11 +6,12 @@
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
+#include <memory>
+
 {% if export == 'CORE_EXPORT' %}
 #include "third_party/blink/renderer/core/core_export.h"
 {% endif %}
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
-#include <memory>
 
 namespace blink {
 
@@ -42,7 +43,7 @@ constexpr unsigned kAttrsCount = {{attrs|count}};
 std::unique_ptr<const QualifiedName*[]> GetAttrs();
 {% endif %}
 
-void init();
+void Init();
 
 }  // namespace {{cpp_namespace}}
 }  // namespace blink

@@ -186,11 +186,11 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   ThreadState::AttachMainThread();
   ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr, nullptr,
                                                    nullptr);
-  http_names::init();
-  fetch_initiator_type_names::init();
+  http_names::Init();
+  fetch_initiator_type_names::Init();
 
   InitializePlatformLanguage();
-  font_family_names::init();
+  font_family_names::Init();
   WebRuntimeFeatures::EnableExperimentalFeatures(true);
   WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 }

@@ -39,8 +39,7 @@ TEST(FontCacheAndroid, genericFamilyNameForScript) {
   FontDescription chinese;
   chinese.SetLocale(LayoutLocale::Get("zh"));
 
-  if (font_family_names::kWebkitStandard.IsEmpty())
-    font_family_names::init();
+  font_family_names::Init();
 
   // For non-CJK, getGenericFamilyNameForScript should return the given
   // familyName.
