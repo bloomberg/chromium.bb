@@ -517,7 +517,7 @@ public class ToolbarTablet
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
             if (mShowMenuBadge) {
                 getMenuBadge().setVisibility(View.GONE);
-                setMenuButtonContentDescription();
+                setMenuButtonContentDescription(false);
             }
         } else {
             mIsInTabSwitcherMode = false;
