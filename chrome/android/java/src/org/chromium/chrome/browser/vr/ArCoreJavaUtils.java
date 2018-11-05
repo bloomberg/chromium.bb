@@ -66,7 +66,7 @@ public class ArCoreJavaUtils {
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
 
     @UsedByReflection("ArDelegate.java")
-    /* package */ static void installArCoreDeviceProviderFactory() {
+    public static void installArCoreDeviceProviderFactory() {
         nativeInstallArCoreDeviceProviderFactory();
     }
 
