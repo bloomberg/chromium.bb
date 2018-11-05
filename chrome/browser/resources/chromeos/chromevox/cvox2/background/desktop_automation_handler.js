@@ -495,6 +495,9 @@ DesktopAutomationHandler.prototype = {
     }
 
     var cur = ChromeVoxState.instance.currentRange;
+    if (!cur)
+      return;
+
     if (AutomationUtil.isDescendantOf(cur.start.node, evt.target) ||
         AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
       new Output().withLocation(cur, null, evt.type).go();
