@@ -2039,7 +2039,7 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
-  network_service_->client()->OnUsedTrustAnchor(params_->username_hash);
+  network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
 }
 #endif
 

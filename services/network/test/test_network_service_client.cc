@@ -80,7 +80,7 @@ void TestNetworkServiceClient::OnCookieChange(
 }
 
 #if defined(OS_CHROMEOS)
-void TestNetworkServiceClient::OnUsedTrustAnchor(
+void TestNetworkServiceClient::OnTrustAnchorUsed(
     const std::string& username_hash) {
   NOTREACHED();
 }

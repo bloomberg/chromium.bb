@@ -642,7 +642,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
 #if defined(OS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
-  virtual void OnUsedTrustAnchor(const std::string& username_hash) {}
+  virtual void OnTrustAnchorUsed(const std::string& username_hash) {}
 #endif
 
   // Allows the embedder to override the LocationProvider implementation.

@@ -62,7 +62,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
 #if defined(OS_CHROMEOS)
-  void OnUsedTrustAnchor(const std::string& username_hash) override;
+  void OnTrustAnchorUsed(const std::string& username_hash) override;
 #endif
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,
