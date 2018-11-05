@@ -335,6 +335,8 @@ bool RulesData::Transform(const std::string& context,
 }
 
 bool RulesData::MatchHistoryPrune(const std::string& str) const {
+  if (!history_prune_re_)
+    return false;
   return re2::RE2::FullMatch(str, *history_prune_re_);
 }
 
