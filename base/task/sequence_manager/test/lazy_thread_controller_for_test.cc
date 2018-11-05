@@ -85,8 +85,9 @@ void LazyThreadControllerForTest::RemoveNestingObserver(
     pending_observer_ = false;
     return;
   }
-  // TODO(altimin): We can't use |message_loop_->IsBoundToCurrentThread()| here
-  // because |message_loop_| is probably dead by now.
+  // TODO(altimin): Refactor this to use STE::LifetimeObserver.
+  // We can't use message_loop_->IsBoundToCurrentThread as |message_loop_|
+  // might be deleted.
   if (MessageLoopCurrent::Get()->ToMessageLoopDeprecated() != message_loop_)
     return;
   RunLoop::RemoveNestingObserverOnCurrentThread(this);

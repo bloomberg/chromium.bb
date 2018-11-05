@@ -239,14 +239,21 @@ bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
   return enqueue_order < other_enqueue_order;
 }
 
+void WorkQueue::MaybeShrinkQueue() {
+  tasks_.MaybeShrinkQueue();
+}
+
+void WorkQueue::DeletePendingTasks() {
+  tasks_.clear();
+
+  if (work_queue_sets_ && heap_handle().IsValid())
+    work_queue_sets_->OnPopQueue(this);
+}
+
 void WorkQueue::PopTaskForTesting() {
   if (tasks_.empty())
     return;
   tasks_.pop_front();
-}
-
-void WorkQueue::MaybeShrinkQueue() {
-  tasks_.MaybeShrinkQueue();
 }
 
 }  // namespace internal

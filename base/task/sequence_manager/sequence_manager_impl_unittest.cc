@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -43,6 +44,7 @@ using testing::ElementsAre;
 using testing::ElementsAreArray;
 using testing::Mock;
 using testing::Not;
+using testing::UnorderedElementsAre;
 using testing::_;
 using base::sequence_manager::internal::EnqueueOrder;
 
@@ -3505,6 +3507,162 @@ TEST_P(SequenceManagerTest, HasPendingHighResolutionTasks) {
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
 }
+
+namespace {
+
+class PostTaskWhenDeleted;
+void CallbackWithDestructor(std::unique_ptr<PostTaskWhenDeleted>);
+
+class PostTaskWhenDeleted {
+ public:
+  PostTaskWhenDeleted(std::string name,
+                      scoped_refptr<SingleThreadTaskRunner> task_runner,
+                      size_t depth,
+                      std::set<std::string>* tasks_alive,
+                      std::vector<std::string>* tasks_deleted)
+      : name_(name),
+        task_runner_(std::move(task_runner)),
+        depth_(depth),
+        tasks_alive_(tasks_alive),
+        tasks_deleted_(tasks_deleted) {
+    tasks_alive_->insert(full_name());
+  }
+
+  ~PostTaskWhenDeleted() {
+    DCHECK(tasks_alive_->find(full_name()) != tasks_alive_->end());
+    tasks_alive_->erase(full_name());
+    tasks_deleted_->push_back(full_name());
+
+    if (depth_ > 0) {
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CallbackWithDestructor,
+                                    std::make_unique<PostTaskWhenDeleted>(
+                                        name_, task_runner_, depth_ - 1,
+                                        tasks_alive_, tasks_deleted_)));
+    }
+  }
+
+ private:
+  std::string full_name() { return name_ + " " + IntToString(depth_); }
+
+  std::string name_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  int depth_;
+  std::set<std::string>* tasks_alive_;
+  std::vector<std::string>* tasks_deleted_;
+};
+
+void CallbackWithDestructor(std::unique_ptr<PostTaskWhenDeleted> object) {}
+
+}  // namespace
+
+TEST_P(SequenceManagerTest, DeletePendingTasks_Simple) {
+  CreateTaskQueues(1u);
+
+  std::set<std::string> tasks_alive;
+  std::vector<std::string> tasks_deleted;
+
+  runners_[0]->PostTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "task", runners_[0]->task_runner(),
+                                            0, &tasks_alive, &tasks_deleted)));
+
+  EXPECT_THAT(tasks_alive, ElementsAre("task 0"));
+  EXPECT_TRUE(manager_->HasTasks());
+
+  manager_->DeletePendingTasks();
+
+  EXPECT_THAT(tasks_alive, ElementsAre());
+  EXPECT_THAT(tasks_deleted, ElementsAre("task 0"));
+  EXPECT_FALSE(manager_->HasTasks());
+
+  // Ensure that |tasks_alive| and |tasks_deleted| outlive |manager_|
+  // and we get a test failure instead of a test crash.
+  manager_.reset();
+}
+
+TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
+  CreateTaskQueues(4u);
+
+  std::set<std::string> tasks_alive;
+  std::vector<std::string> tasks_deleted;
+
+  // Post immediate and delayed to the same task queue.
+  runners_[0]->PostTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q1 I1", runners_[0]->task_runner(),
+                                            1, &tasks_alive, &tasks_deleted)));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q1 D1", runners_[0]->task_runner(),
+                                            0, &tasks_alive, &tasks_deleted)),
+      base::TimeDelta::FromSeconds(1));
+
+  // Post one delayed task to the second queue.
+  runners_[1]->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q2 D1", runners_[1]->task_runner(),
+                                            1, &tasks_alive, &tasks_deleted)),
+      base::TimeDelta::FromSeconds(1));
+
+  // Post two immediate tasks and force a queue reload between them.
+  runners_[2]->PostTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q3 I1", runners_[2]->task_runner(),
+                                            0, &tasks_alive, &tasks_deleted)));
+  runners_[2]->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+  runners_[2]->PostTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q3 I2", runners_[2]->task_runner(),
+                                            1, &tasks_alive, &tasks_deleted)));
+
+  // Post a delayed task and force a delay to expire.
+  runners_[3]->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
+                                            "Q4 D1", runners_[1]->task_runner(),
+                                            0, &tasks_alive, &tasks_deleted)),
+      TimeDelta::FromMilliseconds(10));
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(100));
+  LazyNow lazy_now(test_task_runner_->GetMockTickClock());
+  manager_->WakeUpReadyDelayedQueues(&lazy_now);
+
+  EXPECT_THAT(tasks_alive,
+              UnorderedElementsAre("Q1 I1 1", "Q1 D1 0", "Q2 D1 1", "Q3 I1 0",
+                                   "Q3 I2 1", "Q4 D1 0"));
+  EXPECT_TRUE(manager_->HasTasks());
+
+  manager_->DeletePendingTasks();
+
+  // Note that the tasks reposting themselves are still alive.
+  EXPECT_THAT(tasks_alive,
+              UnorderedElementsAre("Q1 I1 0", "Q2 D1 0", "Q3 I2 0"));
+  EXPECT_THAT(tasks_deleted,
+              UnorderedElementsAre("Q1 I1 1", "Q1 D1 0", "Q2 D1 1", "Q3 I1 0",
+                                   "Q3 I2 1", "Q4 D1 0"));
+  EXPECT_TRUE(manager_->HasTasks());
+  tasks_deleted.clear();
+
+  // Second call should remove the rest.
+  manager_->DeletePendingTasks();
+  EXPECT_THAT(tasks_alive, UnorderedElementsAre());
+  EXPECT_THAT(tasks_deleted,
+              UnorderedElementsAre("Q1 I1 0", "Q2 D1 0", "Q3 I2 0"));
+  EXPECT_FALSE(manager_->HasTasks());
+
+  // Ensure that |tasks_alive| and |tasks_deleted| outlive |manager_|
+  // and we get a test failure instead of a test crash.
+  manager_.reset();
+}
+
+// TODO(altimin): Add a test that posts an infinite number of other tasks
+// from its destructor.
 
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal

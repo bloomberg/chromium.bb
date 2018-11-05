@@ -131,11 +131,14 @@ class BASE_EXPORT WorkQueue {
   // Otherwise returns false.
   bool BlockedByFence() const;
 
-  // Test support function. This should not be used in production code.
-  void PopTaskForTesting();
-
   // Shrinks |tasks_| if it's wasting memory.
   void MaybeShrinkQueue();
+
+  // Delete all tasks within this WorkQueue.
+  void DeletePendingTasks();
+
+  // Test support function. This should not be used in production code.
+  void PopTaskForTesting();
 
  private:
   bool InsertFenceImpl(EnqueueOrder fence);

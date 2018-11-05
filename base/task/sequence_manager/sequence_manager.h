@@ -64,6 +64,11 @@ class SequenceManager {
   // SequenceManager.
   virtual void BindToMessageLoop(MessageLoop* message_loop) = 0;
 
+  // Finishes the initialization for a SequenceManager created via
+  // CreateUnboundSequenceManagerWithPump(). Must not be called in any other
+  // circumstances. The ownership of the pump is transferred to SequenceManager.
+  virtual void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) = 0;
+
   // Initializes the SequenceManager on the bound thread. Should only be called
   // once and only after the ThreadController's dependencies were initialized.
   // Note that CreateSequenceManagerOnCurrentThread() performs this
@@ -133,6 +138,27 @@ class SequenceManager {
   // Returns the metric recording configuration for the current SequenceManager.
   virtual const MetricRecordingSettings& GetMetricRecordingSettings() const = 0;
 
+  // Delete all tasks inside of all queues in this Sequence Manager.
+  // Note that at the moment SequenceManager still can have tasks inside it
+  // after this call due to tasks posting tasks from destructor.
+  virtual void DeletePendingTasks() = 0;
+
+  // Explicitly allow execution in the nested loops.
+  // TODO(altimin,crbug.com/901362): This method exists in the current form
+  // to facilitate MessageLoop deprecation. Rethink this after MessageLoopImpl
+  // is gone.
+  virtual void SetTaskExecutionAllowed(bool allowed) = 0;
+
+  // Whether task execution is allowed (it is disallowed in the nested loops
+  // unless allowed explicitly by SetTaskExecutionAllowed(true).
+  // TODO(altimin): This method exists in the current form to facilitate
+  // MessageLoop deprecation. Rethink this after MessageLoopImpl is gone.
+  virtual bool IsTaskExecutionAllowed() const = 0;
+
+  // Whether at least one queue associated with this SequenceManager has
+  // at least one task, either delayed or immediate.
+  virtual bool HasTasks() = 0;
+
   // Creates a task queue with the given type, |spec| and args.
   // Must be called on the main thread.
   // TODO(scheduler-dev): SequenceManager should not create TaskQueues.
@@ -142,6 +168,11 @@ class SequenceManager {
     return WrapRefCounted(new TaskQueueType(CreateTaskQueueImpl(spec), spec,
                                             std::forward<Args>(args)...));
   }
+
+  // Returns true iff this SequenceManager has no immediate work to do
+  // (tasks with unexpired delay are fine, tasks with zero delay and
+  // expired delay are not).
+  virtual bool IsIdleForTesting() const = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
@@ -165,6 +196,12 @@ CreateSequenceManagerOnCurrentThread();
 // Remove when we get rid of MessageLoop.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
     MessageLoop* message_loop);
+
+// Create a SequenceManager for a future use which would bound directly
+// to a message pump. BindToMessagePump() call is expected before this
+// SequenceManager can be used.
+BASE_EXPORT std::unique_ptr<SequenceManager>
+CreateUnboundSequenceManagerWithPump();
 
 }  // namespace sequence_manager
 }  // namespace base

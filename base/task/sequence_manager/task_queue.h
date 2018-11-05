@@ -315,6 +315,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
  protected:
   TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
             const TaskQueue::Spec& spec);
+
   virtual ~TaskQueue();
 
   internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }

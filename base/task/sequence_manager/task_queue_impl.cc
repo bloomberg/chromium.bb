@@ -617,7 +617,8 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
-  if (PlatformThread::CurrentId() == associated_thread_->thread_id)
+  if (associated_thread_->thread_id == kInvalidThreadId ||
+      PlatformThread::CurrentId() == associated_thread_->thread_id)
     return main_thread_only().time_domain;
 
   AutoLock lock(any_thread_lock_);
@@ -1016,6 +1017,40 @@ void TaskQueueImpl::ActivateDelayedFenceIfNeeded(TimeTicks now) {
   main_thread_only().delayed_fence = nullopt;
 }
 
+void TaskQueueImpl::DeletePendingTasks() {
+  main_thread_only().delayed_work_queue->DeletePendingTasks();
+  main_thread_only().immediate_work_queue->DeletePendingTasks();
+  // TODO(altimin): Add clear() method to DelayedIncomingQueue.
+  DelayedIncomingQueue queue_to_delete;
+  main_thread_only().delayed_incoming_queue.swap(queue_to_delete);
+
+  TaskDeque deque;
+  {
+    // Limit the scope of the lock to ensure that the deque is destroyed
+    // outside of the lock to allow it to post tasks.
+    base::AutoLock lock(immediate_incoming_queue_lock_);
+    deque.swap(immediate_incoming_queue());
+  }
+
+  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  UpdateDelayedWakeUp(&lazy_now);
+}
+
+bool TaskQueueImpl::HasTasks() const {
+  if (!main_thread_only().delayed_work_queue->Empty())
+    return true;
+  if (!main_thread_only().immediate_work_queue->Empty())
+    return true;
+  if (!main_thread_only().delayed_incoming_queue.empty())
+    return true;
+
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  if (!immediate_incoming_queue().empty())
+    return true;
+
+  return false;
+}
+
 void TaskQueueImpl::ClearSequenceManagerForTesting() {
   AutoLock lock(any_thread_lock_);
   any_thread().sequence_manager = nullptr;
@@ -1052,6 +1087,11 @@ void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks(
     pop();
   }
   queue_ = std::move(remaining_tasks);
+}
+
+void TaskQueueImpl::DelayedIncomingQueue::swap(DelayedIncomingQueue& other) {
+  queue_.swap(other.queue_);
+  std::swap(pending_high_res_tasks_, other.pending_high_res_tasks_);
 }
 
 void TaskQueueImpl::DelayedIncomingQueue::AsValueInto(

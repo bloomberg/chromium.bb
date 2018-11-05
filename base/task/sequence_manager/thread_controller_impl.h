@@ -40,7 +40,8 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task) override;
   void ScheduleWork() override;
-  void SetMessageLoop(MessageLoop* message_loop) override;
+  void BindToCurrentThread(MessageLoop* message_loop) override;
+  void BindToCurrentThread(std::unique_ptr<MessagePump> message_pump) override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
@@ -51,6 +52,8 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void AddNestingObserver(RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
   const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const override;
+  void SetTaskExecutionAllowed(bool allowed) override;
+  bool IsTaskExecutionAllowed() const override;
 
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;

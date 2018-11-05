@@ -5,6 +5,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
 #include "base/auto_reset.h"
+#include "base/message_loop/message_pump.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -27,15 +28,15 @@ TimeTicks CapAtOneDay(TimeTicks next_run_time, LazyNow* lazy_now) {
 }  // namespace
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
-    std::unique_ptr<MessagePump> message_pump,
     const TickClock* time_source)
     : associated_thread_(AssociatedThreadId::CreateUnbound()),
-      pump_(std::move(message_pump)),
-      time_source_(time_source) {
-  scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
-      base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
-      &sequence_local_storage_map_);
-  RunLoop::RegisterDelegateForCurrentThread(this);
+      time_source_(time_source) {}
+
+ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
+    std::unique_ptr<MessagePump> message_pump,
+    const TickClock* time_source)
+    : ThreadControllerWithMessagePumpImpl(time_source) {
+  BindToCurrentThread(std::move(message_pump));
 }
 
 ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
@@ -43,6 +44,13 @@ ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
   // will do all the clean-up.
   // ScopedSetSequenceLocalStorageMapForCurrentThread destructor will
   // de-register the current thread as a sequence.
+}
+
+// static
+std::unique_ptr<ThreadControllerWithMessagePumpImpl>
+ThreadControllerWithMessagePumpImpl::CreateUnbound(
+    const TickClock* time_source) {
+  return base::WrapUnique(new ThreadControllerWithMessagePumpImpl(time_source));
 }
 
 ThreadControllerWithMessagePumpImpl::MainThreadOnly::MainThreadOnly() = default;
@@ -57,10 +65,27 @@ void ThreadControllerWithMessagePumpImpl::SetSequencedTaskSource(
   main_thread_only().task_source = task_source;
 }
 
-void ThreadControllerWithMessagePumpImpl::SetMessageLoop(
+void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
     MessageLoop* message_loop) {
   NOTREACHED()
       << "ThreadControllerWithMessagePumpImpl doesn't support MessageLoops";
+}
+
+void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
+    std::unique_ptr<MessagePump> message_pump) {
+  associated_thread_->BindToCurrentThread();
+  AutoLock lock(pump_lock_);
+  pump_ = std::move(message_pump);
+  RunLoop::RegisterDelegateForCurrentThread(this);
+  scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
+      base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
+      &sequence_local_storage_map_);
+  if (task_runner_to_set_) {
+    SetDefaultTaskRunner(task_runner_to_set_);
+    task_runner_to_set_ = nullptr;
+  }
+  if (should_schedule_work_after_bind_)
+    ScheduleWork();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
@@ -71,6 +96,7 @@ void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
 
 void ThreadControllerWithMessagePumpImpl::SetTimerSlack(
     TimerSlack timer_slack) {
+  DCHECK(RunsTasksInCurrentSequence());
   pump_->SetTimerSlack(timer_slack);
 }
 
@@ -80,6 +106,13 @@ void ThreadControllerWithMessagePumpImpl::WillQueueTask(
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
+  auto lock = AcquirePumpReadLockIfNeeded();
+
+  if (!pump_) {
+    should_schedule_work_after_bind_ = true;
+    return;
+  }
+
   // This assumes that cross thread ScheduleWork isn't frequent enough to
   // warrant ScheduleWork deduplication.
   if (RunsTasksInCurrentSequence()) {
@@ -96,7 +129,7 @@ void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
 void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
     LazyNow* lazy_now,
     TimeTicks run_time) {
-  DCHECK_LT(time_source_->NowTicks(), run_time);
+  DCHECK_LT(lazy_now->Now(), run_time);
 
   if (main_thread_only().next_delayed_do_work == run_time)
     return;
@@ -110,6 +143,9 @@ void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
   run_time = CapAtOneDay(run_time, lazy_now);
 
   main_thread_only().next_delayed_do_work = run_time;
+  // |pump_| can't be null as all postTasks are cross-thread before binding,
+  // and delayed cross-thread postTasks do the thread hop through an immediate
+  // task.
   pump_->ScheduleDelayedWork(run_time);
 }
 
@@ -123,8 +159,16 @@ bool ThreadControllerWithMessagePumpImpl::RunsTasksInCurrentSequence() {
 
 void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  main_thread_only().thread_task_runner_handle =
-      std::make_unique<ThreadTaskRunnerHandle>(task_runner);
+  if (associated_thread_->thread_id == kInvalidThreadId) {
+    // Save task runner, it will be set in BindToCurrentThread.
+    task_runner_to_set_ = task_runner;
+  } else {
+    // Only one ThreadTaskRunnerHandle can exist at any time,
+    // so reset the old one.
+    main_thread_only().thread_task_runner_handle.reset();
+    main_thread_only().thread_task_runner_handle =
+        std::make_unique<ThreadTaskRunnerHandle>(task_runner);
+  }
 }
 
 void ThreadControllerWithMessagePumpImpl::RestoreDefaultTaskRunner() {
@@ -153,19 +197,20 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWork() {
-  base::TimeTicks next_run_time;
   main_thread_only().immediate_do_work_posted = false;
-  return DoWorkImpl(&next_run_time);
+  return DoWorkImpl(nullptr);
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
     TimeTicks* next_run_time) {
-  main_thread_only().next_delayed_do_work = TimeTicks::Max();
   return DoWorkImpl(next_run_time);
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     base::TimeTicks* next_run_time) {
+  if (!main_thread_only().task_execution_allowed)
+    return false;
+
   DCHECK(main_thread_only().task_source);
   bool task_ran = false;
 
@@ -176,11 +221,20 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     if (!task)
       break;
 
+    // Execute the task and assume the worst: it is probably not reentrant.
+    main_thread_only().task_execution_allowed = false;
+
     TRACE_TASK_EXECUTION("ThreadController::Task", *task);
     task_annotator_.RunTask("ThreadController::Task", &*task);
     task_ran = true;
 
+    main_thread_only().task_execution_allowed = true;
+
     main_thread_only().task_source->DidRunTask();
+
+    // If we have executed a delayed task, reset the next delayed do work.
+    if (next_run_time)
+      main_thread_only().next_delayed_do_work = TimeTicks();
 
     // When Quit() is called we must stop running the batch because the caller
     // expects per-task granularity.
@@ -206,15 +260,19 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   if (do_work_delay.is_zero()) {
     // Need to run new work immediately, but due to the contract of DoWork we
     // only need to return true to ensure that happens.
-    *next_run_time = lazy_now.Now();
+    if (next_run_time)
+      *next_run_time = main_thread_only().next_delayed_do_work;
     main_thread_only().immediate_do_work_posted = true;
     return true;
   } else if (do_work_delay != TimeDelta::Max()) {
-    *next_run_time = CapAtOneDay(lazy_now.Now() + do_work_delay, &lazy_now);
     // Cancels any previously scheduled delayed wake-ups.
-    pump_->ScheduleDelayedWork(*next_run_time);
-  } else {
-    *next_run_time = base::TimeTicks::Max();
+    // TODO(altimin): Avoid calling ScheduleDelayedWork from DoDelayedWork.
+    SetNextDelayedDoWork(
+        &lazy_now, CapAtOneDay(lazy_now.Now() + do_work_delay, &lazy_now));
+    if (next_run_time)
+      *next_run_time = main_thread_only().next_delayed_do_work;
+  } else if (next_run_time) {
+    *next_run_time = base::TimeTicks();
   }
 
   return task_ran;
@@ -245,12 +303,16 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
 }
 
 void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
-  // No system messages are being processed by this class.
-  DCHECK(application_tasks_allowed);
-
-  // MessagePump::Run() blocks until Quit() called, but previously started
-  // Run() calls continue to block.
-  pump_->Run(this);
+  DCHECK(RunsTasksInCurrentSequence());
+  if (application_tasks_allowed && !main_thread_only().task_execution_allowed) {
+    // Allow nested task execution as explicitly requested.
+    DCHECK(RunLoop::IsNestedOnCurrentThread());
+    main_thread_only().task_execution_allowed = true;
+    pump_->Run(this);
+    main_thread_only().task_execution_allowed = false;
+  } else {
+    pump_->Run(this);
+  }
 }
 
 void ThreadControllerWithMessagePumpImpl::OnBeginNestedRunLoop() {
@@ -267,6 +329,7 @@ void ThreadControllerWithMessagePumpImpl::OnExitNestedRunLoop() {
 }
 
 void ThreadControllerWithMessagePumpImpl::Quit() {
+  DCHECK(RunsTasksInCurrentSequence());
   // Interrupt a batch of work.
   if (InTopLevelDoWork())
     main_thread_only().quit_do_work = true;
@@ -277,6 +340,22 @@ void ThreadControllerWithMessagePumpImpl::Quit() {
 void ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled() {
   main_thread_only().immediate_do_work_posted = true;
   ScheduleWork();
+}
+
+void ThreadControllerWithMessagePumpImpl::SetTaskExecutionAllowed(
+    bool allowed) {
+  main_thread_only().task_execution_allowed = allowed;
+}
+
+bool ThreadControllerWithMessagePumpImpl::IsTaskExecutionAllowed() const {
+  return main_thread_only().task_execution_allowed;
+}
+
+Optional<MoveableAutoLock>
+ThreadControllerWithMessagePumpImpl::AcquirePumpReadLockIfNeeded() {
+  if (RunsTasksInCurrentSequence())
+    return nullopt;
+  return MoveableAutoLock(pump_lock_);
 }
 
 }  // namespace internal
