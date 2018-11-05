@@ -9,17 +9,7 @@
 
 #include "components/signin/core/browser/signin_metrics.h"
 
-@class MDCFlatButton;
 @protocol SigninPromoViewDelegate;
-
-typedef NS_ENUM(NSInteger, SigninPromoViewUI) {
-  // The legacy SigninPromoViewUI style.
-  SigninPromoViewUILegacy,
-  // The SigninPromoViewRefreshUI style. In order for this value to take effect
-  // the UIRefreshPhase1 flag also needs to be enabled. Otherwise
-  // SigninPromoViewUILegacy style will still be used.
-  SigninPromoViewUIRefresh,
-};
 
 typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
   // No identity available on the device.
@@ -62,12 +52,8 @@ extern NSString* const kSigninPromoCloseButtonId;
 // |textLabel|.
 @property(nonatomic, readonly) CGFloat horizontalPadding;
 
-// Designated initializer. |signinPromoViewUI| sets the style for the
-// SigninPromoView to legacy or refreshed. This same view is used on Collections
-// and Settings, while the Collections UI will be refreshed soon, we still need
-// to support the legacy UI for settings.
+// Designated initializer.
 - (instancetype)initWithFrame:(CGRect)frame
-                        style:(SigninPromoViewUI)signinPromoViewUI
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
