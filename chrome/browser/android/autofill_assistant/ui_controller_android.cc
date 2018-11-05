@@ -65,9 +65,9 @@ UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
     jobject jcaller,
     const JavaParamRef<jobject>& webContents,
-    const base::android::JavaParamRef<jobjectArray>& parameterNames,
-    const base::android::JavaParamRef<jobjectArray>& parameterValues,
-    const base::android::JavaParamRef<jstring>& initialUrlString)
+    const JavaParamRef<jobjectArray>& parameterNames,
+    const JavaParamRef<jobjectArray>& parameterValues,
+    const JavaParamRef<jstring>& initialUrlString)
     : ui_delegate_(nullptr) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
@@ -135,7 +135,7 @@ void UiControllerAndroid::UpdateScripts(
 
 void UiControllerAndroid::OnScriptSelected(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jscript_path) {
   std::string script_path;
   base::android::ConvertJavaStringToUTF8(env, jscript_path, &script_path);
@@ -144,8 +144,8 @@ void UiControllerAndroid::OnScriptSelected(
 
 void UiControllerAndroid::OnAddressSelected(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jaddress_guid) {
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jaddress_guid) {
   if (!address_or_card_callback_)  // possibly duplicate call
     return;
 
@@ -156,8 +156,8 @@ void UiControllerAndroid::OnAddressSelected(
 
 void UiControllerAndroid::OnCardSelected(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jcard_guid) {
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jcard_guid) {
   if (!address_or_card_callback_)  // possibly duplicate call
     return;
 
@@ -168,13 +168,13 @@ void UiControllerAndroid::OnCardSelected(
 
 void UiControllerAndroid::OnGetPaymentInformation(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& jcaller,
     jboolean jsucceed,
-    const base::android::JavaParamRef<jobject>& jcard,
-    const base::android::JavaParamRef<jobject>& jaddress,
-    const base::android::JavaParamRef<jstring>& jpayer_name,
-    const base::android::JavaParamRef<jstring>& jpayer_phone,
-    const base::android::JavaParamRef<jstring>& jpayer_email) {
+    const JavaParamRef<jobject>& jcard,
+    const JavaParamRef<jobject>& jaddress,
+    const JavaParamRef<jstring>& jpayer_name,
+    const JavaParamRef<jstring>& jpayer_phone,
+    const JavaParamRef<jstring>& jpayer_email) {
   DCHECK(get_payment_information_callback_);
 
   std::unique_ptr<PaymentInformation> payment_info =
@@ -209,7 +209,7 @@ void UiControllerAndroid::OnGetPaymentInformation(
 
 void UiControllerAndroid::OnAccessToken(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& jcaller,
     jboolean success,
     const JavaParamRef<jstring>& access_token) {
   if (fetch_access_token_callback_) {
@@ -221,7 +221,7 @@ void UiControllerAndroid::OnAccessToken(
 base::android::ScopedJavaLocalRef<jstring>
 UiControllerAndroid::GetPrimaryAccountName(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
+    const JavaParamRef<jobject>& jcaller) {
   AccountInfo account_info = IdentityManagerFactory::GetForProfile(
                                  Profile::FromBrowserContext(browser_context_))
                                  ->GetPrimaryAccountInfo();
@@ -358,11 +358,11 @@ void UiControllerAndroid::Destroy(JNIEnv* env,
 
 static jlong JNI_AutofillAssistantUiController_Init(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& webContents,
-    const base::android::JavaParamRef<jobjectArray>& parameterNames,
-    const base::android::JavaParamRef<jobjectArray>& parameterValues,
-    const base::android::JavaParamRef<jstring>& initialUrlString) {
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& webContents,
+    const JavaParamRef<jobjectArray>& parameterNames,
+    const JavaParamRef<jobjectArray>& parameterValues,
+    const JavaParamRef<jstring>& initialUrlString) {
   auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
       env, jcaller, webContents, parameterNames, parameterValues,
       initialUrlString);
