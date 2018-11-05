@@ -175,11 +175,12 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (mState == State.API_CONNECTION_SUSPENDED) return;
 
         try {
-            launchApplication(mApiClient, mSource.getApplicationId(), true)
-                    .setResultCallback(this);
+            launchApplication(mApiClient, mSource.getApplicationId(), true).setResultCallback(this);
             mState = State.LAUNCHING_APPLICATION;
         } catch (Exception e) {
-            Log.e(TAG, "Launch application failed: %s", mSource.getApplicationId(), e);
+            // Do not log appId, as it can contain appIds overriden in downstream code that must not
+            // be leaked
+            Log.e(TAG, "Launch application failed", e);
             reportError();
         }
     }
@@ -209,8 +210,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
         Status status = result.getStatus();
         if (!status.isSuccess()) {
-            Log.e(TAG, "Launch application failed with status: %s, %d, %s",
-                    mSource.getApplicationId(), status.getStatusCode(), status.getStatusMessage());
+            // Do not log appId, as it can contain appIds overriden in downstream code that must not
+            // be leaked
+            Log.e(TAG, "Launch application failed with status: %d, %s", status.getStatusCode(),
+                    status.getStatusMessage());
             reportError();
             return;
         }
