@@ -9,10 +9,9 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
@@ -33,7 +32,7 @@ class AppWindow;
 class AppWindowRegistry : public KeyedService,
                           public content::DevToolsAgentHostObserver {
  public:
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Called just after an app window was added.
     virtual void OnAppWindowAdded(AppWindow* app_window);
@@ -51,7 +50,7 @@ class AppWindowRegistry : public KeyedService,
     virtual void OnAppWindowActivated(AppWindow* app_window);
 
    protected:
-    virtual ~Observer();
+    ~Observer() override;
   };
 
   typedef std::list<AppWindow*> AppWindowList;
@@ -155,7 +154,7 @@ class AppWindowRegistry : public KeyedService,
   content::BrowserContext* context_;
   AppWindowList app_windows_;
   InspectedWindowSet inspected_windows_;
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace extensions
