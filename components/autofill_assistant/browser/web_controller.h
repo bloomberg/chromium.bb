@@ -105,6 +105,12 @@ class WebController {
                              bool simulate_key_presses,
                              base::OnceCallback<void(bool)> callback);
 
+  // Set the |value| of the |attribute| of the element given by |selectors|.
+  virtual void SetAttribute(const std::vector<std::string>& selectors,
+                            const std::vector<std::string>& attribute,
+                            const std::string& value,
+                            base::OnceCallback<void(bool)> callback);
+
   // Return the outerHTML of |selectors|.
   virtual void GetOuterHtml(
       const std::vector<std::string>& selectors,
@@ -280,13 +286,6 @@ class WebController {
       const std::string& value,
       base::OnceCallback<void(bool)> callback,
       bool clear_status);
-  void OnFindElementForSetFieldValue(
-      const std::string& value,
-      base::OnceCallback<void(bool)> callback,
-      std::unique_ptr<FindElementResult> element_result);
-  void OnSetValueAttribute(
-      base::OnceCallback<void(bool)> callback,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnClickElementForDispatchKeyEvent(
       const std::string& value,
       base::OnceCallback<void(bool)> callback,
@@ -300,6 +299,20 @@ class WebController {
   void OnDispatchKeyUpEvent(const std::string& value,
                             size_t index,
                             base::OnceCallback<void(bool)> callback);
+  void OnFindElementForSetAttribute(
+      const std::vector<std::string>& attribute,
+      const std::string& value,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnSetAttribute(base::OnceCallback<void(bool)> callback,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForSetFieldValue(
+      const std::string& value,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnSetValueAttribute(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<FindElementResult> element_result);

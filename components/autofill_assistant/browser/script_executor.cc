@@ -162,6 +162,14 @@ void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
       selectors, value, simulate_key_presses, std::move(callback));
 }
 
+void ScriptExecutor::SetAttribute(const std::vector<std::string>& selectors,
+                                  const std::vector<std::string>& attribute,
+                                  const std::string& value,
+                                  base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->SetAttribute(selectors, attribute, value,
+                                              std::move(callback));
+}
+
 void ScriptExecutor::GetOuterHtml(
     const std::vector<std::string>& selectors,
     base::OnceCallback<void(bool, const std::string&)> callback) {

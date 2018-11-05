@@ -211,6 +211,7 @@ message ActionProto {
     ResetProto reset = 34;
     StopProto stop = 35;
     GetPaymentInformationProto get_payment_information = 36;
+    SetAttributeProto set_attribute = 37;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -482,4 +483,17 @@ message SetFormFieldValueProto {
 
   // The value to set.
   repeated KeyPress value = 2;
+}
+
+// Set an element attribute to a specific value.
+message SetAttributeProto {
+  // A reference to the form element whose attribute should be set.
+  optional ElementReferenceProto element = 1;
+
+  // The attribute to set, e.g. ["style", "position"] to change
+  // element.style.position.
+  repeated string attribute = 2;
+
+  // The value to set.
+  optional string value = 3;
 }

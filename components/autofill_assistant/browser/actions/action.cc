@@ -32,12 +32,12 @@ void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
 }
 
 // static
-std::vector<std::string> Action::ExtractSelectors(
-    const google::protobuf::RepeatedPtrField<std::string>& selectors_proto) {
-  std::vector<std::string> selectors;
-  for (const auto& selector : selectors_proto) {
-    selectors.emplace_back(selector);
+std::vector<std::string> Action::ExtractVector(
+    const google::protobuf::RepeatedPtrField<std::string>& repeated_strings) {
+  std::vector<std::string> vector;
+  for (const auto& string : repeated_strings) {
+    vector.emplace_back(string);
   }
-  return selectors;
+  return vector;
 }
 }  // namespace autofill_assistant

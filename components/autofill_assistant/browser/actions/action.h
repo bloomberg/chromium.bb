@@ -38,9 +38,9 @@ class Action {
   virtual void InternalProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) = 0;
 
-  // Returns selectors as a string from a repeated proto field.
-  static std::vector<std::string> ExtractSelectors(
-      const google::protobuf::RepeatedPtrField<std::string>& selectors_proto);
+  // Returns vector of string from a repeated proto field.
+  static std::vector<std::string> ExtractVector(
+      const google::protobuf::RepeatedPtrField<std::string>& repeated_strings);
 
   void UpdateProcessedAction(ProcessedActionStatusProto status);
 

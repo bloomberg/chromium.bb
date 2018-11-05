@@ -96,7 +96,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
     selectors_ =
-        ExtractSelectors(proto.use_address().form_field_element().selectors());
+        ExtractVector(proto.use_address().form_field_element().selectors());
     fill_form_message_ = proto.use_address().strings().fill_form();
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
@@ -108,7 +108,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     prompt_ = proto.use_card().prompt();
     name_ = "";
     selectors_ =
-        ExtractSelectors(proto.use_card().form_field_element().selectors());
+        ExtractVector(proto.use_card().form_field_element().selectors());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
     show_overlay_ = proto.use_card().show_overlay();
@@ -289,7 +289,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
     auto& required_address_field = proto_.use_address().required_fields(i);
     DCHECK_GT(required_address_field.element().selectors_size(), 0);
     batch_element_checker_->AddFieldValueCheck(
-        ExtractSelectors(required_address_field.element().selectors()),
+        ExtractVector(required_address_field.element().selectors()),
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        // this instance owns batch_element_checker_
                        base::Unretained(this), i));
@@ -396,7 +396,7 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   DCHECK_GT(
       required_fields.Get(required_fields_index).element().selectors_size(), 0);
   delegate->SetFieldValue(
-      ExtractSelectors(
+      ExtractVector(
           required_fields.Get(required_fields_index).element().selectors()),
       fallback_value,
       required_fields.Get(required_fields_index).simulate_key_presses(),
