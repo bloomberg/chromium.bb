@@ -8,7 +8,6 @@
 #include "base/guid.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -119,8 +118,6 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
     base::OnceClosure done_closure,
     bool is_available) {
   if (!is_available) {
-    for (auto& observer : data_manager()->observers())
-      observer.OnQuotaExceeded(registration_id_);
     FinishWithError(blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
     return;
   }
@@ -306,11 +303,8 @@ void MarkRequestCompleteTask::DidStoreMetadata(
 
 void MarkRequestCompleteTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  if (HasStorageError()) {
+  if (HasStorageError())
     error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-    for (auto& observer : data_manager()->observers())
-      observer.OnFetchStorageError(registration_id_);
-  }
   ReportStorageError();
 
   std::move(callback_).Run(error);

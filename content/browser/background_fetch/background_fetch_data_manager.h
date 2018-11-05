@@ -57,8 +57,7 @@ class ServiceWorkerContextWrapper;
 //
 // Storage schema is documented in storage/README.md
 class CONTENT_EXPORT BackgroundFetchDataManager
-    : public BackgroundFetchScheduler::RequestProvider,
-      public background_fetch::DatabaseTaskHost {
+    : public background_fetch::DatabaseTaskHost {
  public:
   using GetInitializationDataCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
@@ -115,13 +114,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                        const std::string& developer_id,
                        GetRegistrationCallback callback);
 
-  // Updates the UI values for a Background Fetch registration.
-  void UpdateRegistrationUI(
-      const BackgroundFetchRegistrationId& registration_id,
-      const base::Optional<std::string>& title,
-      const base::Optional<SkBitmap>& icon,
-      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
-
   // Reads the settled fetches for the given |registration_id| based on
   // |match_params|. Both the Request and Response objects will be initialised
   // based on the stored data. Will invoke the |callback| when the list of
@@ -130,6 +122,17 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
       SettledFetchesCallback callback);
+
+  // Retrieves the next pending request for |registration_id| and invoke
+  // |callback| with it.
+  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
+                      NextRequestCallback callback);
+
+  // Marks |request_info| as complete and calls |callback| when done.
+  void MarkRequestAsComplete(
+      const BackgroundFetchRegistrationId& registration_id,
+      scoped_refptr<BackgroundFetchRequestInfo> request_info,
+      MarkRequestCompleteCallback callback);
 
   // Marks that the
   // backgroundfetchsuccess/backgroundfetchfail/backgroundfetchabort event is
@@ -167,14 +170,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   observers() {
     return observers_;
   }
-
-  // BackgroundFetchScheduler::RequestProvider implementation:
-  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
-                      NextRequestCallback callback) override;
-  void MarkRequestAsComplete(
-      const BackgroundFetchRegistrationId& registration_id,
-      scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      MarkRequestCompleteCallback callback) override;
 
   void ShutdownOnIO();
 

@@ -59,7 +59,6 @@ const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kAlternativeUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
 const char kInitialTitle[] = "Initial Title";
-const char kUpdatedTitle[] = "Updated Title";
 
 constexpr size_t kResponseFileSize = 42u;
 
@@ -283,22 +282,6 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
 
     return metadata;
-  }
-
-  void UpdateRegistrationUI(
-      const BackgroundFetchRegistrationId& registration_id,
-      const base::Optional<std::string>& updated_title,
-      const base::Optional<SkBitmap>& updated_icon,
-      blink::mojom::BackgroundFetchError* out_error) {
-    DCHECK(out_error);
-
-    base::RunLoop run_loop;
-    background_fetch_data_manager_->UpdateRegistrationUI(
-        registration_id, updated_title, updated_icon,
-        base::BindOnce(&BackgroundFetchDataManagerTest::DidUpdateRegistrationUI,
-                       base::Unretained(this), run_loop.QuitClosure(),
-                       out_error));
-    run_loop.Run();
   }
 
   std::vector<std::string> GetDeveloperIds(
@@ -579,16 +562,19 @@ class BackgroundFetchDataManagerTest
                     const SkBitmap& icon,
                     int num_requests,
                     bool start_paused));
-  MOCK_METHOD3(OnUpdatedUI,
-               void(const BackgroundFetchRegistrationId& registration,
-                    const base::Optional<std::string>& title,
-                    const base::Optional<SkBitmap>& icon));
+  MOCK_METHOD7(OnRegistrationLoadedAtStartup,
+               void(const BackgroundFetchRegistrationId& registration_id,
+                    const BackgroundFetchRegistration& registration,
+                    const BackgroundFetchOptions& options,
+                    const SkBitmap& icon,
+                    int num_completed_requests,
+                    int num_requests,
+                    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+                        active_fetch_requests));
+  MOCK_METHOD1(OnRegistrationQueried,
+               void(BackgroundFetchRegistration* registration));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
-  MOCK_METHOD1(OnQuotaExceeded,
-               void(const BackgroundFetchRegistrationId& registration_id));
-  MOCK_METHOD1(OnFetchStorageError,
-               void(const BackgroundFetchRegistrationId& registration_id));
 
  protected:
   void DidGetRegistration(base::OnceClosure quit_closure,
@@ -615,13 +601,6 @@ class BackgroundFetchDataManagerTest
         *out_metadata = std::move(metadata);
     }
 
-    std::move(quit_closure).Run();
-  }
-
-  void DidUpdateRegistrationUI(base::OnceClosure quit_closure,
-                               blink::mojom::BackgroundFetchError* out_error,
-                               blink::mojom::BackgroundFetchError error) {
-    *out_error = error;
     std::move(quit_closure).Run();
   }
 
@@ -1039,109 +1018,6 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   EXPECT_TRUE(GetUIOptions(sw_id).second.isNull());
 }
 
-TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
-  int64_t sw_id = RegisterServiceWorker();
-  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
-
-  BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-
-  std::vector<ServiceWorkerFetchRequest> requests =
-      CreateValidRequests(origin(), 2u);
-  BackgroundFetchOptions options;
-  options.title = kInitialTitle;
-  blink::mojom::BackgroundFetchError error;
-
-  // There should be no title before the registration.
-  EXPECT_TRUE(GetUIOptions(sw_id).first.empty());
-
-  // Create a single registration.
-  {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
-
-    CreateRegistration(registration_id, requests, options, CreateTestIcon(),
-                       &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  }
-
-  // Verify that the UI Options can be retrieved.
-  {
-    auto ui_options = GetUIOptions(sw_id);
-    EXPECT_EQ(ui_options.first, kInitialTitle);
-    EXPECT_NO_FATAL_FAILURE(
-        ExpectIconProperties(ui_options.second, 42, SK_ColorGREEN));
-  }
-
-  // Update only the title.
-  {
-    EXPECT_CALL(*this,
-                OnUpdatedUI(registration_id,
-                            base::Optional<std::string>(kUpdatedTitle), _));
-
-    UpdateRegistrationUI(registration_id, kUpdatedTitle, base::nullopt, &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-
-    auto ui_options = GetUIOptions(sw_id);
-    // Expect new title.
-    EXPECT_EQ(ui_options.first, kUpdatedTitle);
-    // Expect same icon as before.
-    EXPECT_NO_FATAL_FAILURE(
-        ExpectIconProperties(ui_options.second, 42, SK_ColorGREEN));
-  }
-
-  // Update only the icon.
-  {
-    EXPECT_CALL(*this, OnUpdatedUI(registration_id, _, _));
-
-    UpdateRegistrationUI(registration_id, base::nullopt,
-                         CreateTestIcon(24 /* size */), &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-
-    auto ui_options = GetUIOptions(sw_id);
-    // Expect the same title as before.
-    EXPECT_EQ(ui_options.first, kUpdatedTitle);
-    // Expect the new icon with the different size.
-    EXPECT_NO_FATAL_FAILURE(
-        ExpectIconProperties(ui_options.second, 24, SK_ColorGREEN));
-  }
-
-  // Update both the title and icon.
-  {
-    EXPECT_CALL(*this,
-                OnUpdatedUI(registration_id,
-                            base::Optional<std::string>(kInitialTitle), _));
-
-    UpdateRegistrationUI(registration_id, kInitialTitle,
-                         CreateTestIcon(66 /* size */), &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-
-    auto ui_options = GetUIOptions(sw_id);
-    // Expect the initial title again.
-    EXPECT_EQ(ui_options.first, kInitialTitle);
-    // Expect the new icon with the different size.
-    EXPECT_NO_FATAL_FAILURE(
-        ExpectIconProperties(ui_options.second, 66, SK_ColorGREEN));
-  }
-
-  // New title and an icon that's too large.
-  {
-    EXPECT_CALL(*this,
-                OnUpdatedUI(registration_id,
-                            base::Optional<std::string>(kUpdatedTitle), _));
-
-    UpdateRegistrationUI(registration_id, kUpdatedTitle,
-                         CreateTestIcon(512 /* size */), &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-
-    auto ui_options = GetUIOptions(sw_id);
-    // Expect the new title.
-    EXPECT_EQ(ui_options.first, kUpdatedTitle);
-    // Expect same icon as before.
-    EXPECT_NO_FATAL_FAILURE(
-        ExpectIconProperties(ui_options.second, 66, SK_ColorGREEN));
-  }
-}
-
 TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
@@ -1466,7 +1342,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
   EXPECT_EQ(registration.downloaded, 2 * kResponseFileSize);
 }
 
-TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
+TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaIsReported) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1488,11 +1364,8 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(
       request_info.get(), true /* succeeded */, true /* over_quota */);
-  {
-    EXPECT_CALL(*this, OnQuotaExceeded(registration_id));
-    MarkRequestAsComplete(registration_id, request_info.get(), &error);
-    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
-  }
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {

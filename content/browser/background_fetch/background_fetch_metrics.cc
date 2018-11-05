@@ -19,18 +19,6 @@ namespace background_fetch {
 // Exponential bucket spacing for UKM event data.
 const double kUkmEventDataBucketSpacing = 2.0;
 
-void RecordSchedulerFinishedError(blink::mojom::BackgroundFetchError error) {
-  UMA_HISTOGRAM_ENUMERATION("BackgroundFetch.SchedulerFinishedError", error);
-}
-
-void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error) {
-  UMA_HISTOGRAM_ENUMERATION("BackgroundFetch.RegistrationCreatedError", error);
-}
-
-void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error) {
-  UMA_HISTOGRAM_ENUMERATION("BackgroundFetch.RegistrationDeletedError", error);
-}
-
 void RecordRegistrationsOnStartup(int num_registrations) {
   UMA_HISTOGRAM_COUNTS_100("BackgroundFetch.IncompleteFetchesOnStartup",
                            num_registrations);

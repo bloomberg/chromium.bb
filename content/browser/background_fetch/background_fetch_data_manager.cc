@@ -23,7 +23,6 @@
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 #include "content/browser/background_fetch/storage/match_requests_task.h"
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
-#include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
@@ -117,17 +116,6 @@ void BackgroundFetchDataManager::GetRegistration(
   AddDatabaseTask(std::make_unique<background_fetch::GetRegistrationTask>(
       this, service_worker_registration_id, origin, developer_id,
       std::move(callback)));
-}
-
-void BackgroundFetchDataManager::UpdateRegistrationUI(
-    const BackgroundFetchRegistrationId& registration_id,
-    const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon,
-    blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  AddDatabaseTask(std::make_unique<background_fetch::UpdateRegistrationUITask>(
-      this, registration_id, title, icon, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::PopNextRequest(

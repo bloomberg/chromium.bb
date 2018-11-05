@@ -465,8 +465,6 @@ jumbo_source_set("browser") {
     "background_fetch/storage/match_requests_task.h",
     "background_fetch/storage/start_next_pending_request_task.cc",
     "background_fetch/storage/start_next_pending_request_task.h",
-    "background_fetch/storage/update_registration_ui_task.cc",
-    "background_fetch/storage/update_registration_ui_task.h",
     "background_sync/background_sync_context.cc",
     "background_sync/background_sync_context.h",
     "background_sync/background_sync_manager.cc",

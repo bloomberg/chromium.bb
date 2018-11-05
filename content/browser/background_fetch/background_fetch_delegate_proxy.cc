@@ -401,7 +401,7 @@ void BackgroundFetchDelegateProxy::OnJobCancelled(
 
   JobDetails& job_details = job_details_iter->second;
   if (job_details.controller)
-    job_details.controller->Abort(reason_to_abort);
+    job_details.controller->AbortFromDelegate(reason_to_abort);
 }
 
 void BackgroundFetchDelegateProxy::DidStartRequest(
