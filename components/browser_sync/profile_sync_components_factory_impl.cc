@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
+#include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
@@ -152,18 +153,26 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // Autocomplete sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL)) {
-      controllers.push_back(CreateWebDataModelTypeController(
+      controllers.push_back(std::make_unique<ModelTypeController>(
           syncer::AUTOFILL,
-          base::BindRepeating(&AutocompleteDelegateFromDataService)));
+          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+              db_thread_, base::BindRepeating(
+                              &AutocompleteDelegateFromDataService,
+                              base::RetainedRef(web_data_service_on_disk_)))));
     }
 
     // Autofill sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
       if (FeatureList::IsEnabled(switches::kSyncUSSAutofillProfile)) {
-        controllers.push_back(CreateWebDataModelTypeController(
-            syncer::AUTOFILL_PROFILE,
-            base::BindRepeating(&AutofillProfileDelegateFromDataService)));
+        controllers.push_back(
+            std::make_unique<AutofillProfileModelTypeController>(
+                std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                    db_thread_,
+                    base::BindRepeating(
+                        &AutofillProfileDelegateFromDataService,
+                        base::RetainedRef(web_data_service_on_disk_))),
+                sync_client_));
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
@@ -479,19 +488,6 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
                 base::BindRepeating(
                     &syncer::SyncClient::GetControllerDelegateForModelType,
                     base::Unretained(sync_client_), type)));
-}
-
-std::unique_ptr<ModelTypeController>
-ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
-    syncer::ModelType type,
-    const base::RepeatingCallback<
-        base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-            autofill::AutofillWebDataService*)>& delegate_from_web_data) {
-  return std::make_unique<ModelTypeController>(
-      type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                db_thread_, base::BindRepeating(
-                                delegate_from_web_data,
-                                base::RetainedRef(web_data_service_on_disk_))));
 }
 
 std::unique_ptr<ModelTypeController>
