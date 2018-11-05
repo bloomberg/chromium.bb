@@ -232,11 +232,6 @@ typedef std::unique_ptr<GIcon, GObjectDeleter> ScopedGIcon;
 typedef std::unique_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
 typedef std::unique_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
 
-#if !GTK_CHECK_VERSION(3, 90, 0)
-// Prefix for app indicator ids
-const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
-#endif
-
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
 
@@ -545,7 +540,8 @@ bool GtkUi::IsStatusIconSupported() const {
 
 std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
-    const base::string16& tool_tip) const {
+    const base::string16& tool_tip,
+    const char* id_prefix) const {
 #if GTK_CHECK_VERSION(3, 90, 0)
   NOTIMPLEMENTED();
   return nullptr;
@@ -553,8 +549,8 @@ std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
     return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
-        base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
-        image, tool_tip));
+        base::StringPrintf("%s%d", id_prefix, indicators_count), image,
+        tool_tip));
   } else {
     return std::unique_ptr<views::StatusIconLinux>(
         new GtkStatusIcon(image, tool_tip));
