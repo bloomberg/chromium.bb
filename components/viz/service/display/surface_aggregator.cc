@@ -823,20 +823,25 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                 RenderPassId parent_pass_id,
                 const gfx::Transform& target_to_surface_transform,
                 const gfx::Rect& quad_rect,
-                bool stretch_content_to_fill_bounds)
+                bool stretch_content_to_fill_bounds,
+                bool is_clipped,
+                const gfx::Rect& clip_rect_in_root_target_space)
         : surface_range(surface_range),
           has_moved_pixels(has_moved_pixels),
           parent_pass_id(parent_pass_id),
           target_to_surface_transform(target_to_surface_transform),
           quad_rect(quad_rect),
-          stretch_content_to_fill_bounds(stretch_content_to_fill_bounds) {}
-
+          stretch_content_to_fill_bounds(stretch_content_to_fill_bounds),
+          is_clipped(is_clipped),
+          clip_rect_in_root_target_space(clip_rect_in_root_target_space) {}
     SurfaceRange surface_range;
     bool has_moved_pixels;
     RenderPassId parent_pass_id;
     gfx::Transform target_to_surface_transform;
     gfx::Rect quad_rect;
     bool stretch_content_to_fill_bounds;
+    bool is_clipped;
+    gfx::Rect clip_rect_in_root_target_space;
   };
   std::vector<SurfaceInfo> child_surfaces;
 
@@ -874,10 +879,21 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
             surface_quad->shared_quad_state->quad_to_target_transform);
+        gfx::Rect clip_rect_in_root_target_space;
+        if (surface_quad->shared_quad_state->is_clipped) {
+          // clip_rect is already in quad target space so only
+          // transform_to_root_target needs to be applied
+          clip_rect_in_root_target_space =
+              cc::MathUtil::MapEnclosingClippedRect(
+                  render_pass->transform_to_root_target,
+                  surface_quad->shared_quad_state->clip_rect);
+        }
         child_surfaces.emplace_back(
             surface_quad->surface_range, in_moved_pixel_pass, remapped_pass_id,
             target_to_surface_transform, surface_quad->rect,
-            surface_quad->stretch_content_to_fill_bounds);
+            surface_quad->stretch_content_to_fill_bounds,
+            surface_quad->shared_quad_state->is_clipped,
+            clip_rect_in_root_target_space);
       } else if (quad->material == DrawQuad::RENDER_PASS) {
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         if (in_moved_pixel_pass) {
@@ -971,8 +987,14 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       continue;
     }
 
-    damage_rect.Union(cc::MathUtil::MapEnclosingClippedRect(
-        surface_info.target_to_surface_transform, surface_damage));
+    gfx::Rect surface_damage_in_root_target_space =
+        cc::MathUtil::MapEnclosingClippedRect(
+            surface_info.target_to_surface_transform, surface_damage);
+    if (surface_info.is_clipped) {
+      surface_damage_in_root_target_space.Intersect(
+          surface_info.clip_rect_in_root_target_space);
+    }
+    damage_rect.Union(surface_damage_in_root_target_space);
   }
 
   if (!damage_rect.IsEmpty()) {

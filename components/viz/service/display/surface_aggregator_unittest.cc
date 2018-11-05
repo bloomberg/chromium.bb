@@ -37,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 namespace {
@@ -363,9 +364,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
         SurfaceId(support_->frame_sink_id(), root_local_surface_id_));
   }
 
-  void TearDown() override {
-    SurfaceAggregatorTest::TearDown();
-  }
+  void TearDown() override { SurfaceAggregatorTest::TearDown(); }
 
   // Verifies that if the |SharedQuadState::quad_layer_rect| can be covered by
   // |DrawQuad::Rect| in the SharedQuadState.
@@ -2909,7 +2908,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamageDifferentFrameSinkId) {
   EXPECT_TRUE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
       SurfaceId(kArbitraryFrameSinkId2, id4)));
 
-
   // This FrameSinkId is not embedded at all so it shouldn't damage the display.
   EXPECT_FALSE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
       SurfaceId(kArbitraryFrameSinkId3, id4)));
@@ -4250,6 +4248,105 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     // Should have full damage.
     EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[0]->damage_rect);
     EXPECT_EQ(child_root_pass_damage, aggregated_pass_list[1]->damage_rect);
+  }
+}
+
+// Tests that the damage rect from a child surface is clipped before
+// aggregated with the parent damage rect when clipping is on
+TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
+  std::vector<Quad> child_surface_quads = {
+      Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(SurfaceSize()))};
+  std::vector<Pass> child_surface_passes = {
+      Pass(child_surface_quads, 1, SurfaceSize())};
+
+  CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+            &child_surface_frame.metadata.referenced_surfaces);
+
+  allocator_.GenerateId();
+  LocalSurfaceId child_local_surface_id = allocator_.GetCurrentLocalSurfaceId();
+  SurfaceId child_surface_id(child_support_->frame_sink_id(),
+                             child_local_surface_id);
+  child_support_->SubmitCompositorFrame(child_local_surface_id,
+                                        std::move(child_surface_frame));
+
+  // root surface quads
+  std::vector<Quad> root_surface_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE, gfx::Rect(SurfaceSize()), false)};
+  std::vector<Pass> root_passes = {Pass(root_surface_quads, 1, SurfaceSize())};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
+  support_->SubmitCompositorFrame(root_local_surface_id_,
+                                  std::move(root_frame));
+  // The damage rect of the very first frame is always the full rect
+  CompositorFrame aggregated_frame =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  // Parameters used for damage rect testing
+  gfx::Transform transform(0.5, 0, 0, 0.5, 20, 0);
+  gfx::Rect clip_rect = gfx::Rect(30, 30, 40, 40);
+
+  // Clipping is off
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_support_->SubmitCompositorFrame(child_local_surface_id,
+                                          std::move(child_surface_frame));
+
+    CompositorFrame root_frame = MakeEmptyCompositorFrame();
+    AddPasses(&root_frame.render_pass_list, root_passes,
+              &root_frame.metadata.referenced_surfaces);
+    auto* root_render_pass = root_frame.render_pass_list[0].get();
+    auto* surface_quad_sqs = root_render_pass->shared_quad_state_list.front();
+    surface_quad_sqs->quad_to_target_transform = transform;
+    surface_quad_sqs->is_clipped = false;
+    // Set the root damage rect to empty. Only the child surface will be tested.
+    root_render_pass->damage_rect = gfx::Rect();
+    support_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    // The root damage rect should be the size of the child surface damage rect
+    gfx::Rect expected_damage_rect(20, 0, 50, 50);
+    EXPECT_EQ(aggregated_frame.render_pass_list[0]->damage_rect,
+              expected_damage_rect);
+  }
+  // Clipping is on
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_support_->SubmitCompositorFrame(child_local_surface_id,
+                                          std::move(child_surface_frame));
+
+    CompositorFrame root_frame = MakeEmptyCompositorFrame();
+    AddPasses(&root_frame.render_pass_list, root_passes,
+              &root_frame.metadata.referenced_surfaces);
+    auto* root_render_pass = root_frame.render_pass_list[0].get();
+    auto* surface_quad_sqs = root_render_pass->shared_quad_state_list.front();
+    surface_quad_sqs->quad_to_target_transform = transform;
+    surface_quad_sqs->is_clipped = true;
+    surface_quad_sqs->clip_rect = clip_rect;
+    root_render_pass->damage_rect = gfx::Rect();
+    support_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    // The root damage rect should be the size of the clipped child surface
+    // damage rect
+    gfx::Rect expected_damage_rect(30, 30, 40, 20);
+    EXPECT_EQ(aggregated_frame.render_pass_list[0]->damage_rect,
+              expected_damage_rect);
   }
 }
 
