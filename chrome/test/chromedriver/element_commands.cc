@@ -603,20 +603,29 @@ Status ExecuteGetElementAttribute(Session* session,
 }
 
 Status ExecuteGetElementValueOfCSSProperty(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    std::unique_ptr<base::Value>* value) {
-  std::string property_name;
-  if (!params.GetString("propertyName", &property_name))
-    return Status(kUnknownError, "missing 'propertyName'");
-  std::string property_value;
-  Status status = GetElementEffectiveStyle(
-      session, web_view, element_id, property_name, &property_value);
+                                      Session* session,
+                                      WebView* web_view,
+                                      const std::string& element_id,
+                                      const base::DictionaryValue& params,
+                                      std::unique_ptr<base::Value>* value) {
+  bool is_xml = false;
+  Status status = IsDocumentTypeXml(session, web_view, &is_xml);
   if (status.IsError())
     return status;
-  value->reset(new base::Value(property_value));
+
+  if (is_xml) {
+      value->reset(new base::Value(""));
+  } else {
+    std::string property_name;
+    if (!params.GetString("propertyName", &property_name))
+      return Status(kUnknownError, "missing 'propertyName'");
+    std::string property_value;
+    status = GetElementEffectiveStyle(
+        session, web_view, element_id, property_name, &property_value);
+    if (status.IsError())
+      return status;
+    value->reset(new base::Value(property_value));
+  }
   return Status(kOk);
 }
 
