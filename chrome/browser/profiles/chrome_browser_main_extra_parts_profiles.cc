@@ -126,7 +126,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
-#include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -244,9 +243,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   CookieSettingsFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
   data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
-#if defined(OS_WIN)
-  SMSServiceFactory::GetInstance();
-#endif
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   domain_reliability::DomainReliabilityServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();

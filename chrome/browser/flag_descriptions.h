@@ -1742,9 +1742,6 @@ extern const char kDisablePostscriptPrintingDescription[];
 extern const char kEnableAppcontainerName[];
 extern const char kEnableAppcontainerDescription[];
 
-extern const char kEnableDesktopIosPromotionsName[];
-extern const char kEnableDesktopIosPromotionsDescription[];
-
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
 

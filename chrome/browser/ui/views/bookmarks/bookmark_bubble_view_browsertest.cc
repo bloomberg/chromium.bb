@@ -70,11 +70,3 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeUi_bookmark_details_signed_in) {
   ShowAndVerifyUi();
 }
-
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest, InvokeUi_ios_promotion) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kForceDesktopIOSPromotion);
-  ShowAndVerifyUi();
-}
-#endif

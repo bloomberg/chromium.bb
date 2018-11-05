@@ -309,7 +309,6 @@
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -529,7 +528,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_WIN)
   component_updater::RegisterPrefsForSwReporter(registry);
-  desktop_ios_promotion::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)
   IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(registry);
   ModuleDatabase::RegisterLocalStatePrefs(registry);
@@ -739,7 +737,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_WIN)
   component_updater::RegisterProfilePrefsForSwReporter(registry);
-  desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
   safe_browsing::SettingsResetPromptPrefsManager::RegisterProfilePrefs(
       registry);

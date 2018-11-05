@@ -32,10 +32,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
-#endif
-
 namespace metrics_util = password_manager::metrics_util;
 
 namespace {
@@ -291,7 +287,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::AUTO_SIGNIN_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
-      case password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -315,7 +310,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       case password_manager::ui::MANAGE_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
-      case password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -490,18 +484,6 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
     interaction_keeper_->set_sign_in_promo_shown_count(show_count);
     return true;
   }
-#if defined(OS_WIN)
-  // Desktop to mobile promotion only enabled on windows.
-  if (desktop_ios_promotion::IsEligibleForIOSPromotion(
-          profile,
-          desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE)) {
-    interaction_keeper_->ReportInteractions(this);
-    title_ = desktop_ios_promotion::GetPromoTitle(
-        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
-    state_ = password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
-    return true;
-  }
-#endif
   return false;
 }
 

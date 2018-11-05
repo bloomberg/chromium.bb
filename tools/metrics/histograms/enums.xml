@@ -10628,6 +10628,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DesktopIOSPromotionDismissalReason">
+  <obsolete>
+    Deprecated 11/2018 in issue 894963.
+  </obsolete>
   <int value="0" label="Focus lost."/>
   <int value="1" label="No thanks clicked."/>
   <int value="2" label="Close button clicked."/>
@@ -10636,6 +10639,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DesktopIOSPromotionEntryPoint">
+  <obsolete>
+    Deprecated 11/2018 in issue 894963.
+  </obsolete>
   <int value="1" label="Save Passwords new bubble."/>
   <int value="2" label="Bookmarks new bubble."/>
   <int value="3" label="Bookmarks footnote."/>
