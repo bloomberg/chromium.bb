@@ -1581,7 +1581,7 @@ void TestRunner::Reset() {
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
 
-  blink::WebSecurityPolicy::ClearOriginAccessAllowList();
+  blink::WebSecurityPolicy::ClearOriginAccessList();
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif

@@ -306,10 +306,7 @@ class SecurityPolicyAccessTest : public testing::Test {
         SecurityOrigin::CreateFromString("https://google.com");
   }
 
-  void TearDown() override {
-    SecurityPolicy::ClearOriginAccessAllowList();
-    SecurityPolicy::ClearOriginAccessBlockList();
-  }
+  void TearDown() override { SecurityPolicy::ClearOriginAccessList(); }
 
   const SecurityOrigin* https_example_origin() const {
     return https_example_origin_.get();
@@ -361,7 +358,7 @@ TEST_F(SecurityPolicyAccessTest, IsOriginAccessAllowed) {
                                                      http_example_origin()));
 
   // Clearing the map should revoke all special access.
-  SecurityPolicy::ClearOriginAccessAllowList();
+  SecurityPolicy::ClearOriginAccessList();
   EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
                                                      https_example_origin()));
   EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(
@@ -425,7 +422,7 @@ TEST_F(SecurityPolicyAccessTest,
                                                      https_google_origin()));
 }
 
-TEST_F(SecurityPolicyAccessTest, ClearOriginAccessAllowListForOrigin) {
+TEST_F(SecurityPolicyAccessTest, ClearOriginAccessListForOrigin) {
   SecurityPolicy::AddOriginAccessAllowListEntry(
       *https_chromium_origin(), "https", "example.com", true,
       network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
@@ -436,7 +433,7 @@ TEST_F(SecurityPolicyAccessTest, ClearOriginAccessAllowListForOrigin) {
       *https_example_origin(), "https", "google.com", true,
       network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
 
-  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*https_chromium_origin());
+  SecurityPolicy::ClearOriginAccessListForOrigin(*https_chromium_origin());
 
   EXPECT_FALSE(SecurityPolicy::IsOriginAccessAllowed(https_chromium_origin(),
                                                      https_example_origin()));

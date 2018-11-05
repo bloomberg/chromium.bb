@@ -14,18 +14,13 @@ OriginAccessList::~OriginAccessList() = default;
 void OriginAccessList::SetAllowListForOrigin(
     const url::Origin& source_origin,
     const std::vector<mojom::CorsOriginPatternPtr>& patterns) {
-  SetForOrigin(source_origin, patterns, &allow_list_,
-               network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+  SetForOrigin(source_origin, patterns, &allow_list_);
 }
 
 void OriginAccessList::AddAllowListEntryForOrigin(
     const url::Origin& source_origin,
-    const std::string& protocol,
-    const std::string& domain,
-    bool allow_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
-  AddForOrigin(source_origin, protocol, domain, allow_subdomains, &allow_list_,
-               priority);
+    const mojom::CorsOriginPatternPtr& pattern) {
+  AddForOrigin(source_origin, pattern, &allow_list_);
 }
 
 void OriginAccessList::ClearAllowList() {
@@ -35,18 +30,13 @@ void OriginAccessList::ClearAllowList() {
 void OriginAccessList::SetBlockListForOrigin(
     const url::Origin& source_origin,
     const std::vector<mojom::CorsOriginPatternPtr>& patterns) {
-  SetForOrigin(source_origin, patterns, &block_list_,
-               network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+  SetForOrigin(source_origin, patterns, &block_list_);
 }
 
 void OriginAccessList::AddBlockListEntryForOrigin(
     const url::Origin& source_origin,
-    const std::string& protocol,
-    const std::string& domain,
-    bool allow_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
-  AddForOrigin(source_origin, protocol, domain, allow_subdomains, &block_list_,
-               priority);
+    const mojom::CorsOriginPatternPtr& pattern) {
+  AddForOrigin(source_origin, pattern, &block_list_);
 }
 
 void OriginAccessList::ClearBlockList() {
@@ -78,8 +68,7 @@ bool OriginAccessList::IsAllowed(const url::Origin& source_origin,
 void OriginAccessList::SetForOrigin(
     const url::Origin& source_origin,
     const std::vector<mojom::CorsOriginPatternPtr>& patterns,
-    PatternMap* map,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+    PatternMap* map) {
   DCHECK(map);
   DCHECK(!source_origin.opaque());
 
@@ -94,27 +83,23 @@ void OriginAccessList::SetForOrigin(
         pattern->protocol, pattern->domain,
         pattern->allow_subdomains ? OriginAccessEntry::kAllowSubdomains
                                   : OriginAccessEntry::kDisallowSubdomains,
-        priority));
+        pattern->priority));
   }
 }
 
 // static
-void OriginAccessList::AddForOrigin(
-    const url::Origin& source_origin,
-    const std::string& protocol,
-    const std::string& domain,
-    bool allow_subdomains,
-    PatternMap* map,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
+                                    const mojom::CorsOriginPatternPtr& pattern,
+                                    PatternMap* map) {
   DCHECK(map);
   DCHECK(!source_origin.opaque());
 
   std::string source = source_origin.Serialize();
   (*map)[source].push_back(OriginAccessEntry(
-      protocol, domain,
-      allow_subdomains ? OriginAccessEntry::kAllowSubdomains
-                       : OriginAccessEntry::kDisallowSubdomains,
-      priority));
+      pattern->protocol, pattern->domain,
+      pattern->allow_subdomains ? OriginAccessEntry::kAllowSubdomains
+                                : OriginAccessEntry::kDisallowSubdomains,
+      pattern->priority));
 }
 
 // static

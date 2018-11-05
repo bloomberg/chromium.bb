@@ -80,24 +80,15 @@ class WebSecurityPolicy {
       const WebString& destination_host,
       bool allow_destination_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority);
-  BLINK_EXPORT static void ClearOriginAccessAllowListForOrigin(
-      const WebURL& source_origin);
-  BLINK_EXPORT static void ClearOriginAccessAllowList();
-  BLINK_EXPORT static void ClearOriginAccessListForOrigin(
-      const WebURL& source_origin);
-
   BLINK_EXPORT static void AddOriginAccessBlockListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool disallow_destination_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority);
-
-  BLINK_EXPORT static void AddOriginAccessBlockListEntry(
-      const WebURL& source_origin,
-      const WebString& destination_protocol,
-      const WebString& destination_host,
-      bool disallow_destination_subdomains);
+  BLINK_EXPORT static void ClearOriginAccessListForOrigin(
+      const WebURL& source_origin);
+  BLINK_EXPORT static void ClearOriginAccessList();
 
   // Support for whitelisting origins or hostname patterns to treat them as
   // trustworthy. This method does not do any canonicalization; the caller is

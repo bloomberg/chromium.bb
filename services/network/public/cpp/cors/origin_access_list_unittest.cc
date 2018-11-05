@@ -61,8 +61,9 @@ class OriginAccessListTest : public testing::Test {
       const std::string& host,
       bool allow_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority) {
-    list_.AddAllowListEntryForOrigin(source_origin_, protocol, host,
-                                     allow_subdomains, priority);
+    list_.AddAllowListEntryForOrigin(
+        source_origin_, network::mojom::CorsOriginPattern::New(
+                            protocol, host, allow_subdomains, priority));
   }
   void SetBlockListEntry(const std::string& protocol,
                          const std::string& host,
@@ -78,8 +79,9 @@ class OriginAccessListTest : public testing::Test {
       const std::string& host,
       bool allow_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority) {
-    list_.AddBlockListEntryForOrigin(source_origin_, protocol, host,
-                                     allow_subdomains, priority);
+    list_.AddBlockListEntryForOrigin(
+        source_origin_, network::mojom::CorsOriginPattern::New(
+                            protocol, host, allow_subdomains, priority));
   }
   void ResetLists() {
     std::vector<mojom::CorsOriginPatternPtr> patterns;

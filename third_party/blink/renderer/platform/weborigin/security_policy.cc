@@ -243,30 +243,10 @@ void SecurityPolicy::AddOriginAccessAllowListEntry(
     const network::mojom::CORSOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddAllowListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), allow_destination_subdomains,
-      priority);
-}
-
-void SecurityPolicy::ClearOriginAccessAllowListForOrigin(
-    const SecurityOrigin& source_origin) {
-  MutexLocker lock(GetMutex());
-  GetOriginAccessList().SetAllowListForOrigin(
-      source_origin.ToUrlOrigin(),
-      std::vector<network::mojom::CorsOriginPatternPtr>());
-}
-
-void SecurityPolicy::ClearOriginAccessBlockListForOrigin(
-    const SecurityOrigin& source_origin) {
-  MutexLocker lock(GetMutex());
-  GetOriginAccessList().SetBlockListForOrigin(
-      source_origin.ToUrlOrigin(),
-      std::vector<network::mojom::CorsOriginPatternPtr>());
-}
-
-void SecurityPolicy::ClearOriginAccessAllowList() {
-  MutexLocker lock(GetMutex());
-  GetOriginAccessList().ClearAllowList();
+      source_origin.ToUrlOrigin(), network::mojom::CorsOriginPattern::New(
+                                       WebString(destination_protocol).Utf8(),
+                                       WebString(destination_domain).Utf8(),
+                                       allow_destination_subdomains, priority));
 }
 
 void SecurityPolicy::AddOriginAccessBlockListEntry(
@@ -277,13 +257,26 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
     const network::mojom::CORSOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddBlockListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), allow_destination_subdomains,
-      priority);
+      source_origin.ToUrlOrigin(), network::mojom::CorsOriginPattern::New(
+                                       WebString(destination_protocol).Utf8(),
+                                       WebString(destination_domain).Utf8(),
+                                       allow_destination_subdomains, priority));
 }
 
-void SecurityPolicy::ClearOriginAccessBlockList() {
+void SecurityPolicy::ClearOriginAccessListForOrigin(
+    const SecurityOrigin& source_origin) {
   MutexLocker lock(GetMutex());
+  GetOriginAccessList().SetAllowListForOrigin(
+      source_origin.ToUrlOrigin(),
+      std::vector<network::mojom::CorsOriginPatternPtr>());
+  GetOriginAccessList().SetBlockListForOrigin(
+      source_origin.ToUrlOrigin(),
+      std::vector<network::mojom::CorsOriginPatternPtr>());
+}
+
+void SecurityPolicy::ClearOriginAccessList() {
+  MutexLocker lock(GetMutex());
+  GetOriginAccessList().ClearAllowList();
   GetOriginAccessList().ClearBlockList();
 }
 

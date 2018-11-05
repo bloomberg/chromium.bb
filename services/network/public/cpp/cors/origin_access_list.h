@@ -27,39 +27,29 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   ~OriginAccessList();
 
   // Clears the old allow list for |source_origin|, and set |patterns| to the
-  // allow list.
+  // allow list. When two or more patterns in a list match, the entry with the
+  // higher |priority| takes precedence.
   void SetAllowListForOrigin(
       const url::Origin& source_origin,
       const std::vector<mojom::CorsOriginPatternPtr>& patterns);
 
-  // Adds a matching pattern for |protocol|, |domain|, and |allow_subdomains|
-  // to the allow list. When two or more entries in a list match the entry
-  // with the higher |priority| takes precedence.
-  void AddAllowListEntryForOrigin(
-      const url::Origin& source_origin,
-      const std::string& protocol,
-      const std::string& domain,
-      bool allow_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+  // Adds |pattern| to the allow list for |source_origin|.
+  void AddAllowListEntryForOrigin(const url::Origin& source_origin,
+                                  const mojom::CorsOriginPatternPtr& pattern);
 
   // Clears the old allow list.
   void ClearAllowList();
 
   // Clears the old block list for |source_origin| and set |patterns| to the
-  // block list.
+  // block list. When two or more patterns in a list match, the entry with the
+  // higher |priority| takes precedence.
   void SetBlockListForOrigin(
       const url::Origin& source_origin,
       const std::vector<mojom::CorsOriginPatternPtr>& patterns);
 
-  // Adds a matching pattern for |protocol|, |domain|, and |allow_subdomains|
-  // to the block list. When two or more entries in a list match the entry
-  // with the higher |priority| takes precedence.
-  void AddBlockListEntryForOrigin(
-      const url::Origin& source_origin,
-      const std::string& protocol,
-      const std::string& domain,
-      bool allow_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+  // Adds |pattern| to the block list for |source_origin|.
+  void AddBlockListEntryForOrigin(const url::Origin& source_origin,
+                                  const mojom::CorsOriginPatternPtr& pattern);
 
   // Clears the old block list.
   void ClearBlockList();
@@ -76,15 +66,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   static void SetForOrigin(
       const url::Origin& source_origin,
       const std::vector<mojom::CorsOriginPatternPtr>& patterns,
-      PatternMap* map,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
-  static void AddForOrigin(
-      const url::Origin& source_origin,
-      const std::string& protocol,
-      const std::string& domain,
-      bool allow_subdomains,
-      PatternMap* map,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+      PatternMap* map);
+  static void AddForOrigin(const url::Origin& source_origin,
+                           const mojom::CorsOriginPatternPtr& pattern,
+                           PatternMap* map);
   static network::mojom::CORSOriginAccessMatchPriority
   GetHighestPriorityOfRuleForOrigin(const std::string& source,
                                     const url::Origin& destination_origin,

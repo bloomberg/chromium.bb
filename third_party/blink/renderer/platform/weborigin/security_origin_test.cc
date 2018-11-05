@@ -48,7 +48,10 @@ namespace blink {
 
 const uint16_t kMaxAllowedPort = UINT16_MAX;
 
-class SecurityOriginTest : public testing::Test {};
+class SecurityOriginTest : public testing::Test {
+ private:
+  void TearDown() override { SecurityPolicy::ClearOriginAccessList(); }
+};
 
 TEST_F(SecurityOriginTest, ValidPortsCreateTupleOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
@@ -424,8 +427,8 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
   EXPECT_TRUE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));
 
-  // Clear enterprise policy allowlist.
-  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*origin);
+  // Clear enterprise policy allow/block lists.
+  SecurityPolicy::ClearOriginAccessListForOrigin(*origin);
 
   EXPECT_FALSE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));

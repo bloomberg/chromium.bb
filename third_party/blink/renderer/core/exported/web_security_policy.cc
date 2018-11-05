@@ -77,24 +77,6 @@ void WebSecurityPolicy::AddOriginAccessAllowListEntry(
       destination_host, allow_destination_subdomains, priority);
 }
 
-void WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(
-    const WebURL& source_origin) {
-  SecurityPolicy::ClearOriginAccessAllowListForOrigin(
-      *SecurityOrigin::Create(source_origin));
-}
-
-void WebSecurityPolicy::ClearOriginAccessAllowList() {
-  SecurityPolicy::ClearOriginAccessAllowList();
-}
-
-void WebSecurityPolicy::ClearOriginAccessListForOrigin(
-    const WebURL& source_origin) {
-  scoped_refptr<SecurityOrigin> security_origin =
-      SecurityOrigin::Create(source_origin);
-  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*security_origin);
-  SecurityPolicy::ClearOriginAccessBlockListForOrigin(*security_origin);
-}
-
 void WebSecurityPolicy::AddOriginAccessBlockListEntry(
     const WebURL& source_origin,
     const WebString& destination_protocol,
@@ -104,6 +86,17 @@ void WebSecurityPolicy::AddOriginAccessBlockListEntry(
   SecurityPolicy::AddOriginAccessBlockListEntry(
       *SecurityOrigin::Create(source_origin), destination_protocol,
       destination_host, allow_destination_subdomains, priority);
+}
+
+void WebSecurityPolicy::ClearOriginAccessListForOrigin(
+    const WebURL& source_origin) {
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(source_origin);
+  SecurityPolicy::ClearOriginAccessListForOrigin(*security_origin);
+}
+
+void WebSecurityPolicy::ClearOriginAccessList() {
+  SecurityPolicy::ClearOriginAccessList();
 }
 
 void WebSecurityPolicy::AddOriginTrustworthyWhiteList(const WebString& origin) {

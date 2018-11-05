@@ -33,6 +33,7 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/cors_util.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
@@ -1091,9 +1092,9 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // reloaded with a new messages map.
   EraseL10nMessagesMap(id);
 
-  // Update the origin access map so that any content scripts injected are no
-  // longer allowlisted for extra origins.
-  WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(
+  // Update the origin access map so that any content scripts injected no longer
+  // have dedicated allow/block lists for extra origins.
+  WebSecurityPolicy::ClearOriginAccessListForOrigin(
       Extension::GetBaseURLFromExtensionId(id));
 
   // We don't do anything with existing platform-app stylesheets. They will
@@ -1210,74 +1211,27 @@ void Dispatcher::InitOriginPermissions(const Extension* extension) {
 }
 
 void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
-  static const char* kSchemes[] = {
-    url::kHttpScheme,
-    url::kHttpsScheme,
-    url::kFileScheme,
-    content::kChromeUIScheme,
-    url::kFtpScheme,
-#if defined(OS_CHROMEOS)
-    content::kExternalFileScheme,
-#endif
-    extensions::kExtensionScheme,
-  };
-
   // Remove all old patterns associated with this extension.
   WebSecurityPolicy::ClearOriginAccessListForOrigin(extension.url());
 
+  // TODO(toyoshim): Change this delegate call to be available even from the
+  // browser process.
   delegate_->AddOriginAccessPermissions(extension,
                                         IsExtensionActive(extension.id()));
 
-  URLPatternSet origin_permissions =
-      extension.permissions_data()->GetEffectiveHostPermissions();
-
-  // Permissions declared by the extension.
-  for (const URLPattern& pattern : origin_permissions) {
-    for (const char* scheme : kSchemes) {
-      if (pattern.MatchesScheme(scheme))
-        WebSecurityPolicy::AddOriginAccessAllowListEntry(
-            extension.url(), WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
-            network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
-    }
+  for (const auto& entry : CreateCorsOriginAccessAllowList(extension)) {
+    WebSecurityPolicy::AddOriginAccessAllowListEntry(
+        extension.url(), WebString::FromUTF8(entry->protocol),
+        WebString::FromUTF8(entry->domain), entry->allow_subdomains,
+        entry->priority);
   }
 
-  // Hosts blocked by enterprise policy.
-  for (const URLPattern& pattern :
-       extension.permissions_data()->policy_blocked_hosts()) {
-    for (const char* scheme : kSchemes) {
-      if (pattern.MatchesScheme(scheme))
-        WebSecurityPolicy::AddOriginAccessBlockListEntry(
-            extension.url(), WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
-            network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
-    }
+  for (const auto& entry : CreateCorsOriginAccessBlockList(extension)) {
+    WebSecurityPolicy::AddOriginAccessBlockListEntry(
+        extension.url(), WebString::FromUTF8(entry->protocol),
+        WebString::FromUTF8(entry->domain), entry->allow_subdomains,
+        entry->priority);
   }
-
-  // Hosts exempted from the enterprise policy blocklist.
-  // This set intersection is necessary to prevent an enterprise policy from
-  // granting a host permission the extension didn't ask for.
-  URLPatternSet overlap = URLPatternSet::CreateIntersection(
-      extension.permissions_data()->policy_allowed_hosts(), origin_permissions,
-      URLPatternSet::IntersectionBehavior::kDetailed);
-  for (const URLPattern& pattern : overlap) {
-    for (const char* scheme : kSchemes) {
-      if (pattern.MatchesScheme(scheme))
-        WebSecurityPolicy::AddOriginAccessAllowListEntry(
-            extension.url(), WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
-            network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
-    }
-  };
-
-  const GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
-  WebSecurityPolicy::AddOriginAccessBlockListEntry(
-      extension.url(), WebString::FromUTF8(webstore_launch_url.scheme()),
-      WebString::FromUTF8(webstore_launch_url.host()), true,
-      network::mojom::CORSOriginAccessMatchPriority::kHighPriority);
-
-  // TODO(devlin): Should we also block the webstore update URL here? See
-  // https://crbug.com/826946 for a related instance.
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
