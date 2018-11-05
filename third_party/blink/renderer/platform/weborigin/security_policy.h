@@ -72,19 +72,15 @@ class PLATFORM_EXPORT SecurityPolicy {
       const String& destination_domain,
       bool allow_destination_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority);
-  static void ClearOriginAccessAllowListForOrigin(
-      const SecurityOrigin& source_origin);
-  static void ClearOriginAccessBlockListForOrigin(
-      const SecurityOrigin& source_origin);
-  static void ClearOriginAccessAllowList();
-
   static void AddOriginAccessBlockListEntry(
       const SecurityOrigin& source_origin,
       const String& destination_protocol,
       const String& destination_domain,
       bool allow_destination_subdomains,
       const network::mojom::CORSOriginAccessMatchPriority priority);
-  static void ClearOriginAccessBlockList();
+  static void ClearOriginAccessListForOrigin(
+      const SecurityOrigin& source_origin);
+  static void ClearOriginAccessList();
 
   static bool IsOriginAccessAllowed(const SecurityOrigin* active_origin,
                                     const SecurityOrigin* target_origin);

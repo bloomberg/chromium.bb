@@ -230,8 +230,10 @@ class CORSURLLoaderTest : public testing::Test {
                                   const std::string& domain,
                                   bool allow_subdomains) {
     origin_access_list_.AddAllowListEntryForOrigin(
-        source_origin, protocol, domain, allow_subdomains,
-        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+        source_origin,
+        network::mojom::CorsOriginPattern::New(
+            protocol, domain, allow_subdomains,
+            network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
   }
 
   static net::RedirectInfo CreateRedirectInfo(
