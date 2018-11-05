@@ -134,7 +134,7 @@ TEST_F(LayoutSVGRootTest,
 
   const LayoutSVGRoot& root =
       *ToLayoutSVGRoot(GetLayoutObjectByElementId("svg"));
-  EXPECT_TRUE(root.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
+  EXPECT_FALSE(root.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
 }
 
 TEST_F(LayoutSVGRootTest,

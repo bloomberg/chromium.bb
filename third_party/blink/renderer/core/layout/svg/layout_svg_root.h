@@ -91,8 +91,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   const char* GetName() const override { return "LayoutSVGRoot"; }
 
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
-
  private:
   bool ComputeShouldClipOverflow() const override {
     return LayoutBox::ComputeShouldClipOverflow() || ShouldApplyViewportClip();
