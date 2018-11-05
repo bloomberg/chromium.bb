@@ -126,7 +126,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
   TestLoadApiHelper("testLoadAPISameIdDifferentSrc");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPILoadOtherExtension) {
+// TODO(crbug.com/810225): Test is flaky.
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest,
+                       DISABLED_LoadAPILoadOtherExtension) {
   TestLoadApiHelper("testLoadAPILoadOtherExtension");
 }
 
@@ -146,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, QueuedLoadAPIFunction) {
   TestLoadApiHelper("testQueuedLoadAPIFunction");
 }
 
+// TODO(crbug.com/810225): Test is flaky.
 IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest,
-                       QueuedLoadAPILoadOtherExtension) {
+                       DISABLED_QueuedLoadAPILoadOtherExtension) {
   TestLoadApiHelper("testQueuedLoadAPILoadOtherExtension");
 }
