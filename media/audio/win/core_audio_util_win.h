@@ -47,6 +47,10 @@ class MEDIA_EXPORT CoreAudioUtil {
   // Example: double s = RefererenceTimeToTimeDelta(t).InMillisecondsF();
   static base::TimeDelta ReferenceTimeToTimeDelta(REFERENCE_TIME time);
 
+  // Returns 1, 2, or 3 corresponding to the highest version of IAudioClient
+  // the platform supports.
+  static uint32_t GetIAudioClientVersion();
+
   // Returns AUDCLNT_SHAREMODE_EXCLUSIVE if --enable-exclusive-mode is used
   // as command-line flag and AUDCLNT_SHAREMODE_SHARED otherwise (default).
   static AUDCLNT_SHAREMODE GetShareMode();
@@ -113,10 +117,12 @@ class MEDIA_EXPORT CoreAudioUtil {
   // manage the flow of audio data between the application and an audio endpoint
   // device.
 
-  // Create an IAudioClient instance for a specific device _or_ the default
+  // Create an IAudioClient instance for a specific device or the default
   // device if AudioDeviceDescription::IsDefaultDevice(device_id).
   static Microsoft::WRL::ComPtr<IAudioClient>
   CreateClient(const std::string& device_id, EDataFlow data_flow, ERole role);
+  static Microsoft::WRL::ComPtr<IAudioClient3>
+  CreateClient3(const std::string& device_id, EDataFlow data_flow, ERole role);
 
   // Get the mix format that the audio engine uses internally for processing
   // of shared-mode streams. This format is not necessarily a format that the
@@ -189,8 +195,6 @@ class MEDIA_EXPORT CoreAudioUtil {
                                       uint32_t requested_buffer_size,
                                       uint32_t* endpoint_buffer_size,
                                       const GUID* session_guid);
-
-  // TODO(henrika): add ExclusiveModeInitialize(...)
 
   // Create an IAudioRenderClient client for an existing IAudioClient given by
   // |client|. The IAudioRenderClient interface enables a client to write

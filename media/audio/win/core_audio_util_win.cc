@@ -21,6 +21,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 
@@ -181,6 +182,10 @@ ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
       DVLOG(2) << "Unsupported channel layout: " << layout;
       return KSAUDIO_SPEAKER_UNSUPPORTED;
   }
+}
+
+bool IAudioClient3IsSupported() {
+  return CoreAudioUtil::GetIAudioClientVersion() >= 3;
 }
 
 std::string GetDeviceID(IMMDevice* device) {
@@ -367,6 +372,21 @@ ComPtr<IAudioClient> CreateClientInternal(IMMDevice* audio_device,
   return audio_client;
 }
 
+// Creates and activates an IAudioClient3 COM object given the selected
+// endpoint device.
+ComPtr<IAudioClient3> CreateClientInternal3(IMMDevice* audio_device,
+                                            const UMALogCallback& uma_log_cb) {
+  if (!audio_device)
+    return ComPtr<IAudioClient3>();
+
+  ComPtr<IAudioClient3> audio_client;
+  HRESULT hr = audio_device->Activate(
+      __uuidof(IAudioClient3), CLSCTX_INPROC_SERVER, NULL, &audio_client);
+  DVLOG_IF(1, FAILED(hr)) << "IMMDevice::Activate: " << std::hex << hr;
+  uma_log_cb.Run(UmaLogStep::CREATE_CLIENT, hr);
+  return audio_client;
+}
+
 HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
                                             bool is_output_device,
                                             AudioParameters* params,
@@ -378,34 +398,43 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
     return hr;
 
   // Preferred sample rate.
-  int sample_rate = mix_format.Format.nSamplesPerSec;
+  const int sample_rate = mix_format.Format.nSamplesPerSec;
 
   int min_frames_per_buffer = 0;
   int max_frames_per_buffer = 0;
-  int frames_per_buffer;
+  int frames_per_buffer = 0;
 
-  ComPtr<IAudioClient3> audio_client_3;
-  hr = client->QueryInterface(audio_client_3.GetAddressOf());
-  if (SUCCEEDED(hr)) {
-    UINT32 default_period_frames;
-    UINT32 fundamental_period_frames;
-    UINT32 min_period_frames;
-    UINT32 max_period_frames;
-    hr = audio_client_3->GetSharedModeEnginePeriod(
-        &(mix_format.Format), &default_period_frames,
-        &fundamental_period_frames, &min_period_frames, &max_period_frames);
+  const bool supports_iac3 = IAudioClient3IsSupported();
 
-    uma_log_cb.Run(UmaLogStep::GET_SHARED_MODE_ENGINE_PERIOD, hr);
+  if (supports_iac3) {
+    // Try to obtain an IAudioClient3 interface from the IAudioClient object.
+    // Use ComPtr::As for doing QueryInterface calls on COM objects.
+    ComPtr<IAudioClient> audio_client(client);
+    ComPtr<IAudioClient3> audio_client_3;
+    hr = audio_client.As(&audio_client_3);
     if (SUCCEEDED(hr)) {
-      min_frames_per_buffer = min_period_frames;
-      max_frames_per_buffer = max_period_frames;
-      frames_per_buffer = default_period_frames;
+      UINT32 default_period_frames = 0;
+      UINT32 fundamental_period_frames = 0;
+      UINT32 min_period_frames = 0;
+      UINT32 max_period_frames = 0;
+      hr = audio_client_3->GetSharedModeEnginePeriod(
+          &(mix_format.Format), &default_period_frames,
+          &fundamental_period_frames, &min_period_frames, &max_period_frames);
+
+      uma_log_cb.Run(UmaLogStep::GET_SHARED_MODE_ENGINE_PERIOD, hr);
+      if (SUCCEEDED(hr)) {
+        min_frames_per_buffer = min_period_frames;
+        max_frames_per_buffer = max_period_frames;
+        frames_per_buffer = default_period_frames;
+      }
+      DVLOG(1) << "IAudioClient3 => min_period_frames: " << min_period_frames;
+      DVLOG(1) << "IAudioClient3 => frames_per_buffer: " << frames_per_buffer;
     }
   }
 
   // If we don't have access to IAudioClient3 or if the call to
   // GetSharedModeEnginePeriod() fails we fall back to GetDevicePeriod().
-  if (FAILED(hr)) {
+  if (!supports_iac3 || FAILED(hr)) {
     REFERENCE_TIME default_period = 0;
     hr = CoreAudioUtil::GetDevicePeriod(client, AUDCLNT_SHAREMODE_SHARED,
                                         &default_period);
@@ -416,11 +445,11 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
     // We are using the native device period to derive the smallest possible
     // buffer size in shared mode. Note that the actual endpoint buffer will be
     // larger than this size but it will be possible to fill it up in two calls.
-    // TODO(henrika): ensure that this scheme works for capturing as well.
     frames_per_buffer = static_cast<int>(
         sample_rate * CoreAudioUtil::ReferenceTimeToTimeDelta(default_period)
                           .InSecondsF() +
         0.5);
+    DVLOG(1) << "IAudioClient => frames_per_buffer: " << frames_per_buffer;
   }
 
   ChannelLayout channel_layout = GetChannelLayout(mix_format);
@@ -482,6 +511,19 @@ std::string CoreAudioUtil::WaveFormatExToString(
 base::TimeDelta CoreAudioUtil::ReferenceTimeToTimeDelta(REFERENCE_TIME time) {
   // Each unit of reference time is 100 nanoseconds <=> 0.1 microsecond.
   return base::TimeDelta::FromMicroseconds(0.1 * time + 0.5);
+}
+
+uint32_t CoreAudioUtil::GetIAudioClientVersion() {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    // Minimum supported client: Windows 10.
+    // Minimum supported server: Windows Server 2016
+    return 3;
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Minimum supported client: Windows 8.
+    // Minimum supported server: Windows Server 2012.
+    return 2;
+  }
+  return 1;
 }
 
 AUDCLNT_SHAREMODE CoreAudioUtil::GetShareMode() {
@@ -702,14 +744,20 @@ ComPtr<IAudioClient> CoreAudioUtil::CreateClient(const std::string& device_id,
                                                  EDataFlow data_flow,
                                                  ERole role) {
   ComPtr<IMMDevice> device(CreateDevice(device_id, data_flow, role));
-
   return CreateClientInternal(device.Get(),
                               base::BindRepeating(&LogUMAEmptyCb));
 }
 
+ComPtr<IAudioClient3> CoreAudioUtil::CreateClient3(const std::string& device_id,
+                                                   EDataFlow data_flow,
+                                                   ERole role) {
+  ComPtr<IMMDevice> device(CreateDevice(device_id, data_flow, role));
+  return CreateClientInternal3(device.Get(),
+                               base::BindRepeating(&LogUMAEmptyCb));
+}
+
 HRESULT CoreAudioUtil::GetSharedModeMixFormat(
     IAudioClient* client, WAVEFORMATPCMEX* format) {
-  VLOG(1) << __FUNCTION__;
   ScopedCoMem<WAVEFORMATPCMEX> format_pcmex;
   HRESULT hr = client->GetMixFormat(
       reinterpret_cast<WAVEFORMATEX**>(&format_pcmex));
@@ -814,7 +862,6 @@ HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
 HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
                                                    bool is_output_device,
                                                    AudioParameters* params) {
-  DVLOG(1) << __FUNCTION__;
   UMALogCallback uma_log_cb(
       is_output_device ? base::BindRepeating(&LogUMAPreferredOutputParams)
                        : base::BindRepeating(&LogUMAEmptyCb));
@@ -883,16 +930,21 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
     stream_flags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
   DVLOG(2) << "stream_flags: 0x" << std::hex << stream_flags;
 
+  const bool supports_iac3 = IAudioClient3IsSupported();
+
   HRESULT hr;
-  if (requested_buffer_size > 0) {
+  if (supports_iac3 && requested_buffer_size > 0) {
+    // Try to obtain an IAudioClient3 interface from the IAudioClient object.
+    // Use ComPtr::As for doing QueryInterface calls on COM objects.
+    ComPtr<IAudioClient> audio_client(client);
     ComPtr<IAudioClient3> audio_client_3;
-    hr = client->QueryInterface(audio_client_3.GetAddressOf());
+    hr = audio_client.As(&audio_client_3);
     if (FAILED(hr)) {
-      DVLOG(1) << "Failed to QueryInterface on IAudioClient3 with explicit "
-                  "buffer size: "
-               << std::hex << hr;
+      DVLOG(1) << "Failed to obtain IAudioClient3 interface: " << std::hex
+               << hr;
       return hr;
     }
+    // Initialize a low-latency client using IAudioClient3.
     hr = audio_client_3->InitializeSharedAudioStream(
         stream_flags, requested_buffer_size, &(format->Format), session_guid);
     if (FAILED(hr)) {
