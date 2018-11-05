@@ -182,6 +182,13 @@ FakeRtpReceiver::streams() const {
   return streams_;
 }
 
+std::vector<std::string> FakeRtpReceiver::stream_ids() const {
+  std::vector<std::string> stream_ids;
+  for (const auto& stream : streams_)
+    stream_ids.push_back(stream->id());
+  return stream_ids;
+}
+
 cricket::MediaType FakeRtpReceiver::media_type() const {
   NOTIMPLEMENTED();
   return cricket::MEDIA_TYPE_AUDIO;

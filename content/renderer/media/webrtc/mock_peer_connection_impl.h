@@ -56,6 +56,7 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track() const override;
   std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams()
       const override;
+  std::vector<std::string> stream_ids() const override;
   cricket::MediaType media_type() const override;
   std::string id() const override;
   webrtc::RtpParameters GetParameters() const override;
