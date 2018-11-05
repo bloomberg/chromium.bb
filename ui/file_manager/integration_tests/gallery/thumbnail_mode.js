@@ -297,6 +297,49 @@ function selectAllImagesAfterImageDeletionOnDownloads(
 }
 
 /**
+ * Selects all images in thumbnail mode with shift key when nothing
+ * is selected. (crbug.com/900619)
+ * @param {string} testVolumeName Test volume name.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {!Promise} Promise to be fulfilled with on success.
+ */
+function shiftSelectFromNothingSelected(
+  testVolumeName, volumeType) {
+    const launchedPromise = launch(testVolumeName, volumeType,
+        [ENTRIES.desktop, ENTRIES.image3], [ENTRIES.desktop]);
+    let appId;
+    return launchedPromise.then((result) => {
+      // Confirm initial state after the launch.
+      appId = result.appId;
+      return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
+    }).then(() => {
+      // Switch to thumbnail mode.
+      return gallery.waitAndClickElement(appId, 'button.mode');
+    }).then(() => {
+      // Confirm something is selected.
+      return gallery.waitForElement(appId, '.thumbnail-view > ul > li.selected');
+    }).then(() => {
+      // Click empty space of thumbnail view.
+      return gallery.waitAndClickElement(appId, '.thumbnail-view > ul');
+    }).then(() => {
+      // Confirm no image is selected.
+      return gallery.waitForElementLost(appId, '.thumbnail-view > ul > li.selected');
+    }).then(() => {
+      // Select shift all elements
+      return gallery.callRemoteTestUtil(
+        'fakeMouseClick', appId,
+        ['.thumbnail-view > ul > li:last-child > .selection.frame',
+        {alt:false, shift:true, ctrl:false}]);
+    }).then(() => {
+      // Check: The edit name field should show.
+      return gallery.waitForElement(appId, '#rename-input:not([hidden])');
+    }).then((result) => {
+      // Validate that the proper number of items are selected and displayed
+      chrome.test.assertEq(result.value, '2 items selected');
+    });
+}
+
+/**
  * Rename test in thumbnail mode for Downloads.
  * @return {!Promise} Promise to be fulfilled with on success.
  */
@@ -376,4 +419,16 @@ testcase.selectMultipleImagesWithShiftKeyOnDownloads = function() {
  */
 testcase.selectAllImagesAfterImageDeletionOnDownloads = function() {
   return selectAllImagesAfterImageDeletionOnDownloads('local', 'downloads');
+};
+
+/**
+ * Selects all images from nothing selected and the edit title is updated.
+ * @returns {!Promise} Promise to be fulfilled with on success.
+*/
+testcase.shiftSelectFromNothingSelectedOnDownloads = () => {
+  return shiftSelectFromNothingSelected('local', 'downloads');
+};
+
+testcase.shiftSelectFromNothingSelectedOnDrive = () => {
+  return shiftSelectFromNothingSelected('drive', 'drive');
 };
