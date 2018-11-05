@@ -269,12 +269,12 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       }
       std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
       record->node_id = node_id;
-      record->first_size = rect_size;
-      record->first_paint_index = ++first_paint_index_max_;
       record->image_url =
           !cachedImg ? "" : cachedImg->Url().StrippedForUseAsReferrer();
+      // Mind that first_size has to be assigned at the push of
+      // largest_image_heap_ since it's the sorting key.
+      record->first_size = rect_size;
       largest_image_heap_.push(record->AsWeakPtr());
-      latest_image_heap_.push(record->AsWeakPtr());
       id_record_map_.insert(node_id, std::move(record));
     } else {
       // for assessing whether kImageNodeNumberLimit is large enough for all
@@ -288,8 +288,17 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   if (id_record_map_.Contains(node_id) &&
       IsJustLoaded(cachedImg, *id_record_map_.at(node_id))) {
     records_pending_timing_.push(node_id);
-    id_record_map_.at(node_id)->frame_index = frame_index_;
-    id_record_map_.at(node_id)->loaded = true;
+    ImageRecord* record = id_record_map_.at(node_id);
+    record->frame_index = frame_index_;
+    record->loaded = true;
+    // Latest image heap differs from largest image heap in that the former
+    // pushes a record when an image is loaded while the latter pushes when an
+    // image is attached to DOM. This causes last image paint to base its order
+    // on load time other than attachment time.
+    // Mind that first_paint_index has to be assigned at the push of
+    // latest_image_heap_ since it's the sorting key.
+    record->first_paint_index = ++first_paint_index_max_;
+    latest_image_heap_.push(record->AsWeakPtr());
   }
 }
 
