@@ -2860,6 +2860,13 @@ be describing additional metrics about the same event.
       render process used by other tabs. If this is undefined, TabPMF will be
       undefined.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SubFrameProcessPMF.Excluded">
     <summary>
@@ -2868,11 +2875,25 @@ be describing additional metrics about the same event.
       the process has responsiblities outside the scope of the relevant tab. If
       this is non-zero, TabPMF will be undefined.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SubFrameProcessPMF.Included">
     <summary>
       Number of render processes that contributed to SubFrameProcessPMF.Total.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SubFrameProcessPMF.Total">
     <summary>
@@ -2881,6 +2902,13 @@ be describing additional metrics about the same event.
       hosts frames of other tabs, it isn't considered to be 'dedicated' and so
       it doesn't contribute to this total.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="TabPMF">
     <summary>
@@ -2889,6 +2917,13 @@ be describing additional metrics about the same event.
       responsible for hosting parts of this tab while hosting parts of other
       tabs.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
