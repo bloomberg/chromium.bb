@@ -2414,11 +2414,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected void recordMultiWindowModeScreenSize(boolean widthChanged, boolean heightChanged) {
         if (widthChanged) {
-            RecordHistogram.recordSparseSlowlyHistogram("Android.MultiWindowMode.ScreenWidth",
+            RecordHistogram.recordSparseHistogram("Android.MultiWindowMode.ScreenWidth",
                     MathUtils.clamp(mScreenWidthDp, 200, 1200));
         }
         if (heightChanged) {
-            RecordHistogram.recordSparseSlowlyHistogram("Android.MultiWindowMode.ScreenHeight",
+            RecordHistogram.recordSparseHistogram("Android.MultiWindowMode.ScreenHeight",
                     MathUtils.clamp(mScreenHeightDp, 200, 1200));
         }
 
@@ -2444,9 +2444,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         int largestDisplaySize = displayWidth > displayHeight ? displayWidth : displayHeight;
         int smallestDisplaySize = displayWidth < displayHeight ? displayWidth : displayHeight;
 
-        RecordHistogram.recordSparseSlowlyHistogram("Android.DeviceSize.SmallestDisplaySize",
+        RecordHistogram.recordSparseHistogram("Android.DeviceSize.SmallestDisplaySize",
                 MathUtils.clamp(smallestDisplaySize, 0, 1000));
-        RecordHistogram.recordSparseSlowlyHistogram("Android.DeviceSize.LargestDisplaySize",
+        RecordHistogram.recordSparseHistogram("Android.DeviceSize.LargestDisplaySize",
                 MathUtils.clamp(largestDisplaySize, 200, 1200));
     }
 

@@ -608,7 +608,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private void recordInfobarLanguageData(String histogram, String langCode) {
         Integer hashCode = mOptions.getUMAHashCodeFromCode(langCode);
         if (hashCode != null) {
-            RecordHistogram.recordSparseSlowlyHistogram(histogram, hashCode);
+            RecordHistogram.recordSparseHistogram(histogram, hashCode);
         }
     }
 

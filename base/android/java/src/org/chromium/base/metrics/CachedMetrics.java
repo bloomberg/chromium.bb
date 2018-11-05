@@ -109,7 +109,7 @@ public class CachedMetrics {
         }
 
         private void recordWithNative(int sample) {
-            RecordHistogram.recordSparseSlowlyHistogram(mName, sample);
+            RecordHistogram.recordSparseHistogram(mName, sample);
         }
 
         @Override

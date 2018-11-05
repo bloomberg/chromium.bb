@@ -387,7 +387,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                                     + "ms ret=" + responseCode
                                     + " headers=" + urlConnection.getHeaderFields());
 
-                    RecordHistogram.recordSparseSlowlyHistogram(useDefaultUrl
+                    RecordHistogram.recordSparseHistogram(useDefaultUrl
                                     ? "ConnectivityDetector.Probe.HttpResponseCode.Default"
                                     : "ConnectivityDetector.Probe.HttpResponseCode.Fallback",
                             responseCode);

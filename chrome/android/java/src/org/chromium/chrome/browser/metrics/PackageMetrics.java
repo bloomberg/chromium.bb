@@ -87,7 +87,7 @@ public class PackageMetrics {
                     Math.round(ConversionUtils.bytesToMegabytes(data.dataSize)), 1, 10000, 50);
             RecordHistogram.recordCustomCountHistogram("Android.PackageStats.CacheSize",
                     Math.round(ConversionUtils.bytesToMegabytes(data.cacheSize)), 1, 10000, 50);
-            RecordHistogram.recordSparseSlowlyHistogram("Android.PackageStats.CodeSize",
+            RecordHistogram.recordSparseHistogram("Android.PackageStats.CodeSize",
                     Math.round(ConversionUtils.bytesToMegabytes(data.codeSize)));
         }
     }
