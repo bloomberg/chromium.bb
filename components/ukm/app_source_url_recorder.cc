@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ukm/content/app_source_url_recorder.h"
+#include "components/ukm/app_source_url_recorder.h"
 
 #include "base/atomic_sequence_num.h"
 #include "components/crx_file/id_util.h"

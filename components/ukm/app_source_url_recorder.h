@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_CONTENT_APP_SOURCE_URL_RECORDER_H_
-#define COMPONENTS_UKM_CONTENT_APP_SOURCE_URL_RECORDER_H_
+#ifndef COMPONENTS_UKM_APP_SOURCE_URL_RECORDER_H_
+#define COMPONENTS_UKM_APP_SOURCE_URL_RECORDER_H_
 
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -37,4 +37,4 @@ class AppSourceUrlRecorder {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_CONTENT_APP_SOURCE_URL_RECORDER_H_
+#endif  // COMPONENTS_UKM_APP_SOURCE_URL_RECORDER_H_
