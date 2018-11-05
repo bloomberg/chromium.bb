@@ -38,6 +38,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/crl_set_distributor.h"
 #include "services/network/cross_origin_read_blocking.h"
+#include "services/network/dns_config_change_manager.h"
 #include "services/network/net_log_capture_mode_type_converter.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
@@ -196,6 +197,8 @@ NetworkService::NetworkService(
 
   network_quality_estimator_manager_ =
       std::make_unique<NetworkQualityEstimatorManager>(net_log_);
+
+  dns_config_change_manager_ = std::make_unique<DnsConfigChangeManager>();
 
   host_resolver_ = CreateHostResolver(net_log_);
 
@@ -439,6 +442,11 @@ void NetworkService::GetNetworkChangeManager(
 void NetworkService::GetNetworkQualityEstimatorManager(
     mojom::NetworkQualityEstimatorManagerRequest request) {
   network_quality_estimator_manager_->AddRequest(std::move(request));
+}
+
+void NetworkService::GetDnsConfigChangeManager(
+    mojom::DnsConfigChangeManagerRequest request) {
+  dns_config_change_manager_->AddBinding(std::move(request));
 }
 
 void NetworkService::GetTotalNetworkUsages(

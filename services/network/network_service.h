@@ -25,6 +25,7 @@
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
@@ -51,6 +52,7 @@ class STHReporter;
 namespace network {
 
 class CRLSetDistributor;
+class DnsConfigChangeManager;
 class NetworkContext;
 class NetworkUsageAccumulator;
 class URLRequestContextBuilderMojo;
@@ -147,6 +149,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::NetworkChangeManagerRequest request) override;
   void GetNetworkQualityEstimatorManager(
       mojom::NetworkQualityEstimatorManagerRequest request) override;
+  void GetDnsConfigChangeManager(
+      mojom::DnsConfigChangeManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
 #if BUILDFLAG(IS_CT_SUPPORTED)
@@ -248,6 +252,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;
+
+  std::unique_ptr<DnsConfigChangeManager> dns_config_change_manager_;
 
   std::unique_ptr<net::HostResolver> host_resolver_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
