@@ -174,9 +174,9 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
     rf[0] = ref_frame_map[ref_frame_type - REF_FRAMES][0];
     rf[1] = ref_frame_map[ref_frame_type - REF_FRAMES][1];
   } else {
-    rf[0] = ref_frame_type;
-    rf[1] = NONE_FRAME;
     assert(ref_frame_type > NONE_FRAME);
+    rf[0] = (MV_REFERENCE_FRAME)ref_frame_type;
+    rf[1] = NONE_FRAME;
   }
 }
 

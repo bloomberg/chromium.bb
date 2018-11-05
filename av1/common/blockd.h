@@ -156,8 +156,6 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
    modes for the Y blocks to the left and above us; for interframes, there
    is a single probability table. */
 
-typedef int8_t MV_REFERENCE_FRAME;
-
 typedef struct {
   // Number of base colors for Y (0) and UV (1)
   uint8_t palette_size[2];
