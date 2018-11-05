@@ -831,16 +831,6 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name) {
     observer.OnAccNameCalled();
   }
 
-  // Ignored items are also marked invisible, but NVDA was not actually ignoring
-  // them.
-  // TODO(accessibility) Find a way to not expose ignored items at all, which
-  // would be less hacky but more code. Using a nameless object is a workaround,
-  // although it does not currently cause any known user-facing issues.
-  if (target->GetData().role == ax::mojom::Role::kIgnored) {
-    *name = nullptr;
-    return S_FALSE;
-  }
-
   HRESULT result =
       target->GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName, name);
   if (FAILED(result) && MSAARole() == ROLE_SYSTEM_DOCUMENT && GetParent()) {
@@ -4031,7 +4021,8 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
     } else {
       ia2_state |= IA2_STATE_SINGLE_LINE;
     }
-    ia2_state |= IA2_STATE_SELECTABLE_TEXT;
+    if (!IsInvisibleOrIgnored())
+      ia2_state |= IA2_STATE_SELECTABLE_TEXT;
   }
 
   // TODO(crbug.com/865101) Use
@@ -4810,10 +4801,8 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
     properties.push_back(L"haspopup=true");
   }
 
-  if (data.HasState(ax::mojom::State::kInvisible) ||
-      GetData().role == ax::mojom::Role::kIgnored) {
+  if (IsInvisibleOrIgnored())
     properties.push_back(L"hidden=true");
-  }
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
       GetIntAttribute(ax::mojom::IntAttribute::kInvalidState) !=
@@ -5469,10 +5458,9 @@ int AXPlatformNodeWin::MSAAState() {
 
   // If the role is IGNORED, we want these elements to be invisible so that
   // these nodes are hidden from the screen reader.
-  if (data.HasState(ax::mojom::State::kInvisible) ||
-      GetData().role == ax::mojom::Role::kIgnored) {
+  if (IsInvisibleOrIgnored())
     msaa_state |= STATE_SYSTEM_INVISIBLE;
-  }
+
   if (data.HasState(ax::mojom::State::kLinked))
     msaa_state |= STATE_SYSTEM_LINKED;
 

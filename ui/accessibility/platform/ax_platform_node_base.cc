@@ -471,6 +471,9 @@ int AXPlatformNodeBase::GetTableRowSpan() const {
 }
 
 bool AXPlatformNodeBase::HasCaret() {
+  if (IsInvisibleOrIgnored())
+    return false;
+
   if (IsPlainTextField() &&
       HasIntAttribute(ax::mojom::IntAttribute::kTextSelStart) &&
       HasIntAttribute(ax::mojom::IntAttribute::kTextSelEnd)) {
@@ -540,6 +543,12 @@ bool AXPlatformNodeBase::IsChildOfLeaf() {
   }
 
   return false;
+}
+
+bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
+  const AXNodeData& data = GetData();
+  return data.HasState(ax::mojom::State::kInvisible) ||
+         data.role == ax::mojom::Role::kIgnored;
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {
@@ -632,6 +641,9 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
     AddAttributeToList("checkable", "true", attributes);
+
+  if (IsInvisibleOrIgnored())  // Note: NVDA prefers this over INVISIBLE state.
+    AddAttributeToList("hidden", "true", attributes);
 
   // Expose live region attributes.
   AddAttributeToList(ax::mojom::StringAttribute::kLiveStatus, "live",

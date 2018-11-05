@@ -938,9 +938,14 @@ AXObjectInclusion AXObject::AccessibilityPlatformIncludesObject() const {
 AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsInertOrAriaHidden()) {
-    if (ignored_reasons)
-      ComputeIsInertOrAriaHidden(ignored_reasons);
-    return kIgnoreObject;
+    // Keep focusable elements that are aria-hidden in tree, so that they can
+    // still fire events such as focus and value changes.
+    const Element* elem = GetElement();
+    if (!elem || !elem->SupportsFocus() || elem->IsInert()) {
+      if (ignored_reasons)
+        ComputeIsInertOrAriaHidden(ignored_reasons);
+      return kIgnoreObject;
+    }
   }
 
   return AccessibilityPlatformIncludesObject();
@@ -1000,6 +1005,10 @@ bool AXObject::ComputeIsInertOrAriaHidden(
   }
 
   return false;
+}
+
+bool AXObject::IsVisible() const {
+  return !IsInertOrAriaHidden();
 }
 
 bool AXObject::IsDescendantOfLeafNode() const {

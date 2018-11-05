@@ -175,6 +175,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // that might send notifications.
   bool IsLeaf();
 
+  bool IsInvisibleOrIgnored() const;
+
   // Returns true if this node can be scrolled either in the horizontal or the
   // vertical direction.
   bool IsScrollable() const;
