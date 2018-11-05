@@ -159,7 +159,10 @@ class TestPendingScriptClient final
 TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   // Test that we can successfully compile a streamed script.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -196,7 +199,10 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   // the V8 side typically finished before loading finishes: make sure we
   // handle it gracefully.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
@@ -234,7 +240,10 @@ TEST_F(ScriptStreamingTest, CancellingStreaming) {
   // Test that the upper layers (PendingScript and up) can be ramped down
   // while streaming is ongoing, and ScriptStreamer handles it gracefully.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
@@ -255,11 +264,14 @@ TEST_F(ScriptStreamingTest, CancellingStreaming) {
   EXPECT_FALSE(client->Finished());
 }
 
-TEST_F(ScriptStreamingTest, DataAfterDisposingPendingScript) {
+TEST_F(ScriptStreamingTest, DataAfterCancellingStreaming) {
   // Test that the upper layers (PendingScript and up) can be ramped down
   // before streaming is started, and ScriptStreamer handles it gracefully.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -279,7 +291,6 @@ TEST_F(ScriptStreamingTest, DataAfterDisposingPendingScript) {
                               // holding on to it here.
 
   // Make sure the streaming starts.
-  AppendData(resource, "function foo() {");
   AppendPadding(resource);
   resource.Clear();
 
@@ -295,7 +306,10 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   // upper layer (ScriptResourceClient) should get a notification when the
   // script is loaded.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
@@ -324,7 +338,10 @@ TEST_F(ScriptStreamingTest, EmptyScripts) {
   // (ScriptResourceClient) should be notified when an empty script has been
   // loaded.
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -343,7 +360,10 @@ TEST_F(ScriptStreamingTest, SmallScripts) {
   V8TestingScope scope;
   ScriptStreamer::SetSmallScriptThresholdForTesting(100);
 
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -365,7 +385,10 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
   V8TestingScope scope;
   ScriptStreamer::SetSmallScriptThresholdForTesting(100);
 
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -401,7 +424,10 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   V8TestingScope scope;
   GetResource()->SetEncodingForTest("windows-1252");
 
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -439,7 +465,10 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   // This encoding is wrong on purpose.
   GetResource()->SetEncodingForTest("windows-1252");
 
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
@@ -471,7 +500,10 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
 // A test for crbug.com/711703. Should not crash.
 TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
   V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
+  ScriptStreamer::NotStreamingReason reason;
+  ScriptStreamer::StartStreaming(GetPendingScript(), loading_task_runner_,
+                                 &reason);
+  GetPendingScript()->SetNotStreamingReasonForTest(reason);
 
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
@@ -481,32 +513,6 @@ TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
       BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
-}
-
-TEST_F(ScriptStreamingTest, ResourceSetRevalidatingRequest) {
-  V8TestingScope scope;
-  GetResource()->StartStreaming(loading_task_runner_);
-
-  TestPendingScriptClient* client = new TestPendingScriptClient;
-  GetPendingScript()->WatchForLoad(client);
-
-  // Kick the streaming off.
-  AppendData("function foo() {");
-  AppendPadding();
-  AppendData("}");
-  Finish();
-  ProcessTasksUntilStreamingComplete();
-
-  // Second start streaming should fail.
-  EXPECT_FALSE(GetResource()->StartStreaming(loading_task_runner_));
-
-  ResourceRequest request(GetResource()->Url());
-  GetResource()->SetRevalidatingRequest(request);
-
-  // The next streaming should still fail, but the reason should be
-  // "kRevalidate".
-  EXPECT_FALSE(GetResource()->StartStreaming(loading_task_runner_));
-  EXPECT_EQ(GetResource()->NoStreamerReason(), ScriptStreamer::kRevalidate);
 }
 
 }  // namespace

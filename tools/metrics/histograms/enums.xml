@@ -36454,7 +36454,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="NotStreamingReason">
   <int value="0" label="DEPRECATED: Already loaded"/>
   <int value="1" label="Not HTTP"/>
-  <int value="2" label="Revalidation"/>
+  <int value="2" label="Reload"/>
   <int value="3" label="Context not valid"/>
   <int value="4" label="Encoding not supported"/>
   <int value="5" label="Thread busy"/>

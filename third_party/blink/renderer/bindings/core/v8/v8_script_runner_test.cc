@@ -93,15 +93,11 @@ class V8ScriptRunnerTest : public testing::Test {
   }
 
   ScriptResource* CreateEmptyResource() {
-    ScriptResource* resource =
-        ScriptResource::CreateForTest(NullURL(), UTF8Encoding());
-    resource->SetClientIsWaitingForFinished();
-    return resource;
+    return ScriptResource::CreateForTest(NullURL(), UTF8Encoding());
   }
 
   ScriptResource* CreateResource(const WTF::TextEncoding& encoding) {
     ScriptResource* resource = ScriptResource::CreateForTest(Url(), encoding);
-    resource->SetClientIsWaitingForFinished();
     String code = Code();
     ResourceResponse response(Url());
     response.SetHTTPStatusCode(200);

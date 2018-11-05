@@ -76,7 +76,7 @@ class CORE_EXPORT PendingScript
     return parser_blocking_load_start_time_;
   }
 
-  virtual void WatchForLoad(PendingScriptClient*);
+  void WatchForLoad(PendingScriptClient*);
   void StopWatchingForLoad();
   void PendingScriptFinished();
 
