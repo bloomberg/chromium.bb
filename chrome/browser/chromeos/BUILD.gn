@@ -2199,7 +2199,6 @@ source_set("unit_tests") {
     "lock_screen_apps/state_controller_unittest.cc",
     "login/auth/cryptohome_authenticator_unittest.cc",
     "login/demo_mode/demo_extensions_external_loader_unittest.cc",
-    "login/demo_mode/demo_mode_detector_unittest.cc",
     "login/demo_mode/demo_mode_resources_remover_unittest.cc",
     "login/demo_mode/demo_session_unittest.cc",
     "login/demo_mode/demo_setup_controller_unittest.cc",
