@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -24,18 +26,25 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 
-using syncer::JsEventDetails;
-using syncer::ModelTypeSet;
-using syncer::WeakHandle;
+namespace {
+
+// Returns the initial state of the "include specifics" flag, based on whether
+// or not the corresponding command-line switch is set.
+bool GetIncludeSpecificsInitialState() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncIncludeSpecificsInProtocolLog);
+}
+
+}  // namespace
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
-    : is_registered_(false),
-      is_registered_for_counters_(false),
+    : include_specifics_(GetIncludeSpecificsInitialState()),
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
-  if (js_controller_)
+  if (js_controller_) {
     js_controller_->RemoveJsEventHandler(this);
+  }
 
   syncer::SyncService* service = GetSyncService();
   if (service && service->HasObserver(this)) {
@@ -75,8 +84,9 @@ void SyncInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      syncer::sync_ui_util::kGetAllNodes,
-      base::BindRepeating(&SyncInternalsMessageHandler::HandleGetAllNodes,
+      syncer::sync_ui_util::kRequestIncludeSpecificsInitialState,
+      base::BindRepeating(&SyncInternalsMessageHandler::
+                              HandleRequestIncludeSpecificsInitialState,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -84,6 +94,33 @@ void SyncInternalsMessageHandler::RegisterMessages() {
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestStart,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleRequestStart,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestStopKeepData,
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleRequestStopKeepData,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestStopClearData,
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleRequestStopClearData,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kTriggerRefresh,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleTriggerRefresh,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kGetAllNodes,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleGetAllNodes,
+                          base::Unretained(this)));
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForEvents(
@@ -129,15 +166,25 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
     const base::ListValue* args) {
   DCHECK(args->empty());
   base::DictionaryValue event_details;
-  std::unique_ptr<base::ListValue> type_list(new base::ListValue());
-  ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  auto type_list = std::make_unique<base::ListValue>();
+  syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (syncer::ModelType type : protocol_types) {
     type_list->AppendString(ModelTypeToString(type));
   }
   event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
-  web_ui()->CallJavascriptFunction(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnReceivedListOfTypes), event_details);
+  DispatchEvent(syncer::sync_ui_util::kOnReceivedListOfTypes, event_details);
+}
+
+void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+
+  base::DictionaryValue value;
+  value.SetBoolean(syncer::sync_ui_util::kIncludeSpecifics,
+                   GetIncludeSpecificsInitialState());
+
+  DispatchEvent(syncer::sync_ui_util::kOnReceivedIncludeSpecificsInitialState,
+                value);
 }
 
 void SyncInternalsMessageHandler::HandleGetAllNodes(
@@ -161,6 +208,59 @@ void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
   include_specifics_ = args->GetList()[0].GetBool();
 }
 
+void SyncInternalsMessageHandler::HandleRequestStart(
+    const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+
+  syncer::SyncService* service = GetSyncService();
+  if (!service) {
+    return;
+  }
+
+  service->RequestStart();
+  // If the service was previously stopped with CLEAR_DATA, then the
+  // "first-setup-complete" bit was also cleared, and now the service wouldn't
+  // fully start up. So set that too.
+  service->SetFirstSetupComplete();
+}
+
+void SyncInternalsMessageHandler::HandleRequestStopKeepData(
+    const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+
+  syncer::SyncService* service = GetSyncService();
+  if (!service) {
+    return;
+  }
+
+  service->RequestStop(syncer::SyncService::KEEP_DATA);
+}
+
+void SyncInternalsMessageHandler::HandleRequestStopClearData(
+    const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+
+  syncer::SyncService* service = GetSyncService();
+  if (!service) {
+    return;
+  }
+
+  service->RequestStop(syncer::SyncService::CLEAR_DATA);
+}
+
+void SyncInternalsMessageHandler::HandleTriggerRefresh(
+    const base::ListValue* args) {
+  syncer::SyncService* service = GetSyncService();
+  if (!service) {
+    return;
+  }
+
+  // Only allowed to trigger refresh/schedule nudges for protocol types, things
+  // like PROXY_TABS are not allowed.
+  service->TriggerRefresh(syncer::Intersection(service->GetActiveDataTypes(),
+                                               syncer::ProtocolTypes()));
+}
+
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
     std::unique_ptr<base::ListValue> nodes) {
@@ -177,9 +277,7 @@ void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
   std::unique_ptr<base::DictionaryValue> value(
       syncer::ProtocolEvent::ToValue(event, include_specifics_));
-  web_ui()->CallJavascriptFunction(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnProtocolEvent), *value);
+  DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
 }
 
 void SyncInternalsMessageHandler::OnCommitCountersUpdated(
@@ -208,17 +306,15 @@ void SyncInternalsMessageHandler::EmitCounterUpdate(
   details->SetString(syncer::sync_ui_util::kModelType, ModelTypeToString(type));
   details->SetString(syncer::sync_ui_util::kCounterType, counter_type);
   details->Set(syncer::sync_ui_util::kCounters, std::move(value));
-  web_ui()->CallJavascriptFunction(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnCountersUpdated), *details);
+  DispatchEvent(syncer::sync_ui_util::kOnCountersUpdated, *details);
 }
 
-void SyncInternalsMessageHandler::HandleJsEvent(const std::string& name,
-                                                const JsEventDetails& details) {
+void SyncInternalsMessageHandler::HandleJsEvent(
+    const std::string& name,
+    const syncer::JsEventDetails& details) {
   DVLOG(1) << "Handling event: " << name << " with details "
            << details.ToString();
-  web_ui()->CallJavascriptFunction(syncer::sync_ui_util::kDispatchEvent,
-                                   base::Value(name), details.Get());
+  DispatchEvent(name, details.Get());
 }
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
@@ -226,9 +322,7 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
   std::unique_ptr<base::DictionaryValue> value =
       syncer::sync_ui_util::ConstructAboutInformation(sync_service,
                                                       GetChannel());
-  web_ui()->CallJavascriptFunction(
-      syncer::sync_ui_util::kDispatchEvent,
-      base::Value(syncer::sync_ui_util::kOnAboutInfoUpdated), *value);
+  DispatchEvent(syncer::sync_ui_util::kOnAboutInfoUpdated, *value);
 }
 
 // Gets the SyncService of the underlying original profile. May return null.
@@ -237,4 +331,11 @@ syncer::SyncService* SyncInternalsMessageHandler::GetSyncService() {
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
   return ProfileSyncServiceFactory::GetForBrowserState(
       browser_state->GetOriginalChromeBrowserState());
+}
+
+void SyncInternalsMessageHandler::DispatchEvent(
+    const std::string& name,
+    const base::Value& details_value) {
+  web_ui()->CallJavascriptFunction(syncer::sync_ui_util::kDispatchEvent,
+                                   base::Value(name), details_value);
 }
