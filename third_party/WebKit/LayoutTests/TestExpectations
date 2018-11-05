@@ -5457,9 +5457,6 @@ crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Cr
 #Sheriff 2018-10-18
 crbug.com/896765 [ Linux Mac Win ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
 
-#Sheriff 2018-10-22
-crbug.com/897075 [ Win10 ] inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
-
 #Sheriff 2018-10-23
 crbug.com/898214 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/credentials/authentication-basic.any.html [ Failure ]
 crbug.com/898050 [ Mac Win ] fast/workers/taskqueue/basic.html [ Pass Timeout ]
@@ -5525,7 +5522,7 @@ crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.htm
 crbug.com/v8/8405 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Skip ]
 
 #Sheriff 2018-11-02
-crbug.com/901314 [ Win7 Mac10.10 Mac10.11 ] inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
+crbug.com/901314 inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
 crbug.com/901489 [ Mac10.13 ] http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
 crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
 crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
