@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 
 namespace ash {
 
@@ -36,9 +38,23 @@ class UnifiedBluetoothDetailedViewController : public DetailedViewController,
   void OnBluetoothDiscoveringChanged() override;
 
  private:
+  void Update();
+  void DoUpdate();
+  void BluetoothStartDiscovering();
+  void UpdateBluetoothDeviceList();
+  void UpdateDeviceScrollList();
+
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   tray::BluetoothDetailedView* view_ = nullptr;
+
+  BluetoothDeviceList connected_devices_;
+  BluetoothDeviceList connecting_devices_;
+  BluetoothDeviceList paired_not_connected_devices_;
+  BluetoothDeviceList discovered_not_paired_devices_;
+
+  // Timer used to limit the update frequency.
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBluetoothDetailedViewController);
 };
