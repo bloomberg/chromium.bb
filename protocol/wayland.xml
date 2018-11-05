@@ -1397,9 +1397,9 @@
 	and clears pending damage. The server will clear the current
 	damage as it repaints the surface.
 
-	Alternatively, damage can be posted with wl_surface.damage_buffer
-	which uses buffer coordinates instead of surface coordinates,
-	and is probably the preferred and intuitive way of doing this.
+	Note! New clients should not use this request. Instead damage can be
+	posted with wl_surface.damage_buffer which uses buffer coordinates
+	instead of surface coordinates.
       </description>
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
