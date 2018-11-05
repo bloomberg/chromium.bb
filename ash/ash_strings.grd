@@ -1277,25 +1277,25 @@ This file contains the strings for ash.
         High contrast
       </message>
       <message name="IDS_ASH_HIGH_CONTRAST_BODY" desc="The text for the high contrast confirmation dialog.">
-        You pressed the shortcut for high contrast. Do you want to turn it on?
+        You pressed the keyboard shortcut for high contrast. Do you want to turn it on?
       </message>
       <message name="IDS_ASH_DOCKED_MAGNIFIER_TITLE" desc="Dialog title when docked magnifier is enabled.">
         Docked magnifier
       </message>
       <message name="IDS_ASH_DOCKED_MAGNIFIER_BODY" desc="The text for the docked magnifier dialog.">
-       You pressed the shortcut for the docked magnifier. Do you want to turn it on?
+        You pressed the keyboard shortcut for the docked magnifier. Do you want to turn it on?
       </message>
       <message name="IDS_ASH_SCREEN_MAGNIFIER_TITLE" desc="Dialog title when screen magnifier is enabled.">
         Full-screen magnifier
       </message>
       <message name="IDS_ASH_SCREEN_MAGNIFIER_BODY" desc="The text for the screen magnifier dialog.">
-       You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?
+        You pressed the keyboard shortcut for the full-screen magnifier. Do you want to turn it on?
       </message>
       <message name="IDS_ASH_ROTATE_SCREEN_TITLE" desc="Dialog title for when the screen has been rotated.">
         Rotate Screen
       </message>
       <message name="IDS_ASH_ROTATE_SCREEN_BODY" desc="The text for the screen rotation dialog.">
-        You pressed the shortcut for screen rotation. Do you want to rotate the screen?
+        You pressed the keyboard shortcut for screen rotation. Do you want to rotate the screen?
       </message>
       <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
         Continue
