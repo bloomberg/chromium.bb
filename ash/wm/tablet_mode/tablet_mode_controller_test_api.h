@@ -7,13 +7,13 @@
 
 #include <memory>
 
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 
 namespace ash {
 
-class ScopedDisableInternalMouseAndKeyboard;
+class InternalInputDevicesEventBlocker;
 class TabletModeController;
 class TabletModeWindowManager;
 
@@ -47,7 +47,7 @@ class TabletModeControllerTestApi {
 
   // Sets the event blocker on the tablet mode controller.
   void set_event_blocker(
-      std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
+      std::unique_ptr<InternalInputDevicesEventBlocker> blocker) {
     tablet_mode_controller_->event_blocker_ = std::move(blocker);
   }
 

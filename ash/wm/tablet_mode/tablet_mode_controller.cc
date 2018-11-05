@@ -11,8 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/bind.h"
@@ -114,17 +113,13 @@ TabletModeController::UiMode GetTabletMode() {
   return TabletModeController::UiMode::kNone;
 }
 
-std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-CreateScopedDisableInternalMouseAndKeyboard() {
-  return std::make_unique<ScopedDisableInternalMouseAndKeyboardOzone>();
-}
-
 }  // namespace
 
 constexpr char TabletModeController::kLidAngleHistogramName[];
 
 TabletModeController::TabletModeController()
-    : tablet_mode_usage_interval_start_time_(base::Time::Now()),
+    : event_blocker_(new InternalInputDevicesEventBlocker),
+      tablet_mode_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       binding_(this),
       scoped_session_observer_(this),
@@ -205,7 +200,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
       client_->OnTabletModeToggled(false);
   }
 
-  UpdateInternalMouseAndKeyboardEventBlocker();
+  UpdateInternalInputDevicesEventBlocker();
 }
 
 bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
@@ -242,7 +237,7 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
 }
 
 bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
-  return !!event_blocker_.get();
+  return event_blocker_->is_blocked();
 }
 
 void TabletModeController::FlushForTesting() {
@@ -377,7 +372,7 @@ void TabletModeController::TabletModeEventReceived(
   // Even if we do not change its ui mode, we should update its input device
   // blocker as tablet mode events may come in because of the lid angle/or folio
   // keyboard state changes but ui mode might still stay the same.
-  UpdateInternalMouseAndKeyboardEventBlocker();
+  UpdateInternalInputDevicesEventBlocker();
 }
 
 void TabletModeController::SuspendImminent(
@@ -506,7 +501,7 @@ bool TabletModeController::CanEnterTabletMode() {
 
 void TabletModeController::AttemptEnterTabletMode() {
   if (IsTabletModeWindowManagerEnabled() || has_external_pointing_device_) {
-    UpdateInternalMouseAndKeyboardEventBlocker();
+    UpdateInternalInputDevicesEventBlocker();
     return;
   }
 
@@ -515,7 +510,7 @@ void TabletModeController::AttemptEnterTabletMode() {
 
 void TabletModeController::AttemptLeaveTabletMode() {
   if (!IsTabletModeWindowManagerEnabled()) {
-    UpdateInternalMouseAndKeyboardEventBlocker();
+    UpdateInternalInputDevicesEventBlocker();
     return;
   }
 
@@ -631,7 +626,7 @@ void TabletModeController::UpdateBluetoothDevice(
   HandlePointingDeviceAddedOrRemoved();
 }
 
-void TabletModeController::UpdateInternalMouseAndKeyboardEventBlocker() {
+void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
   bool should_block_internal_events = false;
   if (IsTabletModeWindowManagerEnabled()) {
     // If we are currently in tablet mode, the internal input events should
@@ -647,11 +642,7 @@ void TabletModeController::UpdateInternalMouseAndKeyboardEventBlocker() {
   if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())
     return;
 
-  if (should_block_internal_events)
-    event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
-  else
-    event_blocker_.reset();
-
+  event_blocker_->UpdateInternalInputDevices(should_block_internal_events);
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletModeEventsBlockingChanged();
 }
