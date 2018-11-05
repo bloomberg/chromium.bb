@@ -33,6 +33,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -44,42 +45,45 @@ class ScriptState;
 class ScriptValue;
 class StringOrTrustedScript;
 
-namespace DOMWindowTimers {
-int setTimeout(ScriptState*,
-               EventTarget&,
-               const ScriptValue& handler,
-               int timeout,
-               const Vector<ScriptValue>& arguments);
-int setTimeout(ScriptState*,
-               EventTarget&,
-               const StringOrTrustedScript&,
-               int timeout,
-               const Vector<ScriptValue>&,
-               ExceptionState&);
-int setTimeoutFromString(ScriptState*,
+class DOMWindowTimers {
+  STATIC_ONLY(DOMWindowTimers);
+
+ public:
+  static int setTimeout(ScriptState*,
+                        EventTarget&,
+                        const ScriptValue& handler,
+                        int timeout,
+                        const Vector<ScriptValue>& arguments);
+  static int setTimeout(ScriptState*,
+                        EventTarget&,
+                        const StringOrTrustedScript&,
+                        int timeout,
+                        const Vector<ScriptValue>&,
+                        ExceptionState&);
+  static int setTimeoutFromString(ScriptState*,
+                                  EventTarget&,
+                                  const String& handler,
+                                  int timeout,
+                                  const Vector<ScriptValue>&);
+  static int setInterval(ScriptState*,
                          EventTarget&,
-                         const String& handler,
+                         const ScriptValue& handler,
                          int timeout,
                          const Vector<ScriptValue>&);
-int setInterval(ScriptState*,
-                EventTarget&,
-                const ScriptValue& handler,
-                int timeout,
-                const Vector<ScriptValue>&);
-int setInterval(ScriptState*,
-                EventTarget&,
-                const StringOrTrustedScript&,
-                int timeout,
-                const Vector<ScriptValue>&,
-                ExceptionState&);
-int setIntervalFromString(ScriptState*,
-                          EventTarget&,
-                          const String& handler,
-                          int timeout,
-                          const Vector<ScriptValue>&);
-void clearTimeout(EventTarget&, int timeout_id);
-void clearInterval(EventTarget&, int timeout_id);
-}
+  static int setInterval(ScriptState*,
+                         EventTarget&,
+                         const StringOrTrustedScript&,
+                         int timeout,
+                         const Vector<ScriptValue>&,
+                         ExceptionState&);
+  static int setIntervalFromString(ScriptState*,
+                                   EventTarget&,
+                                   const String& handler,
+                                   int timeout,
+                                   const Vector<ScriptValue>&);
+  static void clearTimeout(EventTarget&, int timeout_id);
+  static void clearInterval(EventTarget&, int timeout_id);
+};
 
 }  // namespace blink
 
