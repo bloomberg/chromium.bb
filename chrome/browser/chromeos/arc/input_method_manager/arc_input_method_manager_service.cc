@@ -271,8 +271,24 @@ void ArcInputMethodManagerService::SetInputMethodManagerBridgeForTesting(
 
 void ArcInputMethodManagerService::OnActiveImeChanged(
     const std::string& ime_id) {
-  // Please see https://crbug.com/845079.
-  NOTIMPLEMENTED();
+  if (ime_id == kChromeOSIMEIdInArcContainer) {
+    // Chrome OS Keyboard is selected in Android side.
+    auto* imm = chromeos::input_method::InputMethodManager::Get();
+    // Create a list of active Chrome OS IMEs.
+    auto active_imes = imm->GetActiveIMEState()->GetActiveInputMethodIds();
+    base::EraseIf(active_imes, chromeos::extension_ime_util::IsArcIME);
+    DCHECK(!active_imes.empty());
+    imm->GetActiveIMEState()->ChangeInputMethod(active_imes[0],
+                                                false /* show_message */);
+    return;
+  }
+
+  // an ARC IME is selected.
+  auto* imm = chromeos::input_method::InputMethodManager::Get();
+  imm->GetActiveIMEState()->ChangeInputMethod(
+      chromeos::extension_ime_util::GetArcInputMethodID(proxy_ime_extension_id_,
+                                                        ime_id),
+      false /* show_message */);
 }
 
 void ArcInputMethodManagerService::OnImeDisabled(const std::string& ime_id) {
