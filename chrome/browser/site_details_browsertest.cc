@@ -579,13 +579,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
                   ElementsAre(Bucket(12, 1), Bucket(29, 1), Bucket(68, 1))));
 }
 
-// Flaky on Windows, Mac and ChromeOS. crbug.com/671891
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_IsolateExtensions DISABLED_IsolateExtensions
-#else
-#define MAYBE_IsolateExtensions IsolateExtensions
-#endif
-IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, MAYBE_IsolateExtensions) {
+// TODO(crbug.com/671891): This test is flaky.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   // We start on "about:blank", which should be credited with a process in this
   // case.
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
