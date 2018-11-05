@@ -236,8 +236,11 @@ void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   const GURL kDestination("https://example.com");
+  network::mojom::ProxyResolvingSocketOptionsPtr options =
+      network::mojom::ProxyResolvingSocketOptions::New();
+  options->use_tls = true;
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
-      kDestination, true /* use_tls */,
+      kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo::MakeRequest(&mojo_socket_ptr_), nullptr /* observer */,
       base::BindLambdaForTesting(

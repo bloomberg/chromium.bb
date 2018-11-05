@@ -14,7 +14,7 @@
 namespace network {
 
 ProxyResolvingSocketMojo::ProxyResolvingSocketMojo(
-    std::unique_ptr<ProxyResolvingClientSocket> socket,
+    std::unique_ptr<net::StreamSocket> socket,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::SocketObserverPtr observer,
     TLSSocketFactory* tls_socket_factory)

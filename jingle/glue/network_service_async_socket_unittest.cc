@@ -187,7 +187,7 @@ class MockProxyResolvingSocketFactory
   // mojom::ProxyResolvingSocketFactory implementation.
   void CreateProxyResolvingSocket(
       const GURL& url,
-      bool use_tls,
+      network::mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::ProxyResolvingSocketRequest request,
       network::mojom::SocketObserverPtr observer,
@@ -317,6 +317,7 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
         base::BindRepeating(
             &NetworkServiceAsyncSocketTest::BindToProxyResolvingSocketFactory,
             base::Unretained(this)),
+        false, /* use_fake_tls_handshake */
         14, 20, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     ns_async_socket_->SignalConnected.connect(

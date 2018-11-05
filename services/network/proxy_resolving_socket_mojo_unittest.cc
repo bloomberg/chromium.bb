@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "jingle/glue/fake_ssl_client_socket.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
@@ -54,6 +55,7 @@ class ProxyResolvingSocketTestBase {
  public:
   ProxyResolvingSocketTestBase(bool use_tls)
       : use_tls_(use_tls),
+        fake_tls_handshake_(false),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
@@ -114,8 +116,12 @@ class ProxyResolvingSocketTestBase {
       mojo::ScopedDataPipeProducerHandle* send_pipe_handle_out) {
     base::RunLoop run_loop;
     int net_error = net::ERR_FAILED;
+    network::mojom::ProxyResolvingSocketOptionsPtr options =
+        network::mojom::ProxyResolvingSocketOptions::New();
+    options->use_tls = use_tls_;
+    options->fake_tls_handshake = fake_tls_handshake_;
     factory_ptr_->CreateProxyResolvingSocket(
-        url, use_tls_,
+        url, std::move(options),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::move(request), std::move(socket_observer),
         base::BindLambdaForTesting(
@@ -141,11 +147,13 @@ class ProxyResolvingSocketTestBase {
   }
 
   bool use_tls() const { return use_tls_; }
+  void set_fake_tls_handshake(bool val) { fake_tls_handshake_ = val; }
 
   mojom::ProxyResolvingSocketFactory* factory() { return factory_ptr_.get(); }
 
  private:
   const bool use_tls_;
+  bool fake_tls_handshake_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<net::MockClientSocketFactory> mock_client_socket_factory_;
   std::unique_ptr<TestURLRequestContextWithProxy> context_with_proxy_;
@@ -334,6 +342,45 @@ class ProxyResolvingSocketMojoTest : public ProxyResolvingSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingSocketMojoTest);
 };
 
+TEST_F(ProxyResolvingSocketMojoTest, ConnectWithFakeTLSHandshake) {
+  const GURL kDestination("https://example.com:443");
+  const char kTestMsg[] = "abcdefghij";
+  const size_t kMsgSize = strlen(kTestMsg);
+
+  Init("DIRECT");
+  set_fake_tls_handshake(true);
+
+  base::StringPiece client_hello =
+      jingle_glue::FakeSSLClientSocket::GetSslClientHello();
+  base::StringPiece server_hello =
+      jingle_glue::FakeSSLClientSocket::GetSslServerHello();
+  std::vector<net::MockRead> reads = {
+      net::MockRead(net::ASYNC, server_hello.data(), server_hello.length(), 1),
+      net::MockRead(net::ASYNC, 2, kTestMsg),
+      net::MockRead(net::ASYNC, net::OK, 3)};
+
+  std::vector<net::MockWrite> writes = {net::MockWrite(
+      net::ASYNC, client_hello.data(), client_hello.length(), 0)};
+
+  net::StaticSocketDataProvider data_provider(reads, writes);
+  data_provider.set_connect_data(net::MockConnect(net::ASYNC, net::OK));
+  mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
+
+  mojom::ProxyResolvingSocketPtr socket;
+  mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
+  mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
+  net::IPEndPoint actual_remote_addr;
+  EXPECT_EQ(net::OK,
+            CreateSocketSync(mojo::MakeRequest(&socket),
+                             nullptr /* socket_observer*/, &actual_remote_addr,
+                             kDestination, &client_socket_receive_handle,
+                             &client_socket_send_handle));
+
+  EXPECT_EQ(kTestMsg, Read(&client_socket_receive_handle, kMsgSize));
+  EXPECT_TRUE(data_provider.AllReadDataConsumed());
+  EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
 // Tests that when ProxyResolvingSocketPtr is destroyed but not the
 // ProxyResolvingSocketFactory, the connect callback is not dropped.
 // Regression test for https://crbug.com/862608.
@@ -350,7 +397,7 @@ TEST_F(ProxyResolvingSocketMojoTest, SocketDestroyedBeforeConnectCompletes) {
   base::RunLoop run_loop;
   int net_error = net::OK;
   factory()->CreateProxyResolvingSocket(
-      kDestination, false,
+      kDestination, nullptr,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo::MakeRequest(&socket), nullptr /* observer */,
       base::BindLambdaForTesting(
