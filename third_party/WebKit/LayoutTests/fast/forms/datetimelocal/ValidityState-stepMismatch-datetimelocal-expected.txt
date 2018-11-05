@@ -2,7 +2,6 @@ Check stepMismatch results for type=datetime-local.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Empty values
 PASS stepMismatchFor("", null, null) is false
 PASS stepMismatchFor("", "2", "1969-12-31T12:34:56") is false
@@ -36,4 +35,5 @@ PASS stepMismatchFor("2010-02-09T12:34:55.001", "1", "2010-02-09T12:34:56", true
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

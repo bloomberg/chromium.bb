@@ -1,4 +1,3 @@
-
 PASS form.imageElement.id is '1'
 PASS form.imageElement.id is '2'
 PASS form.imageElement is undefined.

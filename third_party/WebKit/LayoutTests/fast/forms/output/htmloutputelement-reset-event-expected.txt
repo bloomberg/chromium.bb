@@ -2,7 +2,6 @@ A Test for sending a reset event to output elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 - Sets the value attribute of the output element.
 PASS output.defaultValue is "defaultValue"
 PASS output.value is "aValue"

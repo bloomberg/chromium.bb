@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 1) Select one item with mouse (no previous selection)
 PASS selectionPattern("sl1") is "10000"
 2) Select one item with mouse (with previous selection)

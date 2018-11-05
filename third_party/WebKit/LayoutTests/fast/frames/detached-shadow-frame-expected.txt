@@ -3,7 +3,6 @@ Should not be able to create an iframe with a loaded contentDocument that is not
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS innerFrame.contentDocument is null
 PASS successfullyParsed is true
 

@@ -3,7 +3,6 @@ Tests for .valueAsNumber with non-supported input types.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check for type=button
 PASS input.valueAsNumber is Number.NaN
 PASS input.valueAsNumber = 0 threw exception InvalidStateError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values..
@@ -55,4 +54,5 @@ PASS input.valueAsNumber = 0 threw exception InvalidStateError: Failed to set th
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

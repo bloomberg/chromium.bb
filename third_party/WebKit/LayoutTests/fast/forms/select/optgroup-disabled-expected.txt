@@ -2,7 +2,6 @@ Test disabled attribute of optgroup element
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check :disabled pseudo-class
 PASS disabledSet["listbox_optgroup_disabled"] is true
 PASS disabledSet["listbox_d1"] is true
@@ -54,5 +53,22 @@ PASS $("menulist").selectedIndex is 4
 PASS successfullyParsed is true
 
 TEST COMPLETE
- 
 
+One
+Two
+Three
+Four
+One
+Two
+Three
+Four
+
+
+One
+Two
+Three
+Four
+One
+Two
+Three
+Four

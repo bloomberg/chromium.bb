@@ -2,7 +2,6 @@ Tests that the HTMLSelectElement.item() argument is correctly validated.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS select.__proto__ is HTMLSelectElement.prototype
 PASS select.item(0).value is "a"
 PASS select.item(1).value is "b"
@@ -16,3 +15,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+a
+b
+c
+d

@@ -2,7 +2,6 @@ Tests the behavior of .formaction, .formenctype, .formmethod and .formtarget of 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Ordinary values for input:
 PASS input.formEnctype is ""
 PASS input.formMethod is ""
@@ -24,6 +23,7 @@ PASS input.formMethod is "get"
 PASS input.formTarget is "http://example.com"
 PASS input.formTarget is "nta"
 
+
 Setting null for input:
 PASS input.formEnctype is "application/x-www-form-urlencoded"
 PASS input.getAttribute("formEnctype") is "null"
@@ -34,6 +34,7 @@ PASS input.formMethod is "get"
 PASS input.formTarget is "null"
 PASS input.getAttribute("formTarget") is "null"
 PASS input.formTarget is "null"
+
 
 Setting undefined for input:
 PASS input.formEnctype is "application/x-www-form-urlencoded"
@@ -46,6 +47,7 @@ PASS input.formTarget is "undefined"
 PASS input.getAttribute("formTarget") is "undefined"
 PASS input.formTarget is "undefined"
 
+
 Setting non-string for input:
 PASS input.formEnctype is "application/x-www-form-urlencoded"
 PASS input.getAttribute("formEnctype") is "256"
@@ -56,6 +58,7 @@ PASS input.formMethod is "get"
 PASS input.formTarget is "256"
 PASS input.getAttribute("formTarget") is "256"
 PASS input.formTarget is "256"
+
 
 Ordinary values for button:
 PASS button.formEnctype is ""
@@ -78,6 +81,7 @@ PASS button.formMethod is "get"
 PASS button.formTarget is "http://example.com"
 PASS button.formTarget is "nota"
 
+
 Setting null for button:
 PASS button.formEnctype is "application/x-www-form-urlencoded"
 PASS button.getAttribute("formEnctype") is "null"
@@ -89,6 +93,7 @@ PASS button.formTarget is "null"
 PASS button.getAttribute("formTarget") is "null"
 PASS button.formTarget is "null"
 
+
 Setting undefined for button:
 PASS button.formEnctype is "application/x-www-form-urlencoded"
 PASS button.getAttribute("formEnctype") is "undefined"
@@ -99,6 +104,7 @@ PASS button.formMethod is "get"
 PASS button.formTarget is "undefined"
 PASS button.getAttribute("formTarget") is "undefined"
 PASS button.formTarget is "undefined"
+
 
 Setting non-string for button:
 PASS button.formEnctype is "application/x-www-form-urlencoded"

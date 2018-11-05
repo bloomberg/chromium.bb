@@ -1,4 +1,3 @@
-
 Received files in worker
 Test reading a non-existent file as array buffer
 Received exception, name: NotFoundError, message: Failed to execute 'readAsArrayBuffer' on 'FileReaderSync': A requested file or directory could not be found at the time an operation was processed.

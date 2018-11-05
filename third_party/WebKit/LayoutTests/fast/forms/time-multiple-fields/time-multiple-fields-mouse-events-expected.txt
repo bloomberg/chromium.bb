@@ -2,7 +2,6 @@ Multiple fields UI of time input type with mouse events
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Please run this with DumpRenderTree.
 
 Test following mouse actions:
@@ -12,6 +11,7 @@ Mouse click on spin button
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 = Focus to hour field =
 PASS input.value is "02:23"
 = Focus to minute field =
@@ -23,6 +23,7 @@ PASS input.value is "02:24"
 = Click on a disabled/readonly field =
 PASS input.value is "02:24"
 PASS input.value is "02:24"
+
 
 ==> Click on clear button.
 PASS input.value is "02:24"

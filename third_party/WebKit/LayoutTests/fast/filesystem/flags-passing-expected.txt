@@ -2,7 +2,6 @@ Passing Flags parameter tests. This test checks if passing Flags parameters to D
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 * Passing JSON Flags object.
 * Passing JSON Flags object (with exclusive=true).
 * Passing null as a flags parameter.

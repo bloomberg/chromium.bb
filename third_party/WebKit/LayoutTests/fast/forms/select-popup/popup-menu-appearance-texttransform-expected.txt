@@ -1,3 +1,5 @@
+foo
+bar
 
 PASS successfullyParsed is true
 

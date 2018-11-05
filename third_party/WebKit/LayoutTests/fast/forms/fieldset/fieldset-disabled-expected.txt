@@ -3,7 +3,6 @@ Tests for HTMLFieldSetElement.disabled behavior.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Verifying parser generated fieldsets.
 PASS parserGeneratedInput1.value is "L"
 PASS parserGeneratedInput2.value is "M"

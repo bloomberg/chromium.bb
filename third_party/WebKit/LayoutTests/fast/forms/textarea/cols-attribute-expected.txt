@@ -2,7 +2,6 @@ HTMLTextAreaElement cols attribute test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.createElement("textarea").cols is 20
 PASS colsAttributeEffect("") is 20
 PASS colsAttributeEffect("1") is 1

@@ -2,7 +2,6 @@ Tests if pressing F4 opens the calendar picker.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check that page popup doesn't exist at first.
 PASS internals.pagePopupWindow is null
 Press F4 key.
@@ -10,4 +9,5 @@ PASS internals.pagePopupWindow is non-null.
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

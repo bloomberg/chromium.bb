@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS selectionPattern("sl1") is "10000000000000000"
 PASS selectionPattern("sl1") is "01000000000000000"
 PASS selectionPattern("sl1") is "00000010000000000"
@@ -16,3 +15,23 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+one
+two
+three
+four
+five
+six
+seven
+eight
+nine
+ten
+eleven
+twelve
+thirteen
+fourteen
+fifteen
+sixteen
+seventeen
+one
+two
+three

@@ -2,7 +2,6 @@ Test that a live list is updated after the child of an HTMLOutputElement was rem
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 The number of spans before removal is 2
 The number of spans after removal is 1
 PASS list.length == beforeLength - 1 is true

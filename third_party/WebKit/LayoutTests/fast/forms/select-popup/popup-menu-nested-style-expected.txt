@@ -2,7 +2,6 @@ Check if an OPTION style is serialized with comparison with the parent OPTGROUP 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS params.children[1].type is "optgroup"
 PASS params.children[1].children[0].type is undefined.
 PASS params.children[1].children[0].style.color is "#000000"
@@ -11,3 +10,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+foo
+bar
+baz

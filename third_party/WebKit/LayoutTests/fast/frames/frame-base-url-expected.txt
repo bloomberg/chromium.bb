@@ -4,6 +4,7 @@ This tests the base url in a subframe document that starts out loaded from a rea
 
 The link in the subframe relative to this document should be "/resources/foobar.html" and not "foobar.html"
 
+
 SUCCESS
 
 

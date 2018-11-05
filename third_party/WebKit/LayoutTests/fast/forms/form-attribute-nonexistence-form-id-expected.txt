@@ -2,7 +2,6 @@ This page ensures that <input from="X"> and <label from="X"> don't associate wit
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 label1 label2
 PASS inputShouldHaveForm.form is form
 PASS inputShouldNotHaveForm.form is null

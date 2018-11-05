@@ -2,7 +2,6 @@ This test checks fieldset.name attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Read from HTML
 PASS fs1.name is "a"
 PASS fs1.getAttribute("name") is "a"

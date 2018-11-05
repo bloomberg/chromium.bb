@@ -2,7 +2,6 @@ Existence tests for .setCustomValidity property
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Existence of .setCustomValidity
 PASS typeof document.getElementsByTagName("input")[0].setCustomValidity is "function"
 PASS typeof document.getElementsByTagName("button")[0].setCustomValidity is "function"
@@ -14,5 +13,5 @@ PASS typeof document.getElementsByTagName("object")[0].setCustomValidity is "fun
 PASS successfullyParsed is true
 
 TEST COMPLETE
-Test
 
+Test

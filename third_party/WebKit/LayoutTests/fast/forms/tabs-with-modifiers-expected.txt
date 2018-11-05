@@ -1,6 +1,5 @@
 This test tabs with different combinations of modifiers pressed, where some should advance focus and some should not.
 
-
 resetting focus to middle input
 - focus event: b
 test tab case that should advance focus

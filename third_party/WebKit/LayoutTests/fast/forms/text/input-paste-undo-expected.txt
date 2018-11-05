@@ -2,7 +2,6 @@ This test checks that undoing a paste into an empty text field doesn't cause it 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.getElementById("destination").value is ""
 PASS document.getElementById("destination").value is "Text to copy-paste-undo."
 PASS document.getElementById("source").clientHeight == initialClientHeight is true
@@ -13,6 +12,8 @@ PASS window.getComputedStyle(document.getElementById("source")).height == initia
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 
 
 Text to copy-paste-undo.

@@ -2,7 +2,6 @@ Tests form.elements is invalidated when input element's form attribute is change
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 collection = document.getElementById('someForm').elements;
 PASS collection.length is 1
 PASS collection.length; input.setAttribute('form', 'otherForm'); collection.length is 0

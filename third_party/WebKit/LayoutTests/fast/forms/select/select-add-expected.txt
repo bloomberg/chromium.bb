@@ -2,7 +2,6 @@ Test select.add() method
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test select
 PASS addOption(0) is "X,0,1,2"
 PASS addOption(1) is "0,X,1,2"

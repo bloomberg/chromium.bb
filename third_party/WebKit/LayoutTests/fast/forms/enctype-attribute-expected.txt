@@ -4,10 +4,12 @@ Missing value default:
 PASS form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.getAttribute("enctype") is null
 
+
 Invalid value default:
 PASS form1.enctype = "foobar"; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.getAttribute("enctype") is "foobar"
 PASS form1.setAttribute("enctype", "baz"); form1.enctype is "application/x-www-form-urlencoded"
+
 
 Text and its subtypes:
 PASS form1.enctype = "text"; form1.enctype is "application/x-www-form-urlencoded"
@@ -33,6 +35,7 @@ PASS form1.enctype = "text/vcard"; form1.enctype is "application/x-www-form-urle
 PASS form1.enctype = "text/xml"; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.enctype = "text/xml-external-parsed-entity"; form1.enctype is "application/x-www-form-urlencoded"
 
+
 Multipart and its subtypes:
 PASS form1.enctype = "multipart"; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.enctype = "form-data"; form1.enctype is "application/x-www-form-urlencoded"
@@ -49,6 +52,7 @@ PASS form1.enctype = "multipart/related"; form1.enctype is "application/x-www-fo
 PASS form1.enctype = "multipart/report"; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.enctype = "multipart/signed"; form1.enctype is "application/x-www-form-urlencoded"
 
+
 Valid values:
 PASS form1.enctype = "Text/Plain"; form1.enctype is "text/plain"
 PASS form1.getAttribute("enctype") is "Text/Plain"
@@ -57,12 +61,14 @@ PASS form1.enctype = "Multipart/Form-Data"; form1.enctype is "multipart/form-dat
 PASS form1.getAttribute("enctype") is "Multipart/Form-Data"
 PASS form1.setAttribute("enctype", "Multipart/Form-Data"); form1.enctype is "multipart/form-data"
 
+
 Values with whitespace:
 PASS form1.enctype = "  multipart/form-data"; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.getAttribute("enctype") is "  multipart/form-data"
 PASS form1.enctype = "multipart/form-data  "; form1.enctype is "application/x-www-form-urlencoded"
 PASS form1.getAttribute("enctype") is "multipart/form-data  "
 PASS form1.enctype = "application/x-www-form-urlencoded "; form1.enctype is "application/x-www-form-urlencoded"
+
 
 PASS successfullyParsed is true
 

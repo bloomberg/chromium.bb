@@ -2,7 +2,6 @@ Test to make sure shadow nodes are not exposed.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS getSelection().anchorNode is null
 PASS getSelection().anchorOffset is 0
 PASS getSelection().focusNode is null
@@ -16,6 +15,7 @@ PASS getSelection().extentOffset is 0
 PASS getSelection().type is 'None'
 
 Add an input element.
+
 PASS getSelection().anchorNode is container
 PASS getSelection().anchorOffset is 1
 PASS getSelection().focusNode is container
@@ -33,6 +33,7 @@ PASS getSelection().extentOffset is 1
 PASS getSelection().type is "Range"
 
 Add a textarea element.
+
 PASS getSelection().anchorNode is container
 PASS getSelection().anchorOffset is 2
 PASS getSelection().focusNode is container
@@ -48,6 +49,7 @@ PASS getSelection().baseOffset is 2
 PASS getSelection().extentNode is container
 PASS getSelection().extentOffset is 2
 PASS getSelection().type is "Range"
+
 
 PASS successfullyParsed is true
 

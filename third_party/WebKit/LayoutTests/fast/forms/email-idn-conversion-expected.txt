@@ -2,7 +2,6 @@ Tests ascii-unicode conversion of IDN email addresses on input type=email.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Values from UI
 PASS i.value is "foo@xn--maana-pta.com"
 PASS getUserAgentShadowTextContent(i) is "foo@mañana.com"
@@ -36,4 +35,5 @@ PASS i.validity.typeMismatch is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

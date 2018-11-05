@@ -2,7 +2,6 @@ Tests for .valueAsNumber with <input type=month>.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS valueAsNumberFor("") is Number.NaN
 PASS valueAsNumberFor("1969-01") is -12
 PASS valueAsNumberFor("1969-12") is -1

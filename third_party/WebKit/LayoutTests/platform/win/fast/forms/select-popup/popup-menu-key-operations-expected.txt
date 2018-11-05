@@ -1,4 +1,9 @@
- 
+foo
+bar
+baz
+garply
+abc
+xyz
 ==> Arrow keys + Enter
 PASS picker._selectElement.value is "1"
 PASS menu.value is "bar"

@@ -2,7 +2,6 @@ Test for opening select popup and closing.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 These tests run specfically for Linux and Windows
 Test opening and closing of popup using alt and down arrow key
 PASS internals.isSelectPopupVisible(popup) is true
@@ -24,3 +23,5 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+One
+Two

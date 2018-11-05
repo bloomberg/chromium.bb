@@ -2,7 +2,6 @@ Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Focused: Month
 Focused: Month
 PASS Received MarkDirty
@@ -19,4 +18,5 @@ PASS Received MarkDirty
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

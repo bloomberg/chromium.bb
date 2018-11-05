@@ -2,7 +2,6 @@ Tests for HTMLTextAreaElement.maxLength behaviors.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS textArea.maxLength is -1
 PASS textArea.maxLength is -1
 PASS textArea.maxLength is -1
@@ -43,4 +42,5 @@ PASS textArea.value is "ABC"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

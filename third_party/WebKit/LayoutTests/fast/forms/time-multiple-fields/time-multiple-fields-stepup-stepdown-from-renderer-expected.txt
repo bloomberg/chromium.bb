@@ -2,7 +2,6 @@ Check stepping-up and -down for time input fields from renderer. No cases of emp
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Function arguments are (value, step, min, max, [keySequence]).
 Normal cases
 PASS stepUp("07:13", null, null, null) is "07:14"
@@ -112,6 +111,7 @@ PASS stepUp("07:35", 600, "07:10", "07:35") is "07:10"
 PASS stepDown("07:35", 600, "07:10", "07:35") is "07:30"
 PASS stepUp("07:10", 1, "07:10", "08:20") is "07:11"
 PASS stepDown("07:10", 1, "07:10", "08:20") is "07:09"
+
 
 PASS successfullyParsed is true
 

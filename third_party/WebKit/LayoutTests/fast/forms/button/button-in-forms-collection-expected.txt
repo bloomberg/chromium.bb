@@ -6,8 +6,10 @@ PASS document.test.bla.value is "Button2"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 The following tests for regression against 4405: <button> not listed in form collections. You should see a series of lines starting with PASS.
 
-  Button2
+ Button2
 
 

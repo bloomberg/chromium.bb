@@ -1,4 +1,5 @@
-
+one
+two
 1) Initial there is no selected options.
 PASS optionsLength is 2
 PASS selectedOptions.length is 0
@@ -44,6 +45,7 @@ PASS optionsLength is 2
 PASS selectedOptions.length is 2
 PASS selectedOptions[0].text is 'one'
 PASS selectedOptions[1].text is 'two'
+
 
 PASS successfullyParsed is true
 

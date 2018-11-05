@@ -1,4 +1,3 @@
-
 Success: document.queryCommandEnabled("BackColor") == false
 Success: document.queryCommandEnabled("Bold") == false
 Success: document.queryCommandEnabled("Copy") == true

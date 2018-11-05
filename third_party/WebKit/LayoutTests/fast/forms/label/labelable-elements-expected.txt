@@ -3,7 +3,6 @@ Test labelable elements have labels attribute and others do not.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Labelable: button [object HTMLButtonElement]
 PASS element.labels.length is 1
 

@@ -13,6 +13,7 @@ PASS document.activeElement.id is not "control"
 textarea
 PASS document.activeElement.id is not "control"
 
+
 a
 PASS document.activeElement.id is "control"
 a[href]

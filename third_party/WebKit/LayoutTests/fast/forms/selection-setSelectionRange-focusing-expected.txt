@@ -2,7 +2,6 @@ Test for crbug.com/393504 :HTMLTextAreaElement.setSelectionRange should not chan
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.activeElement is document.body
 PASS document.activeElement is document.body
 PASS document.activeElement is document.body
@@ -11,4 +10,5 @@ PASS document.activeElement is document.body
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
  

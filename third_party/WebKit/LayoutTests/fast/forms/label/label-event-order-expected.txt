@@ -2,7 +2,6 @@ Event order for a labeled control should be "focus" then "change"
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 "focus" event has been dispatched.
 PASS changeCount is 0
 "change" event has been dispatched.

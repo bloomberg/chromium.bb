@@ -1,8 +1,6 @@
-
 80009 Introduce Decimal arithmetic to fix rounding errors in number/range input types
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS createSample("0.1", "0.1", "1e-0").value is "0.1"
 PASS createSample("0.1", "0.1", "1e-0").valueAsNumber is 0.1

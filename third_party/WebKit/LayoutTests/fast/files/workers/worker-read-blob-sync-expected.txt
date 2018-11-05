@@ -1,4 +1,3 @@
-
 Received files in worker
 Test reading a blob containing non-existent file
 result size: 0

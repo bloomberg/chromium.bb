@@ -7,6 +7,7 @@ PASS rb3.checked is true
 PASS rb4.checked is false
 PASS rb5.checked is true
 
+
 - Remove form attr from rb3, verify that rb5 becomes unchecked state
 PASS rb1.checked is false
 PASS rb2.checked is false
@@ -16,5 +17,6 @@ PASS rb5.checked is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  
+
+ 
   

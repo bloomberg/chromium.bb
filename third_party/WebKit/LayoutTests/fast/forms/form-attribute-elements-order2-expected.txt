@@ -14,6 +14,7 @@ PASS owner.elements[0] is input1
 PASS owner.elements[1] is input2
 PASS owner.elements[2] is input3
 
+
 - Test for inserting/removing a form-associated element without form attribute.
 PASS owner.elements.length is 4
 PASS owner.elements[0] is before
@@ -25,6 +26,7 @@ PASS owner.elements[0] is before
 PASS owner.elements[1] is inner
 PASS owner.elements[2] is inner2
 PASS owner.elements[3] is after
+
 
 - Test for inserting/removing a form-associated element with form attribute.
 PASS owner.elements.length is 6
@@ -44,6 +46,4 @@ PASS owner.elements[5] is after2
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
-
 

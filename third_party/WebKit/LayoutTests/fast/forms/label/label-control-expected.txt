@@ -2,7 +2,6 @@ Test that label.control references the correct form control, or null if there is
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Find a control that is the first descendent in a label
 PASS document.getElementById('test1').control.id is 'inputId1'
 Find a control based on a label with valid 'for' attribute
@@ -42,10 +41,4 @@ PASS document.getElementById('test13').control is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
-
-
-
-
-
 

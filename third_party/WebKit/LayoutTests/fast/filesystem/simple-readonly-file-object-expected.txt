@@ -2,7 +2,6 @@ Test readonly attributes of File.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 webkitRequestFileSystem(TEMPORARY, 100, fileSystemCallback, errorCallback);
 removeAllInDirectory(fileSystem.root, createTestFile, errorCallback);
 fileSystem.root.getFile(testFileName, {create:true}, getFileFromEntry, errorCallback);

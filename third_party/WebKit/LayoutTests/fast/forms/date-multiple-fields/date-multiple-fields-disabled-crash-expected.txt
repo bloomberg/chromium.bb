@@ -3,9 +3,9 @@ Date input with invalid initial value should not dispatch a change event on disa
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS changeEventCounter is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

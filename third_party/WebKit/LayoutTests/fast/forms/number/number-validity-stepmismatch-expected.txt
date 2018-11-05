@@ -2,7 +2,6 @@ Check stepMismatch results for number type
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Number type
 Empty values
 PASS stepMismatchFor("", null, null) is false
@@ -35,4 +34,5 @@ PASS stepMismatchFor("1", "2", "0", true) is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

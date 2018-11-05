@@ -2,4 +2,5 @@ Test for http://bugs.webkit.org/show_bug.cgi?id=13857 REGRESSION: onChange funct
 
 SUCCESS
 
-
+One
+Two

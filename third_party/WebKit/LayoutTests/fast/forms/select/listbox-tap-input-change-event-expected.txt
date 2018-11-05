@@ -2,7 +2,6 @@ Tapping on listbox items should fire an input and a change event.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS changeEventCounter is 0
 PASS inputEventCounter is 0
 PASS changeEventCounter is 1
@@ -11,3 +10,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+1
+2
+3

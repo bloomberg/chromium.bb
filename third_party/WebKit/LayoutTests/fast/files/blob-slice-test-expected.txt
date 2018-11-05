@@ -2,7 +2,6 @@ Test Blob.slice().
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Blob .slice(2, 3)
 PASS blobContents is "2"
 File .slice(2, 3)

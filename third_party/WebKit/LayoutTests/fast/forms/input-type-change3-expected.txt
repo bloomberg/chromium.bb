@@ -2,7 +2,6 @@ Tests for writing and reading .type property of HTMLInputElement.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS input.type is "text"
 PASS input.getAttribute('type') is null
 PASS input.type for "text" is correctly "text".

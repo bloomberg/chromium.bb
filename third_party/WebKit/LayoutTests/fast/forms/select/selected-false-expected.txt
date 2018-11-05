@@ -1,4 +1,6 @@
-
+1
+2
+3
 PASS selectElement.selectedIndex = 0; selectElement.selectedIndex is 0
 PASS optionElements[0].selected is true
 PASS optionElements[1].selected is false

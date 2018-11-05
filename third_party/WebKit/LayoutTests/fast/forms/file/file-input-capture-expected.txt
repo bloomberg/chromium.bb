@@ -2,7 +2,6 @@ Tests the capture attribute of <input type='file'>
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 FAIL 'capture' in input should be true. Was false.
 FAIL input.capture should be false (of type boolean). Was undefined (of type undefined).
 PASS input.hasAttribute('capture') is false

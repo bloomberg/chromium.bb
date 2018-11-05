@@ -2,7 +2,6 @@ Tests that setting the .length on an HTMLSelectElement works in the presence of 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS sel.length is 4
 PASS sel.length is 2
 PASS sel.options.item(0).id is "a"
@@ -11,3 +10,5 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+a
+b

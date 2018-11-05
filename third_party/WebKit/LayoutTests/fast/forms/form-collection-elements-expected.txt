@@ -2,7 +2,6 @@ This test lists all the elements of a form per http://www.whatwg.org/specs/web-a
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 This test does not add object element as a listed element. Separate test will cover that.
 PASS owner.elements.length is 22
 PASS owner.elements[0].id is 'button1'
@@ -31,4 +30,4 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
-
+option1

@@ -2,7 +2,6 @@ Test checkValidity correctness on input select and textarea element after clonin
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS input.checkValidity() is true
 PASS clonedInput.checkValidity() is true
 PASS clonedInputDeep.checkValidity() is true

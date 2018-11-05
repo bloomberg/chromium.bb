@@ -2,7 +2,6 @@ Tests for select not showing option element with display: none
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS select1.value is "a"
 PASS select1.value is "c"
 PASS select2.value is "a"
@@ -16,4 +15,25 @@ PASS select5.value is "e"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-        
+
+a
+b
+c
+d
+a
+b
+c
+d
+a
+b
+c
+d
+a
+b
+c
+d
+a
+b
+c
+d
+e

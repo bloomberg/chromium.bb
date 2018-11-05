@@ -2,7 +2,6 @@ Checks input value is preserved after backward and forward
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Went back to a page. Checking a form control which had a full value:
 PASS "12012-10-09T01:23" is "12012-10-09T01:23"
 Went back to a page. Checking a form control which had a partial value:
@@ -12,7 +11,9 @@ PASS "0001-11-17T23:55" is "0001-11-17T23:55"
 Went forward to a page. Checking a form control which had a partial value:
 PASS "mm/31/yyyy 12:-- PM" is "mm/31/yyyy 12:-- PM"
 
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

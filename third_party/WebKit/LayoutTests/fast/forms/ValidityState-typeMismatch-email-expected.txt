@@ -2,7 +2,6 @@ This test aims to check for typeMismatch flag and sanitization with type=email i
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Valid single addresses when 'multiple' attribute is not set.
 PASS "something@something.com" is a valid email address. 
 PASS "someone@localhost.localdomain" is a valid email address. 

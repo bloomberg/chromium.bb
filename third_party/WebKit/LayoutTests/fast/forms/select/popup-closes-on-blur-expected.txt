@@ -2,10 +2,12 @@ Test for http://bugs.webkit.org/show_bug.cgi?id=113220: ensures select popup clo
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.isSelectPopupVisible(popup) is true
 PASS internals.isSelectPopupVisible(popup) is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  
+
+One
+Two
+

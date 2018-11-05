@@ -10,7 +10,6 @@ This test checks validity.patternMismatch.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS patternMismatchFor("simple") is false
 PASS patternMismatchFor("no-pattern-and-no-value") is false
 PASS patternMismatchFor("ip-address") is false

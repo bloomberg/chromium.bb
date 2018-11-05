@@ -2,7 +2,6 @@ Check stepMismatch results for type=week.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Empty values
 PASS stepMismatchFor("", null, null) is false
 PASS stepMismatchFor("", "2", "1970-W02") is false
@@ -35,4 +34,5 @@ PASS stepMismatchFor("2010-W03", "2", "2010-W02", true) is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

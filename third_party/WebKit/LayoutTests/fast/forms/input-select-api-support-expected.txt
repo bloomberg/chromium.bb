@@ -2,7 +2,6 @@ Test to show select() support for Email, Number, Date, Month, Week, Time, DateTi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.getElementById("email").select() did not throw exception.
 PASS document.getElementById("number").select() did not throw exception.
 PASS document.getElementById("date").select() did not throw exception.
@@ -15,4 +14,5 @@ PASS document.getElementById("file").select() did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
         

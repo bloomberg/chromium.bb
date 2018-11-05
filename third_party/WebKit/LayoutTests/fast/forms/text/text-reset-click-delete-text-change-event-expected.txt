@@ -2,7 +2,6 @@ In a text field after reset when whole text is deleted i.e. text value is empty.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Press reset button
 PASS text.value is "value"
 PASS changeEventCounter is 0
@@ -13,4 +12,5 @@ PASS changeEventCounter is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
  

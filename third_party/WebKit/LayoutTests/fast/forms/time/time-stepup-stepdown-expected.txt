@@ -2,7 +2,6 @@ Check stepUp() and stepDown() behavior for type=time.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Invalid value
 PASS stepUp("", null, null) is "00:01"
 PASS stepDown("", null, null) is "00:00"
@@ -31,9 +30,11 @@ PASS stepDown("20:13", "1", "20:13") is "20:13:00"
 PASS stepUp("23:59", null, null) is "23:59"
 PASS stepDown("00:00", null, null) is "00:00"
 
+
 Invalid min/max:
 PASS setInputAttributes("10:00", "09:00", "60", "08:00"); input.stepUp(); input.value is "08:00"
 PASS inputWithInitialValue.stepUp(); inputWithInitialValue.value is "12:34"
+
 
 Step-mismatched initial values
 PASS stepUp("20:13", "86400.000", null, 65536) is "00:00"
@@ -42,6 +43,7 @@ PASS stepUp("20:13", "600", null, 1) is "20:20"
 PASS stepUp("20:13", "600", null, 2) is "20:30"
 PASS stepDown("20:13", "600", null, 1) is "20:10"
 PASS stepDown("20:13", "600", null, 2) is "20:00"
+
 
 PASS successfullyParsed is true
 

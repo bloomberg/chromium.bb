@@ -2,7 +2,6 @@ Tests for writing and reading .type property of HTMLInputElement.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS input.type for "datetime-local" is correctly "datetime-local".
 PASS input.type for "DATETIME-LOCAL" is correctly "datetime-local".
 PASS input.type for " datetime-local " is correctly "text".
@@ -11,4 +10,5 @@ PASS input.type for "datetime_local" is correctly "text".
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

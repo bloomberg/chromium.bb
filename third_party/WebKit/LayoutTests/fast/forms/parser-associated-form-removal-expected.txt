@@ -2,9 +2,9 @@ Form controls associated with a form by the parser should be reset when that for
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Removing a form from the document while leaving its associated element in...
 PASS document.querySelector("input").form is null
+
 
 Removing a form and its associated element...
 PASS table2.querySelector("input").form is non-null.

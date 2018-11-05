@@ -12,8 +12,10 @@ PASS radioNodeList[1].value is '123'
 PASS radioNodeList[2].value is 'inputRadioValue'
 PASS radioNodeList[3].value is 'buttonValue'
 
+
 Changing the input value to check RadioNodeList is live view of FormCollection
 PASS radioNodeList[1].value is '456'
+
 
 Checking value IDL attribute on the RadioNodeList
 PASS radioNodeList.value is ""
@@ -23,18 +25,22 @@ PASS radioNodeList[2].type is 'radio'
 PASS radioNodeList.value is ""
 PASS radioNodeList[2].checked = true; radioNodeList.value is 'inputRadioValue'
 
+
 Check RadioNodeList is updated after adding a new element
 PASS owner.appendChild(newElement); radioNodeList.length is 5
 PASS radioNodeList[4].value is 'new element'
+
 
 Check RadioNodeList is updated after remove an element
 PASS owner.removeChild(newElement); radioNodeList.length is 4
 PASS radioNodeList[3].value is 'buttonValue'
 
+
 Check RadioNodeList is updated after adding a new element
 PASS container.appendChild(nonSubtreeElement); radioNodeList.length is 5
 PASS owner.elements.length is 23
 PASS radioNodeList[4].value is 'non subtree element'
+
 
 Check RadioNodeList is updated after change in id, type and checked state of an element
 PASS radioNodeList.length is 5
@@ -44,6 +50,7 @@ PASS elementsList[13].checked = false; radioNodeList.value is ""
 PASS elementsList[13].checked = true; radioNodeList.value is 'inputRadioValue'
 PASS elementsList[13].type = "date"; radioNodeList.value is ''
 
+
 Check second RadioNodeList is also created properly
 PASS radioNodeList2.length is 3
 PASS radioNodeList2[0].type is 'text'
@@ -52,8 +59,10 @@ PASS radioNodeList2[2].type is 'reset'
 After changing the id
 PASS radioNodeList2.length is 2
 
+
 Check that object element also reflects in RadioNodeList.
 PASS radioNodeList.length is 5
+
 
 Check that object element does not reflect in RadioNodeList if its owner form is not present.
 PASS container.appendChild(nonSubtreeObjectElement); radioNodeList.length is 5

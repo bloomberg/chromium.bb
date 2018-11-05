@@ -2,7 +2,6 @@ Test for the datalist element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test 1: Insert new input after form.
 PASS form.elements.length is 1
 PASS form.elements[0] is input

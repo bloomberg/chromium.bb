@@ -2,7 +2,6 @@ Test Date/Time input field dispatches focusin event when pressed tab
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.activeElement.id is "text"
 PASS dispatchedFocusInEvent is 1
 PASS dispatchedDOMFocusInEvent is 1
@@ -17,4 +16,5 @@ PASS dispatchedDOMFocusInEvent is 3
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
   

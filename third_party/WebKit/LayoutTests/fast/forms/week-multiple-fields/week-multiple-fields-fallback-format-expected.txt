@@ -2,7 +2,6 @@ Checks incomplete datetime formats are rejected.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Valid format
 PASS getUserAgentShadowTextContent(input) is "Week09 1999"
 Invalid format, fallback to yyyy-'W'ww
@@ -11,4 +10,5 @@ PASS getUserAgentShadowTextContent(input) is "1999-W09"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 
