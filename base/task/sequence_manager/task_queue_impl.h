@@ -239,6 +239,13 @@ class BASE_EXPORT TaskQueueImpl {
   // and this queue can be safely deleted on any thread.
   bool IsUnregistered() const;
 
+  // Delete all tasks within this TaskQueue.
+  void DeletePendingTasks();
+
+  // Whether this task queue owns any tasks. Task queue being disabled doesn't
+  // affect this.
+  bool HasTasks() const;
+
   // Disables queue for testing purposes, when a QueueEnabledVoter can't be
   // constructed due to not having TaskQueue.
   void SetQueueEnabledForTest(bool enabled);
@@ -278,6 +285,7 @@ class BASE_EXPORT TaskQueueImpl {
     bool empty() const { return queue_.empty(); }
     size_t size() const { return queue_.size(); }
     const Task& top() const { return queue_.top(); }
+    void swap(DelayedIncomingQueue& other);
 
     bool has_pending_high_resolution_tasks() const {
       return pending_high_res_tasks_;

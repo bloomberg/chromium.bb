@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
@@ -151,7 +152,7 @@ void ThreadControllerImpl::RestoreDefaultTaskRunner() {
   message_loop_->SetTaskRunner(message_loop_task_runner_);
 }
 
-void ThreadControllerImpl::SetMessageLoop(MessageLoop* message_loop) {
+void ThreadControllerImpl::BindToCurrentThread(MessageLoop* message_loop) {
   DCHECK(!message_loop_);
   DCHECK(message_loop);
 #if DCHECK_IS_ON()
@@ -160,6 +161,11 @@ void ThreadControllerImpl::SetMessageLoop(MessageLoop* message_loop) {
   message_loop_ = message_loop;
   task_runner_ = message_loop->task_runner();
   message_loop_task_runner_ = message_loop->task_runner();
+}
+
+void ThreadControllerImpl::BindToCurrentThread(
+    std::unique_ptr<MessagePump> message_pump) {
+  NOTREACHED();
 }
 
 void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
@@ -298,6 +304,14 @@ void ThreadControllerImpl::OnExitNestedRunLoop() {
 
 void ThreadControllerImpl::SetWorkBatchSize(int work_batch_size) {
   main_sequence_only().work_batch_size_ = work_batch_size;
+}
+
+void ThreadControllerImpl::SetTaskExecutionAllowed(bool allowed) {
+  NOTREACHED();
+}
+
+bool ThreadControllerImpl::IsTaskExecutionAllowed() const {
+  return true;
 }
 
 }  // namespace internal

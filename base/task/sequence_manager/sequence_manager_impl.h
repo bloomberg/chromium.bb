@@ -96,9 +96,12 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       MessageLoop* message_loop);
 
+  static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump();
+
   // SequenceManager implementation:
   void BindToCurrentThread() override;
   void BindToMessageLoop(MessageLoop* message_loop) override;
+  void BindToMessagePump(std::unique_ptr<MessagePump> message_loop) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
   void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
@@ -119,11 +122,16 @@ class BASE_EXPORT SequenceManagerImpl
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
+  void DeletePendingTasks() override;
+  bool HasTasks() override;
+  void SetTaskExecutionAllowed(bool allowed) override;
+  bool IsTaskExecutionAllowed() const override;
+  bool IsIdleForTesting() const override;
 
   // Implementation of SequencedTaskSource:
   Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
-  TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;
+  TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
   bool HasPendingHighResolutionTasks() override;
 
   // Requests that a task to process work is posted on the main task runner.
@@ -254,6 +262,8 @@ class BASE_EXPORT SequenceManagerImpl
 
     bool task_was_run_on_quiescence_monitored_queue = false;
     bool nesting_observer_registered_ = false;
+
+    bool task_execution_allowed_ = true;
 
     // Due to nested runloops more than one task can be executing concurrently.
     std::list<ExecutingTask> task_execution_stack;

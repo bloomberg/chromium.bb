@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/task/sequence_manager/thread_controller_impl.h"
+#include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/time/default_tick_clock.h"
@@ -34,6 +35,10 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
 std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
     MessageLoop* message_loop) {
   return internal::SequenceManagerImpl::CreateUnbound(message_loop);
+}
+
+std::unique_ptr<SequenceManager> CreateUnboundSequenceManagerWithPump() {
+  return internal::SequenceManagerImpl::CreateUnboundWithPump();
 }
 
 namespace internal {
@@ -143,18 +148,32 @@ SequenceManagerImpl::CreateOnCurrentThread() {
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
     MessageLoop* message_loop) {
-  return WrapUnique(
-      new SequenceManagerImpl(internal::ThreadControllerImpl::Create(
-          message_loop, DefaultTickClock::GetInstance())));
+  return WrapUnique(new SequenceManagerImpl(ThreadControllerImpl::Create(
+      message_loop, DefaultTickClock::GetInstance())));
+}
+
+// static
+std::unique_ptr<SequenceManagerImpl>
+SequenceManagerImpl::CreateUnboundWithPump() {
+  return WrapUnique(new SequenceManagerImpl(
+      ThreadControllerWithMessagePumpImpl::CreateUnbound(
+          DefaultTickClock::GetInstance())));
 }
 
 void SequenceManagerImpl::BindToMessageLoop(MessageLoop* message_loop) {
-  controller_->SetMessageLoop(message_loop);
+  controller_->BindToCurrentThread(message_loop);
+  CompleteInitializationOnBoundThread();
+}
+
+void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
+  controller_->BindToCurrentThread(std::move(pump));
   CompleteInitializationOnBoundThread();
 }
 
 void SequenceManagerImpl::BindToCurrentThread() {
-  associated_thread_->BindToCurrentThread();
+  // Associated thread is bound early for thread controller with message pump.
+  if (associated_thread_->thread_id == kInvalidThreadId)
+    associated_thread_->BindToCurrentThread();
 }
 
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
@@ -427,7 +446,7 @@ void SequenceManagerImpl::DidRunTask() {
     CleanUpQueues();
 }
 
-TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) {
+TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
   // If the selector has non-empty queues we trivially know there is immediate
@@ -749,6 +768,50 @@ bool SequenceManagerImpl::ShouldRecordCPUTimeForTask() {
 const SequenceManager::MetricRecordingSettings&
 SequenceManagerImpl::GetMetricRecordingSettings() const {
   return metric_recording_settings_;
+}
+
+// TODO(altimin): Ensure that this removes all pending tasks.
+void SequenceManagerImpl::DeletePendingTasks() {
+  DCHECK(main_thread_only().task_execution_stack.empty())
+      << "Tasks should be deleted outside RunLoop";
+
+  for (TaskQueueImpl* task_queue : main_thread_only().active_queues)
+    task_queue->DeletePendingTasks();
+  for (const auto& it : main_thread_only().queues_to_gracefully_shutdown)
+    it.first->DeletePendingTasks();
+  for (const auto& it : main_thread_only().queues_to_delete)
+    it.first->DeletePendingTasks();
+}
+
+bool SequenceManagerImpl::HasTasks() {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+
+  for (TaskQueueImpl* task_queue : main_thread_only().active_queues) {
+    if (task_queue->HasTasks())
+      return true;
+  }
+  for (const auto& it : main_thread_only().queues_to_gracefully_shutdown) {
+    if (it.first->HasTasks())
+      return true;
+  }
+  for (const auto& it : main_thread_only().queues_to_delete) {
+    if (it.first->HasTasks())
+      return true;
+  }
+  return false;
+}
+
+void SequenceManagerImpl::SetTaskExecutionAllowed(bool allowed) {
+  controller_->SetTaskExecutionAllowed(allowed);
+}
+
+bool SequenceManagerImpl::IsTaskExecutionAllowed() const {
+  return controller_->IsTaskExecutionAllowed();
+}
+
+bool SequenceManagerImpl::IsIdleForTesting() const {
+  LazyNow lazy_now(controller_->GetClock());
+  return DelayTillNextTask(&lazy_now) != TimeDelta();
 }
 
 NOINLINE bool SequenceManagerImpl::Validate() {

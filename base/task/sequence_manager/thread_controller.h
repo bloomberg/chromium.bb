@@ -14,6 +14,7 @@
 namespace base {
 
 class MessageLoop;
+class MessagePump;
 class TickClock;
 struct PendingTask;
 
@@ -68,9 +69,20 @@ class ThreadController {
   // Has no effect on some platforms.
   virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
 
-  // Completes delayed initialization of a ThreadControllers created with a null
-  // MessageLoop. May only be called once.
-  virtual void SetMessageLoop(MessageLoop* message_loop) = 0;
+  // Completes delayed initialization of unbound ThreadControllers.
+  // BindToCurrentThread(MessageLoop*) or BindToCurrentThread(MessagePump*)
+  // may only be called once.
+  virtual void BindToCurrentThread(MessageLoop* message_loop) = 0;
+
+  // Completes delayed initialization of unbound ThreadControllers.
+  // BindToCurrentThread(MessageLoop*) or BindToCurrentThread(MessagePump*)
+  // may only be called once.
+  virtual void BindToCurrentThread(
+      std::unique_ptr<MessagePump> message_pump) = 0;
+
+  virtual void SetTaskExecutionAllowed(bool allowed) = 0;
+
+  virtual bool IsTaskExecutionAllowed() const = 0;
 
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager
