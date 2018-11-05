@@ -206,6 +206,7 @@ void WorkerThreadScheduler::Shutdown() {
       "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
+  idle_helper_.Shutdown();
   helper()->Shutdown();
 }
 

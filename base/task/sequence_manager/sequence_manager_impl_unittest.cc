@@ -3349,12 +3349,15 @@ TEST_P(SequenceManagerTest, TaskQueueTaskRunnerDetach) {
 
   // Create without a sequence manager.
   std::unique_ptr<TimeDomain> time_domain =
-      std::make_unique<internal::RealTimeDomain>();
+      std::make_unique<MockTimeDomain>(TimeTicks());
   std::unique_ptr<TaskQueueImpl> queue2 = std::make_unique<TaskQueueImpl>(
       nullptr, time_domain.get(), TaskQueue::Spec("stub"));
   scoped_refptr<SingleThreadTaskRunner> task_runner2 =
       queue2->CreateTaskRunner(0);
   EXPECT_FALSE(task_runner2->PostTask(FROM_HERE, BindOnce(&NopTask)));
+
+  // Tidy up.
+  queue2->UnregisterTaskQueue();
 }
 
 TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {

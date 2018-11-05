@@ -186,7 +186,7 @@ TEST_F(TimeDomainTest, SetNextDelayedDoWork_OnlyCalledForEarlierTasks) {
 }
 
 TEST_F(TimeDomainTest, UnregisterQueue) {
-  std::unique_ptr<TaskQueueImplForTest> task_queue2_ =
+  std::unique_ptr<TaskQueueImplForTest> task_queue2 =
       std::make_unique<TaskQueueImplForTest>(nullptr, time_domain_.get(),
                                              TaskQueue::Spec("test"));
 
@@ -196,8 +196,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, wake_up1)).Times(1);
   task_queue_->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up1, 0});
   TimeTicks wake_up2 = now + TimeDelta::FromMilliseconds(100);
-  task_queue2_->SetDelayedWakeUpForTesting(
-      internal::DelayedWakeUp{wake_up2, 0});
+  task_queue2->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up2, 0});
 
   EXPECT_EQ(task_queue_.get(), time_domain_->NextScheduledTaskQueue());
 
@@ -206,16 +205,21 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, wake_up2)).Times(1);
 
   time_domain_->UnregisterQueue(task_queue_.get());
-  task_queue_ = std::unique_ptr<TaskQueueImplForTest>();
-  EXPECT_EQ(task_queue2_.get(), time_domain_->NextScheduledTaskQueue());
+  EXPECT_EQ(task_queue2.get(), time_domain_->NextScheduledTaskQueue());
+
+  task_queue_->UnregisterTaskQueue();
+  task_queue_ = nullptr;
 
   testing::Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, TimeTicks::Max()))
       .Times(1);
 
-  time_domain_->UnregisterQueue(task_queue2_.get());
+  time_domain_->UnregisterQueue(task_queue2.get());
   EXPECT_FALSE(time_domain_->NextScheduledTaskQueue());
+
+  task_queue2->UnregisterTaskQueue();
+  task_queue2 = nullptr;
 }
 
 TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
@@ -369,6 +373,10 @@ TEST_F(TimeDomainTest, HighResolutionWakeUps) {
   time_domain_->SetNextWakeUpForQueue(
       &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
   EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Tidy up.
+  q1.UnregisterTaskQueue();
+  q2.UnregisterTaskQueue();
 }
 
 }  // namespace sequence_manager
