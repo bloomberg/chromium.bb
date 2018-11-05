@@ -1226,11 +1226,18 @@ void SimpleURLLoaderImpl::DownloadAsStream(
 
 void SimpleURLLoaderImpl::SetOnRedirectCallback(
     const OnRedirectCallback& on_redirect_callback) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+
   on_redirect_callback_.push_back(on_redirect_callback);
+  DCHECK(on_redirect_callback);
 }
 
 void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
     OnResponseStartedCallback on_response_started_callback) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+
   on_response_started_callback_ = std::move(on_response_started_callback);
   DCHECK(on_response_started_callback_);
 }
