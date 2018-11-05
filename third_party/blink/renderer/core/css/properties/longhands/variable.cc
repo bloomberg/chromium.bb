@@ -77,4 +77,8 @@ void Variable::ApplyValue(StyleResolverState& state,
   }
 }
 
+bool Variable::IsStaticInstance(const CSSProperty& property) {
+  return &property == &GetCSSPropertyVariable();
+}
+
 }  // namespace blink
