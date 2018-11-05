@@ -205,31 +205,27 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreTheRemoved) {
   EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }
 
-TEST_F(ImagePaintTimingDetectorTest,
-       LargestImagePaint_OneSwapPromiseForOneFrame) {
+// This test dipicts a situation when a smaller image has loaded, but a larger
+// image is loading. When we call analyze, the result will be empty because
+// we don't know when the largest image will finish loading. We wait until
+// next analysis to make the judgement again.
+// This bahavior is the same with Last Image Paint as well.
+TEST_F(ImagePaintTimingDetectorTest, DiscardAnalysisWhenLargestIsLoading) {
   SetBodyInnerHTML(R"HTML(
     <div id="parent">
-      <img id="1"></img>
-      <img id="2"></img>
+      <img height="5" width="5" id="1"></img>
+      <img height="9" width="9" id="2"></img>
     </div>
   )HTML");
   SetImageAndPaint("1", 5, 5);
   GetFrameView().UpdateAllLifecyclePhases();
+  ImageRecord* record;
+  InvokeCallback();
+  record = FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
 
   SetImageAndPaint("2", 9, 9);
   GetFrameView().UpdateAllLifecyclePhases();
-
-  InvokeCallback();
-  ImageRecord* record;
-  record = FindLargestPaintCandidate();
-  EXPECT_TRUE(record);
-#if defined(OS_MACOSX)
-  EXPECT_EQ(record->first_size, 90);
-#else
-  EXPECT_EQ(record->first_size, 81);
-#endif
-  EXPECT_TRUE(record->first_paint_time_after_loaded.is_null());
-
   InvokeCallback();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
@@ -239,6 +235,34 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_EQ(record->first_size, 81);
 #endif
   EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
+}
+
+// This is to prove that a swap time is assigned only to nodes of the frame who
+// register the swap time. In other words, swap time A should match frame A;
+// swap time B should match frame B.
+TEST_F(ImagePaintTimingDetectorTest, MatchSwapTimeToNodesOfDifferentFrames) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img height="5" width="5" id="smaller"></img>
+      <img height="9" width="9" id="larger"></img>
+    </div>
+  )HTML");
+
+  SetImageAndPaint("larger", 9, 9);
+  GetFrameView().UpdateAllLifecyclePhases();
+  SetImageAndPaint("smaller", 5, 5);
+  GetFrameView().UpdateAllLifecyclePhases();
+  InvokeCallback();
+  // record1 is the larger.
+  ImageRecord* record1 = FindLargestPaintCandidate();
+  const base::TimeTicks record1Time = record1->first_paint_time_after_loaded;
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("larger"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  InvokeCallback();
+  // record2 is the smaller.
+  ImageRecord* record2 = FindLargestPaintCandidate();
+  EXPECT_NE(record1Time, record2->first_paint_time_after_loaded);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
