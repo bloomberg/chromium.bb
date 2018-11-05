@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
@@ -28,6 +29,37 @@ namespace {
 
 void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
   UMA_HISTOGRAM_ENUMERATION("Memory.MovableStringParkingAction", action);
+}
+
+void RecordStatistics(size_t size,
+                      base::TimeDelta duration,
+                      ParkableStringImpl::ParkingAction action) {
+  size_t throughput_mb_s =
+      static_cast<size_t>(size / duration.InSecondsF()) / 1000000;
+  size_t size_kb = size / 1000;
+  if (action == ParkableStringImpl::ParkingAction::kParkedInBackground) {
+    UMA_HISTOGRAM_COUNTS_10000("Memory.ParkableString.Compression.SizeKb",
+                               size_kb);
+    // Size is at least 10kB, and at most ~1MB, and compression throughput
+    // ranges from single-digit MB/s to ~40MB/s depending on the CPU, hence
+    // the range.
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Memory.ParkableString.Compression.Latency", duration,
+        base::TimeDelta::FromMicroseconds(500), base::TimeDelta::FromSeconds(1),
+        100);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Memory.ParkableString.Compression.ThroughputMBps", throughput_mb_s);
+  } else {
+    UMA_HISTOGRAM_COUNTS_10000("Memory.ParkableString.Decompression.SizeKb",
+                               size_kb);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Memory.ParkableString.Decompression.Latency", duration,
+        base::TimeDelta::FromMicroseconds(500), base::TimeDelta::FromSeconds(1),
+        100);
+    // Decompression speed can go up to >500MB/s.
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Memory.ParkableString.Decompression.ThroughputMBps", throughput_mb_s);
+  }
 }
 
 void AsanPoisonString(const String& string) {
@@ -207,6 +239,7 @@ void ParkableStringImpl::Unpark() {
   TRACE_EVENT1("blink", "ParkableStringImpl::Unpark", "size",
                CharactersSizeInBytes());
   DCHECK(compressed_);
+  base::ElapsedTimer timer;
 
   base::StringPiece compressed_string_piece(
       reinterpret_cast<const char*>(compressed_->data()),
@@ -238,12 +271,14 @@ void ParkableStringImpl::Unpark() {
   compressed_ = nullptr;
   string_ = uncompressed;
   state_ = State::kUnparked;
+  ParkableStringManager::Instance().OnUnparked(this, string_.Impl());
 
   bool backgrounded =
       ParkableStringManager::Instance().IsRendererBackgrounded();
-  RecordParkingAction(backgrounded ? ParkingAction::kUnparkedInBackground
-                                   : ParkingAction::kUnparkedInForeground);
-  ParkableStringManager::Instance().OnUnparked(this, string_.Impl());
+  auto action = backgrounded ? ParkingAction::kUnparkedInBackground
+                             : ParkingAction::kUnparkedInForeground;
+  RecordParkingAction(action);
+  RecordStatistics(CharactersSizeInBytes(), timer.Elapsed(), action);
 }
 
 void ParkableStringImpl::OnParkingCompleteOnMainThread(
@@ -282,6 +317,7 @@ void ParkableStringImpl::CompressInBackground(
   TRACE_EVENT1("blink", "ParkableStringImpl::CompressInBackground", "size",
                params->size);
 
+  base::ElapsedTimer timer;
   // Compression touches the string.
   AsanUnpoisonString(params->string->string_);
   base::StringPiece data(reinterpret_cast<const char*>(params->data),
@@ -299,6 +335,7 @@ void ParkableStringImpl::CompressInBackground(
   AsanPoisonString(params->string->string_);
 
   auto* task_runner = params->callback_task_runner.get();
+  size_t size = params->size;
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
       CrossThreadBind(
@@ -309,6 +346,7 @@ void ParkableStringImpl::CompressInBackground(
                                                   std::move(compressed));
           },
           WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed))));
+  RecordStatistics(size, timer.Elapsed(), ParkingAction::kParkedInBackground);
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {
