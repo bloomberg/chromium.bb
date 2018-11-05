@@ -92,21 +92,8 @@ class CoreLibraryInitializer {
       library_path.emplace(kDefaultLibraryPathValue);
     }
 
-    // NOTE: |prefer_own_symbols| on POSIX implies that the library is loaded
-    // with RTLD_DEEPBIND, which is critical given that libmojo_core.so links
-    // against base's allocator shim. Essentially, this ensures that mojo_core
-    // internals get their own heap, and this is OK since heap pointer ownership
-    // is never passed across the ABI boundary.
     base::ScopedAllowBlocking allow_blocking;
-    base::NativeLibraryOptions library_options;
-#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
-    !defined(MEMORY_SANITIZER) && !defined(LEAK_SANITIZER)
-    // Sanitizer builds cannnot support RTLD_DEEPBIND, but they also disable
-    // allocator shims, so it's unnecessary there.
-    library_options.prefer_own_symbols = true;
-#endif
-    library_.emplace(base::LoadNativeLibraryWithOptions(
-        *library_path, library_options, nullptr));
+    library_.emplace(*library_path);
     if (!application_provided_path) {
       CHECK(library_->is_valid())
           << "Unable to load the mojo_core library. Make sure the library is "
@@ -479,10 +466,6 @@ MojoResult MojoQueryQuota(MojoHandle handle,
                           uint64_t* limit,
                           uint64_t* usage) {
   return INVOKE_THUNK(QueryQuota, handle, type, options, limit, usage);
-}
-
-MojoResult MojoShutdown(const MojoShutdownOptions* options) {
-  return INVOKE_THUNK(Shutdown, options);
 }
 
 }  // extern "C"
