@@ -1203,11 +1203,26 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // root. If current directory path is empty, stop the fallback
   // since the current directory is initializing now.
   const entry = this.getCurrentDirEntry();
-  if (entry && !this.volumeManager_.getVolumeInfo(entry)) {
+  if (entry && util.isNativeEntry(entry) &&
+      !this.volumeManager_.getVolumeInfo(entry)) {
     this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
       if (displayRoot)
         this.changeDirectoryEntry(displayRoot);
     });
+  }
+
+  // If a volume within My files is mounted, rescan the contents.
+  // TODO(crbug.com/901690): Remove this special case.
+  if (this.getCurrentRootType() === VolumeManagerCommon.RootType.MY_FILES) {
+    for (let newVolume of event.added) {
+      if (newVolume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+          newVolume.volumeType ===
+              VolumeManagerCommon.VolumeType.ANDROID_FILES ||
+          newVolume.volumeType === VolumeManagerCommon.VolumeType.CROSTINI) {
+        this.rescan(false);
+        break;
+      }
+    }
   }
 
   // If the current directory is the Drive placeholder and the real Drive is
