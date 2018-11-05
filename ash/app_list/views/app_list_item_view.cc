@@ -648,6 +648,12 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
+bool AppListItemView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
+  // Ensure accelerators take priority in the app list. This ensures, e.g., that
+  // Ctrl+Space will switch input methods rather than activate the button.
+  return false;
+}
+
 void AppListItemView::OnFocus() {
   apps_grid_view_->SetSelectedView(this);
 }

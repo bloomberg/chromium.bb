@@ -5,7 +5,6 @@
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
@@ -136,10 +135,7 @@ bool PreTargetAcceleratorHandler::ShouldProcessAcceleratorNow(
 
   // Handle preferred accelerators (such as ALT-TAB) before sending
   // to the target.
-  if (accelerator_controller->IsPreferred(accelerator))
-    return true;
-
-  return Shell::Get()->app_list_controller()->GetTargetVisibility();
+  return accelerator_controller->IsPreferred(accelerator);
 }
 
 }  // namespace ash

@@ -36,6 +36,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -55,6 +56,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -65,6 +68,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace file_manager {
@@ -1460,6 +1467,28 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     LaunchExtension(base::FilePath(FILE_PATH_LITERAL(
                         "ui/file_manager/integration_tests/testing_provider")),
                     manifest.c_str());
+    return;
+  }
+
+  if (name == "dispatchNativeMediaKey") {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_MEDIA_PLAY_PAUSE, 0);
+
+    // Try to dispatch the event close-to-native without pulling in too many
+    // dependencies (i.e. X11/Ozone/Wayland/Mus). aura::WindowTreeHost is pretty
+    // high up in the dispatch stack, but we might need event_injector.mojom
+    // for a more realistic Mus dispatch.
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
+        &key_event, base::BindOnce([](bool) {}));
+    *output = "mediaKeyDispatched";
+    return;
+  }
+
+  if (name == "enableTabletMode") {
+    ::test::SetAndWaitForTabletMode(true);
+    *output = "tabletModeEnabled";
     return;
   }
 

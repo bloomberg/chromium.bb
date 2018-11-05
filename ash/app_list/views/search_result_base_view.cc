@@ -10,6 +10,13 @@ SearchResultBaseView::SearchResultBaseView() : Button(this) {}
 
 SearchResultBaseView::~SearchResultBaseView() = default;
 
+bool SearchResultBaseView::SkipDefaultKeyEventProcessing(
+    const ui::KeyEvent& event) {
+  // Ensure accelerators take priority in the app list. This ensures, e.g., that
+  // Ctrl+Space will switch input methods rather than activate the button.
+  return false;
+}
+
 void SearchResultBaseView::SetBackgroundHighlighted(bool enabled) {
   background_highlighted_ = enabled;
   SchedulePaint();

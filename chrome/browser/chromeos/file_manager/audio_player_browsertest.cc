@@ -79,4 +79,9 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracksPlayListIcon) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, NativeMediaKey) {
+  set_test_case_name("mediaKeyNative");
+  StartTest();
+}
+
 }  // namespace file_manager
