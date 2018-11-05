@@ -7,21 +7,21 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Creates the Dialog view controller.
- * @param {camera.Router} router View router to switch views.
- * @extends {camera.View}
+ * @param {cca.Router} router View router to switch views.
+ * @extends {cca.View}
  * @constructor
  */
-camera.views.Dialog = function(router) {
-  camera.View.call(
+cca.views.Dialog = function(router) {
+  cca.View.call(
       this, router, document.querySelector('#dialog'), 'dialog');
 
   /**
@@ -56,13 +56,13 @@ camera.views.Dialog = function(router) {
  * Type of the dialog.
  * @enum {number}
  */
-camera.views.Dialog.Type = Object.freeze({
+cca.views.Dialog.Type = Object.freeze({
   CONFIRMATION: 0,
   ALERT: 1,
 });
 
-camera.views.Dialog.prototype = {
-  __proto__: camera.View.prototype,
+cca.views.Dialog.prototype = {
+  __proto__: cca.View.prototype,
 };
 
 /**
@@ -73,7 +73,7 @@ camera.views.Dialog.prototype = {
  * @param {Object=} opt_arguments Arguments for the dialog.
  * @override
  */
-camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
+cca.views.Dialog.prototype.onEnter = function(opt_arguments) {
   // Update the element's text content and hide it if there is no text content.
   var updateElement = function(element, text) {
     if (text) {
@@ -89,12 +89,12 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
   var negativeText = null;
   var messageText = null;
   switch (opt_arguments.type) {
-    case camera.views.Dialog.Type.CONFIRMATION:
+    case cca.views.Dialog.Type.CONFIRMATION:
       positiveText = { name: 'dialogOKButton' };
       negativeText = { name: 'dialogCancelButton' };
       messageText = { content: opt_arguments.message };
       break;
-    case camera.views.Dialog.Type.ALERT:
+    case cca.views.Dialog.Type.ALERT:
       positiveText = { name: 'dialogOKButton' };
       messageText = { content: opt_arguments.message };
       break;
@@ -107,7 +107,7 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
 /**
  * @override
  */
-camera.views.Dialog.prototype.onActivate = function() {
+cca.views.Dialog.prototype.onActivate = function() {
   if (!this.positiveButton_.hidden)
     this.positiveButton_.focus();
 };
@@ -117,7 +117,7 @@ camera.views.Dialog.prototype.onActivate = function() {
  * @param {Event} event Click event.
  * @private
  */
-camera.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
+cca.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
   this.router.back({isPositive: true});
 };
 
@@ -126,7 +126,7 @@ camera.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
  * @param {Event} event Click event.
  * @private
  */
-camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
+cca.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
   this.closeDialog_();
 };
 
@@ -134,15 +134,15 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
  * Dismisses the dialog without returning a positive result.
  * @private
  */
-camera.views.Dialog.prototype.closeDialog_ = function() {
+cca.views.Dialog.prototype.closeDialog_ = function() {
   this.router.back({isPositive: false});
 };
 
 /**
  * @override
  */
-camera.views.Dialog.prototype.onKeyPressed = function(event) {
-  if (camera.util.getShortcutIdentifier(event) == 'Escape') {
+cca.views.Dialog.prototype.onKeyPressed = function(event) {
+  if (cca.util.getShortcutIdentifier(event) == 'Escape') {
     this.closeDialog_();
     event.preventDefault();
   }

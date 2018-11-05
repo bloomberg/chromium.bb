@@ -7,23 +7,23 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Namespace for Camera view.
  */
-camera.views.camera = camera.views.camera || {};
+cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the record-time of Camera view.
  * @constructor
  */
-camera.views.camera.RecordTime = function() {
+cca.views.camera.RecordTime = function() {
   /**
    * @type {HTMLElement}
    * @private
@@ -46,7 +46,7 @@ camera.views.camera.RecordTime = function() {
  * @param {number} time Time in seconds.
  * @private
  */
-camera.views.camera.RecordTime.prototype.update_ = function(time) {
+cca.views.camera.RecordTime.prototype.update_ = function(time) {
   // Format time into HH:MM:SS or MM:SS.
   var pad = (n) => {
     return (n < 10 ? '0' : '') + n;
@@ -63,7 +63,7 @@ camera.views.camera.RecordTime.prototype.update_ = function(time) {
 /**
  * Starts to count and show the elapsed recording time.
  */
-camera.views.camera.RecordTime.prototype.start = function() {
+cca.views.camera.RecordTime.prototype.start = function() {
   this.update_(0);
   this.recordTime_.classList.add('visible');
 
@@ -77,8 +77,8 @@ camera.views.camera.RecordTime.prototype.start = function() {
 /**
  * Stops counting and showing the elapsed recording time.
  */
-camera.views.camera.RecordTime.prototype.stop = function() {
-  camera.toast.speak('statusMsgRecordingStopped');
+cca.views.camera.RecordTime.prototype.stop = function() {
+  cca.toast.speak('statusMsgRecordingStopped');
   if (this.tickTimeout_) {
     clearInterval(this.tickTimeout_);
     this.tickTimeout_ = null;

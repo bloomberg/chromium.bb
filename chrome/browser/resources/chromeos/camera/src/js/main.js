@@ -7,42 +7,42 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Creates the Camera App main object.
  * @param {number} aspectRatio Aspect ratio of app window when launched.
  * @constructor
  */
-camera.App = function(aspectRatio) {
+cca.App = function(aspectRatio) {
   /**
-   * @type {camera.ViewsStack}
+   * @type {cca.App.ViewsStack}
    * @private
    */
-  this.viewsStack_ = new camera.App.ViewsStack();
+  this.viewsStack_ = new cca.App.ViewsStack();
 
   /**
-   * @type {camera.Router}
+   * @type {cca.Router}
    * @private
    */
-  this.router_ = new camera.Router(
+  this.router_ = new cca.Router(
       this.navigateById_.bind(this),
       this.viewsStack_.pop.bind(this.viewsStack_));
 
   /**
-   * @type {camera.views.Camera}
+   * @type {cca.views.Camera}
    * @private
    */
   this.cameraView_ = null;
 
   /**
-   * @type {camera.views.Browser}
+   * @type {cca.views.Browser}
    * @private
    */
   this.browserView_ = null;
 
   /**
-   * @type {camera.views.Dialog}
+   * @type {cca.views.Dialog}
    * @private
    */
   this.dialogView_ = null;
@@ -76,7 +76,7 @@ camera.App = function(aspectRatio) {
  * Creates a stack of views.
  * @constructor
  */
-camera.App.ViewsStack = function() {
+cca.App.ViewsStack = function() {
   /**
    * Stack with the views as well as return callbacks.
    * @type {Array.<Object>}
@@ -88,7 +88,7 @@ camera.App.ViewsStack = function() {
   Object.seal(this);
 };
 
-camera.App.ViewsStack.prototype = {
+cca.App.ViewsStack.prototype = {
   get current() {
     return this.stack_.length ? this.stack_[this.stack_.length - 1].view : null;
   },
@@ -100,12 +100,12 @@ camera.App.ViewsStack.prototype = {
 /**
  * Adds the view on the stack and hence makes it the current one. Optionally,
  * passes the arguments to the view.
- * @param {camera.View} view View to be pushed on top of the stack.
+ * @param {cca.View} view View to be pushed on top of the stack.
  * @param {Object=} opt_arguments Optional arguments.
  * @param {function(Object=)} opt_callback Optional result callback to be called
  *     when the view is closed.
  */
-camera.App.ViewsStack.prototype.push = function(
+cca.App.ViewsStack.prototype.push = function(
     view, opt_arguments, opt_callback) {
   if (!view)
     return;
@@ -128,7 +128,7 @@ camera.App.ViewsStack.prototype.push = function(
  * @param {Object=} opt_result Optional result. If not passed, then undefined
  *     will be passed to the callback.
  */
-camera.App.ViewsStack.prototype.pop = function(opt_result) {
+cca.App.ViewsStack.prototype.pop = function(opt_result) {
   var entry = this.stack_.pop();
   entry.view.inactivate();
   entry.view.leave();
@@ -142,17 +142,17 @@ camera.App.ViewsStack.prototype.pop = function(opt_result) {
 /**
  * Starts the app by initializing views and showing the camera view.
  */
-camera.App.prototype.start = function() {
-  var model = new camera.models.Gallery();
-  this.cameraView_ = new camera.views.Camera(
+cca.App.prototype.start = function() {
+  var model = new cca.models.Gallery();
+  this.cameraView_ = new cca.views.Camera(
       this.router_, model, this.onWindowResize_.bind(this));
-  this.browserView_ = new camera.views.Browser(this.router_, model);
-  this.dialogView_ = new camera.views.Dialog(this.router_);
+  this.browserView_ = new cca.views.Browser(this.router_, model);
+  this.dialogView_ = new cca.views.Dialog(this.router_);
 
   var promptMigrate = () => {
     return new Promise((resolve, reject) => {
-      this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
-        type: camera.views.Dialog.Type.ALERT,
+      this.router_.navigate(cca.Router.ViewIdentifier.DIALOG, {
+        type: cca.views.Dialog.Type.ALERT,
         message: chrome.i18n.getMessage('migratePicturesMsg'),
       }, result => {
         if (!result.isPositive) {
@@ -165,44 +165,44 @@ camera.App.prototype.start = function() {
       });
     });
   };
-  camera.models.FileSystem.initialize(promptMigrate).then(() => {
+  cca.models.FileSystem.initialize(promptMigrate).then(() => {
     // Prepare the views and model, and then make the app ready.
     this.cameraView_.prepare();
     this.browserView_.prepare();
     model.load([this.cameraView_.galleryButton, this.browserView_]);
 
-    camera.tooltip.setup();
-    camera.util.makeElementsUnfocusableByMouse();
-    camera.util.setupElementsAria();
-    this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);
+    cca.tooltip.setup();
+    cca.util.makeElementsUnfocusableByMouse();
+    cca.util.setupElementsAria();
+    this.router_.navigate(cca.Router.ViewIdentifier.CAMERA);
   }).catch((error) => {
     console.error(error);
     if (error && error.exitApp) {
       chrome.app.window.current().close();
       return;
     }
-    camera.App.onError('filesystem-failure', 'errorMsgFileSystemFailed');
+    cca.App.onError('filesystem-failure', 'errorMsgFileSystemFailed');
   });
 };
 
 /**
  * Switches the view using a router's view identifier.
- * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
+ * @param {cca.Router.ViewIdentifier} viewIdentifier View identifier.
  * @param {Object=} opt_arguments Optional arguments for the view.
  * @param {function(Object=)} opt_callback Optional result callback to be called
  *     when the view is closed.
  * @private
  */
-camera.App.prototype.navigateById_ = function(
+cca.App.prototype.navigateById_ = function(
     viewIdentifier, opt_arguments, opt_callback) {
   switch (viewIdentifier) {
-    case camera.Router.ViewIdentifier.CAMERA:
+    case cca.Router.ViewIdentifier.CAMERA:
       this.viewsStack_.push(this.cameraView_, opt_arguments, opt_callback);
       break;
-    case camera.Router.ViewIdentifier.BROWSER:
+    case cca.Router.ViewIdentifier.BROWSER:
       this.viewsStack_.push(this.browserView_, opt_arguments, opt_callback);
       break;
-    case camera.Router.ViewIdentifier.DIALOG:
+    case cca.Router.ViewIdentifier.DIALOG:
       this.viewsStack_.push(this.dialogView_, opt_arguments, opt_callback);
       break;
   }
@@ -212,9 +212,9 @@ camera.App.prototype.navigateById_ = function(
  * Resizes the window to match the last known aspect ratio if applicable.
  * @private
  */
-camera.App.prototype.resizeByAspectRatio_ = function() {
+cca.App.prototype.resizeByAspectRatio_ = function() {
   // Don't update window size if it's maximized or fullscreen.
-  if (camera.util.isWindowFullSize()) {
+  if (cca.util.isWindowFullSize()) {
     return;
   }
 
@@ -239,7 +239,7 @@ camera.App.prototype.resizeByAspectRatio_ = function() {
  * @param {number=} aspectRatio Aspect ratio changed.
  * @private
  */
-camera.App.prototype.onWindowResize_ = function(aspectRatio) {
+cca.App.prototype.onWindowResize_ = function(aspectRatio) {
   if (this.resizeWindowTimeout_) {
     clearTimeout(this.resizeWindowTimeout_);
     this.resizeWindowTimeout_ = null;
@@ -269,8 +269,8 @@ camera.App.prototype.onWindowResize_ = function(aspectRatio) {
  * @param {Event} event Key press event.
  * @private
  */
-camera.App.prototype.onKeyPressed_ = function(event) {
-  if (camera.util.getShortcutIdentifier(event) == 'BrowserBack') {
+cca.App.prototype.onKeyPressed_ = function(event) {
+  if (cca.util.getShortcutIdentifier(event) == 'BrowserBack') {
     chrome.app.window.current().minimize();
     return;
   }
@@ -286,7 +286,7 @@ camera.App.prototype.onKeyPressed_ = function(event) {
  * @param {string} identifier Identifier of the error.
  * @param {string} message Message for the error.
  */
-camera.App.onError = function(identifier, message) {
+cca.App.onError = function(identifier, message) {
   // TODO(yuli): Implement error-identifier to look up messages/hints and handle
   // multiple errors. Make 'error' a view to block buttons on other views.
   document.body.classList.add('has-error');
@@ -301,26 +301,26 @@ camera.App.onError = function(identifier, message) {
  * Removes the error message when an error goes away.
  * @param {string} identifier Identifier of the error.
  */
-camera.App.onErrorRecovered = function(identifier) {
+cca.App.onErrorRecovered = function(identifier) {
   document.body.classList.remove('has-error');
   document.querySelector('#error-msg').textContent = '';
 };
 
 /**
- * @type {camera.App} Singleton of the Camera object.
+ * @type {cca.App} Singleton of the Camera object.
  * @private
  */
-camera.App.instance_ = null;
+cca.App.instance_ = null;
 
 /**
  * Creates the Camera object and starts screen capturing.
  */
 document.addEventListener('DOMContentLoaded', () => {
   var appWindow = chrome.app.window.current();
-  if (!camera.App.instance_) {
+  if (!cca.App.instance_) {
     var inner = appWindow.innerBounds;
-    camera.App.instance_ = new camera.App(inner.width / inner.height);
+    cca.App.instance_ = new cca.App(inner.width / inner.height);
   }
-  camera.App.instance_.start();
+  cca.App.instance_.start();
   appWindow.show();
 });

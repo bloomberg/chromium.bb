@@ -7,29 +7,29 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Namespace for Camera view.
  */
-camera.views.camera = camera.views.camera || {};
+cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller to handle layouts of Camera view.
  * @constructor
  */
-camera.views.camera.Layout = function() {
+cca.views.camera.Layout = function() {
   /**
    * CSS sylte of the shifted right-stripe.
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.rightStripe_ = camera.views.camera.Layout.cssStyle_(
+  this.rightStripe_ = cca.views.camera.Layout.cssStyle_(
       'body.shift-right-stripe .right-stripe, ' +
       'body.shift-right-stripe.tablet-landscape .actions-group');
 
@@ -38,7 +38,7 @@ camera.views.camera.Layout = function() {
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.bottomStripe_ = camera.views.camera.Layout.cssStyle_(
+  this.bottomStripe_ = cca.views.camera.Layout.cssStyle_(
       'body.shift-bottom-stripe .bottom-stripe, ' +
       'body.shift-bottom-stripe:not(.tablet-landscape) .actions-group');
 
@@ -47,7 +47,7 @@ camera.views.camera.Layout = function() {
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.leftStripe_ = camera.views.camera.Layout.cssStyle_(
+  this.leftStripe_ = cca.views.camera.Layout.cssStyle_(
       'body.shift-left-stripe .left-stripe');
 
   /**
@@ -55,7 +55,7 @@ camera.views.camera.Layout = function() {
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.topStripe_ = camera.views.camera.Layout.cssStyle_(
+  this.topStripe_ = cca.views.camera.Layout.cssStyle_(
       'body.shift-top-stripe .top-stripe');
 
   // End of properties, seal the object.
@@ -67,7 +67,7 @@ camera.views.camera.Layout = function() {
  * @type {Array.<CSSRule>}
  * @private
  */
-camera.views.camera.Layout.cssRules_ =
+cca.views.camera.Layout.cssRules_ =
     [].slice.call(document.styleSheets[0].cssRules);
 
 /**
@@ -76,8 +76,8 @@ camera.views.camera.Layout.cssRules_ =
  * @return {CSSStyleDeclaration}
  * @private
  */
-camera.views.camera.Layout.cssStyle_ = function(selector) {
-  return camera.views.camera.Layout.cssRules_.find(
+cca.views.camera.Layout.cssStyle_ = function(selector) {
+  return cca.views.camera.Layout.cssRules_.find(
       (rule) => rule.selectorText == selector).style;
 };
 
@@ -86,14 +86,14 @@ camera.views.camera.Layout.cssStyle_ = function(selector) {
  * @return {Array.<number>} Letterbox size in [width, height].
  * @private
  */
-camera.views.camera.Layout.prototype.updatePreviewSize_ = function() {
+cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
   // Make video content keeps its aspect ratio inside the window's inner-bounds;
   // it may fill up the window or be letterboxed when fullscreen/maximized.
   // Don't use app-window.innerBounds' width/height properties during resizing
   // as they are not updated immediately.
   var video = document.querySelector('#preview-video');
   if (video.videoHeight) {
-    var f = camera.util.isWindowFullSize() ? Math.min : Math.max;
+    var f = cca.util.isWindowFullSize() ? Math.min : Math.max;
     var scale = f(window.innerHeight / video.videoHeight,
         window.innerWidth / video.videoWidth);
     video.width = scale * video.videoWidth;
@@ -105,9 +105,9 @@ camera.views.camera.Layout.prototype.updatePreviewSize_ = function() {
 /**
  * Updates the layout for video-size or window-size changes.
  */
-camera.views.camera.Layout.prototype.update = function() {
+cca.views.camera.Layout.prototype.update = function() {
   // TODO(yuli): Check if the app runs on a tablet display.
-  var fullWindow = camera.util.isWindowFullSize();
+  var fullWindow = cca.util.isWindowFullSize();
   var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
   document.body.classList.toggle('tablet-landscape', tabletLandscape);
 

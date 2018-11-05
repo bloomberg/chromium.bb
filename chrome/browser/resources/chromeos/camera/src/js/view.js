@@ -7,16 +7,16 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Creates a named view controller attached to the root element.
- * @param {camera.Router} router View router to switch views.
+ * @param {cca.Router} router View router to switch views.
  * @param {HTMLElement} rootElement Root element of the view.
  * @param {string} name View name.
  * @constructor
  */
-camera.View = function(router, rootElement, name) {
+cca.View = function(router, rootElement, name) {
   /**
    * @type {boolean}
    * @private
@@ -30,7 +30,7 @@ camera.View = function(router, rootElement, name) {
   this.entered_ = false;
 
   /**
-   * @type {camera.Router}
+   * @type {cca.Router}
    * @private
    */
   this.router_ = router;
@@ -54,7 +54,7 @@ camera.View = function(router, rootElement, name) {
   this.tabIndexes_ = [];
 };
 
-camera.View.prototype = {
+cca.View.prototype = {
   get entered() {
     return this.entered_;
   },
@@ -70,45 +70,45 @@ camera.View.prototype = {
  * Processes key pressed events.
  * @param {Event} event Key event.
  */
-camera.View.prototype.onKeyPressed = function(event) {
+cca.View.prototype.onKeyPressed = function(event) {
 };
 
 /**
  * Processes resizing events.
  */
-camera.View.prototype.onResize = function() {
+cca.View.prototype.onResize = function() {
 };
 
 /**
  * Handles entering the view.
  * @param {Object=} opt_arguments Optional arguments.
  */
-camera.View.prototype.onEnter = function(opt_arguments) {
+cca.View.prototype.onEnter = function(opt_arguments) {
 };
 
 /**
  * Handles leaving the view.
  */
-camera.View.prototype.onLeave = function() {
+cca.View.prototype.onLeave = function() {
 };
 
 /**
  * Handles activating the view.
  */
-camera.View.prototype.onActivate = function() {
+cca.View.prototype.onActivate = function() {
 };
 
 /**
  * Handles inactivating the view.
  */
-camera.View.prototype.onInactivate = function() {
+cca.View.prototype.onInactivate = function() {
 };
 
 /**
  * Enters the view.
  * @param {Object=} opt_arguments Optional arguments.
  */
-camera.View.prototype.enter = function(opt_arguments) {
+cca.View.prototype.enter = function(opt_arguments) {
   document.body.classList.add(this.name_);
   this.entered_ = true;
   this.onEnter(opt_arguments);
@@ -117,7 +117,7 @@ camera.View.prototype.enter = function(opt_arguments) {
 /**
  * Leaves the view.
  */
-camera.View.prototype.leave = function() {
+cca.View.prototype.leave = function() {
   this.onLeave();
   this.entered_ = false;
   document.body.classList.remove(this.name_);
@@ -126,7 +126,7 @@ camera.View.prototype.leave = function() {
 /**
  * Activates the view. Makes all of the elements on the view focusable.
  */
-camera.View.prototype.activate = function() {
+cca.View.prototype.activate = function() {
   // Restore tabIndex attribute values.
   for (var index = 0; index < this.tabIndexes_.length; index++) {
     var element = this.tabIndexes_[index][0];
@@ -141,7 +141,7 @@ camera.View.prototype.activate = function() {
 /**
  * Inactivates the view. Makes all of the elements on the view not focusable.
  */
-camera.View.prototype.inactivate = function() {
+cca.View.prototype.inactivate = function() {
   this.onInactivate();
   this.active_ = false;
 

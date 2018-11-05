@@ -5,15 +5,20 @@
 'use strict';
 
 /**
+ * Namespace for the Camera app.
+ */
+var cca = cca || {};
+
+/**
  * Creates a scroll bar for a scrollable area.
  *
- * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
+ * @param {cca.util.SmoothScroller} scoller Scroller for the scrollable
  *     element.
  * @constructor
  */
-camera.ScrollBar = function(scroller) {
+cca.ScrollBar = function(scroller) {
   /**
-   * @type {camera.util.SmoothScroller}
+   * @type {cca.util.SmoothScroller}
    * @protected
    */
   this.scroller = scroller;
@@ -84,7 +89,7 @@ camera.ScrollBar = function(scroller) {
  * Sets the scrollbar thumb hidden even for a scrollable area.
  * @param {boolean} hidden True if hides the thumb, false otherwise.
  */
-camera.ScrollBar.prototype.setThumbHidden = function(hidden) {
+cca.ScrollBar.prototype.setThumbHidden = function(hidden) {
   this.thumbHidden_ = hidden;
   this.redraw_();
 };
@@ -93,7 +98,7 @@ camera.ScrollBar.prototype.setThumbHidden = function(hidden) {
  * Scroll handler.
  * @private
  */
-camera.ScrollBar.prototype.onScroll_ = function() {
+cca.ScrollBar.prototype.onScroll_ = function() {
   this.redraw_();
 };
 
@@ -102,7 +107,7 @@ camera.ScrollBar.prototype.onScroll_ = function() {
  * @param {Event} event Pressing event.
  * @private
  */
-camera.ScrollBar.prototype.onThumbPressed_ = function(event) {
+cca.ScrollBar.prototype.onThumbPressed_ = function(event) {
   this.thumbLastScreenPosition_ = this.getScreenPosition(event);
   this.thumb.classList.add('pressed');
 
@@ -117,7 +122,7 @@ camera.ScrollBar.prototype.onThumbPressed_ = function(event) {
  * @param {Event} event Mouse event.
  * @private
  */
-camera.ScrollBar.prototype.onMouseUp_ = function(event) {
+cca.ScrollBar.prototype.onMouseUp_ = function(event) {
   this.thumbLastScreenPosition_ = null;
   this.thumb.classList.remove('pressed');
 };
@@ -126,7 +131,7 @@ camera.ScrollBar.prototype.onMouseUp_ = function(event) {
  * @return {number} Total client size in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.getClientTotal = function() {
+cca.ScrollBar.prototype.getClientTotal = function() {
   throw new Error('Not implemented');
 };
 
@@ -134,7 +139,7 @@ camera.ScrollBar.prototype.getClientTotal = function() {
  * @return {number} Total scroll size in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.getScrollTotal = function() {
+cca.ScrollBar.prototype.getScrollTotal = function() {
   throw new Error('Not implemented');
 };
 
@@ -143,7 +148,7 @@ camera.ScrollBar.prototype.getScrollTotal = function() {
  * @return {number} Total client position for the event in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.getClientPosition = function(event) {
+cca.ScrollBar.prototype.getClientPosition = function(event) {
   throw new Error('Not implemented');
 };
 
@@ -152,7 +157,7 @@ camera.ScrollBar.prototype.getClientPosition = function(event) {
  * @return {number} Total screen position for the event in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.getScreenPosition = function(event) {
+cca.ScrollBar.prototype.getScreenPosition = function(event) {
   throw new Error('Not implemented');
 };
 
@@ -160,7 +165,7 @@ camera.ScrollBar.prototype.getScreenPosition = function(event) {
  * @return {number} Scroll position in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.getScrollPosition = function() {
+cca.ScrollBar.prototype.getScrollPosition = function() {
   throw new Error('Not implemented');
 };
 
@@ -169,7 +174,7 @@ camera.ScrollBar.prototype.getScrollPosition = function() {
  * @param {number} value Position in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.setScrollPosition = function(value) {
+cca.ScrollBar.prototype.setScrollPosition = function(value) {
   throw new Error('Not implemented');
 };
 
@@ -180,7 +185,7 @@ camera.ScrollBar.prototype.setScrollPosition = function(value) {
  * @param {number} size Size of the thumb in pixels.
  * @protected
  */
-camera.ScrollBar.prototype.setThumbGeometry = function(position, size) {
+cca.ScrollBar.prototype.setThumbGeometry = function(position, size) {
   throw new Error('Not implemented');
 };
 
@@ -189,7 +194,7 @@ camera.ScrollBar.prototype.setThumbGeometry = function(position, size) {
  * @param {Event} event Mouse event.
  * @private
  */
-camera.ScrollBar.prototype.onMouseMove_ = function(event) {
+cca.ScrollBar.prototype.onMouseMove_ = function(event) {
   if (!this.thumbLastScreenPosition_)
     return;
 
@@ -216,7 +221,7 @@ camera.ScrollBar.prototype.onMouseMove_ = function(event) {
  * calls.
  * @private
  */
-camera.ScrollBar.prototype.onDomChanged_ = function() {
+cca.ScrollBar.prototype.onDomChanged_ = function() {
   if (this.domChangedTimer_) {
     clearTimeout(this.domChangedTimer_);
     this.domChangedTimer_ = null;
@@ -230,7 +235,7 @@ camera.ScrollBar.prototype.onDomChanged_ = function() {
 /**
  * Resize handler to update the thumb size/position by redrawing the scroll bar.
  */
-camera.ScrollBar.prototype.onResize = function() {
+cca.ScrollBar.prototype.onResize = function() {
   this.redraw_();
 };
 
@@ -238,7 +243,7 @@ camera.ScrollBar.prototype.onResize = function() {
  * Redraws the scroll bar.
  * @private
  */
-camera.ScrollBar.prototype.redraw_ = function() {
+cca.ScrollBar.prototype.redraw_ = function() {
   var clientTotal = this.getClientTotal();
   var scrollTotal = this.getScrollTotal();
 
@@ -254,140 +259,69 @@ camera.ScrollBar.prototype.redraw_ = function() {
 /**
  * Creates a horizontal scroll bar.
  *
- * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
+ * @param {cca.util.SmoothScroller} scoller Scroller for the scrollable
  *     element.
  * @constructor
- * @extends {camera.ScrollBar}
+ * @extends {cca.ScrollBar}
  */
-camera.HorizontalScrollBar = function(scroller) {
-  camera.ScrollBar.call(this, scroller);
+cca.HorizontalScrollBar = function(scroller) {
+  cca.ScrollBar.call(this, scroller);
   this.track.classList.add('scrollbar-track-horizontal');
 };
 
-camera.HorizontalScrollBar.prototype = {
-  __proto__: camera.ScrollBar.prototype,
+cca.HorizontalScrollBar.prototype = {
+  __proto__: cca.ScrollBar.prototype,
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.getClientTotal = function() {
+cca.HorizontalScrollBar.prototype.getClientTotal = function() {
   return this.scroller.clientWidth;
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.getScrollTotal = function() {
+cca.HorizontalScrollBar.prototype.getScrollTotal = function() {
   return this.scroller.scrollWidth;
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.getClientPosition = function(event) {
+cca.HorizontalScrollBar.prototype.getClientPosition = function(event) {
   return event.clientX;
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.getScreenPosition = function(event) {
+cca.HorizontalScrollBar.prototype.getScreenPosition = function(event) {
   return event.screenX;
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.getScrollPosition = function() {
+cca.HorizontalScrollBar.prototype.getScrollPosition = function() {
   return this.scroller.scrollLeft;
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.setScrollPosition = function(value) {
+cca.HorizontalScrollBar.prototype.setScrollPosition = function(value) {
   this.scroller.scrollTo(value,
                          this.scroller.element.scrollTop,
-                         camera.util.SmoothScroller.Mode.INSTANT);
+                         cca.util.SmoothScroller.Mode.INSTANT);
 };
 
 /**
  * @override
  */
-camera.HorizontalScrollBar.prototype.setThumbGeometry = function(
+cca.HorizontalScrollBar.prototype.setThumbGeometry = function(
     position, size) {
   this.thumb.style.left = position + 'px';
   this.thumb.style.width = size + 'px';
 };
-
-/**
- * Creates a vertical scroll bar.
- *
- * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
- *     element.
- * @constructor
- * @extends {camera.ScrollBar}
- */
-camera.VerticalScrollBar = function(scroller) {
-  camera.ScrollBar.call(this, scroller);
-  this.track.classList.add('scrollbar-track-vertical');
-};
-
-camera.VerticalScrollBar.prototype = {
-  __proto__: camera.ScrollBar.prototype,
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.getClientTotal = function() {
-  return this.scroller.clientHeight;
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.getScrollTotal = function() {
-  return this.scroller.scrollHeight;
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.getClientPosition = function(event) {
-  return event.clientY;
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.getScreenPosition = function(event) {
-  return event.screenY;
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.getScrollPosition = function() {
-  return this.scroller.scrollTop;
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.setScrollPosition = function(value) {
-  this.scroller.scrollTo(this.scroller.element.scrollTop,
-                         value,
-                         camera.util.SmoothScroller.Mode.INSTANT);
-};
-
-/**
- * @override
- */
-camera.VerticalScrollBar.prototype.setThumbGeometry = function(
-    position, size) {
-  this.thumb.style.top = position + 'px';
-  this.thumb.style.height = size + 'px';
-};
-

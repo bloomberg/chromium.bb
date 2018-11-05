@@ -7,38 +7,38 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for the background page.
  */
-camera.bg = {};
+cca.bg = {};
 
 /**
  * Fixed minimum width of the window inner-bounds in pixels.
  * @type {number}
  * @const
  */
-camera.bg.MIN_WIDTH = 768;
+cca.bg.MIN_WIDTH = 768;
 
 /**
  * Initial apsect ratio of the window inner-bounds.
  * @type {number}
  * @const
  */
-camera.bg.INITIAL_ASPECT_RATIO = 1.3333333333;
+cca.bg.INITIAL_ASPECT_RATIO = 1.3333333333;
 
 /**
  * Top bar color of the window.
  * @type {string}
  * @const
  */
-camera.bg.TOPBAR_COLOR = '#000000';
+cca.bg.TOPBAR_COLOR = '#000000';
 
 /**
  * Creates the window. Note, that only one window at once is supported.
  */
-camera.bg.create = function() {
+cca.bg.create = function() {
   new Promise(resolve => {
     chrome.storage.local.get({maximized: false, fullscreen: false},
         values => {
@@ -48,17 +48,17 @@ camera.bg.create = function() {
     // The height will be later calculated to match video aspect ratio once the
     // stream is available.
     var initialHeight = Math.round(
-        camera.bg.MIN_WIDTH / camera.bg.INITIAL_ASPECT_RATIO);
+        cca.bg.MIN_WIDTH / cca.bg.INITIAL_ASPECT_RATIO);
 
     chrome.app.window.create('views/main.html', {
       id: 'main',
-      frame: {color: camera.bg.TOPBAR_COLOR},
+      frame: {color: cca.bg.TOPBAR_COLOR},
       hidden: true, // Will be shown from main.js once loaded.
       innerBounds: {
-        width: camera.bg.MIN_WIDTH,
+        width: cca.bg.MIN_WIDTH,
         height: initialHeight,
-        minWidth: camera.bg.MIN_WIDTH,
-        left: Math.round((window.screen.availWidth - camera.bg.MIN_WIDTH) / 2),
+        minWidth: cca.bg.MIN_WIDTH,
+        left: Math.round((window.screen.availWidth - cca.bg.MIN_WIDTH) / 2),
         top: Math.round((window.screen.availHeight - initialHeight) / 2),
       },
     }, inAppWindow => {
@@ -77,4 +77,4 @@ camera.bg.create = function() {
   });
 };
 
-chrome.app.runtime.onLaunched.addListener(camera.bg.create);
+chrome.app.runtime.onLaunched.addListener(cca.bg.create);

@@ -7,12 +7,12 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for utilities.
  */
-camera.util = camera.util || {};
+cca.util = cca.util || {};
 
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
@@ -20,7 +20,7 @@ camera.util = camera.util || {};
  * @param {Blob} blob JPEG blob that might contain EXIF orientation field.
  * @return {Promise<Object{rotation: number, flip: boolean}>}
  */
-camera.util.getPhotoOrientation = function(blob) {
+cca.util.getPhotoOrientation = function(blob) {
   let getOrientation = new Promise((resolve, reject) => {
     let reader = new FileReader();
     reader.onload = function(event) {
@@ -94,7 +94,7 @@ camera.util.getPhotoOrientation = function(blob) {
  *     a blob.
  * @param {function()} onFailure Failure callback.
  */
-camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
+cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
   // TODO(shenghao): Revise or remove this function if it's no longer
   // applicable.
   let drawPhoto = function(original, orientation, onSuccess, onFailure) {
@@ -142,7 +142,7 @@ camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
     }, 'image/jpeg');
   };
 
-  camera.util.getPhotoOrientation(blob).then(orientation => {
+  cca.util.getPhotoOrientation(blob).then(orientation => {
     if (orientation.rotation == 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
@@ -161,7 +161,7 @@ camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
  * @param {Array.<string>} ids Device ids.
  * @return {!Promise<boolean>} Promise for the result.
  */
-camera.util.isChromeOSDevice = function(ids) {
+cca.util.isChromeOSDevice = function(ids) {
   return new Promise(resolve => {
     if (!chrome.chromeosInfoPrivate) {
       resolve(false);
@@ -180,7 +180,7 @@ camera.util.isChromeOSDevice = function(ids) {
  * @param {number} minVersion the version to be compared with.
  * @return {boolean}
  */
-camera.util.isChromeVersionAbove = function(minVersion) {
+cca.util.isChromeVersionAbove = function(minVersion) {
   var match = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
   return (match ? parseInt(match[2], 10) : 0) >= minVersion;
 };
@@ -189,7 +189,7 @@ camera.util.isChromeVersionAbove = function(minVersion) {
  * Checks if the user is using a Chrome OS device.
  * @return {boolean} Whether it is a Chrome OS device or not.
  */
-camera.util.isChromeOS = function() {
+cca.util.isChromeOS = function() {
   return navigator.appVersion.indexOf('CrOS') !== -1;
 };
 
@@ -197,7 +197,7 @@ camera.util.isChromeOS = function() {
  * Sets up localized aria attributes for TTS on the entire document. Uses the
  * dedicated i18n-label attribute as a strings identifier.
  */
-camera.util.setupElementsAria = function() {
+cca.util.setupElementsAria = function() {
   document.querySelectorAll('*[i18n-label]').forEach((element) => {
     element.setAttribute('aria-label', chrome.i18n.getMessage(
         element.getAttribute('i18n-label')));
@@ -209,11 +209,11 @@ camera.util.setupElementsAria = function() {
  * @param {HTMLElement} element Element to be animated.
  * @param {function()=} callback Callback called on completion.
  */
-camera.util.animateOnce = function(element, callback) {
+cca.util.animateOnce = function(element, callback) {
   element.classList.remove('animate');
   element.offsetWidth; // Force calculation to re-apply animation.
   element.classList.add('animate');
-  camera.util.waitAnimationCompleted(element, 0, () => {
+  cca.util.waitAnimationCompleted(element, 0, () => {
     element.classList.remove('animate');
     if (callback) {
       callback();
@@ -225,7 +225,7 @@ camera.util.animateOnce = function(element, callback) {
  * Cancels animating the element by removing 'animate' class.
  * @param {HTMLElement} element Element for canceling animation.
  */
-camera.util.animateCancel = function(element) {
+cca.util.animateCancel = function(element) {
   element.classList.remove('animate');
 };
 
@@ -235,7 +235,7 @@ camera.util.animateCancel = function(element) {
  * @param {number} timeout Timeout for completion. 0 for no timeout.
  * @param {function()} callback Callback called on completion.
  */
-camera.util.waitAnimationCompleted = function(element, timeout, callback) {
+cca.util.waitAnimationCompleted = function(element, timeout, callback) {
   var completed = false;
   var onCompleted = (event) => {
     if (completed || (event && event.target != element)) {
@@ -256,41 +256,13 @@ camera.util.waitAnimationCompleted = function(element, timeout, callback) {
 };
 
 /**
- * Scrolls the parent of the element so the element is visible.
- * @param {HTMLElement} element Element to be visible.
- * @param {camera.util.SmoothScroller} scroller Scroller to be used.
- * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
- *     SMOOTH.
- */
-camera.util.ensureVisible = function(element, scroller, opt_mode) {
-  var scrollLeft = scroller.scrollLeft;
-  var scrollTop = scroller.scrollTop;
-
-  if (element.offsetTop < scroller.scrollTop)
-    scrollTop = Math.round(element.offsetTop - element.offsetHeight * 0.5);
-  if (element.offsetTop + element.offsetHeight >
-      scrollTop + scroller.clientHeight) {
-    scrollTop = Math.round(element.offsetTop + element.offsetHeight * 1.5 -
-        scroller.clientHeight);
-  }
-  if (element.offsetLeft < scroller.scrollLeft)
-    scrollLeft = Math.round(element.offsetLeft - element.offsetWidth * 0.5);
-  if (element.offsetLeft + element.offsetWidth >
-      scrollLeft + scroller.clientWidth) {
-    scrollLeft = Math.round(element.offsetLeft + element.offsetWidth * 1.5 -
-        scroller.clientWidth);
-  }
-  scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
-};
-
-/**
  * Scrolls the parent of the element so the element is centered.
  * @param {HTMLElement} element Element to be visible.
- * @param {camera.util.SmoothScroller} scroller Scroller to be used.
- * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
+ * @param {cca.util.SmoothScroller} scroller Scroller to be used.
+ * @param {cca.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
  *     SMOOTH.
  */
-camera.util.scrollToCenter = function(element, scroller, opt_mode) {
+cca.util.scrollToCenter = function(element, scroller, opt_mode) {
   var scrollLeft = Math.round(element.offsetLeft + element.offsetWidth / 2 -
     scroller.clientWidth / 2);
   var scrollTop = Math.round(element.offsetTop + element.offsetHeight / 2 -
@@ -307,7 +279,7 @@ camera.util.scrollToCenter = function(element, scroller, opt_mode) {
  *     element.
  * @constructor
  */
-camera.util.SmoothScroller = function(element, padder) {
+cca.util.SmoothScroller = function(element, padder) {
   /**
    * @type {HTMLElement}
    * @private
@@ -341,18 +313,18 @@ camera.util.SmoothScroller = function(element, padder) {
  * @type {number}
  * @const
  */
-camera.util.SmoothScroller.DURATION = 500;
+cca.util.SmoothScroller.DURATION = 500;
 
 /**
  * Mode of scrolling.
  * @enum {number}
  */
-camera.util.SmoothScroller.Mode = {
+cca.util.SmoothScroller.Mode = {
   SMOOTH: 0,
   INSTANT: 1,
 };
 
-camera.util.SmoothScroller.prototype = {
+cca.util.SmoothScroller.prototype = {
   get element() {
     return this.element_;
   },
@@ -389,7 +361,7 @@ camera.util.SmoothScroller.prototype = {
  * Flushes the CSS3 transition scroll to real scrollLeft/scrollTop attributes.
  * @private
  */
-camera.util.SmoothScroller.prototype.flushScroll_ = function() {
+cca.util.SmoothScroller.prototype.flushScroll_ = function() {
   var scrollLeft = this.scrollLeft;
   var scrollTop = this.scrollTop;
 
@@ -407,18 +379,18 @@ camera.util.SmoothScroller.prototype.flushScroll_ = function() {
  * Scrolls smoothly to specified position.
  * @param {number} x X Target scrollLeft value.
  * @param {number} y Y Target scrollTop value.
- * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
+ * @param {cca.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
  *     SMOOTH.
  */
-camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
-  var mode = opt_mode || camera.util.SmoothScroller.Mode.SMOOTH;
+cca.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
+  var mode = opt_mode || cca.util.SmoothScroller.Mode.SMOOTH;
 
   // Limit to the allowed values.
   var x = Math.max(0, Math.min(x, this.scrollWidth - this.clientWidth));
   var y = Math.max(0, Math.min(y, this.scrollHeight - this.clientHeight));
 
   switch (mode) {
-    case camera.util.SmoothScroller.Mode.INSTANT:
+    case cca.util.SmoothScroller.Mode.INSTANT:
       // Cancel any current animations.
       if (this.animating_)
         this.flushScroll_();
@@ -427,7 +399,7 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
       this.element_.scrollTop = y;
       break;
 
-    case camera.util.SmoothScroller.Mode.SMOOTH:
+    case cca.util.SmoothScroller.Mode.SMOOTH:
       // Calculate translating offset using the accelerated CSS3 transform.
       var dx = Math.round(x - this.element_.scrollLeft);
       var dy = Math.round(y - this.element_.scrollTop);
@@ -447,12 +419,12 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
       // Start the accelerated animation.
       this.animating_ = true;
       this.padder_.style.transition = '-webkit-transform ' +
-          camera.util.SmoothScroller.DURATION + 'ms ease-out';
+          cca.util.SmoothScroller.DURATION + 'ms ease-out';
       this.padder_.style.webkitTransform = transformString;
 
       // Remove translation, and switch to scrollLeft/scrollTop when the
       // animation is finished.
-      camera.util.waitAnimationCompleted(
+      cca.util.waitAnimationCompleted(
           this.padder_,
           0,
           function() {
@@ -471,7 +443,7 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
  * @param {function(Event)} callback Callback triggered on events detected.
  * @constructor
  */
-camera.util.PointerTracker = function(element, callback) {
+cca.util.PointerTracker = function(element, callback) {
   /**
    * @type {HTMLElement}
    * @private
@@ -505,7 +477,7 @@ camera.util.PointerTracker = function(element, callback) {
  * @param {Event} event Mouse down event.
  * @private
  */
-camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
+cca.util.PointerTracker.prototype.onMouseDown_ = function(event) {
   this.callback_(event);
   this.lastMousePosition_ = [event.screenX, event.screenY];
 };
@@ -515,7 +487,7 @@ camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
  * @param {Event} event Mouse move event.
  * @private
  */
-camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
+cca.util.PointerTracker.prototype.onMouseMove_ = function(event) {
   // Ignore mouse events, which are invoked on the same position, but with
   // changed client coordinates. This will happen eg. when scrolling. We should
   // ignore them, since they are not invoked by an actual mouse move.
@@ -533,7 +505,7 @@ camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
  * @param {Event} event Touch start event.
  * @private
  */
-camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
+cca.util.PointerTracker.prototype.onTouchStart_ = function(event) {
   this.callback_(event);
 };
 
@@ -542,22 +514,22 @@ camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
  * @param {Event} event Touch move event.
  * @private
  */
-camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
+cca.util.PointerTracker.prototype.onTouchMove_ = function(event) {
   this.callback_(event);
 };
 
 /**
  * Tracks scrolling and calls a callback, when scrolling is started and ended
  * by either the scroller or the user.
- * @param {camera.util.SmoothScroller} scroller Scroller object to be tracked.
+ * @param {cca.util.SmoothScroller} scroller Scroller object to be tracked.
  * @param {function()} onScrollStarted Callback called when scrolling is
  *     started.
  * @param {function()} onScrollEnded Callback called when scrolling is ended.
  * @constructor
  */
-camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
+cca.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   /**
-   * @type {camera.util.SmoothScroller}
+   * @type {cca.util.SmoothScroller}
    * @private
    */
   this.scroller_ = scroller;
@@ -632,7 +604,7 @@ camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   window.addEventListener('touchend', this.onTouchEnd_.bind(this));
 };
 
-camera.util.ScrollTracker.prototype = {
+cca.util.ScrollTracker.prototype = {
   /**
    * @return {boolean} Whether scrolling is being performed or not.
    */
@@ -656,7 +628,7 @@ camera.util.ScrollTracker.prototype = {
  * @param {Event} event Mouse down event.
  * @private
  */
-camera.util.ScrollTracker.prototype.onMouseDown_ = function(event) {
+cca.util.ScrollTracker.prototype.onMouseDown_ = function(event) {
   this.mousePressed_ = true;
 };
 
@@ -665,7 +637,7 @@ camera.util.ScrollTracker.prototype.onMouseDown_ = function(event) {
  * @param {Event} event Mouse up event.
  * @private
  */
-camera.util.ScrollTracker.prototype.onMouseUp_ = function(event) {
+cca.util.ScrollTracker.prototype.onMouseUp_ = function(event) {
   this.mousePressed_ = false;
 };
 
@@ -674,7 +646,7 @@ camera.util.ScrollTracker.prototype.onMouseUp_ = function(event) {
  * @param {Event} event Mouse down event.
  * @private
  */
-camera.util.ScrollTracker.prototype.onTouchStart_ = function(event) {
+cca.util.ScrollTracker.prototype.onTouchStart_ = function(event) {
   this.touchPressed_ = true;
 };
 
@@ -683,14 +655,14 @@ camera.util.ScrollTracker.prototype.onTouchStart_ = function(event) {
  * @param {Event} event Mouse up event.
  * @private
  */
-camera.util.ScrollTracker.prototype.onTouchEnd_ = function(event) {
+cca.util.ScrollTracker.prototype.onTouchEnd_ = function(event) {
   this.touchPressed_ = false;
 };
 
 /**
  * Starts monitoring.
  */
-camera.util.ScrollTracker.prototype.start = function() {
+cca.util.ScrollTracker.prototype.start = function() {
   if (this.timer_ !== null)
     return;
   this.timer_ = setInterval(this.probe_.bind(this), 100);
@@ -699,7 +671,7 @@ camera.util.ScrollTracker.prototype.start = function() {
 /**
  * Stops monitoring.
  */
-camera.util.ScrollTracker.prototype.stop = function() {
+cca.util.ScrollTracker.prototype.stop = function() {
   if (this.timer_ === null)
     return;
   clearTimeout(this.timer_);
@@ -710,7 +682,7 @@ camera.util.ScrollTracker.prototype.stop = function() {
  * Probes for scrolling changes.
  * @private
  */
-camera.util.ScrollTracker.prototype.probe_ = function() {
+cca.util.ScrollTracker.prototype.probe_ = function() {
   var scrollLeft = this.scroller_.scrollLeft;
   var scrollTop = this.scroller_.scrollTop;
 
@@ -760,12 +732,12 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
 
 /**
  * Makes an element scrollable by dragging with a mouse.
- * @param {camera.util.Scroller} scroller Scroller for the element.
+ * @param {cca.util.Scroller} scroller Scroller for the element.
  * @constructor
  */
-camera.util.MouseScroller = function(scroller) {
+cca.util.MouseScroller = function(scroller) {
   /**
-   * @type {camera.util.Scroller}
+   * @type {cca.util.Scroller}
    * @private
    */
   this.scroller_ = scroller;
@@ -797,7 +769,7 @@ camera.util.MouseScroller = function(scroller) {
  * @param {Event} event Mouse down event.
  * @private
  */
-camera.util.MouseScroller.prototype.onMouseDown_ = function(event) {
+cca.util.MouseScroller.prototype.onMouseDown_ = function(event) {
   if (event.which != 1)
     return;
 
@@ -813,7 +785,7 @@ camera.util.MouseScroller.prototype.onMouseDown_ = function(event) {
  * @param {Event} event Mouse move event.
  * @private
  */
-camera.util.MouseScroller.prototype.onMouseMove_ = function(event) {
+cca.util.MouseScroller.prototype.onMouseMove_ = function(event) {
   if (!this.startPosition_)
     return;
 
@@ -831,7 +803,7 @@ camera.util.MouseScroller.prototype.onMouseMove_ = function(event) {
       this.startScrollPosition_[1] - (event.screenY - this.startPosition_[1]);
 
   this.scroller_.scrollTo(
-      scrollLeft, scrollTop, camera.util.SmoothScroller.Mode.INSTANT);
+      scrollLeft, scrollTop, cca.util.SmoothScroller.Mode.INSTANT);
 };
 
 /**
@@ -839,7 +811,7 @@ camera.util.MouseScroller.prototype.onMouseMove_ = function(event) {
  * @param {Event} event Mouse down event.
  * @private
  */
-camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
+cca.util.MouseScroller.prototype.onMouseUp_ = function(event) {
   this.startPosition_ = null;
   this.startScrollPosition_ = null;
 };
@@ -849,7 +821,7 @@ camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
  * @param {Event} event Keyboard event.
  * @return {string} Shortcut identifier.
  */
-camera.util.getShortcutIdentifier = function(event) {
+cca.util.getShortcutIdentifier = function(event) {
   var identifier = (event.ctrlKey ? 'Ctrl-' : '') +
                    (event.altKey ? 'Alt-' : '') +
                    (event.shiftKey ? 'Shift-' : '') +
@@ -887,7 +859,7 @@ camera.util.getShortcutIdentifier = function(event) {
 /**
  * Makes all elements with a tabindex attribute unfocusable by mouse.
  */
-camera.util.makeElementsUnfocusableByMouse = function() {
+cca.util.makeElementsUnfocusableByMouse = function() {
   var elements = document.querySelectorAll('[tabindex]');
   for (var index = 0; index < elements.length; index++) {
     elements[index].addEventListener('mousedown', function(event) {
@@ -906,7 +878,7 @@ camera.util.makeElementsUnfocusableByMouse = function() {
  * @param {boolean} fill True to fill up and crop the content to the bounds,
  *     false to letterbox the content within the bounds.
  */
-camera.util.updateElementSize = function(
+cca.util.updateElementSize = function(
     wrapper, boundWidth, boundHeight, fill) {
   // Assume the wrapped child is either img or video element.
   var child = wrapper.firstElementChild;
@@ -924,7 +896,7 @@ camera.util.updateElementSize = function(
  * Checks if the window is maximized or fullscreen.
  * @return {boolean} True if maximized or fullscreen, false otherwise.
  */
-camera.util.isWindowFullSize = function() {
+cca.util.isWindowFullSize = function() {
   // App-window's isFullscreen state and window's outer-size may not be updated
   // immediately during resizing. Use app-window's isMaximized state and
   // window's inner-size here as workarounds.

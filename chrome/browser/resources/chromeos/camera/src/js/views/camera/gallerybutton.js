@@ -7,40 +7,40 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Namespace for Camera view.
  */
-camera.views.camera = camera.views.camera || {};
+cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the gallery-button of Camera view.
- * @param {camera.Router} router View router to switch views.
- * @param {camera.models.Gallery} model Model object.
- * @implements {camera.models.Gallery.Observer}
+ * @param {cca.Router} router View router to switch views.
+ * @param {cca.models.Gallery} model Model object.
+ * @implements {cca.models.Gallery.Observer}
  * @constructor
  */
-camera.views.camera.GalleryButton = function(router, model) {
+cca.views.camera.GalleryButton = function(router, model) {
   /**
-   * @type {camera.Router}
+   * @type {cca.Router}
    * @private
    */
   this.router_ = router;
 
   /**
-   * @type {camera.models.Gallery}
+   * @type {cca.models.Gallery}
    * @private
    */
   this.model_ = model;
 
   /**
-   * @type {camera.models.Gallery.Picture}
+   * @type {cca.models.Gallery.Picture}
    * @private
    */
   this.lastPicture_ = null;
@@ -65,7 +65,7 @@ camera.views.camera.GalleryButton = function(router, model) {
   });
 };
 
-camera.views.camera.GalleryButton.prototype = {
+cca.views.camera.GalleryButton.prototype = {
   set disabled(value) {
     this.button_.disabled = value;
   },
@@ -75,7 +75,7 @@ camera.views.camera.GalleryButton.prototype = {
  * Updates the button for the model changes.
  * @private
  */
-camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
+cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
   this.model_.lastPicture().then(picture => {
     if (picture != this.lastPicture_) {
       this.lastPicture_ = picture;
@@ -94,11 +94,11 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
 
 /**
  * Opens the gallery to browse the picture.
- * @param {camera.models.Gallery.Picture} picture Picture to be browsed.
+ * @param {cca.models.Gallery.Picture} picture Picture to be browsed.
  * @private
  */
-camera.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
-  if (camera.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
+cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
+  if (cca.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     chrome.fileManagerPrivate.executeTask(
         id, [picture.pictureEntry], result => {
@@ -107,7 +107,7 @@ camera.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
       }
     });
   } else {
-    this.router_.navigate(camera.Router.ViewIdentifier.BROWSER,
+    this.router_.navigate(cca.Router.ViewIdentifier.BROWSER,
         {picture: picture});
   }
 };
@@ -115,8 +115,7 @@ camera.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
 /**
  * @override
  */
-camera.views.camera.GalleryButton.prototype.onPictureDeleted = function(
-    picture) {
+cca.views.camera.GalleryButton.prototype.onPictureDeleted = function(picture) {
   if (this.lastPicture_ == picture) {
     this.updateButton_();
   }
@@ -125,7 +124,7 @@ camera.views.camera.GalleryButton.prototype.onPictureDeleted = function(
 /**
  * @override
  */
-camera.views.camera.GalleryButton.prototype.onPictureAdded = function(picture) {
+cca.views.camera.GalleryButton.prototype.onPictureAdded = function(picture) {
   if (!this.lastPicture_ || this.lastPicture_.timestamp <= picture.timestamp) {
     this.updateButton_();
   }
