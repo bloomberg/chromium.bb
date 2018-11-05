@@ -5,7 +5,6 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//gpu/vulkan/features.gni")
 
 group("service") {
   if (is_component_build) {
@@ -294,7 +293,6 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config",
     "//gpu/ipc/common:surface_handle_type",
-    "//gpu/vulkan:buildflags",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
     "//third_party/angle:translator",
@@ -308,10 +306,6 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl",
     "//ui/gl/init",
   ]
-
-  if (enable_vulkan) {
-    deps += [ "//components/viz/common:vulkan_context_provider" ]
-  }
 
   if (is_mac) {
     # Required by gles2_cmd_decoder.cc on Mac.
