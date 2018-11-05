@@ -18,6 +18,7 @@ const $fidl__kAlignmentMask = 0x7;
 const $fidl__kLE = true;
 
 const $fidl__kUserspaceTxidMask = 0x7fffffff;
+const $fidl__kHandlePresent = 0xffffffff;
 var $fidl__nextTxid = 1;
 
 function $fidl__align(size) {
@@ -78,6 +79,13 @@ $fidl_Encoder.prototype._grow = function(newSize) {
   this.data = new DataView(newBuffer);
 };
 
+/**
+ * @param {number} handle
+ */
+$fidl_Encoder.prototype.addHandle = function(handle) {
+  this.handles.push(handle);
+};
+
 $fidl_Encoder.prototype.messageData = function() {
   // Add all out of line data.
   var len = this.outOfLine.length;
@@ -117,6 +125,8 @@ $fidl_Decoder.prototype.claimMemory = function(size) {
 }
 
 $fidl_Decoder.prototype.claimHandle = function() {
+  if (this.nextHandle >= this.handles.length)
+    throw "Attempt to claim more handles than are available";
   return this.handles[this.nextHandle++];
 }
 
@@ -155,6 +165,27 @@ const _kTT_uint16 = {
 const _kTT_uint32 = {
   enc: function(e, o, v) { e.data.setUint32(o, v, $fidl__kLE); },
   dec: function(d, o) { return d.data.getUint32(o, $fidl__kLE); },
+};
+
+const _kTT_Handle = {
+  enc: function(e, o, v) {
+    if (v === null || v === undefined) {
+      e.data.setUint32(o, 0, $fidl__kLE);
+    } else {
+      e.data.setUint32(o, $fidl__kHandlePresent, $fidl__kLE);
+      e.addHandle(v);
+    }
+  },
+  dec: function(d, o) {
+    var $present = d.data.getUint32(o, $fidl__kLE);
+    if ($present === 0) {
+      return 0;
+    } else {
+      if ($present !== $fidl__kHandlePresent)
+        throw "Expected UINT32_MAX to indicate handle presence";
+      return d.claimHandle();
+    }
+  },
 };
 
 const _kTT_String_Nonnull = {

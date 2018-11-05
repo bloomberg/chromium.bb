@@ -5,8 +5,11 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/internal/pending_response.h>
 #include <lib/fidl/cpp/internal/weak_stub_controller.h>
+#include <lib/zx/log.h>
+#include <zircon/syscalls/log.h>
 
 #include "base/bind.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +31,22 @@ static const char kRuntimeFile[] =
     "/pkg/build/fuchsia/fidlgen_js/runtime/fidl.mjs";
 static const char kTestBindingFile[] =
     "/pkg/build/fuchsia/fidlgen_js/fidl/fidljstest/js/fidl.js";
+
+namespace {
+
+zx_koid_t GetKoidForHandle(const zx::object_base& object) {
+  zx_info_handle_basic_t info;
+  zx_status_t status =
+      zx_object_get_info(object.get(), ZX_INFO_HANDLE_BASIC, &info,
+                         sizeof(info), nullptr, nullptr);
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "zx_object_get_info";
+    return ZX_KOID_INVALID;
+  }
+  return info.koid;
+}
+
+}  // namespace
 
 class FidlGenJsTestShellRunnerDelegate : public gin::ShellRunnerDelegate {
  public:
@@ -190,6 +209,14 @@ class TestolaImpl : public fidljstest::Testola {
     resp(std::move(sat));
   }
 
+  void PassHandles(zx::job job, PassHandlesCallback callback) override {
+    EXPECT_EQ(GetKoidForHandle(job), GetKoidForHandle(*zx::job::default_job()));
+    zx::log log;
+    EXPECT_EQ(zx::log::create(ZX_LOG_FLAG_READABLE, &log), ZX_OK);
+    unowned_log_handle_ = log.get();
+    callback(std::move(log));
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -197,6 +224,8 @@ class TestolaImpl : public fidljstest::Testola {
   fidljstest::Blorp various_blorp() const { return various_blorp_; }
   const std::string& various_msg() const { return various_msg_; }
   const std::vector<uint32_t>& various_stuff() const { return various_stuff_; }
+
+  zx_handle_t unowned_log_handle() const { return unowned_log_handle_; }
 
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
 
@@ -216,6 +245,7 @@ class TestolaImpl : public fidljstest::Testola {
   std::vector<uint32_t> various_stuff_;
   fidljstest::BasicStruct basic_struct_;
   std::vector<base::OnceClosure> response_callbacks_;
+  zx_handle_t unowned_log_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -369,7 +399,7 @@ TEST_F(FidlGenJsTest, RawWithResponse) {
            .then(sum => {
               this.sum_result = sum;
             })
-           .catch((e) => log('HOT GARBAGE: ' + e));
+           .catch((e) => log('FAILED: ' + e));
     )";
   helper.runner().Run(source, "test.js");
 
@@ -407,7 +437,7 @@ TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
               this.rejected = true;
             })
            .catch((e) => {
-             log('HOT GARBAGE: ' + e);
+             log('FAILED: ' + e);
              this.excepted = true;
            })
     )";
@@ -484,7 +514,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
              this.result_basic_u32 = sat.basic.u32;
              this.result_later_string = sat.later_string;
            })
-           .catch((e) => log('HOT GARBAGE: ' + e));
+           .catch((e) => log('FAILED: ' + e));
     )";
   helper.runner().Run(source, "test.js");
 
@@ -507,6 +537,49 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
   EXPECT_EQ(helper.Get<unsigned int>("result_basic_u16"), 64000u);
   EXPECT_EQ(helper.Get<unsigned int>("result_basic_u32"), 4000000000u);
   EXPECT_EQ(helper.Get<std::string>("result_later_string"), "ⓣⓔⓡⓜⓘⓝⓐⓣⓞⓡ");
+}
+
+TEST_F(FidlGenJsTest, HandlePassing) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  zx::job default_job_copy;
+  ASSERT_EQ(zx::job::default_job()->duplicate(ZX_RIGHT_SAME_RIGHTS,
+                                              &default_job_copy),
+            ZX_OK);
+  helper.runner().global()->Set(
+      gin::StringToSymbol(isolate, "testJobHandle"),
+      gin::ConvertToV8(isolate, default_job_copy.get()));
+
+  // TODO(crbug.com/883496): Handles wrapped in Transferrable once MessagePort
+  // is sorted out, and then stop treating handles as unmanaged |uint32_t|s.
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+    proxy.PassHandles(testJobHandle).then(h => {
+      this.debuglogHandle = h;
+    }).catch((e) => log('FAILED: ' + e));
+  )";
+  helper.runner().Run(source, "test.js");
+
+  // Run the message loop to send the request and receive a response.
+  base::RunLoop().RunUntilIdle();
+
+  zx_handle_t debug_handle_back_from_js =
+      helper.Get<uint32_t>("debuglogHandle");
+  EXPECT_EQ(debug_handle_back_from_js, testola_impl.unowned_log_handle());
+
+  // Make sure we received the valid handle back correctly, and close it. Not
+  // stored into a zx::log in case it isn't valid, and to check the return value
+  // from closing it.
+  EXPECT_EQ(zx_handle_close(debug_handle_back_from_js), ZX_OK);
+
+  // Ensure we didn't pass away our default job.
+  EXPECT_NE(GetKoidForHandle(*zx::job::default_job()), ZX_KOID_INVALID);
 }
 
 int main(int argc, char** argv) {

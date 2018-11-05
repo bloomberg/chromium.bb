@@ -240,7 +240,6 @@ v8::Local<v8::Object> ZxChannelRead(gin::Arguments* args) {
                     handles.data(), handles.size(), &actual_handles);
   DCHECK_EQ(actual_bytes, data_size);
   DCHECK_EQ(actual_handles, num_handles);
-  CHECK_EQ(actual_handles, 0u) << "Handle passing untested";
 
   if (status != ZX_OK) {
     return gin::DataObjectBuilder(args->isolate())
