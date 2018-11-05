@@ -190,6 +190,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // TODO(layoutng): Figure out why these two call can't be inside the
       // !constraint_space.IsIntermediateLayout() block below.
       UpdateShapeOutsideInfoIfNeeded(
+          *layout_result,
           constraint_space.PercentageResolutionSize().inline_size);
       // We may need paint invalidation even if we can reuse layout, as our
       // paint offset/visual rect may have changed due to relative
@@ -262,6 +263,19 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
                                         /* ignored */ nullptr);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);
   }
+
+  // We always need to update the ShapeOutsideInfo even if the layout is
+  // intermediate (e.g. called during a min/max pass).
+  //
+  // If a shape-outside float is present in an orthogonal flow, when
+  // calculating the min/max-size (by performing an intermediate layout), we
+  // might calculate this incorrectly, as the layout won't take into account the
+  // shape-outside area.
+  //
+  // TODO(ikilpatrick): This should be fixed by moving the shape-outside data
+  // to the NGLayoutResult, removing this "side" data-structure.
+  UpdateShapeOutsideInfoIfNeeded(
+      *layout_result, constraint_space.PercentageResolutionSize().inline_size);
 
   return layout_result;
 }
@@ -585,9 +599,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->UpdateAfterLayout();
   box_->ClearNeedsLayout();
 
-  UpdateShapeOutsideInfoIfNeeded(
-      constraint_space.PercentageResolutionSize().inline_size);
-
   // Overflow computation depends on this being set.
   if (box_->IsLayoutBlockFlow()) {
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
@@ -877,9 +888,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   builder.SetPadding(padding);
 
   CopyBaselinesFromOldLayout(constraint_space, &builder);
+
+  scoped_refptr<NGLayoutResult> layout_result = builder.ToBoxFragment();
   UpdateShapeOutsideInfoIfNeeded(
-      constraint_space.PercentageResolutionSize().inline_size);
-  return builder.ToBoxFragment();
+      *layout_result, constraint_space.PercentageResolutionSize().inline_size);
+
+  return layout_result;
 }
 
 void NGBlockNode::CopyBaselinesFromOldLayout(
@@ -942,9 +956,15 @@ LayoutUnit NGBlockNode::AtomicInlineBaselineFromOldLayout(
 // current shape machinery requires setting the size of the float after layout
 // in the parents writing mode.
 void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
+    const NGLayoutResult& layout_result,
     LayoutUnit percentage_resolution_inline_size) {
   if (!box_->IsFloating() || !box_->GetShapeOutsideInfo())
     return;
+
+  // The box_ may not have a valid size yet (due to an intermediate layout),
+  // use the fragment's size instead.
+  DCHECK(layout_result.PhysicalFragment());
+  LayoutSize box_size = layout_result.PhysicalFragment()->Size().ToLayoutSize();
 
   // TODO(ikilpatrick): Ideally this should be moved to a NGLayoutResult
   // computing the shape area. There may be an issue with the new fragmentation
@@ -952,9 +972,8 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
   ShapeOutsideInfo* shape_outside = box_->GetShapeOutsideInfo();
   LayoutBlock* containing_block = box_->ContainingBlock();
   shape_outside->SetReferenceBoxLogicalSize(
-      containing_block->IsHorizontalWritingMode()
-          ? box_->Size()
-          : box_->Size().TransposedSize());
+      containing_block->IsHorizontalWritingMode() ? box_size
+                                                  : box_size.TransposedSize());
   shape_outside->SetPercentageResolutionInlineSize(
       percentage_resolution_inline_size);
 }
