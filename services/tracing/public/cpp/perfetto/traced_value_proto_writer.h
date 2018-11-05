@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProtoAppender
   perfetto::protos::pbzero::ChromeTraceEvent_Arg* proto_;
 };
 
-void COMPONENT_EXPORT(TRACING_CPP) RegisterTracedValueProtoWriter(bool enable);
+void COMPONENT_EXPORT(TRACING_CPP) RegisterTracedValueProtoWriter();
 }  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACED_VALUE_PROTO_WRITER_H_

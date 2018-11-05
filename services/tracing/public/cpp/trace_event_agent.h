@@ -27,11 +27,6 @@ class Connector;
 
 namespace tracing {
 
-// Agent used to interface with the legacy tracing system.
-// When Perfetto is used for the backend instead of TraceLog,
-// most of the mojom::Agent functions will never be used
-// as the control signals will go through the Perfetto
-// interface instead.
 class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
  public:
   using MetadataGeneratorFunction =
@@ -41,28 +36,46 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
       service_manager::Connector* connector,
       bool request_clock_sync_marker_on_android);
 
-  TraceEventAgent(service_manager::Connector* connector,
-                        bool request_clock_sync_marker_on_android);
+  ~TraceEventAgent() override;
 
-  void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
+  TraceEventAgent(service_manager::Connector* connector,
+                  bool request_clock_sync_marker_on_android);
+
+  // mojom::Agent
+  void RequestClockSyncMarker(
+      const std::string& sync_id,
+      Agent::RequestClockSyncMarkerCallback callback) override;
+  void GetCategories(GetCategoriesCallback callback) override;
+
+  virtual void AddMetadataGeneratorFunction(
+      MetadataGeneratorFunction generator) = 0;
 
  private:
-  friend std::default_delete<TraceEventAgent>;      // For Testing
+  DISALLOW_COPY_AND_ASSIGN(TraceEventAgent);
+};
+
+// Agent used to interface with the legacy tracing system,
+// i.e. without Perfetto.
+class COMPONENT_EXPORT(TRACING_CPP) LegacyTraceEventAgent
+    : public TraceEventAgent {
+ public:
+  LegacyTraceEventAgent(service_manager::Connector* connector,
+                        bool request_clock_sync_marker_on_android);
+
+  void AddMetadataGeneratorFunction(
+      MetadataGeneratorFunction generator) override;
+
+ private:
+  friend std::default_delete<LegacyTraceEventAgent>;  // For Testing
   friend class TraceEventAgentTest;                 // For Testing
 
-  ~TraceEventAgent() override;
+  ~LegacyTraceEventAgent() override;
 
   // mojom::Agent
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     StartTracingCallback callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
-
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      Agent::RequestClockSyncMarkerCallback callback) override;
-
-  void GetCategories(GetCategoriesCallback callback) override;
 
   void RequestBufferStatus(RequestBufferStatusCallback callback) override;
 
@@ -76,7 +89,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(TraceEventAgent);
+  DISALLOW_COPY_AND_ASSIGN(LegacyTraceEventAgent);
 };
 
 }  // namespace tracing
