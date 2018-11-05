@@ -159,7 +159,8 @@ class FastInkView::LayerTreeFrameSinkHolder
                  gfx::Rect(holder->last_frame_size_in_pixels_),
                  gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
-    holder->frame_sink_->SubmitCompositorFrame(std::move(frame));
+    holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                               /*show_hit_test_borders=*/false);
 
     // Delete sink holder immediately if not waiting for exported resources to
     // be reclaimed.
@@ -188,7 +189,8 @@ class FastInkView::LayerTreeFrameSinkHolder
     exported_resources_[resource_id] = std::move(resource);
     last_frame_size_in_pixels_ = frame.size_in_pixels();
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
-    frame_sink_->SubmitCompositorFrame(std::move(frame));
+    frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                       /*show_hit_test_borders=*/false);
   }
 
   void DamageExportedResources() {

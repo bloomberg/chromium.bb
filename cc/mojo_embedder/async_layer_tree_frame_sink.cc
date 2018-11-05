@@ -161,7 +161,8 @@ void AsyncLayerTreeFrameSink::SetLocalSurfaceId(
 }
 
 void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    bool show_hit_test_borders) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_ptr_);
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
@@ -204,6 +205,9 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
   else
     hit_test_region_list = client_->BuildHitTestData();
+
+  // TODO(zandershah): Add kHitTestDebug flag to |hit_test_region_list_| if
+  // |show_hit_test_borders| is set. https://crbug.com/895600
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
     last_submitted_local_surface_id_ = local_surface_id_;

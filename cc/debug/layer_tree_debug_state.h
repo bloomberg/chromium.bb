@@ -46,6 +46,8 @@ class CC_DEBUG_EXPORT LayerTreeDebugState {
   bool rasterize_only_visible_content;
   bool show_picture_borders;
 
+  bool show_hit_test_borders;
+
   void SetRecordRenderingStats(bool enabled);
   bool RecordRenderingStats() const;
 

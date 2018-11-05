@@ -91,7 +91,8 @@ class SynchronousLayerTreeFrameSink
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
-  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool show_hit_test_borders) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const viz::SharedBitmapId& id) override;

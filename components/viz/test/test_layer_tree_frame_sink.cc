@@ -155,7 +155,8 @@ void TestLayerTreeFrameSink::SetLocalSurfaceId(
   test_client_->DisplayReceivedLocalSurfaceId(local_surface_id);
 }
 
-void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame,
+                                                   bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);

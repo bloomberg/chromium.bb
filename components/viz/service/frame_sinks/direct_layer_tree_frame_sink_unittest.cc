@@ -104,7 +104,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
     auto frame = CompositorFrameBuilder()
                      .AddRenderPass(display_rect_, damage_rect)
                      .Build();
-    layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));
+    layer_tree_frame_sink_->SubmitCompositorFrame(
+        std::move(frame), /*show_hit_test_borders=*/false);
   }
 
   void SendRenderPassList(RenderPassList* pass_list) {
@@ -112,7 +113,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
                      .SetRenderPassList(std::move(*pass_list))
                      .Build();
     pass_list->clear();
-    layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));
+    layer_tree_frame_sink_->SubmitCompositorFrame(
+        std::move(frame), /*show_hit_test_borders=*/false);
   }
 
   void SetUp() override {

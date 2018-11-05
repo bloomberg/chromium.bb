@@ -228,7 +228,8 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
 }
 
 void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    bool show_hit_test_borders) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
 

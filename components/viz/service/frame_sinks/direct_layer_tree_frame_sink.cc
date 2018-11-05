@@ -157,7 +157,9 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
   return hit_test_region_list;
 }
 
-void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void DirectLayerTreeFrameSink::SubmitCompositorFrame(
+    CompositorFrame frame,
+    bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
