@@ -7,7 +7,7 @@
 (function() {
 
 /**
- * Check if |value| equals the |desiredValue| with 1% margin of tolerance.
+ * Check if |value| equals the |desiredValue| within 1% margin of tolerance.
  * @param {number} value The variable value.
  * @param {number} desiredValue The desired value.
  * @return {boolean}
