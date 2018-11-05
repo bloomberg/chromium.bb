@@ -1885,6 +1885,10 @@ if (enable_java_templates) {
   #     uncompressed in the APK. Must be unset or true if load_library_from_apk
   #     is set to true.
   #   uncompress_dex: Store final .dex files uncompressed in the apk.
+  #   optimize_resources: True if resource names should be stripped from the
+  #     resources.arsc file in the apk or module.
+  #   resources_config_path: Path to the aapt2 optimize config file that tags
+  #     resources with acceptable/non-acceptable optimizations.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2125,6 +2129,13 @@ if (enable_java_templates) {
       _android_sdk_dep = "//third_party/android_tools:android_sdk_java"
     }
 
+    _optimize_resources =
+        defined(invoker.optimize_resources) && invoker.optimize_resources
+    if (_optimize_resources) {
+      _unoptimized_resources_path =
+          "$target_out_dir/$_template_name.unoptimized.ap_"
+    }
+
     _compile_resources_target = "${_template_name}__compile_resources"
     _compile_resources_rtxt_out =
         "${target_gen_dir}/${_compile_resources_target}_R.txt"
@@ -2137,6 +2148,7 @@ if (enable_java_templates) {
                                "aapt_locale_whitelist",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resources_config_path",
                                "png_to_webp",
                                "no_xml_namespaces",
                              ])
@@ -2154,6 +2166,10 @@ if (enable_java_templates) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
       output = _packaged_resources_path
+      if (_optimize_resources) {
+        optimize_resources = true
+        unoptimized_resources_path = _unoptimized_resources_path
+      }
 
       build_config = _build_config
       deps = _deps + [
@@ -2590,6 +2606,9 @@ if (enable_java_templates) {
         if (_incremental_allowed) {
           android_manifest = _android_manifest
           base_path = _base_path
+          if (_optimize_resources) {
+            unoptimized_resources_path = _unoptimized_resources_path
+          }
         }
 
         # Incremental apk does not use native libs nor final dex.
@@ -2863,6 +2882,7 @@ if (enable_java_templates) {
                                "never_incremental",
                                "no_build_hooks",
                                "no_xml_namespaces",
+                               "optimize_resources",
                                "png_to_webp",
                                "post_process_package_resources_script",
                                "product_version_resources_dep",
@@ -2871,6 +2891,7 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resources_config_path",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
@@ -2961,6 +2982,7 @@ if (enable_java_templates) {
                                "native_lib_version_rule",
                                "negative_main_dex_globs",
                                "no_xml_namespaces",
+                               "optimize_resources",
                                "png_to_webp",
                                "product_version_resources_dep",
                                "proguard_configs",
@@ -2968,6 +2990,7 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resources_config_path",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
