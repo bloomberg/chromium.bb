@@ -680,6 +680,26 @@ void AXObjectCacheImpl::TextChanged(AXObject* obj,
   PostNotification(obj, ax::mojom::Event::kTextChanged);
 }
 
+void AXObjectCacheImpl::FocusableChanged(Element* element) {
+  AXObject* obj = GetOrCreate(element);
+  if (!obj)
+    return;
+
+  if (obj->AriaHiddenRoot()) {
+    // Elements that are hidden but focusable are not ignored. Therefore, if a
+    // hidden element's focusable state changes, it's ignored state must be
+    // recomputed.
+    ChildrenChanged(element->parentNode());
+  } else {
+    // Refresh the focusable state on the exposed object.
+    // Reusing the value change event in order to invalidate, even though the
+    // value did not necessarily change.
+    // TODO(accessibility) find out why using MarkAXObjectDirty(obj, false) does
+    // not cause a state change event to be emitted.
+    PostNotification(obj, ax::mojom::Event::kValueChanged);
+  }
+}
+
 void AXObjectCacheImpl::DocumentTitleChanged() {
   PostNotification(Root(), ax::mojom::Event::kDocumentTitleChanged);
 }
@@ -1016,6 +1036,8 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     LabelChanged(element);
   else if (attr_name == kIdAttr)
     MaybeNewRelationTarget(element, Get(element));
+  else if (attr_name == kTabindexAttr)
+    FocusableChanged(element);
 
   if (!attr_name.LocalName().StartsWith("aria-"))
     return;

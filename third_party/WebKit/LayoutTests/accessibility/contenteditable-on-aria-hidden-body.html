@@ -7,8 +7,8 @@
 
   <script>
   test(function() {
-    var axDocument = accessibilityController.rootElement;;
-    assert_equals(axDocument.childrenCount, 0);
+    var axDocument = accessibilityController.rootElement;
+    assert_equals(axDocument.childrenCount, 1);
 
     assert_false(axDocument.isEditable);
     assert_false(axDocument.isRichlyEditable);

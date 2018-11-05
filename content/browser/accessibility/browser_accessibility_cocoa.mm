@@ -1256,7 +1256,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (BOOL)isIgnored {
   if (![self instanceActive])
     return YES;
-  return [[self role] isEqualToString:NSAccessibilityUnknownRole];
+  return [[self role] isEqualToString:NSAccessibilityUnknownRole] ||
+         owner_->HasState(ax::mojom::State::kInvisible);
 }
 
 - (NSString*)invalid {

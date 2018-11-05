@@ -349,6 +349,10 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   if (GetRole() == ax::mojom::Role::kRootWebArea && GetText().empty())
     return false;
 
+  // Mark as uninteresting if it's hidden, even if it is focusable.
+  if (HasState(ax::mojom::State::kInvisible))
+    return false;
+
   // Focusable nodes are always interesting. Note that IsFocusable()
   // already skips over things like iframes and child frames that are
   // technically focusable but shouldn't be exposed as focusable on Android.
