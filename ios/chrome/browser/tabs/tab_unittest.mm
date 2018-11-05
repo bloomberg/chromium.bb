@@ -200,6 +200,7 @@ class TabTest : public BlockCleanupTest,
       OCMStub([mock_web_controller_ webViewNavigationProxy])
           .andReturn(mock_web_view_);
     }
+    OCMStub([mock_web_controller_ isViewAlive]).andReturn(YES);
 
     web::WebState::CreateParams create_params(browser_state);
     web_state_impl_ = std::make_unique<web::WebStateImpl>(create_params);
