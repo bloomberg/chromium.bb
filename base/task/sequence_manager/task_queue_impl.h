@@ -260,12 +260,10 @@ class BASE_EXPORT TaskQueueImpl {
     explicit AnyThread(TimeDomain* time_domain);
     ~AnyThread();
 
-    // TimeDomain and Observer are maintained in two copies: inside AnyThread
-    // and inside MainThreadOnly. They can be changed only from main thread, so
-    // it should be locked before accessing from other threads.
+    // TimeDomain is maintained in two copies: inside AnyThread and inside
+    // MainThreadOnly. It can be changed only from main thread, so it should be
+    // locked before accessing from other threads.
     TimeDomain* time_domain;
-    // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
-    OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
 
     bool unregistered = false;
   };
@@ -303,10 +301,10 @@ class BASE_EXPORT TaskQueueImpl {
     MainThreadOnly(TaskQueueImpl* task_queue, TimeDomain* time_domain);
     ~MainThreadOnly();
 
-    // Another copy of SequenceManagerImpl, TimeDomain and Observer
-    // for lock-free access from the main thread.
+    // Another copy of TimeDomain for lock-free access from the main thread.
     // See description inside struct AnyThread for details.
     TimeDomain* time_domain;
+
     // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
 
@@ -330,7 +328,7 @@ class BASE_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  void PostImmediateTaskImpl(PostedTask task);
+  void PostImmediateTaskImpl(PostedTask task, CurrentThread current_thread);
   void PostDelayedTaskImpl(PostedTask task, CurrentThread current_thread);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
@@ -346,11 +344,6 @@ class BASE_EXPORT TaskQueueImpl {
   void ScheduleDelayedWorkTask(Task pending_task);
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
-
-  // Push the task onto the |immediate_incoming_queue| and for auto pumped
-  // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
-  // empty.
-  void PushOntoImmediateIncomingQueueLocked(Task task);
 
   using TaskDeque = LazilyDeallocatedDeque<Task>;
 

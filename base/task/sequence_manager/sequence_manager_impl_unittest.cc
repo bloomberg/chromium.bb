@@ -1891,17 +1891,22 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_ImmediateTask) {
   // We should get a notification when a task is posted on an empty queue.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  manager_->ReloadEmptyWorkQueues();
   Mock::VerifyAndClearExpectations(&observer);
 
   // But not subsequently.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  manager_->ReloadEmptyWorkQueues();
   Mock::VerifyAndClearExpectations(&observer);
 
   // Unless the immediate work queue is emptied.
-  runners_[0]->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+  manager_->TakeTask();
+  manager_->TakeTask();
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  manager_->ReloadEmptyWorkQueues();
+  Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
   runners_[0]->ShutdownTaskQueue();
