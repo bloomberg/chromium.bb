@@ -19,7 +19,6 @@
 # or RenderWidgetHostMouseEventMonitor::EventWasReceived fails.
 # https://crbug.com/884360
 -SitePerProcessHitTestBrowserTest.CrossProcessTooltipTest*
--SitePerProcessHitTestBrowserTest.SubframeGestureEventRouting*
 
 
 # Flaky. https://crbug.com/889878

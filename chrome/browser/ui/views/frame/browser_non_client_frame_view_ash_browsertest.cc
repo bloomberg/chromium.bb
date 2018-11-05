@@ -78,6 +78,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/event_injector.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
@@ -238,6 +239,15 @@ class ImmersiveModeTester : public ImmersiveModeController::Observer {
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeTester);
 };
 
+// Update mouse location of aura::Env by injecting a mouse move event.
+// EventInjector is used so that the Window Service side code under mash sees
+// the updated mouse location as well.
+void UpdateMouseLocation(aura::Window* window, const gfx::Point& location) {
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                       ui::EventTimeForNow(), ui::EF_NONE, 0);
+  aura::EventInjector().Inject(window->GetHost(), &event);
+}
+
 }  // namespace
 
 using views::Widget;
@@ -304,7 +314,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
-  aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
+  // Move mouse cursor beyond immersive UI to avoid affecting tests.
+  UpdateMouseLocation(browser()->window()->GetNativeWindow(),
+                      gfx::Point(0, 100));
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
@@ -515,9 +528,14 @@ class ImmersiveModeBrowserViewTest
   ImmersiveModeBrowserViewTest() = default;
   ~ImmersiveModeBrowserViewTest() override = default;
 
+  // TopChromeMdParamTest<InProcessBrowserTest>:
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
-    aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
+
+    // Move mouse cursor beyond immersive UI to avoid affecting tests.
+    UpdateMouseLocation(browser()->window()->GetNativeWindow(),
+                        gfx::Point(0, 100));
+
     BrowserView::SetDisableRevealerDelayForTesting(true);
   }
 
