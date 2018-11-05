@@ -86,7 +86,7 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
 
   // Child has relative position with the root as the container.
   EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.location);
-  EXPECT_EQ(root->GetUniqueId().Get(), node_data.offset_container_id);
+  EXPECT_EQ(root->GetUniqueId(), node_data.offset_container_id);
 }
 
 TEST_F(AXTreeSourceMusTest, ScaleFactor) {

@@ -95,7 +95,7 @@ void AutomationManagerAura::HandleEvent(views::View* view,
   // This helps us avoid firing accessibility events for transient changes.
   // because there's a chance that the underlying object being wrapped could
   // be deleted, pass the ID of the object rather than the object pointer.
-  int32_t id = obj->GetUniqueId().Get();
+  int32_t id = obj->GetUniqueId();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
@@ -214,7 +214,7 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   // ancestor) but we shouldn't fire the event on the node not in the tree.
   if (current_tree_serializer_->IsInClientTree(aura_obj)) {
     ui::AXEvent event;
-    event.id = aura_obj->GetUniqueId().Get();
+    event.id = aura_obj->GetUniqueId();
     event.event_type = event_type;
     event_bundle.events.push_back(event);
   }

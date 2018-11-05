@@ -247,7 +247,7 @@ void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
   }
 
   ui::AXEvent event;
-  event.id = aura_obj->GetUniqueId().Get();
+  event.id = aura_obj->GetUniqueId();
   event.event_type = event_type;
   // Other fields are not used.
 

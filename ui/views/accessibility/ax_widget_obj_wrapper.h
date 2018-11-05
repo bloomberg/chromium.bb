@@ -29,7 +29,7 @@ class AXWidgetObjWrapper : public AXAuraObjWrapper,
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
-  const ui::AXUniqueId& GetUniqueId() const final;
+  int32_t GetUniqueId() const final;
 
   // WidgetObserver overrides.
   void OnWidgetDestroying(Widget* widget) override;

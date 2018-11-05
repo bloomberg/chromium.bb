@@ -109,16 +109,16 @@ TEST_F(AXTreeSourceViewsTest, Basics) {
   EXPECT_EQ(root, tree.GetParent(textfield));
 
   // IDs match the ones in the cache.
-  EXPECT_EQ(root->GetUniqueId().Get(), tree.GetId(root));
-  EXPECT_EQ(label1->GetUniqueId().Get(), tree.GetId(label1));
-  EXPECT_EQ(label2->GetUniqueId().Get(), tree.GetId(label2));
-  EXPECT_EQ(textfield->GetUniqueId().Get(), tree.GetId(textfield));
+  EXPECT_EQ(root->GetUniqueId(), tree.GetId(root));
+  EXPECT_EQ(label1->GetUniqueId(), tree.GetId(label1));
+  EXPECT_EQ(label2->GetUniqueId(), tree.GetId(label2));
+  EXPECT_EQ(textfield->GetUniqueId(), tree.GetId(textfield));
 
   // Reverse ID lookups work.
-  EXPECT_EQ(root, tree.GetFromId(root->GetUniqueId().Get()));
-  EXPECT_EQ(label1, tree.GetFromId(label1->GetUniqueId().Get()));
-  EXPECT_EQ(label2, tree.GetFromId(label2->GetUniqueId().Get()));
-  EXPECT_EQ(textfield, tree.GetFromId(textfield->GetUniqueId().Get()));
+  EXPECT_EQ(root, tree.GetFromId(root->GetUniqueId()));
+  EXPECT_EQ(label1, tree.GetFromId(label1->GetUniqueId()));
+  EXPECT_EQ(label2, tree.GetFromId(label2->GetUniqueId()));
+  EXPECT_EQ(textfield, tree.GetFromId(textfield->GetUniqueId()));
 
   // Validity.
   EXPECT_TRUE(tree.IsValid(root));

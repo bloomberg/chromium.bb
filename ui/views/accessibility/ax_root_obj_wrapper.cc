@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -98,8 +99,8 @@ void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
 #endif
 }
 
-const ui::AXUniqueId& AXRootObjWrapper::GetUniqueId() const {
-  return unique_id_;
+int32_t AXRootObjWrapper::GetUniqueId() const {
+  return unique_id_.Get();
 }
 
 void AXRootObjWrapper::OnDisplayMetricsChanged(const display::Display& display,

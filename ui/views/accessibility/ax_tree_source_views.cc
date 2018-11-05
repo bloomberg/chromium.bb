@@ -38,20 +38,20 @@ bool AXTreeSourceViews::GetTreeData(ui::AXTreeData* tree_data) const {
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
-    tree_data->focus_id = focus->GetUniqueId().Get();
+    tree_data->focus_id = focus->GetUniqueId();
   return true;
 }
 
 AXAuraObjWrapper* AXTreeSourceViews::GetFromId(int32_t id) const {
   AXAuraObjWrapper* root = GetRoot();
   // Root might not be in the cache.
-  if (id == root->GetUniqueId().Get())
+  if (id == root->GetUniqueId())
     return root;
   return AXAuraObjCache::GetInstance()->Get(id);
 }
 
 int32_t AXTreeSourceViews::GetId(AXAuraObjWrapper* node) const {
-  return node->GetUniqueId().Get();
+  return node->GetUniqueId();
 }
 
 void AXTreeSourceViews::GetChildren(
@@ -100,7 +100,7 @@ void AXTreeSourceViews::SerializeNode(AXAuraObjWrapper* node,
   ui::AXNodeData parent_data;
   parent->Serialize(&parent_data);
   out_data->location.Offset(-parent_data.location.OffsetFromOrigin());
-  out_data->offset_container_id = parent->GetUniqueId().Get();
+  out_data->offset_container_id = parent->GetUniqueId();
 }
 
 std::string AXTreeSourceViews::ToString(AXAuraObjWrapper* root,
