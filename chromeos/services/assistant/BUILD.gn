@@ -47,12 +47,6 @@ source_set("lib") {
       "assistant_manager_service_impl.h",
       "assistant_settings_manager_impl.cc",
       "assistant_settings_manager_impl.h",
-      "chromium_api_delegate.cc",
-      "chromium_api_delegate.h",
-      "chromium_http_connection.cc",
-      "chromium_http_connection.h",
-      "default_url_request_context_getter.cc",
-      "default_url_request_context_getter.h",
       "platform/audio_input_provider_impl.cc",
       "platform/audio_input_provider_impl.h",
       "platform/audio_media_data_source.cc",
@@ -84,11 +78,9 @@ source_set("lib") {
       "//libassistant/shared/internal_api/c:api_wrappers_entrypoint",
       "//libassistant/shared/public",
       "//libassistant/shared/public:export",
-      "//net",
       "//services/network/public/cpp",
       "//services/network/public/mojom",
       "//ui/base",
-      "//url",
     ]
 
     libs = [ "$root_out_dir/libassistant.so" ]
