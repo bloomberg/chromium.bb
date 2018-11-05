@@ -226,7 +226,7 @@ void TextFieldInputType::ForwardEvent(Event& event) {
 
   if (GetElement().GetLayoutObject() &&
       (event.IsMouseEvent() || event.IsDragEvent() ||
-       event.HasInterface(EventNames::WheelEvent) ||
+       event.HasInterface(event_interface_names::kWheelEvent) ||
        event.type() == event_type_names::kBlur ||
        event.type() == event_type_names::kFocus)) {
     LayoutTextControlSingleLine* layout_text_control =
@@ -262,7 +262,7 @@ void TextFieldInputType::HandleBlurEvent() {
 
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
   return (event.type() == event_type_names::kTextInput &&
-          event.HasInterface(EventNames::TextEvent) &&
+          event.HasInterface(event_interface_names::kTextEvent) &&
           ToTextEvent(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);
 }

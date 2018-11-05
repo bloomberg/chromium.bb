@@ -78,8 +78,10 @@ class DeviceMotionEvent final : public Event {
 DEFINE_TYPE_CASTS(DeviceMotionEvent,
                   Event,
                   event,
-                  event->InterfaceName() == EventNames::DeviceMotionEvent,
-                  event.InterfaceName() == EventNames::DeviceMotionEvent);
+                  event->InterfaceName() ==
+                      event_interface_names::kDeviceMotionEvent,
+                  event.InterfaceName() ==
+                      event_interface_names::kDeviceMotionEvent);
 
 }  // namespace blink
 

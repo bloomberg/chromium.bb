@@ -23,7 +23,7 @@ BlobEvent* BlobEvent::Create(const AtomicString& type,
 }
 
 const AtomicString& BlobEvent::InterfaceName() const {
-  return EventNames::BlobEvent;
+  return event_interface_names::kBlobEvent;
 }
 
 void BlobEvent::Trace(blink::Visitor* visitor) {

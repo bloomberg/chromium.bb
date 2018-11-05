@@ -24,7 +24,7 @@ PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
 
 const AtomicString& PresentationConnectionAvailableEvent::InterfaceName()
     const {
-  return EventNames::PresentationConnectionAvailableEvent;
+  return event_interface_names::kPresentationConnectionAvailableEvent;
 }
 
 void PresentationConnectionAvailableEvent::Trace(blink::Visitor* visitor) {

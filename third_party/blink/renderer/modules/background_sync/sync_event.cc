@@ -23,7 +23,7 @@ SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit* init)
 SyncEvent::~SyncEvent() = default;
 
 const AtomicString& SyncEvent::InterfaceName() const {
-  return EventNames::SyncEvent;
+  return event_interface_names::kSyncEvent;
 }
 
 String SyncEvent::tag() {

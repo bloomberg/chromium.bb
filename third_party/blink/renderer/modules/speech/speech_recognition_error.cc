@@ -88,7 +88,7 @@ SpeechRecognitionError::SpeechRecognitionError(
 }
 
 const AtomicString& SpeechRecognitionError::InterfaceName() const {
-  return EventNames::SpeechRecognitionError;
+  return event_interface_names::kSpeechRecognitionError;
 }
 
 }  // namespace blink

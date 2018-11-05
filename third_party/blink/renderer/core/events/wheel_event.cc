@@ -107,7 +107,7 @@ WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
       native_event_(event) {}
 
 const AtomicString& WheelEvent::InterfaceName() const {
-  return EventNames::WheelEvent;
+  return event_interface_names::kWheelEvent;
 }
 
 bool WheelEvent::IsMouseEvent() const {

@@ -36,7 +36,7 @@ ClipboardEvent::ClipboardEvent(const AtomicString& type,
 ClipboardEvent::~ClipboardEvent() = default;
 
 const AtomicString& ClipboardEvent::InterfaceName() const {
-  return EventNames::ClipboardEvent;
+  return event_interface_names::kClipboardEvent;
 }
 
 bool ClipboardEvent::IsClipboardEvent() const {

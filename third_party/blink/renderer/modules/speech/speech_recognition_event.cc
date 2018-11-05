@@ -57,7 +57,7 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::CreateNoMatch(
 }
 
 const AtomicString& SpeechRecognitionEvent::InterfaceName() const {
-  return EventNames::SpeechRecognitionEvent;
+  return event_interface_names::kSpeechRecognitionEvent;
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(

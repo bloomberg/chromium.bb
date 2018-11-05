@@ -24,7 +24,7 @@ PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
       message_(initializer->message()) {}
 
 const AtomicString& PresentationConnectionCloseEvent::InterfaceName() const {
-  return EventNames::PresentationConnectionCloseEvent;
+  return event_interface_names::kPresentationConnectionCloseEvent;
 }
 
 void PresentationConnectionCloseEvent::Trace(blink::Visitor* visitor) {

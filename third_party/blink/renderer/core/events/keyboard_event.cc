@@ -181,7 +181,7 @@ int KeyboardEvent::charCode() const {
 }
 
 const AtomicString& KeyboardEvent::InterfaceName() const {
-  return EventNames::KeyboardEvent;
+  return event_interface_names::kKeyboardEvent;
 }
 
 bool KeyboardEvent::IsKeyboardEvent() const {

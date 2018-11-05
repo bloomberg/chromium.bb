@@ -23,7 +23,7 @@ PushEvent::PushEvent(const AtomicString& type, const PushEventInit* initializer)
 PushEvent::~PushEvent() = default;
 
 const AtomicString& PushEvent::InterfaceName() const {
-  return EventNames::PushEvent;
+  return event_interface_names::kPushEvent;
 }
 
 PushMessageData* PushEvent::data() {

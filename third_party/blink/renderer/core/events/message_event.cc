@@ -242,7 +242,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 }
 
 const AtomicString& MessageEvent::InterfaceName() const {
-  return EventNames::MessageEvent;
+  return event_interface_names::kMessageEvent;
 }
 
 MessagePortArray MessageEvent::ports() {

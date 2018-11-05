@@ -40,7 +40,7 @@ BeforeTextInsertedEvent::~BeforeTextInsertedEvent() = default;
 
 const AtomicString& BeforeTextInsertedEvent::InterfaceName() const {
   // Notice that there is no BeforeTextInsertedEvent.idl.
-  return EventNames::Event;
+  return event_interface_names::kEvent;
 }
 
 void BeforeTextInsertedEvent::Trace(blink::Visitor* visitor) {

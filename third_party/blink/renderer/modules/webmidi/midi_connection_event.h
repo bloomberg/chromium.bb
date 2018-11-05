@@ -55,7 +55,7 @@ class MIDIConnectionEvent final : public Event {
   MIDIPort* port() { return port_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MIDIConnectionEvent;
+    return event_interface_names::kMIDIConnectionEvent;
   }
 
   void Trace(blink::Visitor*) override;

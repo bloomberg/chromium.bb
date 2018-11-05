@@ -46,7 +46,7 @@ class BeforeUnloadEvent final : public Event {
   String returnValue() const { return return_value_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::BeforeUnloadEvent;
+    return event_interface_names::kBeforeUnloadEvent;
   }
 
   void Trace(blink::Visitor*) override;

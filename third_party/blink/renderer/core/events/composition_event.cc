@@ -69,7 +69,7 @@ void CompositionEvent::initCompositionEvent(const AtomicString& type,
 }
 
 const AtomicString& CompositionEvent::InterfaceName() const {
-  return EventNames::CompositionEvent;
+  return event_interface_names::kCompositionEvent;
 }
 
 bool CompositionEvent::IsCompositionEvent() const {

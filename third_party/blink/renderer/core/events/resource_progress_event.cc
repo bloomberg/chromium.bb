@@ -42,7 +42,7 @@ const String& ResourceProgressEvent::url() const {
 }
 
 const AtomicString& ResourceProgressEvent::InterfaceName() const {
-  return EventNames::ResourceProgressEvent;
+  return event_interface_names::kResourceProgressEvent;
 }
 
 void ResourceProgressEvent::Trace(blink::Visitor* visitor) {

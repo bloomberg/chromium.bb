@@ -64,7 +64,7 @@ void MutationEvent::initMutationEvent(const AtomicString& type,
 }
 
 const AtomicString& MutationEvent::InterfaceName() const {
-  return EventNames::MutationEvent;
+  return event_interface_names::kMutationEvent;
 }
 
 void MutationEvent::Trace(blink::Visitor* visitor) {

@@ -22,7 +22,7 @@ GamepadEvent::GamepadEvent(const AtomicString& type,
 GamepadEvent::~GamepadEvent() = default;
 
 const AtomicString& GamepadEvent::InterfaceName() const {
-  return EventNames::GamepadEvent;
+  return event_interface_names::kGamepadEvent;
 }
 
 void GamepadEvent::Trace(blink::Visitor* visitor) {

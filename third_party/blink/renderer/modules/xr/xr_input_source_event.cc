@@ -28,7 +28,7 @@ XRInputSourceEvent::XRInputSourceEvent(
 XRInputSourceEvent::~XRInputSourceEvent() {}
 
 const AtomicString& XRInputSourceEvent::InterfaceName() const {
-  return EventNames::XRInputSourceEvent;
+  return event_interface_names::kXRInputSourceEvent;
 }
 
 void XRInputSourceEvent::Trace(blink::Visitor* visitor) {

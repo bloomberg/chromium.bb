@@ -55,7 +55,7 @@ TrackEvent::TrackEvent(const AtomicString& type,
 TrackEvent::~TrackEvent() = default;
 
 const AtomicString& TrackEvent::InterfaceName() const {
-  return EventNames::TrackEvent;
+  return event_interface_names::kTrackEvent;
 }
 
 void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& return_value) {

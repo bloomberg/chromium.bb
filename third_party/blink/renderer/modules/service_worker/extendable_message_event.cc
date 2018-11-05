@@ -77,7 +77,7 @@ void ExtendableMessageEvent::source(
 }
 
 const AtomicString& ExtendableMessageEvent::InterfaceName() const {
-  return EventNames::ExtendableMessageEvent;
+  return event_interface_names::kExtendableMessageEvent;
 }
 
 void ExtendableMessageEvent::Trace(blink::Visitor* visitor) {

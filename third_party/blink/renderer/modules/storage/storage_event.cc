@@ -102,7 +102,7 @@ void StorageEvent::initStorageEvent(const AtomicString& type,
 }
 
 const AtomicString& StorageEvent::InterfaceName() const {
-  return EventNames::StorageEvent;
+  return event_interface_names::kStorageEvent;
 }
 
 void StorageEvent::Trace(blink::Visitor* visitor) {

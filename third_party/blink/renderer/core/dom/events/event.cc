@@ -172,7 +172,7 @@ void Event::setLegacyReturnValue(ScriptState* script_state, bool return_value) {
 }
 
 const AtomicString& Event::InterfaceName() const {
-  return EventNames::Event;
+  return event_interface_names::kEvent;
 }
 
 bool Event::HasInterface(const AtomicString& name) const {

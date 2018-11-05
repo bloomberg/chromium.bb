@@ -17,7 +17,7 @@ namespace blink {
 ExtendableCookieChangeEvent::~ExtendableCookieChangeEvent() = default;
 
 const AtomicString& ExtendableCookieChangeEvent::InterfaceName() const {
-  return EventNames::ExtendableCookieChangeEvent;
+  return event_interface_names::kExtendableCookieChangeEvent;
 }
 
 void ExtendableCookieChangeEvent::Trace(blink::Visitor* visitor) {

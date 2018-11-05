@@ -32,7 +32,7 @@
 namespace blink {
 
 const AtomicString& FocusEvent::InterfaceName() const {
-  return EventNames::FocusEvent;
+  return event_interface_names::kFocusEvent;
 }
 
 bool FocusEvent::IsFocusEvent() const {

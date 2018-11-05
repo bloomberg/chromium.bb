@@ -57,7 +57,7 @@ class MIDIMessageEvent final : public Event {
   DOMUint8Array* data() { return data_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MIDIMessageEvent;
+    return event_interface_names::kMIDIMessageEvent;
   }
 
   void Trace(blink::Visitor* visitor) override {

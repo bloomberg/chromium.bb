@@ -22,7 +22,7 @@ void FormDataEvent::Trace(Visitor* visitor) {
 }
 
 const AtomicString& FormDataEvent::InterfaceName() const {
-  return EventNames::FormDataEvent;
+  return event_interface_names::kFormDataEvent;
 }
 
 }  // namespace blink

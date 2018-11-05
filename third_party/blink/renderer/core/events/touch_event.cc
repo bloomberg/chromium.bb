@@ -252,7 +252,7 @@ TouchEvent::TouchEvent(const AtomicString& type,
 TouchEvent::~TouchEvent() = default;
 
 const AtomicString& TouchEvent::InterfaceName() const {
-  return EventNames::TouchEvent;
+  return event_interface_names::kTouchEvent;
 }
 
 bool TouchEvent::IsTouchEvent() const {

@@ -87,7 +87,7 @@ bool UIEvent::IsUIEvent() const {
 }
 
 const AtomicString& UIEvent::InterfaceName() const {
-  return EventNames::UIEvent;
+  return event_interface_names::kUIEvent;
 }
 
 unsigned UIEvent::which() const {

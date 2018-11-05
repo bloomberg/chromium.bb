@@ -2602,7 +2602,7 @@ void Node::DefaultEventHandler(Event& event) {
           ToMouseEvent(&event));
     }
   } else if (event_type == event_type_names::kTextInput) {
-    if (event.HasInterface(EventNames::TextEvent)) {
+    if (event.HasInterface(event_interface_names::kTextEvent)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultTextInputEventHandler(
             ToTextEvent(&event));

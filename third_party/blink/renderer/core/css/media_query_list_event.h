@@ -37,7 +37,7 @@ class MediaQueryListEvent final : public Event {
   }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MediaQueryListEvent;
+    return event_interface_names::kMediaQueryListEvent;
   }
 
   void Trace(blink::Visitor* visitor) override {

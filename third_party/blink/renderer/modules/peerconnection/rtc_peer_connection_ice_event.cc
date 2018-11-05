@@ -57,7 +57,7 @@ RTCIceCandidate* RTCPeerConnectionIceEvent::candidate() const {
 }
 
 const AtomicString& RTCPeerConnectionIceEvent::InterfaceName() const {
-  return EventNames::RTCPeerConnectionIceEvent;
+  return event_interface_names::kRTCPeerConnectionIceEvent;
 }
 
 void RTCPeerConnectionIceEvent::Trace(blink::Visitor* visitor) {

@@ -72,7 +72,7 @@ ScriptValue CustomEvent::detail(ScriptState* script_state) const {
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {
-  return EventNames::CustomEvent;
+  return event_interface_names::kCustomEvent;
 }
 
 void CustomEvent::Trace(blink::Visitor* visitor) {

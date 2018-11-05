@@ -11,7 +11,7 @@
 namespace blink {
 
 const AtomicString& ActivateInvisibleEvent::InterfaceName() const {
-  return EventNames::ActivateInvisibleEvent;
+  return event_interface_names::kActivateInvisibleEvent;
 }
 
 bool ActivateInvisibleEvent::IsActivateInvisibleEvent() const {

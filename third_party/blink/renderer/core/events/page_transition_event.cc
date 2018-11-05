@@ -46,7 +46,7 @@ PageTransitionEvent::PageTransitionEvent(
 PageTransitionEvent::~PageTransitionEvent() = default;
 
 const AtomicString& PageTransitionEvent::InterfaceName() const {
-  return EventNames::PageTransitionEvent;
+  return event_interface_names::kPageTransitionEvent;
 }
 
 void PageTransitionEvent::Trace(blink::Visitor* visitor) {

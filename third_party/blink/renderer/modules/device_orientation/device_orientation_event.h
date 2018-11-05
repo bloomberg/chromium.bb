@@ -74,8 +74,10 @@ class DeviceOrientationEvent final : public Event {
 DEFINE_TYPE_CASTS(DeviceOrientationEvent,
                   Event,
                   event,
-                  event->InterfaceName() == EventNames::DeviceOrientationEvent,
-                  event.InterfaceName() == EventNames::DeviceOrientationEvent);
+                  event->InterfaceName() ==
+                      event_interface_names::kDeviceOrientationEvent,
+                  event.InterfaceName() ==
+                      event_interface_names::kDeviceOrientationEvent);
 
 }  // namespace blink
 
