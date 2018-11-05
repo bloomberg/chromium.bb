@@ -149,6 +149,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
 @property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
+// Item for the activity and interactions feature.
+@property(nonatomic, strong, readonly)
+    SyncSwitchItem* syncActivityAndInteractionsItem;
 // Collapsible item for the non-personalized section.
 @property(nonatomic, strong, readonly)
     SettingsCollapsibleItem* nonPersonalizedServicesItem;
@@ -180,6 +183,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize syncPersonalizationItem = _syncPersonalizationItem;
 @synthesize personalizedItems = _personalizedItems;
 @synthesize autocompleteWalletItem = _autocompleteWalletItem;
+@synthesize syncActivityAndInteractionsItem = _syncActivityAndInteractionsItem;
 @synthesize nonPersonalizedServicesItem = _nonPersonalizedServicesItem;
 @synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
@@ -382,14 +386,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncReadingList];
-    SyncSwitchItem* syncActivityAndInteractionsItem = [self
-        switchItemWithItemType:SyncActivityAndInteractionsItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
-                detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncUserEvent];
     CollectionViewTextItem* syncGoogleActivityControlsItem = [self
         textItemWithItemType:SyncGoogleActivityControlsItemType
                 textStringID:
@@ -417,7 +413,7 @@ initWithUserPrefService:(PrefService*)userPrefService
     _personalizedItems = @[
       syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
       syncAutofillItem, syncSettingsItem, syncReadingListItem,
-      self.autocompleteWalletItem, syncActivityAndInteractionsItem,
+      self.autocompleteWalletItem, self.syncActivityAndInteractionsItem,
       syncGoogleActivityControlsItem, encryptionItem, manageSyncedDataItem
     ];
   }
@@ -436,6 +432,20 @@ initWithUserPrefService:(PrefService*)userPrefService
                       dataType:0];
   }
   return _autocompleteWalletItem;
+}
+
+- (SyncSwitchItem*)syncActivityAndInteractionsItem {
+  if (!_syncActivityAndInteractionsItem) {
+    _syncActivityAndInteractionsItem = [self
+        switchItemWithItemType:SyncActivityAndInteractionsItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncUserEvent];
+  }
+  return _syncActivityAndInteractionsItem;
 }
 
 - (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
@@ -622,6 +632,14 @@ textItemWithItemType:(NSInteger)itemType
     // Autocomplete wallet item should be disabled when autofill is off.
     self.autocompleteWalletItem.on = false;
   }
+  syncer::ModelType historyModelType =
+      _syncSetupService->GetModelType(SyncSetupService::kSyncOmniboxHistory);
+  BOOL isHistoryOn = _syncSetupService->IsDataTypePreferred(historyModelType);
+  self.syncActivityAndInteractionsItem.enabled = enabled && isHistoryOn;
+  if (!isHistoryOn) {
+    // Activity and interactions item should be disabled when history is off.
+    self.syncActivityAndInteractionsItem.on = false;
+  }
 }
 
 // Updates the non-personalized section according to the user consent.
@@ -790,6 +808,11 @@ textItemWithItemType:(NSInteger)itemType
 
 - (void)onSyncStateChanged {
   [self updatePersonalizedSection];
+  // TODO(crbug.com/899791): Should reloads only the updated items (instead of
+  // reload the full section), and get ride of
+  // |self.personalizedSectionBeingAnimated|. This will get a smoother animation
+  // for "Autocomplete wall" switch and "Sync Activity and Interactions" switch
+  // when being tapped by the user.
   if (!self.personalizedSectionBeingAnimated) {
     CollectionViewModel* model = self.consumer.collectionViewModel;
     NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
@@ -797,9 +820,12 @@ textItemWithItemType:(NSInteger)itemType
                                               PersonalizedSectionIdentifier]];
     [self.consumer reloadSections:sectionIndexToReload];
   } else {
-    // Needs to reload only the autocomplete wallet item (which is part of the
-    // personalized section), if the autofill feature changed state.
+    // |self.autocompleteWalletItem| needs to be reloaded in case the autofill
+    // data type changed state.
     [self.consumer reloadItem:self.autocompleteWalletItem];
+    // |self.syncActivityAndInteractionsItem| needs to be reloaded in case
+    // the history data type changed state.
+    [self.consumer reloadItem:self.syncActivityAndInteractionsItem];
   }
   [self updateSyncErrorSectionAndNotifyConsumer:YES];
 }
