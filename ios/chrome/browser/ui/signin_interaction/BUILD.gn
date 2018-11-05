@@ -25,6 +25,7 @@ source_set("signin_interaction") {
     "//ios/chrome/browser/unified_consent",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
+    "//services/identity/public/cpp:cpp",
   ]
 }
 
