@@ -435,7 +435,6 @@ void WorkerThread::InitializeOnWorkerThread(
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK(IsCurrentThread());
-  bool wait_for_debugger = devtools_params->wait_for_debugger;
   {
     MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
@@ -492,11 +491,7 @@ void WorkerThread::InitializeOnWorkerThread(
   // Otherwise, InspectorTaskRunner might interrupt isolate execution
   // from another thread and try to resume "pause on start" before
   // we even paused.
-  if (wait_for_debugger) {
-    WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
-    if (debugger)
-      debugger->PauseWorkerOnStart(this);
-  }
+  worker_inspector_controller_->WaitForDebuggerIfNeeded();
 }
 
 void WorkerThread::EvaluateClassicScriptOnWorkerThread(
