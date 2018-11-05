@@ -386,13 +386,12 @@ void TiclInvalidationService::StartInvalidator(
   UMA_HISTOGRAM_ENUMERATION(
       "Invalidations.NetworkChannel", network_channel, NETWORK_CHANNELS_COUNT);
   invalidator_.reset(new syncer::NonBlockingInvalidator(
-          network_channel_creator,
-          invalidation_state_tracker_->GetInvalidatorClientId(),
-          invalidation_state_tracker_->GetSavedInvalidations(),
-          invalidation_state_tracker_->GetBootstrapData(),
-          invalidation_state_tracker_.get(),
-          user_agent_,
-          request_context_));
+      network_channel_creator,
+      invalidation_state_tracker_->GetInvalidatorClientId(),
+      invalidation_state_tracker_->GetSavedInvalidations(),
+      invalidation_state_tracker_->GetBootstrapData(),
+      invalidation_state_tracker_.get(), user_agent_,
+      request_context_->GetNetworkTaskRunner()));
 
   UpdateInvalidatorCredentials();
 
