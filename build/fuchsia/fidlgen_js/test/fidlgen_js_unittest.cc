@@ -205,6 +205,9 @@ class TestolaImpl : public fidljstest::Testola {
     sat.basic.u16 = basic_struct.u16 * 2;
     sat.basic.u32 = basic_struct.u32 * 2;
     sat.later_string = "ⓣⓔⓡⓜⓘⓝⓐⓣⓞⓡ";
+    for (uint64_t i = 0; i < fidljstest::ARRRR_SIZE; ++i) {
+      sat.arrrr[i] = static_cast<int32_t>(i * 5) - 10;
+    }
 
     resp(std::move(sat));
   }
@@ -513,6 +516,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
              this.result_basic_u16 = sat.basic.u16;
              this.result_basic_u32 = sat.basic.u32;
              this.result_later_string = sat.later_string;
+             this.result_arrrr = sat.arrrr;
            })
            .catch((e) => log('FAILED: ' + e));
     )";
@@ -537,6 +541,14 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
   EXPECT_EQ(helper.Get<unsigned int>("result_basic_u16"), 64000u);
   EXPECT_EQ(helper.Get<unsigned int>("result_basic_u32"), 4000000000u);
   EXPECT_EQ(helper.Get<std::string>("result_later_string"), "ⓣⓔⓡⓜⓘⓝⓐⓣⓞⓡ");
+  // Retrieve as a vector as there's no difference in representation in JS (and
+  // gin already supports vector), and verify the length matches the expected
+  // length of the fidl array.
+  auto result_arrrr = helper.Get<std::vector<int32_t>>("result_arrrr");
+  ASSERT_EQ(result_arrrr.size(), fidljstest::ARRRR_SIZE);
+  for (uint64_t i = 0; i < fidljstest::ARRRR_SIZE; ++i) {
+    EXPECT_EQ(result_arrrr[i], static_cast<int32_t>(i * 5) - 10);
+  }
 }
 
 TEST_F(FidlGenJsTest, HandlePassing) {

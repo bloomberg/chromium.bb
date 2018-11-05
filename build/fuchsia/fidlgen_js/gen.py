@@ -133,12 +133,19 @@ class Compiler(object):
 
 ''')
 
-  def _CompileConst(self, c):
+  def _CompileConst(self, const):
+    compound = _ParseCompoundIdentifier(const.name)
+    name = _CompileCompoundIdentifier(compound)
+    value = _CompileConstant(const.value)
     self.f.write('''/**
-  * @const {%(type)s}
-  */
+ * @const
+ */
 const %(name)s = %(value)s;
-''' % c.to_dict())
+
+''' % {
+        'name': name,
+        'value': value
+    })
 
   def _CompileEnum(self, enum):
     compound = _ParseCompoundIdentifier(enum.name)
@@ -227,6 +234,34 @@ function %(name)s(%(param_names)s) {
       return name
     elif t.kind == fidl.TypeKind.HANDLE:
       return 'Handle'
+    elif t.kind == fidl.TypeKind.ARRAY:
+      element_ttname = self._CompileType(t.element_type)
+      ttname = 'ARR_%d_%s' % (t.element_count, element_ttname)
+      if ttname not in self.type_table_defined:
+        self.type_table_defined.add(ttname)
+        self.output_deferred_to_eof += ('''\
+const _kTT_%(ttname)s = {
+  enc: function(e, o, v) {
+    for (var i = 0; i < %(element_count)s; i++) {
+      _kTT_%(element_ttname)s.enc(e, o + (i * %(element_size)s), v[i]);
+    }
+  },
+  dec: function(d, o) {
+    var result = [];
+    for (var i = 0; i < %(element_count)s; i++) {
+      result.push(_kTT_%(element_ttname)s.dec(d, o + (i * %(element_size)s)));
+    }
+    return result;
+  },
+};
+
+''' % {
+            'ttname': ttname,
+            'element_ttname': element_ttname,
+            'element_count': t.element_count,
+            'element_size': _InlineSizeOfType(t.element_type),
+        })
+      return ttname
     elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
       ttname = (
@@ -287,7 +322,7 @@ const _kTT_%(ttname)s = {
         })
       return ttname
     else:
-      raise NotImplementedError()
+      raise NotImplementedError(t.kind)
 
   def _GenerateJsInterfaceForInterface(self, name, interface):
     """Generates a JS @interface for the given FIDL interface."""
