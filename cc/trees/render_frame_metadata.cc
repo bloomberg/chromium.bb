@@ -32,6 +32,7 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          device_scale_factor == other.device_scale_factor &&
          viewport_size_in_pixels == other.viewport_size_in_pixels &&
          page_scale_factor == other.page_scale_factor &&
+         external_page_scale_factor == other.external_page_scale_factor &&
          top_controls_height == other.top_controls_height &&
          top_controls_shown_ratio == other.top_controls_shown_ratio &&
 #if defined(OS_ANDROID)

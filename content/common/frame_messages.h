@@ -254,6 +254,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameVisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
+  IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation_time)
 IPC_STRUCT_TRAITS_END()
 

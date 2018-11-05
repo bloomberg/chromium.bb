@@ -546,6 +546,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
+  // Allows the main frame's page scale factor to be tracked.
+  void SetPageScaleFactor(float page_scale_factor);
+
   // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
   bool GetVisualProperties(VisualProperties* visual_properties,
@@ -976,6 +979,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The maximum size for the render widget if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize_;
+
+  // The page-scale factor of the main-frame.
+  float page_scale_factor_;
 
   bool waiting_for_screen_rects_ack_;
   gfx::Rect last_view_screen_rect_;

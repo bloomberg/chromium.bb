@@ -2040,6 +2040,7 @@ void RenderViewImpl::PageScaleFactorChanged() {
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               webview()->PageScaleFactor()));
+  GetWidget()->PageScaleFactorChanged(webview()->PageScaleFactor());
 }
 
 double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {

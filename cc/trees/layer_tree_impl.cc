@@ -85,6 +85,7 @@ LayerTreeImpl::LayerTreeImpl(
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
+      external_page_scale_factor_(1.f),
       device_scale_factor_(1.f),
       painted_device_scale_factor_(1.f),
       content_source_id_(0),
@@ -476,6 +477,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // tree so only the limits need to be provided.
   target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
                                             max_page_scale_factor());
+  target_tree->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
@@ -1102,6 +1104,15 @@ void LayerTreeImpl::SetRasterColorSpace(
     return;
   raster_color_space_id_ = raster_color_space_id;
   raster_color_space_ = raster_color_space;
+}
+
+void LayerTreeImpl::SetExternalPageScaleFactor(
+    float external_page_scale_factor) {
+  if (external_page_scale_factor_ == external_page_scale_factor)
+    return;
+
+  external_page_scale_factor_ = external_page_scale_factor;
+  DidUpdatePageScale();
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {

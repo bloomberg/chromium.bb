@@ -351,6 +351,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
+  void SetExternalPageScaleFactor(float external_page_scale_factor);
+  float external_page_scale_factor() const {
+    return external_page_scale_factor_;
+  }
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
   }
@@ -645,6 +649,7 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
+  float external_page_scale_factor_;
 
   float device_scale_factor_;
   float painted_device_scale_factor_;

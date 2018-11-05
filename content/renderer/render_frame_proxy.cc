@@ -295,6 +295,11 @@ void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
   SynchronizeVisualProperties();
 }
 
+void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor) {
+  pending_visual_properties_.page_scale_factor = page_scale_factor;
+  SynchronizeVisualProperties();
+}
+
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   pending_visual_properties_.capture_sequence_number = capture_sequence_number;
@@ -652,6 +657,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.screen_info ||
       sent_visual_properties_->zoom_level !=
           pending_visual_properties_.zoom_level ||
+      sent_visual_properties_->page_scale_factor !=
+          pending_visual_properties_.page_scale_factor ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {

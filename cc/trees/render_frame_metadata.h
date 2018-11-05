@@ -68,7 +68,10 @@ class CC_EXPORT RenderFrameMetadata {
   // The time at which |local_surface_id| was allocated.
   base::Optional<base::TimeTicks> local_surface_id_allocation_time_from_child;
 
+  // Page scale factor (always 1.f for sub-frame renderers).
   float page_scale_factor = 1.f;
+  // Used for testing propagation of page scale factor to sub-frame renderers.
+  float external_page_scale_factor = 1.f;
 
   // Used to position the location top bar and page content, whose precise
   // position is computed by the renderer compositor.

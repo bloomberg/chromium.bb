@@ -783,6 +783,7 @@ void RenderWidget::OnEnableDeviceEmulation(
     visual_properties.visible_viewport_size = visible_viewport_size_;
     visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
     visual_properties.display_mode = display_mode_;
+    visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
     screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
         this, params, visual_properties, widget_screen_rect_,
         window_screen_rect_));
@@ -1337,6 +1338,10 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   if (!GetWebWidget())
     return;
 
+  // Only propagate the external PSF to non-main-frames.
+  if (!owner_delegate_)
+    layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
+
   gfx::Size new_compositor_viewport_pixel_size =
       params.auto_resize_enabled
           ? gfx::ScaleToCeiledSize(size_,
@@ -1384,6 +1389,14 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 
   if (fullscreen_change)
     DidToggleFullscreen();
+
+  if (!owner_delegate_) {
+    // Make sure that page scale factor changes propagating down from the main
+    // frame are relayed to nested OOPIFs/non-main-frames.
+    page_scale_factor_from_mainframe_ = params.page_scale_factor;
+    for (auto& observer : render_frame_proxies_)
+      observer.OnPageScaleFactorChanged(params.page_scale_factor);
+  }
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -1918,6 +1931,7 @@ void RenderWidget::SetWindowRectSynchronously(
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id = local_surface_id_from_parent_;
+  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -2927,6 +2941,10 @@ void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   render_frame_proxies_.AddObserver(proxy);
+  // During initial page load, the main frame may have received page
+  // scale factor information before the sub-frame proxies were registered, so
+  // make sure we pass the page scale factor along here.
+  proxy->OnPageScaleFactorChanged(page_scale_factor_from_mainframe_);
 }
 
 void RenderWidget::UnregisterRenderFrameProxy(RenderFrameProxy* proxy) {
@@ -3068,6 +3086,18 @@ bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
 }
 
+void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
+  // Only the main frame pulls page scale information from the layer tree host.
+  // Pages scale is shared with non-mainframe widgets via the IPC for
+  // OnSynchronizeVisualProperties.
+  if (!owner_delegate_)
+    return;
+
+  page_scale_factor_from_mainframe_ = page_scale_factor;
+  for (auto& observer : render_frame_proxies_)
+    observer.OnPageScaleFactorChanged(page_scale_factor);
+}
+
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
   resizing_mode_selector_->set_is_synchronous_mode(enable);
 }
@@ -3087,6 +3117,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id = local_surface_id_from_parent_;
+  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -3109,6 +3140,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id = local_surface_id_from_parent_;
+  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -3129,6 +3161,7 @@ void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
   visual_properties.max_size_for_auto_resize = max_size;
   visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
       viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   OnSynchronizeVisualProperties(visual_properties);
 }
 
@@ -3148,6 +3181,7 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.visible_viewport_size = visible_viewport_size_;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
+  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   OnSynchronizeVisualProperties(visual_properties);
 }
 

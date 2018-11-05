@@ -133,6 +133,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
@@ -10705,6 +10706,86 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   ShutdownTest();
 }
 #endif  // defined(OS_ANDROID)
+
+// This test verifies that the main-frame's page scale factor propagates to
+// the compositor layertrees in each of the child processes.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PageScaleFactorPropagatesToOOPIFs) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(2u, root->child_count());
+  FrameTreeNode* child_b = root->child_at(0);
+  FrameTreeNode* child_c = root->child_at(1);
+  ASSERT_EQ(1U, child_b->child_count());
+  FrameTreeNode* child_d = child_b->child_at(0);
+
+  ASSERT_TRUE(child_b);
+  ASSERT_TRUE(child_c);
+  ASSERT_TRUE(child_d);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site B ------- proxies for A C D\n"
+      "   |    +--Site C -- proxies for A B D\n"
+      "   +--Site D ------- proxies for A B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/\n"
+      "      D = http://d.com/",
+      DepictFrameTree(root));
+
+  RenderFrameSubmissionObserver observer_a(root);
+  RenderFrameSubmissionObserver observer_b(child_b);
+  RenderFrameSubmissionObserver observer_c(child_c);
+  RenderFrameSubmissionObserver observer_d(child_d);
+
+  // We need to observe a root frame submission to pick up the initial page
+  // scale factor.
+  observer_a.WaitForAnyFrameSubmission();
+
+  const float kPageScaleDelta = 2.f;
+  // On desktop systems we expect |current_page_scale| to be 1.f, but on
+  // Android it will typically be less than 1.f, and may take on arbitrary
+  // values.
+  float current_page_scale =
+      observer_a.LastRenderFrameMetadata().page_scale_factor;
+  float target_page_scale = current_page_scale * kPageScaleDelta;
+
+  SyntheticPinchGestureParams params;
+  auto* host = static_cast<RenderWidgetHostImpl*>(
+      root->current_frame_host()->GetRenderWidgetHost());
+  gfx::Rect bounds(host->GetView()->GetViewBounds().size());
+  // The synthetic gesture code expects a location in root-view coordinates.
+  params.anchor = gfx::PointF(bounds.CenterPoint());
+  // In SyntheticPinchGestureParams, |scale_factor| is really a delta.
+  params.scale_factor = kPageScaleDelta;
+#if defined(OS_MACOSX)
+  auto synthetic_pinch_gesture =
+      std::make_unique<SyntheticTouchpadPinchGesture>(params);
+#else
+  auto synthetic_pinch_gesture =
+      std::make_unique<SyntheticTouchscreenPinchGesture>(params);
+#endif
+
+  // Send pinch gesture and verify we receive the ack.
+  InputEventAckWaiter ack_waiter(host, blink::WebInputEvent::kGesturePinchEnd);
+  host->QueueSyntheticGesture(
+      std::move(synthetic_pinch_gesture),
+      base::BindOnce([](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+      }));
+  ack_waiter.Wait();
+
+  // Make sure all the page scale values behave as expected.
+  const float kScaleTolerance = 0.0001f;
+  observer_a.WaitForPageScaleFactor(target_page_scale, kScaleTolerance);
+  observer_b.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
+  observer_c.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
+  observer_d.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
+}
 
 // Verify that sandbox flags specified by a CSP header are properly inherited by
 // child frames, but are removed when the frame navigates.

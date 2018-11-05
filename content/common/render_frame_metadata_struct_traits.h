@@ -64,6 +64,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.page_scale_factor;
   }
 
+  static float external_page_scale_factor(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.external_page_scale_factor;
+  }
+
   static float top_controls_height(const cc::RenderFrameMetadata& metadata) {
     return metadata.top_controls_height;
   }

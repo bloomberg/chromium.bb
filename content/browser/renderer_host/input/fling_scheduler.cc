@@ -36,7 +36,10 @@ void FlingScheduler::RegisterFlingSchedulerObserver(
     base::WeakPtr<FlingController> fling_controller) {
   DCHECK(fling_controller);
   fling_controller_ = fling_controller;
-  DCHECK(!observed_compositor_);
+  // Convert the following if-statement back to DCHECK(!observed_compositor_)
+  // once https://crbug.com/897216 is fixed.
+  if (observed_compositor_)
+    return;
 
   ui::Compositor* compositor = GetCompositor();
   // If a ui::Compositor can't be obtained, ask the host for BeginFrames.
