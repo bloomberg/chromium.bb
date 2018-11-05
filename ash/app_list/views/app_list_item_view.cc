@@ -119,8 +119,6 @@ class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
 class AppListItemView::IconImageView : public views::ImageView {
  public:
   IconImageView() {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
     set_can_process_events_within_subtree(false);
     SetVerticalAlignment(views::ImageView::LEADING);
   }
@@ -146,6 +144,7 @@ class AppListItemView::IconImageView : public views::ImageView {
   // Sets a rounded rect mask layer with |corner_radius| and |insets| to clip
   // the icon.
   void SetRoundedRectMaskLayer(int corner_radius, const gfx::Insets& insets) {
+    EnsureLayer();
     icon_mask_ = views::Painter::CreatePaintedLayer(
         views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
                                                     corner_radius, insets));
@@ -156,6 +155,14 @@ class AppListItemView::IconImageView : public views::ImageView {
     // Save the attributes in case the layer is recreated.
     mask_corner_radius_ = corner_radius;
     mask_insets_ = insets;
+  }
+
+  // Ensure that the view has a layer.
+  void EnsureLayer() {
+    if (!layer()) {
+      SetPaintToLayer();
+      layer()->SetFillsBoundsOpaquely(false);
+    }
   }
 
  private:
@@ -250,6 +257,9 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   SetAnimationDuration(0);
 
   preview_circle_radius_ = 0;
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 AppListItemView::~AppListItemView() {
@@ -748,6 +758,8 @@ void AppListItemView::OnDraggedViewExit() {
 
 void AppListItemView::SetBackgroundBlurEnabled(bool enabled) {
   DCHECK(is_folder_);
+  if (enabled)
+    icon_->EnsureLayer();
   icon_->layer()->SetBackgroundBlur(
       enabled ? AppListConfig::instance().blur_radius() : 0);
 }

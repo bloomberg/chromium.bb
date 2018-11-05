@@ -125,10 +125,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Performs the 'back' action for the active page.
   void Back();
 
-  // Enables/disables a semi-transparent overlay over the app list (good for
-  // hiding the app list when a modal dialog is being shown).
-  void SetAppListOverlayVisible(bool visible);
-
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
@@ -396,10 +392,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // A widget observer that sets the AppListView state when the widget is
   // closed.
   std::unique_ptr<FullscreenWidgetObserver> widget_observer_;
-
-  // A semi-transparent white overlay that covers the app list while dialogs
-  // are open.
-  views::View* overlay_view_ = nullptr;
 
   std::unique_ptr<HideViewAnimationObserver> hide_view_animation_observer_;
 

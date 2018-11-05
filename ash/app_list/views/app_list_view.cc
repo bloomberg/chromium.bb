@@ -121,33 +121,6 @@ class SearchBoxFocusHost : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SearchBoxFocusHost);
 };
 
-// The view for the App List overlay, which appears as a white rounded
-// rectangle with the given radius.
-class AppListOverlayView : public views::View {
- public:
-  explicit AppListOverlayView(int corner_radius)
-      : corner_radius_(corner_radius) {
-    SetPaintToLayer();
-    SetVisible(false);
-    layer()->SetOpacity(0.0f);
-  }
-
-  ~AppListOverlayView() override {}
-
-  // Overridden from views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(SK_ColorWHITE);
-    canvas->DrawRoundRect(GetContentsBounds(), corner_radius_, flags);
-  }
-
- private:
-  const int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListOverlayView);
-};
-
 SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors) {
   if (prominent_colors.empty())
     return app_list::AppListView::kDefaultBackgroundColor;
@@ -361,7 +334,6 @@ void AppListView::Initialize(const InitParams& params) {
   InitializeFullscreen(params.parent);
 
   InitChildWidgets();
-  AddChildView(overlay_view_);
 
   SetState(app_list_state_);
 
@@ -408,44 +380,6 @@ bool AppListView::CloseOpenedPage() {
 
 void AppListView::Back() {
   app_list_main_view_->contents_view()->Back();
-}
-
-void AppListView::SetAppListOverlayVisible(bool visible) {
-  DCHECK(overlay_view_);
-
-  // Display the overlay immediately so we can begin the animation.
-  overlay_view_->SetVisible(true);
-
-  ui::ScopedLayerAnimationSettings settings(
-      overlay_view_->layer()->GetAnimator());
-  settings.SetTweenType(gfx::Tween::LINEAR);
-
-  // If we're dismissing the overlay, hide the view at the end of the animation.
-  if (!visible) {
-    // Since only one animation is visible at a time, it's safe to re-use
-    // animation_observer_ here.
-    hide_view_animation_observer_->SetTarget(overlay_view_);
-    settings.AddObserver(hide_view_animation_observer_.get());
-  }
-
-  const float kOverlayFadeInMilliseconds = 125;
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kOverlayFadeInMilliseconds));
-
-  const float kOverlayOpacity = 0.75f;
-  overlay_view_->layer()->SetOpacity(visible ? kOverlayOpacity : 0.0f);
-  // Create the illusion that the search box is hidden behind the app list
-  // overlay mask by setting its opacity to the same value, and disabling it.
-  {
-    ui::ScopedLayerAnimationSettings settings(
-        search_box_widget_->GetLayer()->GetAnimator());
-    const float kSearchBoxWidgetOpacity = 0.5f;
-    search_box_widget_->GetLayer()->SetOpacity(visible ? kSearchBoxWidgetOpacity
-                                                       : 1.0f);
-    search_box_view_->SetEnabled(!visible);
-    if (!visible)
-      search_box_view_->search_box()->RequestFocus();
-  }
 }
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
@@ -648,8 +582,6 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   // The initial bounds of app list should be the same as that in closed state.
   fullscreen_widget_->GetNativeView()->SetBounds(
       GetPreferredWidgetBoundsForState(AppListViewState::CLOSED));
-
-  overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
   widget_observer_ = std::make_unique<FullscreenWidgetObserver>(this);
 }

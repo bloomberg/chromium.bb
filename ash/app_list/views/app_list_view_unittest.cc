@@ -1996,27 +1996,6 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   EXPECT_FALSE(search_box_view->back_button()->visible());
 }
 
-// Tests that the correct views are displayed for showing search results.
-TEST_F(AppListViewTest, DISABLED_AppListOverlayTest) {
-  Initialize(0, false, false);
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  Show();
-
-  AppListMainView* main_view = view_->app_list_main_view();
-  SearchBoxView* search_box_view = main_view->search_box_view();
-
-  // The search box should not be enabled when the app list overlay is shown.
-  view_->SetAppListOverlayVisible(true);
-  EXPECT_FALSE(search_box_view->enabled());
-
-  // The search box should be refocused when the app list overlay is hidden.
-  view_->SetAppListOverlayVisible(false);
-  EXPECT_TRUE(search_box_view->enabled());
-  EXPECT_EQ(search_box_view->search_box(),
-            view_->GetWidget()->GetFocusManager()->GetFocusedView());
-}
-
 // Tests that even if initialize is called again with a different initial page,
 // that different initial page is respected.
 TEST_F(AppListViewTest, DISABLED_MultiplePagesReinitializeOnInputPage) {
