@@ -64,11 +64,13 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
 
 void ContentMockCertVerifier::CertVerifier::
     EnsureNetworkServiceTestInitialized() {
-  if (network_service_test_)
-    return;
-
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test_);
+  if (!network_service_test_) {
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        mojom::kNetworkServiceName, &network_service_test_);
+  }
+  // TODO(crbug.com/901026): Make sure the network process is started to avoid a
+  // deadlock on Android.
+  network_service_test_.FlushForTesting();
 }
 
 ContentMockCertVerifier::ContentMockCertVerifier()
