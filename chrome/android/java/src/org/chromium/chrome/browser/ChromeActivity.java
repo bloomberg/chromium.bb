@@ -465,7 +465,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getTabModelSelector(), getControlContainerHeightResource());
             }
 
-            ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
+            ((BottomContainer) findViewById(R.id.bottom_container))
+                    .initialize(mFullscreenManager,
+                            mManualFillingController.getKeyboardExtensionSizeManager());
 
             mModalDialogManager = createModalDialogManager();
 

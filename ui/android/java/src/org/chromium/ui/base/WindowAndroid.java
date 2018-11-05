@@ -797,6 +797,15 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     }
 
     /**
+     * As long as there are still animations which haven't ended, this will return false.
+     * @return True if all known animations have ended.
+     */
+    @VisibleForTesting
+    public boolean haveAnimationsEnded() {
+        return mAnimationsOverContent.isEmpty();
+    }
+
+    /**
      * Pauses/Unpauses VSync. When VSync is paused the compositor for this window will idle, and
      * requestAnimationFrame callbacks won't fire, etc.
      */
