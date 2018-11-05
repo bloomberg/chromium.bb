@@ -1844,7 +1844,9 @@ public class TabsTest {
         Assert.assertTrue("notifyChanged() was not called", mNotifyChangedCalled);
     }
 
+    // Flaky: http://crbug.com/901986
     @Test
+    @DisabledTest
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
