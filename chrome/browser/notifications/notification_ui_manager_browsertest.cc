@@ -23,6 +23,7 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -46,6 +47,26 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
   }
 
   Profile* profile() { return browser()->profile(); }
+
+  class TestMessageCenterObserver
+      : public message_center::MessageCenterObserver {
+   public:
+    TestMessageCenterObserver() = default;
+
+    // MessageCenterObserver:
+    void OnNotificationDisplayed(
+        const std::string& notification_id,
+        const message_center::DisplaySource source) override {
+      last_displayed_id_ = notification_id;
+    }
+
+    const std::string& last_displayed_id() const { return last_displayed_id_; }
+
+   private:
+    std::string last_displayed_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestMessageCenterObserver);
+  };
 
   class TestDelegate : public message_center::NotificationDelegate {
    public:
@@ -126,11 +147,15 @@ IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicAddCancel) {
   // mode..." or something which may change the expectation.
   // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
   // of canceling animation which prevents some Displayed() event.
+  TestMessageCenterObserver observer;
+  message_center()->AddObserver(&observer);
   manager()->CancelAll();
   manager()->Add(CreateTestNotification("hey"), profile());
   EXPECT_EQ(1u, message_center()->NotificationCount());
+  EXPECT_NE("", observer.last_displayed_id());
   manager()->CancelById("hey", NotificationUIManager::GetProfileID(profile()));
   EXPECT_EQ(0u, message_center()->NotificationCount());
+  message_center()->RemoveObserver(&observer);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicDelegate) {

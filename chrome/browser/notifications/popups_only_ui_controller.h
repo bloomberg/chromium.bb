@@ -27,7 +27,7 @@ class PopupsOnlyUiController : public message_center::MessageCenterObserver {
   // Implementations are platform specific.
   static std::unique_ptr<Delegate> CreateDelegate();
 
-  explicit PopupsOnlyUiController(std::unique_ptr<Delegate> delegate);
+  PopupsOnlyUiController();
   ~PopupsOnlyUiController() override;
 
   // UiDelegate implementation.
@@ -45,7 +45,7 @@ class PopupsOnlyUiController : public message_center::MessageCenterObserver {
 
  private:
   message_center::MessageCenter* const message_center_;
-  const std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Update the visibility of the popup bubbles. Shows or hides them if
   // necessary.

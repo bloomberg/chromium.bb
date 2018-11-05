@@ -41,8 +41,7 @@ NotificationUIManager* NotificationUIManager::Create() {
 
 NotificationUIManagerImpl::NotificationUIManagerImpl()
     : system_observer_(this),
-      popups_only_ui_controller_(std::make_unique<PopupsOnlyUiController>(
-          PopupsOnlyUiController::CreateDelegate())) {
+      popups_only_ui_controller_(std::make_unique<PopupsOnlyUiController>()) {
   auto* message_center = MessageCenter::Get();
   message_center->AddObserver(this);
 
