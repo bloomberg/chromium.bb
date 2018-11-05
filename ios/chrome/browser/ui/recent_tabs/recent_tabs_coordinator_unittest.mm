@@ -10,10 +10,8 @@
 
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -23,6 +21,8 @@
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
@@ -135,13 +135,14 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   void SetupSyncState(BOOL signedIn,
                       BOOL syncEnabled,
                       BOOL hasForeignSessions) {
-    SigninManager* siginManager = ios::SigninManagerFactory::GetForBrowserState(
-        chrome_browser_state_.get());
-    if (signedIn)
-      siginManager->SetAuthenticatedAccountInfo("test", "test");
-    else if (siginManager->IsAuthenticated())
-      siginManager->SignOut(signin_metrics::SIGNOUT_TEST,
-                            signin_metrics::SignoutDelete::IGNORE_METRIC);
+    if (signedIn) {
+      identity_test_env()->MakePrimaryAccountAvailable("test");
+    } else if (identity_test_env()->identity_manager()->HasPrimaryAccount()) {
+      identity_test_env()->identity_manager()->ClearPrimaryAccount(
+          identity::IdentityManager::ClearAccountTokensAction::kDefault,
+          signin_metrics::SIGNOUT_TEST,
+          signin_metrics::SignoutDelete::IGNORE_METRIC);
+    }
 
     SyncSetupServiceMock* syncSetupService = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(
@@ -182,10 +183,15 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     [coordinator_ start];
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return &identity_test_env_;
+  }
+
  protected:
   web::TestWebThreadBundle thread_bundle_;
   GoogleServiceAuthError no_error_;
   IOSChromeScopedTestingLocalState local_state_;
+  identity::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
