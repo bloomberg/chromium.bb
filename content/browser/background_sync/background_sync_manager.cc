@@ -400,7 +400,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
         BackgroundSyncRegistrationOptions* options = registration->options();
         options->tag = registration_proto.tag();
-        options->network_state = registration_proto.network_state();
 
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
@@ -655,8 +654,6 @@ void BackgroundSyncManager::StoreRegistrations(
     BackgroundSyncRegistrationProto* registration_proto =
         registrations_proto.add_registration();
     registration_proto->set_tag(registration.options()->tag);
-    registration_proto->set_network_state(
-        registration.options()->network_state);
     registration_proto->set_num_attempts(registration.num_attempts());
     registration_proto->set_delay_until(
         registration.delay_until().ToInternalValue());
@@ -837,7 +834,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
 bool BackgroundSyncManager::AreOptionConditionsMet(
     const BackgroundSyncRegistrationOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return network_observer_->NetworkSufficient(options.network_state);
+  return network_observer_->NetworkSufficient();
 }
 
 bool BackgroundSyncManager::IsRegistrationReadyToFire(
@@ -1204,7 +1201,7 @@ blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
     scoped_refptr<ServiceWorkerVersion> active_version) {
   if (!active_version)
     return blink::ServiceWorkerStatusCode::kErrorFailed;
-  if (!network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE))
+  if (!network_observer_->NetworkSufficient())
     return blink::ServiceWorkerStatusCode::kErrorNetwork;
   int64_t registration_id = active_version->registration_id();
   if (base::ContainsKey(emulated_offline_sw_, registration_id))

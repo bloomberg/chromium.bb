@@ -19,7 +19,7 @@ message BackgroundSyncRegistrationProto {
   required string tag = 2;
   // required SyncPeriodicity periodicity = 3;
   // required int64 min_period = 4;
-  required SyncNetworkState network_state = 5;
+  // required SyncNetworkState network_state = 5;
   // required SyncPowerState power_state = 6;
   required int32 num_attempts = 7;
   required int64 delay_until = 8;

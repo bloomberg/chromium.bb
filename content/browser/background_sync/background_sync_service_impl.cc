@@ -23,7 +23,6 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   BackgroundSyncRegistrationOptions out;
 
   out.tag = in->tag;
-  out.network_state = static_cast<SyncNetworkState>(in->network_state);
   return out;
 }
 
@@ -31,8 +30,6 @@ blink::mojom::SyncRegistrationPtr ToMojoRegistration(
     const BackgroundSyncRegistration& in) {
   blink::mojom::SyncRegistrationPtr out(blink::mojom::SyncRegistration::New());
   out->tag = in.options()->tag;
-  out->network_state = static_cast<blink::mojom::BackgroundSyncNetworkState>(
-      in.options()->network_state);
   return out;
 }
 
@@ -58,15 +55,6 @@ COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::PERMISSION_DENIED,
                              BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
 COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::MAX,
                              BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
-
-COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::ANY,
-                             SyncNetworkState::NETWORK_STATE_ANY);
-COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::AVOID_CELLULAR,
-                             SyncNetworkState::NETWORK_STATE_AVOID_CELLULAR);
-COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::ONLINE,
-                             SyncNetworkState::NETWORK_STATE_ONLINE);
-COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::MAX,
-                             SyncNetworkState::NETWORK_STATE_ONLINE);
 
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
