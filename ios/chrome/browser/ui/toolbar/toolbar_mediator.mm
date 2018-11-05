@@ -35,6 +35,9 @@
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
 
+// The icon for the search button.
+@property(nonatomic, strong) UIImage* searchIcon;
+
 @end
 
 @implementation ToolbarMediator {
@@ -50,6 +53,7 @@
 @synthesize consumer = _consumer;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
+@synthesize searchIcon = _searchIcon;
 
 - (instancetype)init {
   self = [super init];
@@ -173,6 +177,17 @@
 }
 
 #pragma mark - Setters
+
+- (void)setIncognito:(BOOL)incognito {
+  if (incognito == _incognito)
+    return;
+
+  _incognito = incognito;
+  if (self.searchIcon) {
+    // If the searchEngine was already initialized, ask for the new image.
+    [self searchEngineChanged];
+  }
+}
 
 - (void)setTemplateURLService:(TemplateURLService*)templateURLService {
   _templateURLService = templateURLService;
@@ -328,9 +343,11 @@
           SEARCH_ENGINE_GOOGLE) {
     searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
   }
-  UIImage* searchIcon = ios::GetChromeBrowserProvider()
-                            ->GetBrandedImageProvider()
-                            ->GetToolbarSearchIcon(searchEngineIcon);
+  UIImage* searchIcon =
+      ios::GetChromeBrowserProvider()
+          ->GetBrandedImageProvider()
+          ->GetToolbarSearchIcon(searchEngineIcon, self.incognito);
+  DCHECK(searchIcon);
   [self.consumer setSearchIcon:searchIcon];
 }
 
