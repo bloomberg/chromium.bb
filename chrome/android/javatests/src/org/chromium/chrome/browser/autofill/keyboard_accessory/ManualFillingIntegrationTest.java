@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -40,6 +41,8 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -427,5 +430,41 @@ public class ManualFillingIntegrationTest {
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
 
         whenDisplayed(withText(kInfoBarText));
+    }
+
+    @Test
+    @SmallTest
+    public void testMovesUpSnackbar() throws InterruptedException, TimeoutException {
+        final String kSnackbarText = "snackbar";
+
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Create a simple, persistent snackbar and verify it's displayed.
+        SnackbarManager manager = mActivityTestRule.getActivity().getSnackbarManager();
+        ThreadUtils.runOnUiThread(
+                ()
+                        -> manager.showSnackbar(Snackbar.make(kSnackbarText,
+                                new SnackbarManager.SnackbarController() {},
+                                Snackbar.TYPE_PERSISTENT, Snackbar.UMA_TEST_SNACKBAR)));
+        CriteriaHelper.pollUiThread(manager::isShowing);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getWindowAndroid()::haveAnimationsEnded);
+
+        // Click in a field to open keyboard and accessory -- this shouldn't hide the snackbar.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.keyboard_accessory));
+        onView(withText(kSnackbarText)).check(matches(isCompletelyDisplayed()));
+
+        // Open a keyboard accessory sheet -- this also shouldn't hide the snackbar.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        onView(withText(kSnackbarText)).check(matches(isCompletelyDisplayed()));
+
+        // Click into the email field to dismiss the keyboard accessory.
+        mHelper.clickEmailField(false);
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+        onView(withText(kSnackbarText)).check(matches(isCompletelyDisplayed()));
     }
 }
