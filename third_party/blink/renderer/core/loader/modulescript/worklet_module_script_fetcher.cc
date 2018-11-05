@@ -38,8 +38,7 @@ void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // need to handle that case, maybe by having a way to restart fetches in a
   // different global scope?
   url_ = fetch_params.Url();
-  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this,
-                        ScriptResource::kNoStreaming);
+  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this);
 }
 
 void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
