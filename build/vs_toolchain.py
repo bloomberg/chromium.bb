@@ -130,7 +130,6 @@ def DetectVisualStudioPath():
     raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
                      ' not supported. Supported versions are: %s') % (
                        version_as_year, ', '.join(year_to_version.keys())))
-  version = year_to_version[version_as_year]
   if version_as_year == '2017':
     # The VC++ 2017 install location needs to be located using COM instead of
     # the registry. For details see:
