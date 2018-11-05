@@ -325,6 +325,7 @@ class ManualFillingMediator extends EmptyTabObserver
         mKeyboardAccessory.closeActiveTab();
         mKeyboardAccessory.setBottomOffset(0);
         mAccessorySheet.hide();
+        mActivity.getCompositorViewHolder().requestLayout(); // Request checks for keyboard changes.
     }
 
     /**
