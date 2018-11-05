@@ -209,14 +209,19 @@ class CompositorDependencies {
     host_frame_sink_manager.SetConnectionLostCallback(base::BindRepeating(
         []() { CompositorDependencies::Get().CreateVizFrameSinkManager(); }));
 
-    pending_connect_viz_on_main_thread_ = base::BindOnce(
-        &CompositorDependencies::
-            OnReadyToConnectVizFrameSinkManagerOnMainThread,
-        base::Unretained(this), std::move(frame_sink_manager_request),
+    // Set up a pending request which will be run once we've successfully
+    // connected to the GPU process.
+    pending_connect_viz_on_io_thread_ = base::BindOnce(
+        &CompositorDependencies::ConnectVizFrameSinkManagerOnIOThread,
+        std::move(frame_sink_manager_request),
         frame_sink_manager_client.PassInterface());
+  }
 
-    // Will connect using the above callback if we are foreground.
-    TryEstablishVizConnectionIfNeeded();
+  void TryEstablishVizConnectionIfNeeded() {
+    if (!pending_connect_viz_on_io_thread_)
+      return;
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             std::move(pending_connect_viz_on_io_thread_));
   }
 
   SingleThreadTaskGraphRunner task_graph_runner;
@@ -264,49 +269,18 @@ class CompositorDependencies {
     }
   }
 
-  void OnReadyToConnectVizFrameSinkManagerOnMainThread(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtrInfo client,
-      scoped_refptr<gpu::GpuChannelHost> host) {
-    if (!host) {
-      // If host creation failed, try again. We have no software fallback on
-      // Android. This must succeed.
-      CreateVizFrameSinkManager();
-      return;
-    }
-
-    // Forward |connect_on_io| to the IO thread to run.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CompositorDependencies::
-                           OnReadyToConnectVizFrameSinkManagerOnIOThread,
-                       base::Unretained(this), std::move(request),
-                       std::move(client)));
-  }
-
-  void OnReadyToConnectVizFrameSinkManagerOnIOThread(
+  // Called on IO thread, after a GPU connection has already been established.
+  // |gpu_process_host| should only be invalid if a channel has been
+  // established and lost. In this case the ConnectionLost callback will be
+  // re-run when the request is deleted (goes out of scope).
+  static void ConnectVizFrameSinkManagerOnIOThread(
       viz::mojom::FrameSinkManagerRequest request,
       viz::mojom::FrameSinkManagerClientPtrInfo client) {
-    // There should always be a GpuProcessHost instance, and GPU
-    // process at this point. The exception is
-    // during shutdown the GPU process won't be restarted and
-    // GpuProcessHost::Get() can return null.
     auto* gpu_process_host = GpuProcessHost::Get();
-    if (gpu_process_host) {
-      gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
-                                                            std::move(client));
-    }
-  }
-
-  void TryEstablishVizConnectionIfNeeded() {
-    // We don't connect to the viz process if backgrounded, as the OS may
-    // repeatedly kill the resulting process. Instead wait until we come to the
-    // foreground.
-    if (pending_connect_viz_on_main_thread_ && application_is_foreground_) {
-      BrowserMainLoop::GetInstance()
-          ->gpu_channel_establish_factory()
-          ->EstablishGpuChannel(std::move(pending_connect_viz_on_main_thread_));
-    }
+    if (!gpu_process_host)
+      return;
+    gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
+                                                          std::move(client));
   }
 
   void EnqueueLowEndBackgroundCleanup() {
@@ -356,7 +330,6 @@ class CompositorDependencies {
         BrowserGpuChannelHostFactorySetApplicationVisible(true);
         SendOnForegroundedToGpuService();
         low_end_background_cleanup_task_.Cancel();
-        TryEstablishVizConnectionIfNeeded();
         break;
       case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
       case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
@@ -377,7 +350,9 @@ class CompositorDependencies {
   // An instance of Android AppListener.
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
   bool application_is_foreground_ = true;
-  gpu::GpuChannelEstablishedCallback pending_connect_viz_on_main_thread_;
+
+  // A callback which connects to the viz service on the IO thread.
+  base::OnceClosure pending_connect_viz_on_io_thread_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
@@ -1120,6 +1095,10 @@ bool CompositorImpl::CreateVulkanOutputSurface() {
 
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  // At this point we know we have a valid GPU process, establish our viz
+  // connection if needed.
+  CompositorDependencies::Get().TryEstablishVizConnectionIfNeeded();
+
   // We might end up queing multiple GpuChannel requests for the same
   // LayerTreeFrameSink request as the visibility of the compositor changes, so
   // the LayerTreeFrameSink request could have been handled already.
