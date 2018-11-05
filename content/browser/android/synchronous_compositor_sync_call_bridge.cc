@@ -24,7 +24,6 @@ SynchronousCompositorSyncCallBridge::SynchronousCompositorSyncCallBridge(
 
 SynchronousCompositorSyncCallBridge::~SynchronousCompositorSyncCallBridge() {
   DCHECK(frame_futures_.empty());
-  DCHECK(!window_android_in_vsync_);
 }
 
 void SynchronousCompositorSyncCallBridge::RemoteReady() {
@@ -88,12 +87,7 @@ bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
   if (remote_state_ != RemoteState::READY)
     return false;
   CHECK(!begin_frame_response_valid_);
-  if (window_android_in_vsync_) {
-    DCHECK_EQ(window_android_in_vsync_, window_android);
-    return true;
-  }
-  window_android_in_vsync_ = window_android;
-  window_android_in_vsync_->AddBeginFrameCompletionCallback(base::BindOnce(
+  window_android->AddBeginFrameCompletionCallback(base::BindOnce(
       &SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread,
       this));
   return true;
@@ -131,8 +125,6 @@ bool SynchronousCompositorSyncCallBridge::IsRemoteReadyOnUIThread() {
 
 void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(window_android_in_vsync_);
-  window_android_in_vsync_ = nullptr;
 
   bool update_state = false;
   SyncCompositorCommonRendererParams render_params;

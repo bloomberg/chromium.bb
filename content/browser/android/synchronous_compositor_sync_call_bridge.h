@@ -127,7 +127,6 @@ class SynchronousCompositorSyncCallBridge
   const int routing_id_;
 
   // UI thread only.
-  ui::WindowAndroid* window_android_in_vsync_ = nullptr;
   SynchronousCompositorHost* host_;
 
   // Shared variables between the IO thread and UI thread.
