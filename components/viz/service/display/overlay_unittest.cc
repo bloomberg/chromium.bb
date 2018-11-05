@@ -568,16 +568,6 @@ class OverlayTest : public testing::Test {
   std::vector<gfx::Rect> content_bounds_;
 };
 
-OverlayCandidateList BackbufferOverlayList(const RenderPass* root_render_pass) {
-  OverlayCandidateList list;
-  OverlayCandidate output_surface_plane;
-  output_surface_plane.display_rect = gfx::RectF(root_render_pass->output_rect);
-  output_surface_plane.use_output_surface_for_resource = true;
-  output_surface_plane.overlay_handled = true;
-  list.push_back(output_surface_plane);
-  return list;
-}
-
 using FullscreenOverlayTest = OverlayTest<FullscreenOverlayValidator>;
 using SingleOverlayOnTopTest = OverlayTest<SingleOnTopOverlayValidator>;
 using UnderlayTest = OverlayTest<UnderlayOverlayValidator>;
@@ -1539,25 +1529,6 @@ TEST_F(SingleOverlayOnTopTest, RejectTransparentColorOnTopWithoutBlending) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowVideoNormalTransform) {
-  std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateVideoQuad(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
-      kNormalTransform);
-
-  OverlayCandidateList candidate_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
-      nullptr, nullptr, &damage_rect_, &content_bounds_);
-  EXPECT_EQ(1U, candidate_list.size());
-}
-
 TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateVideoQuad(
@@ -1575,33 +1546,6 @@ TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
       render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
-}
-
-TEST_F(SingleOverlayOnTopTest,
-       AllowVideoNormalTransformWithOutputSurfaceOverlay) {
-  std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateQuad(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-
-  gfx::Rect video_rect = gfx::ScaleToEnclosingRect(pass->output_rect, .5);
-  CreateCandidateVideoQuadAt(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
-      video_rect, kNormalTransform);
-
-  OverlayCandidateList candidate_list(BackbufferOverlayList(pass.get()));
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
-      nullptr, nullptr, &damage_rect_, &content_bounds_);
-  ASSERT_EQ(2U, candidate_list.size());
-  EXPECT_EQ(candidate_list[0].uv_rect, gfx::RectF(.5, .5));
-  EXPECT_EQ(candidate_list[1].uv_rect, gfx::RectF(.1, .2, .9, .8));
 }
 
 TEST_F(UnderlayTest, AllowVideoXMirrorTransform) {
@@ -2285,6 +2229,16 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
   ASSERT_EQ(false, candidate_list[0].is_opaque);
   EXPECT_EQ(1U, content_bounds_.size());
   EXPECT_EQ(output_rect, content_bounds_[0]);
+}
+
+OverlayCandidateList BackbufferOverlayList(const RenderPass* root_render_pass) {
+  OverlayCandidateList list;
+  OverlayCandidate output_surface_plane;
+  output_surface_plane.display_rect = gfx::RectF(root_render_pass->output_rect);
+  output_surface_plane.use_output_surface_for_resource = true;
+  output_surface_plane.overlay_handled = true;
+  list.push_back(output_surface_plane);
+  return list;
 }
 
 TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
