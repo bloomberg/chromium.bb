@@ -230,6 +230,20 @@ TEST_P(ParameterizedTextOffsetMappingTest, RangeOfEmptyBlock) {
             TextOffsetMapping::FindBackwardInlineContents(position));
 }
 
+// http://crbug.com/900906
+TEST_P(ParameterizedTextOffsetMappingTest,
+       AnonymousBlockFlowWrapperForFloatPseudo) {
+  InsertStyleElement("table::after{content:close-quote;float:right;}");
+  const PositionInFlatTree position =
+      ToPositionInFlatTree(SetCaretTextToBody("<table></table>|foo"));
+  const TextOffsetMapping::InlineContents inline_contents =
+      TextOffsetMapping::FindBackwardInlineContents(position);
+  ASSERT_TRUE(inline_contents.IsNotNull());
+  const TextOffsetMapping::InlineContents previous_contents =
+      TextOffsetMapping::InlineContents::PreviousOf(inline_contents);
+  EXPECT_TRUE(previous_contents.IsNull());
+}
+
 // http://crbug.com/832497
 TEST_P(ParameterizedTextOffsetMappingTest, RangeWithCollapsedWhitespace) {
   // Whitespaces after <div> is collapsed.
