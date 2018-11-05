@@ -10,16 +10,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/js/js_controller.h"
 #include "components/sync/js/js_event_handler.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace syncer {
 class SyncService;
@@ -46,8 +43,11 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // Fires an event to send updated info back to the page.
   void HandleRequestUpdatedAboutInfo(const base::ListValue* args);
 
-  // Fires and event to send the list of types back to the page.
+  // Fires an event to send the list of types back to the page.
   void HandleRequestListOfTypes(const base::ListValue* args);
+
+  // Fires an event to send the initial state of the "include specifics" flag.
+  void HandleRequestIncludeSpecificsInitialState(const base::ListValue* args);
 
   // Handler for getAllNodes message.  Needs a |request_id| argument.
   void HandleGetAllNodes(const base::ListValue* args);
@@ -55,6 +55,18 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // Handler for setting internal state of if specifics should be included in
   // protocol events when sent to be displayed.
   void HandleSetIncludeSpecifics(const base::ListValue* args);
+
+  // Handler for requestStart message.
+  void HandleRequestStart(const base::ListValue* args);
+
+  // Handler for requestStopKeepData message.
+  void HandleRequestStopKeepData(const base::ListValue* args);
+
+  // Handler for requestStopClearData message.
+  void HandleRequestStopClearData(const base::ListValue* args);
+
+  // Handler for triggerRefresh message.
+  void HandleTriggerRefresh(const base::ListValue* args);
 
   // syncer::JsEventHandler implementation.
   void HandleJsEvent(const std::string& name,
@@ -94,14 +106,16 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
 
   syncer::SyncService* GetSyncService();
 
+  void DispatchEvent(const std::string& name, const base::Value& details_value);
+
   base::WeakPtr<syncer::JsController> js_controller_;
 
   // A flag used to prevent double-registration with ProfileSyncService.
-  bool is_registered_;
+  bool is_registered_ = false;
 
   // A flag used to prevent double-registration as TypeDebugInfoObserver with
   // ProfileSyncService.
-  bool is_registered_for_counters_;
+  bool is_registered_for_counters_ = false;
 
   // Whether specifics should be included when converting protocol events to a
   // human readable format.
