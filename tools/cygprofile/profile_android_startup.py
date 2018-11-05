@@ -264,6 +264,7 @@ class AndroidProfileTool(object):
       logging.info('Using pregenerated profiles instead of running profile')
       logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
       return self._pregenerated_profiles
+    self._device.adb.Logcat(clear=True)
     self._Install(apk)
     try:
       changer = self._SetChromeFlags(package_info)
@@ -274,6 +275,11 @@ class AndroidProfileTool(object):
           self._RunProfileCollection(package_info, self._simulate_user)
       else:
         self._RunProfileCollection(package_info, self._simulate_user)
+    except device_errors.CommandFailedError as exc:
+      logging.error('Exception %s; dumping logcat', exc)
+      for logcat_line in self._device.adb.Logcat(dump=True):
+        logging.error(logcat_line)
+      raise
     finally:
       self._RestoreChromeFlags(changer)
 
