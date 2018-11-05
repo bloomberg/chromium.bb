@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_InstallTheme) {
   ASSERT_TRUE(RunInstallTest("theme.html", "../../theme.crx"));
   listener.Wait();
   ASSERT_TRUE(listener.received_success());
-  ASSERT_EQ("iamefpfkojoapidjnbafmgkgncegbkad", listener.id());
+  ASSERT_EQ("idlfhncioikpdnlhnmcjogambnefbbfp", listener.id());
 }
 
 // Tests that an error is properly reported when an empty crx is returned.

@@ -87,11 +87,11 @@ namespace {
 const char autoupdate[] = "ogjcoiohnmldgjemafoockdghcjciccf";
 const char good0[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 const char good2[] = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
-const char good2048[] = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
+const char good2048[] = "dfhpodpjggiioolfhoimofdbfjibmedp";
 const char good_crx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char page_action[] = "obcimlgaoabeegjmmpldobjndiealpln";
 const char permissions_increase[] = "pgdpcfcocojkjfbgpiianjngphoopgmo";
-const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char theme2_crx[] = "ibcijncamhmjjdodjamgiipcgnnaeagd";
 
 ExtensionSyncData GetDisableSyncData(const Extension& extension,
                                      int disable_reasons) {
