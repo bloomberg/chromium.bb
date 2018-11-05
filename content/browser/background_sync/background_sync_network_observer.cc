@@ -67,26 +67,10 @@ void BackgroundSyncNetworkObserver::UpdateConnectionType() {
     OnConnectionChanged(connection_type);
 }
 
-bool BackgroundSyncNetworkObserver::NetworkSufficient(
-    SyncNetworkState network_state) {
+bool BackgroundSyncNetworkObserver::NetworkSufficient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  switch (network_state) {
-    case NETWORK_STATE_ANY:
-      return true;
-    case NETWORK_STATE_AVOID_CELLULAR:
-      // Note that this returns true for CONNECTION_UNKNOWN to avoid never
-      // firing.
-      return connection_type_ !=
-                 network::mojom::ConnectionType::CONNECTION_NONE &&
-             !network::NetworkConnectionTracker::IsConnectionCellular(
-                 connection_type_);
-    case NETWORK_STATE_ONLINE:
-      return connection_type_ !=
-             network::mojom::ConnectionType::CONNECTION_NONE;
-  }
-
-  NOTREACHED();
+  return connection_type_ != network::mojom::ConnectionType::CONNECTION_NONE;
   return false;
 }
 

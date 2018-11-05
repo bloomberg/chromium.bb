@@ -40,8 +40,6 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
   mojom::blink::SyncRegistrationPtr sync_registration =
       mojom::blink::SyncRegistration::New();
   sync_registration->tag = tag;
-  sync_registration->network_state =
-      blink::mojom::BackgroundSyncNetworkState::ONLINE;
 
   GetBackgroundSyncServicePtr()->Register(
       std::move(sync_registration), registration_->RegistrationId(),

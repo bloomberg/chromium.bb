@@ -19,7 +19,6 @@ struct CONTENT_EXPORT BackgroundSyncRegistrationOptions {
   bool Equals(const BackgroundSyncRegistrationOptions& other) const;
 
   std::string tag;
-  SyncNetworkState network_state = NETWORK_STATE_ONLINE;
 };
 
 }  // namespace content

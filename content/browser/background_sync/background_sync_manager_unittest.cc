@@ -88,10 +88,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     sync_options_1_.tag = "foo";
-    sync_options_1_.network_state = NETWORK_STATE_ONLINE;
-
     sync_options_2_.tag = "bar";
-    sync_options_2_.network_state = NETWORK_STATE_ONLINE;
   }
 
   void SetUp() override {
@@ -744,23 +741,12 @@ TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options()->network_state = NETWORK_STATE_ANY;
-  reg_2.options()->network_state = NETWORK_STATE_ONLINE;
-  EXPECT_FALSE(reg_1.Equals(reg_2));
-}
-
 TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
   InitDelayedSyncEventTest();
   BackgroundSyncRegistrationOptions options;
 
   // Set non-default values for each field.
   options.tag = "foo";
-  EXPECT_NE(NETWORK_STATE_AVOID_CELLULAR, options.network_state);
-  options.network_state = NETWORK_STATE_AVOID_CELLULAR;
 
   // Store the registration.
   EXPECT_TRUE(Register(options));

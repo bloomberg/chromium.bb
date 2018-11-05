@@ -4,16 +4,8 @@
 
 module blink.mojom;
 
-enum BackgroundSyncNetworkState {
-  ANY,
-  AVOID_CELLULAR,
-  ONLINE,
-  MAX=ONLINE
-};
-
 struct SyncRegistration {
   string tag = "";
-  BackgroundSyncNetworkState network_state = ONLINE;
 };
 
 enum BackgroundSyncError {

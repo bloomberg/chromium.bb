@@ -8,7 +8,7 @@ namespace content {
 
 bool BackgroundSyncRegistrationOptions::Equals(
     const BackgroundSyncRegistrationOptions& other) const {
-  return tag == other.tag && network_state == other.network_state;
+  return tag == other.tag;
 }
 
 }  // namespace content
