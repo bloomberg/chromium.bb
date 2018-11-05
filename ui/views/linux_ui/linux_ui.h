@@ -130,10 +130,12 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Checks for platform support for status icons.
   virtual bool IsStatusIconSupported() const = 0;
 
-  // Create a native status icon.
+  // Create a native status icon. The id_prefix is used to distinguish Chrome's
+  // status icons from other apps' status icons, and should be unique.
   virtual std::unique_ptr<StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
-      const base::string16& tool_tip) const = 0;
+      const base::string16& tool_tip,
+      const char* id_prefix) const = 0;
 
   // Returns the icon for a given content type from the icon theme.
   // TODO(davidben): Add an observer for the theme changing, so we can drop the

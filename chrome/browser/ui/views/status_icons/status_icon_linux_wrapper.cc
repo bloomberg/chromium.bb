@@ -8,6 +8,13 @@
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
+namespace {
+
+// Prefix for app indicator ids
+const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
+
+}  // namespace
+
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(
     std::unique_ptr<views::StatusIconLinux> status_icon)
     : status_icon_(std::move(status_icon)), menu_model_(nullptr) {
@@ -53,7 +60,8 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const base::string16& tool_tip) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    auto status_icon = linux_ui->CreateLinuxStatusIcon(image, tool_tip);
+    auto status_icon =
+        linux_ui->CreateLinuxStatusIcon(image, tool_tip, kAppIndicatorIdPrefix);
     if (status_icon) {
       return base::WrapUnique(
           new StatusIconLinuxWrapper(std::move(status_icon)));
