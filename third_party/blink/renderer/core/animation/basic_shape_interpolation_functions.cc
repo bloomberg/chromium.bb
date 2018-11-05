@@ -164,7 +164,7 @@ LengthSize CreateBorderRadius(
           height, nullptr, conversion_data, kValueRangeNonNegative));
 }
 
-namespace CircleFunctions {
+namespace circle_functions {
 
 enum CircleComponentIndex : unsigned {
   kCircleCenterXIndex,
@@ -230,9 +230,9 @@ scoped_refptr<BasicShape> CreateBasicShape(
   return circle;
 }
 
-}  // namespace CircleFunctions
+}  // namespace circle_functions
 
-namespace EllipseFunctions {
+namespace ellipse_functions {
 
 enum EllipseComponentIndex : unsigned {
   kEllipseCenterXIndex,
@@ -308,9 +308,9 @@ scoped_refptr<BasicShape> CreateBasicShape(
   return ellipse;
 }
 
-}  // namespace EllipseFunctions
+}  // namespace ellipse_functions
 
-namespace InsetFunctions {
+namespace inset_functions {
 
 enum InsetComponentIndex : unsigned {
   kInsetTopIndex,
@@ -448,9 +448,9 @@ scoped_refptr<BasicShape> CreateBasicShape(
   return inset;
 }
 
-}  // namespace InsetFunctions
+}  // namespace inset_functions
 
-namespace PolygonFunctions {
+namespace polygon_functions {
 
 InterpolationValue ConvertCSSValue(
     const cssvalue::CSSBasicShapePolygonValue& polygon) {
@@ -504,48 +504,49 @@ scoped_refptr<BasicShape> CreateBasicShape(
   return polygon;
 }
 
-}  // namespace PolygonFunctions
+}  // namespace polygon_functions
 
 }  // namespace
 
-InterpolationValue BasicShapeInterpolationFunctions::MaybeConvertCSSValue(
+InterpolationValue basic_shape_interpolation_functions::MaybeConvertCSSValue(
     const CSSValue& value) {
   if (value.IsBasicShapeCircleValue()) {
-    return CircleFunctions::ConvertCSSValue(
+    return circle_functions::ConvertCSSValue(
         cssvalue::ToCSSBasicShapeCircleValue(value));
   }
   if (value.IsBasicShapeEllipseValue()) {
-    return EllipseFunctions::ConvertCSSValue(
+    return ellipse_functions::ConvertCSSValue(
         cssvalue::ToCSSBasicShapeEllipseValue(value));
   }
   if (value.IsBasicShapeInsetValue()) {
-    return InsetFunctions::ConvertCSSValue(
+    return inset_functions::ConvertCSSValue(
         cssvalue::ToCSSBasicShapeInsetValue(value));
   }
   if (value.IsBasicShapePolygonValue()) {
-    return PolygonFunctions::ConvertCSSValue(
+    return polygon_functions::ConvertCSSValue(
         cssvalue::ToCSSBasicShapePolygonValue(value));
   }
   return nullptr;
 }
 
-InterpolationValue BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
+InterpolationValue basic_shape_interpolation_functions::MaybeConvertBasicShape(
     const BasicShape* shape,
     double zoom) {
   if (!shape)
     return nullptr;
   switch (shape->GetType()) {
     case BasicShape::kBasicShapeCircleType:
-      return CircleFunctions::ConvertBasicShape(ToBasicShapeCircle(*shape),
-                                                zoom);
+      return circle_functions::ConvertBasicShape(ToBasicShapeCircle(*shape),
+                                                 zoom);
     case BasicShape::kBasicShapeEllipseType:
-      return EllipseFunctions::ConvertBasicShape(ToBasicShapeEllipse(*shape),
-                                                 zoom);
+      return ellipse_functions::ConvertBasicShape(ToBasicShapeEllipse(*shape),
+                                                  zoom);
     case BasicShape::kBasicShapeInsetType:
-      return InsetFunctions::ConvertBasicShape(ToBasicShapeInset(*shape), zoom);
+      return inset_functions::ConvertBasicShape(ToBasicShapeInset(*shape),
+                                                zoom);
     case BasicShape::kBasicShapePolygonType:
-      return PolygonFunctions::ConvertBasicShape(ToBasicShapePolygon(*shape),
-                                                 zoom);
+      return polygon_functions::ConvertBasicShape(ToBasicShapePolygon(*shape),
+                                                  zoom);
     default:
       NOTREACHED();
       return nullptr;
@@ -553,33 +554,33 @@ InterpolationValue BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
 }
 
 std::unique_ptr<InterpolableValue>
-BasicShapeInterpolationFunctions::CreateNeutralValue(
+basic_shape_interpolation_functions::CreateNeutralValue(
     const NonInterpolableValue& untyped_non_interpolable_value) {
   const BasicShapeNonInterpolableValue& non_interpolable_value =
       ToBasicShapeNonInterpolableValue(untyped_non_interpolable_value);
   switch (non_interpolable_value.GetShapeType()) {
     case BasicShape::kBasicShapeCircleType:
-      return CircleFunctions::CreateNeutralValue();
+      return circle_functions::CreateNeutralValue();
     case BasicShape::kBasicShapeEllipseType:
-      return EllipseFunctions::CreateNeutralValue();
+      return ellipse_functions::CreateNeutralValue();
     case BasicShape::kBasicShapeInsetType:
-      return InsetFunctions::CreateNeutralValue();
+      return inset_functions::CreateNeutralValue();
     case BasicShape::kBasicShapePolygonType:
-      return PolygonFunctions::CreateNeutralValue(non_interpolable_value);
+      return polygon_functions::CreateNeutralValue(non_interpolable_value);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-bool BasicShapeInterpolationFunctions::ShapesAreCompatible(
+bool basic_shape_interpolation_functions::ShapesAreCompatible(
     const NonInterpolableValue& a,
     const NonInterpolableValue& b) {
   return ToBasicShapeNonInterpolableValue(a).IsCompatibleWith(
       ToBasicShapeNonInterpolableValue(b));
 }
 
-scoped_refptr<BasicShape> BasicShapeInterpolationFunctions::CreateBasicShape(
+scoped_refptr<BasicShape> basic_shape_interpolation_functions::CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue& untyped_non_interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
@@ -587,16 +588,16 @@ scoped_refptr<BasicShape> BasicShapeInterpolationFunctions::CreateBasicShape(
       ToBasicShapeNonInterpolableValue(untyped_non_interpolable_value);
   switch (non_interpolable_value.GetShapeType()) {
     case BasicShape::kBasicShapeCircleType:
-      return CircleFunctions::CreateBasicShape(interpolable_value,
-                                               conversion_data);
-    case BasicShape::kBasicShapeEllipseType:
-      return EllipseFunctions::CreateBasicShape(interpolable_value,
+      return circle_functions::CreateBasicShape(interpolable_value,
                                                 conversion_data);
+    case BasicShape::kBasicShapeEllipseType:
+      return ellipse_functions::CreateBasicShape(interpolable_value,
+                                                 conversion_data);
     case BasicShape::kBasicShapeInsetType:
-      return InsetFunctions::CreateBasicShape(interpolable_value,
-                                              conversion_data);
+      return inset_functions::CreateBasicShape(interpolable_value,
+                                               conversion_data);
     case BasicShape::kBasicShapePolygonType:
-      return PolygonFunctions::CreateBasicShape(
+      return polygon_functions::CreateBasicShape(
           interpolable_value, non_interpolable_value, conversion_data);
     default:
       NOTREACHED();

@@ -92,7 +92,7 @@ double ClampParameter(double value, FilterOperation::OperationType type) {
 
 }  // namespace
 
-InterpolationValue FilterInterpolationFunctions::MaybeConvertCSSFilter(
+InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
     const CSSValue& value) {
   if (value.IsURIValue())
     return nullptr;
@@ -160,7 +160,7 @@ InterpolationValue FilterInterpolationFunctions::MaybeConvertCSSFilter(
   return result;
 }
 
-InterpolationValue FilterInterpolationFunctions::MaybeConvertFilter(
+InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
     const FilterOperation& filter,
     double zoom) {
   InterpolationValue result = nullptr;
@@ -210,7 +210,7 @@ InterpolationValue FilterInterpolationFunctions::MaybeConvertFilter(
 }
 
 std::unique_ptr<InterpolableValue>
-FilterInterpolationFunctions::CreateNoneValue(
+filter_interpolation_functions::CreateNoneValue(
     const NonInterpolableValue& untyped_value) {
   switch (ToFilterNonInterpolableValue(untyped_value).GetOperationType()) {
     case FilterOperation::GRAYSCALE:
@@ -237,14 +237,14 @@ FilterInterpolationFunctions::CreateNoneValue(
   }
 }
 
-bool FilterInterpolationFunctions::FiltersAreCompatible(
+bool filter_interpolation_functions::FiltersAreCompatible(
     const NonInterpolableValue& a,
     const NonInterpolableValue& b) {
   return ToFilterNonInterpolableValue(a).GetOperationType() ==
          ToFilterNonInterpolableValue(b).GetOperationType();
 }
 
-FilterOperation* FilterInterpolationFunctions::CreateFilter(
+FilterOperation* filter_interpolation_functions::CreateFilter(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue& untyped_non_interpolable_value,
     const StyleResolverState& state) {
