@@ -20682,9 +20682,9 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="kMagnetometer"/>
   <int value="21" label="kUnsizedMedia"/>
   <int value="22" label="kLegacyImageFormats"/>
-  <int value="23" label="kImageCompression"/>
+  <int value="23" label="kUnoptimizedImages"/>
   <int value="24" label="kAnimations"/>
-  <int value="25" label="kMaxDownscalingImage"/>
+  <int value="25" label="kOversizedImages"/>
   <int value="26" label="kPictureInPicture"/>
   <int value="27" label="kVerticalScroll"/>
   <int value="28" label="kDocumentWrite"/>
