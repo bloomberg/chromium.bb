@@ -279,22 +279,28 @@ typedef struct AV1Common {
   // TODO(hkuang): Combine this with cur_buf in macroblockd.
   RefCntBuffer *cur_frame;
 
-  int ref_frame_map[REF_FRAMES]; /* maps fb_idx to reference slot */
+  // For decoder, ref_frame_map[i] maps reference type 'i' to actual index of
+  // the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  // For encoder, ref_frame_map[j] (where j = remapped_ref_idx[i]) maps
+  // remapped reference index 'j' (that is, original reference type 'i') to
+  // actual index of the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  int ref_frame_map[REF_FRAMES];
 
   // Prepare ref_frame_map for the next frame.
   // Only used in frame parallel decode.
   int next_ref_frame_map[REF_FRAMES];
 
-  // TODO(jkoleszar): could expand active_ref_idx to 4, with 0 as intra, and
-  // roll new_fb_idx into it.
-
-  // Each Inter frame can reference INTER_REFS_PER_FRAME buffers
+  // Each Inter frame can reference INTER_REFS_PER_FRAME buffers. This maps each
+  // (inter) reference frame type to the corresponding reference buffer.
   RefBuffer frame_refs[INTER_REFS_PER_FRAME];
+
   int is_skip_mode_allowed;
   int skip_mode_flag;
   int ref_frame_idx_0;
   int ref_frame_idx_1;
 
+  // Index to the 'new' frame (i.e. the frame currently being encoded or
+  // decoded) in the buffer pool 'cm->buffer_pool'.
   int new_fb_idx;
 
   FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
