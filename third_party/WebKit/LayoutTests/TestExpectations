@@ -3001,8 +3001,7 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.10 Mac10.13 Retina ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/simplecall-no-ssrcs.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/simplecall-no-ssrcs.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 Mac10.12 Mac10.13 Retina ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/simplecall-no-ssrcs.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-005.html [ Failure ]
