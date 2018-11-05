@@ -71,6 +71,86 @@ TestComponentCreator::CreateComponentInfoWithPageHints(
   return WriteConfigToFileAndReturnComponentInfo(config);
 }
 
+optimization_guide::ComponentInfo
+TestComponentCreator::CreateComponentInfoWithExperimentalPageHints(
+    optimization_guide::proto::OptimizationType optimization_type,
+    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::vector<std::string>& experimental_resource_patterns) {
+  optimization_guide::proto::Configuration config;
+  for (const auto& page_hint_site : page_hint_host_suffixes) {
+    optimization_guide::proto::Hint* hint = config.add_hints();
+    hint->set_key(page_hint_site);
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+    page_hint->set_page_pattern("*");
+
+    optimization_guide::proto::Optimization* optimization =
+        page_hint->add_whitelisted_optimizations();
+    optimization->set_optimization_type(optimization_type);
+    optimization->set_experiment_name(kFooExperimentName);
+
+    for (auto resource_blocking_pattern : experimental_resource_patterns) {
+      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
+          optimization->add_resource_loading_hints();
+      resource_loading_hint->set_loading_optimization_type(
+          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+      resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
+    }
+  }
+
+  return WriteConfigToFileAndReturnComponentInfo(config);
+}
+
+optimization_guide::ComponentInfo
+TestComponentCreator::CreateComponentInfoWithMixPageHints(
+    optimization_guide::proto::OptimizationType optimization_type,
+    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::vector<std::string>& experimental_resource_patterns,
+    const std::vector<std::string>& default_resource_patterns) {
+  optimization_guide::proto::Configuration config;
+  for (const auto& page_hint_site : page_hint_host_suffixes) {
+    optimization_guide::proto::Hint* hint = config.add_hints();
+    hint->set_key(page_hint_site);
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+    page_hint->set_page_pattern("*");
+
+    // Add experimental patterns first so they get higher priority.
+    {
+      optimization_guide::proto::Optimization* optimization =
+          page_hint->add_whitelisted_optimizations();
+      optimization->set_optimization_type(optimization_type);
+      optimization->set_experiment_name(kFooExperimentName);
+
+      for (auto resource_blocking_pattern : experimental_resource_patterns) {
+        optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
+            optimization->add_resource_loading_hints();
+        resource_loading_hint->set_loading_optimization_type(
+            optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+        resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
+      }
+    }
+
+    {
+      optimization_guide::proto::Optimization* optimization =
+          page_hint->add_whitelisted_optimizations();
+      optimization->set_optimization_type(optimization_type);
+
+      for (auto resource_blocking_pattern : default_resource_patterns) {
+        optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
+            optimization->add_resource_loading_hints();
+        resource_loading_hint->set_loading_optimization_type(
+            optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+        resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
+      }
+    }
+  }
+
+  return WriteConfigToFileAndReturnComponentInfo(config);
+}
+
 base::FilePath TestComponentCreator::GetFilePath(std::string file_path_suffix) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(scoped_temp_dir_->IsValid() ||

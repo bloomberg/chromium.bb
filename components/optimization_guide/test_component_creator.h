@@ -16,6 +16,9 @@
 namespace optimization_guide {
 namespace testing {
 
+// Experiment name used for experimental resource loading hints.
+static const char kFooExperimentName[] = "foo_experiment";
+
 // Helper class to create test OptimizationHints components for testing.
 //
 // All temporary files and paths are cleaned up when this instance goes out of
@@ -31,13 +34,41 @@ class TestComponentCreator {
   optimization_guide::ComponentInfo CreateComponentInfoWithTopLevelWhitelist(
       optimization_guide::proto::OptimizationType optimization_type,
       const std::vector<std::string>& whitelisted_host_suffixes);
+
   // Creates component data based on |whitelisted_host_suffixes| with page hints
   // for type |optimization_type| blocking resources specified by
-  // |resource_patterns|.and returns the ComponentInfo for it.
+  // |resource_patterns|, and returns the ComponentInfo for it.
   optimization_guide::ComponentInfo CreateComponentInfoWithPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
       const std::vector<std::string>& whitelisted_host_suffixes,
       const std::vector<std::string>& resource_patterns);
+
+  // Creates component data based on |whitelisted_host_suffixes| with page hints
+  // for type |optimization_type| blocking resources specified by
+  // |experimental_resource_patterns|, and returns the ComponentInfo for it.
+  // The loading hints are set as experimental with experiment name set to
+  // kFooExperimentName.
+
+  // Creates component data for testing with experimental optimizations. It
+  // creates a PageHint (with page pattern "*" for each key in
+  // |whitelisted_host_suffixes| that each has resource blocking patterns from
+  // |experimental_resource_patterns|.
+  optimization_guide::ComponentInfo
+  CreateComponentInfoWithExperimentalPageHints(
+      optimization_guide::proto::OptimizationType optimization_type,
+      const std::vector<std::string>& whitelisted_host_suffixes,
+      const std::vector<std::string>& experimental_resource_patterns);
+
+  // Creates component data for testing with both default and experimental
+  // optimizations. It creates a PageHint (with page pattern "*" for each key in
+  // |whitelisted_host_suffixes| that each has resource blocking patterns from
+  // |default_resource_patterns| and |experimental_resource_patterns|. The
+  // experimental hints are guarded behind experiment kFooExperimentName.
+  optimization_guide::ComponentInfo CreateComponentInfoWithMixPageHints(
+      optimization_guide::proto::OptimizationType optimization_type,
+      const std::vector<std::string>& whitelisted_host_suffixes,
+      const std::vector<std::string>& experimental_resource_patterns,
+      const std::vector<std::string>& default_resource_patterns);
 
  private:
   // Returns the scoped temp directory path with the |file_path_suffix| that is
