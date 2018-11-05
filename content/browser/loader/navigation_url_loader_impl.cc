@@ -446,8 +446,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       storage::FileSystemContext* upload_file_system_context,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder,
       bool was_request_intercepted) const {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -470,8 +468,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                 ? nullptr
                 : service_worker_navigation_handle_core),
         base::Unretained(was_request_intercepted ? nullptr
-                                                 : appcache_handle_core),
-        std::move(signed_exchange_prefetch_metric_recorder));
+                                                 : appcache_handle_core));
   }
 
   void CreateNonNetworkServiceURLLoader(
@@ -480,8 +477,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationRequestInfo> request_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder,
       const network::ResourceRequest& /* resource_request */,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
@@ -495,30 +490,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK(started_);
 
     default_loader_used_ = true;
-    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
-      // TODO(falken): Understand and add a comment about why
-      // SignedExchangeRequestHandler is the only interceptor being added here.
-      DCHECK(!network_loader_factory_);
-      // It is safe to pass the callback of CreateURLLoaderThrottles with the
-      // unretained |this|, because the passed callback will be used by a
-      // SignedExchangeHandler which is indirectly owned by |this| until its
-      // header is verified and parsed, that's where the getter is used.
-      interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
-          url::Origin::Create(request_info->common_params.url),
-          GetURLLoaderOptions(request_info->is_main_frame),
-          request_info->frame_tree_node_id,
-          request_info->devtools_navigation_token,
-          request_info->devtools_frame_token, request_info->report_raw_headers,
-          request_info->begin_params->load_flags,
-          base::MakeRefCounted<
-              SignedExchangeURLLoaderFactoryForNonNetworkService>(
-              resource_context_, url_request_context_getter),
-          base::BindRepeating(
-              &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this)),
-          std::move(signed_exchange_prefetch_metric_recorder)));
-    }
-
     uint32_t options = GetURLLoaderOptions(request_info->is_main_frame);
 
     bool intercepted = false;
@@ -580,8 +551,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(this), base::Unretained(url_request_context_getter),
         base::Unretained(upload_file_system_context),
         base::Unretained(service_worker_navigation_handle_core),
-        base::Unretained(appcache_handle_core),
-        base::RetainedRef(signed_exchange_prefetch_metric_recorder));
+        base::Unretained(appcache_handle_core));
 
     // Requests to Blob scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
@@ -597,13 +567,30 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    // If S13nServiceWorker is disabled, just use
-    // |default_request_handler_factory_| and return. The non network service
-    // request handling goes through ResourceDispatcherHost which has legacy
-    // hooks for service worker (ServiceWorkerRequestInterceptor), so no service
-    // worker interception is needed here.
-    if (!blink::ServiceWorkerUtils::IsServicificationEnabled() ||
-        !service_worker_navigation_handle_core) {
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+        service_worker_navigation_handle_core) {
+      std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
+          CreateServiceWorkerInterceptor(*request_info_,
+                                         service_worker_navigation_handle_core);
+      // The interceptor for service worker may not be created for some reasons
+      // (e.g. the origin is not secure).
+      if (service_worker_interceptor)
+        interceptors_.push_back(std::move(service_worker_interceptor));
+    }
+
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
+      DCHECK(!network_loader_factory_);
+      interceptors_.push_back(CreateSignedExchangeRequestHandler(
+          *request_info_,
+          base::MakeRefCounted<
+              SignedExchangeURLLoaderFactoryForNonNetworkService>(
+              resource_context_, url_request_context_getter),
+          std::move(signed_exchange_prefetch_metric_recorder)));
+    }
+
+    // If an interceptor is not created, we no longer have to go through the
+    // rest of the network service code.
+    if (interceptors_.empty()) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
               default_request_handler_factory_.Run(
@@ -614,28 +601,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
-
-    // Otherwise, if S13nServiceWorker is enabled, create an interceptor so
-    // S13nServiceWorker has a chance to intercept the request.
-    std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        CreateServiceWorkerInterceptor(*request_info_,
-                                       service_worker_navigation_handle_core);
-    // If an interceptor is not created for some reasons (e.g. the origin is not
-    // secure), we no longer have to go through the rest of the network service
-    // code.
-    if (!service_worker_interceptor) {
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-          base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              default_request_handler_factory_.Run(
-                  false /* was_request_intercepted */)),
-          CreateURLLoaderThrottles(), -1 /* routing_id */, 0 /* request_id */,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(),
-          this /* client */, kNavigationUrlLoaderTrafficAnnotation,
-          base::ThreadTaskRunnerHandle::Get());
-      return;
-    }
-
-    interceptors_.push_back(std::move(service_worker_interceptor));
 
     Restart();
   }
@@ -721,21 +686,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
-      // It is safe to pass the callback of CreateURLLoaderThrottles with the
-      // unretained |this|, because the passed callback will be used by a
-      // SignedExchangeHandler which is indirectly owned by |this| until its
-      // header is verified and parsed, that's where the getter is used.
-      interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
-          url::Origin::Create(request_info->common_params.url),
-          GetURLLoaderOptions(request_info->is_main_frame),
-          request_info->frame_tree_node_id,
-          request_info->devtools_navigation_token,
-          request_info->devtools_frame_token, request_info->report_raw_headers,
-          request_info->begin_params->load_flags, network_loader_factory_,
-          base::BindRepeating(
-              &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this)),
-          signed_exchange_prefetch_metric_recorder));
+      interceptors_.push_back(CreateSignedExchangeRequestHandler(
+          *request_info, network_loader_factory_,
+          std::move(signed_exchange_prefetch_metric_recorder)));
     }
 
     std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
@@ -1433,6 +1386,28 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         request_info.begin_params->request_context_type, frame_type,
         request_info.are_ancestors_secure, request_info.common_params.post_data,
         web_contents_getter_);
+  }
+
+  std::unique_ptr<SignedExchangeRequestHandler>
+  CreateSignedExchangeRequestHandler(
+      const NavigationRequestInfo& request_info,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder) {
+    // It is safe to pass the callback of CreateURLLoaderThrottles with the
+    // unretained |this|, because the passed callback will be used by a
+    // SignedExchangeHandler which is indirectly owned by |this| until its
+    // header is verified and parsed, that's where the getter is used.
+    return std::make_unique<SignedExchangeRequestHandler>(
+        url::Origin::Create(request_info.common_params.url),
+        GetURLLoaderOptions(request_info.is_main_frame),
+        request_info.frame_tree_node_id, request_info.devtools_navigation_token,
+        request_info.devtools_frame_token, request_info.report_raw_headers,
+        request_info.begin_params->load_flags, std::move(url_loader_factory),
+        base::BindRepeating(
+            &URLLoaderRequestController::CreateURLLoaderThrottles,
+            base::Unretained(this)),
+        std::move(signed_exchange_prefetch_metric_recorder));
   }
 
   void RecordSCTHistogramIfNeeded(
