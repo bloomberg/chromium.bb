@@ -107,23 +107,24 @@ const char kHistogramDataReductionProxyLitePagePrefix[] =
     "PageLoad.Clients.Previews.LitePages.";
 
 const char kResourcesPercentProxied[] =
-    "Experimental.CompletedResources.Network.PercentProxied";
-const char kBytesPercentProxied[] = "Experimental.Bytes.Network.PercentProxied";
+    "Experimental.CompletedResources.Network2.PercentProxied";
+const char kBytesPercentProxied[] =
+    "Experimental.Bytes.Network.PercentProxied2";
 const char kBytesCompressionRatio[] =
-    "Experimental.Bytes.Network.CompressionRatio";
+    "Experimental.Bytes.Network.CompressionRatio2";
 const char kBytesInflationPercent[] =
-    "Experimental.Bytes.Network.InflationPercent";
-const char kNetworkResources[] = "Experimental.CompletedResources.Network";
+    "Experimental.Bytes.Network.InflationPercent2";
+const char kNetworkResources[] = "Experimental.CompletedResources.Network2";
 const char kResourcesProxied[] =
-    "Experimental.CompletedResources.Network.Proxied";
+    "Experimental.CompletedResources.Network2.Proxied";
 const char kResourcesNotProxied[] =
-    "Experimental.CompletedResources.Network.NonProxied";
-const char kNetworkBytes[] = "Experimental.Bytes.Network";
-const char kBytesProxied[] = "Experimental.Bytes.Network.Proxied";
-const char kBytesNotProxied[] = "Experimental.Bytes.Network.NonProxied";
-const char kBytesOriginal[] = "Experimental.Bytes.Network.Original";
-const char kBytesSavings[] = "Experimental.Bytes.Network.Savings";
-const char kBytesInflation[] = "Experimental.Bytes.Network.Inflation";
+    "Experimental.CompletedResources.Network2.NonProxied";
+const char kNetworkBytes[] = "Experimental.Bytes.Network2";
+const char kBytesProxied[] = "Experimental.Bytes.Network.Proxied2";
+const char kBytesNotProxied[] = "Experimental.Bytes.Network.NonProxied2";
+const char kBytesOriginal[] = "Experimental.Bytes.Network.Original2";
+const char kBytesSavings[] = "Experimental.Bytes.Network.Savings2";
+const char kBytesInflation[] = "Experimental.Bytes.Network.Inflation2";
 
 }  // namespace internal
 
@@ -560,37 +561,45 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
       extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
     data_->set_lofi_received(true);
   }
+}
 
-  const bool is_secure =
-      extra_request_complete_info.url.SchemeIsCryptographic();
-
-  if (extra_request_complete_info.was_cached) {
-    if (is_secure) {
-      secure_cached_bytes_ += extra_request_complete_info.raw_body_bytes;
-    } else {
-      insecure_cached_bytes_ += extra_request_complete_info.raw_body_bytes;
+void DataReductionProxyMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto const& resource : resources) {
+    if (resource->was_fetched_via_cache) {
+      if (resource->is_complete) {
+        if (resource->is_secure_scheme) {
+          secure_cached_bytes_ += resource->encoded_body_length;
+        } else {
+          insecure_cached_bytes_ += resource->encoded_body_length;
+        }
+      }
+      continue;
     }
-    return;
+    int64_t original_network_bytes =
+        resource->delta_bytes *
+        resource->data_reduction_proxy_compression_ratio_estimate;
+    if (resource->is_secure_scheme) {
+      secure_original_network_bytes_ += original_network_bytes;
+      secure_network_bytes_ += resource->delta_bytes;
+    } else {
+      insecure_original_network_bytes_ += original_network_bytes;
+      insecure_network_bytes_ += resource->delta_bytes;
+    }
+    if (resource->is_complete)
+      num_network_resources_++;
+    // If the request is proxied on a page with data saver proxy for the main
+    // frame request, then it is very likely a data saver proxy for this
+    // request.
+    if (resource->proxy_used) {
+      if (resource->is_complete)
+        num_data_reduction_proxy_resources_++;
+      // Proxied bytes are always non-secure.
+      network_bytes_proxied_ += resource->delta_bytes;
+    }
   }
-
-  if (is_secure) {
-    secure_original_network_bytes_ +=
-        extra_request_complete_info.original_network_content_length;
-    secure_network_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    insecure_original_network_bytes_ +=
-        extra_request_complete_info.original_network_content_length;
-    insecure_network_bytes_ += extra_request_complete_info.raw_body_bytes;
-  }
-  num_network_resources_++;
-  if (!extra_request_complete_info.data_reduction_proxy_data ||
-      !extra_request_complete_info.data_reduction_proxy_data
-           ->used_data_reduction_proxy()) {
-    return;
-  }
-  num_data_reduction_proxy_resources_++;
-  // Proxied bytes are always non-secure.
-  network_bytes_proxied_ += extra_request_complete_info.raw_body_bytes;
 }
 
 DataReductionProxyPingbackClient*

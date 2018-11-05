@@ -17,6 +17,8 @@
 #include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
+class GURL;
+
 namespace base {
 class OneShotTimer;
 }  // namespace base
@@ -45,7 +47,8 @@ class PageTimingMetricsSender {
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature);
   void DidObserveNewCssPropertyUsage(int css_property, bool is_animated);
   void DidObserveLayoutJank(double jank_fraction);
-  void DidStartResponse(int resource_id,
+  void DidStartResponse(const GURL& response_url,
+                        int resource_id,
                         const network::ResourceResponseHead& response_head);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,

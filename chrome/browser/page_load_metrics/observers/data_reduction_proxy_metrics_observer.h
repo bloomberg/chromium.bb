@@ -97,6 +97,9 @@ class DataReductionProxyMetricsObserver
                    const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_compelte_info) override;
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
   void OnEventOccurred(const void* const event_key) override;
   void OnUserInput(const blink::WebInputEvent& event) override;
 

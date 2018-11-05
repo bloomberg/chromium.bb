@@ -71,6 +71,24 @@ previews::PreviewsUserData* PreviewsDataForNavigationHandle(
       navigation_handle, 1u);
 }
 
+page_load_metrics::mojom::ResourceDataUpdatePtr
+CreateDataReductionProxyResource(bool was_cached,
+                                 int64_t delta_bytes,
+                                 bool is_complete,
+                                 bool proxy_used,
+                                 double compression_ratio = 1.0) {
+  auto resource_data_update =
+      page_load_metrics::mojom::ResourceDataUpdate::New();
+  resource_data_update->was_fetched_via_cache = was_cached;
+  resource_data_update->delta_bytes = was_cached ? 0 : delta_bytes;
+  resource_data_update->encoded_body_length = delta_bytes;
+  resource_data_update->is_complete = is_complete;
+  resource_data_update->proxy_used = true;
+  resource_data_update->data_reduction_proxy_compression_ratio_estimate =
+      compression_ratio;
+  return resource_data_update;
+}
+
 // Pingback client responsible for recording the timing information it receives
 // from a SendPingback call.
 class TestPingbackClient
@@ -604,53 +622,27 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
 
-  // Prepare 4 resources of varying size and configurations.
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       true /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached proxied request with .1 compression ratio.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 10 /* original_network_content_length */,
-       data->DeepCopy(),
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached proxied request with .5 compression ratio.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 5 /* original_network_content_length */,
-       std::move(data),
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Cached resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      true /* was_cached */, 10 * 1024 /* delta_bytes */,
+      true /* is_complete */, false /* proxy_used*/));
+  // Non data saver resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 20 * 1024 /* delta_bytes */,
+      true /* is_complete */, false /* proxy_used*/));
+  // Data saver resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 2 * 1024 /* delta_bytes */,
+      true /* is_complete */, true /* proxy_used*/,
+      0.5 /* compression_ratio */));
+  // Data saver incomplete resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 3 * 1024 /* delta_bytes */,
+      false /* is_complete */, true /* proxy_used*/,
+      0.5 /* compression_ratio */));
+
+  SimulateResourceDataUseUpdate(resources);
 
   int network_resources = 0;
   int drp_resources = 0;
@@ -660,24 +652,27 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    if (!request.was_cached) {
-      if (request.url.SchemeIsCryptographic()) {
-        secure_network_bytes += request.raw_body_bytes;
-        secure_ocl_bytes += request.original_network_content_length;
+    if (!request->was_fetched_via_cache) {
+      if (request->is_secure_scheme) {
+        secure_network_bytes += request->delta_bytes;
+        secure_ocl_bytes +=
+            request->delta_bytes *
+            request->data_reduction_proxy_compression_ratio_estimate;
       } else {
-        insecure_network_bytes += request.raw_body_bytes;
-        insecure_ocl_bytes += request.original_network_content_length;
+        insecure_network_bytes += request->delta_bytes;
+        insecure_ocl_bytes +=
+            request->delta_bytes *
+            request->data_reduction_proxy_compression_ratio_estimate;
       }
-      ++network_resources;
+      if (request->is_complete)
+        ++network_resources;
     }
-    if (request.data_reduction_proxy_data &&
-        request.data_reduction_proxy_data->used_data_reduction_proxy()) {
-      drp_bytes += request.raw_body_bytes;
-      ++drp_resources;
+    if (request->proxy_used) {
+      drp_bytes += request->delta_bytes;
+      if (!request->was_fetched_via_cache && request->is_complete)
+        ++drp_resources;
     }
   }
-
   NavigateToUntrackedUrl();
 
   ValidateDataHistograms(network_resources, drp_resources,
@@ -695,53 +690,26 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
 
-  // Prepare 4 resources of varying size and configurations.
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       true /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached proxied request with .1 compression ratio.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 * 10 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       data->DeepCopy(),
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached proxied request with .5 compression ratio.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 * 5 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       std::move(data),
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Cached resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      true /* was_cached */, 10 * 1024 /* delta_bytes */,
+      true /* is_complete */, false /* proxy_used*/));
+  // Non data saver resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 20 * 1024 /* delta_bytes */,
+      true /* is_complete */, false /* proxy_used*/));
+  // Data saver inflated resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 2 * 1024 /* delta_bytes */,
+      true /* is_complete */, true /* proxy_used*/, 5 /* compression_ratio */));
+  // Data saver incomplete inflated resource.
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 3 * 1024 /* delta_bytes */,
+      false /* is_complete */, true /* proxy_used*/,
+      10 /* compression_ratio */));
+
+  SimulateResourceDataUseUpdate(resources);
 
   int network_resources = 0;
   int drp_resources = 0;
@@ -752,28 +720,30 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    const bool is_secure = request.url.SchemeIsCryptographic();
-    if (!request.was_cached) {
-      if (is_secure) {
-        secure_network_bytes += request.raw_body_bytes;
-        secure_ocl_bytes += request.original_network_content_length;
+    if (!request->was_fetched_via_cache) {
+      if (request->is_secure_scheme) {
+        secure_network_bytes += request->delta_bytes;
+        secure_ocl_bytes +=
+            request->delta_bytes *
+            request->data_reduction_proxy_compression_ratio_estimate;
       } else {
-        insecure_network_bytes += request.raw_body_bytes;
-        insecure_ocl_bytes += request.original_network_content_length;
+        insecure_network_bytes += request->delta_bytes;
+        insecure_ocl_bytes +=
+            request->delta_bytes *
+            request->data_reduction_proxy_compression_ratio_estimate;
       }
-      ++network_resources;
+      if (request->is_complete)
+        ++network_resources;
     }
-    if (request.data_reduction_proxy_data &&
-        request.data_reduction_proxy_data->used_data_reduction_proxy()) {
-      if (is_secure)
-        secure_drp_bytes += request.raw_body_bytes;
+    if (request->proxy_used) {
+      if (request->is_secure_scheme)
+        secure_drp_bytes += request->delta_bytes;
       else
-        drp_bytes += request.raw_body_bytes;
-      ++drp_resources;
+        drp_bytes += request->delta_bytes;
+      if (!request->was_fetched_via_cache && request->is_complete)
+        ++drp_resources;
     }
   }
-
   NavigateToUntrackedUrl();
 
   ValidateDataHistograms(network_resources, drp_resources,
