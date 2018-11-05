@@ -17,7 +17,6 @@ typemaps = [
   "//third_party/blink/renderer/platform/mojo/file.typemap",
   "//third_party/blink/renderer/platform/mojo/geometry.typemap",
   "//third_party/blink/renderer/platform/mojo/kurl.typemap",
-  "//third_party/blink/renderer/platform/mojo/referrer.typemap",
   "//third_party/blink/renderer/platform/mojo/security_origin.typemap",
   "//third_party/blink/renderer/platform/mojo/string.typemap",
   "//third_party/blink/renderer/platform/mojo/time.typemap",

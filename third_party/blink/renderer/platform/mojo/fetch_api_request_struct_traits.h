@@ -48,7 +48,7 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
   static scoped_refptr<::blink::BlobDataHandle> blob(
       const ::blink::WebServiceWorkerRequest&);
 
-  static const ::blink::Referrer& referrer(
+  static ::blink::mojom::blink::ReferrerPtr referrer(
       const ::blink::WebServiceWorkerRequest&);
 
   static ::network::mojom::FetchCredentialsMode credentials_mode(
