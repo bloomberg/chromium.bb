@@ -1,0 +1,100 @@
+
+================================================================================
+AXSelection from AX object anchored position in "WebArea": "", 0 to AX object anchored position in "WebArea": "", 0
+================================================================================
+|++<Table>
+++++<Row>
+++++++<ColumnHeader: Sum>
+++++++++<StaticText: Sum>
+++++++<ColumnHeader: Subtraction>
+++++++++<StaticText: Subtraction>
+++++<Row>
+++++++<Cell: 10>
+++++++++<StaticText: 10>
+++++++<Cell: 7>
+++++++++<StaticText: 7>
+++++<Row>
+++++++<Cell: 2>
+++++++++<StaticText: 2>
+++++++<Cell: 4>
+++++++++<StaticText: 4>
+++++<Row>
+++++++<Cell: 12>
+++++++++<StaticText: 12>
+++++++<Cell: 3>
+++++++++<StaticText: 3>
+
+================================================================================
+AXSelection from AX object anchored position in "WebArea": "", 0 to AX object anchored position in "WebArea": "", 0
+================================================================================
+|++<Table>
+++++<Row>
+++++++<ColumnHeader: Sum>
+++++++++<StaticText: Sum>
+++++++<ColumnHeader: Subtraction>
+++++++++<StaticText: Subtraction>
+++++<Row>
+++++++<Cell: 10>
+++++++++<StaticText: 10>
+++++++<Cell: 7>
+++++++++<StaticText: 7>
+++++<Row>
+++++++<Cell: 2>
+++++++++<StaticText: 2>
+++++++<Cell: 4>
+++++++++<StaticText: 4>
+++++<Row>
+++++++<Cell: 12>
+++++++++<StaticText: 12>
+++++++<Cell: 3>
+++++++++<StaticText: 3>
+
+================================================================================
+AXSelection from AX object anchored position in "WebArea": "", 0 to AX object anchored position in "WebArea": "", 0
+================================================================================
+|++<Table>
+++++<Row>
+++++++<ColumnHeader: Sum>
+++++++++<StaticText: Sum>
+++++++<ColumnHeader: Subtraction>
+++++++++<StaticText: Subtraction>
+++++<Row>
+++++++<Cell: 10>
+++++++++<StaticText: 10>
+++++++<Cell: 7>
+++++++++<StaticText: 7>
+++++<Row>
+++++++<Cell: 2>
+++++++++<StaticText: 2>
+++++++<Cell: 4>
+++++++++<StaticText: 4>
+++++<Row>
+++++++<Cell: 12>
+++++++++<StaticText: 12>
+++++++<Cell: 3>
+++++++++<StaticText: 3>
+
+================================================================================
+AXSelection from AX text position in "StaticText": "Sum", 0 to AX text position in "StaticText": "Subtraction", 11
+================================================================================
+++<Table>
+++++<Row>
+++++++<ColumnHeader: Sum>
+^++++++++<StaticText: ^Sum>
+++++++<ColumnHeader: Subtraction>
+++++++++<StaticText: Subtraction|>
+++++<Row>
+++++++<Cell: 10>
+++++++++<StaticText: 10>
+++++++<Cell: 7>
+++++++++<StaticText: 7>
+++++<Row>
+++++++<Cell: 2>
+++++++++<StaticText: 2>
+++++++<Cell: 4>
+++++++++<StaticText: 4>
+++++<Row>
+++++++<Cell: 12>
+++++++++<StaticText: 12>
+++++++<Cell: 3>
+++++++++<StaticText: 3>

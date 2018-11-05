@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+namespace test {
 
 namespace {
 
@@ -1393,4 +1394,5 @@ TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
   EXPECT_EQ(ax_after, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 
+}  // namespace test
 }  // namespace blink

@@ -207,6 +207,12 @@ void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   frame_selection.SetSelection(selection, SetSelectionOptions());
 }
 
+String AXSelection::ToString() const {
+  if (!IsValid())
+    return "Invalid AXSelection";
+  return "AXSelection from " + Base().ToString() + " to " + Extent().ToString();
+}
+
 bool operator==(const AXSelection& a, const AXSelection& b) {
   DCHECK(a.IsValid() && b.IsValid());
   return a.Base() == b.Base() && a.Extent() == b.Extent();
@@ -217,10 +223,7 @@ bool operator!=(const AXSelection& a, const AXSelection& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXSelection& selection) {
-  if (!selection.IsValid())
-    return ostream << "Invalid AXSelection";
-  return ostream << "AXSelection from " << selection.Base() << " to "
-                 << selection.Extent();
+  return ostream << selection.ToString().Utf8().data();
 }
 
 }  // namespace blink

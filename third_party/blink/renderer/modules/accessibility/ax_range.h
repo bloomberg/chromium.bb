@@ -5,13 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_RANGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_RANGE_H_
 
-#include <base/logging.h>
 #include <stdint.h>
+
 #include <ostream>
 
+#include <base/logging.h>
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -43,6 +45,9 @@ class MODULES_EXPORT AXRange final {
 
   // Creates an |AXRange| encompassing the contents of the given |AXObject|.
   static AXRange RangeOfContents(const AXObject&);
+
+  // Returns a string representation of this object.
+  String ToString() const;
 
  private:
   AXPosition start_;

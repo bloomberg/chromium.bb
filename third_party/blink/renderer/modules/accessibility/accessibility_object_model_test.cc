@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+namespace test {
 
 namespace {
 
@@ -400,4 +401,5 @@ TEST_F(AccessibilityObjectModelTest, LabeledBy) {
 
 }  // namespace
 
+}  // namespace test
 }  // namespace blink

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -675,6 +676,26 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   return PositionWithAffinity(range.EndPosition(), affinity_);
 }
 
+String AXPosition::ToString() const {
+  if (!IsValid())
+    return "Invalid AXPosition";
+
+  StringBuilder builder;
+  if (IsTextPosition()) {
+    builder.Append("AX text position in ");
+    builder.Append(container_object_->ToString());
+    builder.Append(", ");
+    builder.Append(String::Format("%d", TextOffset()));
+    return builder.ToString();
+  }
+
+  builder.Append("AX object anchored position in ");
+  builder.Append(container_object_->ToString());
+  builder.Append(", ");
+  builder.Append(String::Format("%d", ChildIndex()));
+  return builder.ToString();
+}
+
 // static
 const AXObject* AXPosition::FindNeighboringUnignoredObject(
     const Document& document,
@@ -805,15 +826,7 @@ bool operator>=(const AXPosition& a, const AXPosition& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXPosition& position) {
-  if (!position.IsValid())
-    return ostream << "Invalid AXPosition";
-  if (position.IsTextPosition()) {
-    return ostream << "AX text position in " << *position.ContainerObject()
-                   << ", " << position.TextOffset();
-  }
-  return ostream << "AX object anchored position in "
-                 << *position.ContainerObject() << ", "
-                 << position.ChildIndex();
+  return ostream << position.ToString().Utf8().data();
 }
 
 }  // namespace blink
