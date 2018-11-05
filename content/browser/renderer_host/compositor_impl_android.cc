@@ -1424,7 +1424,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   params.enable_surface_synchronization = true;
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          /*should_ask_for_child_region=*/false);
+          false /* should_ask_for_child_region */,
+          true /* root_accepts_events */);
   params.client_name = kBrowser;
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(

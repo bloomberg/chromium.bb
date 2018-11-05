@@ -892,10 +892,6 @@ TEST(WindowTreeTest, PointerWatcher) {
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
-  setup.window_tree_test_helper()->SetEventTargetingPolicy(
-      top_level, mojom::EventTargetingPolicy::NONE);
-  EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
-            top_level->event_targeting_policy());
   // Start the pointer watcher only for pointer down/up.
   setup.window_tree_test_helper()->window_tree()->StartPointerWatcher(false);
 
