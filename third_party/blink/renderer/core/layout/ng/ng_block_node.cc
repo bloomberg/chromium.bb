@@ -103,8 +103,7 @@ void UpdateLegacyMultiColumnFlowThread(
     if (!has_processed_first_child) {
       // The offset of the flow thread should be the same as that of the first
       // first column.
-      flow_thread->SetX(child.Offset().left);
-      flow_thread->SetY(child.Offset().top);
+      flow_thread->SetLocation(child.Offset().ToLayoutPoint());
       flow_thread->SetLogicalWidth(child_fragment.InlineSize());
       column_block_size = child_fragment.BlockSize();
       has_processed_first_child = true;
@@ -510,7 +509,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGLayoutResult& layout_result) {
   DCHECK(layout_result.PhysicalFragment());
-  if (constraint_space.IsIntermediateLayout())
+  if (UNLIKELY(constraint_space.IsIntermediateLayout()))
     return;
 
   const NGPhysicalBoxFragment& physical_fragment =
@@ -527,7 +526,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   // legacy layout doesn't support non-uniform fragmentainer widths.
   LayoutUnit logical_height;
   LayoutUnit intrinsic_content_logical_height;
-  if (IsFirstFragment(constraint_space, physical_fragment)) {
+  if (LIKELY(IsFirstFragment(constraint_space, physical_fragment))) {
     box_->SetLogicalWidth(fragment_logical_size.inline_size);
   } else {
     DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
@@ -547,7 +546,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
 
-  if (IsLastFragment(physical_fragment))
+  if (LIKELY(IsLastFragment(physical_fragment)))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetLogicalHeight(logical_height);
   box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
@@ -557,11 +556,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
 
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(*box_);
-  if (flow_thread) {
+  if (UNLIKELY(flow_thread)) {
     PlaceChildrenInFlowThread(constraint_space, physical_fragment);
   } else {
     NGPhysicalOffset offset_from_start;
-    if (constraint_space.HasBlockFragmentation()) {
+    if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
       // Need to include any block space that this container has used in
       // previous fragmentainers. The offset of children will be relative to
       // the container, in flow thread coordinates, i.e. the model where
@@ -576,16 +575,17 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
                              offset_from_start);
   }
 
-  if (box_->IsLayoutBlock() && IsLastFragment(physical_fragment)) {
-    LayoutBlock* block = ToLayoutBlock(box_);
+  LayoutBlock* block = ToLayoutBlockOrNull(box_);
+  if (LIKELY(block && IsLastFragment(physical_fragment))) {
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
-    if (constraint_space.HasBlockFragmentation()) {
+    if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
       intrinsic_block_size +=
           PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
     }
-    block->LayoutPositionedObjects(/* relayout_children */ false);
+    if (UNLIKELY(block->HasPositionedObjects()))
+      block->LayoutPositionedObjects(/* relayout_children */ false);
 
-    if (flow_thread) {
+    if (UNLIKELY(flow_thread)) {
       UpdateLegacyMultiColumnFlowThread(*this, flow_thread, constraint_space,
                                         physical_fragment);
     }
@@ -600,10 +600,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->ClearNeedsLayout();
 
   // Overflow computation depends on this being set.
-  if (box_->IsLayoutBlockFlow()) {
-    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
+  if (LIKELY(block_flow))
     block_flow->UpdateIsSelfCollapsing();
-  }
 }
 
 void NGBlockNode::PlaceChildrenInLayoutBox(
@@ -701,8 +700,8 @@ void NGBlockNode::CopyChildFragmentPosition(
     horizontal_offset = containing_block->Size().Width() - horizontal_offset -
                         fragment.Size().width;
   }
-  layout_box->SetX(horizontal_offset);
-  layout_box->SetY(fragment_offset.top + additional_offset.top);
+  layout_box->SetLocation(LayoutPoint(
+      horizontal_offset, fragment_offset.top + additional_offset.top));
 
   // Floats need an associated FloatingObject for painting.
   if (IsFloatFragment(fragment) && containing_block->IsLayoutBlockFlow()) {
