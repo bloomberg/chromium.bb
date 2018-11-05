@@ -253,15 +253,15 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("document-write",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
-          "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
+          "unoptimized-images",
+          mojom::FeaturePolicyFeature::kUnoptimizedImages);
       default_feature_name_map.Set("lazyload",
                                    mojom::FeaturePolicyFeature::kLazyLoad);
       default_feature_name_map.Set(
           "legacy-image-formats",
           mojom::FeaturePolicyFeature::kLegacyImageFormats);
       default_feature_name_map.Set(
-          "max-downscaling-image",
-          mojom::FeaturePolicyFeature::kMaxDownscalingImage);
+          "oversized-images", mojom::FeaturePolicyFeature::kOversizedImages);
       default_feature_name_map.Set("unsized-media",
                                    mojom::FeaturePolicyFeature::kUnsizedMedia);
       default_feature_name_map.Set(

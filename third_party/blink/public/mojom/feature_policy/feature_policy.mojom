@@ -83,10 +83,10 @@ enum FeaturePolicyFeature {
   // Controls which image formats are allowed to be used in the document.
   kLegacyImageFormats = 22,
   // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
-  kImageCompression = 23,
+  kUnoptimizedImages = 23,
   // When disallowed, restricts source image size to be no more 2x larger than
   // the image's containing block.
-  kMaxDownscalingImage = 25,
+  kOversizedImages = 25,
   // Controls access to Picture-in-Picture.
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.

@@ -5468,27 +5468,11 @@ crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll
 crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
 
 # Sheriff 2018-10-24
-crbug.com/889185 [ Win10 ] http/tests/images/feature-policy-image-compression.html [ Failure ]
 crbug.com/889185 [ Win10 ] http/tests/images/feature-policy-image-policies-with-border-radius.html [ Failure ]
 crbug.com/889185 [ Win10 ] http/tests/images/feature-policy-legacy-formats.html [ Failure ]
-crbug.com/889185 [ Win10 ] images/feature-policy-max-downscaling-image-edge-cases.html [ Failure ]
-crbug.com/889185 [ Win10 ] images/feature-policy-max-downscaling-image-forced-layout.html [ Failure ]
-crbug.com/889185 [ Win10 ] images/feature-policy-max-downscaling-image-responsive-image.html [ Failure ]
-crbug.com/889185 [ Win10 ] images/feature-policy-max-downscaling-image-styles.html [ Failure ]
-crbug.com/889185 [ Win10 ] images/feature-policy-max-downscaling-image.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/exotic-color-space/images/feature-policy-max-downscaling-image-edge-cases.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/exotic-color-space/images/feature-policy-max-downscaling-image-forced-layout.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/exotic-color-space/images/feature-policy-max-downscaling-image-responsive-image.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/exotic-color-space/images/feature-policy-max-downscaling-image-styles.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/exotic-color-space/images/feature-policy-max-downscaling-image.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image-edge-cases.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image-forced-layout.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image-responsive-image.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image-styles.html [ Failure ]
-crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image.html [ Failure ]
 
 # Sheriff 2018-10-25
-crbug.com/874576 http/tests/images/feature-policy-image-compression-cached-image.html [ Skip ]
+crbug.com/874576 http/tests/images/feature-policy-unoptimized-images-cached-image.html [ Skip ]
 
 # Sheriff 2018-10-26
 ### See crbug.com/891427 comment near the top of this file:
