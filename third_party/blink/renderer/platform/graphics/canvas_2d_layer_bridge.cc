@@ -415,7 +415,7 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
           FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
                                weak_ptr_factory_.GetWeakPtr()));
     } else {
-      Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+      ThreadScheduler::Current()->PostIdleTask(
           FROM_HERE,
           WTF::Bind(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
     }

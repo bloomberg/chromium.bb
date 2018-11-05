@@ -221,15 +221,7 @@ void ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
   new (main_thread_state_storage_) ThreadState();
 
-  // PpapiThread doesn't set the current thread.
-  Thread* current_thread = Platform::Current()->CurrentThread();
-  if (current_thread) {
-    ThreadScheduler* scheduler = current_thread->Scheduler();
-    // Some binaries do not have a scheduler (e.g.
-    // v8_context_snapshot_generator)
-    if (scheduler)
-      scheduler->AddRAILModeObserver(MainThreadState());
-  }
+  ThreadScheduler::Current()->AddRAILModeObserver(MainThreadState());
 }
 
 void ThreadState::AttachCurrentThread() {
@@ -693,7 +685,6 @@ ThreadState* ThreadState::FromObject(const void* object) {
 
 void ThreadState::PerformIdleGC(TimeTicks deadline) {
   DCHECK(CheckThread());
-  DCHECK(Platform::Current()->CurrentThread()->Scheduler());
 
   if (GetGCState() != kIdleGCScheduled)
     return;
@@ -707,10 +698,7 @@ void ThreadState::PerformIdleGC(TimeTicks deadline) {
   TimeDelta estimated_marking_time =
       heap_->stats_collector()->estimated_marking_time();
   if ((deadline - CurrentTimeTicks()) <= estimated_marking_time &&
-      !Platform::Current()
-           ->CurrentThread()
-           ->Scheduler()
-           ->CanExceedIdleDeadlineIfRequired()) {
+      !ThreadScheduler::Current()->CanExceedIdleDeadlineIfRequired()) {
     // If marking is estimated to take longer than the deadline and we can't
     // exceed the deadline, then reschedule for the next idle period.
     RescheduleIdleGC();
@@ -773,18 +761,13 @@ void ThreadState::ScheduleIncrementalMarkingFinalize() {
 }
 
 void ThreadState::ScheduleIdleGC() {
-  // Some threads (e.g. PPAPI thread) don't have a scheduler.
-  // Also some tests can call Platform::SetCurrentPlatformForTesting() at any
-  // time, so we need to check if it exists.
-  if (!Platform::Current()->CurrentThread()->Scheduler())
-    return;
   // Idle GC has the lowest priority so do not schedule if a GC is already
   // scheduled or if marking is in progress.
   if (GetGCState() != kNoGCScheduled)
     return;
   CompleteSweep();
   SetGCState(kIdleGCScheduled);
-  Platform::Current()->CurrentThread()->Scheduler()->PostNonNestableIdleTask(
+  ThreadScheduler::Current()->PostNonNestableIdleTask(
       FROM_HERE, WTF::Bind(&ThreadState::PerformIdleGC, WTF::Unretained(this)));
 }
 
@@ -795,11 +778,7 @@ void ThreadState::RescheduleIdleGC() {
 }
 
 void ThreadState::ScheduleIdleLazySweep() {
-  // Some threads (e.g. PPAPI thread) don't have a scheduler.
-  if (!Platform::Current()->CurrentThread()->Scheduler())
-    return;
-
-  Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+  ThreadScheduler::Current()->PostIdleTask(
       FROM_HERE,
       WTF::Bind(&ThreadState::PerformIdleLazySweep, WTF::Unretained(this)));
 }
