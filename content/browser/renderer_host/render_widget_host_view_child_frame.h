@@ -316,6 +316,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::FrameSinkId parent_frame_sink_id_;
 
   const bool enable_viz_;
+  const bool enable_surface_synchronization_;
   bool has_frame_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;

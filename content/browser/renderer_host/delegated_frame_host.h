@@ -50,7 +50,8 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual float GetDeviceScaleFactor() const = 0;
-  virtual void WasEvicted() = 0;
+  virtual void AllocateNewSurfaceIdOnEviction() = 0;
+  virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -85,9 +86,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnLostSharedContext() override;
   void OnLostVizProcess() override;
 
-  // FrameEvictorClient implementation.
-  void EvictDelegatedFrame() override;
-
   void ResetFallbackToFirstNavigationSurface();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
@@ -113,7 +111,6 @@ class CONTENT_EXPORT DelegatedFrameHost
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list);
-  void ClearDelegatedFrame();
   void WasHidden();
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
@@ -185,6 +182,9 @@ class CONTENT_EXPORT DelegatedFrameHost
                            SkippedDelegatedFrames);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithLocking);
+
+  // FrameEvictorClient implementation.
+  void EvictDelegatedFrame() override;
 
   SkColor GetGutterColor() const;
 

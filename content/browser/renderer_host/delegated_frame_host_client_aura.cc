@@ -55,8 +55,13 @@ float DelegatedFrameHostClientAura::GetDeviceScaleFactor() const {
   return render_widget_host_view_->device_scale_factor_;
 }
 
-void DelegatedFrameHostClientAura::WasEvicted() {
-  render_widget_host_view_->WasEvicted();
+void DelegatedFrameHostClientAura::AllocateNewSurfaceIdOnEviction() {
+  render_widget_host_view_->AllocateNewSurfaceIdOnEviction();
+}
+
+std::vector<viz::SurfaceId>
+DelegatedFrameHostClientAura::CollectSurfaceIdsForEviction() {
+  return render_widget_host_view_->host()->CollectSurfaceIdsForEviction();
 }
 
 }  // namespace content

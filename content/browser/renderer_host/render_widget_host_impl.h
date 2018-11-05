@@ -714,6 +714,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // NotifyRendererResponsive.
   void RendererIsResponsive();
 
+  // Called during frame eviction to return all SurfaceIds in the frame tree.
+  // Marks all views in the frame tree as evicted.
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to

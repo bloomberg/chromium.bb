@@ -83,15 +83,6 @@ DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
   return delegated_frame_host_.get();
 }
 
-void BrowserCompositorMac::ClearCompositorFrame() {
-  // Make sure that we no longer hold a compositor lock by un-suspending the
-  // compositor. This ensures that we are able to swap in a new blank frame to
-  // replace any old content.
-  // https://crbug.com/739621
-  if (delegated_frame_host_)
-    delegated_frame_host_->ClearDelegatedFrame();
-}
-
 bool BrowserCompositorMac::RequestRepaintForTesting() {
   dfh_local_surface_id_allocator_.GenerateId();
   const viz::LocalSurfaceId& new_local_surface_id =
@@ -249,15 +240,16 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
       (new_state != UseParentLayerCompositor ||
        parent_ui_layer_ != root_layer_->parent())) {
     DCHECK(root_layer_->parent());
+    state_ = HasNoCompositor;
     root_layer_->parent()->RemoveObserver(this);
     root_layer_->parent()->Remove(root_layer_.get());
     delegated_frame_host_->WasHidden();
     delegated_frame_host_->DetachFromCompositor();
-    state_ = HasNoCompositor;
   }
 
   // Transition HasNoCompositor -> HasAttachedCompositor.
   if (state_ == HasNoCompositor && new_state == HasAttachedCompositor) {
+    state_ = HasAttachedCompositor;
     recyclable_compositor_ =
         ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
             content::GetContextFactory(), content::GetContextFactoryPrivate());
@@ -274,11 +266,11 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
                                     false /* record_presentation_time */);
     recyclable_compositor_->Unsuspend();
-    state_ = HasAttachedCompositor;
   }
 
   // Transition HasAttachedCompositor -> HasNoCompositor.
   if (state_ == HasAttachedCompositor && new_state != HasAttachedCompositor) {
+    state_ = HasNoCompositor;
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
@@ -288,7 +280,6 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     recyclable_compositor_->InvalidateSurface();
     ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
         std::move(recyclable_compositor_));
-    state_ = HasNoCompositor;
   }
 
   // Transition HasNoCompositor -> UseParentLayerCompositor.
@@ -296,13 +287,13 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     DCHECK(parent_ui_layer_);
     DCHECK(parent_ui_layer_->GetCompositor());
     DCHECK(!root_layer_->parent());
+    state_ = UseParentLayerCompositor;
     delegated_frame_host_->AttachToCompositor(
         parent_ui_layer_->GetCompositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
                                     false /* record_presentation_time */);
     parent_ui_layer_->Add(root_layer_.get());
     parent_ui_layer_->AddObserver(this);
-    state_ = UseParentLayerCompositor;
   }
 }
 
@@ -361,8 +352,13 @@ float BrowserCompositorMac::GetDeviceScaleFactor() const {
   return dfh_display_.device_scale_factor();
 }
 
-void BrowserCompositorMac::WasEvicted() {
+void BrowserCompositorMac::AllocateNewSurfaceIdOnEviction() {
   dfh_local_surface_id_allocator_.GenerateId();
+}
+
+std::vector<viz::SurfaceId>
+BrowserCompositorMac::CollectSurfaceIdsForEviction() {
+  return client_->CollectSurfaceIdsForEviction();
 }
 
 void BrowserCompositorMac::DidNavigate() {

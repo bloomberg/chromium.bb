@@ -902,8 +902,9 @@ void RenderWidgetHostViewAura::OnDidNotProduceFrame(
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->ClearDelegatedFrame();
+  // This method is only used for content rendering timeout when surface sync is
+  // off. However, surface sync is always on on Aura platforms.
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewAura::ResetFallbackToFirstNavigationSurface() {
@@ -2583,7 +2584,7 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
   host()->GetContentRenderingTimeoutFrom(view_aura->host());
 }
 
-void RenderWidgetHostViewAura::WasEvicted() {
+void RenderWidgetHostViewAura::AllocateNewSurfaceIdOnEviction() {
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(base::nullopt, base::nullopt);
 }
 

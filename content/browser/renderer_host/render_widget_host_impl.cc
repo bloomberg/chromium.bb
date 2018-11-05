@@ -794,9 +794,11 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   SendScreenRects();
   RestartInputEventAckTimeoutIfNecessary();
 
-  Send(new WidgetMsg_WasShown(routing_id_, record_presentation_time
-                                               ? base::TimeTicks::Now()
-                                               : base::TimeTicks()));
+  Send(new WidgetMsg_WasShown(
+      routing_id_,
+      record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks(),
+      view_->is_evicted()));
+  view_->reset_is_evicted();
 
   process_->UpdateClientPriority(this);
 
@@ -3134,6 +3136,15 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChangedAfterActivation() {
 void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {
   DidUpdateVisualProperties(metadata);
+}
+
+std::vector<viz::SurfaceId>
+RenderWidgetHostImpl::CollectSurfaceIdsForEviction() {
+  RenderViewHostImpl* rvh = RenderViewHostImpl::From(this);
+  // A corresponding RenderViewHostImpl may not exist in unit tests.
+  if (!rvh)
+    return {};
+  return rvh->CollectSurfaceIdsForEviction();
 }
 
 }  // namespace content

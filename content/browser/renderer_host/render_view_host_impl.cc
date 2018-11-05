@@ -997,4 +997,28 @@ void RenderViewHostImpl::ClosePageTimeout() {
   ClosePageIgnoringUnloadEvents();
 }
 
+std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
+  if (!is_active())
+    return {};
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  if (!rfh || !rfh->IsCurrent())
+    return {};
+  FrameTreeNode* root = rfh->frame_tree_node();
+  FrameTree* tree = root->frame_tree();
+  std::vector<viz::SurfaceId> ids;
+  for (FrameTreeNode* node : tree->SubtreeNodes(root)) {
+    if (!node->current_frame_host()->is_local_root())
+      continue;
+    RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+        node->current_frame_host()->GetView());
+    if (!view)
+      continue;
+    viz::SurfaceId id = view->GetCurrentSurfaceId();
+    if (id.is_valid())
+      ids.push_back(id);
+    view->set_is_evicted();
+  }
+  return ids;
+}
+
 }  // namespace content
