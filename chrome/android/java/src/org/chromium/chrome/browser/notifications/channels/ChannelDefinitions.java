@@ -177,6 +177,13 @@ public class ChannelDefinitions {
     }
 
     /**
+     * @return A set of all known channel ids that can be used for {@link #getChannelFromId}.
+     */
+    static Set<String> getAllChannelIds() {
+        return PredefinedChannels.MAP.keySet();
+    }
+
+    /**
      * @return A set of channel ids of channels that should be initialized on startup.
      */
     static Set<String> getStartupChannelIds() {

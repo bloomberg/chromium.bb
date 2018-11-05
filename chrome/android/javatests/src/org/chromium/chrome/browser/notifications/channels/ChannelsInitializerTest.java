@@ -139,6 +139,24 @@ public class ChannelsInitializerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
+    public void testUpdateLocale_otherChannelsDoNotThrowException() throws Exception {
+        NotificationChannelGroup group =
+                ChannelDefinitions.getChannelGroup(ChannelDefinitions.ChannelGroupId.GENERAL)
+                        .toNotificationChannelGroup(mContext.getResources());
+        NotificationChannel channel =
+                new NotificationChannel("ACCOUNT", "Account", NotificationManager.IMPORTANCE_LOW);
+        channel.setGroup(ChannelDefinitions.ChannelGroupId.GENERAL);
+        mNotificationManagerProxy.createNotificationChannelGroup(group);
+        mNotificationManagerProxy.createNotificationChannel(channel);
+        mContext = InstrumentationRegistry.getTargetContext();
+        mChannelsInitializer.updateLocale(mContext.getResources());
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_browserChannel() throws Exception {
         mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.BROWSER);
 

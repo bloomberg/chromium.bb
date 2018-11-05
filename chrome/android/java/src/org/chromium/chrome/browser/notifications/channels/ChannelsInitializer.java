@@ -53,6 +53,8 @@ public class ChannelsInitializer {
         for (NotificationChannel channel : mNotificationManager.getNotificationChannels()) {
             channelIds.add(channel.getId());
         }
+        // only re-initialize known channel ids, as we only want to update known & existing channels
+        channelIds.retainAll(ChannelDefinitions.getAllChannelIds());
         ensureInitialized(channelIds);
     }
 
