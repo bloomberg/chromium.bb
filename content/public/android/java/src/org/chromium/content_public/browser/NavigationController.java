@@ -102,7 +102,6 @@ public interface NavigationController {
      * Clears NavigationController's page history in both backwards and
      * forwards directions.
      */
-    @VisibleForTesting
     public void clearHistory();
 
     /**
@@ -120,13 +119,6 @@ public interface NavigationController {
     * @return navigation history by keeping above constraints.
     */
     public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit);
-
-    /**
-     * Get Original URL for current Navigation entry of NavigationController.
-     * @return The original request URL for the current navigation entry, or null if there is no
-     *         current entry.
-     */
-    public String getOriginalUrlForVisibleNavigationEntry();
 
     /**
      * Clears SSL preferences for this NavigationController.
@@ -171,32 +163,6 @@ public interface NavigationController {
      *         call discards any transient or pending entries.
      */
     public boolean removeEntryAtIndex(int index);
-
-    /**
-     * @return Whether it is safe to call CopyStateFrom (i.e. the navigation state is empty).
-     */
-    public boolean canCopyStateOver();
-
-    /**
-     * @return Whether it is safe to call CopyStateFromAndPrune.
-     */
-    public boolean canPruneAllButLastCommitted();
-
-    /**
-     * Copies the navigation state from the given controller to this one. This one should be empty.
-     * @param source A source of the navigation state
-     * @param needsReload Indicates whether a reload needs to happen when activated.
-     */
-    public void copyStateFrom(NavigationController source, boolean needsReload);
-
-    /**
-     * A variant of CopyStateFrom. Removes all entries from this except the last committed entry,
-     * and inserts all entries from |source| before and including its last committed entry.
-     * See navigation_controller.h for more detailed description.
-     * @param source A source of the navigation state
-     * @param replaceEntry Whether to replace the current entry in source
-     */
-    public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry);
 
     /**
      * Gets extra data on the {@link NavigationEntry} at {@code index}.

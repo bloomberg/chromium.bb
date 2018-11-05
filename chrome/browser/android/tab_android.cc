@@ -253,11 +253,6 @@ bool TabAndroid::IsUserInteractable() const {
   return Java_Tab_isUserInteractable(env, weak_java_tab_.get(env));
 }
 
-bool TabAndroid::LoadIfNeeded() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env));
-}
-
 Profile* TabAndroid::GetProfile() const {
   if (!web_contents())
     return NULL;

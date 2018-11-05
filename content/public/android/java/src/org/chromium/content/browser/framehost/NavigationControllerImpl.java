@@ -154,7 +154,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
-    @VisibleForTesting
     public void clearHistory() {
         if (mNativeNavigationControllerAndroid != 0) {
             nativeClearHistory(mNativeNavigationControllerAndroid);
@@ -178,12 +177,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
         nativeGetDirectedNavigationHistory(mNativeNavigationControllerAndroid,
                    history, isForward, itemLimit);
         return history;
-    }
-
-    @Override
-    public String getOriginalUrlForVisibleNavigationEntry() {
-        if (mNativeNavigationControllerAndroid == 0) return null;
-        return nativeGetOriginalUrlForVisibleNavigationEntry(mNativeNavigationControllerAndroid);
     }
 
     @Override
@@ -242,38 +235,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
-    public boolean canCopyStateOver() {
-        return mNativeNavigationControllerAndroid != 0
-                && nativeCanCopyStateOver(mNativeNavigationControllerAndroid);
-    }
-
-    @Override
-    public boolean canPruneAllButLastCommitted() {
-        return mNativeNavigationControllerAndroid != 0
-                && nativeCanPruneAllButLastCommitted(mNativeNavigationControllerAndroid);
-    }
-
-    @Override
-    public void copyStateFrom(NavigationController source, boolean needsReload) {
-        if (mNativeNavigationControllerAndroid == 0) return;
-        NavigationControllerImpl sourceImpl = (NavigationControllerImpl) source;
-        if (sourceImpl.mNativeNavigationControllerAndroid == 0) return;
-        nativeCopyStateFrom(mNativeNavigationControllerAndroid,
-                sourceImpl.mNativeNavigationControllerAndroid, needsReload);
-    }
-
-    @Override
-    public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
-        if (mNativeNavigationControllerAndroid == 0) return;
-        NavigationControllerImpl sourceImpl = (NavigationControllerImpl) source;
-        if (sourceImpl.mNativeNavigationControllerAndroid == 0) return;
-        nativeCopyStateFromAndPrune(
-                mNativeNavigationControllerAndroid,
-                sourceImpl.mNativeNavigationControllerAndroid,
-                replaceEntry);
-    }
-
-    @Override
     public String getEntryExtraData(int index, String key) {
         if (mNativeNavigationControllerAndroid == 0) return null;
         return nativeGetEntryExtraData(mNativeNavigationControllerAndroid, index, key);
@@ -327,8 +288,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
             Object history);
     private native void nativeGetDirectedNavigationHistory(long nativeNavigationControllerAndroid,
             NavigationHistory history, boolean isForward, int itemLimit);
-    private native String nativeGetOriginalUrlForVisibleNavigationEntry(
-            long nativeNavigationControllerAndroid);
     private native void nativeClearSslPreferences(long nativeNavigationControllerAndroid);
     private native boolean nativeGetUseDesktopUserAgent(long nativeNavigationControllerAndroid);
     private native void nativeSetUseDesktopUserAgent(long nativeNavigationControllerAndroid,
@@ -339,13 +298,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     private native int nativeGetLastCommittedEntryIndex(long nativeNavigationControllerAndroid);
     private native boolean nativeRemoveEntryAtIndex(long nativeNavigationControllerAndroid,
             int index);
-    private native boolean nativeCanCopyStateOver(long nativeNavigationControllerAndroid);
-    private native boolean nativeCanPruneAllButLastCommitted(
-            long nativeNavigationControllerAndroid);
-    private native void nativeCopyStateFrom(long nativeNavigationControllerAndroid,
-            long sourceNavigationControllerAndroid, boolean needsReload);
-    private native void nativeCopyStateFromAndPrune(long nativeNavigationControllerAndroid,
-            long sourceNavigationControllerAndroid, boolean replaceEntry);
     private native String nativeGetEntryExtraData(
             long nativeNavigationControllerAndroid, int index, String key);
     private native void nativeSetEntryExtraData(
