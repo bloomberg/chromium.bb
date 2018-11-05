@@ -695,9 +695,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
                                  v8_extras_mode, &array_buffer_allocator,
                                  reference_table);
 
-  // NOTE: Some threads (namely utility threads) don't have a scheduler.
-  ThreadScheduler* scheduler =
-      Platform::Current()->CurrentThread()->Scheduler();
+  ThreadScheduler* scheduler = ThreadScheduler::Current();
 
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
   V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
@@ -715,10 +713,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
 #endif  // USE_V8_CONTEXT_SNAPSHOT
 
-  v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler ? scheduler->V8TaskRunner()
-                : Platform::Current()->CurrentThread()->GetTaskRunner(),
-      v8_context_snapshot_mode);
+  v8::Isolate* isolate = V8PerIsolateData::Initialize(scheduler->V8TaskRunner(),
+                                                      v8_context_snapshot_mode);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer
   // as setting the tracer indicates that a V8 garbage collection should trace
