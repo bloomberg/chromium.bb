@@ -19,7 +19,6 @@ group("jni") {
 shared_library("remoting_client_jni") {
   deps = [
     "//remoting/android:jni_headers",
-    "//remoting/android:remoting_jni_registration",
     "//remoting/base",
     "//remoting/client",
     "//remoting/client/display",
@@ -45,7 +44,11 @@ shared_library("remoting_client_jni") {
     "android",
     "EGL",
   ]
-  configs += [ "//remoting/build/config:enable_webrtc_remoting_client" ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [
+    "//build/config/android:hide_all_but_jni",
+    "//remoting/build/config:enable_webrtc_remoting_client",
+  ]
   assert_no_deps = [ "//third_party/ffmpeg:*" ]
 }
 
