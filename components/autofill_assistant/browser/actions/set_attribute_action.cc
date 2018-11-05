@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,29 +12,24 @@
 
 namespace autofill_assistant {
 
-FocusElementAction::FocusElementAction(const ActionProto& proto)
+SetAttributeAction::SetAttributeAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
-  DCHECK(proto_.has_focus_element());
+  DCHECK_GT(proto_.set_attribute().element().selectors_size(), 0);
+  DCHECK_GT(proto_.set_attribute().attribute_size(), 0);
 }
 
-FocusElementAction::~FocusElementAction() {}
+SetAttributeAction::~SetAttributeAction() {}
 
-void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
+void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
-  const FocusElementProto& focus_element = proto_.focus_element();
-  DCHECK_GT(focus_element.element().selectors_size(), 0);
-
-  if (!focus_element.title().empty()) {
-    delegate->ShowStatusMessage(focus_element.title());
-  }
   delegate->WaitForElement(
-      ExtractVector(focus_element.element().selectors()),
-      base::BindOnce(&FocusElementAction::OnWaitForElement,
+      ExtractVector(proto_.set_attribute().element().selectors()),
+      base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
 }
 
-void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
+void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
                                           bool element_found) {
   if (!element_found) {
@@ -44,13 +38,15 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->FocusElement(
-      ExtractVector(proto_.focus_element().element().selectors()),
-      base::BindOnce(&FocusElementAction::OnFocusElement,
+  delegate->SetAttribute(
+      ExtractVector(proto_.set_attribute().element().selectors()),
+      ExtractVector(proto_.set_attribute().attribute()),
+      proto_.set_attribute().value(),
+      base::BindOnce(&SetAttributeAction::OnSetAttribute,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FocusElementAction::OnFocusElement(ProcessActionCallback callback,
+void SetAttributeAction::OnSetAttribute(ProcessActionCallback callback,
                                         bool status) {
   UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));

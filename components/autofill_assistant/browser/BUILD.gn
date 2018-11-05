@@ -33,6 +33,8 @@ jumbo_static_library("browser") {
     "actions/reset_action.h",
     "actions/select_option_action.cc",
     "actions/select_option_action.h",
+    "actions/set_attribute_action.cc",
+    "actions/set_attribute_action.h",
     "actions/set_form_field_value_action.cc",
     "actions/set_form_field_value_action.h",
     "actions/show_details_action.cc",

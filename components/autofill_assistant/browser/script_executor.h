@@ -96,6 +96,10 @@ class ScriptExecutor : public ActionDelegate {
                      const std::string& value,
                      bool simulate_key_presses,
                      base::OnceCallback<void(bool)> callback) override;
+  void SetAttribute(const std::vector<std::string>& selectors,
+                    const std::vector<std::string>& attribute,
+                    const std::string& value,
+                    base::OnceCallback<void(bool)> callback) override;
   void GetOuterHtml(
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool, const std::string&)> callback) override;

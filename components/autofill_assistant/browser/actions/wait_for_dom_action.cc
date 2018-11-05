@@ -30,7 +30,7 @@ void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
   DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
   batch_element_checker_ = delegate->CreateBatchElementChecker();
   batch_element_checker_->AddElementCheck(
-      kVisibilityCheck, ExtractSelectors(proto_.wait_for_dom().selectors()),
+      kVisibilityCheck, ExtractVector(proto_.wait_for_dom().selectors()),
       base::DoNothing());
 
   base::TimeDelta duration = kDefaultCheckDuration;

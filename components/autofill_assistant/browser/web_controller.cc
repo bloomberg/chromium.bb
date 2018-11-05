@@ -78,6 +78,16 @@ const char* const kSetValueAttributeScript =
          this.dispatchEvent(e);
        })";
 
+// Javascript code to set an attribute of a node to a given value.
+const char* const kSetAttributeScript =
+    R"(function (attribute, value) {
+         let receiver = this;
+         for (let i = 0; i < attribute.length - 1; i++) {
+           receiver = receiver[attribute[i]];
+         }
+         receiver[attribute[attribute.length - 1]] = value;
+       })";
+
 // Javascript code to get the outerHTML of a node.
 // TODO(crbug.com/806868): Investigate if using DOM.GetOuterHtml would be a
 // better solution than injecting Javascript code.
@@ -879,6 +889,60 @@ void WebController::OnFindElementForSetFieldValue(
 }
 
 void WebController::OnSetValueAttribute(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
+}
+
+void WebController::SetAttribute(const std::vector<std::string>& selectors,
+                                 const std::vector<std::string>& attribute,
+                                 const std::string& value,
+                                 base::OnceCallback<void(bool)> callback) {
+  DCHECK_GT(selectors.size(), 0u);
+  DCHECK_GT(attribute.size(), 0u);
+  FindElement(selectors,
+              /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForSetAttribute,
+                             weak_ptr_factory_.GetWeakPtr(), attribute, value,
+                             std::move(callback)));
+}
+
+void WebController::OnFindElementForSetAttribute(
+    const std::vector<std::string>& attribute,
+    const std::string& value,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  base::Value::ListStorage attribute_values;
+  for (const std::string& string : attribute) {
+    attribute_values.emplace_back(base::Value(string));
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  arguments.emplace_back(runtime::CallArgument::Builder()
+                             .SetValue(base::Value::ToUniquePtrValue(
+                                 base::Value(attribute_values)))
+                             .Build());
+  arguments.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
+          .Build());
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(std::string(kSetAttributeScript))
+          .Build(),
+      base::BindOnce(&WebController::OnSetAttribute,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnSetAttribute(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));

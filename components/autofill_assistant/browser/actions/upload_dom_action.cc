@@ -23,7 +23,7 @@ void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
                                             ProcessActionCallback callback) {
   DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
   delegate->WaitForElement(
-      ExtractSelectors(proto_.upload_dom().tree_root().selectors()),
+      ExtractVector(proto_.upload_dom().tree_root().selectors()),
       base::BindOnce(&UploadDomAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -39,7 +39,7 @@ void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->GetOuterHtml(
-      ExtractSelectors(proto_.upload_dom().tree_root().selectors()),
+      ExtractVector(proto_.upload_dom().tree_root().selectors()),
       base::BindOnce(&UploadDomAction::OnGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

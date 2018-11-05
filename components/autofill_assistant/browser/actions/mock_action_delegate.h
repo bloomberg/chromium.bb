@@ -106,6 +106,12 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     const std::string& value,
                     base::OnceCallback<void(bool)>& callback));
+
+  MOCK_METHOD4(SetAttribute,
+               void(const std::vector<std::string>& selectors,
+                    const std::vector<std::string>& attribute,
+                    const std::string& value,
+                    base::OnceCallback<void(bool)> callback));
   MOCK_METHOD2(
       GetOuterHtml,
       void(const std::vector<std::string>& selectors,

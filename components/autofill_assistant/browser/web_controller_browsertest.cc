@@ -247,6 +247,27 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+  bool SetAttribute(const std::vector<std::string>& selectors,
+                    const std::vector<std::string>& attribute,
+                    const std::string& value) {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->SetAttribute(
+        selectors, attribute, value,
+        base::BindOnce(&WebControllerBrowserTest::OnSetAttribute,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnSetAttribute(const base::Closure& done_callback,
+                      bool* result_output,
+                      bool result) {
+    *result_output = result;
+    std::move(done_callback).Run();
+  }
+
  protected:
   std::unique_ptr<WebController> web_controller_;
 
@@ -519,6 +540,22 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 
   EXPECT_FALSE(
       SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
+  std::vector<std::string> selectors;
+  std::vector<std::string> attribute;
+
+  selectors.emplace_back("#full_height_section");
+  attribute.emplace_back("style");
+  attribute.emplace_back("backgroundColor");
+  std::string value = "red";
+
+  EXPECT_TRUE(SetAttribute(selectors, attribute, value));
+  const std::string javascript = R"(
+    document.querySelector("#full_height_section").style.backgroundColor;
+  )";
+  EXPECT_EQ(value, content::EvalJs(shell(), javascript));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {

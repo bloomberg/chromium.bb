@@ -26,7 +26,7 @@ void SetFormFieldValueAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
   delegate->WaitForElement(
-      ExtractSelectors(proto_.set_form_value().element().selectors()),
+      ExtractVector(proto_.set_form_value().element().selectors()),
       base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -44,7 +44,7 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
   // TODO(crbug.com/806868): Add flag to allow simulating key presses to set
   // field value.
   delegate->SetFieldValue(
-      ExtractSelectors(proto_.set_form_value().element().selectors()),
+      ExtractVector(proto_.set_form_value().element().selectors()),
       proto_.set_form_value().value(0).text(),
       /* simulate_key_presses= */ false,
       base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,

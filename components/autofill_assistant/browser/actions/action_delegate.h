@@ -115,6 +115,12 @@ class ActionDelegate {
                              bool simulate_key_presses,
                              base::OnceCallback<void(bool)> callback) = 0;
 
+  // Set the |value| of the |attribute| of the element given by |selectors|.
+  virtual void SetAttribute(const std::vector<std::string>& selectors,
+                            const std::vector<std::string>& attribute,
+                            const std::string& value,
+                            base::OnceCallback<void(bool)> callback) = 0;
+
   // Return the outerHTML of an element given by |selectors|.
   virtual void GetOuterHtml(
       const std::vector<std::string>& selectors,
