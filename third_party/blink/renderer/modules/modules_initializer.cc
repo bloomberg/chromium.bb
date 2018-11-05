@@ -103,11 +103,11 @@ void ModulesInitializer::Initialize() {
       event_target_names::kModulesNamesCount + indexed_db_names::kNamesCount;
   StringImpl::ReserveStaticStringsCapacityForSize(kModulesStaticStringsCount);
 
-  event_interface_names::initModules();
-  event_target_names::initModules();
+  event_interface_names::InitModules();
+  event_target_names::InitModules();
   Document::RegisterEventFactory(EventModulesFactory::Create());
   ModuleBindingsInitializer::Init();
-  indexed_db_names::init();
+  indexed_db_names::Init();
   AXObjectCache::Init(AXObjectCacheImpl::Create);
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);

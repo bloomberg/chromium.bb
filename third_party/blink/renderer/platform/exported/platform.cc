@@ -195,10 +195,10 @@ void Platform::InitializeCommon(Platform* platform,
 
   ThreadState::AttachMainThread();
 
-  // FontFamilyNames are used by platform/fonts and are initialized by core.
+  // font_family_names are used by platform/fonts and are initialized by core.
   // In case core is not available (like on PPAPI plugins), we need to init
   // them here.
-  font_family_names::init();
+  font_family_names::Init();
   InitializePlatformLanguage();
 
   DCHECK(!g_gc_task_runner);
