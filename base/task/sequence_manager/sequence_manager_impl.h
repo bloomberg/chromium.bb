@@ -297,11 +297,11 @@ class BASE_EXPORT SequenceManagerImpl
                             internal::WorkQueue* selected_work_queue) const;
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
-  // |queue_is_blocked| is false it makes sure a DoWork is posted.
+  // |schedule_work| is true it makes sure a DoWork is posted.
   // Can be called from any thread.
   void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue,
                                        internal::EnqueueOrder enqueue_order,
-                                       bool queue_is_blocked);
+                                       bool schedule_work);
 
   // Returns true if |task_queue| was added to the list, or false if it was
   // already in the list.  If |task_queue| was inserted, the |order| is set

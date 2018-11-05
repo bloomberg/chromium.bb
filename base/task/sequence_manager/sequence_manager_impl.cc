@@ -280,13 +280,32 @@ void SequenceManagerImpl::UnregisterTaskQueueImpl(
 }
 
 void SequenceManagerImpl::ReloadEmptyWorkQueues() {
+  DCHECK(main_thread_only().queues_to_reload.empty());
+
+  {
+    AutoLock lock(any_thread_lock_);
+
+    for (internal::IncomingImmediateWorkList* iter =
+             any_thread().incoming_immediate_work_list;
+         iter; iter = iter->next) {
+      main_thread_only().queues_to_reload.push_back(iter->queue);
+      iter->queue = nullptr;
+    }
+
+    any_thread().incoming_immediate_work_list = nullptr;
+  }
+
   // There are two cases where a queue needs reloading.  First, it might be
   // completely empty and we've just posted a task (this method handles that
   // case). Secondly if the work queue becomes empty in when calling
   // WorkQueue::TakeTaskFromWorkQueue (handled there).
   for (internal::TaskQueueImpl* queue : main_thread_only().queues_to_reload) {
+    // It's important we call ReloadImmediateWorkQueueIfEmpty out side of
+    // |any_thread_lock_| avoid lock order inversion.
     queue->ReloadImmediateWorkQueueIfEmpty();
   }
+
+  main_thread_only().queues_to_reload.clear();
 }
 
 void SequenceManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
@@ -331,8 +350,8 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
 void SequenceManagerImpl::OnQueueHasIncomingImmediateWork(
     internal::TaskQueueImpl* queue,
     internal::EnqueueOrder enqueue_order,
-    bool queue_is_blocked) {
-  if (AddToIncomingImmediateWorkList(queue, enqueue_order) && !queue_is_blocked)
+    bool schedule_work) {
+  if (AddToIncomingImmediateWorkList(queue, enqueue_order) && schedule_work)
     controller_->ScheduleWork();
 }
 
@@ -370,22 +389,6 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TRACE_EVENT0("sequence_manager", "SequenceManagerImpl::TakeTask");
 
-  {
-    AutoLock lock(any_thread_lock_);
-    main_thread_only().queues_to_reload.clear();
-
-    for (internal::IncomingImmediateWorkList* iter =
-             any_thread().incoming_immediate_work_list;
-         iter; iter = iter->next) {
-      main_thread_only().queues_to_reload.push_back(iter->queue);
-      iter->queue = nullptr;
-    }
-
-    any_thread().incoming_immediate_work_list = nullptr;
-  }
-
-  // It's important we call ReloadEmptyWorkQueues out side of the lock to
-  // avoid a lock order inversion.
   ReloadEmptyWorkQueues();
   LazyNow lazy_now(controller_->GetClock());
   WakeUpReadyDelayedQueues(&lazy_now);
