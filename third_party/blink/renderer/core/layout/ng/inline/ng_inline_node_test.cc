@@ -830,4 +830,25 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutWithBox) {
   EXPECT_TRUE(lines[1]->IsDirty());
 }
 
+// Test marking line boxes when a span inside a span has NeedsLayout.
+// The parent span has a box fragment, and wraps, so that its fragment
+// is seen earlier in pre-order DFS.
+TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
+  SetupHtml("container", R"HTML(
+    <div id=container style="font-size: 10px">
+      <span style="background: yellow">
+        <span id=t>target</span>
+        <br>
+        12345678
+      </span>
+    </div>
+  )HTML");
+
+  LayoutObject* span = GetLayoutObjectByElementId("t");
+  span->SetNeedsLayout("");
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_TRUE(lines[0]->IsDirty());
+}
+
 }  // namespace blink
