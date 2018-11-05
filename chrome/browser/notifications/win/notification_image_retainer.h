@@ -48,9 +48,8 @@ class NotificationImageRetainer {
 
   // Stores an |image| on disk in a temporary (short-lived) file. Returns the
   // path to the file created, which will be valid for a few seconds only. It
-  // will be deleted either after a short timeout or after a restart of Chrome
-  // (the next time this function is called). The function returns an empty
-  // FilePath if file creation fails.
+  // will be deleted either after a short timeout or after a restart of Chrome.
+  // The function returns an empty FilePath if file creation fails.
   virtual base::FilePath RegisterTemporaryImage(const gfx::Image& image);
 
   // Returns a closure that, when run, performs cleanup operations. This closure
