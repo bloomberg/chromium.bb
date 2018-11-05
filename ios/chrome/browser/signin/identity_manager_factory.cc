@@ -62,6 +62,13 @@ identity::IdentityManager* IdentityManagerFactory::GetForBrowserState(
 }
 
 // static
+identity::IdentityManager* IdentityManagerFactory::GetForBrowserStateIfExists(
+    ios::ChromeBrowserState* browser_state) {
+  return static_cast<IdentityManagerWrapper*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, false));
+}
+
+// static
 IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return base::Singleton<IdentityManagerFactory>::get();
 }

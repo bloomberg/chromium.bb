@@ -242,6 +242,8 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/cpp:cpp",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:strings_grit",

@@ -16,7 +16,6 @@
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
@@ -27,6 +26,8 @@
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -415,9 +416,9 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                              false);
 
   // Make sure the user is signed out.
-  if (GetSigninManager()->IsAuthenticated()) {
-    GetSigninManager()->SignOut(signin_metrics::SIGNOUT_TEST,
-                                signin_metrics::SignoutDelete::IGNORE_METRIC);
+  auto* identity_manager = identity_test_env()->identity_manager();
+  if (identity_manager->HasPrimaryAccount()) {
+    identity_test_env()->ClearPrimaryAccount();
   }
 
   // Footer item should be of type CollectionViewFooterItem.
@@ -430,8 +431,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT)]);
 
   // Fake a signed in user.
-  GetSigninManager()->SetAuthenticatedAccountInfo("12345",
-                                                  "username@example.com");
+  identity_test_env()->SetPrimaryAccount("username@example.com");
 
   item = [mediator() footerItem];
   footer_item = base::mac::ObjCCastStrict<CollectionViewFooterItem>(item);
@@ -451,8 +451,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS)]);
 
   // Sign the user out.
-  GetSigninManager()->SignOut(signin_metrics::SIGNOUT_TEST,
-                              signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_test_env()->ClearPrimaryAccount();
 
   // The signed in state has no effect on the footer text if the first
   // transaction has completed.
