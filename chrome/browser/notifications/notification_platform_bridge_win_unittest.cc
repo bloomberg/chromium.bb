@@ -73,12 +73,11 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         message_center::RichNotificationData(), nullptr /* delegate */);
     notification->set_renotify(renotify);
     MockNotificationImageRetainer image_retainer;
-    std::unique_ptr<NotificationTemplateBuilder> builder =
-        NotificationTemplateBuilder::Build(&image_retainer, launch_id,
-                                           *notification);
+    base::string16 xml_template =
+        BuildNotificationTemplate(&image_retainer, launch_id, *notification);
 
     mswr::ComPtr<winui::Notifications::IToastNotification> toast =
-        bridge->GetToastNotificationForTesting(*notification, *builder,
+        bridge->GetToastNotificationForTesting(*notification, xml_template,
                                                profile_id, incognito);
     if (!toast) {
       LOG(ERROR) << "GetToastNotificationForTesting failed";

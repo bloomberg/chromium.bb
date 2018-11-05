@@ -146,13 +146,13 @@ class NotificationPlatformBridgeWinImpl
         image_retainer_->GetCleanupTask());
   }
 
-  // Obtain an IToastNotification interface from a given XML (provided by the
-  // NotificationTemplateBuilder). This function is only used when displaying
-  // notification in production code, which explains why the UMA metrics record
-  // within are classified with the display path.
+  // Obtain an IToastNotification interface from a given XML as in
+  // |xml_template|. This function is only used when displaying notification in
+  // production code, which explains why the UMA metrics record within are
+  // classified with the display path.
   mswr::ComPtr<winui::Notifications::IToastNotification> GetToastNotification(
       const message_center::Notification& notification,
-      const NotificationTemplateBuilder& notification_template_builder,
+      const base::string16& xml_template,
       const std::string& profile_id,
       bool incognito) {
     ScopedHString ref_class_name =
@@ -176,9 +176,7 @@ class NotificationPlatformBridgeWinImpl
       return nullptr;
     }
 
-    base::string16 notification_template =
-        notification_template_builder.GetNotificationTemplate();
-    ScopedHString ref_template = ScopedHString::Create(notification_template);
+    ScopedHString ref_template = ScopedHString::Create(xml_template);
     hr = document_io->LoadXml(ref_template.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::LOAD_XML_FAILED);
@@ -350,11 +348,10 @@ class NotificationPlatformBridgeWinImpl
     NotificationLaunchId launch_id(notification_type, notification->id(),
                                    profile_id, incognito,
                                    notification->origin_url());
-    std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
-                                           *notification);
+    base::string16 xml_template = BuildNotificationTemplate(
+        image_retainer_.get(), launch_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast =
-        GetToastNotification(*notification, *notification_template, profile_id,
+        GetToastNotification(*notification, xml_template, profile_id,
                              incognito);
     if (!toast)
       return;
@@ -906,9 +903,9 @@ void NotificationPlatformBridgeWin::SetNotifierForTesting(
 mswr::ComPtr<winui::Notifications::IToastNotification>
 NotificationPlatformBridgeWin::GetToastNotificationForTesting(
     const message_center::Notification& notification,
-    const NotificationTemplateBuilder& notification_template_builder,
+    const base::string16& xml_template,
     const std::string& profile_id,
     bool incognito) {
-  return impl_->GetToastNotification(
-      notification, notification_template_builder, profile_id, incognito);
+  return impl_->GetToastNotification(notification, xml_template, profile_id,
+                                     incognito);
 }

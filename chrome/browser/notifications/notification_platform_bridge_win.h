@@ -80,7 +80,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>
   GetToastNotificationForTesting(
       const message_center::Notification& notification,
-      const NotificationTemplateBuilder& notification_template_builder,
+      const base::string16& xml_template,
       const std::string& profile_id,
       bool incognito);
 
