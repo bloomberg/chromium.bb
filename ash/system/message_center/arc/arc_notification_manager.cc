@@ -255,7 +255,7 @@ void ArcNotificationManager::OnLockScreenSettingUpdated(
 void ArcNotificationManager::ProcessUserAction(
     arc::mojom::ArcNotificationUserActionDataPtr data) {
   if (!data->defer_until_unlock) {
-    PerformUserAction(data->action_id);
+    PerformUserAction(data->action_id, data->to_be_focused_after_unlock);
     return;
   }
 
@@ -264,12 +264,14 @@ void ArcNotificationManager::ProcessUserAction(
       ->lock_screen_controller()
       ->DismissLockScreenThenExecute(
           base::BindOnce(&ArcNotificationManager::PerformUserAction,
-                         weak_ptr_factory_.GetWeakPtr(), data->action_id),
+                         weak_ptr_factory_.GetWeakPtr(), data->action_id,
+                         data->to_be_focused_after_unlock),
           base::BindOnce(&ArcNotificationManager::CancelUserAction,
                          weak_ptr_factory_.GetWeakPtr(), data->action_id));
 }
 
-void ArcNotificationManager::PerformUserAction(uint32_t id) {
+void ArcNotificationManager::PerformUserAction(uint32_t id,
+                                               bool open_message_center) {
   // TODO(yoshiki): Pass the event to the message center and handle the action
   // in the NotificationDelegate::Click() for consistency with non-arc
   // notifications.
@@ -285,8 +287,11 @@ void ArcNotificationManager::PerformUserAction(uint32_t id) {
 
   notifications_instance->PerformDeferredUserAction(id);
 
-  // TODO(yoshiki): open the message center and focus the target notification if
-  // the flag is set.
+  if (open_message_center) {
+    OpenMessageCenter();
+    // TODO(yoshiki): focus the target notification after opening the message
+    // center.
+  }
 }
 
 void ArcNotificationManager::CancelUserAction(uint32_t id) {
