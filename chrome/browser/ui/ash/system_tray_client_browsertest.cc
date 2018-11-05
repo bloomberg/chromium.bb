@@ -75,13 +75,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &tray_test_api);
 
-  // Open the system tray menu.
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
-  wait_for.ShowBubble();
 
   // Managed devices show an item in the menu.
   bool view_visible = false;
-  wait_for.IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE, &view_visible);
+  wait_for.IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE,
+                               true /* open_tray */, &view_visible);
   EXPECT_TRUE(view_visible);
 }
 

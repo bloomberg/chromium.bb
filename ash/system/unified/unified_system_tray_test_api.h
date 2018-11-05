@@ -41,7 +41,9 @@ class UnifiedSystemTrayTestApi : public mojom::SystemTrayTestApi {
   void ShowDetailedView(mojom::TrayItem item,
                         ShowDetailedViewCallback cb) override;
   void IsBubbleViewVisible(int view_id,
+                           bool open_tray,
                            IsBubbleViewVisibleCallback cb) override;
+  void ClickBubbleView(int32_t view_id, ClickBubbleViewCallback cb) override;
   void GetBubbleViewTooltip(int view_id,
                             GetBubbleViewTooltipCallback cb) override;
   void GetBubbleLabelText(int view_id, GetBubbleLabelTextCallback cb) override;
