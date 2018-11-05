@@ -16,6 +16,7 @@ import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -26,6 +27,8 @@ import java.util.concurrent.Executors;
 
 /** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
+    private static final String TAG = "FeedProcessScopeFtry";
+
     /** Flag that tracks whether we've ever been disabled via enterprise policy. Should only be
      * accessed through isFeedProcessScopeEnabled(). */
     private static boolean sEverDisabledForPolicy = false;
@@ -194,6 +197,8 @@ public class FeedProcessScopeFactory {
         // Should only be subscribed while it was enabled. A change should mean articles are now
         // disabled.
         assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+        // Log this event warning while investigating https://crbug.com/901414.
+        Log.w(TAG, "Disabling Feed because of policy.");
         sEverDisabledForPolicy = true;
         destroy();
     }
