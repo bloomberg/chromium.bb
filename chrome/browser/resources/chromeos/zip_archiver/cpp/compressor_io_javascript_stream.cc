@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
-#include "ppapi/cpp/logging.h"
 
 namespace {
 

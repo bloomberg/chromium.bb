@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/char_coding.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
@@ -84,7 +85,7 @@ void ConstructMetadata(int64_t index,
     if (!old_entry_metadata_var.is_undefined()) {
       pp::VarDictionary old_entry_metadata =
           pp::VarDictionary(old_entry_metadata_var);
-      PP_DCHECK(old_entry_metadata.Get("isDirectory").AsBool());
+      DCHECK(old_entry_metadata.Get("isDirectory").AsBool());
       entry_metadata.Set("entries", old_entry_metadata.Get("entries"));
     }
   } else {  // Get next parent on the way to the entry.
@@ -132,8 +133,8 @@ class JavaScriptRequestor : public JavaScriptRequestorInterface {
   void RequestFileChunk(const std::string& request_id,
                         int64_t offset,
                         int64_t bytes_to_read) override {
-    PP_DCHECK(offset >= 0);
-    PP_DCHECK(bytes_to_read > 0);
+    DCHECK_GE(offset, 0);
+    DCHECK_GT(bytes_to_read, 0);
     volume_->message_sender()->SendFileChunkRequest(
         volume_->file_system_id(), request_id, offset, bytes_to_read);
   }
@@ -258,14 +259,14 @@ void Volume::ReadFile(const std::string& request_id,
 void Volume::ReadChunkDone(const std::string& request_id,
                            const pp::VarArrayBuffer& array_buffer,
                            int64_t read_offset) {
-  PP_DCHECK(volume_archive_);
+  DCHECK(volume_archive_);
 
   static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
       ->SetBufferAndSignal(array_buffer, read_offset);
 }
 
 void Volume::ReadChunkError(const std::string& request_id) {
-  PP_DCHECK(volume_archive_);
+  DCHECK(volume_archive_);
 
   static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
       ->ReadErrorSignal();
@@ -273,7 +274,7 @@ void Volume::ReadChunkError(const std::string& request_id) {
 
 void Volume::ReadPassphraseDone(const std::string& request_id,
                                 const std::string& passphrase) {
-  PP_DCHECK(volume_archive_);
+  DCHECK(volume_archive_);
 
   job_lock_.Acquire();
   if (request_id == reader_request_id_) {
@@ -284,7 +285,7 @@ void Volume::ReadPassphraseDone(const std::string& request_id,
 }
 
 void Volume::ReadPassphraseError(const std::string& request_id) {
-  PP_DCHECK(volume_archive_);
+  DCHECK(volume_archive_);
 
   job_lock_.Acquire();
   if (request_id == reader_request_id_) {
@@ -462,7 +463,7 @@ void Volume::ReadFileCallback(int32_t /*result*/,
       request::GetInt64FromString(dictionary, request::key::kOffset);
   int64_t length =
       request::GetInt64FromString(dictionary, request::key::kLength);
-  PP_DCHECK(length > 0);  // JavaScript must not make requests with length <= 0.
+  DCHECK_GT(length, 0);  // JavaScript must not make requests with length <= 0.
 
   job_lock_.Acquire();
   if (open_request_id != reader_request_id_) {
