@@ -445,6 +445,41 @@ TEST_P(WebRtcSetDescriptionObserverHandlerTest, OnFailure) {
   }
 }
 
+// Test coverage for https://crbug.com/897251. If the webrtc peer connection is
+// implemented to invoke the callback with a delay it might already have been
+// closed when the observer is invoked. A closed RTCPeerConnection is allowed to
+// be garbage collected. In rare circumstances, the RTCPeerConnection,
+// RTCPeerConnectionHandler and any local track adapters may thus have been
+// deleted when the observer attempts to surface transceiver state information.
+// This test insures that TransceiverStateSurfacer::Initialize() does not crash
+// due to track adapters not existing.
+TEST_P(WebRtcSetDescriptionObserverHandlerTest,
+       ClosePeerConnectionBeforeCallback) {
+  switch (surfacer_type_) {
+    case StateSurfacerType::kTransceivers:
+      CreateTransceivers();
+      break;
+    case StateSurfacerType::kReceiversOnly:
+      CreateReceivers();
+      break;
+  }
+
+  // Simulate the peer connection having been closed and local track adapters
+  // destroyed before the observer was invoked.
+  EXPECT_CALL(*pc_, signaling_state())
+      .WillRepeatedly(Return(webrtc::PeerConnectionInterface::kClosed));
+  local_track_adapters_.clear();
+
+  observer_handler_->InvokeOnComplete(webrtc::RTCError::OK());
+  EXPECT_TRUE(observer_->called());
+  EXPECT_TRUE(observer_->error().ok());
+
+  EXPECT_EQ(webrtc::PeerConnectionInterface::kClosed,
+            observer_->states().signaling_state);
+
+  EXPECT_EQ(0u, observer_->states().transceiver_states.size());
+}
+
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     WebRtcSetDescriptionObserverHandlerTest,
