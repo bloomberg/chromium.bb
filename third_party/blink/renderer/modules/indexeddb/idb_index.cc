@@ -153,7 +153,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
                                  IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyAndValue, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyAndValue, direction);
   BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
                           key_range, direction, false, kWebIDBTaskTypeNormal,
                           request->CreateWebCallbacks().release());
@@ -228,7 +228,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
 
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyOnly, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyOnly, direction);
   BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
                           key_range, direction, true, kWebIDBTaskTypeNormal,
                           request->CreateWebCallbacks().release());

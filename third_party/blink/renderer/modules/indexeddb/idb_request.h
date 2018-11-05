@@ -217,7 +217,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
 
-  void SetCursorDetails(IndexedDB::CursorType, WebIDBCursorDirection);
+  void SetCursorDetails(indexed_db::CursorType, WebIDBCursorDirection);
   void SetPendingCursor(IDBCursor*);
   void Abort();
 
@@ -390,7 +390,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   Member<EventQueue> event_queue_;
 
   // Only used if the result type will be a cursor.
-  IndexedDB::CursorType cursor_type_ = IndexedDB::kCursorKeyAndValue;
+  indexed_db::CursorType cursor_type_ = indexed_db::kCursorKeyAndValue;
   WebIDBCursorDirection cursor_direction_ = kWebIDBCursorDirectionNext;
   // When a cursor is continued/advanced, |result_| is cleared and
   // |pendingCursor_| holds it.
