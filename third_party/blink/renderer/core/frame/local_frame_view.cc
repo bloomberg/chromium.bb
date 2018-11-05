@@ -2086,7 +2086,7 @@ void LocalFrameView::DidAttachDocument() {
     viewport_scrollable_area_ = root_frame_viewport;
 
     page->GlobalRootScrollerController().InitializeViewportScrollCallback(
-        *root_frame_viewport);
+        *root_frame_viewport, *frame_->GetDocument());
   }
 }
 
@@ -3545,14 +3545,12 @@ bool LocalFrameView::VisualViewportSuppliesScrollbars() {
       !frame_->GetDocument() || !frame_->GetPage())
     return false;
 
-  const TopDocumentRootScrollerController& controller =
-      frame_->GetPage()->GlobalRootScrollerController();
-
   if (!LayoutViewport())
     return false;
 
-  return root_scroller_util::ScrollableAreaForRootScroller(
-             controller.GlobalRootScroller()) == LayoutViewport();
+  const TopDocumentRootScrollerController& controller =
+      frame_->GetPage()->GlobalRootScrollerController();
+  return controller.RootScrollerArea() == LayoutViewport();
 }
 
 AXObjectCache* LocalFrameView::ExistingAXObjectCache() const {

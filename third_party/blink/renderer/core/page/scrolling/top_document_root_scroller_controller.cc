@@ -24,6 +24,18 @@
 
 namespace blink {
 
+namespace {
+
+ScrollableArea* GetScrollableArea(Node* node) {
+  if (!node || !node->GetLayoutObject() ||
+      !node->GetLayoutObject()->IsBoxModelObject())
+    return nullptr;
+
+  return ToLayoutBoxModelObject(node->GetLayoutObject())->GetScrollableArea();
+}
+
+}  // namespace
+
 // static
 TopDocumentRootScrollerController* TopDocumentRootScrollerController::Create(
     Page& page) {
@@ -40,25 +52,34 @@ void TopDocumentRootScrollerController::Trace(blink::Visitor* visitor) {
 }
 
 void TopDocumentRootScrollerController::DidChangeRootScroller() {
-  RecomputeGlobalRootScroller();
+  Node* target = FindGlobalRootScroller();
+  UpdateGlobalRootScroller(target);
 }
 
 void TopDocumentRootScrollerController::DidResizeViewport() {
-  if (!GlobalRootScroller())
+  if (!GlobalRootScroller() || !GlobalRootScroller()->GetDocument().IsActive())
     return;
+
+  if (!GlobalRootScroller()->GetLayoutObject())
+    return;
+
+  DCHECK(GlobalRootScroller()->GetLayoutObject()->IsBoxModelObject());
+
+  LayoutBoxModelObject* layout_object =
+      ToLayoutBoxModelObject(GlobalRootScroller()->GetLayoutObject());
 
   // Top controls can resize the viewport without invalidating compositing or
   // paint so we need to do that manually here.
-  DCHECK(GlobalRootScroller()->IsElementNode());
-  ToElement(GlobalRootScroller())->SetNeedsCompositingUpdate();
+  if (layout_object->HasLayer()) {
+    layout_object->Layer()->SetNeedsCompositingInputsUpdate();
+    layout_object->Layer()->UpdateSelfPaintingLayer();
+  }
 
-  if (GlobalRootScroller()->GetLayoutObject())
-    GlobalRootScroller()->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
+  layout_object->SetNeedsPaintPropertyUpdate();
 }
 
 ScrollableArea* TopDocumentRootScrollerController::RootScrollerArea() const {
-  return root_scroller_util::ScrollableAreaForRootScroller(
-      GlobalRootScroller());
+  return GetScrollableArea(GlobalRootScroller());
 }
 
 IntSize TopDocumentRootScrollerController::RootScrollerVisibleArea() const {
@@ -86,9 +107,6 @@ Node* TopDocumentRootScrollerController::FindGlobalRootScroller() {
   Node* root_scroller =
       &TopDocument()->GetRootScrollerController().EffectiveRootScroller();
 
-  if (root_scroller->IsDocumentNode())
-    return TopDocument()->documentElement();
-
   while (root_scroller && root_scroller->IsFrameOwnerElement()) {
     HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(root_scroller);
     DCHECK(frame_owner);
@@ -99,9 +117,6 @@ Node* TopDocumentRootScrollerController::FindGlobalRootScroller() {
 
     root_scroller =
         &iframe_document->GetRootScrollerController().EffectiveRootScroller();
-
-    if (root_scroller->IsDocumentNode())
-      return iframe_document->documentElement();
   }
 
   return root_scroller;
@@ -111,8 +126,7 @@ void SetNeedsCompositingUpdateOnAncestors(Node* node) {
   if (!node || !node->GetDocument().IsActive())
     return;
 
-  ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(node);
+  ScrollableArea* area = GetScrollableArea(node);
 
   if (!area || !area->Layer())
     return;
@@ -129,16 +143,15 @@ void SetNeedsCompositingUpdateOnAncestors(Node* node) {
   }
 }
 
-void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
+void TopDocumentRootScrollerController::UpdateGlobalRootScroller(
+    Node* new_global_root_scroller) {
   if (!viewport_apply_scroll_)
     return;
 
-  Node* target = FindGlobalRootScroller();
-  if (target == global_root_scroller_)
+  if (new_global_root_scroller == global_root_scroller_)
     return;
 
-  ScrollableArea* target_scroller =
-      root_scroller_util::ScrollableAreaForRootScroller(target);
+  ScrollableArea* target_scroller = GetScrollableArea(new_global_root_scroller);
 
   if (!target_scroller)
     return;
@@ -149,24 +162,23 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   // Use disable-native-scroll since the ViewportScrollCallback needs to
   // apply scroll actions both before (BrowserControls) and after (overscroll)
   // scrolling the element so it will apply scroll to the element itself.
-  target->SetApplyScroll(viewport_apply_scroll_);
+  new_global_root_scroller->SetApplyScroll(viewport_apply_scroll_);
 
   Node* old_root_scroller = global_root_scroller_;
 
-  global_root_scroller_ = target;
+  global_root_scroller_ = new_global_root_scroller;
 
   // Ideally, scroll customization would pass the current element to scroll to
   // the apply scroll callback but this doesn't happen today so we set it
   // through a back door here. This is also needed by the
-  // ViewportScrollCallback to swap the target into the layout viewport
-  // in RootFrameViewport.
+  // ViewportScrollCallback to swap the new global root scroller into the
+  // layout viewport in RootFrameViewport.
   viewport_apply_scroll_->SetScroller(target_scroller);
 
   SetNeedsCompositingUpdateOnAncestors(old_root_scroller);
-  SetNeedsCompositingUpdateOnAncestors(target);
+  SetNeedsCompositingUpdateOnAncestors(new_global_root_scroller);
 
-  if (ScrollableArea* area = root_scroller_util::ScrollableAreaForRootScroller(
-          old_root_scroller)) {
+  if (ScrollableArea* area = GetScrollableArea(old_root_scroller)) {
     if (old_root_scroller->GetDocument().IsActive())
       area->DidChangeGlobalRootScroller();
   }
@@ -216,13 +228,14 @@ void TopDocumentRootScrollerController::DidDisposeScrollableArea(
 }
 
 void TopDocumentRootScrollerController::InitializeViewportScrollCallback(
-    RootFrameViewport& root_frame_viewport) {
+    RootFrameViewport& root_frame_viewport,
+    Document& main_document) {
   DCHECK(page_);
   viewport_apply_scroll_ = ViewportScrollCallback::Create(
       &page_->GetBrowserControls(), &page_->GetOverscrollController(),
       root_frame_viewport);
 
-  RecomputeGlobalRootScroller();
+  UpdateGlobalRootScroller(&main_document);
 }
 
 bool TopDocumentRootScrollerController::IsViewportScrollCallback(
@@ -234,8 +247,7 @@ bool TopDocumentRootScrollerController::IsViewportScrollCallback(
 }
 
 GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
-  ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(global_root_scroller_);
+  ScrollableArea* area = GetScrollableArea(global_root_scroller_);
 
   if (!area)
     return nullptr;
@@ -250,9 +262,7 @@ GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
 }
 
 GraphicsLayer* TopDocumentRootScrollerController::RootContainerLayer() const {
-  ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(global_root_scroller_);
-
+  ScrollableArea* area = GetScrollableArea(global_root_scroller_);
   return area ? area->LayerForContainer() : nullptr;
 }
 

@@ -466,7 +466,6 @@ Node* Node::getRootNode(const GetRootNodeOptions* options) const {
 
 void Node::setDistributeScroll(V8ScrollStateCallback* scroll_state_callback,
                                const String& native_scroll_behavior) {
-  DCHECK(IsElementNode());
   GetScrollCustomizationCallbacks().SetDistributeScroll(
       this, ScrollStateCallbackV8Impl::Create(scroll_state_callback,
                                               native_scroll_behavior));
@@ -474,28 +473,23 @@ void Node::setDistributeScroll(V8ScrollStateCallback* scroll_state_callback,
 
 void Node::setApplyScroll(V8ScrollStateCallback* scroll_state_callback,
                           const String& native_scroll_behavior) {
-  DCHECK(IsElementNode());
   SetApplyScroll(ScrollStateCallbackV8Impl::Create(scroll_state_callback,
                                                    native_scroll_behavior));
 }
 
 void Node::SetApplyScroll(ScrollStateCallback* scroll_state_callback) {
-  DCHECK(IsElementNode());
   GetScrollCustomizationCallbacks().SetApplyScroll(this, scroll_state_callback);
 }
 
 void Node::RemoveApplyScroll() {
-  DCHECK(IsElementNode());
   GetScrollCustomizationCallbacks().RemoveApplyScroll(this);
 }
 
 ScrollStateCallback* Node::GetApplyScroll() {
-  DCHECK(IsElementNode());
   return GetScrollCustomizationCallbacks().GetApplyScroll(this);
 }
 
 void Node::NativeDistributeScroll(ScrollState& scroll_state) {
-  DCHECK(IsElementNode());
   if (scroll_state.FullyConsumed())
     return;
 
@@ -518,10 +512,11 @@ void Node::NativeDistributeScroll(ScrollState& scroll_state) {
 }
 
 void Node::NativeApplyScroll(ScrollState& scroll_state) {
-  DCHECK(IsElementNode());
+  if (!GetLayoutObject())
+    return;
 
   // All elements in the scroll chain should be boxes.
-  DCHECK(!GetLayoutObject() || GetLayoutObject()->IsBox());
+  DCHECK(GetLayoutObject()->IsBox());
 
   if (scroll_state.FullyConsumed())
     return;
@@ -535,15 +530,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   // updateStyleAndLayoutIgnorePendingStylesheetsForNode.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  LayoutBox* box_to_scroll = nullptr;
-
-  if (this == GetDocument().documentElement())
-    box_to_scroll = GetDocument().GetLayoutView();
-  else if (GetLayoutObject())
-    box_to_scroll = ToLayoutBox(GetLayoutObject());
-
-  if (!box_to_scroll)
-    return;
+  LayoutBox* box_to_scroll = ToLayoutBox(GetLayoutObject());
 
   ScrollableArea* scrollable_area =
       box_to_scroll->EnclosingBox()->GetScrollableArea();
@@ -571,7 +558,6 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
 
 void Node::CallDistributeScroll(ScrollState& scroll_state) {
   TRACE_EVENT0("input", "Node::CallDistributeScroll");
-  DCHECK(IsElementNode());
   ScrollStateCallback* callback =
       GetScrollCustomizationCallbacks().GetDistributeScroll(this);
 
@@ -607,7 +593,6 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
 
 void Node::CallApplyScroll(ScrollState& scroll_state) {
   TRACE_EVENT0("input", "Node::CallApplyScroll");
-  DCHECK(IsElementNode());
   // Hits ASSERTs when trying to determine whether we need to scroll on main
   // or CC. http://crbug.com/625676.
   DisableCompositingQueryAsserts disabler;
@@ -652,7 +637,6 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
 
 void Node::WillBeginCustomizedScrollPhase(
     ScrollCustomization::ScrollDirection direction) {
-  DCHECK(IsElementNode());
   DCHECK(!GetScrollCustomizationCallbacks().InScrollPhase(this));
   LayoutBox* box = GetLayoutBox();
   if (!box)
@@ -666,7 +650,6 @@ void Node::WillBeginCustomizedScrollPhase(
 }
 
 void Node::DidEndCustomizedScrollPhase() {
-  DCHECK(IsElementNode());
   GetScrollCustomizationCallbacks().SetInScrollPhase(this, false);
 }
 
@@ -2921,6 +2904,11 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
         parent_slot->DidSlotChange(slot_change_type);
     }
   }
+}
+
+bool Node::IsEffectiveRootScroller() const {
+  return GetLayoutObject() ? GetLayoutObject()->IsEffectiveRootScroller()
+                           : false;
 }
 
 WebPluginContainerImpl* Node::GetWebPluginContainer() const {
