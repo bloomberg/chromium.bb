@@ -580,4 +580,8 @@ void WebRuntimeFeatures::EnableBackgroundFetchUploads(bool enable) {
   RuntimeEnabledFeatures::SetBackgroundFetchUploadsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMergeBlockingNonBlockingPools(bool enable) {
+  RuntimeEnabledFeatures::SetMergeBlockingNonBlockingPoolsEnabled(enable);
+}
+
 }  // namespace blink

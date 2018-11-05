@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/task_features.h"
 #include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
 #include "base/task/task_scheduler/scheduler_sequenced_task_runner.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
@@ -45,9 +46,6 @@ EnvironmentType GetEnvironmentIndex(bool is_background, bool is_blocking) {
 }
 
 }  // namespace
-
-const base::Feature kMergeBlockingNonBlockingPools = {
-    "MergeBlockingNonBlockingPools", base::FEATURE_DISABLED_BY_DEFAULT};
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
     : TaskSchedulerImpl(histogram_label,

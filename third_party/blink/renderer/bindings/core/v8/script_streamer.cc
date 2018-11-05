@@ -463,9 +463,10 @@ void ScriptStreamer::NotifyFinished() {
     // a non-blocking task, since we know now that all the data is received and
     // we will no longer block.
     //
-    // TODO(874080): Once we have mutable task traits, simply unmark the
-    // existing task as no longer MayBlock.
+    // TODO(874080): Remove this once blocking and non-blocking pools are
+    // merged.
     if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled() &&
+        !RuntimeEnabledFeatures::MergeBlockingNonBlockingPoolsEnabled() &&
         !blocking_task_started_or_cancelled_.test_and_set()) {
       std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
           script_streaming_task(

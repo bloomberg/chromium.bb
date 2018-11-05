@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/task_features.h"
 #include "base/task/task_scheduler/environment_config.h"
 #include "base/task/task_scheduler/scheduler_worker_observer.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"

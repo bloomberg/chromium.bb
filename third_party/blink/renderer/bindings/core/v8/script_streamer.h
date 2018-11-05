@@ -158,7 +158,7 @@ class CORE_EXPORT ScriptStreamer final
 
   // Flag used to allow atomic cancelling and reposting of the streaming task
   // when the load completes without the task yet starting.
-  // TODO(874080): Remove once we can mutate task traits.
+  // TODO(874080): Remove this once blocking and non-blocking pools are merged.
   std::atomic_flag blocking_task_started_or_cancelled_ = ATOMIC_FLAG_INIT;
 
   // Whether the script source code should be retrieved from the Resource

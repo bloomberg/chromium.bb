@@ -779,6 +779,8 @@ jumbo_component("base") {
     "task/single_thread_task_runner_thread_mode.h",
     "task/task_executor.cc",
     "task/task_executor.h",
+    "task/task_features.cc",
+    "task/task_features.h",
     "task/task_observer.h",
     "task/task_scheduler/can_schedule_sequence_observer.h",
     "task/task_scheduler/delayed_task_manager.cc",
