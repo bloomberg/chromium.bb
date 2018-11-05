@@ -1502,54 +1502,10 @@ static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   return prune_bitmask;
 }
 
-static void get_horver_correlation(const int16_t *diff, int stride, int w,
-                                   int h, double *hcorr, double *vcorr) {
-  // Returns hor/ver correlation coefficient
-  const int num = (h - 1) * (w - 1);
-  double num_r;
-  int i, j;
-  int64_t xy_sum = 0, xz_sum = 0;
-  int64_t x_sum = 0, y_sum = 0, z_sum = 0;
-  int64_t x2_sum = 0, y2_sum = 0, z2_sum = 0;
-  double x_var_n, y_var_n, z_var_n, xy_var_n, xz_var_n;
-  *hcorr = *vcorr = 1;
-
-  assert(num > 0);
-  num_r = 1.0 / num;
-  for (i = 1; i < h; ++i) {
-    for (j = 1; j < w; ++j) {
-      const int16_t x = diff[i * stride + j];
-      const int16_t y = diff[i * stride + j - 1];
-      const int16_t z = diff[(i - 1) * stride + j];
-      xy_sum += x * y;
-      xz_sum += x * z;
-      x_sum += x;
-      y_sum += y;
-      z_sum += z;
-      x2_sum += x * x;
-      y2_sum += y * y;
-      z2_sum += z * z;
-    }
-  }
-  x_var_n = x2_sum - (x_sum * x_sum) * num_r;
-  y_var_n = y2_sum - (y_sum * y_sum) * num_r;
-  z_var_n = z2_sum - (z_sum * z_sum) * num_r;
-  xy_var_n = xy_sum - (x_sum * y_sum) * num_r;
-  xz_var_n = xz_sum - (x_sum * z_sum) * num_r;
-  if (x_var_n > 0 && y_var_n > 0) {
-    *hcorr = xy_var_n / sqrt(x_var_n * y_var_n);
-    *hcorr = *hcorr < 0 ? 0 : *hcorr;
-  }
-  if (x_var_n > 0 && z_var_n > 0) {
-    *vcorr = xz_var_n / sqrt(x_var_n * z_var_n);
-    *vcorr = *vcorr < 0 ? 0 : *vcorr;
-  }
-}
-
 static int dct_vs_idtx(const int16_t *diff, int stride, int w, int h) {
-  double hcorr, vcorr;
+  float hcorr, vcorr;
   int prune_bitmask = 0;
-  get_horver_correlation(diff, stride, w, h, &hcorr, &vcorr);
+  av1_get_horver_correlation_full(diff, stride, w, h, &hcorr, &vcorr);
 
   if (vcorr > FAST_EXT_TX_CORR_MID + FAST_EXT_TX_CORR_MARGIN)
     prune_bitmask |= 1 << IDTX_1D;
@@ -2589,9 +2545,9 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
 
   const double mean = get_mean(src_diff, diff_stride, txw, txh);
-  double hor_corr, vert_corr;
-  get_horver_correlation(src_diff, diff_stride, txw, txh, &hor_corr,
-                         &vert_corr);
+  float hor_corr, vert_corr;
+  av1_get_horver_correlation_full(src_diff, diff_stride, txw, txh, &hor_corr,
+                                  &vert_corr);
   fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
@@ -2690,8 +2646,9 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   double mean = get_mean(src_diff, diff_stride, bw, bh);
   mean /= (1 << shift);
-  double hor_corr, vert_corr;
-  get_horver_correlation(src_diff, diff_stride, bw, bh, &hor_corr, &vert_corr);
+  float hor_corr, vert_corr;
+  av1_get_horver_correlation_full(src_diff, diff_stride, bw, bh, &hor_corr,
+                                  &vert_corr);
   fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
@@ -2765,8 +2722,9 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const double q_sqr = (double)(q_step * q_step);
   const double q_sqr_by_sse_norm = q_sqr / (sse_norm + 1.0);
   const double mean_sqr_by_sse_norm = mean * mean / (sse_norm + 1.0);
-  double hor_corr, vert_corr;
-  get_horver_correlation(src_diff, diff_stride, bw, bh, &hor_corr, &vert_corr);
+  float hor_corr, vert_corr;
+  av1_get_horver_correlation_full(src_diff, diff_stride, bw, bh, &hor_corr,
+                                  &vert_corr);
 
   float features[NUM_FEATURES_PUSTATS];
   features[0] = (float)hor_corr;
