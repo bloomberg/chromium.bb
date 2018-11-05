@@ -61,9 +61,7 @@ const CGFloat kSignInPromoViewPadding = 10;
   self = [super initWithFrame:frame];
   if (self) {
     UIView* contentView = self.contentView;
-    _signinPromoView =
-        [[SigninPromoView alloc] initWithFrame:self.bounds
-                                         style:SigninPromoViewUIRefresh];
+    _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
 

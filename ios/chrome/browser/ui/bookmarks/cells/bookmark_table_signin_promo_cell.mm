@@ -35,9 +35,7 @@ const NSInteger kSigninPromoMargin = 8;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     UIView* contentView = self.contentView;
-    _signinPromoView =
-        [[SigninPromoView alloc] initWithFrame:self.bounds
-                                         style:SigninPromoViewUIRefresh];
+    _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
     NSArray* visualConstraints = @[
