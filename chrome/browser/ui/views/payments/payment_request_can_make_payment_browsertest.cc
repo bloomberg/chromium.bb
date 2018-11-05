@@ -355,6 +355,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // should return false for them.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentApps) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kWebPaymentsPerMethodCanMakePaymentQuota);
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   CallCanMakePayment(CheckFor::ALICE_PAY);
 
@@ -411,8 +414,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentAppsInIncognitoMode) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ::features::kServiceWorkerPaymentApps);
+  scoped_feature_list.InitWithFeatures(
+      /*enable_features=*/{::features::kServiceWorkerPaymentApps,
+                           features::kWebPaymentsPerMethodCanMakePaymentQuota},
+      /*disable_features=*/{});
 
   SetIncognito();
 
@@ -439,6 +444,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // NotSupportedError to avoid user fingerprinting.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kWebPaymentsPerMethodCanMakePaymentQuota);
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   SetIncognito();
 
