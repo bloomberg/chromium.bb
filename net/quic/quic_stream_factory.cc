@@ -795,6 +795,12 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
     }
   }
 
+  if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
+      network_ != factory_->default_network()) {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.MigrationBeforeHandshake",
+                          rv == OK);
+  }
+
   if (rv != OK)
     return rv;
 
