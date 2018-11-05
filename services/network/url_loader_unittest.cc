@@ -2212,7 +2212,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
   }
 
 #if defined(OS_CHROMEOS)
-  void OnUsedTrustAnchor(const std::string& username_hash) override {
+  void OnTrustAnchorUsed(const std::string& username_hash) override {
     NOTREACHED();
   }
 #endif

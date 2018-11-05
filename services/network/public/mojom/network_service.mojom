@@ -104,8 +104,9 @@ interface NetworkServiceClient {
                         bool fatal) => (int32 net_error);
 
   // Notification that a trust anchor was used for the given user.
+  // |username_hash| was the parameter passed in NetworkContextParams.
   [EnableIf=is_chromeos]
-  OnUsedTrustAnchor(string username_hash);
+  OnTrustAnchorUsed(string username_hash);
 
   // Called when file uploading was requested.
   // If the process that requested the uploads has permission to read all of

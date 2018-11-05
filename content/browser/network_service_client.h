@@ -55,7 +55,7 @@ class CONTENT_EXPORT NetworkServiceClient
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
 #if defined(OS_CHROMEOS)
-  void OnUsedTrustAnchor(const std::string& username_hash) override;
+  void OnTrustAnchorUsed(const std::string& username_hash) override;
 #endif
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,

@@ -409,8 +409,8 @@ void NetworkServiceClient::OnSSLCertificateError(
 }
 
 #if defined(OS_CHROMEOS)
-void NetworkServiceClient::OnUsedTrustAnchor(const std::string& username_hash) {
-  GetContentClient()->browser()->OnUsedTrustAnchor(username_hash);
+void NetworkServiceClient::OnTrustAnchorUsed(const std::string& username_hash) {
+  GetContentClient()->browser()->OnTrustAnchorUsed(username_hash);
 }
 #endif
 
