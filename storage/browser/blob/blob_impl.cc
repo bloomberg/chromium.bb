@@ -151,6 +151,10 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
         }
         int32_t body_size =
             entry->GetDataSize(item->disk_cache_side_stream_index());
+        if (body_size == 0) {
+          std::move(callback).Run(std::vector<uint8_t>());
+          return;
+        }
         auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(body_size);
 
         auto io_callback = base::AdaptCallbackForRepeating(base::BindOnce(
