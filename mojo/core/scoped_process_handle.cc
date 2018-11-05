@@ -48,10 +48,7 @@ ScopedProcessHandle ScopedProcessHandle::CloneFrom(base::ProcessHandle handle) {
   BOOL ok = ::DuplicateHandle(GetCurrentProcessHandle(), handle,
                               GetCurrentProcessHandle(), &handle, 0, FALSE,
                               DUPLICATE_SAME_ACCESS);
-
-  // TODO(https://crbug.com/887576): Revert this to a DCHECK once we have sorted
-  // out the cause of handle verifier failures.
-  PCHECK(ok);
+  DCHECK(ok);
 #endif
   return ScopedProcessHandle(handle);
 }
