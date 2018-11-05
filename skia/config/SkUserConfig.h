@@ -139,6 +139,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
 #endif
 
+#define SK_LEGACY_OP_COLOR_AS_BYTES
+
 // Remove this after we fixed all the issues related to the new SDF algorithm
 // (https://codereview.chromium.org/1643143002)
 #ifndef SK_USE_LEGACY_DISTANCE_FIELDS
