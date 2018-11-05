@@ -103,9 +103,10 @@ const LayoutBlockFlow* ComputeInlineContentsAsBlockFlow(
       block_flow.IsFloatingOrOutOfFlowPositioned()) {
     const LayoutBlockFlow& root_block_flow =
         RootInlineContentsContainerOf(block_flow);
-    DCHECK(CanBeInlineContentsContainer(root_block_flow))
-        << layout_object << " block_flow=" << block_flow
-        << " root_block_flow=" << root_block_flow;
+    // Skip |root_block_flow| if it's an anonymous wrapper created for
+    // pseudo elements. See test AnonymousBlockFlowWrapperForFloatPseudo.
+    if (!CanBeInlineContentsContainer(root_block_flow))
+      return nullptr;
     return &root_block_flow;
   }
   if (!CanBeInlineContentsContainer(block_flow))
