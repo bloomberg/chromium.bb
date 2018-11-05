@@ -1953,7 +1953,7 @@ void Texture::SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle) {
 }
 
 void Texture::ApplyFormatWorkarounds(FeatureInfo* feature_info) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
       return;
     const Texture::LevelInfo& info = face_infos_[0].level_infos[base_level_];
@@ -3380,7 +3380,7 @@ void TextureManager::DoTexSubImageLayerByLayerWorkaround(
 const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     return GetCompatibilitySwizzleInternal(format);
   } else {
     return nullptr;
@@ -3391,7 +3391,7 @@ const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
 GLenum TextureManager::AdjustTexInternalFormat(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzleInternal(format);
     if (swizzle)
@@ -3411,7 +3411,7 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
     if (format == GL_SRGB_ALPHA_EXT)
       return GL_RGBA;
   }
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzleInternal(format);
     if (swizzle)
@@ -3424,8 +3424,7 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
 GLenum TextureManager::AdjustTexStorageFormat(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  // We need to emulate luminance/alpha on core profile only.
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     switch (format) {
       case GL_ALPHA8_EXT:
         return GL_R8_EXT;

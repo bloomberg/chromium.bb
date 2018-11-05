@@ -151,6 +151,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool unpremultiply_alpha,
       bool dither,
       const GLfloat transform_matrix[16],
+      CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
   // The attributes used during invocation of the extension.

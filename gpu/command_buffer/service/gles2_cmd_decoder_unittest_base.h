@@ -50,6 +50,7 @@ class MemoryTracker;
 
 namespace gles2 {
 class MockCopyTextureResourceManager;
+class MockCopyTexImageResourceManager;
 
 class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
                              public DecoderClient {
@@ -816,7 +817,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   MockGLStates gl_states_;
   base::MessageLoop message_loop_;
 
-  MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
+  MockCopyTextureResourceManager* copy_texture_manager_;     // not owned
+  MockCopyTexImageResourceManager* copy_tex_image_blitter_;  // not owned
 };
 
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {

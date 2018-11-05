@@ -506,6 +506,11 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
 
   copy_texture_manager_ = new MockCopyTextureResourceManager();
   decoder_->SetCopyTextureResourceManagerForTest(copy_texture_manager_);
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
+    copy_tex_image_blitter_ =
+        new MockCopyTexImageResourceManager(feature_info.get());
+    decoder_->SetCopyTexImageBlitterForTest(copy_tex_image_blitter_);
+  }
 
   ASSERT_EQ(decoder_->Initialize(surface_, context_, false,
                                  DisallowedFeatures(), attribs),
@@ -1424,10 +1429,34 @@ void GLES2DecoderTestBase::DoTexImage2D(GLenum target,
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format,
-                               width, height, border, format, type, _))
-      .Times(1)
-      .RetiresOnSaturation();
+  bool emulated_format = group_->feature_info()->gl_version_info().is_es3 &&
+                         (format == GL_LUMINANCE ||
+                          format == GL_LUMINANCE_ALPHA || format == GL_ALPHA);
+  if (emulated_format) {
+    // The format of these textures may be different than requested due to
+    // emulation.
+    EXPECT_CALL(*gl_,
+                TexImage2D(target, level, _, width, height, border, _, type, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_R, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_G, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_B, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_A, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format, width, height,
+                                 border, format, type, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
@@ -1546,6 +1575,25 @@ void GLES2DecoderTestBase::DoCopyTexImage2D(
                                         width, height))
         .Times(1)
         .RetiresOnSaturation();
+  } else if (group_->feature_info()->gl_version_info().is_es3) {
+    bool emulated = internal_format == GL_ALPHA ||
+                    internal_format == GL_LUMINANCE ||
+                    internal_format == GL_LUMINANCE_ALPHA;
+    if (emulated) {
+      EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_R, _))
+          .Times(testing::AtLeast(1));
+      EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_G, _))
+          .Times(testing::AtLeast(1));
+      EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_B, _))
+          .Times(testing::AtLeast(1));
+      EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_SWIZZLE_A, _))
+          .Times(testing::AtLeast(1));
+    } else {
+      EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
+                                       width, height, border))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
   } else {
     EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
                                      width, height, border))
