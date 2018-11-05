@@ -258,6 +258,17 @@ const CGFloat kCardBorderRadius = 11;
   [self updateConstraints];
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  if (CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) &&
+      !CGSizeEqualToSize(self.view.bounds.size, CGSizeZero)) {
+    // When started after a cold start, the frame of the collection view isn't
+    // set to the bounds of the view. In that case, the constraints for the
+    // cells are broken.
+    self.collectionView.frame = self.view.bounds;
+  }
+}
+
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
