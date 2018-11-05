@@ -117,7 +117,15 @@ bool MessageCenterChangeObserver::Wait() {
   return impl_->Wait();
 }
 
-// -----------------------------------------------------------------------------
+void TestMessageCenterObserver::OnNotificationDisplayed(
+    const std::string& notification_id,
+    const message_center::DisplaySource source) {
+  last_displayed_id_ = notification_id;
+}
+
+const std::string& TestMessageCenterObserver::last_displayed_id() const {
+  return last_displayed_id_;
+}
 
 void NotificationsTest::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {

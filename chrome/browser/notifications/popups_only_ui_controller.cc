@@ -46,6 +46,11 @@ void PopupsOnlyUiController::OnNotificationClicked(
     ShowOrHidePopupBubbles();
 }
 
+void PopupsOnlyUiController::OnBlockingStateChanged(
+    message_center::NotificationBlocker* blocker) {
+  ShowOrHidePopupBubbles();
+}
+
 void PopupsOnlyUiController::ShowOrHidePopupBubbles() {
   if (popups_visible_ && !message_center_->HasPopupNotifications()) {
     if (delegate_)

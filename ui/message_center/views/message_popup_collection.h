@@ -50,6 +50,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                              bool by_user) override;
   void OnNotificationUpdated(const std::string& notification_id) override;
   void OnCenterVisibilityChanged(Visibility visibility) override;
+  void OnBlockingStateChanged(NotificationBlocker* blocker) override;
 
   // AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

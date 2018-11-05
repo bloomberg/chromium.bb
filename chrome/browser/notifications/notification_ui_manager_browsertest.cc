@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,7 +24,6 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -47,26 +47,6 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
   }
 
   Profile* profile() { return browser()->profile(); }
-
-  class TestMessageCenterObserver
-      : public message_center::MessageCenterObserver {
-   public:
-    TestMessageCenterObserver() = default;
-
-    // MessageCenterObserver:
-    void OnNotificationDisplayed(
-        const std::string& notification_id,
-        const message_center::DisplaySource source) override {
-      last_displayed_id_ = notification_id;
-    }
-
-    const std::string& last_displayed_id() const { return last_displayed_id_; }
-
-   private:
-    std::string last_displayed_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestMessageCenterObserver);
-  };
 
   class TestDelegate : public message_center::NotificationDelegate {
    public:

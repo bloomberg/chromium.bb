@@ -72,6 +72,11 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     [popup_collection_ updateNotification:notification_id];
   }
 
+  void OnBlockingStateChanged(
+      message_center::NotificationBlocker* blocker) override {
+    [popup_collection_ layoutNewNotifications];
+  }
+
  private:
   message_center::MessageCenter* message_center_;  // Weak, global.
 
