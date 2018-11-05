@@ -15,6 +15,7 @@ namespace features {
 
 // Alphabetical:
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
+extern const base::Feature kWebViewUmaLogAppPackageName;
 
 }  // namespace features
 }  // namespace android_webview

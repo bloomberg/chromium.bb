@@ -77,6 +77,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
   base::TimeDelta GetStandardUploadInterval() override;
+  std::string GetAppPackageName() override;
 
  private:
   AwMetricsServiceClient();
