@@ -182,7 +182,7 @@ class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
       return true;
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSiteIsolationTrials))
+            switches::kDisableSiteIsolation))
       return true;
 
     return false;

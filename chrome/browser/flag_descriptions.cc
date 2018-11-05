@@ -1750,17 +1750,16 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
-const char kSiteIsolationTrialOptOutName[] = "Site isolation trial opt-out";
-const char kSiteIsolationTrialOptOutDescription[] =
-    "Opts out of field trials and defaults that enable site isolation modes "
+const char kSiteIsolationOptOutName[] = "Disable site isolation";
+const char kSiteIsolationOptOutDescription[] =
+    "Disables site isolation "
     "(SitePerProcess, IsolateOrigins, etc). Intended for diagnosing bugs that "
     "may be due to out-of-process iframes. Opt-out has no effect if site "
     "isolation is force-enabled via #enable-site-per-process or enterprise "
     "policy. Caution: this disables important mitigations for the Spectre CPU "
     "vulnerability affecting most computers.";
-const char kSiteIsolationTrialOptOutChoiceDefault[] = "Default";
-const char kSiteIsolationTrialOptOutChoiceOptOut[] =
-    "Opt-out (not recommended)";
+const char kSiteIsolationOptOutChoiceDefault[] = "Default";
+const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
 
 const char kSiteSettings[] = "Site settings";
 const char kSiteSettingsDescription[] =

@@ -35,7 +35,7 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+          switches::kDisableSiteIsolation)) {
     return false;
   }
 
@@ -80,7 +80,7 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+          switches::kDisableSiteIsolation)) {
     return false;
   }
 
@@ -122,7 +122,7 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
   // --isolate-origins (both command-line flag and enterprise policy) trumps
   // the opt-out flag.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+          switches::kDisableSiteIsolation)) {
     return origins;
   }
 

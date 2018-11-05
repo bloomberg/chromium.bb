@@ -778,8 +778,18 @@ const char kSingleProcess[]                 = "single-process";
 // process consolidation, not isolation). You probably want this one.
 const char kSitePerProcess[]                = "site-per-process";
 
-// Disables enabling site isolation (i.e., --site-per-process) via field trial.
-const char kDisableSiteIsolationTrials[] = "disable-site-isolation-trials";
+// Disables site isolation.
+//
+// Note that the opt-in (to site-per-process, isolate-origins, etc.) via
+// enterprise policy and/or cmdline takes precedence over the
+// kDisableSiteIsolation switch (i.e. the opt-in takes effect despite potential
+// presence of kDisableSiteIsolation switch).
+//
+// Note that for historic reasons the name of the switch misleadingly mentions
+// "trials", but the switch also disables the default site isolation that ships
+// on desktop since M67.  The name of the switch is preserved for
+// backcompatibility of chrome://flags.
+const char kDisableSiteIsolation[] = "disable-site-isolation-trials";
 
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.

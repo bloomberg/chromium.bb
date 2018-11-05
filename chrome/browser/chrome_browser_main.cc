@@ -1165,16 +1165,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     }
   }
 
-  // The admin should also be able to use these policies to override trials that
-  // will try to turn site isolation on per default.
-  // Note that disabling either SitePerProcess or IsolateOrigins via policy will
-  // disable both types of field trials.
+  // The admin should also be able to use these policies to force Site Isolation
+  // off.  Note that disabling either SitePerProcess or IsolateOrigins via
+  // policy will disable both types of isolation.
   if ((local_state->IsManagedPreference(prefs::kSitePerProcess) &&
        !local_state->GetBoolean(prefs::kSitePerProcess)) ||
       (local_state->IsManagedPreference(prefs::kIsolateOrigins) &&
        local_state->GetString(prefs::kIsolateOrigins).empty())) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableSiteIsolationTrials);
+        switches::kDisableSiteIsolation);
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
