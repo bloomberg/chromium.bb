@@ -410,14 +410,20 @@ test.util.sync.fakeKeyDown = function(
  *     If targetQuery is an array, |targetQuery[0]| specifies the first
  *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
  *     the first element, and so on.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers Object
+ *     contaning common key modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the all events are sent to the target, false
  *     otherwise.
  */
-test.util.sync.fakeMouseClick = function(contentWindow, targetQuery) {
+test.util.sync.fakeMouseClick = function(contentWindow, targetQuery, opt_keyModifiers) {
+  const modifiers = opt_keyModifiers || {};
   const props = {
     bubbles: true,
     detail: 1,
     composed: true,  // Allow the event to bubble past shadow DOM root.
+    ctrlKey: modifiers.ctrl,
+    shiftKey: modifiers.shift,
+    altKey: modifiers.alt,
   };
   const mouseOverEvent = new MouseEvent('mouseover', props);
   const resultMouseOver =

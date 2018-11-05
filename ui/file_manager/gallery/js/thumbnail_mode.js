@@ -663,6 +663,9 @@ ThumbnailView.prototype.selectByThumbnail_ = function(
         this.selectionModel_.selectedIndexes.indexOf(index) === -1);
   } else if (selectionMode === ThumbnailView.SelectionMode.RANGE) {
     var leadIndex = this.selectionModel_.leadIndex;
+    if(leadIndex < 0) {
+      leadIndex = 0;
+    }
     this.selectionModel_.unselectAll();
     this.selectionModel_.selectRange(leadIndex, index);
   } else {
