@@ -83,6 +83,14 @@ EXTERN_C const IID IID_IElevator;
     IElevator : public IUnknown
     {
     public:
+        virtual HRESULT STDMETHODCALLTYPE RunRecoveryCRXElevated( 
+            /* [string][in] */ const WCHAR *crx_path,
+            /* [string][in] */ const WCHAR *browser_appid,
+            /* [string][in] */ const WCHAR *browser_version,
+            /* [string][in] */ const WCHAR *session_id,
+            /* [in] */ DWORD caller_proc_id,
+            /* [out] */ ULONG_PTR *proc_handle) = 0;
+        
     };
     
     
@@ -103,6 +111,15 @@ EXTERN_C const IID IID_IElevator;
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IElevator * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *RunRecoveryCRXElevated )( 
+            IElevator * This,
+            /* [string][in] */ const WCHAR *crx_path,
+            /* [string][in] */ const WCHAR *browser_appid,
+            /* [string][in] */ const WCHAR *browser_version,
+            /* [string][in] */ const WCHAR *session_id,
+            /* [in] */ DWORD caller_proc_id,
+            /* [out] */ ULONG_PTR *proc_handle);
         
         END_INTERFACE
     } IElevatorVtbl;
@@ -126,6 +143,9 @@ EXTERN_C const IID IID_IElevator;
 #define IElevator_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
+
+#define IElevator_RunRecoveryCRXElevated(This,crx_path,browser_appid,browser_version,session_id,caller_proc_id,proc_handle)	\
+    ( (This)->lpVtbl -> RunRecoveryCRXElevated(This,crx_path,browser_appid,browser_version,session_id,caller_proc_id,proc_handle) ) 
 
 #endif /* COBJMACROS */
 

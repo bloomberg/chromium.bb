@@ -49,8 +49,8 @@
 
 #include "elevation_service_idl.h"
 
-#define TYPE_FORMAT_STRING_SIZE   3                                 
-#define PROC_FORMAT_STRING_SIZE   1                                 
+#define TYPE_FORMAT_STRING_SIZE   11                                
+#define PROC_FORMAT_STRING_SIZE   67                                
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   0            
@@ -108,6 +108,68 @@ static const elevation_service_idl_MIDL_PROC_FORMAT_STRING elevation_service_idl
         0,
         {
 
+	/* Procedure RunRecoveryCRXElevated */
+
+			0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/*  2 */	NdrFcLong( 0x0 ),	/* 0 */
+/*  6 */	NdrFcShort( 0x3 ),	/* 3 */
+/*  8 */	NdrFcShort( 0x20 ),	/* x86 Stack size/offset = 32 */
+/* 10 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 12 */	NdrFcShort( 0x24 ),	/* 36 */
+/* 14 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+			0x7,		/* 7 */
+/* 16 */	0x8,		/* 8 */
+			0x1,		/* Ext Flags:  new corr desc, */
+/* 18 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 20 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 22 */	NdrFcShort( 0x0 ),	/* 0 */
+
+	/* Parameter crx_path */
+
+/* 24 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 26 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 28 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
+
+	/* Parameter browser_appid */
+
+/* 30 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 32 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 34 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
+
+	/* Parameter browser_version */
+
+/* 36 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 38 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 40 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
+
+	/* Parameter session_id */
+
+/* 42 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 44 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
+/* 46 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
+
+	/* Parameter caller_proc_id */
+
+/* 48 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 50 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
+/* 52 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Parameter proc_handle */
+
+/* 54 */	NdrFcShort( 0x2150 ),	/* Flags:  out, base type, simple ref, srv alloc size=8 */
+/* 56 */	NdrFcShort( 0x18 ),	/* x86 Stack size/offset = 24 */
+/* 58 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Return value */
+
+/* 60 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 62 */	NdrFcShort( 0x1c ),	/* x86 Stack size/offset = 28 */
+/* 64 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
 			0x0
         }
     };
@@ -117,6 +179,15 @@ static const elevation_service_idl_MIDL_TYPE_FORMAT_STRING elevation_service_idl
         0,
         {
 			NdrFcShort( 0x0 ),	/* 0 */
+/*  2 */	
+			0x11, 0x8,	/* FC_RP [simple_pointer] */
+/*  4 */	
+			0x25,		/* FC_C_WSTRING */
+			0x5c,		/* FC_PAD */
+/*  6 */	
+			0x11, 0xc,	/* FC_RP [alloced_on_stack] [simple_pointer] */
+/*  8 */	0x8,		/* FC_LONG */
+			0x5c,		/* FC_PAD */
 
 			0x0
         }
@@ -157,20 +228,21 @@ static const MIDL_SERVER_INFO IElevator_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(3) _IElevatorProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(4) _IElevatorProxyVtbl = 
 {
-    0,
+    &IElevator_ProxyInfo,
     &IID_IElevator,
     IUnknown_QueryInterface_Proxy,
     IUnknown_AddRef_Proxy,
-    IUnknown_Release_Proxy
+    IUnknown_Release_Proxy ,
+    (void *) (INT_PTR) -1 /* IElevator::RunRecoveryCRXElevated */
 };
 
 const CInterfaceStubVtbl _IElevatorStubVtbl =
 {
     &IID_IElevator,
     &IElevator_ServerInfo,
-    3,
+    4,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
