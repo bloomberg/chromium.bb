@@ -7,9 +7,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 
@@ -40,11 +38,6 @@ WorkerShadowPage::WorkerShadowPage(
       loader_factory_(std::move(loader_factory)),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
-
-  // TODO(lunalu): Service worker and shared worker count feature usage on the
-  // blink side use counter. Once the blink side use counter is removed
-  // (crbug.com/811948), remove this instant from Settings.
-  main_frame_->GetFrame()->GetSettings()->SetIsShadowPage(true);
 
   main_frame_->SetDevToolsAgentImpl(
       WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
