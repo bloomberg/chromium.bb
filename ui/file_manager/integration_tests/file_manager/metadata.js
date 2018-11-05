@@ -13,10 +13,19 @@
  * @return {boolean}
  */
 function equal1PercentMargin(value, desiredValue) {
-  const minValue = desiredValue * 0.99;
-  const maxValue = desiredValue * 1.01;
-  return value === desiredValue ||
-      (minValue <= desiredValue && desiredValue <= maxValue);
+  // floor and ceil to account to at least +/-1 unit.
+  const minValue = Math.floor(desiredValue * 0.99);
+  const maxValue = Math.ceil(desiredValue * 1.01);
+
+  const result =
+      value === desiredValue || (minValue <= value && value <= maxValue);
+  if (!result) {
+    console.log(
+        'min value: ' + minValue + ' got value: ' + value +
+        ' max value: ' + maxValue);
+  }
+
+  return result;
 }
 
 /**
@@ -188,7 +197,8 @@ testcase.metadataDownloads = function() {
       // +  8 files in Downloads again.
       // = 21
       chrome.test.assertEq(21, metadataStats.fullFetch);
-      // 8 files and 3 folders in Downloads when expading in the directory tree.
+      // 8 files and 3 folders in Downloads when expanding in the directory
+      // tree.
       chrome.test.assertEq(0, metadataStats.fromCache);
       // Cleared 8 files + 3 folders when navigated out of Downloads and
       // clearing file list.
@@ -256,8 +266,8 @@ testcase.metadataLargeDrive = function() {
         result &= equal1PercentMargin(metadataStats.fullFetch, 103);
 
         // 50 team drives cached, reading from file list when navigating to
-        // /team_drives, then read cached when expading directory tree.
-        result &= equal1PercentMargin(metadataStats.fromCache, 62);
+        // /team_drives, then read cached when expanding directory tree.
+        result &= metadataStats.fromCache < 70;
 
         // Cleared 51 folders when navigated out of My Drive and clearing file
         // list.
@@ -363,7 +373,7 @@ testcase.metadataTeamDrives = function() {
       // = 152
       chrome.test.assertEq(152, metadataStats.fullFetch);
       // 50 team drives cached, reading from file list when navigating to
-      // /team_drives, then read cached when expading directory tree.
+      // /team_drives, then read cached when expanding directory tree.
       chrome.test.assertEq(50, metadataStats.fromCache);
       // Cleared 50 folders + 50 files when navigated out of My Drive and
       // clearing file list.
