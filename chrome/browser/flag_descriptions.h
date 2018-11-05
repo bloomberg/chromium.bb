@@ -1048,8 +1048,10 @@ extern const char kSingleClickAutofillDescription[];
 extern const char kSingleTabMode[];
 extern const char kSingleTabModeDescription[];
 
+#if defined(OS_ANDROID)
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
+#endif
 
 extern const char kSiteIsolationOptOutName[];
 extern const char kSiteIsolationOptOutDescription[];
