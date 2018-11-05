@@ -1361,7 +1361,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // are not associated with touch events, because non-synthetic events can be
     // created by ContentView. These will use the target found by the
     // RenderWidgetTargeter. These gesture events should always have a
-    // unique_touch_event_id of 0.
+    // unique_touch_event_id of 0. They must have a non-null target in order
+    // to get the coordinate transform.
+    DCHECK(target);
     touchscreen_gesture_target_.target = target;
     touchscreen_gesture_target_in_map_ = IsViewInMap(target);
     if (!root_view->GetTransformToViewCoordSpace(

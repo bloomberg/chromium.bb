@@ -71,6 +71,7 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client,
           ui::GestureProviderConfigType::CURRENT_PLATFORM),
       double_tap_enabled_(true),
       use_2x_cursors_(false),
+      pinch_gesture_mode_for_testing_(false),
       emulated_stream_active_sequence_count_(0),
       native_stream_active_sequence_count_(0),
       last_emulated_start_target_(nullptr),
@@ -516,6 +517,7 @@ void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
   WebGestureEvent scroll_event(
       WebInputEvent::kGestureScrollEnd, ModifiersWithoutMouseButtons(event),
       event.TimeStamp(), blink::kWebGestureDeviceTouchscreen);
+  scroll_event.unique_touch_event_id = event.unique_touch_event_id;
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
 
@@ -571,7 +573,11 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event,
 }
 
 bool TouchEmulator::InPinchGestureMode() const {
-  return shift_pressed_;
+  return shift_pressed_ || pinch_gesture_mode_for_testing_;
+}
+
+void TouchEmulator::SetPinchGestureModeForTesting(bool pinch_gesture_mode) {
+  pinch_gesture_mode_for_testing_ = pinch_gesture_mode;
 }
 
 }  // namespace content
