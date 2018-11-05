@@ -278,6 +278,7 @@ class AppStateTest : public BlockCleanupTest {
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
       [app_state_ setWindow:window];
+      [window makeKeyAndVisible];
     }
     return app_state_;
   }
