@@ -420,6 +420,9 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   size_t bucket_count = ranges->bucket_count();
 
   // Temporary for https://crbug.com/836238
+  double log_max_copy = log_max;
+  debug::Alias(&log_max_copy);
+  CHECK_EQ(maximum, static_cast<Sample>(std::round(exp(log_max_copy))));
   uint32_t checksum = static_cast<uint32_t>(bucket_count + 1);
   checksum = Crc32(checksum, 0);
   checksum = Crc32(checksum, current);
@@ -448,6 +451,9 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   ranges->ResetChecksum();
   checksum = Crc32(checksum, HistogramBase::kSampleType_MAX);
   CHECK_EQ(checksum, ranges->checksum());
+  log_max_copy = log_max;
+  debug::Alias(&log_max_copy);
+  CHECK_EQ(maximum, static_cast<Sample>(std::round(exp(log_max_copy))));
 }
 
 // static
