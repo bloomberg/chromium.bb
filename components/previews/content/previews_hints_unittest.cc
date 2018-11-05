@@ -278,6 +278,62 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
+TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint for "/has_inflation_percent/"
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/has_inflation_percent/");
+  optimization_guide::proto::Optimization* optimization_with_inflation_percent =
+      page_hint1->add_whitelisted_optimizations();
+  optimization_with_inflation_percent->set_inflation_percent(55);
+  optimization_with_inflation_percent->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint1 =
+      optimization_with_inflation_percent->add_resource_loading_hints();
+  resource_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint1->set_resource_pattern("default_resource.js");
+  ParseConfig(config);
+
+  // Verify optimization providing inflation_percent.
+  int inflation_percent = 0;
+  EXPECT_TRUE(previews_hints()->IsWhitelisted(
+      GURL("https://www.somedomain.org/has_inflation_percent/"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+  EXPECT_EQ(55, inflation_percent);
+}
+
+TEST_F(PreviewsHintsTest,
+       IsWhitelistedForNoScriptInPageHintsWithResourceLoadingHintsDisabled) {
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint with NOSCRIPT optimization
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/has_noscript/");
+  optimization_guide::proto::Optimization* optimization_with_inflation_percent =
+      page_hint1->add_whitelisted_optimizations();
+  optimization_with_inflation_percent->set_optimization_type(
+      optimization_guide::proto::NOSCRIPT);
+
+  ParseConfig(config);
+
+  int inflation_percent = 0;
+  EXPECT_TRUE(previews_hints()->IsWhitelisted(
+      GURL("https://www.somedomain.org/has_noscript/"), PreviewsType::NOSCRIPT,
+      &inflation_percent));
+}
+
 TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -313,28 +369,50 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   default_resourcehint->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   default_resourcehint->set_resource_pattern("experimental_resource.js");
-  ParseConfig(config);
 
-  // Verify default resource hint whitelisted (via inflation_percent).
-  int inflation_percent;
-  EXPECT_TRUE(previews_hints()->IsWhitelisted(
-      GURL("https://www.somedomain.org/experimental_preview/"
-           "experimental_resource.js"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
-  EXPECT_EQ(33, inflation_percent);
+  // Test with the experiment disabled.
+  {
+    base::HistogramTester histogram_tester;
+
+    ParseConfig(config);
+
+    // Verify default resource hint whitelisted (via inflation_percent).
+    int inflation_percent = 0;
+    EXPECT_TRUE(previews_hints()->IsWhitelisted(
+        GURL("https://www.somedomain.org/experimental_preview/"
+             "experimental_resource.js"),
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+    EXPECT_EQ(33, inflation_percent);
+
+    // Verify that the experimental optimization was not added when it was
+    // disabled.
+    histogram_tester.ExpectUniqueSample(
+        "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
+  }
 
   // Now enable the experiment and verify experimental resource hint chosen.
   {
+    base::HistogramTester histogram_tester;
+
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
         features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
-    int inflation_percent;
+
+    // Parse the config again with the experiment enabled.
+    ParseConfig(config);
+
+    int inflation_percent = 0;
     EXPECT_TRUE(previews_hints()->IsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
     EXPECT_EQ(99, inflation_percent);
+
+    // Verify that the second optimization was not added when the experimental
+    // optimization was enabled.
+    histogram_tester.ExpectUniqueSample(
+        "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   }
 }
 
