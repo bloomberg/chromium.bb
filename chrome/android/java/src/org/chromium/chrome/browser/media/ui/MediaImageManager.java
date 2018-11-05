@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import static org.chromium.content_public.common.MediaMetadata.MediaImage;
+import static org.chromium.services.media_session.MediaMetadata.MediaImage;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
