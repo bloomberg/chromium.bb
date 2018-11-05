@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 
 class WebAppIconDownloader;
 struct InstallableData;
@@ -33,6 +32,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace web_app {
+enum class ForInstallableSite;
+}  // namespace web_app
+
 namespace extensions {
 class CrxInstaller;
 class Extension;
@@ -41,12 +44,6 @@ class ExtensionService;
 // A helper class for creating bookmark apps from a WebContents.
 class BookmarkAppHelper : public content::NotificationObserver {
  public:
-  enum class ForInstallableSite {
-    kYes,
-    kNo,
-    kUnknown,
-  };
-
   typedef base::Callback<void(const Extension*, const WebApplicationInfo&)>
       CreateBookmarkAppCallback;
 
@@ -62,11 +59,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
                     content::WebContents* contents,
                     WebappInstallSource install_source);
   ~BookmarkAppHelper() override;
-
-  // Update the given WebApplicationInfo with information from the manifest.
-  static void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
-                                           WebApplicationInfo* web_app_info,
-                                           ForInstallableSite installable_site);
 
   // It is important that the linked app information in any extension that
   // gets created from sync matches the linked app information that came from
@@ -181,7 +173,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   InstallableManager* installable_manager_;
 
-  ForInstallableSite for_installable_site_ = ForInstallableSite::kUnknown;
+  web_app::ForInstallableSite for_installable_site_;
 
   base::Optional<LaunchType> forced_launch_type_;
 

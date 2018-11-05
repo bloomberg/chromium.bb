@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
@@ -59,6 +60,7 @@
 #include "extensions/common/url_pattern.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_MACOSX)
@@ -247,48 +249,6 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 }  // namespace
 
 // static
-void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-    const blink::Manifest& manifest,
-    WebApplicationInfo* web_app_info,
-    ForInstallableSite for_installable_site) {
-  if (!manifest.short_name.is_null())
-    web_app_info->title = manifest.short_name.string();
-
-  // Give the full length name priority.
-  if (!manifest.name.is_null())
-    web_app_info->title = manifest.name.string();
-
-  // Set the url based on the manifest value, if any.
-  if (manifest.start_url.is_valid())
-    web_app_info->app_url = manifest.start_url;
-
-  if (for_installable_site == ForInstallableSite::kYes) {
-    // If there is no scope present, use 'start_url' without the filename as the
-    // scope. This does not match the spec but it matches what we do on Android.
-    // See: https://github.com/w3c/manifest/issues/550
-    if (!manifest.scope.is_empty())
-      web_app_info->scope = manifest.scope;
-    else if (manifest.start_url.is_valid())
-      web_app_info->scope = manifest.start_url.Resolve(".");
-  }
-
-  if (manifest.theme_color)
-    web_app_info->theme_color = *manifest.theme_color;
-
-  // If any icons are specified in the manifest, they take precedence over any
-  // we picked up from the web_app stuff.
-  if (!manifest.icons.empty()) {
-    web_app_info->icons.clear();
-    for (const auto& icon : manifest.icons) {
-      // TODO(benwells): Take the declared icon density and sizes into account.
-      WebApplicationInfo::IconInfo info;
-      info.url = icon.src;
-      web_app_info->icons.push_back(info);
-    }
-  }
-}
-
-// static
 void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
     std::map<int, web_app::BitmapAndSource> bitmap_map,
     WebApplicationInfo* web_app_info) {
@@ -314,7 +274,6 @@ void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
   }
 }
 
-
 BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
                                      WebApplicationInfo web_app_info,
                                      content::WebContents* contents,
@@ -324,6 +283,7 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
       web_app_info_(web_app_info),
       crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())),
+      for_installable_site_(web_app::ForInstallableSite::kUnknown),
       install_source_(install_source),
       weak_factory_(this) {
   if (contents)
@@ -376,7 +336,7 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
                              weak_factory_.GetWeakPtr()));
     }
   } else {
-    for_installable_site_ = ForInstallableSite::kNo;
+    for_installable_site_ = web_app::ForInstallableSite::kNo;
     OnIconsDownloaded(true, std::map<GURL, std::vector<SkBitmap>>());
   }
 }
@@ -397,11 +357,11 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
 
   for_installable_site_ =
       data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
-          ? ForInstallableSite::kYes
-          : ForInstallableSite::kNo;
+          ? web_app::ForInstallableSite::kYes
+          : web_app::ForInstallableSite::kNo;
 
-  UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
-                               for_installable_site_);
+  web_app::UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
+                                        for_installable_site_);
 
   // TODO(mgiuca): Web Share Target should have its own flag, rather than using
   // the experimental-web-platform-features flag. https://crbug.com/736178.
@@ -506,7 +466,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   }
 
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      for_installable_site_ == ForInstallableSite::kYes) {
+      for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
     chrome::ShowPWAInstallDialog(
         contents_, web_app_info_,
@@ -548,7 +508,7 @@ void BookmarkAppHelper::OnBubbleCompleted(
     crx_installer_->InstallWebApp(web_app_info_);
 
     if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
-        for_installable_site_ == ForInstallableSite::kYes) {
+        for_installable_site_ == web_app::ForInstallableSite::kYes) {
       InstallableMetrics::TrackInstallEvent(install_source_);
     }
   } else {
@@ -563,8 +523,8 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
-    DCHECK_NE(ForInstallableSite::kUnknown, for_installable_site_);
-    launch_type = for_installable_site_ == ForInstallableSite::kYes
+    DCHECK_NE(web_app::ForInstallableSite::kUnknown, for_installable_site_);
+    launch_type = for_installable_site_ == web_app::ForInstallableSite::kYes
                       ? LAUNCH_TYPE_WINDOW
                       : LAUNCH_TYPE_REGULAR;
   }
