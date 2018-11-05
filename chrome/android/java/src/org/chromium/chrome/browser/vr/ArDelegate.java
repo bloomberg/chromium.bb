@@ -18,9 +18,16 @@ public class ArDelegate {
             Class.forName("org.chromium.chrome.browser.vr.ArCoreJavaUtils")
                     .getDeclaredMethod("installArCoreDeviceProviderFactory")
                     .invoke(null);
-        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
-                | NoSuchMethodException | InvocationTargetException e) {
+        } catch (ClassNotFoundException e) {
             // AR not available. No initialization required.
+        } catch (NoSuchMethodException e) {
+            // This and the exceptions below should not happen. Multiple catch statements to work
+            // around ReflectiveOperationException in API level 19.
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 
