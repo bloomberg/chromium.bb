@@ -770,6 +770,9 @@
       name: "MediaStreamTrackContentHint",
       status: "stable",
     },
+    {
+      name: "MergeBlockingNonBlockingPools",
+    },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
     {
