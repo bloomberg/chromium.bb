@@ -244,8 +244,8 @@ SyncEngine::~SyncEngine() {
   Reset();
 
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  if (signin_manager_)
-    signin_manager_->RemoveObserver(this);
+  if (identity_manager_)
+    identity_manager_->RemoveObserver(this);
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
 }
@@ -706,19 +706,19 @@ void SyncEngine::OnConnectionChanged(network::mojom::ConnectionType type) {
   }
 }
 
-void SyncEngine::GoogleSigninFailed(const GoogleServiceAuthError& error) {
+void SyncEngine::OnPrimaryAccountSigninFailed(
+    const GoogleServiceAuthError& error) {
   Reset();
   UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
                      "Failed to sign in.");
 }
 
-void SyncEngine::GoogleSigninSucceeded(const std::string& account_id,
-                                       const std::string& username) {
+void SyncEngine::OnPrimaryAccountSet(const AccountInfo& primary_account_info) {
   Initialize();
 }
 
-void SyncEngine::GoogleSignedOut(const std::string& account_id,
-                                 const std::string& username) {
+void SyncEngine::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   Reset();
   UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
                      "User signed out.");
@@ -758,8 +758,8 @@ SyncEngine::SyncEngine(
   DCHECK(sync_file_system_dir_.IsAbsolute());
   if (notification_manager_)
     notification_manager_->AddObserver(this);
-  if (signin_manager_)
-    signin_manager_->AddObserver(this);
+  if (identity_manager_)
+    identity_manager_->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 }
 
