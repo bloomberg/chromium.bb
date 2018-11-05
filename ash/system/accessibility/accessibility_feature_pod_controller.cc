@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -24,6 +25,7 @@ AccessibilityFeaturePodController::~AccessibilityFeaturePodController() =
 
 FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
   auto* button = new FeaturePodButton(this);
+  button->set_id(ash::VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
   button->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY));
   button->SetVectorIcon(kUnifiedMenuAccessibilityIcon);
@@ -35,6 +37,7 @@ FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   LoginStatus login_status = Shell::Get()->session_controller()->login_status();
   button->SetVisible(login_status == LoginStatus::NOT_LOGGED_IN ||
+                     login_status == LoginStatus::LOCKED ||
                      delegate->ShouldShowAccessibilityMenu());
   return button;
 }

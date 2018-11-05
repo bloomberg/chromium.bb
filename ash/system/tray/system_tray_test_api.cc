@@ -79,13 +79,12 @@ void SystemTrayTestApi::CloseBubble(CloseBubbleCallback cb) {
 
 void SystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
                                          ShowDetailedViewCallback cb) {
-  SystemTrayItem* tray_item;
+  SystemTrayItem* tray_item = nullptr;
   switch (item) {
-    case mojom::TrayItem::kEnterprise:
-      tray_item = tray_->tray_enterprise_;
-      break;
     case mojom::TrayItem::kNetwork:
       tray_item = tray_->tray_network_;
+      break;
+    default:
       break;
   }
   tray_->ShowDetailedView(tray_item, 0 /* delay */, BUBBLE_CREATE_NEW);
@@ -93,6 +92,7 @@ void SystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
 }
 
 void SystemTrayTestApi::IsBubbleViewVisible(int view_id,
+                                            bool open_tray,
                                             IsBubbleViewVisibleCallback cb) {
   views::View* view = GetBubbleView(view_id);
   std::move(cb).Run(view && view->visible());

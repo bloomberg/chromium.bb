@@ -56,7 +56,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   bool IsViewDrawn(int view_id) {
     ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
     bool visible = false;
-    wait_for.IsBubbleViewVisible(view_id, &visible);
+    wait_for.IsBubbleViewVisible(view_id, false /* open_tray */, &visible);
     return visible;
   }
 
