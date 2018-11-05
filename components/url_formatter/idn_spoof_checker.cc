@@ -487,6 +487,10 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   // Block {Single,double}-quotation-mark look-alikes.
   allowed_set.remove(0x2bbu);  // Modifier Letter Turned Comma
   allowed_set.remove(0x2bcu);  // Modifier Letter Apostrophe
+
+  // Block modifier letter voicing.
+  allowed_set.remove(0x2ecu);
+
   // No need to block U+144A (Canadian Syllabics West-Cree P) separately
   // because it's blocked from mixing with other scripts including Latin.
 
