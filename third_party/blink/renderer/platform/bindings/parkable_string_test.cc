@@ -350,6 +350,8 @@ TEST_F(ParkableStringTest, AsanPoisoningTest) {
 #endif  // defined(ADDRESS_SANITIZER)
 
 TEST_F(ParkableStringTest, Compression) {
+  base::HistogramTester histogram_tester;
+
   ParkableString parkable(MakeLargeString().Impl());
   ParkableStringImpl* impl = parkable.Impl();
   EXPECT_TRUE(impl->Park());
@@ -362,6 +364,19 @@ TEST_F(ParkableStringTest, Compression) {
   parkable.ToString();
   EXPECT_FALSE(impl->is_parked());
   EXPECT_EQ(nullptr, impl->compressed_);
+
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.Compression.SizeKb", kSizeKb, 1);
+  histogram_tester.ExpectTotalCount("Memory.ParkableString.Compression.Latency",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "Memory.ParkableString.Compression.ThroughputMBps", 1);
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.Decompression.SizeKb", kSizeKb, 1);
+  histogram_tester.ExpectTotalCount(
+      "Memory.ParkableString.Decompression.Latency", 1);
+  histogram_tester.ExpectTotalCount(
+      "Memory.ParkableString.Decompression.ThroughputMBps", 1);
 }
 
 }  // namespace blink
