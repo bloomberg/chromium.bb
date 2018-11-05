@@ -188,7 +188,10 @@ class MockHostResolverProc : public HostResolverProc {
       DCHECK_EQ(OK, rv);
       return OK;
     }
-    ResolveKey key(hostname, address_family, host_resolver_flags);
+    // Ignore HOST_RESOLVER_SYSTEM_ONLY, since it should have no impact on
+    // whether a rule matches. It should only affect cache lookups.
+    ResolveKey key(hostname, address_family,
+                   host_resolver_flags & ~HOST_RESOLVER_SYSTEM_ONLY);
     if (rules_.count(key) == 0)
       return ERR_NAME_NOT_RESOLVED;
     *addrlist = rules_[key];
@@ -707,9 +710,9 @@ class HostResolverImplTest : public TestWithScopedTaskEnvironment {
     return resolver_->num_running_dispatcher_jobs_for_tests();
   }
 
-  void set_fallback_to_proctask(bool fallback_to_proctask) {
+  void set_allow_fallback_to_proctask(bool allow_fallback_to_proctask) {
     DCHECK(resolver_.get());
-    resolver_->fallback_to_proctask_ = fallback_to_proctask;
+    resolver_->allow_fallback_to_proctask_ = allow_fallback_to_proctask;
   }
 
   static unsigned maximum_dns_failures() {
@@ -3616,7 +3619,7 @@ TEST_F(HostResolverImplDnsTest, DnsTask_ResolveHost) {
 // Test successful and failing resolutions in HostResolverImpl::DnsTask when
 // fallback to ProcTask is disabled.
 TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
 
   proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
   // All other hostnames will fail in proc_.
@@ -3668,7 +3671,7 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
 // Test successful and failing resolutions in HostResolverImpl::DnsTask when
 // fallback to ProcTask is disabled.
 TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask_ResolveHost) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
 
   proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
   // All other hostnames will fail in proc_.
@@ -3735,7 +3738,7 @@ TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob) {
   EXPECT_THAT(requests_[0]->result(), IsError(ERR_IO_PENDING));
 
   // Repeat test with Fallback to ProcTask disabled
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
   EXPECT_THAT(CreateRequest("nx_abort", 80)->Resolve(),
               IsError(ERR_IO_PENDING));
@@ -3761,7 +3764,7 @@ TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob_ResolveHost) {
   EXPECT_FALSE(response.complete());
 
   // Repeat test with Fallback to ProcTask disabled
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
   ResolveHostResponseHelper no_fallback_response(resolver_->CreateRequest(
       HostPortPair("nx_abort", 80), NetLogWithSource(), base::nullopt));
@@ -3772,6 +3775,108 @@ TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob_ResolveHost) {
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   // It shouldn't crash during OnDnsTaskFailure callbacks.
   EXPECT_FALSE(no_fallback_response.complete());
+}
+
+// Fallback to proc allowed with ANY source.
+TEST_F(HostResolverImplDnsTest, FallbackBySource_Any) {
+  // Ensure fallback is otherwise allowed by resolver settings.
+  set_allow_fallback_to_proctask(true);
+
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
+  // All other hostnames will fail in proc_.
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response0(resolver_->CreateRequest(
+      HostPortPair("nx_fail", 80), NetLogWithSource(), base::nullopt));
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), base::nullopt));
+  proc_->SignalMultiple(2u);
+
+  EXPECT_THAT(response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(response1.result_error(), IsOk());
+  EXPECT_THAT(response1.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.102", 80)));
+}
+
+// Fallback to proc not allowed with DNS source.
+TEST_F(HostResolverImplDnsTest, FallbackBySource_Dns) {
+  // Ensure fallback is otherwise allowed by resolver settings.
+  set_allow_fallback_to_proctask(true);
+
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
+  // All other hostnames will fail in proc_.
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response0(resolver_->CreateRequest(
+      HostPortPair("nx_fail", 80), NetLogWithSource(), parameters));
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), parameters));
+  // Nothing should reach |proc_| on success, but let failures through to fail
+  // instead of hanging.
+  proc_->SignalMultiple(2u);
+
+  EXPECT_THAT(response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(response1.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+}
+
+// Fallback to proc on DnsClient change allowed with ANY source.
+TEST_F(HostResolverImplDnsTest, FallbackOnAbortBySource_Any) {
+  // Ensure fallback is otherwise allowed by resolver settings.
+  set_allow_fallback_to_proctask(true);
+
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
+  // All other hostnames will fail in proc_.
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response0(resolver_->CreateRequest(
+      HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt));
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), base::nullopt));
+  proc_->SignalMultiple(2u);
+
+  // Simulate the case when the preference or policy has disabled the DNS client
+  // causing AbortDnsTasks.
+  resolver_->SetDnsClient(nullptr);
+
+  // All requests should fallback to proc resolver.
+  EXPECT_THAT(response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(response1.result_error(), IsOk());
+  EXPECT_THAT(response1.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.102", 80)));
+}
+
+// Fallback to proc on DnsClient change not allowed with DNS source.
+TEST_F(HostResolverImplDnsTest, FallbackOnAbortBySource_Dns) {
+  // Ensure fallback is otherwise allowed by resolver settings.
+  set_allow_fallback_to_proctask(true);
+
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
+  // All other hostnames will fail in proc_.
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response0(resolver_->CreateRequest(
+      HostPortPair("ok_fail", 80), NetLogWithSource(), parameters));
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), parameters));
+  // Nothing should reach |proc_| on success, but let failures through to fail
+  // instead of hanging.
+  proc_->SignalMultiple(2u);
+
+  // Simulate the case when the preference or policy has disabled the DNS client
+  // causing AbortDnsTasks.
+  resolver_->SetDnsClient(nullptr);
+
+  // No fallback expected.  All requests should fail.
+  EXPECT_THAT(response0.result_error(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(response1.result_error(), IsError(ERR_NETWORK_CHANGED));
 }
 
 TEST_F(HostResolverImplDnsTest, DnsTaskUnspec) {
@@ -4284,11 +4389,16 @@ TEST_F(HostResolverImplDnsTest,
 
   ASSERT_FALSE(proc_->HasBlockedRequests());
 
-  // DnsTask should be disabled by now.
+  // DnsTask should be disabled by now unless explictly requested via |source|.
   ResolveHostResponseHelper fail_response(resolver_->CreateRequest(
       HostPortPair("ok_2", 80), NetLogWithSource(), base::nullopt));
-  proc_->SignalMultiple(1u);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper dns_response(resolver_->CreateRequest(
+      HostPortPair("ok_2", 80), NetLogWithSource(), parameters));
+  proc_->SignalMultiple(2u);
   EXPECT_THAT(fail_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(dns_response.result_error(), IsOk());
 
   // Check that it is re-enabled after DNS change.
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -4641,7 +4751,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv6TransactionActive_ResolveHost) {
 
 // Cancel a request with only the IPv4 transaction pending.
 TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   EXPECT_THAT(CreateRequest("4slow_ok", 80)->Resolve(),
@@ -4657,7 +4767,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending) {
 
 // Cancel a request with only the IPv4 transaction pending.
 TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending_ResolveHost) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -4675,7 +4785,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending_ResolveHost) {
 
 // Test cases where AAAA completes first.
 TEST_F(HostResolverImplDnsTest, AAAACompletesFirst) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   EXPECT_THAT(CreateRequest("4slow_ok", 80)->Resolve(),
@@ -4715,7 +4825,7 @@ TEST_F(HostResolverImplDnsTest, AAAACompletesFirst) {
 
 // Test cases where AAAA completes first.
 TEST_F(HostResolverImplDnsTest, AAAACompletesFirst_ResolveHost) {
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
@@ -4757,7 +4867,7 @@ TEST_F(HostResolverImplDnsTest, AAAACompletesFirst_ResolveHost) {
 // Test the case where only a single transaction slot is available.
 TEST_F(HostResolverImplDnsTest, SerialResolver) {
   CreateSerialResolver();
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
@@ -4774,7 +4884,7 @@ TEST_F(HostResolverImplDnsTest, SerialResolver) {
 // Test the case where only a single transaction slot is available.
 TEST_F(HostResolverImplDnsTest, SerialResolver_ResolveHost) {
   CreateSerialResolver();
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -4795,7 +4905,7 @@ TEST_F(HostResolverImplDnsTest, SerialResolver_ResolveHost) {
 TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes) {
   CreateResolverWithLimitsAndParams(2u, DefaultParams(proc_.get()),
                                     true /* ipv6_reachable */);
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80, MEDIUM,
@@ -4826,7 +4936,7 @@ TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes) {
 TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes_ResolveHost) {
   CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()),
                                     true /* ipv6_reachable */);
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
@@ -5092,8 +5202,8 @@ TEST_F(HostResolverImplDnsTest,
   // result in different behavior when aborting in-progress DnsTasks.  Having
   // a DnsTask that has one job active and one in the queue when another job
   // occupying two slots has its DnsTask aborted is the case most likely to run
-  // into problems.
-  for (size_t limit = 1u; limit < 6u; ++limit) {
+  // into problems.  Try limits between [1, 2 * # of non failure requests].
+  for (size_t limit = 1u; limit < 10u; ++limit) {
     CreateResolverWithLimitsAndParams(limit, DefaultParams(proc_.get()),
                                       true /* ipv6_reachable */);
 
@@ -5126,7 +5236,23 @@ TEST_F(HostResolverImplDnsTest,
         HostPortPair("slow_ok3", 80), NetLogWithSource(), base::nullopt));
     EXPECT_FALSE(response2.complete());
 
-    proc_->SignalMultiple(maximum_dns_failures() + 3);
+    // Requests specifying DNS source cannot fallback to ProcTask, so they
+    // should be unaffected.
+    HostResolver::ResolveHostParameters parameters;
+    parameters.source = HostResolverSource::DNS;
+    ResolveHostResponseHelper response_dns(resolver_->CreateRequest(
+        HostPortPair("4slow_ok", 80), NetLogWithSource(), parameters));
+    EXPECT_FALSE(response_dns.complete());
+
+    // Requests specifying SYSTEM source should be unaffected by disabling
+    // DnsClient.
+    proc_->AddRuleForAllFamilies("nx_ok", "192.168.0.5");
+    parameters.source = HostResolverSource::SYSTEM;
+    ResolveHostResponseHelper response_system(resolver_->CreateRequest(
+        HostPortPair("nx_ok", 80), NetLogWithSource(), parameters));
+    EXPECT_FALSE(response_system.complete());
+
+    proc_->SignalMultiple(maximum_dns_failures() + 5);
 
     for (size_t i = 0u; i < maximum_dns_failures(); ++i) {
       EXPECT_THAT(failure_responses[i]->result_error(), IsOk());
@@ -5147,6 +5273,14 @@ TEST_F(HostResolverImplDnsTest,
     EXPECT_THAT(response2.result_error(), IsOk());
     EXPECT_THAT(response2.request()->GetAddressResults().value().endpoints(),
                 testing::ElementsAre(CreateExpected("192.168.0.4", 80)));
+
+    dns_client_->CompleteDelayedTransactions();
+    EXPECT_THAT(response_dns.result_error(), IsOk());
+
+    EXPECT_THAT(response_system.result_error(), IsOk());
+    EXPECT_THAT(
+        response_system.request()->GetAddressResults().value().endpoints(),
+        testing::ElementsAre(CreateExpected("192.168.0.5", 80)));
   }
 }
 
@@ -5413,7 +5547,7 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
 
 TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
   CreateResolver();
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
   // NODATA
   Request* request = CreateRequest("empty");
@@ -5444,7 +5578,7 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
 
 TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
   CreateResolver();
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
   // NODATA
@@ -5483,7 +5617,7 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName) {
              false);
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   Request* request = CreateRequest("alias", 80);
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   ASSERT_THAT(request->WaitForResult(), IsOk());
@@ -5500,7 +5634,7 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
              false);
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), base::nullopt));
   ASSERT_THAT(response.result_error(), IsOk());
@@ -5518,7 +5652,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
              false);
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -5538,7 +5672,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
              true);
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -5557,7 +5691,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
              false);
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
-  set_fallback_to_proctask(false);
+  set_allow_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
   params.dns_query_type = HostResolver::DnsQueryType::A;
   params.include_canonical_name = true;

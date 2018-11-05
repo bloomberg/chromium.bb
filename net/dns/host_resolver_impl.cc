@@ -1125,11 +1125,13 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsTask(DnsClient* client,
           const Key& key,
+          bool allow_fallback_resolution,
           Delegate* delegate,
           const NetLogWithSource& job_net_log,
           const base::TickClock* tick_clock)
       : client_(client),
         key_(key),
+        allow_fallback_resolution_(allow_fallback_resolution),
         delegate_(delegate),
         net_log_(job_net_log),
         num_completed_transactions_(0),
@@ -1138,6 +1140,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK(client);
     DCHECK(delegate_);
   }
+
+  bool allow_fallback_resolution() const { return allow_fallback_resolution_; }
 
   bool needs_two_transactions() const {
     return key_.address_family == ADDRESS_FAMILY_UNSPECIFIED;
@@ -1330,6 +1334,10 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   DnsClient* client_;
   Key key_;
 
+  // Whether resolution may fallback to other task types (e.g. ProcTask) on
+  // failure of this task.
+  bool allow_fallback_resolution_;
+
   // The listener to the results of this DnsTask.
   Delegate* delegate_;
   const NetLogWithSource net_log_;
@@ -1376,7 +1384,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         priority_change_time_(creation_time_),
         net_log_(
             NetLogWithSource::Make(source_net_log.net_log(),
-                                   NetLogSourceType::HOST_RESOLVER_IMPL_JOB)) {
+                                   NetLogSourceType::HOST_RESOLVER_IMPL_JOB)),
+        weak_ptr_factory_(this) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CREATE_JOB);
 
     net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB,
@@ -1495,12 +1504,30 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     CompleteRequestsWithError(ERR_NETWORK_CHANGED);
   }
 
-  // If DnsTask present, abort it and fall back to ProcTask.
-  void AbortDnsTask() {
+  // Gets a closure that will abort a DnsTask (see AbortDnsTask()) iff |this| is
+  // still valid. Useful if aborting a list of Jobs as some may be cancelled
+  // while aborting others.
+  base::OnceClosure GetAbortDnsTaskClosure(int error, bool fallback_only) {
+    return base::BindOnce(&Job::AbortDnsTask, weak_ptr_factory_.GetWeakPtr(),
+                          error, fallback_only);
+  }
+
+  // If DnsTask present, abort it. Depending on task settings, either fall back
+  // to ProcTask or abort the job entirely. Warning, aborting a job may cause
+  // other jobs to be aborted, thus |jobs_| may be unpredictably changed by
+  // calling this method.
+  //
+  // |error| is the net error that will be returned to requests if this method
+  // results in completely aborting the job.
+  void AbortDnsTask(int error, bool fallback_only) {
     if (dns_task_) {
-      KillDnsTask();
-      dns_task_error_ = OK;
-      StartProcTask();
+      if (dns_task_->allow_fallback_resolution()) {
+        KillDnsTask();
+        dns_task_error_ = OK;
+        StartProcTask();
+      } else if (!fallback_only) {
+        CompleteRequestsWithError(error);
+      }
     }
   }
 
@@ -1632,9 +1659,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     switch (key_.host_resolver_source) {
       case HostResolverSource::ANY:
-        if (resolver_->HaveDnsConfig() &&
-            !ResemblesMulticastDNSName(key_.hostname)) {
-          StartDnsTask();
+        if (!ResemblesMulticastDNSName(key_.hostname)) {
+          StartDnsTask(true /* allow_fallback_resolution */);
         } else {
           StartProcTask();
         }
@@ -1643,11 +1669,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         StartProcTask();
         break;
       case HostResolverSource::DNS:
-        // DNS source should not be requested unless the resolver is configured
-        // to handle it.
-        DCHECK(resolver_->HaveDnsConfig());
-
-        StartDnsTask();
+        StartDnsTask(false /* allow_fallback_resolution */);
         break;
       case HostResolverSource::MULTICAST_DNS:
         StartMdnsTask();
@@ -1681,6 +1703,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DCHECK(is_proc_running());
 
     if (dns_task_error_ != OK) {
+      // This ProcTask was a fallback resolution after a failed DnsTask.
       base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
       if (net_error == OK) {
         UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackSuccess", duration);
@@ -1692,7 +1715,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         }
         base::UmaHistogramSparse("Net.DNS.DnsTask.Errors",
                                  std::abs(dns_task_error_));
-        resolver_->OnDnsTaskResolve(dns_task_error_);
+        resolver_->OnFallbackResolve(dns_task_error_);
       } else {
         UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackFail", duration);
         UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
@@ -1715,15 +1738,35 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         ttl, true /* allow_cache */);
   }
 
-  void StartDnsTask() {
-    DCHECK(resolver_->HaveDnsConfig());
-    dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), key_, this,
-                                net_log_, tick_clock_));
+  void StartDnsTask(bool allow_fallback_resolution) {
+    if ((!resolver_->HaveDnsConfig() || resolver_->use_proctask_by_default_) &&
+        allow_fallback_resolution) {
+      // DnsClient or config is not available, but we're allowed to switch to
+      // ProcTask instead.
+      StartProcTask();
+      return;
+    }
 
-    dns_task_->StartFirstTransaction();
-    // Schedule a second transaction, if needed.
-    if (dns_task_->needs_two_transactions())
-      Schedule(true);
+    // Need to create the task even if we're going to post a failure instead of
+    // running it, as a "started" job needs a task to be properly cleaned up.
+    dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), key_,
+                                allow_fallback_resolution, this, net_log_,
+                                tick_clock_));
+
+    if (resolver_->HaveDnsConfig()) {
+      dns_task_->StartFirstTransaction();
+      // Schedule a second transaction, if needed.
+      if (dns_task_->needs_two_transactions())
+        Schedule(true);
+    } else {
+      // Cannot start a DNS task when DnsClient or config is not available.
+      // Since we cannot complete synchronously from here, post a failure.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&Job::OnDnsTaskFailure, weak_ptr_factory_.GetWeakPtr(),
+                         dns_task_->AsWeakPtr(), base::TimeDelta(),
+                         ERR_FAILED));
+    }
   }
 
   void StartSecondDnsTransaction() {
@@ -1756,7 +1799,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     // TODO(szym): Some net errors indicate lack of connectivity. Starting
     // ProcTask in that case is a waste of time.
-    if (resolver_->fallback_to_proctask_) {
+    if (resolver_->allow_fallback_to_proctask_ &&
+        dns_task->allow_fallback_resolution()) {
       KillDnsTask();
       StartProcTask();
     } else {
@@ -1793,7 +1837,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     UmaAsyncDnsResolveStatus(RESOLVE_STATUS_DNS_SUCCESS);
     RecordTTL(ttl);
 
-    resolver_->OnDnsTaskResolve(OK);
+    resolver_->OnDnsTaskResolve();
 
     base::TimeDelta bounded_ttl =
         std::max(ttl, base::TimeDelta::FromSeconds(kMinimumTTLSeconds));
@@ -2089,6 +2133,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   // A handle used in |HostResolverImpl::dispatcher_|.
   PrioritizedDispatcher::Handle handle_;
+
+  base::WeakPtrFactory<Job> weak_ptr_factory_;
 };
 
 //-----------------------------------------------------------------------------
@@ -2122,7 +2168,8 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
-      fallback_to_proctask_(true),
+      use_proctask_by_default_(false),
+      allow_fallback_to_proctask_(true),
       url_request_context_(nullptr),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this),
@@ -2164,7 +2211,7 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
   }
 
-  fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
+  allow_fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
 }
 
 HostResolverImpl::~HostResolverImpl() {
@@ -2198,7 +2245,7 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
 
-  AbortDnsTasks();
+  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
@@ -2819,7 +2866,15 @@ void HostResolverImpl::AbortAllInProgressJobs() {
     dispatcher_->SetLimits(limits);
 }
 
-void HostResolverImpl::AbortDnsTasks() {
+void HostResolverImpl::AbortDnsTasks(int error, bool fallback_only) {
+  // Aborting jobs potentially modifies |jobs_| and may even delete some jobs.
+  // Create safe closures of all current jobs.
+  std::vector<base::OnceClosure> job_abort_closures;
+  for (auto& job : jobs_) {
+    job_abort_closures.push_back(
+        job.second->GetAbortDnsTaskClosure(error, fallback_only));
+  }
+
   // Pause the dispatcher so it won't start any new dispatcher jobs while
   // aborting the old ones.  This is needed so that it won't start the second
   // DnsTransaction for a job if the DnsConfig just changed.
@@ -2827,8 +2882,9 @@ void HostResolverImpl::AbortDnsTasks() {
   dispatcher_->SetLimits(
       PrioritizedDispatcher::Limits(limits.reserved_slots.size(), 0));
 
-  for (auto it = jobs_.begin(); it != jobs_.end(); ++it)
-    it->second->AbortDnsTask();
+  for (base::OnceClosure& closure : job_abort_closures)
+    std::move(closure).Run();
+
   dispatcher_->SetLimits(limits);
 }
 
@@ -2930,6 +2986,7 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
+  use_proctask_by_default_ = false;
 
   if (config_changed) {
     // If the DNS server has changed, existing cached info could be wrong so we
@@ -2961,26 +3018,31 @@ bool HostResolverImpl::HaveDnsConfig() const {
          (proc_params_.resolver_proc || !HostResolverProc::GetDefault());
 }
 
-void HostResolverImpl::OnDnsTaskResolve(int net_error) {
+void HostResolverImpl::OnDnsTaskResolve() {
   DCHECK(dns_client_);
-  if (net_error == OK) {
-    num_dns_failures_ = 0;
-    return;
-  }
+  num_dns_failures_ = 0;
+}
+
+void HostResolverImpl::OnFallbackResolve(int dns_task_error) {
+  DCHECK(dns_client_);
+  DCHECK_NE(OK, dns_task_error);
+
   ++num_dns_failures_;
   if (num_dns_failures_ < kMaximumDnsFailures)
     return;
 
-  // Disable DnsClient until the next DNS change.  Must be done before aborting
-  // DnsTasks, since doing so may start new jobs.
-  dns_client_->SetConfig(DnsConfig());
+  // Force fallback until the next DNS change.  Must be done before aborting
+  // DnsTasks, since doing so may start new jobs.  Do not fully clear out or
+  // disable the DnsClient as some requests (e.g. those specifying DNS source)
+  // are not allowed to fallback and will continue using DnsTask.
+  use_proctask_by_default_ = true;
 
-  // Switch jobs with active DnsTasks over to using ProcTasks.
-  AbortDnsTasks();
+  // Fallback all fallback-allowed DnsTasks to ProcTasks.
+  AbortDnsTasks(ERR_FAILED, true /* fallback_only */);
 
   UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", false);
   base::UmaHistogramSparse("AsyncDNS.DnsClientDisabledReason",
-                           std::abs(net_error));
+                           std::abs(dns_task_error));
 }
 
 MDnsClient* HostResolverImpl::GetOrCreateMdnsClient() {

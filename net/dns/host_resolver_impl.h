@@ -326,9 +326,11 @@ class NET_EXPORT HostResolverImpl
   void AbortAllInProgressJobs();
 
   // Aborts all in progress DnsTasks. In-progress jobs will fall back to
-  // ProcTasks. Might start new jobs, if any jobs were taking up two dispatcher
-  // slots.
-  void AbortDnsTasks();
+  // ProcTasks if able and otherwise abort with |error|. Might start new jobs,
+  // if any jobs were taking up two dispatcher slots.
+  //
+  // If |fallback_only|, tasks will only abort if they can fallback to ProcTask.
+  void AbortDnsTasks(int error, bool fallback_only);
 
   // Attempts to serve each Job in |jobs_| from the HOSTS file if we have
   // a DnsClient with a valid DnsConfig.
@@ -351,9 +353,11 @@ class NET_EXPORT HostResolverImpl
   // True if have a DnsClient with a valid DnsConfig.
   bool HaveDnsConfig() const;
 
-  // Called when a host name is successfully resolved and DnsTask was run on it
-  // and resulted in |net_error|.
-  void OnDnsTaskResolve(int net_error);
+  // Called on successful DnsTask resolve.
+  void OnDnsTaskResolve();
+  // Called on successful resolve after falling back to ProcTask after a failed
+  // DnsTask resolve.
+  void OnFallbackResolve(int dns_task_error);
 
   MDnsClient* GetOrCreateMdnsClient();
 
@@ -419,8 +423,14 @@ class NET_EXPORT HostResolverImpl
   // Any resolver flags that should be added to a request by default.
   HostResolverFlags additional_resolver_flags_;
 
+  // |true| if requests that would otherwise be handled via DnsTask should
+  // instead use ProcTask when able.  Used in cases where there have been
+  // multiple failures in DnsTask that succeeded in ProcTask, leading to the
+  // conclusion that the resolver has a bad DNS configuration.
+  bool use_proctask_by_default_;
+
   // Allow fallback to ProcTask if DnsTask fails.
-  bool fallback_to_proctask_;
+  bool allow_fallback_to_proctask_;
 
   // Task runner used for DNS lookups using the system resolver. Normally a
   // TaskScheduler task runner, but can be overridden for tests.
