@@ -82,6 +82,8 @@ class ChromeImpl : public Chrome {
   WebViewList web_views_;
   std::vector<std::unique_ptr<DevToolsEventListener>> devtools_event_listeners_;
   std::string page_load_strategy_;
+
+  friend class ChromeDesktopImpl;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_
