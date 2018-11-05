@@ -709,8 +709,9 @@ bool CSPDirectiveList::AllowEval(
         "Policy directive: ",
         script_state, exception_status, content);
   }
-  return CheckEval(
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc));
+  return IsReportOnly() ||
+         CheckEval(OperativeDirective(
+             ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
 bool CSPDirectiveList::AllowWasmEval(
@@ -726,8 +727,9 @@ bool CSPDirectiveList::AllowWasmEval(
         "Content Security Policy directive: ",
         script_state, exception_status, content);
   }
-  return CheckWasmEval(
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc));
+  return IsReportOnly() ||
+         CheckWasmEval(OperativeDirective(
+             ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
 bool CSPDirectiveList::AllowPluginType(
