@@ -7,12 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Fuzzer entry point.
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Run your code on data.
-  return 0;
-}
-
 // Environment is optional.
 struct Environment {
   Environment() {
@@ -20,6 +14,10 @@ struct Environment {
   }
 };
 
-Environment* env = new Environment();
-
-
+// Fuzzer entry point.
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Initialize environment once.
+  static Environment env;
+  // Run your code on data.
+  return 0;
+}
