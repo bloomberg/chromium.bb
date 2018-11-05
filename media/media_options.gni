@@ -21,7 +21,6 @@ media_subcomponent_deps = [
   "//media/device_monitors",
   "//media/filters",
   "//media/formats",
-  "//media/learning",
   "//media/muxers",
   "//media/renderers",
   "//media/video",

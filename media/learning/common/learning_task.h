@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_LEARNING_LEARNING_TASK_H_
-#define MEDIA_LEARNING_LEARNING_TASK_H_
+#ifndef MEDIA_LEARNING_COMMON_LEARNING_TASK_H_
+#define MEDIA_LEARNING_COMMON_LEARNING_TASK_H_
 
 #include <initializer_list>
 #include <string>
 
-#include "media/base/media_export.h"
-#include "media/learning/instance.h"
+#include "base/component_export.h"
+#include "media/learning/common/instance.h"
 
 namespace media {
 namespace learning {
@@ -18,7 +18,9 @@ namespace learning {
 // inputs (features) and output (target value), plus a choice of the model and
 // parameters for learning.
 // TODO(liberato): Consider separating the task from the choice of model.
-struct MEDIA_EXPORT LearningTask {
+// TODO(liberato): should this be in impl?  Probably not if we want to allow
+// registering tasks.
+struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // Not all models support all feature / target descriptions.  For example,
   // NaiveBayes requires kUnordered features.  Similarly, kLogLinear doesn't
   // support kUnordered features or targets.  kRandomForest might support more
@@ -93,4 +95,4 @@ struct MEDIA_EXPORT LearningTask {
 }  // namespace learning
 }  // namespace media
 
-#endif  // MEDIA_LEARNING_LEARNING_TASK_H_
+#endif  // MEDIA_LEARNING_COMMON_LEARNING_TASK_H_

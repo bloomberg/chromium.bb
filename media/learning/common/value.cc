@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/value.h"
+#include "media/learning/common/value.h"
 
 #include "base/hash.h"
 
 namespace media {
 namespace learning {
 
+Value::Value() = default;
+
 Value::Value(int x) : value_(x) {}
+
 Value::Value(const char* x) {
   // std::hash would be nice, but it can (and does) change values between
   // different instances of the class.  In other words, Value("foo") !=

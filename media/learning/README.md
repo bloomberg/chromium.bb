@@ -64,3 +64,8 @@ be found in the header for the class, an overview of the main ones is:
 ## Models
 
 All of our models are supervised.
+
+## Directory Structure
+
+ * `common/` - public interfaces
+ * `impl/` - learning algorithms, other implementation details

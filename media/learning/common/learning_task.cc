@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/learning_task.h"
+#include "media/learning/common/learning_task.h"
 
 namespace media {
 namespace learning {
