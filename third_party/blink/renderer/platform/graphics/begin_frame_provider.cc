@@ -62,10 +62,8 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  auto* scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
-  if (scheduler)
-    task_runner = scheduler->CompositorTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ThreadScheduler::Current()->CompositorTaskRunner();
 
   mojom::blink::EmbeddedFrameSinkClientPtr efs_client;
   efs_binding_.Bind(mojo::MakeRequest(&efs_client), task_runner);

@@ -28,9 +28,6 @@ class PLATFORM_EXPORT ThreadScheduler {
       scheduler::WebThreadScheduler::RendererPauseHandle;
 
   // Return the current thread's ThreadScheduler.
-  //
-  // TODO(yutak): Replace all the "Platform::Current()->CurrentThread()
-  // ->Scheduler()" calls in Blink with this.
   static ThreadScheduler* Current();
 
   virtual ~ThreadScheduler() = default;
