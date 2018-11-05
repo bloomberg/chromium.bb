@@ -231,25 +231,50 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
   // to pass its style on to anyone else.
   const ComputedStyle& new_style = StyleRef();
   if (LayoutInline* continuation = InlineElementContinuation()) {
+    bool position_type_changed =
+        old_style && (new_style.GetPosition() != old_style->GetPosition()) &&
+        (new_style.HasInFlowPosition() || old_style->HasInFlowPosition());
+
+    // An inline that establishes a continuation is normally wrapped inside an
+    // anonymous block, of course, but if the continuation chain has been
+    // partially torn down (read comment further below), this is not the
+    // case. Here we want to find the nearest containing block that's an
+    // ancestor of all the continuations.
+    const LayoutBlock* boundary = ContainingBlock();
+    if (boundary->IsAnonymousBlock())
+      boundary = boundary->ContainingBlock();
     LayoutInline* previous_part = this;
     LayoutInline* end_of_continuation = nullptr;
-    bool is_real_continuation = false;
+    bool needs_anon_block_position_update = false;
     for (LayoutInline* curr_cont = continuation; curr_cont;
          curr_cont = curr_cont->InlineElementContinuation()) {
-      if (!is_real_continuation && curr_cont != previous_part->NextSibling()) {
+      if (position_type_changed && !needs_anon_block_position_update) {
         // When we have a continuation chain, and the block child that was the
         // reason for creating that in the first place is removed, we don't
         // clean up the continuation chain. Previously split inlines should
         // ideally be joined when this happens, but we don't do that, but rather
-        // leave the mess around. We'll end up with direct LayoutInline siblings
-        // for the same Node (that form a bogus continuation chain). Here we
-        // check that we're NOT in such a situation, and that the Node actually
-        // forms a real continuation chain. This matters when it comes to
-        // marking the anonymous container(s) of block children as relatively
-        // positioned. We should only do that if the Node is an ancestor of the
+        // leave the mess around. We'll end up with LayoutInline siblings or
+        // cousins for the same Node (that form a bogus continuation chain),
+        // without any blocks in-between. Here we check that we're NOT in such a
+        // situation, and that the Node actually forms a real continuation
+        // chain. This matters when it comes to marking the anonymous
+        // container(s) of block children as relatively positioned (further
+        // below). We should only do that if the Node is an ancestor of the
         // blocks. Otherwise out-of-flow positioned descendants will use the
         // wrong containing block.
-        is_real_continuation = true;
+        for (LayoutObject* walker = previous_part->NextInPreOrder(boundary);
+             walker;) {
+          if (walker == curr_cont)
+            break;
+          if (walker->IsAnonymousBlock()) {
+            needs_anon_block_position_update = true;
+            break;
+          }
+          if (walker->IsLayoutInline())
+            walker = walker->NextInPreOrder(boundary);
+          else
+            walker = walker->NextInPreOrderAfterChildren(boundary);
+        }
       }
       previous_part = curr_cont;
 
@@ -260,14 +285,13 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
       end_of_continuation = curr_cont;
     }
 
-    if (is_real_continuation && old_style) {
+    if (needs_anon_block_position_update) {
+      DCHECK(old_style);
       DCHECK(end_of_continuation);
       LayoutObject* block = ContainingBlock()->NextSibling();
       // If an inline's in-flow positioning has changed then any descendant
       // blocks will need to change their styles accordingly.
-      if (block && block->IsAnonymousBlock() &&
-          new_style.GetPosition() != old_style->GetPosition() &&
-          (new_style.HasInFlowPosition() || old_style->HasInFlowPosition())) {
+      if (block && block->IsAnonymousBlock()) {
         UpdateInFlowPositionOfAnonymousBlockContinuations(
             block, new_style, *old_style,
             end_of_continuation->ContainingBlock());
