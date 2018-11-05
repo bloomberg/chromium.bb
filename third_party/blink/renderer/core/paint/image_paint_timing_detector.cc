@@ -269,7 +269,6 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       }
       std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
       record->node_id = node_id;
-      record->frame_index = frame_index_;
       record->first_size = rect_size;
       record->first_paint_index = ++first_paint_index_max_;
       record->image_url =
@@ -289,6 +288,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   if (id_record_map_.Contains(node_id) &&
       IsJustLoaded(cachedImg, *id_record_map_.at(node_id))) {
     records_pending_timing_.push(node_id);
+    id_record_map_.at(node_id)->frame_index = frame_index_;
     id_record_map_.at(node_id)->loaded = true;
   }
 }
