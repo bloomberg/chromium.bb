@@ -3,7 +3,7 @@ PASS getDisplayMedia() with video true
 PASS getDisplayMedia() with no constraints
 PASS getDisplayMedia() with video false
 PASS getDisplayMedia() with audio false
-FAIL getDisplayMedia() with audio true promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'Navigator': Audio capture is not supported"
+FAIL getDisplayMedia() with audio true promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'MediaDevices': Audio capture is not supported"
 PASS getDisplayMedia() with advanced constraint
 PASS getDisplayMedia() with min constraint
 PASS getDisplayMedia() with exact constraint
