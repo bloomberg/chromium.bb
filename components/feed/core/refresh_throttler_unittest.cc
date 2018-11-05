@@ -49,7 +49,8 @@ TEST_F(RefreshThrottlerTest, QuotaExceeded) {
   EXPECT_FALSE(throttler_->RequestQuota());
 }
 
-TEST_F(RefreshThrottlerTest, QuotaIsPerDay) {
+// Disabled since this is not robust against DST https://crbug.com/901698
+TEST_F(RefreshThrottlerTest, DISABLED_QuotaIsPerDay) {
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_FALSE(throttler_->RequestQuota());
@@ -58,7 +59,8 @@ TEST_F(RefreshThrottlerTest, QuotaIsPerDay) {
   EXPECT_TRUE(throttler_->RequestQuota());
 }
 
-TEST_F(RefreshThrottlerTest, RollOver) {
+// Disabled since this is not robust against DST https://crbug.com/901698
+TEST_F(RefreshThrottlerTest, DISABLED_RollOver) {
   // Exhaust our quota so the for loop can verify everything as false.
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_TRUE(throttler_->RequestQuota());
