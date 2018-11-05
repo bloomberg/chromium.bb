@@ -896,6 +896,40 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   EXPECT_FALSE(AreEventsBlocked());
 }
 
+// Tests that when an external touchpad is connected, the device should exit
+// tablet mode and enter clamshell mode.
+TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Attach a external touchpad.
+  ws::InputDeviceClientTestApi().SetTouchpadDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Open lid to tent mode. Verify that tablet mode is not started.
+  OpenLidToAngle(300.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Verify that after unplugging the touchpad, tablet mode will resume.
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+}
+
 class TabletModeControllerForceTabletModeTest
     : public TabletModeControllerTest {
  public:

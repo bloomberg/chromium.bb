@@ -393,11 +393,15 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void TabletModeController::OnMouseDeviceConfigurationChanged() {
-  HandleMouseAddedOrRemoved();
+  HandlePointingDeviceAddedOrRemoved();
+}
+
+void TabletModeController::OnTouchpadDeviceConfigurationChanged() {
+  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::OnDeviceListsComplete() {
-  HandleMouseAddedOrRemoved();
+  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -501,7 +505,7 @@ bool TabletModeController::CanEnterTabletMode() {
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
-  if (IsTabletModeWindowManagerEnabled() || has_external_mouse_) {
+  if (IsTabletModeWindowManagerEnabled() || has_external_pointing_device_) {
     UpdateInternalMouseAndKeyboardEventBlocker();
     return;
   }
@@ -563,33 +567,47 @@ bool TabletModeController::AllowUiModeChange() const {
   return force_ui_mode_ == UiMode::kNone;
 }
 
-void TabletModeController::HandleMouseAddedOrRemoved() {
+void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   if (!AllowUiModeChange())
     return;
 
-  bool has_external_mouse = false;
+  bool has_external_pointing_device = false;
+  // Check if there is an external mouse device.
   for (const ui::InputDevice& mouse :
        ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {
     if (mouse.type == ui::INPUT_DEVICE_USB ||
         (mouse.type == ui::INPUT_DEVICE_BLUETOOTH &&
          bluetooth_devices_observer_->IsConnectedBluetoothDevice(mouse))) {
-      has_external_mouse = true;
+      has_external_pointing_device = true;
       break;
     }
   }
+  // Check if there is an external touchpad device.
+  if (!has_external_pointing_device) {
+    for (const ui::InputDevice& touch_pad :
+         ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+      if (touch_pad.type == ui::INPUT_DEVICE_USB ||
+          (touch_pad.type == ui::INPUT_DEVICE_BLUETOOTH &&
+           bluetooth_devices_observer_->IsConnectedBluetoothDevice(
+               touch_pad))) {
+        has_external_pointing_device = true;
+        break;
+      }
+    }
+  }
 
-  if (has_external_mouse_ == has_external_mouse)
+  if (has_external_pointing_device_ == has_external_pointing_device)
     return;
 
-  has_external_mouse_ = has_external_mouse;
+  has_external_pointing_device_ = has_external_pointing_device;
 
-  // Enter clamshell mode whenever an external mouse is attached.
-  if (has_external_mouse) {
+  // Enter clamshell mode whenever an external pointing device is attached.
+  if (has_external_pointing_device) {
     AttemptLeaveTabletMode();
   } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
-    // If there is no external mouse, only enter tablet mode if 1) the lid angle
-    // can be detected and is in tablet mode angle range. or 2) if the lid angle
-    // can't be detected (e.g., tablet device or clamshell device) and
+    // If there is no external pointing device, only enter tablet mode if 1) the
+    // lid angle can be detected and is in tablet mode angle range. or 2) if the
+    // lid angle can't be detected (e.g., tablet device or clamshell device) and
     // |tablet_mode_switch_is_on_| is true (it can only happen for tablet device
     // as |tablet_mode_switch_is_on_| should never be true for a clamshell
     // device).
@@ -599,17 +617,18 @@ void TabletModeController::HandleMouseAddedOrRemoved() {
 
 void TabletModeController::UpdateBluetoothDevice(
     device::BluetoothDevice* device) {
-  // We only care about mouse type bluetooth device change. Note KEYBOARD
+  // We only care about pointing type bluetooth device change. Note KEYBOARD
   // type is also included here as sometimes a bluetooth keyboard comes with a
   // touch pad.
   if (device->GetDeviceType() != device::BluetoothDeviceType::MOUSE &&
       device->GetDeviceType() !=
           device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO &&
-      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD) {
+      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD &&
+      device->GetDeviceType() != device::BluetoothDeviceType::TABLET) {
     return;
   }
 
-  HandleMouseAddedOrRemoved();
+  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::UpdateInternalMouseAndKeyboardEventBlocker() {
