@@ -88,6 +88,10 @@ bool DeactivateStationarityPropertiesAtInit() {
       "WebRTC-Aec3UseStationarityPropertiesAtInitKillSwitch");
 }
 
+bool UseEarlyDelayDetection() {
+  return !field_trial::IsEnabled("WebRTC-Aec3EarlyDelayDetectionKillSwitch");
+}
+
 // Method for adjusting config parameter dependencies..
 EchoCanceller3Config AdjustConfig(const EchoCanceller3Config& config) {
   EchoCanceller3Config adjusted_cfg = config;
@@ -182,6 +186,10 @@ EchoCanceller3Config AdjustConfig(const EchoCanceller3Config& config) {
 
   if (DeactivateStationarityPropertiesAtInit()) {
     adjusted_cfg.echo_audibility.use_stationarity_properties_at_init = false;
+  }
+
+  if (!UseEarlyDelayDetection()) {
+    adjusted_cfg.delay.delay_selection_thresholds = {25, 25};
   }
 
   return adjusted_cfg;

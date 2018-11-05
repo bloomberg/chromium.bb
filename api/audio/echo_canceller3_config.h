@@ -43,7 +43,7 @@ struct RTC_EXPORT EchoCanceller3Config {
     struct DelaySelectionThresholds {
       int initial;
       int converged;
-    } delay_selection_thresholds = {25, 25};
+    } delay_selection_thresholds = {5, 20};
   } delay;
 
   struct Filter {
