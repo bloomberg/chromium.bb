@@ -180,6 +180,14 @@ bool ParseResponseMap(const cbor::Value& value,
         devtools_proxy, "Failed to parse status code to integer.");
     return false;
   }
+
+  // TODO(kouhei): Add spec ref here once
+  // https://github.com/WICG/webpackage/issues/326 is resolved.
+  if (response_code != 200) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "Status code is not 200.");
+    return false;
+  }
   out->set_response_code(static_cast<net::HttpStatusCode>(response_code));
 
   for (const auto& it : response_map) {
