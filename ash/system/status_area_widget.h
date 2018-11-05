@@ -26,7 +26,6 @@ class PaletteTray;
 class SelectToSpeakTray;
 class Shelf;
 class StatusAreaWidgetDelegate;
-class SystemTray;
 class UnifiedSystemTray;
 class TrayBackgroundView;
 class VirtualKeyboardTray;
@@ -66,8 +65,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
   }
-  // TODO(tetsui): Remove this getter.  https://crbug.com/898419
-  SystemTray* system_tray() { return nullptr; }
   UnifiedSystemTray* unified_system_tray() {
     return unified_system_tray_.get();
   }

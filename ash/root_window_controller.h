@@ -47,7 +47,6 @@ class ShelfLayoutManager;
 class StackingController;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
-class SystemTray;
 class SystemWallpaperController;
 class TouchExplorationManager;
 class TouchObserverHUD;
@@ -139,11 +138,6 @@ class ASH_EXPORT RootWindowController {
 
   // May return null, for example for a secondary monitor at the login screen.
   StatusAreaWidget* GetStatusAreaWidget();
-
-  // Returns the system tray on this root window. Note that
-  // calling this on the root window that doesn't have a shelf will
-  // lead to a crash.
-  SystemTray* GetSystemTray();
 
   // Returns if system tray and its widget is visible.
   bool IsSystemTrayVisible();

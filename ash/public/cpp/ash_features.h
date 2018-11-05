@@ -96,8 +96,6 @@ ASH_PUBLIC_EXPORT bool IsNotificationExpansionAnimationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationScrollBarEnabled();
 
-ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
-
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();

@@ -14,6 +14,7 @@ namespace ash {
 class UnifiedSystemTrayController;
 
 // Default implementation of DetailedViewDelegate for UnifiedSystemTray.
+// TODO(tetsui): Combine with DetailedViewDelegate.  https://crbug.com/901713
 class ASH_EXPORT UnifiedDetailedViewDelegate : public DetailedViewDelegate {
  public:
   explicit UnifiedDetailedViewDelegate(

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/system/network/network_icon.h"
-#include "ash/system/tray/system_tray.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

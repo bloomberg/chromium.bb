@@ -178,7 +178,6 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemNotificationController;
-class SystemTray;
 class SystemTrayModel;
 class SystemTrayNotifier;
 class TimeToFirstPresentRecorder;
@@ -564,9 +563,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();
-
-  // Returns the system tray on primary display.
-  SystemTray* GetPrimarySystemTray();
 
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();

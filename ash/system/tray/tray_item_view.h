@@ -22,7 +22,6 @@ class Label;
 }
 
 namespace ash {
-class SystemTrayItem;
 class Shelf;
 
 // Base-class for items in the tray. It makes sure the widget is updated
@@ -31,9 +30,6 @@ class Shelf;
 class ASH_EXPORT TrayItemView : public views::View,
                                 public gfx::AnimationDelegate {
  public:
-  // TODO(tetsui): Remove this with old SystemTray.  https://crbug.com/898419
-  explicit TrayItemView(SystemTrayItem* owner);
-
   explicit TrayItemView(Shelf* shelf);
   ~TrayItemView() override;
 

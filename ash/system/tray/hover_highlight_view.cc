@@ -24,7 +24,7 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener,
                                        bool use_unified_theme)
-    : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
+    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       listener_(listener),
       use_unified_theme_(use_unified_theme) {
   set_notify_enter_exit_on_child(true);
