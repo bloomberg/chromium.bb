@@ -867,6 +867,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/cast/CastSessionInfo.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/ChromeCastSessionManager.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/CreateRouteRequest.java",
+  "java/src/org/chromium/chrome/browser/media/router/cast/remoting/DefaultRemotingApp.java",
+  "java/src/org/chromium/chrome/browser/media/router/cast/remoting/RemotingAppLauncher.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/remoting/RemotingCastSession.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/remoting/RemotingMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/remoting/RemotingMediaSource.java",

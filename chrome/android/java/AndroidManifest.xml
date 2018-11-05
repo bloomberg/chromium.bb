@@ -1165,6 +1165,8 @@ android:value="true" />
              controllers with its own list. -->
         <meta-data android:name="org.chromium.content.browser.REMOTE_MEDIA_PLAYERS"
             android:value="org.chromium.chrome.browser.media.remote.DefaultMediaRouteController"/>
+        <meta-data android:name="org.chromium.content.browser.REMOTE_PLAYBACK_APPS"
+            android:value="org.chromium.chrome.browser.media.router.cast.remoting.DefaultRemotingApp"/>
 
         {% endblock %}
     </application>
