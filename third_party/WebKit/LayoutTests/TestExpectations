@@ -5482,7 +5482,7 @@ crbug.com/899222 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/gest
 
 # Sheriff 2018-10-29
 crbug.com/899710 [ Linux Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
-crbug.com/899715 [ Linux ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
+crbug.com/766357 [ Linux Mac Win ]  virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
