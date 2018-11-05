@@ -1320,6 +1320,9 @@
         'ui/gl/gl_.*egl.*|'\
         'ui/gl/gl_.*ozone.*'
     },
+    'ozone_scenic': {
+      'filepath': 'ui/ozone/platform/scenic',
+    },
     'page_info' : {
       'filepath': 'chrome/browser/ui/page_info/'\
                   '|chrome/browser/ui/.*/page_info/'\
@@ -2325,6 +2328,11 @@
     'ozone': ['kalyan.kondapally@intel.com',
               'msisov@igalia.com',
               'ozone-reviews@chromium.org'],
+    'ozone_scenic': ['dworsham@google.com',
+                     'rjkroege@chromium.org'
+                     'sergeyu@chromium.org',
+                     'spang+watch@chromium.org',
+                     'wez@chromium.org'],
     'page_info' : ['raymes+watch@chromium.org'],
     'page_load_metrics' : ['bmcquade+watch@chromium.org',
                            'csharrison+watch@chromium.org',
