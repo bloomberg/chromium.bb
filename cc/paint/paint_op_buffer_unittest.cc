@@ -1162,8 +1162,7 @@ std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
 
 std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
     [] {
-      SkPaint font;
-      font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      SkFont font;
       font.setTypeface(test_typefaces[0][0]);
 
       SkTextBlobBuilder builder;
@@ -1175,8 +1174,7 @@ std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
       return builder.make();
     }(),
     [] {
-      SkPaint font;
-      font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      SkFont font;
       font.setTypeface(test_typefaces[1][0]);
 
       SkTextBlobBuilder builder;

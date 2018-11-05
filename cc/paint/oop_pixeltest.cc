@@ -1397,21 +1397,20 @@ sk_sp<SkTextBlob> BuildTextBlob(
     typeface = SkTypeface::MakeFromName("monospace", SkFontStyle());
   }
 
-  SkPaint paint;
-  paint.setTypeface(typeface);
-  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint.setHinting(SkPaint::kNormal_Hinting);
-  paint.setTextSize(1u);
+  SkFont font;
+  font.setTypeface(typeface);
+  font.setHinting(SkFont::kNormal_Hinting);
+  font.setSize(1u);
   if (use_lcd_text) {
-    paint.setAntiAlias(true);
-    paint.setSubpixelText(true);
-    paint.setLCDRenderText(true);
+    font.DEPRECATED_setAntiAlias(true);
+    font.setSubpixel(true);
+    font.DEPRECATED_setLCDRender(true);
   }
 
   SkTextBlobBuilder builder;
   SkRect bounds = SkRect::MakeWH(100, 100);
   const int glyphCount = 10;
-  const auto& runBuffer = builder.allocRunPosH(paint, glyphCount, 0, &bounds);
+  const auto& runBuffer = builder.allocRunPosH(font, glyphCount, 0, &bounds);
   for (int i = 0; i < glyphCount; i++) {
     runBuffer.glyphs[i] = static_cast<SkGlyphID>(i);
     runBuffer.pos[i] = SkIntToScalar(i);

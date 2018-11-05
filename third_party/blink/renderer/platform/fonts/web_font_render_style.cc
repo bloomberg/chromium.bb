@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
 
+#include <SkFont.h>
+
 namespace blink {
 
 namespace {
@@ -113,6 +115,25 @@ void WebFontRenderStyle::ApplyToSkPaint(SkPaint& font,
       (sk_hint_style != SkPaint::kFull_Hinting || device_scale_factor > 1.0f);
 
   font.setSubpixelText(force_subpixel_positioning || use_subpixel_positioning);
+}
+
+void WebFontRenderStyle::ApplyToSkFont(SkFont* font,
+                                       float device_scale_factor) const {
+  auto sk_hint_style = static_cast<SkFont::Hinting>(hint_style);
+  font->DEPRECATED_setAntiAlias(use_anti_alias);
+  font->setHinting(sk_hint_style);
+  font->setEmbeddedBitmaps(use_bitmaps);
+  font->setForceAutoHinting(use_auto_hint);
+  if (use_anti_alias)
+    font->DEPRECATED_setLCDRender(use_subpixel_rendering);
+
+  // Force-enable subpixel positioning, except when full hinting is requested on
+  // low-dpi screen or when running layout tests.
+  bool force_subpixel_positioning =
+      !LayoutTestSupport::IsRunningLayoutTest() &&
+      (sk_hint_style != SkFont::kFull_Hinting || device_scale_factor > 1.0f);
+
+  font->setSubpixel(force_subpixel_positioning || use_subpixel_positioning);
 }
 
 }  // namespace blink

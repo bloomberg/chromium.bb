@@ -47,8 +47,7 @@ class CachedFont {
     auto& supported = supported_scripts_[script];
     if (supported != UNDEFINED)
       return supported == KNOWN;
-    uint16_t glyph_id;
-    paint_.textToGlyphs(&character, sizeof(UChar32), &glyph_id);
+    uint16_t glyph_id = typeface_->unicharToGlyph(character);
     supported = glyph_id ? KNOWN : UNKNOWN;
     return supported == KNOWN;
   }
@@ -59,11 +58,10 @@ class CachedFont {
     SkString sk_name;
     skia_face->getFamilyName(&sk_name);
     name_ = std::string(sk_name.c_str(), sk_name.size());
-    paint_.setTypeface(std::move(skia_face));
-    paint_.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+    typeface_ = std::move(skia_face);
   }
 
-  SkPaint paint_;
+  sk_sp<SkTypeface> typeface_;
   std::map<UScriptCode, KnownGlyph> supported_scripts_;
   std::string name_;
 
