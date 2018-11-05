@@ -601,9 +601,6 @@ NGPaintFragment* NGPaintFragment::FirstLineBox() const {
 void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInline()) << layout_object;
 
-  if (TryMarkFirstLineBoxDirtyFor(layout_object))
-    return;
-
   // Since |layout_object| isn't in fragment tree, check preceding siblings.
   // Note: Once we reuse lines below dirty lines, we should check next siblings.
   for (LayoutObject* previous = layout_object.PreviousSibling(); previous;

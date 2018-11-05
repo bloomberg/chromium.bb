@@ -729,15 +729,26 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
   for (LayoutObject* layout_object = block_flow->NextInPreOrder(block_flow);
        layout_object;) {
     bool should_dirty_lines = false;
+    NGPaintFragment* fragment = nullptr;
     LayoutObject* next = nullptr;
-    if (layout_object->IsText()) {
-      should_dirty_lines =
-          !has_dirtied_lines && layout_object->SelfNeedsLayout();
+    if (LayoutText* layout_text = ToLayoutTextOrNull(layout_object)) {
+      if (!has_dirtied_lines) {
+        should_dirty_lines = layout_object->SelfNeedsLayout();
+        if (!should_dirty_lines)
+          fragment = layout_text->FirstInlineFragment();
+      }
       next = layout_object->NextInPreOrderAfterChildren(block_flow);
       layout_object->ClearNeedsLayout();
-    } else if (layout_object->IsLayoutInline()) {
-      should_dirty_lines =
-          !has_dirtied_lines && layout_object->SelfNeedsLayout();
+    } else if (LayoutInline* layout_inline =
+                   ToLayoutInlineOrNull(layout_object)) {
+      if (!has_dirtied_lines) {
+        should_dirty_lines = layout_object->SelfNeedsLayout();
+        // Do not keep fragments of LayoutInline unless it's a leaf, because
+        // the last fragment of LayoutInline is not the previous fragment of its
+        // descendants.
+        if (!should_dirty_lines && !layout_inline->FirstChild())
+          fragment = layout_inline->FirstInlineFragment();
+      }
       next = layout_object->NextInPreOrder(block_flow);
       layout_object->ClearNeedsLayout();
     } else if (UNLIKELY(layout_object->IsFloatingOrOutOfFlowPositioned())) {
@@ -751,7 +762,11 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
       // solution if any.
       return false;
     } else if (layout_object->IsAtomicInlineLevel()) {
-      should_dirty_lines = !has_dirtied_lines && layout_object->NeedsLayout();
+      if (!has_dirtied_lines) {
+        should_dirty_lines = layout_object->NeedsLayout();
+        if (!should_dirty_lines)
+          fragment = layout_object->FirstInlineFragment();
+      }
       next = layout_object->NextInPreOrderAfterChildren(block_flow);
     } else {
       NOTREACHED();
@@ -778,9 +793,8 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
             first_line->MarkLineBoxDirty();
         }
         has_dirtied_lines = true;
-      } else {
-        if (NGPaintFragment* fragment = layout_object->FirstInlineFragment())
-          last_fragment = fragment;
+      } else if (fragment) {
+        last_fragment = fragment;
       }
     }
 
