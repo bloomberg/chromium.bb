@@ -665,7 +665,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyPointerEvents:
       return value_id == CSSValueVisible || value_id == CSSValueNone ||
              value_id == CSSValueAll || value_id == CSSValueAuto ||
-             (value_id >= CSSValueVisiblePainted &&
+             (value_id >= CSSValueVisiblepainted &&
               value_id <= CSSValueBoundingBox);
     case CSSPropertyPosition:
       return value_id == CSSValueStatic || value_id == CSSValueRelative ||

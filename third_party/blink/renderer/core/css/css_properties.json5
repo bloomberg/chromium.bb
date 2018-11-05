@@ -2522,8 +2522,8 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke",
-        "visibleFill", "visiblePainted", "bounding-box", "all"
+        "none", "auto", "stroke", "fill", "painted", "visible", "visiblestroke",
+        "visiblefill", "visiblepainted", "bounding-box", "all"
       ],
       typedom_types: ["Keyword"],
       default_value: "auto",
