@@ -18,6 +18,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "components/drive/service/fake_drive_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -27,6 +28,9 @@
 namespace sync_file_system {
 
 namespace {
+
+const char kGaiaId[] = "gaia_id";
+const char kEmail[] = "email@example.com";
 
 class FakeDriveServiceFactory
     : public drive_backend::SyncEngine::DriveServiceFactory {
@@ -117,8 +121,9 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SignIn() {
-    fake_signin_manager_->SetAuthenticatedAccountInfo("12345", "tester");
-    sync_engine()->GoogleSigninSucceeded("12345", "tester");
+    fake_signin_manager_->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
+    sync_engine()->OnPrimaryAccountSet(
+        fake_signin_manager_->GetAuthenticatedAccountInfo());
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -169,7 +174,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   // service.  Wait for the completion and resume the app.
   WaitUntilIdle();
 
-  sync_engine()->GoogleSignedOut("test_account", std::string());
+  AccountInfo info;
+  info.account_id = kGaiaId;
+  info.account_id = kEmail;
+  sync_engine()->OnPrimaryAccountCleared(info);
   foo_created.Reply("resume");
 
   ASSERT_TRUE(bar_created.WaitUntilSatisfied());
@@ -182,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   EXPECT_EQ(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
             sync_engine()->GetCurrentState());
 
-  sync_engine()->GoogleSigninSucceeded("test_account", "tester");
+  sync_engine()->OnPrimaryAccountSet(info);
   WaitUntilIdle();
 
   bar_created.Reply("resume");

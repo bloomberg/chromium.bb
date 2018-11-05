@@ -20,7 +20,9 @@
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -36,10 +38,6 @@ class DriveUploaderInterface;
 
 namespace extensions {
 class ExtensionServiceInterface;
-}
-
-namespace identity {
-class IdentityManager;
 }
 
 namespace leveldb {
@@ -68,8 +66,8 @@ class SyncEngine
       public LocalChangeProcessor,
       public drive::DriveNotificationObserver,
       public drive::DriveServiceObserver,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public SigninManagerBase::Observer {
+      public identity::IdentityManager::Observer,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   typedef RemoteFileSyncService::Observer SyncServiceObserver;
 
@@ -149,12 +147,12 @@ class SyncEngine
   // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  // SigninManagerBase::Observer overrides.
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // IdentityManager::Observer overrides.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
 
  private:
   class WorkerObserver;
