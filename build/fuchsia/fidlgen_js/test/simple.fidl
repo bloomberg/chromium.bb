@@ -44,4 +44,6 @@ interface Testola {
   6: SendAStruct(BasicStruct basic);
 
   7: NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
+
+  8: PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
 };

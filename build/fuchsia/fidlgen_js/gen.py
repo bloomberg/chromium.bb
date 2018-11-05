@@ -225,6 +225,8 @@ function %(name)s(%(param_names)s) {
       compound = _ParseCompoundIdentifier(t.identifier)
       name = _CompileCompoundIdentifier(compound)
       return name
+    elif t.kind == fidl.TypeKind.HANDLE:
+      return 'Handle'
     elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
       ttname = (
@@ -400,7 +402,7 @@ function %(proxy_name)s() {
 
           var $view = new DataView($readResult.data);
 
-          var $decoder = new $fidl_Decoder($view, []);
+          var $decoder = new $fidl_Decoder($view, $readResult.handles);
           $decoder.claimMemory(%(size)s - $fidl_kMessageHeaderSize);
 ''' % {'size': method.maybe_response_size})
         for param, ttname in zip(method.maybe_response, type_tables):
