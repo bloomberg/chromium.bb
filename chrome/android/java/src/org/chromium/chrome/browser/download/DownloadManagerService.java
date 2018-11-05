@@ -1848,15 +1848,14 @@ public class DownloadManagerService
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(name);
         if (isAutoRetryOnly) {
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "MobileDownload.ResumptionsCount.Automatic", count);
         } else {
-            RecordHistogram.recordSparseSlowlyHistogram(
-                    "MobileDownload.ResumptionsCount.Manual", count);
+            RecordHistogram.recordSparseHistogram("MobileDownload.ResumptionsCount.Manual", count);
             name = getDownloadRetryCountSharedPrefName(downloadGuid, false, true);
             count = sharedPrefs.getInt(name, 0);
             assert count >= 0;
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "MobileDownload.ResumptionsCount.Total", Math.min(count, 500));
             editor.remove(name);
         }

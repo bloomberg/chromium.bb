@@ -186,7 +186,7 @@ public class WebViewChromiumAwInit {
             // library has been loaded and initialized.
             CachedMetrics.commitCachedMetrics();
 
-            RecordHistogram.recordSparseSlowlyHistogram("Android.WebView.TargetSdkVersion",
+            RecordHistogram.recordSparseHistogram("Android.WebView.TargetSdkVersion",
                     context.getApplicationInfo().targetSdkVersion);
 
             try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(

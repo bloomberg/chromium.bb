@@ -885,10 +885,10 @@ public class ContextualSearchUma {
      */
     public static void logSelectionLengthResultsSeen(boolean wasPanelSeen, int selectionLength) {
         if (wasPanelSeen) {
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "Search.ContextualSearchSelectionLengthSeen", selectionLength);
         } else {
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "Search.ContextualSearchSelectionLengthNotSeen", selectionLength);
         }
     }

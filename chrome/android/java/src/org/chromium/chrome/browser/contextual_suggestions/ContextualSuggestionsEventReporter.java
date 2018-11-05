@@ -47,9 +47,9 @@ class ContextualSuggestionsEventReporter implements SuggestionsEventReporter {
                 : ContextualSuggestionsEvent.SUGGESTION_CLICKED;
         mSuggestionSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), eventId);
 
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "ContextualSuggestions.SuggestionClickPosition.Global", suggestion.getGlobalRank());
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "ContextualSuggestions.SuggestionClickPosition.Cluster",
                 suggestion.getPerSectionRank());
     }
