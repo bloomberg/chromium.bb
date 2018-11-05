@@ -464,10 +464,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                float bottom_controls_height,
                                bool browser_controls_shrink_layout);
 
-  // Overrides the compositor visibility. See the description of
-  // m_overrideCompositorVisibility for more details.
-  void SetCompositorVisibility(bool);
-
   // TODO(lfg): Remove once WebViewFrameWidget is deleted.
   void ScheduleAnimationForWidget();
 
@@ -663,12 +659,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
 
   WebPageImportanceSignals page_importance_signals_;
-
-  // TODO(lfg): This is used in order to disable compositor visibility while
-  // the page is still visible. This is needed until the WebView and WebWidget
-  // split is complete, since in out-of-process iframes the page can be
-  // visible, but the WebView should not be used as a widget.
-  bool override_compositor_visibility_;
 
   // We defer commits when transitioning to a new page. ChromeClientImpl calls
   // StopDeferringCommits() to release this when a new page is loaded.

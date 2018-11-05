@@ -343,25 +343,20 @@ class CONTENT_EXPORT RenderWidget
   // position.
   ui::TextInputType GetTextInputType();
 
-  // Internal helper that generates the LayerTreeSettings to be given to the
-  // compositor in StartCompositor().
   static cc::LayerTreeSettings GenerateLayerTreeSettings(
       CompositorDependencies* compositor_deps,
       bool is_for_subframe,
       const gfx::Size& initial_screen_size,
       float initial_device_scale_factor);
-  // Internal helper that generates the ManagedMemoryPolicy to be given to the
-  // compositor in StartCompositor().
   static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy,
       const gfx::Size& initial_screen_size,
       float initial_device_scale_factor);
 
-  // Begins the compositor's scheduler to start producing frames.
+  // Initiates the compositor to set up IPC channels and begin its scheduler.
   void StartCompositor();
-
-  // Stop compositing.
-  void WillCloseLayerTreeView();
+  // Pauses the compositor's scheduler and tears down its IPC channels.
+  void StopCompositor();
 
   LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
   WidgetInputHandlerManager* widget_input_handler_manager() {
@@ -573,6 +568,9 @@ class CONTENT_EXPORT RenderWidget
   // It is safe to call this multiple times, which happens in the case of
   // frame widgets beings closed, since subsequent calls are ignored.
   void CloseWebWidget();
+  // Informs the WebWidget that compositor is being destroyed, so it can remove
+  // references to it first.
+  void WillCloseLayerTreeView();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void SetExternalPopupOriginAdjustmentsForEmulation(
