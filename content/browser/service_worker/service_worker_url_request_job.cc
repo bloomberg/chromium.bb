@@ -304,11 +304,6 @@ class ServiceWorkerURLRequestJob::NavigationPreloadMetrics {
   DISALLOW_COPY_AND_ASSIGN(NavigationPreloadMetrics);
 };
 
-bool ServiceWorkerURLRequestJob::Delegate::RequestStillValid(
-    ServiceWorkerMetrics::URLRequestJobResult* result) {
-  return true;
-}
-
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
