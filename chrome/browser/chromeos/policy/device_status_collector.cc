@@ -81,6 +81,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -300,6 +301,8 @@ policy::TpmStatusInfo GetTpmStatusReplyToTpmStatusInfo(
 }
 
 void ReadTpmStatus(policy::DeviceStatusCollector::TpmStatusReceiver callback) {
+  // D-Bus calls are allowed only on the UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetTpmStatus(
       cryptohome::GetTpmStatusRequest(),
       base::BindOnce(
@@ -442,15 +445,10 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         base::Bind(&GetStatusState::OnAndroidInfoReceived, this));
   }
 
-  // Queues an async callback to query TPM status information.
   void FetchTpmStatus(const policy::DeviceStatusCollector::TpmStatusFetcher&
                           tpm_status_fetcher) {
-    // Call out to the blocking pool to get TPM status information.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            tpm_status_fetcher,
-            base::BindOnce(&GetStatusState::OnTpmStatusReceived, this)));
+    tpm_status_fetcher.Run(
+        base::BindOnce(&GetStatusState::OnTpmStatusReceived, this));
   }
 
  private:
@@ -490,12 +488,14 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   }
 
   void OnTpmStatusReceived(const TpmStatusInfo& tpm_status_struct) {
+    // Make sure we edit the state on the right thread.
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     em::TpmStatusInfo* const tpm_status_proto =
         device_status_->mutable_tpm_status_info();
 
     tpm_status_proto->set_enabled(tpm_status_struct.enabled);
     tpm_status_proto->set_owned(tpm_status_struct.owned);
-    tpm_status_proto->set_initialized(tpm_status_struct.initialized);
+    tpm_status_proto->set_tpm_initialized(tpm_status_struct.initialized);
     tpm_status_proto->set_attestation_prepared(
         tpm_status_struct.attestation_prepared);
     tpm_status_proto->set_attestation_enrolled(

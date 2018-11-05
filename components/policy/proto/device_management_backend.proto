@@ -1688,7 +1688,11 @@ message TpmVersionInfo {
 message TpmStatusInfo {
   optional bool enabled = 1;
   optional bool owned = 2;
-  optional bool initialized = 3;
+  // This field was previously named "initialized", but that's not a valid name
+  // for a proto field since it generates isInitialized method for the Java
+  // binding which collides with the isInitialized method that exists for all
+  // Java protos.
+  optional bool tpm_initialized = 3;
   optional bool attestation_prepared = 4;
   optional bool attestation_enrolled = 5;
   optional int32 dictionary_attack_counter = 6;
