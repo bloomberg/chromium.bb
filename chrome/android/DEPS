@@ -7,5 +7,4 @@ include_rules = [
   "+components/spellcheck/browser",
   "+jni",
   "+media/base/android/java",
-  "+services/media_session/public",
 ]

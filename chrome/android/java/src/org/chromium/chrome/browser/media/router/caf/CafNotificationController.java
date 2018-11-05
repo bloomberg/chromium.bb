@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.services.media_session.MediaMetadata;
+import org.chromium.content_public.common.MediaMetadata;
 
 /** Controller for updating media notification for Casting and MediaFling. */
 public class CafNotificationController implements MediaNotificationListener {
