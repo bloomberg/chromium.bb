@@ -48,7 +48,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
       case EPointerEvents::kBoundingBox:
         can_hit_bounding_box = true;
         break;
-      case EPointerEvents::kVisiblePainted:
+      case EPointerEvents::kVisiblepainted:
       case EPointerEvents::kAuto:  // "auto" is like "visiblePainted" when in
                                    // SVG content
         require_fill = true;
@@ -59,11 +59,11 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
         can_hit_fill = true;
         can_hit_stroke = true;
         break;
-      case EPointerEvents::kVisibleFill:
+      case EPointerEvents::kVisiblefill:
         require_visible = true;
         can_hit_fill = true;
         break;
-      case EPointerEvents::kVisibleStroke:
+      case EPointerEvents::kVisiblestroke:
         require_visible = true;
         can_hit_stroke = true;
         break;
@@ -90,7 +90,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
       case EPointerEvents::kBoundingBox:
         can_hit_bounding_box = true;
         break;
-      case EPointerEvents::kVisiblePainted:
+      case EPointerEvents::kVisiblepainted:
       case EPointerEvents::kAuto:  // "auto" is like "visiblePainted" when in
                                    // SVG content
         require_visible = true;
@@ -99,8 +99,8 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
         can_hit_fill = true;
         can_hit_stroke = true;
         break;
-      case EPointerEvents::kVisibleFill:
-      case EPointerEvents::kVisibleStroke:
+      case EPointerEvents::kVisiblefill:
+      case EPointerEvents::kVisiblestroke:
       case EPointerEvents::kVisible:
         require_visible = true;
         can_hit_fill = true;
