@@ -91,6 +91,9 @@ class VIEWS_EXPORT MenuItemView : public View {
     CHECKBOX,            // Can be selected/checked to toggle a boolean state.
     RADIO,               // Can be selected/checked among a group of choices.
     SEPARATOR,           // Shows a horizontal line separator.
+    HIGHLIGHTED,         // Performs an action when selected, and has a
+                         // different colored background that merges with the
+                         // menu's rounded corners when placed at the bottom.
     EMPTY,  // EMPTY is a special type for empty menus that is only used
             // internally.
   };
@@ -359,6 +362,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // there's no way to unset it for this MenuItemView!
   void SetForcedVisualSelection(bool selected);
 
+  // For items of type HIGHLIGHTED only: sets the radius of the item's
+  // background. This makes the menu item's background fit its container's
+  // border radius, if they are both the same value.
+  void SetCornerRadius(int radius);
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -423,6 +431,12 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Actual paint implementation. If mode is PB_FOR_DRAG, portions of the menu
   // are not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
+
+  // Helper function for PaintButton(), draws the background for the button if
+  // appropriate.
+  void PaintBackground(gfx::Canvas* canvas,
+                       PaintButtonMode mode,
+                       bool render_selection);
 
   // Paints the right-side icon and text.
   void PaintMinorIconAndText(gfx::Canvas* canvas,
@@ -567,6 +581,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Margins in pixels.
   int top_margin_;
   int bottom_margin_;
+
+  // Corner radius in pixels, for HIGHLIGHTED items placed at the end of a menu.
+  int corner_radius_;
 
   // Horizontal icon margins in pixels, which can differ between MenuItems.
   // These values will be set in the layout process.

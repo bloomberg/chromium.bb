@@ -489,6 +489,11 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+const base::Feature kShowManagedUi{"ShowManagedUi",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

@@ -316,6 +316,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,
     kColorId_MenuBorderColor,
+    kColorId_HighlightedMenuItemBackgroundColor,
+    kColorId_HighlightedMenuItemForegroundColor,
+    kColorId_FocusedHighlightedMenuItemBackgroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,

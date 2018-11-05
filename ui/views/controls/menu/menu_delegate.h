@@ -35,7 +35,6 @@ namespace views {
 
 class MenuButton;
 class MenuItemView;
-class View;
 
 // MenuDelegate --------------------------------------------------------------
 
@@ -234,11 +233,6 @@ class VIEWS_EXPORT MenuDelegate {
   // Returns true if the labels should reserve additional spacing for e.g.
   // submenu indicators at the end of the line.
   virtual bool ShouldReserveSpaceForSubmenuIndicator() const;
-
-  // Override this function to display a footnote view below the menu-items in a
-  // top-level menu. Overrides may construct the view; this will only be called
-  // once per menu.
-  virtual View* CreateFootnoteView();
 };
 
 }  // namespace views
