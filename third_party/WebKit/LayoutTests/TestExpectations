@@ -5526,9 +5526,12 @@ crbug.com/v8/8405 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ 
 
 #Sheriff 2018-11-02
 crbug.com/901314 [ Win7 Mac10.10 Mac10.11 ] inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
-crbug.com/901317 [ Mac10.10 Mac10.13 ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
-crbug.com/901317 [ Mac10.11 Mac10.12 Mac10.13 ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
-crbug.com/901317 [ Mac10.11 Mac10.13 Win10 Linux ] virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
 crbug.com/901489 [ Mac10.13 ] http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
 crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
 crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
+
+#Sheriff 2018-11-05
+crbug.com/901317 external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
+crbug.com/901317 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
+crbug.com/901317 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
+crbug.com/901317 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
