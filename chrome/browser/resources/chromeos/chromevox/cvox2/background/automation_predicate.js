@@ -327,6 +327,10 @@ AutomationPredicate.container = function(node) {
   if (AutomationPredicate.math(node))
     return false;
 
+  // Clickables (on Android) are not containers.
+  if (node.clickable)
+    return false;
+
   return AutomationPredicate.match({
     anyRole: [
       Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST,
