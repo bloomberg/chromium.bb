@@ -1736,27 +1736,29 @@ const char kSingleTabMode[] = "Single-tab mode";
 const char kSingleTabModeDescription[] =
     "Windows with a single tab receive a special, minimal visual treatment.";
 
+#if defined(OS_ANDROID)
 const char kStrictSiteIsolationName[] = "Strict site isolation";
 const char kStrictSiteIsolationDescription[] =
     "Security mode that enables site isolation for all sites (SitePerProcess). "
     "In this mode, each renderer process will contain pages from at most one "
-    "site, using out-of-process iframes when needed. NOTE: Site isolation is "
-    "enabled by default on desktop platforms regardless of how this flag is "
-    "set; see chrome://process-internals for whether it is currently enabled. "
+    "site, using out-of-process iframes when needed. "
+    "Check chrome://process-internals to see the current isolation mode. "
     "Setting this flag to 'Enabled' turns on site isolation regardless of the "
     "default. Here, 'Disabled' is a legacy value that actually means "
     "'Default,' in which case site isolation may be already enabled based on "
     "platform, enterprise policy, or field trial. See also "
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
+#endif
 
 const char kSiteIsolationOptOutName[] = "Disable site isolation";
 const char kSiteIsolationOptOutDescription[] =
     "Disables site isolation "
     "(SitePerProcess, IsolateOrigins, etc). Intended for diagnosing bugs that "
     "may be due to out-of-process iframes. Opt-out has no effect if site "
-    "isolation is force-enabled via #enable-site-per-process or enterprise "
-    "policy. Caution: this disables important mitigations for the Spectre CPU "
+    "isolation is force-enabled using a command line switch or using an "
+    "enterprise policy. "
+    "Caution: this disables important mitigations for the Spectre CPU "
     "vulnerability affecting most computers.";
 const char kSiteIsolationOptOutChoiceDefault[] = "Default";
 const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
