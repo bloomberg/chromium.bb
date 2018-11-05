@@ -7,35 +7,35 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Creates the Gallery Base view controller.
- * @param {camera.Router} router View router to switch views.
- * @param {camera.models.Gallery} model Model object.
+ * @param {cca.Router} router View router to switch views.
+ * @param {cca.models.Gallery} model Model object.
  * @param {HTMLElement} rootElement Root element of the view.
  * @param {string} name View name.
- * @extends {camera.View}
- * @implements {camera.models.Gallery.Observer}
+ * @extends {cca.View}
+ * @implements {cca.models.Gallery.Observer}
  * @constructor
  */
-camera.views.GalleryBase = function(router, model, rootElement, name) {
-  camera.View.call(this, router, rootElement, name);
+cca.views.GalleryBase = function(router, model, rootElement, name) {
+  cca.View.call(this, router, rootElement, name);
 
   /**
-   * @type {camera.models.Gallery}
+   * @type {cca.models.Gallery}
    * @private
    */
   this.model_ = model;
 
   /**
    * Contains pictures' views.
-   * @type {Array.<camera.views.GalleryBase.DOMPicture>}
+   * @type {Array.<cca.views.GalleryBase.DOMPicture>}
    * @protected
    */
   this.pictures = [];
@@ -57,13 +57,13 @@ camera.views.GalleryBase = function(router, model, rootElement, name) {
 /**
  * Represents a picture attached to the DOM by combining the picture data
  * object with the DOM element.
- * @param {camera.models.Gallery.Picture} picture Picture data.
+ * @param {cca.models.Gallery.Picture} picture Picture data.
  * @param {HTMLImageElement} element DOM element holding the picture.
  * @constructor
  */
-camera.views.GalleryBase.DOMPicture = function(picture, element) {
+cca.views.GalleryBase.DOMPicture = function(picture, element) {
   /**
-   * @type {camera.models.Gallery.Picture}
+   * @type {cca.models.Gallery.Picture}
    * @private
    */
   this.picture_ = picture;
@@ -78,7 +78,7 @@ camera.views.GalleryBase.DOMPicture = function(picture, element) {
   Object.seal(this);
 };
 
-camera.views.GalleryBase.DOMPicture.prototype = {
+cca.views.GalleryBase.DOMPicture.prototype = {
   get picture() {
     return this.picture_;
   },
@@ -87,15 +87,15 @@ camera.views.GalleryBase.DOMPicture.prototype = {
   },
 };
 
-camera.views.GalleryBase.prototype = {
-  __proto__: camera.View.prototype,
+cca.views.GalleryBase.prototype = {
+  __proto__: cca.View.prototype,
 };
 
 /**
  * Exports the selected pictures. If nothing selected, then nothing happens.
  * @protected
  */
-camera.views.GalleryBase.prototype.exportSelection = function() {
+cca.views.GalleryBase.prototype.exportSelection = function() {
   var selectedIndexes = this.selectedIndexes;
   if (!selectedIndexes.length)
     return;
@@ -108,11 +108,11 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
       var picture = domPicture.picture;
       // TODO(yuli): Use FileSystem.getFile_ to handle name conflicts.
       dirEntry.getFile(
-          camera.models.FileSystem.regulatePictureName(picture.pictureEntry),
+          cca.models.FileSystem.regulatePictureName(picture.pictureEntry),
           {create: true, exclusive: false}, entry => {
         this.model_.exportPicture(picture, entry).catch(error => {
           console.error(error);
-          camera.toast.show(chrome.i18n.getMessage(
+          cca.toast.show(chrome.i18n.getMessage(
               'errorMsgGalleryExportFailed', entry.name));
         });
       });
@@ -125,7 +125,7 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
  * happens.
  * @protected
  */
-camera.views.GalleryBase.prototype.deleteSelection = function() {
+cca.views.GalleryBase.prototype.deleteSelection = function() {
   var selectedIndexes = this.selectedIndexes;
   if (!selectedIndexes.length)
     return;
@@ -133,8 +133,8 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
   var multi = selectedIndexes.length > 1;
   var param = multi ? selectedIndexes.length.toString() :
       this.lastSelectedPicture().picture.pictureEntry.name;
-  this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
-    type: camera.views.Dialog.Type.CONFIRMATION,
+  this.router.navigate(cca.Router.ViewIdentifier.DIALOG, {
+    type: cca.views.Dialog.Type.CONFIRMATION,
     message: chrome.i18n.getMessage(multi ?
         'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param),
   }, result => {
@@ -155,7 +155,7 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
  * @return {?number}
  * @protected
  */
-camera.views.GalleryBase.prototype.lastSelectedIndex = function() {
+cca.views.GalleryBase.prototype.lastSelectedIndex = function() {
   var selectedIndexes = this.selectedIndexes;
   if (!selectedIndexes.length)
     return null;
@@ -165,20 +165,20 @@ camera.views.GalleryBase.prototype.lastSelectedIndex = function() {
 
 /**
  * Returns the last selected picture from the current selections.
- * @return {camera.views.GalleryBase.DOMPicture}
+ * @return {cca.views.GalleryBase.DOMPicture}
  * @protected
  */
-camera.views.GalleryBase.prototype.lastSelectedPicture = function() {
+cca.views.GalleryBase.prototype.lastSelectedPicture = function() {
   var leadIndex = this.lastSelectedIndex();
   return (leadIndex !== null) ? this.pictures[leadIndex] : null;
 };
 
 /**
  * Returns the currently selected picture views sorted in the added order.
- * @return {Array.<camera.views.GalleryBase.DOMPicture>}
+ * @return {Array.<cca.views.GalleryBase.DOMPicture>}
  * @protected
  */
-camera.views.GalleryBase.prototype.selectedPictures = function() {
+cca.views.GalleryBase.prototype.selectedPictures = function() {
   var indexes = this.selectedIndexes.slice();
   indexes.sort((a, b) => a - b);
   return indexes.map((i) => this.pictures[i]);
@@ -186,11 +186,11 @@ camera.views.GalleryBase.prototype.selectedPictures = function() {
 
 /**
  * Returns the picture's index in the picture views.
- * @param {camera.models.Gallery.Picture} picture Picture to be indexed.
+ * @param {cca.models.Gallery.Picture} picture Picture to be indexed.
  * @return {?number}
  * @protected
  */
-camera.views.GalleryBase.prototype.pictureIndex = function(picture) {
+cca.views.GalleryBase.prototype.pictureIndex = function(picture) {
   for (var index = 0; index < this.pictures.length; index++) {
     if (this.pictures[index].picture == picture)
       return index;
@@ -201,7 +201,7 @@ camera.views.GalleryBase.prototype.pictureIndex = function(picture) {
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onActivate = function() {
+cca.views.GalleryBase.prototype.onActivate = function() {
   // Tab indexes have to be recalculated, since they might have changed while
   // the view wasn't active. Therefore, the restoring logic in the View class
   // might have restored old tabIndex values.
@@ -217,7 +217,7 @@ camera.views.GalleryBase.prototype.onActivate = function() {
  * @param {number} index Index of the picture to be selected.
  * @protected
  */
-camera.views.GalleryBase.prototype.setPictureSelected = function(index) {
+cca.views.GalleryBase.prototype.setPictureSelected = function(index) {
   this.pictures[index].element.tabIndex = this.active ? 0 : -1;
   this.pictures[index].element.classList.add('selected');
   this.pictures[index].element.setAttribute('aria-selected', 'true');
@@ -231,7 +231,7 @@ camera.views.GalleryBase.prototype.setPictureSelected = function(index) {
  * @param {number} index Index of the picture to be unselected.
  * @protected
  */
-camera.views.GalleryBase.prototype.setPictureUnselected = function(index) {
+cca.views.GalleryBase.prototype.setPictureUnselected = function(index) {
   this.pictures[index].element.tabIndex = -1;
   this.pictures[index].element.classList.remove('selected');
   this.pictures[index].element.setAttribute('aria-selected', 'false');
@@ -242,7 +242,7 @@ camera.views.GalleryBase.prototype.setPictureUnselected = function(index) {
  * @param {number} index Index of the picture to be selected.
  * @protected
  */
-camera.views.GalleryBase.prototype.setSelectedIndex = function(index) {
+cca.views.GalleryBase.prototype.setSelectedIndex = function(index) {
   var selectedIndexes = this.selectedIndexes;
   for (var i = 0; i < selectedIndexes.length; i++) {
     this.setPictureUnselected(selectedIndexes[i]);
@@ -258,7 +258,7 @@ camera.views.GalleryBase.prototype.setSelectedIndex = function(index) {
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
+cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
   var index = this.pictureIndex(picture);
   if (index == null)
     return;
@@ -296,8 +296,8 @@ camera.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
-  switch (camera.util.getShortcutIdentifier(event)) {
+cca.views.GalleryBase.prototype.onKeyPressed = function(event) {
+  switch (cca.util.getShortcutIdentifier(event)) {
     case 'Delete':
     case 'Meta-Backspace':
       this.deleteSelection();
@@ -321,16 +321,16 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onPictureAdded = function(picture) {
+cca.views.GalleryBase.prototype.onPictureAdded = function(picture) {
   this.addPictureToDOM(picture);
 };
 
 /**
  * Adds the picture to DOM. Should be overriden by inheriting classes.
- * @param {camera.models.Gallery.Picture} picture Model's picture to be added.
+ * @param {cca.models.Gallery.Picture} picture Model's picture to be added.
  * @protected
  */
-camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
+cca.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
   throw new Error('Not implemented.');
 };
 
@@ -339,7 +339,7 @@ camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
  * @return {HTMLElement}
  * @protected
  */
-camera.views.GalleryBase.prototype.ariaListNode = function() {
+cca.views.GalleryBase.prototype.ariaListNode = function() {
   throw new Error('Not implemented.');
 };
 
@@ -348,7 +348,7 @@ camera.views.GalleryBase.prototype.ariaListNode = function() {
  * else.
  * @protected
  */
-camera.views.GalleryBase.prototype.synchronizeFocus = function() {
+cca.views.GalleryBase.prototype.synchronizeFocus = function() {
   // Force focusing only once, after deleting a picture. This is because, the
   // focus might be lost since the deleted picture is removed from DOM.
   var force = this.forceUpcomingFocusSync_;

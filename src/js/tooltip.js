@@ -7,20 +7,20 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for tooltip.
  */
-camera.tooltip = camera.tooltip || {};
+cca.tooltip = cca.tooltip || {};
 
 /**
  * Sets up the tooltip.
  */
-camera.tooltip.setup = function() {
+cca.tooltip.setup = function() {
   // Add tooltip handlers to every element with the i18n-label attribute.
   document.querySelectorAll('*[i18n-label]').forEach((element) => {
-    var handler = camera.tooltip.show_.bind(undefined, element);
+    var handler = cca.tooltip.show_.bind(undefined, element);
     element.addEventListener('mouseover', handler);
     element.addEventListener('focus', handler);
   });
@@ -31,7 +31,7 @@ camera.tooltip.setup = function() {
  * @param {HTMLElement} element Element for tooltip to be positioned to.
  * @private
  */
-camera.tooltip.position_ = function(element) {
+cca.tooltip.position_ = function(element) {
   var tooltip = document.querySelector('#tooltip');
   const [edgeMargin, elementMargin] = [5, 8];
   var rect = element.getBoundingClientRect();
@@ -54,7 +54,7 @@ camera.tooltip.position_ = function(element) {
  * @param {HTMLElement} element Element whose tooltip to be shown.
  * @private
  */
-camera.tooltip.show_ = function(element) {
+cca.tooltip.show_ = function(element) {
   var tooltip = document.querySelector('#tooltip');
   var hide = () => {
     tooltip.classList.remove('visible');
@@ -70,6 +70,6 @@ camera.tooltip.show_ = function(element) {
   tooltip.offsetWidth; // Force calculation to hide tooltip if shown.
   tooltip.textContent = chrome.i18n.getMessage(
       element.getAttribute('i18n-label'));
-  camera.tooltip.position_(element);
+  cca.tooltip.position_(element);
   tooltip.classList.add('visible');
 };

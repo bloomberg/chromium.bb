@@ -7,52 +7,52 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Creates the Browser view controller.
  * TODO(yuli): Merge GalleryBase into Browser.
- * @param {camera.Router} router View router to switch views.
- * @param {camera.models.Gallery} model Model object.
+ * @param {cca.Router} router View router to switch views.
+ * @param {cca.models.Gallery} model Model object.
  * @extends {camera.view.GalleryBase}
  * @constructor
  */
-camera.views.Browser = function(router, model) {
-  camera.views.GalleryBase.call(
+cca.views.Browser = function(router, model) {
+  cca.views.GalleryBase.call(
       this, router, model, document.querySelector('#browser'), 'browser');
 
   /**
-   * @type {camera.util.SmoothScroller}
+   * @type {cca.util.SmoothScroller}
    * @private
    */
-  this.scroller_ = new camera.util.SmoothScroller(
+  this.scroller_ = new cca.util.SmoothScroller(
       document.querySelector('#browser'),
       document.querySelector('#browser .padder'));
 
   /**
-   * @type {camera.HorizontalScrollBar}
+   * @type {cca.HorizontalScrollBar}
    * @private
    */
-  this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
+  this.scrollBar_ = new cca.HorizontalScrollBar(this.scroller_);
 
   /**
    * Makes the browser scrollable by dragging with mouse.
-   * @type {camera.util.MouseScroller}
+   * @type {cca.util.MouseScroller}
    * @private
    */
-  this.mouseScroller_ = new camera.util.MouseScroller(this.scroller_);
+  this.mouseScroller_ = new cca.util.MouseScroller(this.scroller_);
 
   /**
    * Monitores when scrolling is ended.
-   * @type {camera.util.ScrollTracker}
+   * @type {cca.util.ScrollTracker}
    * @private
    */
-  this.scrollTracker_ = new camera.util.ScrollTracker(
+  this.scrollTracker_ = new cca.util.ScrollTracker(
       this.scroller_,
       function() {}, // onScrollStarted
       this.onScrollEnded_.bind(this));
@@ -79,16 +79,16 @@ camera.views.Browser = function(router, model) {
       'click', this.router.back.bind(this.router));
 };
 
-camera.views.Browser.prototype = {
-  __proto__: camera.views.GalleryBase.prototype,
+cca.views.Browser.prototype = {
+  __proto__: cca.views.GalleryBase.prototype,
 };
 
 /**
  * Prepares the view.
  */
-camera.views.Browser.prototype.prepare = function() {
+cca.views.Browser.prototype.prepare = function() {
   // Hide export-button if using external file system.
-  if (camera.models.FileSystem.externalFs) {
+  if (cca.models.FileSystem.externalFs) {
     document.querySelector('#browser-export').hidden = true;
   }
 };
@@ -98,7 +98,7 @@ camera.views.Browser.prototype.prepare = function() {
  * @param {Object=} opt_arguments Arguments for the browser.
  * @override
  */
-camera.views.Browser.prototype.onEnter = function(opt_arguments) {
+cca.views.Browser.prototype.onEnter = function(opt_arguments) {
   var index = null;
   if (opt_arguments && opt_arguments.picture) {
     index = this.pictureIndex(opt_arguments.picture);
@@ -116,8 +116,8 @@ camera.views.Browser.prototype.onEnter = function(opt_arguments) {
 /**
  * @override
  */
-camera.views.Browser.prototype.onActivate = function() {
-  camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
+cca.views.Browser.prototype.onActivate = function() {
+  cca.views.GalleryBase.prototype.onActivate.apply(this, arguments);
   if (!this.scroller_.animating)
     this.synchronizeFocus();
 };
@@ -125,7 +125,7 @@ camera.views.Browser.prototype.onActivate = function() {
 /**
  * @override
  */
-camera.views.Browser.prototype.onLeave = function() {
+cca.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
   this.setSelectedIndex(null);
 };
@@ -133,17 +133,16 @@ camera.views.Browser.prototype.onLeave = function() {
 /**
  * @override
  */
-camera.views.Browser.prototype.onResize = function() {
+cca.views.Browser.prototype.onResize = function() {
   this.pictures.forEach(function(picture) {
-    camera.views.Browser.updateElementSize_(picture.element);
+    cca.views.Browser.updateElementSize_(picture.element);
   });
 
   this.scrollBar_.onResize();
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
-    camera.util.scrollToCenter(selectedPicture.element,
-                               this.scroller_,
-                               camera.util.SmoothScroller.Mode.INSTANT);
+    cca.util.scrollToCenter(selectedPicture.element, this.scroller_,
+        cca.util.SmoothScroller.Mode.INSTANT);
   }
 };
 
@@ -152,7 +151,7 @@ camera.views.Browser.prototype.onResize = function() {
  * @param {Event} event Click event.
  * @private
  */
-camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
+cca.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
   window.matchMedia('print').addListener(function(media) {
     if (!media.matches) {
       for (var index = 0; index < this.pictures.length; index++) {
@@ -174,7 +173,7 @@ camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
  * @param {Event} event Click event.
  * @private
  */
-camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
+cca.views.Browser.prototype.onExportButtonClicked_ = function(event) {
   this.exportSelection();
 };
 
@@ -183,7 +182,7 @@ camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
  * @param {Event} event Click event.
  * @private
  */
-camera.views.Browser.prototype.onDeleteButtonClicked_ = function(event) {
+cca.views.Browser.prototype.onDeleteButtonClicked_ = function(event) {
   this.deleteSelection();
 };
 
@@ -191,7 +190,7 @@ camera.views.Browser.prototype.onDeleteButtonClicked_ = function(event) {
  * Handles ending of scrolling.
  * @private
  */
-camera.views.Browser.prototype.onScrollEnded_ = function() {
+cca.views.Browser.prototype.onScrollEnded_ = function() {
   var center = this.scroller_.scrollLeft + this.scroller_.clientWidth / 2;
 
   // Find the closest picture.
@@ -217,7 +216,7 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
  * Updates visibility of the browser buttons.
  * @private
  */
-camera.views.Browser.prototype.updateButtons_ = function() {
+cca.views.Browser.prototype.updateButtons_ = function() {
   if (this.selectedIndexes.length) {
     document.querySelector('#browser-print').removeAttribute('disabled');
     document.querySelector('#browser-export').removeAttribute('disabled');
@@ -233,7 +232,7 @@ camera.views.Browser.prototype.updateButtons_ = function() {
  * Updates visibility of the scrollbar thumb.
  * @private
  */
-camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
+cca.views.Browser.prototype.updateScrollbarThumb_ = function() {
   // Hide the scrollbar thumb if there is only one picture.
   this.scrollBar_.setThumbHidden(this.pictures.length < 2);
 };
@@ -245,7 +244,7 @@ camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
  * updating resolutions.
  * @private
  */
-camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
+cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
   var wrappedElement = function(wrapper, tagName) {
     var wrapped = wrapper.firstElementChild;
     return (wrapped.tagName == tagName) ? wrapped : null;
@@ -253,7 +252,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
 
   var replaceElement = function(wrapper, element) {
     wrapper.replaceChild(element, wrapper.firstElementChild);
-    camera.views.Browser.updateElementSize_(wrapper);
+    cca.views.Browser.updateElementSize_(wrapper);
   };
 
   var updateImage = function(wrapper, url) {
@@ -267,7 +266,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
       img.src = url;
     } else if (img.src != url) {
       img.onload = function() {
-        camera.views.Browser.updateElementSize_(wrapper);
+        cca.views.Browser.updateElementSize_(wrapper);
       };
       img.src = url;
     }
@@ -317,12 +316,12 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
 /**
  * @override
  */
-camera.views.Browser.prototype.setSelectedIndex = function(index) {
-  camera.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
+cca.views.Browser.prototype.setSelectedIndex = function(index) {
+  cca.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
 
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
-    camera.util.scrollToCenter(selectedPicture.element, this.scroller_);
+    cca.util.scrollToCenter(selectedPicture.element, this.scroller_);
   }
   this.updateButtons_();
 
@@ -341,8 +340,8 @@ camera.views.Browser.prototype.setSelectedIndex = function(index) {
 /**
  * @override
  */
-camera.views.Browser.prototype.onKeyPressed = function(event) {
-  switch (camera.util.getShortcutIdentifier(event)) {
+cca.views.Browser.prototype.onKeyPressed = function(event) {
+  switch (cca.util.getShortcutIdentifier(event)) {
     case 'Right':
       if (this.pictures.length) {
         var leadIndex = this.lastSelectedIndex();
@@ -379,21 +378,21 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
   }
 
   // Call the base view for unhandled keys.
-  camera.views.GalleryBase.prototype.onKeyPressed.apply(this, arguments);
+  cca.views.GalleryBase.prototype.onKeyPressed.apply(this, arguments);
 };
 
 /**
  * @override
  */
-camera.views.Browser.prototype.onPictureDeleted = function(picture) {
-  camera.views.GalleryBase.prototype.onPictureDeleted.apply(this, arguments);
+cca.views.Browser.prototype.onPictureDeleted = function(picture) {
+  cca.views.GalleryBase.prototype.onPictureDeleted.apply(this, arguments);
   this.updateScrollbarThumb_();
 };
 
 /**
  * @override
  */
-camera.views.Browser.prototype.addPictureToDOM = function(picture) {
+cca.views.Browser.prototype.addPictureToDOM = function(picture) {
   var wrapper = document.createElement('div');
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
@@ -409,7 +408,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     var element = wrapper.appendChild(document.createElement(
         isVideo ? 'video' : 'img'));
     var updateElementSize = () => {
-      camera.views.Browser.updateElementSize_(wrapper);
+      cca.views.Browser.updateElementSize_(wrapper);
     };
     if (isVideo) {
       element.controls = true;
@@ -433,7 +432,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     browserPadder.insertBefore(wrapper, nextSibling);
     this.updateScrollbarThumb_();
 
-    var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
+    var domPicture = new cca.views.GalleryBase.DOMPicture(picture, wrapper);
     this.pictures.splice(index + 1, 0, domPicture);
 
     wrapper.addEventListener('mousedown', event => {
@@ -461,17 +460,17 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
  * @param {HTMLElement} wrapper Element to be updated.
  * @private
  */
-camera.views.Browser.updateElementSize_ = function(wrapper) {
+cca.views.Browser.updateElementSize_ = function(wrapper) {
   // Make the picture element not too large to overlap the buttons.
   var browserPadder = document.querySelector('#browser .padder');
   var maxWidth = browserPadder.clientWidth * 0.7;
   var maxHeight = browserPadder.clientHeight * 0.7;
-  camera.util.updateElementSize(wrapper, maxWidth, maxHeight, false);
+  cca.util.updateElementSize(wrapper, maxWidth, maxHeight, false);
 };
 
 /**
  * @override
  */
-camera.views.Browser.prototype.ariaListNode = function() {
+cca.views.Browser.prototype.ariaListNode = function() {
   return document.querySelector('#browser');
 };

@@ -7,17 +7,17 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for views.
  */
-camera.views = camera.views || {};
+cca.views = cca.views || {};
 
 /**
  * Namespace for Camera view.
  */
-camera.views.camera = camera.views.camera || {};
+cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the video preview of Camera view.
@@ -25,7 +25,7 @@ camera.views.camera = camera.views.camera || {};
  * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-camera.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
+cca.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
   /**
    * @type {function()}
    * @private
@@ -72,7 +72,7 @@ camera.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
   this.video_.cleanup = () => {};
 };
 
-camera.views.camera.Preview.prototype = {
+cca.views.camera.Preview.prototype = {
   get stream() {
     return this.stream_;
   },
@@ -81,7 +81,7 @@ camera.views.camera.Preview.prototype = {
 /**
  * @override
  */
-camera.views.camera.Preview.prototype.toString = function() {
+cca.views.camera.Preview.prototype.toString = function() {
   return this.video_.videoHeight ?
       (this.video_.videoWidth + ' x ' + this.video_.videoHeight) : '';
 };
@@ -91,7 +91,7 @@ camera.views.camera.Preview.prototype.toString = function() {
  * @param {MediaStream} stream Stream to be the source.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.views.camera.Preview.prototype.setSource_ = function(stream) {
+cca.views.camera.Preview.prototype.setSource_ = function(stream) {
   return new Promise((resolve) => {
     var video = document.createElement('video');
     video.id = 'preview-video';
@@ -135,7 +135,7 @@ camera.views.camera.Preview.prototype.setSource_ = function(stream) {
  * @param {MediaStream} stream Stream to be the source.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.views.camera.Preview.prototype.start = function(stream) {
+cca.views.camera.Preview.prototype.start = function(stream) {
   return this.setSource_(stream).then(() => {
     // Use a watchdog since the stream.onended event is unreliable in the
     // recent version of Chrome. As of 55, the event is still broken.
@@ -156,7 +156,7 @@ camera.views.camera.Preview.prototype.start = function(stream) {
 /**
  * Stops the preview.
  */
-camera.views.camera.Preview.prototype.stop = function() {
+cca.views.camera.Preview.prototype.stop = function() {
   if (this.watchdog_) {
     clearInterval(this.watchdog_);
     this.watchdog_ = null;
@@ -173,7 +173,7 @@ camera.views.camera.Preview.prototype.stop = function() {
  * Creates an image blob of the current frame.
  * @return {!Promise<Blob>} Promise for the result.
  */
-camera.views.camera.Preview.prototype.toImage = function() {
+cca.views.camera.Preview.prototype.toImage = function() {
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
   canvas.width = this.video_.videoWidth;
@@ -196,7 +196,7 @@ camera.views.camera.Preview.prototype.toImage = function() {
  * @param {number} offsetY Y-coordinate based on the video element.
  * @private
  */
-camera.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
+cca.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
   this.cancelFocus_();
 
   // Normalize to square space coordinates by W3C spec.
@@ -222,7 +222,7 @@ camera.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
  * Cancels the current applying focus.
  * @private
  */
-camera.views.camera.Preview.prototype.cancelFocus_ = function() {
+cca.views.camera.Preview.prototype.cancelFocus_ = function() {
   this.focus_ = null;
   document.querySelector('#preview-focus-aim').hidden = true;
 };

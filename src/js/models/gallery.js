@@ -7,26 +7,26 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for models.
  */
-camera.models = camera.models || {};
+cca.models = cca.models || {};
 
 /**
  * Creates the Gallery view controller.
  * @constructor
  */
-camera.models.Gallery = function() {
+cca.models.Gallery = function() {
   /**
-   * @type {Array.<camera.models.Gallery.Observer>}
+   * @type {Array.<cca.models.Gallery.Observer>}
    * @private
    */
   this.observers_ = [];
 
   /**
-   * @type {Promise<Array.<camera.models.Gallery.Picture>>}
+   * @type {Promise<Array.<cca.models.Gallery.Picture>>}
    * @private
    */
   this.loaded_ = null;
@@ -43,7 +43,7 @@ camera.models.Gallery = function() {
  *     false it's a still picture (image).
  * @constructor
  */
-camera.models.Gallery.Picture = function(
+cca.models.Gallery.Picture = function(
     thumbnailEntry, pictureEntry, isMotionPicture) {
   /**
    * @type {?FileEntry}
@@ -67,7 +67,7 @@ camera.models.Gallery.Picture = function(
    * @type {Date}
    * @private
    */
-  this.timestamp_ = camera.models.Gallery.Picture.parseTimestamp_(pictureEntry);
+  this.timestamp_ = cca.models.Gallery.Picture.parseTimestamp_(pictureEntry);
 
   // End of properties. Freeze the object.
   Object.freeze(this);
@@ -79,12 +79,12 @@ camera.models.Gallery.Picture = function(
  * @return {Date} Picture timestamp.
  * @private
  */
-camera.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
+cca.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
   var num = function(str) {
     return parseInt(str, 10);
   };
 
-  var name = camera.models.FileSystem.regulatePictureName(pictureEntry);
+  var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
   // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss (n)'.jpg.
   // Assume no more than one picture taken within one millisecond.
   var match = name.match(
@@ -94,7 +94,7 @@ camera.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
       match[7] ? num(match[7]) : 0) : new Date(0);
 };
 
-camera.models.Gallery.Picture.prototype = {
+cca.models.Gallery.Picture.prototype = {
   // Assume pictures always have different names as URL API may still point to
   // the deleted file for new files created with the same name.
   get thumbnailURL() {
@@ -115,39 +115,39 @@ camera.models.Gallery.Picture.prototype = {
  * Creates and returns an URL for a picture.
  * @return {!Promise<string>} Promise for the result.
  */
-camera.models.Gallery.Picture.prototype.pictureURL = function() {
-  return camera.models.FileSystem.pictureURL(this.pictureEntry_);
+cca.models.Gallery.Picture.prototype.pictureURL = function() {
+  return cca.models.FileSystem.pictureURL(this.pictureEntry_);
 };
 
 /**
  * Observer interface for the pictures' model changes.
  * @constructor
  */
-camera.models.Gallery.Observer = function() {
+cca.models.Gallery.Observer = function() {
 };
 
 /**
  * Notifies about a deleted picture.
- * @param {camera.models.Gallery.Picture} picture Picture deleted.
+ * @param {cca.models.Gallery.Picture} picture Picture deleted.
  */
-camera.models.Gallery.Observer.prototype.onPictureDeleted = function(picture) {
+cca.models.Gallery.Observer.prototype.onPictureDeleted = function(picture) {
 };
 
 /**
  * Notifies about an added picture.
- * @param {camera.models.Gallery.Picture} picture Picture added.
+ * @param {cca.models.Gallery.Picture} picture Picture added.
  */
-camera.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
+cca.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
 };
 
 /**
  * Loads the model.
- * @param {Array.<camera.models.Gallery.Observer>} observers Observers for
+ * @param {Array.<cca.models.Gallery.Observer>} observers Observers for
  *     the pictures' model changes.
  */
-camera.models.Gallery.prototype.load = function(observers) {
+cca.models.Gallery.prototype.load = function(observers) {
   this.observers_ = observers;
-  this.loaded_ = camera.models.FileSystem.getEntries().then(
+  this.loaded_ = cca.models.FileSystem.getEntries().then(
       ([pictureEntries, thumbnailEntriesByName]) => {
     return this.loadStoredPictures_(pictureEntries, thumbnailEntriesByName);
   });
@@ -166,17 +166,17 @@ camera.models.Gallery.prototype.load = function(observers) {
  * @param {Array.<FileEntry>} pictureEntries Picture entries.
  * @param {Object{string, FileEntry}} thumbnailEntriesByName Thumbanil entries
  *     mapped by thumbnail names.
- * @return {!Promise<Array.<camera.models.Gallery.Picture>>} Promise for the
+ * @return {!Promise<Array.<cca.models.Gallery.Picture>>} Promise for the
  *     pictures.
  * @private
  */
-camera.models.Gallery.prototype.loadStoredPictures_ = function(
+cca.models.Gallery.prototype.loadStoredPictures_ = function(
     pictureEntries, thumbnailEntriesByName) {
   var wrapped = pictureEntries.filter(entry => entry.name).map(entry => {
     // Create the thumbnail if it's not cached. Ignore errors since it is
     // better to load something than nothing.
     // TODO(yuli): Remove unused thumbnails.
-    var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
+    var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
     var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
     return this.wrapPicture_(entry, thumbnailEntry);
   });
@@ -197,9 +197,9 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
 
 /**
  * Gets the last picture of the loaded pictures' model.
- * @return {!Promise<camera.models.Gallery.Picture>} Promise for the result.
+ * @return {!Promise<cca.models.Gallery.Picture>} Promise for the result.
  */
-camera.models.Gallery.prototype.lastPicture = function() {
+cca.models.Gallery.prototype.lastPicture = function() {
   return this.loaded_.then(pictures => {
     return pictures[pictures.length - 1];
   });
@@ -207,15 +207,15 @@ camera.models.Gallery.prototype.lastPicture = function() {
 
 /**
  * Checks and updates the last picture of the loaded pictures' model.
- * @return {!Promise<camera.models.Gallery.Picture>} Promise for the result.
+ * @return {!Promise<cca.models.Gallery.Picture>} Promise for the result.
  */
-camera.models.Gallery.prototype.checkLastPicture = function() {
+cca.models.Gallery.prototype.checkLastPicture = function() {
   return this.lastPicture().then(picture => {
     // Assume only external pictures were removed without updating the model.
-    if (camera.models.FileSystem.externalFs && picture) {
+    if (cca.models.FileSystem.externalFs && picture) {
       var name = picture.pictureEntry.name;
-      return camera.models.FileSystem.getFile_(
-          camera.models.FileSystem.externalFs, name, false).then(entry => {
+      return cca.models.FileSystem.getFile_(
+          cca.models.FileSystem.externalFs, name, false).then(entry => {
         return [picture, (entry != null)];
       });
     } else {
@@ -232,11 +232,11 @@ camera.models.Gallery.prototype.checkLastPicture = function() {
 
 /**
  * Deletes the picture in the pictures' model.
- * @param {camera.models.Gallery.Picture} picture Picture to be deleted.
+ * @param {cca.models.Gallery.Picture} picture Picture to be deleted.
  * @param {boolean=} pictureEntryDeleted Whether the picture-entry was deleted.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.deletePicture = function(
+cca.models.Gallery.prototype.deletePicture = function(
     picture, pictureEntryDeleted) {
   var removed = new Promise((resolve, reject) => {
     if (pictureEntryDeleted) {
@@ -259,11 +259,11 @@ camera.models.Gallery.prototype.deletePicture = function(
 
 /**
  * Exports the picture to the external storage.
- * @param {camera.models.Gallery.Picture} picture Picture to be exported.
+ * @param {cca.models.Gallery.Picture} picture Picture to be exported.
  * @param {FileEntry} entry Target file entry.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.exportPicture = function(picture, entry) {
+cca.models.Gallery.prototype.exportPicture = function(picture, entry) {
   return new Promise((resolve, reject) => {
     entry.getParent(directory => {
       picture.pictureEntry.copyTo(directory, entry.name, resolve, reject);
@@ -275,19 +275,19 @@ camera.models.Gallery.prototype.exportPicture = function(picture, entry) {
  * Wraps file entries as a picture for the pictures' model.
  * @param {FileEntry} pictureEntry Picture file entry.
  * @param {FileEntry=} thumbnailEntry Thumbnail file entry.
- * @return {!Promise<camera.models.Gallery.Picture>} Promise for the picture.
+ * @return {!Promise<cca.models.Gallery.Picture>} Promise for the picture.
  * @private
  */
-camera.models.Gallery.prototype.wrapPicture_ = function(
+cca.models.Gallery.prototype.wrapPicture_ = function(
     pictureEntry, thumbnailEntry) {
-  var isMotionPicture = camera.models.FileSystem.hasVideoPrefix(pictureEntry);
+  var isMotionPicture = cca.models.FileSystem.hasVideoPrefix(pictureEntry);
   var saved = () => {
     // Proceed to wrap the picture even if unable to save its thumbnail.
-    return camera.models.FileSystem.saveThumbnail(
+    return cca.models.FileSystem.saveThumbnail(
         isMotionPicture, pictureEntry).catch(() => null);
   };
   return Promise.resolve(thumbnailEntry || saved()).then(thumbnailEntry => {
-    return new camera.models.Gallery.Picture(
+    return new cca.models.Gallery.Picture(
         thumbnailEntry, pictureEntry, isMotionPicture);
   });
 };
@@ -295,10 +295,10 @@ camera.models.Gallery.prototype.wrapPicture_ = function(
 /**
  * Notifies observers about the added or deleted picture.
  * @param {string} fn Observers' callback function name.
- * @param {camera.models.Gallery.Picture} picture Picture added or deleted.
+ * @param {cca.models.Gallery.Picture} picture Picture added or deleted.
  * @private
  */
-camera.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
+cca.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
   for (var i = 0; i < this.observers_.length; i++) {
     this.observers_[i][fn](picture);
   }
@@ -310,7 +310,7 @@ camera.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
  * @param {boolean} isMotionPicture Picture to be added is a video.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
+cca.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
   // and then add a new picture into the model.
   var saved = new Promise(resolve => {
@@ -319,12 +319,12 @@ camera.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
     } else {
       // Ignore errors since it is better to save something than nothing.
       // TODO(yuli): Support showing images by EXIF orientation instead.
-      camera.util.orientPhoto(blob, resolve, () => {
+      cca.util.orientPhoto(blob, resolve, () => {
         resolve(blob);
       });
     }
   }).then(blob => {
-    return camera.models.FileSystem.savePicture(isMotionPicture, blob);
+    return cca.models.FileSystem.savePicture(isMotionPicture, blob);
   }).then(pictureEntry => {
     return this.wrapPicture_(pictureEntry);
   });

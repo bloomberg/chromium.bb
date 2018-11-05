@@ -7,18 +7,18 @@
 /**
  * Namespace for the Camera app.
  */
-var camera = camera || {};
+var cca = cca || {};
 
 /**
  * Namespace for models.
  */
-camera.models = camera.models || {};
+cca.models = cca.models || {};
 
 /**
  * Creates the file system controller.
  * @constructor
  */
-camera.models.FileSystem = function() {
+cca.models.FileSystem = function() {
   // End of properties, seal the object.
   Object.seal(this);
 };
@@ -28,40 +28,40 @@ camera.models.FileSystem = function() {
  * @type {string}
  * @const
  */
-camera.models.FileSystem.IMAGE_PREFIX = 'IMG_';
+cca.models.FileSystem.IMAGE_PREFIX = 'IMG_';
 
 /**
  * The prefix of video files.
  * @type {string}
  * @const
  */
-camera.models.FileSystem.VIDEO_PREFIX = 'VID_';
+cca.models.FileSystem.VIDEO_PREFIX = 'VID_';
 
 /**
  * The prefix of thumbnail files.
  * @type {string}
  * @const
  */
-camera.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
+cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
  * Internal file system.
  * @type {FileSystem}
  */
-camera.models.FileSystem.internalFs = null;
+cca.models.FileSystem.internalFs = null;
 
 /**
  * External file system.
  * @type {FileSystem}
  */
-camera.models.FileSystem.externalFs = null;
+cca.models.FileSystem.externalFs = null;
 
 /**
  * Initializes the internal file system.
  * @return {!Promise<FileSystem>} Promise for the internal file system.
  * @private
  */
-camera.models.FileSystem.initInternalFs_ = function() {
+cca.models.FileSystem.initInternalFs_ = function() {
   return new Promise((resolve, reject) => {
     webkitRequestFileSystem(
         window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */, resolve, reject);
@@ -73,9 +73,9 @@ camera.models.FileSystem.initInternalFs_ = function() {
  * @return {!Promise<?FileSystem>} Promise for the external file system.
  * @private
  */
-camera.models.FileSystem.initExternalFs_ = function() {
+cca.models.FileSystem.initExternalFs_ = function() {
   return new Promise(resolve => {
-    if (!camera.util.isChromeOS()) {
+    if (!cca.util.isChromeOS()) {
       resolve(null);
       return;
     }
@@ -100,7 +100,7 @@ camera.models.FileSystem.initExternalFs_ = function() {
        prompts users to migrate pictures if no acknowledgement yet.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.models.FileSystem.initialize = function(promptMigrate) {
+cca.models.FileSystem.initialize = function(promptMigrate) {
   var checkAcked = new Promise(resolve => {
     // ackMigratePictures 1: User acknowledges to migrate pictures to Downloads.
     chrome.storage.local.get({ackMigratePictures: 0}, values => {
@@ -126,22 +126,22 @@ camera.models.FileSystem.initialize = function(promptMigrate) {
   };
 
   return Promise.all([
-    camera.models.FileSystem.initInternalFs_(),
-    camera.models.FileSystem.initExternalFs_(),
+    cca.models.FileSystem.initInternalFs_(),
+    cca.models.FileSystem.initExternalFs_(),
     checkAcked,
     checkMigrated,
   ]).then(([internalFs, externalFs, acked, migrated]) => {
-    camera.models.FileSystem.internalFs = internalFs;
-    camera.models.FileSystem.externalFs = externalFs;
-    if (migrated && !camera.models.FileSystem.externalFs) {
+    cca.models.FileSystem.internalFs = internalFs;
+    cca.models.FileSystem.externalFs = externalFs;
+    if (migrated && !cca.models.FileSystem.externalFs) {
       throw 'External file system should be available.';
     }
 
     // Check if acknowledge-prompt and migrate-pictures are needed.
-    if (migrated || !camera.models.FileSystem.externalFs) {
+    if (migrated || !cca.models.FileSystem.externalFs) {
       return [false, false];
     } else {
-      return camera.models.FileSystem.hasInternalPictures_().then(result => {
+      return cca.models.FileSystem.hasInternalPictures_().then(result => {
         if (result) {
           return [!acked, true];
         } else {
@@ -164,7 +164,7 @@ camera.models.FileSystem.initialize = function(promptMigrate) {
     return migrateNeeded;
   }).then(migrateNeeded => {
     if (migrateNeeded) {
-      return camera.models.FileSystem.migratePictures().then(doneMigrate);
+      return cca.models.FileSystem.migratePictures().then(doneMigrate);
     }
   });
 };
@@ -175,7 +175,7 @@ camera.models.FileSystem.initialize = function(promptMigrate) {
  * @return {!Promise<!Array.<FileEntry>} Promise for the read file entries.
  * @private
  */
-camera.models.FileSystem.readFs_ = function(fs) {
+cca.models.FileSystem.readFs_ = function(fs) {
   return new Promise((resolve, reject) => {
     if (fs) {
       var dirReader = fs.root.createReader();
@@ -202,13 +202,13 @@ camera.models.FileSystem.readFs_ = function(fs) {
  * @return {!Promise<boolean>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.hasInternalPictures_ = function() {
-  var fs = camera.models.FileSystem.internalFs;
-  return camera.models.FileSystem.readFs_(fs).then(entries => {
+cca.models.FileSystem.hasInternalPictures_ = function() {
+  var fs = cca.models.FileSystem.internalFs;
+  return cca.models.FileSystem.readFs_(fs).then(entries => {
     for (var index = entries.length - 1; index >= 0; index--) {
       // Check if there is any picture other than thumbnail in file entries.
       // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
-      if (!camera.models.FileSystem.hasThumbnailPrefix_(entries[index])) {
+      if (!cca.models.FileSystem.hasThumbnailPrefix_(entries[index])) {
         return true;
       }
     }
@@ -220,20 +220,20 @@ camera.models.FileSystem.hasInternalPictures_ = function() {
  * Migrates all picture-files from internal storage to external storage.
  * @return {!Promise<>} Promise for the operation.
  */
-camera.models.FileSystem.migratePictures = function() {
-  var internalFs = camera.models.FileSystem.internalFs;
-  var externalFs = camera.models.FileSystem.externalFs;
+cca.models.FileSystem.migratePictures = function() {
+  var internalFs = cca.models.FileSystem.internalFs;
+  var externalFs = cca.models.FileSystem.externalFs;
 
   var migratePicture = (pictureEntry, thumbnailEntry) => {
-    var name = camera.models.FileSystem.regulatePictureName(pictureEntry);
-    return camera.models.FileSystem.getFile_(
+    var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
+    return cca.models.FileSystem.getFile_(
         externalFs, name, true).then(entry => {
       return new Promise((resolve, reject) => {
         pictureEntry.copyTo(externalFs.root, entry.name, result => {
           if (result.name != pictureEntry.name && thumbnailEntry) {
             // Thumbnails can be recreated later if failing to rename them here.
             thumbnailEntry.moveTo(internalFs.root,
-                camera.models.FileSystem.getThumbnailName(result));
+                cca.models.FileSystem.getThumbnailName(result));
           }
           pictureEntry.remove(() => {});
           resolve();
@@ -242,16 +242,16 @@ camera.models.FileSystem.migratePictures = function() {
     });
   };
 
-  return camera.models.FileSystem.readFs_(internalFs).then(internalEntries => {
+  return cca.models.FileSystem.readFs_(internalFs).then(internalEntries => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
-    camera.models.FileSystem.parseInternalEntries_(
+    cca.models.FileSystem.parseInternalEntries_(
         internalEntries, thumbnailEntriesByName, pictureEntries);
 
     var migrated = [];
     for (var index = 0; index < pictureEntries.length; index++) {
       var entry = pictureEntries[index];
-      var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
+      var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
       var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
       migrated.push(migratePicture(entry, thumbnailEntry));
     }
@@ -266,13 +266,13 @@ camera.models.FileSystem.migratePictures = function() {
  * @return {string} Picture's file name.
  * @private
  */
-camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
+cca.models.FileSystem.generatePictureName_ = function(isVideo, time) {
   const pad = (n) => (n < 10 ? '0' : '') + n;
 
   // File name base will be formatted as IMG/VID_yyyyMMdd_HHmmss.
   var prefix = isVideo ?
-      camera.models.FileSystem.VIDEO_PREFIX :
-      camera.models.FileSystem.IMAGE_PREFIX;
+      cca.models.FileSystem.VIDEO_PREFIX :
+      cca.models.FileSystem.IMAGE_PREFIX;
   var date = new Date(time);
   var result = prefix + date.getFullYear() + pad(date.getMonth() + 1) +
       pad(date.getDate()) + '_' + pad(date.getHours()) +
@@ -286,9 +286,9 @@ camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
  * @param {FileEntry} entry Picture entry whose name to be regulated.
  * @return {string} Name in the desired format.
  */
-camera.models.FileSystem.regulatePictureName = function(entry) {
-  if (camera.models.FileSystem.hasVideoPrefix(entry) ||
-      camera.models.FileSystem.hasImagePrefix_(entry)) {
+cca.models.FileSystem.regulatePictureName = function(entry) {
+  if (cca.models.FileSystem.hasVideoPrefix(entry) ||
+      cca.models.FileSystem.hasImagePrefix_(entry)) {
     var match = entry.name.match(/(\w{3}_\d{8}_\d{6})(?:_(\d+))?(\..+)?$/);
     if (match) {
       var idx = match[2] ? ' (' + match[2] + ')' : '';
@@ -299,7 +299,7 @@ camera.models.FileSystem.regulatePictureName = function(entry) {
     // Early pictures are in legacy file name format (crrev.com/c/310064).
     var match = entry.name.match(/(\d+).(?:\d+)/);
     if (match) {
-      return camera.models.FileSystem.generatePictureName_(
+      return cca.models.FileSystem.generatePictureName_(
           false, parseInt(match[1], 10));
     }
   }
@@ -315,8 +315,8 @@ camera.models.FileSystem.regulatePictureName = function(entry) {
  * @return {!Promise<FileEntry>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.saveToFile_ = function(fs, name, blob) {
-  return camera.models.FileSystem.getFile_(fs, name, true).then(entry => {
+cca.models.FileSystem.saveToFile_ = function(fs, name, blob) {
+  return cca.models.FileSystem.getFile_(fs, name, true).then(entry => {
     return new Promise((resolve, reject) => {
       entry.createWriter(fileWriter => {
         fileWriter.onwriteend = () => {
@@ -335,11 +335,10 @@ camera.models.FileSystem.saveToFile_ = function(fs, name, blob) {
  * @param {Blob} blob Data of the picture to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
-camera.models.FileSystem.savePicture = function(isVideo, blob) {
-  var fs = camera.models.FileSystem.externalFs ||
-      camera.models.FileSystem.internalFs;
-  var name = camera.models.FileSystem.generatePictureName_(isVideo, Date.now());
-  return camera.models.FileSystem.saveToFile_(fs, name, blob);
+cca.models.FileSystem.savePicture = function(isVideo, blob) {
+  var fs = cca.models.FileSystem.externalFs || cca.models.FileSystem.internalFs;
+  var name = cca.models.FileSystem.generatePictureName_(isVideo, Date.now());
+  return cca.models.FileSystem.saveToFile_(fs, name, blob);
 };
 
 /**
@@ -349,7 +348,7 @@ camera.models.FileSystem.savePicture = function(isVideo, blob) {
  * @return {!Promise<Blob>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.createThumbnail_ = function(isVideo, url) {
+cca.models.FileSystem.createThumbnail_ = function(isVideo, url) {
   const thumbnailWidth = 480;
   var element = document.createElement(isVideo ? 'video' : 'img');
   return new Promise((resolve, reject) => {
@@ -387,8 +386,8 @@ camera.models.FileSystem.createThumbnail_ = function(isVideo, url) {
  * @param {FileEntry} entry Picture's file entry.
  * @return {string} Thumbnail name.
  */
-camera.models.FileSystem.getThumbnailName = function(entry) {
-  var thumbnailName = camera.models.FileSystem.THUMBNAIL_PREFIX + entry.name;
+cca.models.FileSystem.getThumbnailName = function(entry) {
+  var thumbnailName = cca.models.FileSystem.THUMBNAIL_PREFIX + entry.name;
   return (thumbnailName.substr(0, thumbnailName.lastIndexOf('.')) ||
       thumbnailName) + '.jpg';
 };
@@ -399,13 +398,13 @@ camera.models.FileSystem.getThumbnailName = function(entry) {
  * @param {FileEntry} entry Picture's file entry whose thumbnail to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
-camera.models.FileSystem.saveThumbnail = function(isVideo, entry) {
-  return camera.models.FileSystem.pictureURL(entry).then(url => {
-    return camera.models.FileSystem.createThumbnail_(isVideo, url);
+cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
+  return cca.models.FileSystem.pictureURL(entry).then(url => {
+    return cca.models.FileSystem.createThumbnail_(isVideo, url);
   }).then(blob => {
-    var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
-    return camera.models.FileSystem.saveToFile_(
-        camera.models.FileSystem.internalFs, thumbnailName, blob);
+    var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
+    return cca.models.FileSystem.saveToFile_(
+        cca.models.FileSystem.internalFs, thumbnailName, blob);
   });
 };
 
@@ -415,8 +414,8 @@ camera.models.FileSystem.saveThumbnail = function(isVideo, entry) {
  * @return {boolean} Has the video prefix or not.
  * @private
  */
-camera.models.FileSystem.hasVideoPrefix = function(entry) {
-  return entry.name.startsWith(camera.models.FileSystem.VIDEO_PREFIX);
+cca.models.FileSystem.hasVideoPrefix = function(entry) {
+  return entry.name.startsWith(cca.models.FileSystem.VIDEO_PREFIX);
 };
 
 /**
@@ -425,8 +424,8 @@ camera.models.FileSystem.hasVideoPrefix = function(entry) {
  * @return {boolean} Has the image prefix or not.
  * @private
  */
-camera.models.FileSystem.hasImagePrefix_ = function(entry) {
-  return entry.name.startsWith(camera.models.FileSystem.IMAGE_PREFIX);
+cca.models.FileSystem.hasImagePrefix_ = function(entry) {
+  return entry.name.startsWith(cca.models.FileSystem.IMAGE_PREFIX);
 };
 
 /**
@@ -435,8 +434,8 @@ camera.models.FileSystem.hasImagePrefix_ = function(entry) {
  * @return {boolean} Has the thumbnail prefix or not.
  * @private
  */
-camera.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
-  return entry.name.startsWith(camera.models.FileSystem.THUMBNAIL_PREFIX);
+cca.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
+  return entry.name.startsWith(cca.models.FileSystem.THUMBNAIL_PREFIX);
 };
 
 /**
@@ -448,9 +447,9 @@ camera.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
  *     initially empty.
  * @private
  */
-camera.models.FileSystem.parseInternalEntries_ = function(
+cca.models.FileSystem.parseInternalEntries_ = function(
     internalEntries, thumbnailEntriesByName, pictureEntries) {
-  var isThumbnail = camera.models.FileSystem.hasThumbnailPrefix_;
+  var isThumbnail = cca.models.FileSystem.hasThumbnailPrefix_;
   var thumbnailEntries = [];
   if (pictureEntries) {
     for (var index = 0; index < internalEntries.length; index++) {
@@ -475,26 +474,26 @@ camera.models.FileSystem.parseInternalEntries_ = function(
  *     Promise for the picture entries and the thumbnail entries mapped by
  *     thumbnail names.
  */
-camera.models.FileSystem.getEntries = function() {
+cca.models.FileSystem.getEntries = function() {
   return Promise.all([
-    camera.models.FileSystem.readFs_(camera.models.FileSystem.internalFs),
-    camera.models.FileSystem.readFs_(camera.models.FileSystem.externalFs),
+    cca.models.FileSystem.readFs_(cca.models.FileSystem.internalFs),
+    cca.models.FileSystem.readFs_(cca.models.FileSystem.externalFs),
   ]).then(([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
 
-    if (camera.models.FileSystem.externalFs) {
+    if (cca.models.FileSystem.externalFs) {
       pictureEntries = externalEntries.filter(entry => {
-        if (!camera.models.FileSystem.hasVideoPrefix(entry) &&
-            !camera.models.FileSystem.hasImagePrefix_(entry)) {
+        if (!cca.models.FileSystem.hasVideoPrefix(entry) &&
+            !cca.models.FileSystem.hasImagePrefix_(entry)) {
           return false;
         }
         return entry.name.match(/_(\d{8})_(\d{6})(?: \((\d+)\))?/);
       });
-      camera.models.FileSystem.parseInternalEntries_(
+      cca.models.FileSystem.parseInternalEntries_(
           internalEntries, thumbnailEntriesByName);
     } else {
-      camera.models.FileSystem.parseInternalEntries_(
+      cca.models.FileSystem.parseInternalEntries_(
           internalEntries, thumbnailEntriesByName, pictureEntries);
     }
     return [pictureEntries, thumbnailEntriesByName];
@@ -506,9 +505,9 @@ camera.models.FileSystem.getEntries = function() {
  * @param {FileEntry} entry File entry.
  * @return {!Promise<string>} Promise for the result.
  */
-camera.models.FileSystem.pictureURL = function(entry) {
+cca.models.FileSystem.pictureURL = function(entry) {
   return new Promise(resolve => {
-    if (camera.models.FileSystem.externalFs) {
+    if (cca.models.FileSystem.externalFs) {
       entry.file(file => {
         resolve(URL.createObjectURL(file));
       });
@@ -526,15 +525,15 @@ camera.models.FileSystem.pictureURL = function(entry) {
  * @return {!Promise<?FileEntry>} Promise for the result.
  * @private
  */
-camera.models.FileSystem.getFile_ = function(fs, name, create) {
+cca.models.FileSystem.getFile_ = function(fs, name, create) {
   return new Promise((resolve, reject) => {
     var options = create ? {create: true, exclusive: true} : {create: false};
     fs.root.getFile(name, options, resolve, reject);
   }).catch(error => {
     if (create && error.name == 'InvalidModificationError') {
       // Avoid name conflicts for creating files.
-      return camera.models.FileSystem.getFile_(fs,
-          camera.models.FileSystem.incrementFileName_(name), create);
+      return cca.models.FileSystem.getFile_(fs,
+          cca.models.FileSystem.incrementFileName_(name), create);
     } else if (!create && error.name == 'NotFoundError') {
       return null;
     }
@@ -548,7 +547,7 @@ camera.models.FileSystem.getFile_ = function(fs, name, create) {
  * @return {string} File name with incremented index.
  * @private
  */
-camera.models.FileSystem.incrementFileName_ = function(name) {
+cca.models.FileSystem.incrementFileName_ = function(name) {
   var [base, ext] = ['', ''];
   var idx = 0;
   var match = name.match(/^([^.]+)(\..+)?$/);
