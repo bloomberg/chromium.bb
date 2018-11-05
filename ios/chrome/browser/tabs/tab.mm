@@ -420,7 +420,11 @@ NSString* const kTabUrlKey = @"url";
     _openInController = [[OpenInController alloc]
         initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
                    webController:self.webController];
-    _openInController.baseView = self.view;
+    // If the tab was evicted before, It should have been loaded already before
+    // starting the open-in controller.
+    DCHECK(!self.webState->IsEvicted());
+    self.webState->GetNavigationManager()->LoadIfNecessary();
+    _openInController.baseView = self.webState->GetView();
   }
   return _openInController;
 }
