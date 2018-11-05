@@ -200,7 +200,7 @@ class ProfileSyncService : public syncer::SyncService,
     ~InitParams();
 
     std::unique_ptr<syncer::SyncClient> sync_client;
-    identity::IdentityManager* identity_manager;
+    identity::IdentityManager* identity_manager = nullptr;
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     std::vector<invalidation::IdentityProvider*>
@@ -208,7 +208,7 @@ class ProfileSyncService : public syncer::SyncService,
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-    network::NetworkConnectionTracker* network_connection_tracker;
+    network::NetworkConnectionTracker* network_connection_tracker = nullptr;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     bool user_events_separate_pref_group = false;
