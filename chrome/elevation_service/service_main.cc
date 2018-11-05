@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/elevation_service/elevated_recovery_impl.h"
 #include "chrome/elevation_service/elevator.h"
 #include "chrome/install_static/install_util.h"
 
@@ -99,7 +100,7 @@ HRESULT ServiceMain::RegisterClassObjects() {
   hr = module.RegisterCOMObject(nullptr, class_ids, class_factories, cookies_,
                                 base::size(cookies_));
   if (FAILED(hr)) {
-    LOG(ERROR) << "NotificationActivator registration failed; hr: " << hr;
+    LOG(ERROR) << "RegisterCOMObject failed; hr: " << hr;
     return hr;
   }
 
@@ -111,7 +112,7 @@ void ServiceMain::UnregisterClassObjects() {
   const HRESULT hr =
       module.UnregisterCOMObject(nullptr, cookies_, base::size(cookies_));
   if (FAILED(hr))
-    LOG(ERROR) << "NotificationActivator unregistration failed; hr: " << hr;
+    LOG(ERROR) << "UnregisterCOMObject failed; hr: " << hr;
 
   // Unregister the Elevator class factories.
   UnregisterElevatorFactories();
@@ -209,6 +210,8 @@ void ServiceMain::SetServiceStatus(DWORD state) {
 }
 
 HRESULT ServiceMain::Run() {
+  LOG_IF(WARNING, FAILED(CleanupChromeRecoveryDirectory()));
+
   HRESULT hr = InitializeComSecurity();
   if (FAILED(hr))
     return hr;

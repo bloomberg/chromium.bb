@@ -17,10 +17,21 @@ interface IElevator : IUnknown
   // Elevators are exposed as methods on IElevator, and provide High Integrity
   // actions. Any changes to add or change a method in IElevator will require a
   // security review.
-  // ...
-  // For example, a method might be:
-  // HRESULT CopyAndVerifyComponent([in] BSTR component_id);
-  // ...
+  //
+  // Runs the Chrome Recovery CRX elevated.
+  //
+  // @param crx_path Path for the recovery CRX.
+  // @param browser_appid Omaha AppID for the version of Chrome being recovered.
+  // @param browser_version Version of Chrome for the recovery CRX.
+  // @param session_id Omaha Session Id.
+  // @param caller_proc_id The process id of the calling process.
+  // @param proc_handle The process handle valid in the calling process context.
+  HRESULT RunRecoveryCRXElevated([in, string] const WCHAR* crx_path,
+                                 [in, string] const WCHAR* browser_appid,
+                                 [in, string] const WCHAR* browser_version,
+                                 [in, string] const WCHAR* session_id,
+                                 [in] DWORD caller_proc_id,
+                                 [out] ULONG_PTR* proc_handle);
 };
 
 [

@@ -87,6 +87,10 @@ struct BASE_EXPORT LaunchOptions {
 #if defined(OS_WIN)
   bool start_hidden = false;
 
+  // Sets STARTF_FORCEOFFFEEDBACK so that the feedback cursor is forced off
+  // while the process is starting.
+  bool feedback_cursor_off = false;
+
   // Windows can inherit handles when it launches child processes.
   // See https://blogs.msdn.microsoft.com/oldnewthing/20111216-00/?p=8873
   // for a good overview of Windows handle inheritance.
