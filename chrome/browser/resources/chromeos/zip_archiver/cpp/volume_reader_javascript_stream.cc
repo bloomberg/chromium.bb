@@ -8,8 +8,8 @@
 #include <limits>
 
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
-#include "third_party/minizip/src/unzip.h"
 
 VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
     int64_t archive_size,

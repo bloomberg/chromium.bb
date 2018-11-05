@@ -21,7 +21,6 @@
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/minizip/src/ioapi.h"
 
 namespace {
 

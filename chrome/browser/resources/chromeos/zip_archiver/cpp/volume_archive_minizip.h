@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/optional.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/minizip_helpers.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
-#include "third_party/minizip/src/unzip.h"
-#include "third_party/minizip/src/zip.h"
+#include "third_party/minizip/src/mz_strm.h"
 
 // Defines an implementation of VolumeArchive that wraps all minizip
 // operations.
@@ -46,21 +46,19 @@ class VolumeArchiveMinizip : public VolumeArchive {
   void MaybeDecompressAhead() override;
 
  private:
-  // Stream functions used by minizip. In all cases, |archive| points to |this|.
-  static uint32_t MinizipRead(void* archive,
-                              void* stream,
-                              void* buf,
-                              uint32_t size);
-  static long MinizipTell(void* archive, void* stream);
-  static long MinizipSeek(void* archive,
-                          void* stream,
-                          uint32_t offset,
-                          int origin);
+  static mz_stream_vtbl minizip_vtable;
+  struct MinizipStream;
+
+  // Stream functions used by minizip. In all cases, |stream| points to
+  // |this->stream_|.
+  static int32_t MinizipRead(void* stream, void* buf, int32_t size);
+  static int64_t MinizipTell(void* stream);
+  static int32_t MinizipSeek(void* stream, int64_t offset, int32_t origin);
 
   // Implementation of stream functions used by minizip.
-  uint32_t StreamRead(void* buf, uint32_t size);
-  long StreamTell();
-  long StreamSeek(uint32_t offset, int origin);
+  int32_t StreamRead(void* buf, int32_t size);
+  int64_t StreamTell();
+  int32_t StreamSeek(int64_t offset, int32_t origin);
 
   // Read cache.
   int64_t DynamicCache(int64_t unz_size);
@@ -68,11 +66,17 @@ class VolumeArchiveMinizip : public VolumeArchive {
   // Decompress length bytes of data starting from offset.
   void DecompressData(int64_t offset, int64_t length);
 
+  // Closes the current zip file entry.
+  bool CloseZipEntry();
+
   // The size of the requested data from VolumeReader.
   int64_t reader_data_size_;
 
+  // The minizip stream used to read the archive file.
+  std::unique_ptr<MinizipStream> stream_;
+
   // The minizip correspondent archive object.
-  zipFile zip_file_;
+  ScopedMzZip zip_file_;
 
   // We use two kinds of cache strategies here: dynamic and static.
   // Dynamic cache is a common cache strategy used in most of IO streams such as
