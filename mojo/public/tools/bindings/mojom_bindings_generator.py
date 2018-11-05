@@ -370,9 +370,11 @@ def _VerifyImportDeps(args, __):
         args.gen_dir + "/", 1)[1]
       full_target_name = "//" + target_prefix_without_gen_dir.rsplit(
         "/", 1)[0] + ":" + target_name
-      print ">>> File \n\t%s\nfrom target \n\t%s\nis missing dependencies " + \
-        "for the following imports:\n\t%s" % (args.filename[0], \
-        full_target_name, list(mojom_imports.difference(sources)))
+
+      print ">>> File \"%s\"" % (filename)
+      print ">>> from target \"%s\"" % (full_target_name)
+      print ">>> is missing dependencies for the following imports:\n%s" % \
+        list(mojom_imports.difference(sources))
       sys.exit(1)
 
     source_filename, _ = os.path.splitext(rel_path.relative_path())
