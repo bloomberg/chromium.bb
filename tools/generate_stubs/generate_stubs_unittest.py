@@ -6,7 +6,7 @@
 """Unittest for the generate_stubs.py.
 
 Since generate_stubs.py is a code generator, it is hard to do a very good
-test.  Instead of creating a golden-file test, which might be flakey, this
+test.  Instead of creating a golden-file test, which might be flaky, this
 test elects instead to verify that various components "exist" within the
 generated file as a sanity check.  In particular, there is a simple hit
 test to make sure that umbrella functions, etc., do try and include every

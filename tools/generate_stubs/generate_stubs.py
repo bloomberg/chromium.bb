@@ -3,29 +3,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Creates windows and posix stub files for a given set of signatures.
+"""Creates Windows and POSIX stub files for a given set of signatures.
 
 For libraries that need to be loaded outside of the standard executable startup
 path mechanism, stub files need to be generated for the wanted functions.  In
-windows, this is done via "def" files and the delay load mechanism.  On a posix
+Windows, this is done via "def" files and the delay load mechanism.  On a POSIX
 system, a set of stub functions need to be generated that dispatch to functions
 found via dlsym.
 
 This script takes a set of files, where each file is a list of C-style
-signatures (one signature per line).  The output is either a windows def file,
-or a header + implementation file of stubs suitable for use in a posix system.
+signatures (one signature per line).  The output is either a Windows def file,
+or a header + implementation file of stubs suitable for use in a POSIX system.
 
-This script also handles varidiac functions, e.g.
+This script also handles variadic functions, e.g.
 void printf(const char* s, ...);
 
-TODO(hclam): Fix the situation for varidiac functions.
+TODO(hclam): Fix the situation for variadic functions.
 Stub for the above function will be generated and inside the stub function it
 is translated to:
 void printf(const char* s, ...) {
   printf_ptr(s, (void*)arg1);
 }
 
-Only one argument from the varidiac arguments is used and it will be used as
+Only one argument from the variadic arguments is used and it will be used as
 type void*.
 """
 
@@ -63,9 +63,9 @@ class SubprocessError(Error):
 #
 #   1) Starts with [_a-ZA-Z] (C++ spec 2.10).
 #   2) Continues with [_a-ZA-Z0-9] (C++ spec 2.10).
-#   3) Preceeds an opening parenthesis by 0 or more whitespace chars.
+#   3) Precedes an opening parenthesis by 0 or more whitespace chars.
 #
-# From that, all preceeding characters are considered the return value.
+# From that, all preceding characters are considered the return value.
 # Trailing characters should have a substring matching the form (.*).  That
 # is considered the arguments.
 SIGNATURE_REGEX = re.compile('(?P<return_type>.+?)'
@@ -75,7 +75,7 @@ SIGNATURE_REGEX = re.compile('(?P<return_type>.+?)'
 # Used for generating C++ identifiers.
 INVALID_C_IDENT_CHARS = re.compile('[^_a-zA-Z0-9]')
 
-# Constants defning the supported file types options.
+# Constants defining the supported file types options.
 FILE_TYPE_WIN_X86 = 'windows_lib'
 FILE_TYPE_WIN_X64 = 'windows_lib_x64'
 FILE_TYPE_POSIX_STUB = 'posix_stubs'
@@ -168,7 +168,7 @@ STUB_HEADER_CLOSER = """}  // namespace %(namespace)s
 """
 
 # The standard includes needed for the stub implementation file.  Takes one
-# string substition with the path to the associated stub header file.
+# string substitution with the path to the associated stub header file.
 IMPLEMENTATION_PREAMBLE = """// This is generated file. Do not modify directly.
 
 #include "%s"
@@ -217,7 +217,7 @@ FUNCTION_POINTER_SECTION_COMMENT = (
 """)
 
 # Template for the module initialization check function.  This template
-# takes two parameteres: the function name, and the conditional used to
+# takes two parameters: the function name, and the conditional used to
 # verify the module's initialization.
 MODULE_INITIALIZATION_CHECK_FUNCTION = (
     """// Returns true if all stubs have been properly initialized.
@@ -360,7 +360,7 @@ def ExtractModuleName(infile_path):
   """Infers the module name from the input file path.
 
   The input filename is supposed to be in the form "ModuleName.sigs".
-  This function splits the filename from the extention on that basename of
+  This function splits the filename from the extension on that basename of
   the path and returns that as the module name.
 
   Args:
@@ -427,11 +427,11 @@ def ParseSignatures(infile):
 
 
 def WriteWindowsDefFile(module_name, signatures, outfile):
-  """Writes a windows def file to the given output file object.
+  """Writes a Windows def file to the given output file object.
 
     The def file format is basically a list of function names.  Generation is
     simple.  After outputting the LIBRARY and EXPORTS lines, print out each
-    function name, one to a line, preceeded by 2 spaces.
+    function name, one to a line, preceded by 2 spaces.
 
   Args:
     module_name: The name of the module we are writing a stub for.
@@ -459,7 +459,7 @@ def QuietRun(args, filter=None, write_to=sys.stdout):
 
 def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path,
                      machine):
-  """Creates a windows library file.
+  """Creates a Windows library file.
 
   Calling this function will create a lib file in the outdir_path that exports
   the signatures passed into the object.  A temporary def file will be created
@@ -474,7 +474,7 @@ def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path,
     machine: String holding the machine type, 'X86' or 'X64'.
 
   Raises:
-    SubprocessError: If invoking the windows "lib" tool fails, this is raised
+    SubprocessError: If invoking the Windows "lib" tool fails, this is raised
                      with the error code.
   """
   def_file_path = os.path.join(intermediate_dir,
@@ -489,7 +489,7 @@ def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path,
 
   # Invoke the "lib" program on Windows to create stub .lib files for the
   # generated definitions.  These .lib files can then be used during
-  # delayloading of the dynamic libraries.
+  # delay loading of the dynamic libraries.
   ret = QuietRun(['lib', '/nologo',
                   '/machine:' + machine,
                   '/def:' + def_file_path,
@@ -509,11 +509,11 @@ class PosixStubWriter(object):
   delays loading of the dynamic library/resolution of the symbols until one of
   the needed functions are accessed.
 
-  In posix, RTLD_LAZY does something similar with DSOs.  This is the default
+  In POSIX, RTLD_LAZY does something similar with DSOs.  This is the default
   link mode for DSOs.  However, even though the symbol is not resolved until
   first usage, the DSO must be present at load time of the main binary.
 
-  To simulate the windows delay load procedure, we need to create a set of
+  To simulate the Windows delay load procedure, we need to create a set of
   stub functions that allow for correct linkage of the main binary, but
   dispatch to the dynamically resolved symbol when the module is initialized.
 
@@ -618,7 +618,7 @@ class PosixStubWriter(object):
 
     Args:
       signature: A signature hash, as produced by ParseSignatures,
-                 representating the function signature.
+                 representing the function signature.
 
     Returns:
       A string with the declaration of the function pointer for the signature.
@@ -637,7 +637,7 @@ class PosixStubWriter(object):
 
     Args:
       signature: A signature hash, as produced by ParseSignatures,
-                 representating the function signature.
+                 representing the function signature.
 
     Returns:
       A string with the stub function definition.
@@ -660,7 +660,7 @@ class PosixStubWriter(object):
       arg_list = ''
 
     if arg_list != '' and len(arguments) > 1 and arguments[-1] == '...':
-      # If the last argment is ... then this is a variadic function.
+      # If the last argument is ... then this is a variadic function.
       if return_prefix != '':
         return VARIADIC_STUB_FUNCTION_DEFINITION % {
             'return_type': signature['return_type'],
@@ -717,7 +717,7 @@ class PosixStubWriter(object):
     outfile.write(UMBRELLA_INITIALIZER_START % namespace)
     outfile.write(UMBRELLA_INITIALIZER_CLEANUP_FUNCTION)
 
-    # Create the initializaiton function that calls all module initializers,
+    # Create the initialization function that calls all module initializers,
     # checks if they succeeded, and backs out module loads on an error.
     outfile.write(UMBRELLA_INITIALIZER_INITIALIZE_FUNCTION_START)
     outfile.write(
@@ -758,7 +758,7 @@ class PosixStubWriter(object):
     outfile.write(STUB_HEADER_PREAMBLE %
                   {'guard_name': header_guard, 'namespace': namespace})
 
-    # Generate the Initializer protoypes for each module.
+    # Generate the Initializer prototypes for each module.
     outfile.write('// Individual module initializer functions.\n')
     for name in module_names:
       outfile.write(MODULE_FUNCTION_PROTOTYPES % {
@@ -853,7 +853,7 @@ class PosixStubWriter(object):
     ptr_names = ['%s_ptr' % sig['name'] for sig in self.signatures]
 
     # Construct the conditional expression to check the initialization of
-    # all the function pointers above.  It should generate a conjuntion
+    # all the function pointers above.  It should generate a conjunction
     # with each pointer on its own line, indented by six spaces to match
     # the indentation level of MODULE_INITIALIZATION_CHECK_FUNCTION.
     initialization_conditional = ' &&\n      '.join(ptr_names)
@@ -930,7 +930,7 @@ def CreateOptionParser():
                     dest='extra_stub_header',
                     default=None,
                     help=('File to insert after the system includes in the '
-                          'generated stub implemenation file. Ignored for '
+                          'generated stub implementation file. Ignored for '
                           '%s and %s types.' %
                           (FILE_TYPE_WIN_X86, FILE_TYPE_WIN_X64)))
   parser.add_option('-m',
@@ -945,7 +945,7 @@ def CreateOptionParser():
                     default='',
                     help=('A macro to place between the return type and '
                           'function name, e.g. MODULE_EXPORT, to control the '
-                          'visbility of the stub functions.'))
+                          'visibility of the stub functions.'))
 
   return parser
 
@@ -1022,12 +1022,12 @@ def CreateOutputDirectories(options):
 
 def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine,
                                 export_macro):
-  """For each signature file, create a windows lib.
+  """For each signature file, create a Windows lib.
 
   Args:
     sig_files: Array of strings with the paths to each signature file.
     out_dir: String holding path to directory where the generated libs go.
-    intermediate_dir: String holding path to directory generated intermdiate
+    intermediate_dir: String holding path to directory generated intermediate
                       artifacts.
     machine: String holding the machine type, 'X86' or 'X64'.
     export_macro: A preprocessor macro used to annotate stub symbols with
@@ -1047,7 +1047,7 @@ def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine,
 
 
 def CreateWindowsDefForSigFiles(sig_files, out_dir, module_name):
-  """For all signature files, create a single windows def file.
+  """For all signature files, create a single Windows def file.
 
   Args:
     sig_files: Array of strings with the paths to each signature file.
@@ -1075,7 +1075,7 @@ def CreateWindowsDefForSigFiles(sig_files, out_dir, module_name):
 def CreatePosixStubsForSigFiles(sig_files, stub_name, out_dir,
                                 intermediate_dir, path_from_source,
                                 extra_stub_header, export_macro):
-  """Create a posix stub library with a module for each signature file.
+  """Create a POSIX stub library with a module for each signature file.
 
   Args:
     sig_files: Array of strings with the paths to each signature file.
