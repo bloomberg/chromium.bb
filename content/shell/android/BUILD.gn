@@ -19,18 +19,10 @@ generate_jni("content_shell_jni_headers") {
   ]
 }
 
-generate_jni_registration("content_shell_jni_registration") {
-  testonly = true
-  target = ":content_shell_apk"
-  output = "$root_gen_dir/content/shell/android/${target_name}.h"
-  exception_files = jni_exception_files
-}
-
 shared_library("libcontent_shell_content_view") {
   testonly = true
   deps = [
     ":content_shell_jni_headers",
-    ":content_shell_jni_registration",
     "//components/crash/content/browser",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
@@ -49,12 +41,13 @@ shared_library("libcontent_shell_content_view") {
   sources = [
     "shell_library_loader.cc",
   ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
 shared_library("libcontent_native_test") {
   testonly = true
   deps = [
-    ":content_test_jni_registration",
     "//base",
     "//content/public/test/android:content_native_test_support",
     "//content/shell:content_shell_lib",
@@ -63,6 +56,8 @@ shared_library("libcontent_native_test") {
   sources = [
     "shell_test_library_loader.cc",
   ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
 android_resources("content_shell_java_resources") {
@@ -214,13 +209,6 @@ android_library("content_shell_test_java") {
     "javatests/src/org/chromium/content_shell_apk/ContentShellActivityTestRule.java",
     "javatests/src/org/chromium/content_shell_apk/ContentShellUrlTest.java",
   ]
-}
-
-generate_jni_registration("content_test_jni_registration") {
-  testonly = true
-  target = ":content_shell_test_apk__apk"
-  output = "$root_gen_dir/content/shell/android/${target_name}.h"
-  exception_files = jni_exception_files
 }
 
 instrumentation_test_apk("content_shell_test_apk") {
