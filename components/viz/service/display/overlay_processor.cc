@@ -31,7 +31,8 @@ class SendPromotionHintsBeforeReturning {
       : resource_provider_(resource_provider), candidates_(candidates) {}
   ~SendPromotionHintsBeforeReturning() {
     resource_provider_->SendPromotionHints(
-        candidates_->promotion_hint_info_map_);
+        candidates_->promotion_hint_info_map_,
+        candidates_->promotion_hint_requestor_set_);
   }
 
  private:

@@ -78,22 +78,31 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
 #if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
-  // |wants_promotion_hints_set_|.  |promotable_hints| contains all the
-  // resources that should be told that they're promotable.  Others will be told
-  // that they're not promotable right now.
+  // |requestor_set|.  |promotable_hints| contains all the resources that should
+  // be told that they're promotable.  Others will be told that they're not.
+  //
+  // We don't use |wants_promotion_hints_set_| in place of |requestor_set|,
+  // since we might have resources that aren't used for drawing.  Sending a hint
+  // for a resource that wasn't even considered for overlay would be misleading
+  // to the requestor; the resource might be overlayable except that nobody
+  // tried to do it.
   void SendPromotionHints(
-      const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
+      const OverlayCandidateList::PromotionHintInfoMap& promotion_hints,
+      const ResourceIdSet& requestor_set);
 
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
   bool IsBackedBySurfaceTexture(ResourceId id);
 
-  // Indicates if this resource wants to receive promotion hints.
-  bool WantsPromotionHintForTesting(ResourceId id);
-
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();
 #endif
+
+  // Indicates if this resource wants to receive promotion hints.
+  bool DoesResourceWantPromotionHint(ResourceId id) const;
+
+  // Return true if and only if any resource wants a promotion hint.
+  bool DoAnyResourcesWantPromotionHints() const;
 
   bool IsResourceSoftwareBacked(ResourceId id);
   GLenum GetResourceTextureTarget(ResourceId id);
