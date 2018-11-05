@@ -1,7 +1,5 @@
 include_rules = [
   "+components/ukm/test_ukm_recorder.h",
-  "+mojo/converters",
-  "+mojo/logging",
   "+mojo/public",
 
   # For changing the bad message handler for tests.

@@ -1,0 +1,22 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("impl") {
+  output_name = "learning_impl"
+  sources = [
+    "learner.h",
+    "learning_session_impl.cc",
+    "learning_session_impl.h",
+  ]
+
+  defines = [ "IS_LEARNING_IMPL_IMPL" ]
+
+  deps = [
+    "//base",
+  ]
+
+  public_deps = [
+    "//media/learning/common",
+  ]
+}

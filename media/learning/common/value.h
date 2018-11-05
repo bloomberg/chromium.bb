@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_LEARNING_VALUE_H_
-#define MEDIA_LEARNING_VALUE_H_
+#ifndef MEDIA_LEARNING_COMMON_VALUE_H_
+#define MEDIA_LEARNING_COMMON_VALUE_H_
 
 #include <cstdint>
 #include <ostream>
 #include <string>
 
-#include "media/base/media_export.h"
+#include "base/component_export.h"
 
 namespace media {
 namespace learning {
@@ -22,8 +22,9 @@ namespace learning {
 // For numeric values, ==, !=, > operators behave as one would expect.
 //
 // For strings, only == and != are guaranteed to be meaningful.
-class MEDIA_EXPORT Value {
+class COMPONENT_EXPORT(LEARNING_COMMON) Value {
  public:
+  Value();
   explicit Value(int x);
   explicit Value(const char* x);
   explicit Value(const std::string& x);
@@ -34,11 +35,14 @@ class MEDIA_EXPORT Value {
   bool operator!=(const Value& rhs) const;
   bool operator<(const Value& rhs) const;
 
+  int64_t value() const { return value_; }
+
  private:
   int64_t value_ = 0;
 
-  friend MEDIA_EXPORT std::ostream& operator<<(std::ostream& out,
-                                               const Value& value);
+  friend COMPONENT_EXPORT(LEARNING_COMMON) std::ostream& operator<<(
+      std::ostream& out,
+      const Value& value);
 
   // Copy and assign are fine.
 };
@@ -47,9 +51,10 @@ class MEDIA_EXPORT Value {
 using FeatureValue = Value;
 using TargetValue = Value;
 
-MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, const Value& value);
+COMPONENT_EXPORT(LEARNING_COMMON)
+std::ostream& operator<<(std::ostream& out, const Value& value);
 
 }  // namespace learning
 }  // namespace media
 
-#endif  // MEDIA_LEARNING_VALUE_H_
+#endif  // MEDIA_LEARNING_COMMON_VALUE_H_
