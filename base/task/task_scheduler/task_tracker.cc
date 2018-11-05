@@ -133,12 +133,6 @@ HistogramBase* GetHistogramForTaskTraits(
                         : 0];
 }
 
-// Maximum number of BLOCK_SHUTDOWN tasks that can be posted during shutdown. If
-// that many BLOCK_SHUTDOWN tasks are posted during shutdown, it is possible
-// that buggy code is posting an infinite number of tasks and that shutdown will
-// never complete. The mitigation is to induce a crash.
-constexpr int kMaxBlockShutdownTasksPostedDuringShutdown = 1000;
-
 // Returns the maximum number of TaskPriority::BEST_EFFORT sequences that can be
 // scheduled concurrently based on command line flags.
 int GetMaxNumScheduledBestEffortSequences() {
@@ -663,7 +657,6 @@ void TaskTracker::PerformShutdown() {
 
     // This method can only be called once.
     DCHECK(!shutdown_event_);
-    DCHECK(!num_block_shutdown_tasks_posted_during_shutdown_);
     DCHECK(!state_->HasShutdownStarted());
 
     shutdown_event_ = std::make_unique<WaitableEvent>();
@@ -783,10 +776,6 @@ bool TaskTracker::BeforePostTask(
         state_->DecrementNumTasksBlockingShutdown();
         return false;
       }
-
-      ++num_block_shutdown_tasks_posted_during_shutdown_;
-      CHECK_LT(num_block_shutdown_tasks_posted_during_shutdown_,
-               kMaxBlockShutdownTasksPostedDuringShutdown);
     }
 
     return true;
