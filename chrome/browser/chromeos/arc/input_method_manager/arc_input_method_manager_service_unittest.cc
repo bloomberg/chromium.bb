@@ -761,11 +761,10 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
   bridge()->update_text_input_state_calls_count_ = 0;
 
   engine_handler->SetCompositionBounds({});
-  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
-  EXPECT_FALSE(bridge()->last_text_input_state->first_update_after_operation);
+  EXPECT_EQ(0, bridge()->update_text_input_state_calls_count_);
 
   engine_handler->SetSurroundingText("", 0, 0, 0);
-  EXPECT_EQ(2, bridge()->update_text_input_state_calls_count_);
+  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
   EXPECT_FALSE(bridge()->last_text_input_state->first_update_after_operation);
 
   engine_handler->FocusOut();
