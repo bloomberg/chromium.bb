@@ -542,6 +542,7 @@
 
     <!-- Download manager dimensions -->
     <dimen name="download_manager_ideal_image_width">150dp</dimen>
+    <dimen name="download_manager_recycler_view_min_padding_wide_screen">16dp</dimen>
     <dimen name="download_manager_max_image_item_width_wide_screen">300dp</dimen>
     <dimen name="download_manager_wide_screen_threshold">600dp</dimen>
     <dimen name="download_manager_image_padding">2dp</dimen>

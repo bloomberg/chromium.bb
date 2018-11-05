@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +25,8 @@ import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * The View component of a DateOrderedList.  This takes the DateOrderedListModel and creates the
@@ -40,6 +44,7 @@ class DateOrderedListView {
     private final int mWideScreenThreshold;
 
     private final RecyclerView mView;
+    private final UiConfig mUiConfig;
 
     /** Creates an instance of a {@link DateOrderedListView} representing {@code model}. */
     public DateOrderedListView(Context context, DownloadManagerUiConfig config,
@@ -66,6 +71,7 @@ class DateOrderedListView {
             @Override
             protected void onConfigurationChanged(Configuration newConfig) {
                 super.onConfigurationChanged(newConfig);
+                mUiConfig.updateDisplayStyle();
                 if (newConfig.orientation == mScreenOrientation) return;
 
                 mScreenOrientation = newConfig.orientation;
@@ -92,11 +98,36 @@ class DateOrderedListView {
                 dateOrderedListObserver.onListScroll(mView.canScrollVertically(-1));
             }
         });
+
+        mUiConfig = new UiConfig(mView);
+        mUiConfig.addObserver((newDisplayStyle) -> {
+            int padding = getPaddingForDisplayStyle(newDisplayStyle, context.getResources());
+            ViewCompat.setPaddingRelative(
+                    mView, padding, mView.getPaddingTop(), padding, mView.getPaddingBottom());
+        });
     }
 
     /** @return The Android {@link View} representing this widget. */
     public View getView() {
         return mView;
+    }
+
+    /**
+     * @return The start and end padding of the recycler view for the given display style.
+     */
+    private static int getPaddingForDisplayStyle(
+            UiConfig.DisplayStyle displayStyle, Resources resources) {
+        int padding = 0;
+        if (displayStyle.horizontal == HorizontalDisplayStyle.WIDE) {
+            int screenWidthDp = resources.getConfiguration().screenWidthDp;
+            padding = (int) (((screenWidthDp - UiConfig.WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) / 2.f)
+                    * resources.getDisplayMetrics().density);
+            padding = (int) Math.max(
+                    resources.getDimensionPixelSize(
+                            R.dimen.download_manager_recycler_view_min_padding_wide_screen),
+                    padding);
+        }
+        return padding;
     }
 
     private class GridLayoutManagerImpl extends GridLayoutManager {

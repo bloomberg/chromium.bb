@@ -392,7 +392,7 @@ class DateOrderedListMediator {
                 DateOrderedListObserver dateOrderedListObserver) {
             mOfflineItemFilter = offlineItemFilter;
             mDateOrderedListObserver = dateOrderedListObserver;
-            calculateEmptyState();
+            new Handler().post(() -> calculateEmptyState());
         }
 
         @Override
