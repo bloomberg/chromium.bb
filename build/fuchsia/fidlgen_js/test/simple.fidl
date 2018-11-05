@@ -22,12 +22,15 @@ struct BasicStruct {
   uint32 u32 = 4000000000;
 };
 
+const uint64 ARRRR_SIZE = 32;
+
 struct StuffAndThings {
   int32 count;
   string id;
   vector<int32> a_vector;
   BasicStruct basic;
   string later_string;
+  array<int32>:ARRRR_SIZE arrrr;
 };
 
 interface Testola {
