@@ -19,6 +19,12 @@ Polymer({
       value: '',
     },
 
+    /** Whether powerwash is required in case of a setup error. */
+    isPowerwashRequired_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** Ordered array of screen ids that are a part of demo setup flow. */
     screens_: {
       type: Array,
@@ -48,9 +54,12 @@ Polymer({
   /**
    * Called when demo mode setup failed.
    * @param {string} message Error message to be displayed to the user.
+   * @param {boolean} isPowerwashRequired Whether powerwash is required to
+   *     recover from the error.
    */
-  onSetupFailed: function(message) {
+  onSetupFailed: function(message, isPowerwashRequired) {
     this.errorMessage_ = message;
+    this.isPowerwashRequired_ = isPowerwashRequired;
     this.showScreen_('demoSetupErrorDialog');
   },
 
@@ -97,10 +106,21 @@ Polymer({
   },
 
   /**
+   * Powerwash button click handler.
+   * @private
+   */
+  onPowerwashClicked_: function() {
+    chrome.send('login.DemoSetupScreen.userActed', ['powerwash']);
+  },
+
+  /**
    * Close button click handler.
    * @private
    */
   onCloseClicked_: function() {
+    // TODO(wzang): Remove this after crbug.com/900640 is fixed.
+    if (this.isPowerwashRequired_)
+      return;
     chrome.send('login.DemoSetupScreen.userActed', ['close-setup']);
   },
 });

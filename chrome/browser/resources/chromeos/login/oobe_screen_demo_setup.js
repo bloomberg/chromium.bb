@@ -45,9 +45,11 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
     /**
      * Called when demo mode setup failed.
      * @param {string} message Error message to be displayed to the user.
+     * @param {boolean} isPowerwashRequired Whether powerwash is required to
+     *     recover from the error.
      */
-    onSetupFailed: function(message) {
-      this.demoSetupModule_.onSetupFailed(message);
+    onSetupFailed: function(message, isPowerwashRequired) {
+      this.demoSetupModule_.onSetupFailed(message, isPowerwashRequired);
     },
   };
 });

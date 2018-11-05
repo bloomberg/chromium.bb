@@ -22,7 +22,12 @@ namespace chromeos {
 namespace test {
 
 // Result of Demo Mode setup.
-enum class DemoModeSetupResult { SUCCESS, ERROR };
+// TODO(agawronska, wzang): Test more error types.
+enum class DemoModeSetupResult {
+  SUCCESS,
+  ERROR_DEFAULT,
+  ERROR_POWERWASH_REQUIRED
+};
 
 // Helper method that mocks EnterpriseEnrollmentHelper for online Demo Mode
 // setup. It simulates specified Demo Mode enrollment |result|.
@@ -37,14 +42,23 @@ EnterpriseEnrollmentHelper* MockDemoModeOnlineEnrollmentHelperCreator(
   EXPECT_EQ(enrollment_config.mode, policy::EnrollmentConfig::MODE_ATTESTATION);
   EXPECT_CALL(*mock, EnrollUsingAttestation())
       .WillRepeatedly(testing::Invoke([mock]() {
-        if (result == DemoModeSetupResult::SUCCESS) {
-          mock->status_consumer()->OnDeviceEnrolled("");
-        } else {
-          // TODO(agawronska): Test different error types.
-          mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForRegistrationError(
-                  policy::DeviceManagementStatus::
-                      DM_STATUS_TEMPORARY_UNAVAILABLE));
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock->status_consumer()->OnDeviceEnrolled("");
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_ALREADY_LOCKED));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForRegistrationError(
+                    policy::DeviceManagementStatus::
+                        DM_STATUS_TEMPORARY_UNAVAILABLE));
+            break;
+          default:
+            NOTREACHED();
         }
       }));
   return mock;
@@ -64,13 +78,22 @@ EnterpriseEnrollmentHelper* MockDemoModeOfflineEnrollmentHelperCreator(
             policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   EXPECT_CALL(*mock, EnrollForOfflineDemo())
       .WillRepeatedly(testing::Invoke([mock]() {
-        if (result == DemoModeSetupResult::SUCCESS) {
-          mock->status_consumer()->OnDeviceEnrolled("");
-        } else {
-          // TODO(agawronska): Test different error types.
-          mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForLockError(
-                  chromeos::InstallAttributes::LOCK_READBACK_ERROR));
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock->status_consumer()->OnDeviceEnrolled("");
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_READBACK_ERROR));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForStatus(
+                    policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED));
+            break;
+          default:
+            NOTREACHED();
         }
       }));
   return mock;
