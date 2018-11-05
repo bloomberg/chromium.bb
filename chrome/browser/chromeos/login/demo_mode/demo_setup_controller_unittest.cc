@@ -229,12 +229,38 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
-TEST_F(DemoSetupControllerTest, OfflineError) {
+TEST_F(DemoSetupControllerTest, OfflineErrorDefault) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::ERROR_DEFAULT>);
+
+  policy::MockCloudPolicyStore mock_store;
+  EXPECT_CALL(mock_store, Store(_)).Times(0);
+  tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
+
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->RequiresPowerwash());
+  EXPECT_EQ("", GetDeviceRequisition());
+}
+
+TEST_F(DemoSetupControllerTest, OfflineErrorPowerwashRequired) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
+
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
 
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_)).Times(0);
@@ -268,9 +294,10 @@ TEST_F(DemoSetupControllerTest, OnlineSuccess) {
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
-TEST_F(DemoSetupControllerTest, OnlineError) {
+TEST_F(DemoSetupControllerTest, OnlineErrorDefault) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockDemoModeOnlineEnrollmentHelperCreator<
+          DemoModeSetupResult::ERROR_DEFAULT>);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
@@ -281,6 +308,23 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_FALSE(helper_->RequiresPowerwash());
+  EXPECT_EQ("", GetDeviceRequisition());
+}
+
+TEST_F(DemoSetupControllerTest, OnlineErrorPowerwashRequired) {
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOnlineEnrollmentHelperCreator<
+          DemoModeSetupResult::ERROR_POWERWASH_REQUIRED>);
+
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_TRUE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -305,7 +349,8 @@ TEST_F(DemoSetupControllerTest, OnlineComponentError) {
 
 TEST_F(DemoSetupControllerTest, EnrollTwice) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockDemoModeOnlineEnrollmentHelperCreator<
+          DemoModeSetupResult::ERROR_DEFAULT>);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
