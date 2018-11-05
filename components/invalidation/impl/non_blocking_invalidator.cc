@@ -34,7 +34,7 @@ struct NonBlockingInvalidator::InitializeOptions {
       const scoped_refptr<base::SingleThreadTaskRunner>&
           invalidation_state_tracker_task_runner,
       const std::string& client_info,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
       : network_channel_creator(network_channel_creator),
         invalidator_client_id(invalidator_client_id),
         saved_invalidations(saved_invalidations),
@@ -43,7 +43,7 @@ struct NonBlockingInvalidator::InitializeOptions {
         invalidation_state_tracker_task_runner(
             invalidation_state_tracker_task_runner),
         client_info(client_info),
-        request_context_getter(request_context_getter) {}
+        network_task_runner(network_task_runner) {}
 
   NetworkChannelCreator network_channel_creator;
   std::string invalidator_client_id;
@@ -53,7 +53,7 @@ struct NonBlockingInvalidator::InitializeOptions {
   scoped_refptr<base::SingleThreadTaskRunner>
       invalidation_state_tracker_task_runner;
   std::string client_info;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner;
 };
 
 namespace {
@@ -154,9 +154,8 @@ NonBlockingInvalidator::Core::~Core() {
 
 void NonBlockingInvalidator::Core::Initialize(
     const NonBlockingInvalidator::InitializeOptions& initialize_options) {
-  DCHECK(initialize_options.request_context_getter);
-  network_task_runner_ =
-      initialize_options.request_context_getter->GetNetworkTaskRunner();
+  DCHECK(initialize_options.network_task_runner);
+  network_task_runner_ = initialize_options.network_task_runner;
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   std::unique_ptr<SyncNetworkChannel> network_channel =
       initialize_options.network_channel_creator.Run();
@@ -222,10 +221,10 @@ NonBlockingInvalidator::NonBlockingInvalidator(
     const std::string& invalidation_bootstrap_data,
     InvalidationStateTracker* invalidation_state_tracker,
     const std::string& client_info,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter)
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : invalidation_state_tracker_(invalidation_state_tracker),
       parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      network_task_runner_(request_context_getter->GetNetworkTaskRunner()),
+      network_task_runner_(network_task_runner),
       weak_ptr_factory_(this) {
   base::WeakPtr<NonBlockingInvalidator> weak_ptr_this =
       weak_ptr_factory_.GetWeakPtr();
@@ -236,7 +235,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
   InitializeOptions initialize_options(
       network_channel_creator, invalidator_client_id, saved_invalidations,
       invalidation_bootstrap_data, weak_ptr_this,
-      base::ThreadTaskRunnerHandle::Get(), client_info, request_context_getter);
+      base::ThreadTaskRunnerHandle::Get(), client_info, network_task_runner);
 
   if (!network_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&NonBlockingInvalidator::Core::Initialize,

@@ -187,7 +187,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
       null_invalidation_state_tracker.GetSavedInvalidations(),
       null_invalidation_state_tracker.GetBootstrapData(),
       &null_invalidation_state_tracker, kClientInfo,
-      notifier_options.request_context_getter));
+      notifier_options.request_context_getter->GetNetworkTaskRunner()));
 
   NotificationPrinter notification_printer;
 

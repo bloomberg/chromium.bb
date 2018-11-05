@@ -48,15 +48,11 @@ class NonBlockingInvalidatorTestDelegate {
         network::TestNetworkConnectionTracker::GetInstance();
     NetworkChannelCreator network_channel_creator =
         NonBlockingInvalidator::MakePushClientChannelCreator(notifier_options);
-    invalidator_.reset(
-        new NonBlockingInvalidator(
-            network_channel_creator,
-            invalidator_client_id,
-            UnackedInvalidationsMap(),
-            initial_state,
-            invalidation_state_tracker.get(),
-            "fake_client_info",
-            request_context_getter_));
+    invalidator_.reset(new NonBlockingInvalidator(
+        network_channel_creator, invalidator_client_id,
+        UnackedInvalidationsMap(), initial_state,
+        invalidation_state_tracker.get(), "fake_client_info",
+        request_context_getter_->GetNetworkTaskRunner()));
   }
 
   Invalidator* GetInvalidator() {
