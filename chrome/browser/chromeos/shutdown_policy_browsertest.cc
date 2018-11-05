@@ -239,7 +239,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     // Bring up the locker screen.
     ScreenLocker::Show();
     std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-    tester->EmulateWindowManagerReady();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
         content::NotificationService::AllSources());
