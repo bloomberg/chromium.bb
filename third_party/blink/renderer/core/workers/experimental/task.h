@@ -18,41 +18,40 @@ class SerializedScriptValue;
 // Scans |arguments| for Task objects, and registers those as dependencies,
 // passing the result of those tasks in place of the Task arguments.
 // All public functions are main-thread-only.
-// ThreadPoolTask keeps itself alive via a self scoped_refptr until the
+// Task keeps itself alive via a SelfKeepAlive until the
 // the task completes and reports itself done on the main thread via
-// TaskCompleted(). Other users (e.g. Task below) can keep the task
-// alive after completion.
-class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
+// TaskCompleted().
+class Task final : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   // Called on main thread
-  ThreadPoolTask(ThreadPoolThreadProvider*,
-                 ScriptState*,
-                 const ScriptValue& function,
-                 const Vector<ScriptValue>& arguments,
-                 TaskType);
-  ThreadPoolTask(ThreadPoolThreadProvider*,
-                 ScriptState*,
-                 const String& function_name,
-                 const Vector<ScriptValue>& arguments,
-                 TaskType);
-  ~ThreadPoolTask();
+  Task(ThreadPoolThreadProvider*,
+       ScriptState*,
+       const ScriptValue& function,
+       const Vector<ScriptValue>& arguments,
+       TaskType);
+  Task(ThreadPoolThreadProvider*,
+       ScriptState*,
+       const String& function_name,
+       const Vector<ScriptValue>& arguments,
+       TaskType);
+  ~Task() override;
   // Returns a promise that will be resolved with the result when it completes.
-  ScriptPromise GetResult();
-  void Cancel() LOCKS_EXCLUDED(mutex_);
+  ScriptPromise result();
+  void cancel() LOCKS_EXCLUDED(mutex_);
 
-  base::WeakPtr<ThreadPoolTask> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+  void Trace(Visitor*) override;
 
  private:
   enum class State { kPending, kStarted, kCancelPending, kCompleted, kFailed };
 
-  ThreadPoolTask(ThreadPoolThreadProvider*,
-                 ScriptState*,
-                 const ScriptValue& function,
-                 const String& function_name,
-                 const Vector<ScriptValue>& arguments,
-                 TaskType);
+  Task(ThreadPoolThreadProvider*,
+       ScriptState*,
+       const ScriptValue& function,
+       const String& function_name,
+       const Vector<ScriptValue>& arguments,
+       TaskType);
 
   class AsyncFunctionCompleted;
 
@@ -74,10 +73,10 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
 
   // Called on main thread
   static ThreadPoolThread* SelectThread(
-      const Vector<ThreadPoolTask*>& prerequisites,
+      const HeapVector<Member<Task>>& prerequisites,
       ThreadPoolThreadProvider*);
   ThreadPoolThread* GetScheduledThread() LOCKS_EXCLUDED(mutex_);
-  void RegisterDependencies(const Vector<ThreadPoolTask*>& prerequisites,
+  void RegisterDependencies(const HeapVector<Member<Task>>& prerequisites,
                             const Vector<size_t>& prerequisite_indices)
       LOCKS_EXCLUDED(mutex_);
   void TaskCompleted();
@@ -87,8 +86,8 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   const TaskType task_type_;
 
   // Main thread only
-  scoped_refptr<ThreadPoolTask> self_keep_alive_;
-  Persistent<ScriptPromiseResolver> resolver_;
+  SelfKeepAlive<Task> self_keep_alive_;
+  Member<ScriptPromiseResolver> resolver_;
 
   // Created in constructor on the main thread, consumed and cleared on
   // worker_thread_. Those steps can't overlap, so no mutex_ required.
@@ -120,38 +119,20 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   size_t prerequisites_remaining_ GUARDED_BY(mutex_) = 0u;
 
   // Elements added from main thread. Cleared on completion on worker_thread_.
-  // Each element in dependents_ is not yet in the kCompleted state and
-  // therefore is guaranteed to be alive.
-  struct Dependent {
+  // Each element in dependents_ is not yet in the kCompleted state.
+  struct Dependent final : public GarbageCollected<Dependent> {
    public:
-    Dependent(ThreadPoolTask* task, size_t index) : task(task), index(index) {}
-    ThreadPoolTask* task;
+    Dependent(Task* task, size_t index) : task(task), index(index) {
+      DCHECK(IsMainThread());
+    }
+    void Trace(Visitor* visitor) { visitor->Trace(task); }
+    Member<Task> task;
+    // The index in the dependent's argument array where this result should go.
     size_t index;
   };
-  HashSet<std::unique_ptr<Dependent>> dependents_ GUARDED_BY(mutex_);
+  Vector<CrossThreadPersistent<Dependent>> dependents_ GUARDED_BY(mutex_);
 
   Mutex mutex_;
-
-  base::WeakPtrFactory<ThreadPoolTask> weak_factory_;
-};
-
-// This is a thin, v8-exposed wrapper around ThreadPoolTask that allows
-// ThreadPoolTask to avoid being GarbageCollected.
-class Task : public ScriptWrappable {
-  DEFINE_WRAPPERTYPEINFO();
-
- public:
-  explicit Task(ThreadPoolTask* thread_pool_task)
-      : thread_pool_task_(thread_pool_task) {}
-  ~Task() override = default;
-
-  ScriptPromise result() { return thread_pool_task_->GetResult(); }
-  void cancel() { thread_pool_task_->Cancel(); }
-
-  ThreadPoolTask* GetThreadPoolTask() const { return thread_pool_task_.get(); }
-
- private:
-  scoped_refptr<ThreadPoolTask> thread_pool_task_;
 };
 
 }  // namespace blink
