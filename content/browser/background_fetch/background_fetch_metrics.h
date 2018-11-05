@@ -12,19 +12,6 @@ namespace content {
 
 namespace background_fetch {
 
-// Records the |error| status issued by the DataManager after it was requested
-// to mark a Background Fetch registration for deletion. The marking is invoked
-// by the scheduler controller after it is finished.
-void RecordSchedulerFinishedError(blink::mojom::BackgroundFetchError error);
-
-// Records the |error| status issued by the DataManager after it was requested
-// to create and store a new Background Fetch registration.
-void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error);
-
-// Records the |error| status issued by the DataManager after the storage
-// associated with a registration has been completely deleted.
-void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error);
-
 // Records the number of registrations that have unfinished fetches found on
 // start-up.
 void RecordRegistrationsOnStartup(int num_registrations);

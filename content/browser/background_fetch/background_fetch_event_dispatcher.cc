@@ -75,6 +75,41 @@ BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
+void BackgroundFetchEventDispatcher::DispatchBackgroundFetchCompletionEvent(
+    const BackgroundFetchRegistrationId& registration_id,
+    std::unique_ptr<BackgroundFetchRegistration> registration,
+    base::OnceClosure finished_closure) {
+  switch (registration->failure_reason) {
+    case blink::mojom::BackgroundFetchFailureReason::NONE:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::SUCCESS);
+      DispatchBackgroundFetchSuccessEvent(registration_id,
+                                          std::move(registration),
+                                          std::move(finished_closure));
+      return;
+    case blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI:
+    case blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::FAILURE);
+      DispatchBackgroundFetchAbortEvent(registration_id,
+                                        std::move(registration),
+                                        std::move(finished_closure));
+      return;
+    case blink::mojom::BackgroundFetchFailureReason::BAD_STATUS:
+    case blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR:
+    case blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE:
+    case blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED:
+    case blink::mojom::BackgroundFetchFailureReason::
+        TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::FAILURE);
+      DispatchBackgroundFetchFailEvent(registration_id, std::move(registration),
+                                       std::move(finished_closure));
+      return;
+  }
+  NOTREACHED();
+}
+
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
     const BackgroundFetchRegistrationId& registration_id,
     std::unique_ptr<BackgroundFetchRegistration> registration,

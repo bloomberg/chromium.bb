@@ -49,8 +49,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
       invalid_registration_id.developer_id(),
       invalid_registration_id.unique_id(),
       blink::mojom::BackgroundFetchResult::FAILURE,
-      blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
-  event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
+  event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
       invalid_registration_id, std::move(registration), run_loop.QuitClosure());
 
   run_loop.Run();
@@ -81,7 +81,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
         kExampleDeveloperId, kExampleUniqueId,
         blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
 
     run_loop.Run();
@@ -110,10 +110,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId2, kExampleUniqueId2,
         blink::mojom::BackgroundFetchResult::FAILURE,
-        blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(second_registration_id,
-                                                        std::move(registration),
-                                                        run_loop.QuitClosure());
+        blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
+        second_registration_id, std::move(registration),
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -217,7 +217,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
         kExampleDeveloperId, kExampleUniqueId,
         blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
-    event_dispatcher_.DispatchBackgroundFetchFailEvent(
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
 
     run_loop.Run();
@@ -243,9 +243,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
         kExampleDeveloperId2, kExampleUniqueId2,
         blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
-    event_dispatcher_.DispatchBackgroundFetchFailEvent(second_registration_id,
-                                                       std::move(registration),
-                                                       run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
+        second_registration_id, std::move(registration),
+        run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -279,7 +279,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
         kExampleDeveloperId, kExampleUniqueId,
         blink::mojom::BackgroundFetchResult::SUCCESS,
         blink::mojom::BackgroundFetchFailureReason::NONE);
-    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
 
     run_loop.Run();
@@ -308,7 +308,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
         kExampleDeveloperId2, kExampleUniqueId2,
         blink::mojom::BackgroundFetchResult::SUCCESS,
         blink::mojom::BackgroundFetchFailureReason::NONE);
-    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
+    event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
         second_registration_id, std::move(registration),
         run_loop.QuitClosure());
 

@@ -121,8 +121,6 @@ void BackgroundFetchServiceImpl::Fetch(
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
         base::nullopt /* registration */);
-    background_fetch::RecordRegistrationCreatedError(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
   }
 

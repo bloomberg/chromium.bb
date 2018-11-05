@@ -49,7 +49,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
 
     // Called when the delegate aborts a Background Fetch registration.
-    virtual void Abort(blink::mojom::BackgroundFetchFailureReason) = 0;
+    virtual void AbortFromDelegate(
+        blink::mojom::BackgroundFetchFailureReason) = 0;
 
     virtual ~Controller() {}
   };

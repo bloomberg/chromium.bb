@@ -129,7 +129,7 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_completed_ = true;
   }
 
-  void Abort(
+  void AbortFromDelegate(
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override {}
 
   bool request_started_ = false;
