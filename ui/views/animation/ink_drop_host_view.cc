@@ -230,6 +230,7 @@ void InkDropHostView::OnBlur() {
 }
 
 void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
+  View::OnMouseEvent(event);
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
       GetInkDrop()->SetHovered(true);
@@ -243,7 +244,6 @@ void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  View::OnMouseEvent(event);
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
