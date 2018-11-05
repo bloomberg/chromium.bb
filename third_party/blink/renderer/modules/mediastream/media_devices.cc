@@ -158,6 +158,15 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   return promise;
 }
 
+ScriptPromise MediaDevices::getDisplayMedia(
+    ScriptState* script_state,
+    const MediaStreamConstraints* options,
+    ExceptionState& exception_state) {
+  return SendUserMediaRequest(script_state,
+                              WebUserMediaRequest::MediaType::kDisplayMedia,
+                              options, exception_state);
+}
+
 const AtomicString& MediaDevices::InterfaceName() const {
   return event_target_names::kMediaDevices;
 }

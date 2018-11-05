@@ -23,7 +23,7 @@
   }
 
   function runGetDisplayMedia(constraints) {
-    navigator.getDisplayMedia(constraints).
+    navigator.mediaDevices.getDisplayMedia(constraints).
       then(handleSuccess).catch(handleError);
   }
 

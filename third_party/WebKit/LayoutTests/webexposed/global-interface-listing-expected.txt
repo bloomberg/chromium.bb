@@ -4278,6 +4278,7 @@ interface MediaDevices : EventTarget
     getter ondevicechange
     method constructor
     method enumerateDevices
+    method getDisplayMedia
     method getSupportedConstraints
     method getUserMedia
     setter ondevicechange
@@ -4719,7 +4720,6 @@ interface Navigator
     getter xr
     method constructor
     method getBattery
-    method getDisplayMedia
     method getGamepads
     method getInstalledRelatedApps
     method getUserMedia
