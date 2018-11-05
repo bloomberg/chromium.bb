@@ -210,7 +210,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _incognitoBlocker.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [_window addSubview:_incognitoBlocker];
+
+    // Adding |_incognitoBlocker| to |_window| won't cover overlay windows such
+    // as fullscreen video.  Instead use the sharedApplication |keyWindow|.
+    UIWindow* window = [[UIApplication sharedApplication] keyWindow];
+    [window addSubview:_incognitoBlocker];
   }
 
   // Do not save cookies if it is already in progress.
