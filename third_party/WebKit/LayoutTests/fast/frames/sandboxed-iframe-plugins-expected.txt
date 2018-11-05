@@ -6,10 +6,10 @@ This test verifies that sandboxing of plugins works as intended. Two tests are m
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS (self.embedFrame1.document.getElementById('plugin').postMessage) != undefined is true
 PASS (self.embedFrame2.document.getElementById('plugin').postMessage) == undefined is true
 PASS (self.objectFrame1.document.getElementById('plugin').postMessage) != undefined is true
@@ -17,4 +17,5 @@ PASS (self.objectFrame2.document.getElementById('plugin').postMessage) == undefi
 PASS successfullyParsed is true
 
 TEST COMPLETE
-     
+
+   

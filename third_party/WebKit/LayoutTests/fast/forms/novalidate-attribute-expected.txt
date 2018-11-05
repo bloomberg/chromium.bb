@@ -2,7 +2,6 @@ This test performs some simple check on the noValidate attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS f.hasAttribute('noValidate') is false
 PASS f.getAttribute('noValidate') is null
 PASS f.noValidate is false

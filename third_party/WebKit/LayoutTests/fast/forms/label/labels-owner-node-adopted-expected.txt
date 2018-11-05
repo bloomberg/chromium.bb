@@ -2,7 +2,6 @@ This tests moving a node with labels property from one document to another. The 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 The input element initially have two label elements #label1 and #label2.
 PASS labels = input.labels; labels.length is 2
 PASS label0 = labels[0]; label1 = labels[1]; iframe.contentDocument.body.appendChild(form); labels.length; label1.parentNode.removeChild(label1); labels.length is 1
@@ -13,4 +12,5 @@ PASS labels[1] is label1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

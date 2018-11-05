@@ -1,3 +1,7 @@
+foo
+bar
+qux
+baz
 
 PASS successfullyParsed is true
 

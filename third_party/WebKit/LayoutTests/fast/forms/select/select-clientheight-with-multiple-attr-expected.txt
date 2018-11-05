@@ -10,4 +10,22 @@ PASS getElemById('sel3').setAttribute('size', '1+ef'); clientHeight('sel3') < cl
 PASS successfullyParsed is true
 
 TEST COMPLETE
-    
+
+One
+One
+Two
+Three
+Four
+Five
+Six
+Seven
+Eight
+Nine
+Ten
+Eleven
+Twelve
+Thirteen
+Fourteen
+One
+Two
+Three

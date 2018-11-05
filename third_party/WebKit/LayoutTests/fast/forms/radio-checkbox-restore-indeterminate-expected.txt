@@ -1,6 +1,6 @@
-A  B
-Intermediate A  Intermediate B
-C  D
+A B
+Intermediate A Intermediate B
+C D
 Click did not unselect all radio buttons: PASS
 
 Checking whether default-prevented click clobbered indeterminate state:

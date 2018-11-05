@@ -2,7 +2,6 @@ HTMLTextAreaElement rows attribute test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.createElement("textarea").rows is 2
 PASS rowsAttributeEffect("") is 2
 PASS rowsAttributeEffect("1") is 1

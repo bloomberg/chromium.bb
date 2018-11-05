@@ -2,7 +2,6 @@ This test performs a check that :valid/:invalid CSS psudo selectors are lively a
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check the initial state:
 PASS backgroundOf(el) is invalidColor
 Change name:
@@ -50,4 +49,15 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
-
+empty
+another
+empty
+another
+X
+X
+X
+X
+X
+X
+X
+X

@@ -2,7 +2,6 @@ Test for Bug: 76995 - Checks whether indeterminate property works with various i
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS radioInput.indeterminate is true
 PASS checkboxInput.indeterminate is true
 PASS dateInput.indeterminate is true

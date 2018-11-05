@@ -7,7 +7,6 @@ Value sanitization test for input[type=color]
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS input.value = "#000000"; input.value is "#000000"
 PASS input.value = "#ABCDEF"; input.value is "#abcdef"
 PASS input.value = "#abcdef"; input.value is "#abcdef"
@@ -19,4 +18,5 @@ PASS input.value = " #223344 "; input.value is "#000000"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

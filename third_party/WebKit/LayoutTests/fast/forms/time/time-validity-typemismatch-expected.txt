@@ -2,7 +2,6 @@ This test aims to check for typeMismatch flag with type=time input fields
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "" is a correct valid time string.
 PASS "00:00" is a correct valid time string.
 PASS "23:59" is a correct valid time string.

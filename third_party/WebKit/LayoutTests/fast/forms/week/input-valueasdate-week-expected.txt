@@ -2,7 +2,6 @@ Tests for .valueAsDate with <input type=week>.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS valueAsDateFor("") is null
 PASS valueAsDateFor("2007-W01").getTime() is Date.UTC(2007, 0, 1)
 PASS valueAsDateFor("2008-W01").getTime() is Date.UTC(2007, 11, 31)

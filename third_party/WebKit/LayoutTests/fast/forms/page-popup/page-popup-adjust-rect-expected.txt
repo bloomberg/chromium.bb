@@ -2,7 +2,6 @@ Test for child elements of a datalist element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Move anchor element along the vertical axis.
 PASS popupWindow.adjustWindowRect(30, 10, 30, 10).toString() is "Rectangle(0,-10,30,10)"
 PASS popupWindow.adjustWindowRect(30, 10, 30, 10).toString() is "Rectangle(0,0,30,10)"
@@ -66,4 +65,5 @@ PASS popupWindow.adjustWindowRect(90, 10, 90, 10).toString() is "Rectangle(30,10
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

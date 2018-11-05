@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: ../resources/file-from-file-entry.js
 PASS [Worker] testFile.name is testFileEntry.name
 PASS [Worker] testFile.type is 'text/plain'

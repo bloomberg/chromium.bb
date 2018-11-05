@@ -2,7 +2,6 @@ Tests for HTMLOptionElement::defaultSelected
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS option1.defaultSelected is false
 PASS option1.defaultSelected = true; option1.hasAttribute("selected") is true
 PASS option1.selected is true

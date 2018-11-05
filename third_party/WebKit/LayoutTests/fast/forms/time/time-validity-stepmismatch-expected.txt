@@ -2,7 +2,6 @@ Check stepMismatch results for type=time.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Empty values
 PASS stepMismatchFor("", null, null) is false
 PASS stepMismatchFor("", "2", "12:34:56") is false
@@ -32,7 +31,9 @@ PASS stepMismatchFor("12:35", "any", "12:34") is false
 Disabled
 PASS stepMismatchFor("12:34:55.001", "1", "12:34:56", true) is false
 
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

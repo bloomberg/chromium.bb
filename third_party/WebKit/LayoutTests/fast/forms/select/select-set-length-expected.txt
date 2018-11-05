@@ -2,7 +2,6 @@ Tests that setting the .length of an HTMLSelectElement correctly creates and des
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS sel.length is 0
 PASS sel.length is 200
 PASS sel.length is 100

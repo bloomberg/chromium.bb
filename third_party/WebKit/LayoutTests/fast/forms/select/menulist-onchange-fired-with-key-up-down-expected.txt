@@ -1,6 +1,9 @@
 Selecting menu list options using up/down key should fire onchange event
 
-
+option 1
+option 2
+option 3
+option 4
 Pressing down arrow key
 PASS
 Pressing up arrow key

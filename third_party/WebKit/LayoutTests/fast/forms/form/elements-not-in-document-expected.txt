@@ -2,7 +2,6 @@ Test the elements collection when the form is not a descendant of the document. 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS i.getAttribute('name') is 'first'
 PASS i.name is 'first'
 PASS i.getAttribute('type') is 'text'

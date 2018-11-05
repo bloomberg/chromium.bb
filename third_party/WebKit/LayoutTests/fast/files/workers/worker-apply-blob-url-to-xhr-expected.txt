@@ -1,4 +1,3 @@
-
 Test that sync XMLHttpRequest GET succeeds.
 Status: 200
 Response: Hello

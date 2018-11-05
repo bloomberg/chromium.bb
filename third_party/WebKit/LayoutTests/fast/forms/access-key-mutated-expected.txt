@@ -2,7 +2,6 @@ Access key should work after accesskey attribute is mutated. To test this manual
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Pressing the "a" access key triggered a focus event.
 PASS Pressing the "b" access key triggered a focus event.
 PASS Pressing the "c" access key triggered a focus event.

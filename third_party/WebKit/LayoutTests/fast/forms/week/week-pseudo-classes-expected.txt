@@ -3,7 +3,6 @@ Test if an input field matches to various pseudo classes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS matchedNodesContainId(container, ":enabled", "enabled") is true
 PASS matchedNodesContainId(container, ":valid", "enabled") is true
 PASS matchedNodesContainId(container, ":optional", "enabled") is true

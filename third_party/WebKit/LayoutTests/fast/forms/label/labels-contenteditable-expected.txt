@@ -9,8 +9,8 @@ Test that labels with contenteditable attribute send focus and key events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 text tAext

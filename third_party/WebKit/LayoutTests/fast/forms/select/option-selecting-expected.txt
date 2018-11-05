@@ -2,7 +2,6 @@ Test the behavior of selecting and deselecting options in <select> elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 ListBox with no size attribute specified.
 PASS menuListBoxNoSize.selectedIndex is 1
 PASS menuListBoxNoSize.options[1].selected is true

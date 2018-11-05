@@ -2,7 +2,6 @@ Check stepMismatch results for type=month.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Empty values
 PASS stepMismatchFor("", null, null) is false
 PASS stepMismatchFor("", "2", "1969-12") is false
@@ -31,7 +30,9 @@ PASS stepMismatchFor("2010-03", "any", "2010-02") is false
 Disabled
 PASS stepMismatchFor("2010-03", "2", "2010-02", true) is false
 
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

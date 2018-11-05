@@ -2,7 +2,6 @@ Test if step limits available dates in calendar picker.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test Day constructor
 PASS new pw.Day(2000, 1, 2).year is 2000
 PASS new pw.Day(2000, 1, 2).month is 1
@@ -231,4 +230,5 @@ PASS pw.Month.parse("") is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

@@ -2,7 +2,6 @@ This test measures the width of textareas and text inputs for different fonts.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Lucida Grande
 input
 size=1 clientWidth=9
@@ -17,6 +16,7 @@ size=100 clientWidth=698
 size=500 clientWidth=3480
 size=1000 clientWidth=6958
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -29,6 +29,7 @@ cols=50 clientWidth=367
 cols=100 clientWidth=715
 cols=500 clientWidth=3497
 cols=1000 clientWidth=6975
+
 
 Courier
 input
@@ -44,6 +45,7 @@ size=100 clientWidth=662
 size=500 clientWidth=3303
 size=1000 clientWidth=6603
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -56,6 +58,7 @@ cols=50 clientWidth=350
 cols=100 clientWidth=680
 cols=500 clientWidth=3320
 cols=1000 clientWidth=6621
+
 
 Helvetica
 input
@@ -71,6 +74,7 @@ size=100 clientWidth=614
 size=500 clientWidth=3061
 size=1000 clientWidth=6120
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=32
@@ -83,6 +87,7 @@ cols=50 clientWidth=325
 cols=100 clientWidth=631
 cols=500 clientWidth=3078
 cols=1000 clientWidth=6137
+
 
 Monaco
 input
@@ -98,6 +103,7 @@ size=100 clientWidth=662
 size=500 clientWidth=3303
 size=1000 clientWidth=6603
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -110,6 +116,7 @@ cols=50 clientWidth=350
 cols=100 clientWidth=680
 cols=500 clientWidth=3320
 cols=1000 clientWidth=6621
+
 
 Times
 input
@@ -125,6 +132,7 @@ size=100 clientWidth=552
 size=500 clientWidth=2752
 size=1000 clientWidth=5502
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=30
@@ -137,6 +145,7 @@ cols=50 clientWidth=294
 cols=100 clientWidth=569
 cols=500 clientWidth=2769
 cols=1000 clientWidth=5519
+
 
 Andale Mono
 input
@@ -152,6 +161,7 @@ size=100 clientWidth=705
 size=500 clientWidth=3505
 size=1000 clientWidth=7005
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -164,6 +174,7 @@ cols=50 clientWidth=369
 cols=100 clientWidth=719
 cols=500 clientWidth=3519
 cols=1000 clientWidth=7019
+
 
 Arial
 input
@@ -179,6 +190,7 @@ size=100 clientWidth=606
 size=500 clientWidth=3006
 size=1000 clientWidth=6006
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=31
@@ -191,6 +203,7 @@ cols=50 clientWidth=319
 cols=100 clientWidth=619
 cols=500 clientWidth=3019
 cols=1000 clientWidth=6019
+
 
 Comic Sans MS
 input
@@ -206,6 +219,7 @@ size=100 clientWidth=608
 size=500 clientWidth=3008
 size=1000 clientWidth=6008
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=31
@@ -218,6 +232,7 @@ cols=50 clientWidth=319
 cols=100 clientWidth=619
 cols=500 clientWidth=3019
 cols=1000 clientWidth=6019
+
 
 Courier New
 input
@@ -233,6 +248,7 @@ size=100 clientWidth=704
 size=500 clientWidth=3504
 size=1000 clientWidth=7004
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -245,6 +261,7 @@ cols=50 clientWidth=369
 cols=100 clientWidth=719
 cols=500 clientWidth=3519
 cols=1000 clientWidth=7019
+
 
 Georgia
 input
@@ -260,6 +277,7 @@ size=100 clientWidth=606
 size=500 clientWidth=3006
 size=1000 clientWidth=6006
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=31
@@ -272,6 +290,7 @@ cols=50 clientWidth=319
 cols=100 clientWidth=619
 cols=500 clientWidth=3019
 cols=1000 clientWidth=6019
+
 
 Times New Roman
 input
@@ -287,6 +306,7 @@ size=100 clientWidth=606
 size=500 clientWidth=3006
 size=1000 clientWidth=6006
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=31
@@ -299,6 +319,7 @@ cols=50 clientWidth=319
 cols=100 clientWidth=619
 cols=500 clientWidth=3019
 cols=1000 clientWidth=6019
+
 
 Trebuchet MS
 input
@@ -314,6 +335,7 @@ size=100 clientWidth=606
 size=500 clientWidth=3006
 size=1000 clientWidth=6006
 
+
 textarea
 cols=1 clientWidth=25
 cols=2 clientWidth=31
@@ -326,6 +348,7 @@ cols=50 clientWidth=319
 cols=100 clientWidth=619
 cols=500 clientWidth=3019
 cols=1000 clientWidth=6019
+
 
 Verdana
 input
@@ -341,6 +364,7 @@ size=100 clientWidth=706
 size=500 clientWidth=3506
 size=1000 clientWidth=7006
 
+
 textarea
 cols=1 clientWidth=26
 cols=2 clientWidth=33
@@ -353,6 +377,7 @@ cols=50 clientWidth=369
 cols=100 clientWidth=719
 cols=500 clientWidth=3519
 cols=1000 clientWidth=7019
+
 
 Webdings
 input
@@ -368,6 +393,7 @@ size=100 clientWidth=1100
 size=500 clientWidth=5500
 size=1000 clientWidth=11000
 
+
 textarea
 cols=1 clientWidth=30
 cols=2 clientWidth=41
@@ -380,6 +406,7 @@ cols=50 clientWidth=569
 cols=100 clientWidth=1119
 cols=500 clientWidth=5519
 cols=1000 clientWidth=11019
+
 
 PASS successfullyParsed is true
 

@@ -1,4 +1,8 @@
-
+item 0
+item 1
+item 2
+item 3
+keyboard test
 Results:
 1) Make sure onChange doesn't fire when clicking on an initially selected item
 2) Make sure onChange fires when deselecting an initially selected item

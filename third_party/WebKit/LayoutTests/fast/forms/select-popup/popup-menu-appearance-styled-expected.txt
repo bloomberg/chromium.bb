@@ -1,3 +1,9 @@
+foo
+bar
+qux
+baz
+before separator
+after separator
 
 PASS successfullyParsed is true
 

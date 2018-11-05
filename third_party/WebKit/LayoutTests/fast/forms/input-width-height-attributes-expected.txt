@@ -2,7 +2,6 @@ width and height attributes of HTMLInputElement.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test case #1 : Image, HTML inline setting as "160", "80"
 PASS ('width' in image1) is true
 PASS ('height' in image1) is true
@@ -46,6 +45,15 @@ PASS button1.width,button1.height is 60,40
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
+
+
+
+
+
+
+
 
 
 

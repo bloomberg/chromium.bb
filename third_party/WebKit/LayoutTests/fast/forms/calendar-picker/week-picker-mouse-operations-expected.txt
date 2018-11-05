@@ -2,7 +2,6 @@ Tests if week picker mouse operations work as expected.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check that page popup doesn't exist at first.
 PASS document.getElementById("mock-page-popup") is null
 PASS currentMonth() is "2000-01"
@@ -68,4 +67,5 @@ PASS currentMonth() is "1999-06"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

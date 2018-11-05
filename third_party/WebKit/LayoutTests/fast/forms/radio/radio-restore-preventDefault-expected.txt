@@ -5,4 +5,5 @@ PASS document.getElementById("radio2").checked is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
-A  B
+
+A B

@@ -2,7 +2,6 @@ This test aims to check for typeMismatch flag with type=week input fields
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "" is a correct valid week string.
 PASS "0001-W01" is a correct valid week string.
 PASS "1583-W01" is a correct valid week string.

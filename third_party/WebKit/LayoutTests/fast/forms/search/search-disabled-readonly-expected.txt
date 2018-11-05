@@ -1,7 +1,10 @@
 
 
 
+
 This tests the behavior of a cancel button in search input forms.
+
+
 
 
 Test on the input form with disabled=false and readonly=false
@@ -14,6 +17,7 @@ PASS input.value is "foo"
 ... and then input one character:
 PASS input.value is "foob"
 
+
 Test on the input form with disabled=false and readonly=true
 Click the cancel button:
 PASS input.value is "foo"
@@ -23,6 +27,7 @@ Click the center of the form:
 PASS input.value is "foo"
 ... and then input one character:
 PASS input.value is "foo"
+
 
 Test on the input form with disabled=true and readonly=false
 Click the cancel button:
@@ -34,6 +39,7 @@ PASS input.value is "foo"
 ... and then input one character:
 PASS input.value is "foo"
 
+
 Test on the input form with disabled=true and readonly=true
 Click the cancel button:
 PASS input.value is "foo"
@@ -43,6 +49,7 @@ Click the center of the form:
 PASS input.value is "foo"
 ... and then input one character:
 PASS input.value is "foo"
+
 
 PASS successfullyParsed is true
 

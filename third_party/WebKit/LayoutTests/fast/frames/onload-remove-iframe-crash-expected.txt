@@ -3,5 +3,3 @@ This test checks for a crash that once happened in WebKit. The crash was caused 
 (For compatibility, WebKit loads about:blank and javascript: URLs synchronously).
 
 PASS: You didn't crash.
-
-

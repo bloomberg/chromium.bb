@@ -1,21 +1,79 @@
 ListBox In Multi-Coulumn
 This is test cases for BUG 70898.
 No outer
+Alpha
+Bravo
+Charlie
+Delta
 
+
+Alpha
+Bravo
+Charlie
+Delta
+
+
+Alpha
+Bravo
+Charlie
+Delta
 
 
 DIV outer
+Alpha
+Bravo
+Charlie
+Delta
 
+
+Alpha
+Bravo
+Charlie
+Delta
+
+
+Alpha
+Bravo
+Charlie
+Delta
 
 
 SPAN outer
- 
+Alpha
+Bravo
+Charlie
+Delta
+
+
+Alpha
+Bravo
+Charlie
+Delta
+
+
+Alpha
+Bravo
+Charlie
+Delta
 
 
 TABLE outer
+Alpha
+Bravo
+Charlie
+Delta
 
 
+Alpha
+Bravo
+Charlie
+Delta
 
+
+Alpha
+Bravo
+Charlie
+Delta
 Results
 PASSED c00
 PASSED c01

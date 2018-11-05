@@ -2,7 +2,6 @@ Test the File constructor.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS (new File([new Blob([new Blob])], 'world.html')) instanceof window.File is true
 PASS (new Blob([new File([], 'world.txt')])) instanceof window.Blob is true
 PASS (new Blob([new Blob([new File([new Blob], 'world.txt')])])) instanceof window.Blob is true

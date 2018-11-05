@@ -2,10 +2,10 @@ Tests that querying dimensions in an iframe returns the correct value even befor
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS heightBeforeLayout is heightAfterLayout
 PASS widthBeforeLayout is widthAfterLayout
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

@@ -2,7 +2,6 @@ Tests that key bindings work as expected.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check that page popup doesn't exist at first.
 PASS document.getElementById("mock-page-popup") is null
 Check that page popup exists.
@@ -40,4 +39,5 @@ PASS document.getElementById("month").value is "2016-12"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

@@ -2,7 +2,6 @@ Tests for assigning the value attribute to output elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 - Sets the defaultValue attribute with the value mode flag is in mode "defalut".
 PASS output.defaultValue is "defaultValue"
 PASS output.value is "defaultValue"

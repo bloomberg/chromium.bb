@@ -2,7 +2,6 @@ Test that the labels list of a form control is dynamically updated when removing
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check button
 PASS element.labels.length is 1
 PASS element.labels.length is 0
@@ -93,5 +92,4 @@ PASS element.labels.length is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
 

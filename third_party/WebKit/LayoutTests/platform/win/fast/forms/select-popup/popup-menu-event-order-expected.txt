@@ -8,3 +8,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+foo
+bar
+baz
+garply

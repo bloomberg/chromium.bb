@@ -1,6 +1,9 @@
 Selecting listbox options should fire oninput event
 
-
+option 1
+option 2
+option 3
+option 4
 Pressing down arrow key
 PASS
 Pressing down arrow key

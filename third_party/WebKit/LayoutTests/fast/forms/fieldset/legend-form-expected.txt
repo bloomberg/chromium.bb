@@ -9,9 +9,11 @@ PASS legendElement1.form is owner
 PASS legendElement2.form is null
 PASS legendElement3.form is null
 
+
 - Ensures that the legend's form attribute points its parent fieldset's form owner even if the element is within another form element.
 PASS fieldsetElement.form is owner
 PASS legendElement.form is owner
+
 
 - Ensures whether the form owner is set correctly for the legend when the value of form attribute of its parent fieldset changed.
 PASS fieldsetElement.form is form1

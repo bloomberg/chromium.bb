@@ -2,10 +2,10 @@ Multiple radio buttons/checkboxes with the same name should map to a countable c
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+Radio button: Male Female
+Checkbox: 1
+Checkbox: 1 2
 
-Radio button:  Male  Female
-Checkbox:  1
-Checkbox:  1  2
 
 PASS typeof document.f.cb0 is 'undefined'
 PASS document.f.cb1.nodeName is 'INPUT'

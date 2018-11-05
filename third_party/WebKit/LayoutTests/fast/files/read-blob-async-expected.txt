@@ -1,4 +1,3 @@
-
 Test reading a blob containing non-existent file
 readyState: 0
 Received loadstart event

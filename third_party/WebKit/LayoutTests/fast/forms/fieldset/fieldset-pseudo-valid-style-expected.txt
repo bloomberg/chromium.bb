@@ -2,7 +2,6 @@ Check if :valid/:invalid CSS pseudo selectors are lively applied for fieldsets
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Removing and adding required text inputs and modifying their value by a DOM tree mutation:
 PASS backgroundOf(fieldset1) is invalidColor
 PASS backgroundOf(sub1) is subInvalidColor
@@ -15,6 +14,7 @@ PASS backgroundOf(sub1) is subValidColor
 PASS input2.setAttribute("value", ""); backgroundOf(fieldset1) is invalidColor
 PASS backgroundOf(sub1) is subInvalidColor
 
+
 Disabling and marking inputs readonly by a DOM tree mutation:
 PASS backgroundOf(fieldset1) is invalidColor
 PASS backgroundOf(sub1) is subInvalidColor
@@ -25,9 +25,11 @@ PASS backgroundOf(sub1) is subInvalidColor
 PASS input1.setAttribute("readonly", "1"); backgroundOf(fieldset1) is validColor
 PASS backgroundOf(sub1) is subValidColor
 
+
 Adding a required text input that is not a direct child of the fieldset:
 PASS backgroundOf(fieldset1) is validColor
 PASS div1.appendChild(input1); backgroundOf(fieldset1) is invalidColor
+
 
 Nested fieldsets:
 PASS backgroundOf($("fieldset0")) is invalidColor
@@ -40,6 +42,7 @@ PASS input2.setAttribute("required", ""); backgroundOf($("fieldset0")) is invali
 PASS backgroundOf($("fieldset1")) is validColor
 PASS backgroundOf($("fieldset2")) is invalidColor
 
+
 Render multiple fieldsets and move an invalid input from one to another:
 PASS backgroundOf($("fieldset1")) is invalidColor
 PASS backgroundOf($("fieldset2")) is validColor
@@ -47,10 +50,12 @@ PASS backgroundOf($("fieldset3")) is validColor
 PASS backgroundOf($("fieldset1")) is validColor
 PASS backgroundOf($("fieldset3")) is invalidColor
 
+
 Ensure that invalid event was not triggered on style evaluation:
 PASS backgroundOf(fieldset1) is invalidColor
 PASS val is "0"
 PASS input1.checkValidity(); val is "1"
+
 
 PASS successfullyParsed is true
 

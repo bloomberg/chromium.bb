@@ -1,8 +1,6 @@
-
 Tests the webkitEntries attribute of <input type="file">
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 * Testing testCases[0]
 PASS Array.isArray(droppedEntries) is true

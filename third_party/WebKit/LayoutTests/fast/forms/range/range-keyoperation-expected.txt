@@ -33,9 +33,11 @@ PASS changeEventCounter is lastChangeEventCounter
 PASS input.value is "100"
 PASS changeEventCounter is lastChangeEventCounter
 
+
 RTL
 PASS input.value is "51"
 PASS input.value is "50"
+
 
 Tests for a vertical range
 Press the up arrow key:
@@ -54,6 +56,7 @@ Press the Home key:
 PASS input.value is "100"
 Press the End key:
 PASS input.value is "0"
+
 
 step=any cases
 Press the up arrow key:
@@ -92,12 +95,14 @@ PASS input.value is "0"
 PASS changeEventCounter is lastChangeEventCounter
 PASS input.value is "20"
 
+
 small range
 PASS input.value is "9"
 PASS input.value is "6"
 PASS input.value is "0"
 PASS input.value is "9"
 PASS input.value is "0"
+
 
 Disabled and read-only
 PASS input.value is "1"
@@ -106,6 +111,7 @@ PASS input.value is "1"
 PASS input.value is "1"
 PASS input.value is "1"
 PASS input.value is "1"
+
 
 PASS successfullyParsed is true
 

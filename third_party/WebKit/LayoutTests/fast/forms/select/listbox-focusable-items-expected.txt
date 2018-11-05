@@ -2,7 +2,6 @@ option/optgroup in menulist can be made focusable by setting tabindex as long as
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS isFocusable("optionA") is true
 PASS isFocusable("optionB") is false
 PASS isFocusable("optionC") is false
@@ -15,3 +14,9 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+A
+B
+C
+E
+G
+H

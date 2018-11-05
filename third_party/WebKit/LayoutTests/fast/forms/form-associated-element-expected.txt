@@ -2,7 +2,6 @@ Verify that only elements that are 'form associatable' get a form owner.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS elements.length > 0 is true
 Testing LABEL
 PASS formOwner is "not defined"
@@ -48,6 +47,7 @@ Testing SPAN
 PASS formOwner is "not defined"
 Testing IMG
 PASS formOwner is "not defined"
+
 
 Tests for association-by-parser:
 PASS form2['input1'] is defined.

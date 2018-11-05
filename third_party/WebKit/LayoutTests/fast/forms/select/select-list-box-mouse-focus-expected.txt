@@ -2,4 +2,7 @@ The select below should be focused because we dispatched a mouse down event to i
 
 PASS
 
-
+one
+two
+three
+four

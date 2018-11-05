@@ -2,7 +2,6 @@ Test for child elements of a datalist element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS e.willValidate is false
 PASS e.willValidate is true
 PASS w.querySelector(":invalid") is e
@@ -13,4 +12,5 @@ PASS document.getElementById("inLegend").willValidate is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

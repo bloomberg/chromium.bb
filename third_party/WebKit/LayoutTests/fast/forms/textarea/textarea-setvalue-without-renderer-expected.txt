@@ -3,5 +3,3 @@ This test checks for a regression against Glendale REGRESSION (Safari 416.12-417
 If the test passes, you will see a value of "success" below.
 
 value of textarea element is: success
-
-

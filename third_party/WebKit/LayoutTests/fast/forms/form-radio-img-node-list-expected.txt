@@ -2,7 +2,6 @@ Test RadioNodeLists returned by the HTMLFormElement named-getter.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check that if no 'listed elements' match by name, img elements are picked instead.
 PASS radioNodeList.length is 2
 PASS radioNodeList[0] instanceof HTMLImageElement is true

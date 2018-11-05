@@ -2,7 +2,6 @@ CR and LF in placeholder values should be stripped for input type. For textarea 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.visiblePlaceholder(input0) is "first line second line"
 PASS internals.visiblePlaceholder(input1) is ""
 PASS internals.visiblePlaceholder(textarea0) is "first line \r\nsecond line"

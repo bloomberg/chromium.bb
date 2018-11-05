@@ -2,7 +2,6 @@ This test aims to check for typeMismatch flag with type=date input fields
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "" is a correct valid date string.
 PASS "2009-09-07" is a correct valid date string.
 PASS "9999-12-31" is a correct valid date string.

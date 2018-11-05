@@ -2,7 +2,6 @@ valueMissing tests for radio buttons
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Without form element
 No checked button:
 PASS inputs[0].validity.valueMissing is true
@@ -21,6 +20,7 @@ PASS inputs[0].validity.valueMissing is false
 PASS inputs[1].validity.valueMissing is false
 PASS inputs[2].validity.valueMissing is false
 
+
 With form element
 No checked button:
 PASS inputs[0].validity.valueMissing is true
@@ -38,6 +38,7 @@ The third button has been checked:
 PASS inputs[0].validity.valueMissing is false
 PASS inputs[1].validity.valueMissing is false
 PASS inputs[2].validity.valueMissing is false
+
 
 Not in a radio button group
 PASS requiredButton.validity.valueMissing is false

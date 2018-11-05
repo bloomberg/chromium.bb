@@ -2,4 +2,5 @@ This tests that the correct form control element is activated when clicking on a
 label1
 label2
 
+
 SUCCESS

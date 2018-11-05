@@ -2,7 +2,6 @@ Access key should work case-insensitively. To test this manually, press <alt>+a,
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Pressing the "a" access key triggered a focus event.
 PASS Pressing the "B" access key triggered a focus event.
 PASS Pressing the "C" access key triggered a focus event.

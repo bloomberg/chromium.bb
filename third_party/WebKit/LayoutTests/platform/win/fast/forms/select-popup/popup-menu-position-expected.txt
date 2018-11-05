@@ -1,4 +1,3 @@
-
 PASS popupWindowRect.x is 0
 PASS popupWindowRect.y is menuHeight
 PASS popupWindowRect.x is screenWidth - popupWindowRect.width

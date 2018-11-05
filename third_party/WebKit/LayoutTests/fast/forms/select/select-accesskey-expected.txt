@@ -1,4 +1,6 @@
- Press Ctrl-Option-A (or Alt-A on Windows) to activate the select. Works as layout test too using eventSender.
+blaa
+jee
+Press Ctrl-Option-A (or Alt-A on Windows) to activate the select. Works as layout test too using eventSender.
 focus event:
 PASS 1
 click event:

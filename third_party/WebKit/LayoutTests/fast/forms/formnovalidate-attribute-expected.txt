@@ -2,7 +2,6 @@ This test performs some simple check on the formnovalidate attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS i.hasAttribute('formNoValidate') is false
 PASS i.getAttribute('formNoValidate') is null
 PASS i.formNoValidate is false

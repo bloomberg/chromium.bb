@@ -2,6 +2,4 @@ Tests behavior of code that calls select() inside an onclick handler. The entire
 
 The test runs only under DumpRenderTree with eventSender; if you test by hand the test result below will say FAIL.
 
-
-
 PASS

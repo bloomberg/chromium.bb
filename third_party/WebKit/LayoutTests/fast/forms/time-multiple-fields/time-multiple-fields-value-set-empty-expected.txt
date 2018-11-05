@@ -2,10 +2,10 @@ Check if input.value="" clears an input with partially-specified value.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Empty text: --:-- --
 PASS eventSender.keyDown("ArrowUp"); getUserAgentShadowTextContent(input) is not emptyText
 PASS input.value = ""; getUserAgentShadowTextContent(input) is emptyText
+
 
 Initial text: --:--:45 --
 Empty value should not clear read-only fields.
@@ -16,4 +16,5 @@ PASS input.value = ""; getUserAgentShadowTextContent(input) is "--:--:45 --"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

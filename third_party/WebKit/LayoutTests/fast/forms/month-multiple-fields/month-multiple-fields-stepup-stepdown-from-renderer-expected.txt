@@ -2,7 +2,6 @@ Check stepping-up and -down for month input fields from renderer.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Function arguments are (value, min, max, [keySequence]).
 Month
 PASS stepUp("2000-05", "2000-05", "2000-10") is "2000-06"
@@ -28,6 +27,7 @@ PASS stepUp("1990-01", "2000-01", "2009-12") is "2000-01"
 PASS stepDown("1990-01", "2000-01", "2009-12") is "2009-01"
 PASS stepUp("2020-01", "2000-01", "2000-12") is "2000-01"
 PASS stepDown("2020-01", "2000-01", "2000-12") is "2000-01"
+
 
 PASS successfullyParsed is true
 

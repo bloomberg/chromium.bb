@@ -2,7 +2,6 @@ Tests if value selection by calendar picker dispatches correct events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Choosing a new date value from the calendar picker. No events should be dispatched because the hour field and the minutes field are empty.
 PASS datetimelocal1.value is ""
 PASS eventsCounter.input is undefined.
@@ -16,4 +15,5 @@ PASS eventsCounter.change is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

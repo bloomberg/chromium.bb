@@ -4,7 +4,3 @@ If the test passes for both textarea and text input elements you'll see two mess
 
 Passed.
 Passed.
-
-
-
-

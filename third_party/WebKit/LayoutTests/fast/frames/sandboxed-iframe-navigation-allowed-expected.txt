@@ -4,10 +4,10 @@ This test verifies that a sandboxed iframe CAN navigate both itself and a child 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS (self.sandboxedFrame.frameWithPlugin.document.getElementById('plugin').postMessage) == undefined is true
 PASS (self.frameWithPlugin.document.getElementById('plugin').postMessage) != undefined is true
 PASS document.getElementById('sandboxedFrameId').sandbox is ['allow-scripts', 'allow-same-origin']
@@ -15,4 +15,5 @@ PASS document.getElementById('sandboxedFrameId').getAttribute('sandbox') is 'all
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  
+
+ 

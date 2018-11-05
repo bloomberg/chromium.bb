@@ -5,7 +5,7 @@ If the test passes, you should see a line saying "focused 2", then 3.
 legend.focus() should not delegate focus.
 
 Legend
-
 Label2 Label3
+
 focused 2
 focused 3
