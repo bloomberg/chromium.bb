@@ -35,9 +35,9 @@ IOSSecurityInterstitialPage::~IOSSecurityInterstitialPage() {}
 
 void IOSSecurityInterstitialPage::Show() {
   DCHECK(!web_interstitial_);
-  web_interstitial_ = web::WebInterstitial::CreateHtmlInterstitial(
+  web_interstitial_ = web::WebInterstitial::CreateInterstitial(
       web_state_, ShouldCreateNewNavigation(), request_url_,
-      std::unique_ptr<web::HtmlWebInterstitialDelegate>(this));
+      std::unique_ptr<web::WebInterstitialDelegate>(this));
   web_interstitial_->Show();
   AfterShow();
 }
