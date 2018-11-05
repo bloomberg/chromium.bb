@@ -28,7 +28,7 @@ namespace {
 constexpr char kMountScheme[] = "drivefs://";
 constexpr char kDataPath[] = "GCache/v2";
 constexpr char kIdentityConsumerId[] = "drivefs";
-constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 
 class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
  public:
