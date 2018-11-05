@@ -674,14 +674,37 @@ class SetMouseCaptureInterceptor
 // that might otherwise cause unpredictable behaviour in tests.
 class SystemEventRewriter : public ui::EventRewriter {
  public:
+  // Helper class to allow events to pass through for the lifetime of the
+  // object. Use this when tests generate events. This is needed under mash
+  // because the generate events reach SystemEventRewriter and will be dropped
+  // if there is no ScopedAllow instance.
+  // Note that allowing system events can cause flakiness in browser tests that
+  // don't expect them.
+  class ScopedAllow {
+   public:
+    explicit ScopedAllow(SystemEventRewriter* rewriter) : rewriter_(rewriter) {
+      ++rewriter_->num_of_scoped_allows_;
+    }
+    ~ScopedAllow() {
+      DCHECK_GT(rewriter_->num_of_scoped_allows_, 0);
+      --rewriter_->num_of_scoped_allows_;
+    }
+
+   private:
+    SystemEventRewriter* const rewriter_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedAllow);
+  };
+
   SystemEventRewriter() = default;
-  ~SystemEventRewriter() override {}
+  ~SystemEventRewriter() override = default;
 
  private:
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
       std::unique_ptr<ui::Event>* new_event) override {
-    return ui::EVENT_REWRITE_DISCARD;
+    return num_of_scoped_allows_ ? ui::EVENT_REWRITE_CONTINUE
+                                 : ui::EVENT_REWRITE_DISCARD;
   }
 
   ui::EventRewriteStatus NextDispatchEvent(
@@ -690,6 +713,10 @@ class SystemEventRewriter : public ui::EventRewriter {
     NOTREACHED();
     return ui::EVENT_REWRITE_CONTINUE;
   }
+
+  // Count of ScopedAllow objects. When it is greater than 0, events are allowed
+  // to pass. Otherwise, they are discarded.
+  int num_of_scoped_allows_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SystemEventRewriter);
 };
@@ -707,11 +734,11 @@ class SitePerProcessHitTestBrowserTest
   void PreRunTestOnMainThread() override {
     SitePerProcessBrowserTest::PreRunTestOnMainThread();
     // Disable system mouse events, which can interfere with tests.
-    shell()->window()->GetHost()->AddEventRewriter(&event_rewriter);
+    shell()->window()->GetHost()->AddEventRewriter(&event_rewriter_);
   }
 
   void PostRunTestOnMainThread() override {
-    shell()->window()->GetHost()->RemoveEventRewriter(&event_rewriter);
+    shell()->window()->GetHost()->RemoveEventRewriter(&event_rewriter_);
     SitePerProcessBrowserTest::PostRunTestOnMainThread();
   }
 #endif
@@ -732,7 +759,7 @@ class SitePerProcessHitTestBrowserTest
 
   base::test::ScopedFeatureList feature_list_;
 #if defined(USE_AURA)
-  SystemEventRewriter event_rewriter;
+  SystemEventRewriter event_rewriter_;
 #endif
 };
 
@@ -3671,6 +3698,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   InputEventAckWaiter ack_waiter(child_frame_host->GetRenderWidgetHost(),
                                  blink::WebInputEvent::kGestureTap);
 
+#if defined(USE_AURA)
+  // Allows the gesture events to go through under mash.
+  SystemEventRewriter::ScopedAllow scoped_allow(&event_rewriter_);
+#endif
   render_widget_host->QueueSyntheticGesture(
       std::move(gesture), base::BindOnce([](SyntheticGesture::Result result) {
         EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
