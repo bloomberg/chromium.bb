@@ -36,7 +36,6 @@ namespace blink {
 
 inline SVGDiscardElement::SVGDiscardElement(Document& document)
     : SVGSMILElement(svg_names::kDiscardTag, document) {
-  DCHECK(RuntimeEnabledFeatures::SMILEnabled());
 }
 
 DEFINE_NODE_FACTORY(SVGDiscardElement)

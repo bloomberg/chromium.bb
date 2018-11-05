@@ -1194,10 +1194,6 @@
       name: "SlimmingPaintV2",
     },
     {
-      name: "SMIL",
-      status: "stable",
-    },
-    {
       name: "SmoothScrollJSIntervention",
       status: "stable",
     },

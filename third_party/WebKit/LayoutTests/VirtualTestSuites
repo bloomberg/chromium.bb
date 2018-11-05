@@ -211,11 +211,6 @@
     "args": ["--stable-release-mode"]
   },
   {
-    "prefix": "without-smil",
-    "base": "svg/animations/exposed",
-    "args": ["--disable-blink-features=SMIL"]
-  },
-  {
     "prefix": "linux-subpixel",
     "base": "platform/linux/fast/text/subpixel",
     "args": ["--enable-webkit-text-subpixel-positioning"]
