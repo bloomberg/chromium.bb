@@ -19,6 +19,7 @@ const $fidl__kLE = true;
 
 const $fidl__kUserspaceTxidMask = 0x7fffffff;
 const $fidl__kHandlePresent = 0xffffffff;
+const $fidl__kInvalidUnionTag = 0xffffffff;
 var $fidl__nextTxid = 1;
 
 function $fidl__align(size) {

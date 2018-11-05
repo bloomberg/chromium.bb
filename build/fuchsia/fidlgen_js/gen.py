@@ -115,8 +115,8 @@ class Compiler(object):
       self._CompileConst(c)
     for e in self.fidl.enum_declarations:
       self._CompileEnum(e)
-    if self.fidl.union_declarations:
-      raise NotImplementedError()
+    for u in self.fidl.union_declarations:
+      self._CompileUnion(u)
     for s in self.fidl.struct_declarations:
       self._CompileStruct(s)
     for i in self.fidl.interface_declarations:
@@ -163,6 +163,85 @@ const %(name)s = {
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
+  def _CompileUnion(self, union):
+    compound = _ParseCompoundIdentifier(union.name)
+    name = _CompileCompoundIdentifier(compound)
+    member_names = []
+    enc_cases = []
+    for i, m in enumerate(union.members):
+      member_name = _ChangeIfReserved(m.name)
+      member_names.append(member_name)
+      member_type = self._CompileType(m.type)
+      enc_cases.append('''\
+      case %(index)s:
+        _kTT_%(member_type)s.enc(e, o + 4, v.%(member_name)s);
+        break;''' % {
+          'index': i,
+          'member_type': member_type,
+          'member_name': member_name,
+      })
+
+    self.f.write('''\
+const _kTT_%(name)s = {
+  enc: function(e, o, v) {
+    if (v.$tag === $fidl__kInvalidUnionTag) throw "invalid tag";
+    e.data.setUint32(o, v.$tag, $fidl__kLE);
+    switch (v.$tag) {
+%(enc_cases)s
+    }
+  },
+  dec: function(d, o) {
+    throw 'not implemented crbug.com/883496'
+  },
+};
+
+const _kTT_%(name)s_Nullable = {
+  enc: function(e, o, v) {
+    e.data.setUint32(o, v ? 0xffffffff : 0, $fidl__kLE);
+    e.data.setUint32(o + 4, v ? 0xffffffff : 0, $fidl__kLE);
+    e.outOfLine.push([function() {
+      var start = e.alloc(%(size)s);
+      _kTT_%(name)s.enc(e, start, v);
+    }]);
+  },
+  dec: function(d, o) {
+    throw 'not implemented crbug.com/883496'
+  },
+};
+
+/**
+ * @constructor
+ */
+function %(name)s() { this.reset(); }
+
+%(name)s.prototype.reset = function(i) {
+  this.$tag = (i === undefined) ? $fidl__kInvalidUnionTag : i;
+''' % {
+        'name': name,
+        'size': union.size,
+        'enc_cases': '\n'.join(enc_cases),
+    })
+    for m in member_names:
+      self.f.write('  this.%s = null;\n' % m)
+    self.f.write('}\n\n')
+
+    for i, m in enumerate(member_names):
+      self.f.write('''\
+%(name)s.prototype.set_%(member_name)s = function(v) {
+  this.reset(%(index)s);
+  this.%(member_name)s = v;
+};
+
+%(name)s.prototype.is_%(member_name)s = function() {
+  return this.$tag === %(index)s;
+};
+
+''' % {
+          'name': name,
+          'member_name': m,
+          'index': i,
+      })
+
   def _CompileStruct(self, struct):
     compound = _ParseCompoundIdentifier(struct.name)
     name = _CompileCompoundIdentifier(compound)
@@ -183,6 +262,12 @@ function %(name)s(%(param_names)s) {
       if member.maybe_default_value:
         value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' +
                  _CompileConstant(member.maybe_default_value))
+      elif self.fidl.declarations.get(member.type.identifier) == \
+          fidl.DeclarationsMap.UNION:
+        union_compound = _ParseCompoundIdentifier(member.type.identifier)
+        union_name = _CompileCompoundIdentifier(union_compound)
+        value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' + 'new '
+                 + union_name + '()')
       self.f.write(('  this.%(member_name)s = ' + value + ';\n') %
                    {'member_name': member_name})
     self.f.write('}\n\n')
@@ -224,6 +309,8 @@ function %(name)s(%(param_names)s) {
     })
 
   def _CompileType(self, t):
+    """Ensures there's a type table for the given type, and returns the stem of
+    its name."""
     if t.kind == fidl.TypeKind.PRIMITIVE:
       return t.subtype
     elif t.kind == fidl.TypeKind.STRING:
@@ -231,7 +318,7 @@ function %(name)s(%(param_names)s) {
     elif t.kind == fidl.TypeKind.IDENTIFIER:
       compound = _ParseCompoundIdentifier(t.identifier)
       name = _CompileCompoundIdentifier(compound)
-      return name
+      return name + ('_Nullable' if t.nullable else '')
     elif t.kind == fidl.TypeKind.HANDLE:
       return 'Handle'
     elif t.kind == fidl.TypeKind.ARRAY:

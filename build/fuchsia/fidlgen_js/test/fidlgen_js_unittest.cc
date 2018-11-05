@@ -220,6 +220,22 @@ class TestolaImpl : public fidljstest::Testola {
     callback(std::move(log));
   }
 
+  void ReceiveUnions(fidljstest::StructOfMultipleUnions somu) override {
+    EXPECT_TRUE(somu.initial.is_swb());
+    EXPECT_TRUE(somu.initial.swb().some_bool);
+
+    EXPECT_TRUE(somu.optional.get());
+    EXPECT_TRUE(somu.optional->is_lswa());
+    for (int i = 0; i < 32; ++i) {
+      EXPECT_EQ(somu.optional->lswa().components[i], i * 99);
+    }
+
+    EXPECT_TRUE(somu.trailing.is_swu());
+    EXPECT_EQ(somu.trailing.swu().length, 123456u);
+
+    did_receive_union_ = true;
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -231,6 +247,8 @@ class TestolaImpl : public fidljstest::Testola {
   zx_handle_t unowned_log_handle() const { return unowned_log_handle_; }
 
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
+
+  bool did_receive_union() const { return did_receive_union_; }
 
   void CallResponseCallbacks() {
     for (auto& cb : response_callbacks_) {
@@ -249,6 +267,7 @@ class TestolaImpl : public fidljstest::Testola {
   fidljstest::BasicStruct basic_struct_;
   std::vector<base::OnceClosure> response_callbacks_;
   zx_handle_t unowned_log_handle_;
+  bool did_receive_union_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -592,6 +611,41 @@ TEST_F(FidlGenJsTest, HandlePassing) {
 
   // Ensure we didn't pass away our default job.
   EXPECT_NE(GetKoidForHandle(*zx::job::default_job()), ZX_KOID_INVALID);
+}
+
+TEST_F(FidlGenJsTest, UnionSend) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+    var somu = new StructOfMultipleUnions();
+
+    var swb = new StructWithBool(/*some_bool*/ true);
+    somu.initial.set_swb(swb);
+
+    var lswa = new LargerStructWithArray([]);
+    for (var i = 0; i < 32; ++i) {
+      lswa.components[i] = i * 99;
+    }
+    somu.optional.set_lswa(lswa);
+
+    somu.trailing.set_swu(new StructWithUint(123456));
+
+    proxy.ReceiveUnions(somu);
+  )";
+  helper.runner().Run(source, "test.js");
+
+  base::RunLoop().RunUntilIdle();
+
+  // Expectations on the contents of the union are checked in the body of
+  // TestolaImpl::ReceiveAUnion().
+  EXPECT_TRUE(testola_impl.did_receive_union());
 }
 
 int main(int argc, char** argv) {

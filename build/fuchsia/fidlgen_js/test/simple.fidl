@@ -33,6 +33,30 @@ struct StuffAndThings {
   array<int32>:ARRRR_SIZE arrrr;
 };
 
+struct StructWithBool {
+  bool some_bool = false;
+};
+
+struct StructWithUint {
+  uint32 length;
+};
+
+struct LargerStructWithArray {
+  array<int32>:32 components;
+};
+
+union UnionOfStructs {
+  StructWithBool swb;
+  StructWithUint swu;
+  LargerStructWithArray lswa;
+};
+
+struct StructOfMultipleUnions {
+  UnionOfStructs initial;
+  UnionOfStructs? optional;
+  UnionOfStructs trailing;
+};
+
 interface Testola {
   1: DoSomething();
 
@@ -49,4 +73,6 @@ interface Testola {
   7: NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
 
   8: PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
+
+  9: ReceiveUnions(StructOfMultipleUnions somu);
 };
