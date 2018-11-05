@@ -138,7 +138,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     private void handleResponses(
             String fileName, DirectoryOption directoryOption, boolean dontShowAgain) {
         // If there's no file location, treat as a cancellation.
-        if (directoryOption == null || directoryOption.location == null) {
+        if (directoryOption == null || directoryOption.location == null || fileName == null) {
             cancel();
             return;
         }
