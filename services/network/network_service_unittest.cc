@@ -1172,6 +1172,14 @@ TEST_F(NetworkServiceTestWithService,
   EXPECT_TRUE(network_context.encountered_error());
 }
 
+TEST_F(NetworkServiceTestWithService, GetDnsConfigChangeManager) {
+  mojom::DnsConfigChangeManagerPtr ptr;
+  ASSERT_FALSE(ptr.is_bound());
+
+  network_service_->GetDnsConfigChangeManager(mojo::MakeRequest(&ptr));
+  EXPECT_TRUE(ptr.is_bound());
+}
+
 class TestNetworkChangeManagerClient
     : public mojom::NetworkChangeManagerClient {
  public:

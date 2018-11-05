@@ -199,3 +199,17 @@ interface HostResolver {
               ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
 };
+
+// A client interface that subscribes to DNS config change events from
+// DnsConfigChangeManager.
+interface DnsConfigChangeManagerClient {
+  // Notifies that a potential change has been detected in the DNS settings of
+  // the system that may affect results of host resolution.
+  OnSystemDnsConfigChanged();
+};
+
+// An interface that broadcasts DNS config change events.
+interface DnsConfigChangeManager {
+  // Requests to receive notification when there is a DNS config change.
+  RequestNotifications(DnsConfigChangeManagerClient client_ptr);
+};

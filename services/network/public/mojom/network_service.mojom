@@ -295,6 +295,9 @@ interface NetworkService {
   GetNetworkQualityEstimatorManager(
       NetworkQualityEstimatorManager& network_quality_estimator_manager);
 
+  // Gets the DnsConfigChangeManager.
+  GetDnsConfigChangeManager(DnsConfigChangeManager& dns_config_change_manager);
+
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
 
