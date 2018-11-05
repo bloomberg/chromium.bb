@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
@@ -53,6 +54,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -65,8 +67,10 @@
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -798,6 +802,17 @@ void AppMenuModel::Build() {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
+
+  if (chrome::ShouldDisplayManagedUi(browser_->profile())) {
+    AddSeparator(ui::LOWER_SEPARATOR);
+    const int kIconSize = 20;
+    const auto icon = gfx::CreateVectorIcon(gfx::IconDescription(
+        vector_icons::kBusinessIcon, kIconSize, gfx::kChromeIconGrey,
+        base::TimeDelta(), gfx::kNoneIcon));
+    AddHighlightedItemWithStringIdAndIcon(IDC_MANAGED_UI_HELP,
+                                          IDS_MANAGED_BY_ORG, icon);
+  }
+
   uma_action_recorded_ = false;
 }
 

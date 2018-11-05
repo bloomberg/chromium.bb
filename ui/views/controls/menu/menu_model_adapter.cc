@@ -83,6 +83,9 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
     case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
       type = MenuItemView::ACTIONABLE_SUBMENU;
       break;
+    case ui::MenuModel::TYPE_HIGHLIGHTED:
+      type = MenuItemView::HIGHLIGHTED;
+      break;
   }
 
   if (*type == MenuItemView::SEPARATOR) {

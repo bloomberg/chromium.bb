@@ -92,6 +92,9 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuSeparatorColor:
     case kColorId_MenuBackgroundColor:
     case kColorId_MenuBorderColor:
+    case kColorId_HighlightedMenuItemBackgroundColor:
+    case kColorId_HighlightedMenuItemForegroundColor:
+    case kColorId_FocusedHighlightedMenuItemBackgroundColor:
     case kColorId_LinkDisabled:
     case kColorId_TabBottomBorder:
     case kColorId_TabTitleColorActive:

@@ -119,6 +119,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemMinorTextColor:
       return SkColorSetA(SK_ColorBLACK, 0x89);
+    case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+      return gfx::kGoogleGrey050;
+    case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+      return gfx::kGoogleGrey900;
+    case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
+      return gfx::kGoogleGrey200;
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:

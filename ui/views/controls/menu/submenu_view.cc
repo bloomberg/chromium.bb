@@ -469,17 +469,18 @@ bool SubmenuView::GetShowSelection(MenuItemView* item) {
 MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
   if (!scroll_view_container_) {
     scroll_view_container_ = new MenuScrollViewContainer(this);
-    if (GetMenuItem()->GetParentMenuItem() == nullptr) {
-      // Top-level menu, this may have a footnote. Submenus can't have a
-      // footnote, because they share the |MenuDelegate| with their parent.
-      View* footnote_view = GetMenuItem()->GetDelegate()->CreateFootnoteView();
-      if (footnote_view)
-        scroll_view_container_->SetFootnoteView(footnote_view);
-    }
     // Otherwise MenuHost would delete us.
     scroll_view_container_->set_owned_by_client();
   }
   return scroll_view_container_;
+}
+
+MenuItemView* SubmenuView::GetLastItem() {
+  for (int i = child_count() - 1; i >= 0; i--) {
+    if (child_at(i)->id() == MenuItemView::kMenuItemViewID)
+      return static_cast<MenuItemView*>(child_at(i));
+  }
+  return nullptr;
 }
 
 void SubmenuView::MenuHostDestroyed() {

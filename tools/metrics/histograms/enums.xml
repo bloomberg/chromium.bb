@@ -29148,6 +29148,7 @@ from previous Chrome versions.
   <int value="-1710772665" label="disable-my-files-navigation"/>
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
+  <int value="-1701123067" label="ShowManagedUi:enabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
   <int value="-1694353093" label="ArcVpn:disabled"/>
@@ -30646,6 +30647,7 @@ from previous Chrome versions.
   <int value="1111871757" label="ForceUnifiedConsentBump:enabled"/>
   <int value="1112051724" label="DetectingHeavyPages:enabled"/>
   <int value="1112885300" label="VizHitTestDrawQuad:disabled"/>
+  <int value="1113196543" label="ShowManagedUi:disabled"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115476442" label="PolicyTool:disabled"/>

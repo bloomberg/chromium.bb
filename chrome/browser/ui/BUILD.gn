@@ -869,6 +869,8 @@ jumbo_split_static_library("ui") {
       "layout_constants.h",
       "location_bar/location_bar.cc",
       "location_bar/location_bar.h",
+      "managed_ui.cc",
+      "managed_ui.h",
       "media_router/cast_dialog_controller.h",
       "media_router/cast_dialog_model.cc",
       "media_router/cast_dialog_model.h",

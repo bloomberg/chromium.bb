@@ -133,6 +133,12 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
     case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
       return gfx::kPlaceholderColor;
+    // Fallback to the same colors as Aura.
+    case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+    case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+    case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
+      return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          color_id);
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:

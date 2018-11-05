@@ -31,6 +31,9 @@ struct EnumTraits<ash::mojom::MenuItemType, ui::MenuModel::ItemType> {
         return ash::mojom::MenuItemType::SUBMENU;
       case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
         return ash::mojom::MenuItemType::ACTIONABLE_SUBMENU;
+      case ui::MenuModel::TYPE_HIGHLIGHTED:
+        NOTREACHED() << "TYPE_HIGHLIGHTED is not yet supported";
+        return ash::mojom::MenuItemType::COMMAND;
     }
     NOTREACHED();
     return ash::mojom::MenuItemType::COMMAND;

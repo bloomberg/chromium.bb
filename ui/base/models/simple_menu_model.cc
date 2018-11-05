@@ -119,6 +119,15 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
 }
 
+void SimpleMenuModel::AddHighlightedItemWithStringIdAndIcon(
+    int command_id,
+    int string_id,
+    const gfx::ImageSkia& icon) {
+  Item item(command_id, TYPE_HIGHLIGHTED, l10n_util::GetStringUTF16(string_id));
+  item.icon = gfx::Image(icon);
+  AppendItem(std::move(item));
+}
+
 void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
   if (items_.empty()) {
     if (separator_type == NORMAL_SEPARATOR) {

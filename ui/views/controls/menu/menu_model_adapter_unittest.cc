@@ -241,6 +241,9 @@ void CheckSubmenu(const RootModel& model,
       case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
         EXPECT_EQ(views::MenuItemView::ACTIONABLE_SUBMENU, item->GetType());
         break;
+      case ui::MenuModel::TYPE_HIGHLIGHTED:
+        EXPECT_EQ(views::MenuItemView::HIGHLIGHTED, item->GetType());
+        break;
     }
 
     // Check enabled state.
@@ -311,6 +314,9 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
         break;
       case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
         EXPECT_EQ(views::MenuItemView::ACTIONABLE_SUBMENU, item->GetType());
+        break;
+      case ui::MenuModel::TYPE_HIGHLIGHTED:
+        EXPECT_EQ(views::MenuItemView::HIGHLIGHTED, item->GetType());
         break;
     }
 
