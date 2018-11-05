@@ -39,6 +39,7 @@ class BrowserCompositorMacClient {
           child_allocated_local_surface_id,
       const base::Optional<base::TimeTicks>&
           child_local_surface_id_allocation_time) = 0;
+  virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and
@@ -62,10 +63,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   // These will not return nullptr until Destroy is called.
   DelegatedFrameHost* GetDelegatedFrameHost();
-
-  // Ensure that the currect compositor frame be cleared (even if it is
-  // potentially visible).
-  void ClearCompositorFrame();
 
   bool RequestRepaintForTesting();
 
@@ -138,7 +135,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   float GetDeviceScaleFactor() const override;
-  void WasEvicted() override;
+  void AllocateNewSurfaceIdOnEviction() override;
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
 
   base::WeakPtr<BrowserCompositorMac> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

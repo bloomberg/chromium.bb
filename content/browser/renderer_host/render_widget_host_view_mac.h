@@ -397,6 +397,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
           child_allocated_local_surface_id,
       const base::Optional<base::TimeTicks>&
           child_local_surface_id_allocation_time) override;
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
 
   // AcceleratedWidgetMacNSView implementation.
   void AcceleratedWidgetCALayerParamsUpdated() override;

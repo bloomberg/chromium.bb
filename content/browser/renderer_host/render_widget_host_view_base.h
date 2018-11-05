@@ -602,6 +602,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Called when the RenderWidgetHostImpl has be initialized.
   virtual void OnRenderWidgetInit() {}
 
+  void set_is_evicted() { is_evicted_ = true; }
+  void reset_is_evicted() { is_evicted_ = false; }
+  bool is_evicted() { return is_evicted_; }
+
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
 
@@ -733,6 +737,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 #endif
 
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
+
+  bool is_evicted_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 

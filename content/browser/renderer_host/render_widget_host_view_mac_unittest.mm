@@ -2202,16 +2202,6 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsInvalidSelection) {
   }
 }
 
-TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {
-  BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();
-  ui::Compositor* ui_compositor = browser_compositor->GetCompositor();
-  EXPECT_NE(ui_compositor, nullptr);
-  EXPECT_FALSE(ui_compositor->IsLocked());
-  rwhv_mac_->ClearCompositorFrame();
-  EXPECT_EQ(browser_compositor->GetCompositor(), ui_compositor);
-  EXPECT_FALSE(ui_compositor->IsLocked());
-}
-
 // This test verifies that in AutoResize mode a child-allocated
 // viz::LocalSurfaceId will be properly routed and stored in the parent.
 TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {

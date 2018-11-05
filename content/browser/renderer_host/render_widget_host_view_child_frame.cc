@@ -73,6 +73,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      enable_surface_synchronization_(
+          features::IsSurfaceSynchronizationEnabled()),
       weak_factory_(this) {
   if (features::IsMultiProcessMash()) {
     // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId
@@ -755,7 +757,9 @@ viz::FrameSinkId RenderWidgetHostViewChildFrame::GetRootFrameSinkId() {
 }
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
-  return last_activated_surface_info_.id();
+  return enable_surface_synchronization_
+             ? viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId())
+             : last_activated_surface_info_.id();
 }
 
 bool RenderWidgetHostViewChildFrame::HasSize() const {

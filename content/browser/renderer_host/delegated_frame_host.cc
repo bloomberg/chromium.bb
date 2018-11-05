@@ -271,14 +271,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                   std::move(hit_test_region_list));
 }
 
-void DelegatedFrameHost::ClearDelegatedFrame() {
-  // Ensure that we are able to swap in a new blank frame to replace any old
-  // content. This will result in a white flash if we switch back to this
-  // content.
-  // https://crbug.com/739621
-  EvictDelegatedFrame();
-}
-
 void DelegatedFrameHost::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
@@ -344,12 +336,19 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   if (!HasSavedFrame())
     return;
 
+  DCHECK(!client_->DelegatedFrameHostIsVisible());
   std::vector<viz::SurfaceId> surface_ids = {
-      viz::SurfaceId(frame_sink_id_, local_surface_id_)};
-  DCHECK(host_frame_sink_manager_);
-  host_frame_sink_manager_->EvictSurfaces(surface_ids);
+      client_->CollectSurfaceIdsForEviction()};
+  // This list could be empty if this frame is not in the frame tree (can happen
+  // during navigation, construction, destruction, or in unit tests).
+  if (!surface_ids.empty()) {
+    DCHECK(std::find(surface_ids.begin(), surface_ids.end(),
+                     GetCurrentSurfaceId()) != surface_ids.end());
+    DCHECK(host_frame_sink_manager_);
+    host_frame_sink_manager_->EvictSurfaces(surface_ids);
+  }
   frame_evictor_->OnSurfaceDiscarded();
-  client_->WasEvicted();
+  client_->AllocateNewSurfaceIdOnEviction();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

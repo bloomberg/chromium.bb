@@ -1194,8 +1194,8 @@ TEST_F(SurfaceSynchronizationTest, SubmitToDestroyedSurface) {
 }
 
 // Verifies that if a LocalSurfaceId belonged to a surface that doesn't
-// exist anymore, it can still be reused for new surfaces.
-TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
+// exist anymore, it can not be recreated.
+TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsNotReusable) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
 
@@ -1220,11 +1220,11 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
 
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
 
-  // Submit another frame with the same local surface id. This should work fine
-  // and a new surface must be created.
+  // Submit another frame with the same local surface id. The surface should not
+  // be recreated.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
                                          MakeDefaultCompositorFrame());
-  EXPECT_NE(nullptr, GetSurfaceForId(child_id));
+  EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
 }
 
 // This test verifies that a crash does not occur if garbage collection is
@@ -2951,25 +2951,26 @@ TEST_F(SurfaceSynchronizationTest, EvictSurface) {
   // Parent-initiated synchronizaton event:
   const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 2);
 
-  // Evict |child_id1|.
-  child_support1().EvictSurface(child_id1.local_surface_id());
-
-  // Submit a CompositorFrame to |child_id1|. It should get marked for
-  // destruction immediately.
+  // Submit a CompositorFrame to |child_id1|.
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
                                          MakeDefaultCompositorFrame());
+
+  // Evict |child_id1|. It should get marked for destruction immediately.
+  child_support1().EvictSurface(child_id1.local_surface_id());
   EXPECT_TRUE(IsMarkedForDestruction(child_id1));
 
-  // Submit a CompositorFrame to |child_id2|. It should also get marked for
-  // destruction because it has the same parent sequence number as |child_id1|.
+  // Submit a CompositorFrame to |child_id2|. This CompositorFrame should be
+  // immediately rejected because |child_id2| has the same parent sequence
+  // number as |child_id1|.
   child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
                                          MakeDefaultCompositorFrame());
-  EXPECT_TRUE(IsMarkedForDestruction(child_id2));
+  EXPECT_EQ(nullptr, GetSurfaceForId(child_id2));
 
-  // Submit a CompositorFrame to |child_id3|. It should not be marked for
-  // destruction.
+  // Submit a CompositorFrame to |child_id3|. It should not be accepted and not
+  // marked for destruction.
   child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
                                          MakeDefaultCompositorFrame());
+  ASSERT_NE(nullptr, GetSurfaceForId(child_id3));
   EXPECT_FALSE(IsMarkedForDestruction(child_id3));
 }
 

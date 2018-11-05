@@ -156,8 +156,9 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden).
-IPC_MESSAGE_ROUTED1(WidgetMsg_WasShown,
-                    base::TimeTicks /* show_request_timestamp */)
+IPC_MESSAGE_ROUTED2(WidgetMsg_WasShown,
+                    base::TimeTicks /* show_request_timestamp */,
+                    bool /* was_evicted */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint
 // accordingly, etc.).

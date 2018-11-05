@@ -33,7 +33,8 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   float GetDeviceScaleFactor() const override;
-  void WasEvicted() override;
+  void AllocateNewSurfaceIdOnEviction() override;
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
 
  private:
   RenderWidgetHostViewAura* render_widget_host_view_;

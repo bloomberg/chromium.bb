@@ -943,4 +943,10 @@ const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
   return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
+void RenderFrameProxy::WasEvicted() {
+  // On eviction, the last SurfaceId is invalidated. We need to allocate a new
+  // id.
+  ResendVisualProperties();
+}
+
 }  // namespace content

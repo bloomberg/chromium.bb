@@ -118,6 +118,11 @@ bool RenderWidgetHostViewMac::SynchronizeVisualProperties(
   return host()->SynchronizeVisualProperties();
 }
 
+std::vector<viz::SurfaceId>
+RenderWidgetHostViewMac::CollectSurfaceIdsForEviction() {
+  return host()->CollectSurfaceIdsForEviction();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 
@@ -1070,7 +1075,9 @@ void RenderWidgetHostViewMac::OnDidNotProduceFrame(
 }
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {
-  browser_compositor_->ClearCompositorFrame();
+  // This method is only used for content rendering timeout when surface sync is
+  // off. However, surface sync is always on on Mac.
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewMac::ResetFallbackToFirstNavigationSurface() {
@@ -1287,6 +1294,10 @@ viz::FrameSinkId RenderWidgetHostViewMac::GetRootFrameSinkId() {
 }
 
 viz::SurfaceId RenderWidgetHostViewMac::GetCurrentSurfaceId() const {
+  // |browser_compositor_| could be null if this method is called during its
+  // destruction.
+  if (!browser_compositor_)
+    return viz::SurfaceId();
   return browser_compositor_->GetDelegatedFrameHost()->GetCurrentSurfaceId();
 }
 

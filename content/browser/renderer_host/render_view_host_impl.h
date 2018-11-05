@@ -216,6 +216,10 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // and RenderFrameProxyHosts currently using it.
   int ref_count() { return frames_ref_count_; }
 
+  // Called during frame eviction to return all SurfaceIds in the frame tree.
+  // Marks all views in the frame tree as evicted.
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
