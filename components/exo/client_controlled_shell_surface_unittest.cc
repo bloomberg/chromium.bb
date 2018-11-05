@@ -1766,6 +1766,13 @@ TEST_F(ClientControlledShellSurfaceTest, AdjustBoundsLocally) {
   views::Widget* widget = shell_surface->GetWidget();
   EXPECT_EQ(gfx::Rect(774, 0, 200, 300), widget->GetWindowBoundsInScreen());
   EXPECT_EQ(gfx::Rect(774, 0, 200, 300), requested_bounds);
+
+  // Receiving the same bounds shouldn't try to update the bounds again.
+  requested_bounds.SetRect(0, 0, 0, 0);
+  shell_surface->SetGeometry(client_bounds);
+  surface->Commit();
+
+  EXPECT_TRUE(requested_bounds.IsEmpty());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {

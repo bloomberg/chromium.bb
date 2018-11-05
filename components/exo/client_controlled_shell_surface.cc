@@ -761,7 +761,14 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     preserve_widget_bounds_ = false;
   }
 
-  if (bounds == widget_->GetWindowBoundsInScreen() &&
+  // Calculate a minimum window visibility required bounds.
+  gfx::Rect adjusted_bounds = bounds;
+  if (!is_display_move_pending) {
+    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+        target_display.bounds(), &adjusted_bounds);
+  }
+
+  if (adjusted_bounds == widget_->GetWindowBoundsInScreen() &&
       target_display.id() == current_display.id()) {
     return;
   }
@@ -784,17 +791,10 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     // Move the window relative to the current display.
     {
       ScopedSetBoundsLocally scoped_set_bounds(this);
-      window->SetBounds(gfx::Rect(origin, bounds.size()));
+      window->SetBounds(gfx::Rect(origin, adjusted_bounds.size()));
     }
     UpdateSurfaceBounds();
     return;
-  }
-
-  // Calculate a minimum window visibility required bounds.
-  gfx::Rect adjusted_bounds = bounds;
-  if (!is_display_move_pending) {
-    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-        target_display.bounds(), &adjusted_bounds);
   }
 
   {
