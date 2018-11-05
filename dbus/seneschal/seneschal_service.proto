@@ -123,6 +123,8 @@ message SharePathRequest {
 
     // Removable media mount directory /media/removable.
     REMOVABLE = 4;
+    // The user's MyFiles/ directory /home/user/<owner_id>/MyFiles.
+    MY_FILES = 5;
   }
   StorageLocation storage_location = 3;
 
