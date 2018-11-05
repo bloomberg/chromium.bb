@@ -25,7 +25,11 @@ class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 
-class SigninManager;
+namespace identity {
+class IdentityTestEnvironment;
+}  // namespace identity
+
+class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 
 // Base class for various payment request related unit tests. This purposely
 // does not inherit from PlatformTest (testing::Test) so that it can be used
@@ -45,7 +49,7 @@ class PaymentRequestUnitTestBase {
   void AddAutofillProfile(const autofill::AutofillProfile& profile);
   void AddCreditCard(const autofill::CreditCard& card);
 
-  SigninManager* GetSigninManager();
+  identity::IdentityTestEnvironment* identity_test_env();
 
   payments::TestPaymentRequest* payment_request() {
     return payment_request_.get();
@@ -72,6 +76,8 @@ class PaymentRequestUnitTestBase {
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
+  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
+      identity_test_env_adaptor_;
 };
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_

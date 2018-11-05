@@ -6,10 +6,9 @@
 
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payments_test_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
-#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,13 +20,14 @@ PaymentRequestUnitTestBase::PaymentRequestUnitTestBase()
 PaymentRequestUnitTestBase::~PaymentRequestUnitTestBase() {}
 
 void PaymentRequestUnitTestBase::DoSetUp() {
-  TestChromeBrowserState::Builder test_cbs_builder;
-  test_cbs_builder.AddTestingFactory(
-      ios::SigninManagerFactory::GetInstance(),
-      base::BindRepeating(&ios::BuildFakeSigninManager));
-  chrome_browser_state_ = test_cbs_builder.Build();
+  chrome_browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
+      CreateChromeBrowserStateForIdentityTestEnvironment();
   web_state_.SetBrowserState(chrome_browser_state_.get());
   personal_data_manager_.SetPrefService(pref_service_.get());
+
+  identity_test_env_adaptor_ =
+      std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
+          chrome_browser_state_.get());
 }
 
 void PaymentRequestUnitTestBase::DoTearDown() {
@@ -51,7 +51,7 @@ void PaymentRequestUnitTestBase::AddCreditCard(
   personal_data_manager_.AddCreditCard(card);
 }
 
-SigninManager* PaymentRequestUnitTestBase::GetSigninManager() {
-  return ios::SigninManagerFactory::GetForBrowserState(
-      chrome_browser_state_.get());
+identity::IdentityTestEnvironment*
+PaymentRequestUnitTestBase::identity_test_env() {
+  return identity_test_env_adaptor_->identity_test_env();
 }
