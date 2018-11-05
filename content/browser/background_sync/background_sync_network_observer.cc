@@ -52,10 +52,19 @@ void BackgroundSyncNetworkObserver::RegisterWithNetworkConnectionTracker(
   DCHECK(network_connection_tracker);
   network_connection_tracker_ = network_connection_tracker;
   network_connection_tracker_->AddNetworkConnectionObserver(this);
-  network_connection_tracker_->GetConnectionType(
-      &connection_type_,
+
+  UpdateConnectionType();
+}
+
+void BackgroundSyncNetworkObserver::UpdateConnectionType() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  network::mojom::ConnectionType connection_type;
+  bool synchronous_return = network_connection_tracker_->GetConnectionType(
+      &connection_type,
       base::BindOnce(&BackgroundSyncNetworkObserver::OnConnectionChanged,
                      weak_ptr_factory_.GetWeakPtr()));
+  if (synchronous_return)
+    OnConnectionChanged(connection_type);
 }
 
 bool BackgroundSyncNetworkObserver::NetworkSufficient(
@@ -84,7 +93,6 @@ bool BackgroundSyncNetworkObserver::NetworkSufficient(
 void BackgroundSyncNetworkObserver::OnConnectionChanged(
     network::mojom::ConnectionType connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   if (ignore_network_changes_)
     return;
   NotifyManagerIfConnectionChanged(connection_type);
