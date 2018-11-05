@@ -107,6 +107,8 @@ source_set("exo") {
       "shell_surface_base.h",
       "text_input.cc",
       "text_input.h",
+      "wm_helper_chromeos.cc",
+      "wm_helper_chromeos.h",
       "xdg_shell_surface.cc",
       "xdg_shell_surface.h",
     ]

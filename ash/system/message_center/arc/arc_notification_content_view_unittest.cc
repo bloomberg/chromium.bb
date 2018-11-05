@@ -33,6 +33,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -112,8 +113,8 @@ class ArcNotificationContentViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-
-    wm_helper_ = std::make_unique<exo::WMHelper>(ash::Shell::Get()->aura_env());
+    wm_helper_ =
+        std::make_unique<exo::WMHelperChromeOS>(ash::Shell::Get()->aura_env());
     exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
 

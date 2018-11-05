@@ -95,6 +95,7 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "components/exo/xdg_shell_surface.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -2558,7 +2559,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       : display_(display),
         remote_shell_resource_(remote_shell_resource),
         weak_ptr_factory_(this) {
-    auto* helper = WMHelper::GetInstance();
+    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
     helper->AddTabletModeObserver(this);
     helper->AddActivationObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
@@ -2581,7 +2582,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     SendActivated(helper->GetActiveWindow(), nullptr);
   }
   ~WaylandRemoteShell() override {
-    auto* helper = WMHelper::GetInstance();
+    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
     helper->RemoveTabletModeObserver(this);
     helper->RemoveActivationObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);

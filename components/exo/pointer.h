@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
