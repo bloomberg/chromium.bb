@@ -10878,6 +10878,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileFakeboxNTPTapped">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>User pressed the fakebox on NTP. iOS only.</description>
+</action>
+
 <action name="MobileFirstEditInOmnibox">
   <obsolete>Deprecated as of 12/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -11415,6 +11420,13 @@ should be able to be added at any place in this file.
   <owner>thildebr@chromium.org</owner>
   <description>
     The user cleared the contents of the omnibox via the delete button.
+  </description>
+</action>
+
+<action name="MobileOmniboxFocused">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    Omnibox focused (either directly or through one of the shortcuts). iOS only.
   </description>
 </action>
 

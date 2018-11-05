@@ -282,7 +282,7 @@ using base::UserMetricsAction;
   self.searchHintLabel.isAccessibilityElement = NO;
   self.accessibilityButton = [[UIButton alloc] init];
   [self.accessibilityButton addTarget:self
-                               action:@selector(focusFakebox)
+                               action:@selector(fakeboxTapped)
                      forControlEvents:UIControlEventTouchUpInside];
   // Because the visual fakebox background is implemented within
   // ContentSuggestionsHeaderView, KVO the highlight events of
@@ -330,7 +330,7 @@ using base::UserMetricsAction;
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
-                    action:@selector(focusFakebox)
+                    action:@selector(fakeboxTapped)
           forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -363,6 +363,11 @@ using base::UserMetricsAction;
                 action:@selector(preloadVoiceSearch:)
       forControlEvents:UIControlEventTouchDown];
   [self.dispatcher preloadVoiceSearch];
+}
+
+- (void)fakeboxTapped {
+  base::RecordAction(base::UserMetricsAction("MobileFakeboxNTPTapped"));
+  [self focusFakebox];
 }
 
 - (void)focusFakebox {
