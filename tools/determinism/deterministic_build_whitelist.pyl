@@ -33,6 +33,12 @@
     'mr_extension/release',
   ],
 
+  'linux_component': [
+    # https://crbug.com/900696
+    'browser_tests.isolated',
+    'remoting-webapp.v2.zip',
+  ],
+
   # https://crbug.com/330262
   'mac': [
     # ld64 in current Xcode versions is not deterministic. Most smaller binaries
