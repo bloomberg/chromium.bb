@@ -10,6 +10,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "ui/message_center/message_center_observer.h"
 
 class MessageCenterChangeObserver {
  public:
@@ -23,6 +24,23 @@ class MessageCenterChangeObserver {
   std::unique_ptr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterChangeObserver);
+};
+
+class TestMessageCenterObserver : public message_center::MessageCenterObserver {
+ public:
+  TestMessageCenterObserver() = default;
+
+  // MessageCenterObserver:
+  void OnNotificationDisplayed(
+      const std::string& notification_id,
+      const message_center::DisplaySource source) override;
+
+  const std::string& last_displayed_id() const;
+
+ private:
+  std::string last_displayed_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMessageCenterObserver);
 };
 
 class NotificationsTest : public InProcessBrowserTest {

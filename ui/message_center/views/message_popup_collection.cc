@@ -170,6 +170,11 @@ void MessagePopupCollection::OnCenterVisibilityChanged(Visibility visibility) {
   Update();
 }
 
+void MessagePopupCollection::OnBlockingStateChanged(
+    NotificationBlocker* blocker) {
+  Update();
+}
+
 void MessagePopupCollection::AnimationEnded(const gfx::Animation* animation) {
   Update();
 }
