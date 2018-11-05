@@ -10,7 +10,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.services.media_session.MediaMetadata;
+import org.chromium.content_public.common.MediaMetadata;
 
 import java.util.HashSet;
 
