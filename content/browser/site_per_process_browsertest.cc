@@ -58,6 +58,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -66,7 +67,6 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
@@ -13764,5 +13764,104 @@ INSTANTIATE_TEST_CASE_P(SitePerProcess,
                         testing::Values(std::make_tuple("a", "a", "b"),
                                         std::make_tuple("a", "b", "b"),
                                         std::make_tuple("a", "b", "c")));
+
+class ScrollingIntegrationTest : public SitePerProcessBrowserTest {
+ public:
+  ScrollingIntegrationTest() = default;
+  ~ScrollingIntegrationTest() override = default;
+
+  void DoScroll(const gfx::Point& point,
+                const gfx::Vector2d& distance,
+                SyntheticGestureParams::GestureSourceType source) {
+    SyntheticSmoothScrollGestureParams params;
+    params.gesture_source_type = source;
+    params.anchor = gfx::PointF(point);
+    params.distances.push_back(-distance);
+    params.precise_scrolling_deltas = true;
+
+    auto gesture = std::make_unique<SyntheticSmoothScrollGesture>(params);
+
+    // Runs until we get the SyntheticGestureCompleted callback
+    base::RunLoop run_loop;
+    GetRenderWidgetHostImpl()->QueueSyntheticGesture(
+        std::move(gesture),
+        base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
+          EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  double GetScrollTop() {
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    return EvalJs(root, "window.scrollY").ExtractDouble();
+  }
+
+  void WaitForVerticalScroll() {
+    RenderFrameSubmissionObserver frame_observer(shell()->web_contents());
+    gfx::Vector2dF default_scroll_offset;
+    while (frame_observer.LastRenderFrameMetadata()
+               .root_scroll_offset.value_or(default_scroll_offset)
+               .y() <= 0) {
+      frame_observer.WaitForMetadataChange();
+    }
+  }
+
+  RenderWidgetHostImpl* GetRenderWidgetHostImpl() {
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    return root->current_frame_host()->GetRenderWidgetHost();
+  }
+};
+
+// Tests basic scrolling after navigating to a new origin works. Guards against
+// bugs like https://crbug.com/899234 which are caused by invalid
+// initialization due to the cross-origin provisional frame swap.
+IN_PROC_BROWSER_TEST_F(ScrollingIntegrationTest,
+                       ScrollAfterCrossOriginNavigation) {
+  // Navigate to the a.com domain first.
+  GURL url_domain_a(
+      embedded_test_server()->GetURL("a.com", "/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
+
+  // Now navigate to baz.com, this should cause a cross-origin navigation which
+  // will load into a provisional frame and then swap in as a local main frame.
+  // This test ensures all the correct initialization takes place in the
+  // renderer so that a basic scrolling smoke test works.
+  GURL url_domain_b(embedded_test_server()->GetURL(
+      "baz.com", "/scrollable_page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_domain_b));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  {
+    // TODO(bokan): We currently don't have a good way to know when the
+    // compositor's scrolling layers are ready after changes on the main thread.
+    // We wait a timeout but that's really a hack. Fixing is tracked in
+    // https://crbug.com/897520
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(3000));
+    run_loop.Run();
+  }
+
+  SyntheticGestureParams::GestureSourceType source;
+
+// TODO(bokan): Mac doesn't support touch events and for an unknown reason,
+// Android doesn't like mouse wheel here. https://crbug.com/897520.
+#if defined(OS_ANDROID)
+  source = SyntheticGestureParams::TOUCH_INPUT;
+#else
+  source = SyntheticGestureParams::TOUCHPAD_INPUT;
+#endif
+
+  // Perform the scroll (below the iframe), ensure it's correctly processed.
+  DoScroll(gfx::Point(100, 110), gfx::Vector2d(0, 500), source);
+  WaitForVerticalScroll();
+  EXPECT_GT(GetScrollTop(), 0);
+}
 
 }  // namespace content

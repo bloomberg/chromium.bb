@@ -16,9 +16,6 @@ namespace {
 Node* NodeForId(DOMNodeId node_id) {
   Node* node = DOMNodeIds::NodeForId(node_id);
   DCHECK(node);
-  if (!node)
-    return nullptr;
-  DCHECK(node->IsElementNode());
   return node;
 }
 }  // namespace

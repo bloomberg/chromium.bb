@@ -861,6 +861,8 @@ class CORE_EXPORT Node : public EventTarget {
     return GetFlag(kInDOMNodeRemovedHandler);
   }
 
+  bool IsEffectiveRootScroller() const;
+
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;
 
