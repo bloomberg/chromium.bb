@@ -136,6 +136,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
                                                const NGConstraintSpace&);
 
   void UpdateShapeOutsideInfoIfNeeded(
+      const NGLayoutResult&,
       LayoutUnit percentage_resolution_inline_size);
 };
 

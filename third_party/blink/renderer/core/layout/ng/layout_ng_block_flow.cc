@@ -210,7 +210,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // border-box relative, flip it around the size of the border box, rather than
   // the size of the containing block (padding box).
   LayoutUnit block_top_or_left =
-      parent_style->IsFlippedBlocksWritingMode()
+      container_style->IsFlippedBlocksWritingMode()
           ? container_border_box_logical_height - static_block
           : static_block;
 
@@ -221,7 +221,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
           ? NGPhysicalOffset(inline_left_or_top, block_top_or_left)
           : NGPhysicalOffset(block_top_or_left, inline_left_or_top);
   NGStaticPosition static_position =
-      NGStaticPosition::Create(parent_style->GetWritingMode(),
+      NGStaticPosition::Create(container_style->GetWritingMode(),
                                parent_style->Direction(), static_location);
 
   // Set correct container for inline containing blocks.
