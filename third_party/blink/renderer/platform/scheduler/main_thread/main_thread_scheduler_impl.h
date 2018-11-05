@@ -161,7 +161,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // WebThreadScheduler implementation:
   std::unique_ptr<Thread> CreateMainThread() override;
-  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
@@ -252,6 +251,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       base::TimeDelta queueing_time) override;
 
   // ThreadSchedulerImpl implementation:
+  scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
   void RegisterTimeDomain(
       base::sequence_manager::TimeDomain* time_domain) override;

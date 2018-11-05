@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -46,11 +45,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // ==== Functions for any scheduler =========================================
   //
   // Functions below work on a scheduler instance on any thread.
-
-  // Returns the idle task runner. Tasks posted to this runner may be reordered
-  // relative to other task types and may be starved for an arbitrarily long
-  // time if no idle time is available.
-  virtual scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() = 0;
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be

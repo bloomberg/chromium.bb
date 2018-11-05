@@ -438,6 +438,16 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/platform/scheduler/common/single_thread_idle_task_runner.h',
+        ],
+        # base::RefCounted is prohibited in platform/ as defined above, but
+        # SingleThreadIdleTaskRunner needs to be constructed before WTF and
+        # PartitionAlloc are initialized, which forces us to use
+        # base::RefCountedThreadSafe for it.
+        'allowed': ['.+'],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/core/exported/',
             'third_party/blink/renderer/modules/exported/',
         ],
