@@ -360,6 +360,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void SetCopyTextureResourceManagerForTest(
       CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
       override;
+  void SetCopyTexImageBlitterForTest(
+      CopyTexImageResourceManager* copy_tex_image_blit) override;
 
   void OnAbstractTextureDestroyed(PassthroughAbstractTextureImpl*,
                                   scoped_refptr<TexturePassthrough>);

@@ -782,6 +782,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     copy_texture_chromium_.reset(copy_texture_resource_manager);
   }
 
+  void SetCopyTexImageBlitterForTest(
+      CopyTexImageResourceManager* copy_tex_image_blit) override {
+    copy_tex_image_blit_.reset(copy_tex_image_blit);
+  }
+
   // ServiceFontManager::Client implementation.
   scoped_refptr<gpu::Buffer> GetShmBuffer(uint32_t shm_id);
 
@@ -17052,6 +17057,12 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
 
+  CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
+      GetFeatureInfo(), source_target, source_level, source_internal_format,
+      source_type, dest_binding_target, dest_level, internal_format,
+      unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
+      unpack_unmultiply_alpha == GL_TRUE, false /* dither */);
+
   // GL_TEXTURE_EXTERNAL_OES texture requires that we apply a transform matrix
   // before presenting.
   if (source_target == GL_TEXTURE_EXTERNAL_OES) {
@@ -17066,16 +17077,10 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
           dest_level, internal_format, source_width, source_height,
           unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
           unpack_unmultiply_alpha == GL_TRUE, false /* dither */,
-          transform_matrix, copy_tex_image_blit_.get());
+          transform_matrix, method, copy_tex_image_blit_.get());
       return;
     }
   }
-
-  CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
-      GetFeatureInfo(), source_target, source_level, source_internal_format,
-      source_type, dest_binding_target, dest_level, internal_format,
-      unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, false /* dither */);
   copy_texture_chromium_->DoCopyTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),

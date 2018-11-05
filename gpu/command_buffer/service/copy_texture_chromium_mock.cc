@@ -7,6 +7,11 @@
 namespace gpu {
 namespace gles2 {
 
+MockCopyTexImageResourceManager::MockCopyTexImageResourceManager(
+    const gles2::FeatureInfo* feature_info)
+    : CopyTexImageResourceManager(feature_info) {}
+MockCopyTexImageResourceManager::~MockCopyTexImageResourceManager() = default;
+
 MockCopyTextureResourceManager::MockCopyTextureResourceManager() = default;
 MockCopyTextureResourceManager::~MockCopyTextureResourceManager() = default;
 

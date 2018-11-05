@@ -1697,6 +1697,11 @@ void GLES2DecoderPassthroughImpl::SetCopyTextureResourceManagerForTest(
   NOTIMPLEMENTED();
 }
 
+void GLES2DecoderPassthroughImpl::SetCopyTexImageBlitterForTest(
+    CopyTexImageResourceManager* copy_tex_image_blit) {
+  NOTIMPLEMENTED();
+}
+
 const char* GLES2DecoderPassthroughImpl::GetCommandName(
     unsigned int command_id) const {
   if (command_id >= kFirstGLES2Command && command_id < kNumCommands) {

@@ -731,18 +731,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-instrumentation', 'no_passthrough'],
               bug=352645)
-    # New video-to-luminance-alpha tests are failing on Android right now.
-    self.Fail('conformance/textures/video/' +
-        'tex-2d-alpha-alpha-unsigned_byte.html',
-        ['android'], bug=733599)
-    self.Fail('conformance/textures/video/' +
-        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
-        ['android'], bug=733599)
-    self.Fail('conformance/textures/video/' +
-        'tex-2d-luminance-luminance-unsigned_byte.html',
-        ['android'], bug=733599)
 
     # These video tests appear to be flaky.
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-alpha-alpha-unsigned_byte.html',
+        ['android'], bug=733599)
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['android'], bug=733599)
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['android'], bug=733599)
     self.Flaky('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', 'android-chromium'], bug=834933)
