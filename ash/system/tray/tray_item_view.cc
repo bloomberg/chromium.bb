@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -23,6 +24,14 @@ const int kTrayItemAnimationDurationMS = 200;
 
 }  // namespace
 
+void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (custom_accessible_name_.empty())
+    return Label::GetAccessibleNodeData(node_data);
+
+  node_data->role = ax::mojom::Role::kStaticText;
+  node_data->SetName(custom_accessible_name_);
+}
+
 TrayItemView::TrayItemView(Shelf* shelf)
     : shelf_(shelf), label_(NULL), image_view_(NULL) {
   DCHECK(shelf_);
@@ -34,7 +43,7 @@ TrayItemView::TrayItemView(Shelf* shelf)
 TrayItemView::~TrayItemView() = default;
 
 void TrayItemView::CreateLabel() {
-  label_ = new views::Label;
+  label_ = new IconizedLabel;
   AddChildView(label_);
   PreferredSizeChanged();
 }
