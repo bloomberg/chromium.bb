@@ -3204,10 +3204,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-usb-backend", flag_descriptions::kNewUsbBackendName,
      flag_descriptions::kNewUsbBackendDescription, kOsWin,
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
-    {"enable-desktop-ios-promotions",
-     flag_descriptions::kEnableDesktopIosPromotionsName,
-     flag_descriptions::kEnableDesktopIosPromotionsDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kDesktopIOSPromotion)},
 #endif  // defined(OS_WIN)
 
     {"enable-zero-suggest-redirect-to-chrome",

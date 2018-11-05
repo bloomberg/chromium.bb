@@ -1522,29 +1522,6 @@
             ]
         }
     ],
-    "DesktopIOSPromotion": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "BookmarksBubblePromotionV1",
-                    "params": {
-                        "body_text_id": "0",
-                        "entry_point": "BookmarksBubblePromotion",
-                        "max_views": "3",
-                        "promo_variation_id": "6",
-                        "sms_id": "19001511",
-                        "title_text_id": "0"
-                    },
-                    "enable_features": [
-                        "DesktopIOSPromotion"
-                    ]
-                }
-            ]
-        }
-    ],
     "DetectingHeavyPages": [
         {
             "platforms": [

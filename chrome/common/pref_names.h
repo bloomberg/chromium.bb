@@ -839,21 +839,6 @@ extern const char kDSEWasDisabledByPolicy[];
 extern const char kWebShareVisitedTargets[];
 
 #if defined(OS_WIN)
-extern const char kIOSPromotionEligible[];
-extern const char kIOSPromotionDone[];
-extern const char kIOSPromotionSMSEntryPoint[];
-extern const char kIOSPromotionShownEntryPoints[];
-extern const char kIOSPromotionLastImpression[];
-extern const char kIOSPromotionVariationId[];
-extern const char kNumberSavePasswordsBubbleIOSPromoShown[];
-extern const char kSavePasswordsBubbleIOSPromoDismissed[];
-extern const char kNumberBookmarksBubbleIOSPromoShown[];
-extern const char kBookmarksBubbleIOSPromoDismissed[];
-extern const char kNumberBookmarksFootNoteIOSPromoShown[];
-extern const char kBookmarksFootNoteIOSPromoDismissed[];
-extern const char kNumberHistoryPageIOSPromoShown[];
-extern const char kHistoryPageIOSPromoDismissed[];
-
 #if defined(GOOGLE_CHROME_BUILD)
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];

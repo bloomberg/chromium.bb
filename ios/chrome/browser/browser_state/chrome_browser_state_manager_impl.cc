@@ -31,7 +31,6 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -227,7 +226,6 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   // Initialization needs to happen after the browser context is available
   // because ProfileSyncService needs the URL context getter.
   UnifiedConsentServiceFactory::GetForBrowserState(browser_state);
-  DesktopPromotionSyncServiceFactory::GetForBrowserState(browser_state);
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(

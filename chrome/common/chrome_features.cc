@@ -183,13 +183,6 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN)
-// Enables or disables desktop ios promotion, which shows a promotion to the
-// user promoting Chrome for iOS.
-const base::Feature kDesktopIOSPromotion{"DesktopIOSPromotion",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables windowing related features for desktop PWAs.
 const base::Feature kDesktopPWAWindowing {
   "DesktopPWAWindowing",

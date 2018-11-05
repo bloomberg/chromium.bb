@@ -117,11 +117,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeLimitPolicy;
 #endif
 
-#if defined(OS_WIN)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopIOSPromotion;
-#endif  // defined(OS_WIN)
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAWindowing;
 
