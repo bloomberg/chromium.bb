@@ -140,6 +140,9 @@ base::FilePath AwBrowserContext::GetCacheDir() {
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path = GetCacheDir();
 
+  // TODO(ntfschr): set this to nullptr when the NetworkService is disabled,
+  // once we remove a dependency on url_request_context_getter_
+  // (http://crbug.com/887538).
   url_request_context_getter_ = new AwURLRequestContextGetter(
       cache_path, context_storage_path_.Append(kChannelIDFilename),
       CreateProxyConfigService(), user_pref_service_.get(), net_log);

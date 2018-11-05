@@ -26,6 +26,7 @@
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
+#include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
@@ -64,6 +65,7 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -78,6 +80,7 @@
 #include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -229,6 +232,34 @@ AwContentBrowserClient::AwContentBrowserClient(
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
+
+network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  DCHECK(context);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  // TODO(ntfschr): set this value to a proper value based on the user's
+  // preferred locales (http://crbug.com/898555). For now, set this to
+  // "en-US,en" instead of "en-us,en", since Android guarantees region codes
+  // will be uppercase.
+  context_params->accept_language = "en-US,en";
+  context_params->enable_data_url_support = true;
+
+  context_params->http_cache_enabled = true;
+  context_params->http_cache_max_size = 20 * 1024 * 1024;  // 20M
+  context_params->http_cache_path = AwBrowserContext::GetCacheDir();
+
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context), std::move(context_params));
+  return network_context;
+}
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   base::FilePath user_data_dir;
