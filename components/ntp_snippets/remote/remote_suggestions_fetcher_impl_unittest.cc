@@ -177,11 +177,11 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
             {{"send_top_languages", "true"},
              {"send_user_class", "true"},
              {"append_request_priority_as_query_parameter", "true"}}),
+        mock_task_runner_(new base::TestMockTimeTaskRunner(
+            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
-                        {ntp_snippets::kArticleSuggestionsFeature.name}),
-        mock_task_runner_(new base::TestMockTimeTaskRunner(
-            base::TestMockTimeTaskRunner::Type::kBoundToThread)) {
+                        {ntp_snippets::kArticleSuggestionsFeature.name}) {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = std::make_unique<UserClassifier>(
         utils_.pref_service(), base::DefaultClock::GetInstance());
@@ -259,13 +259,13 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
 
  protected:
   std::map<std::string, std::string> default_variation_params_;
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   identity::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;

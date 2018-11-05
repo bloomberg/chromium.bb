@@ -97,6 +97,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    autofill_client_ = std::make_unique<TestAutofillClient>();
     autofill_provider_ = std::make_unique<MockAutofillProvider>();
     embedded_test_server()->AddDefaultHandlers(base::FilePath(kDocRoot));
     // Serve both a.com and b.com (and any other domain).
@@ -114,7 +115,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
 
     // Replace the ContentAutofillDriverFactory for sub frame.
     ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-        web_contents, &autofill_client_, "en-US",
+        web_contents, autofill_client_.get(), "en-US",
         AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
         autofill_provider_.get());
   }
@@ -216,7 +217,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestAutofillClient autofill_client_;
+  std::unique_ptr<TestAutofillClient> autofill_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,

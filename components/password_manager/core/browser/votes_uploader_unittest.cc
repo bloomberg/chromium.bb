@@ -10,6 +10,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -127,6 +128,7 @@ class VotesUploaderTest : public testing::Test {
     return ASCIIToUTF16("field") + base::UintToString16(index);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   autofill::TestAutofillDriver test_autofill_driver_;
   autofill::TestAutofillClient test_autofill_client_;
   autofill::TestPersonalDataManager test_personal_data_manager_;

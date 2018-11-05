@@ -77,7 +77,7 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
   account_tracker_.Initialize(&pref_service_, base::FilePath());
-
+  signin_manager_.Initialize(&pref_service_);
 }
 
 IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {}
