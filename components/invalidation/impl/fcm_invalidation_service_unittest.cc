@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -139,6 +140,7 @@ class FCMInvalidationServiceTestDelegate {
     fake_invalidator_->EmitOnIncomingInvalidation(invalidation_map);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;

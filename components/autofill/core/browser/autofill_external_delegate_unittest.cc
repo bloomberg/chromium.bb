@@ -167,12 +167,12 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
         kQueryId, suggestions, /*autoselect_first_suggestion=*/false);
   }
 
+  base::MessageLoop message_loop_;
+
   testing::NiceMock<MockAutofillClient> autofill_client_;
   std::unique_ptr<testing::NiceMock<MockAutofillDriver>> autofill_driver_;
   std::unique_ptr<MockAutofillManager> autofill_manager_;
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
-
-  base::MessageLoop message_loop_;
 };
 
 // Test that our external delegate called the virtual methods at the right time.

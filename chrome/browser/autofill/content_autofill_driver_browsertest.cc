@@ -89,17 +89,19 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   ~ContentAutofillDriverBrowserTest() override {}
 
   void SetUpOnMainThread() override {
+    autofill_client_ =
+        std::make_unique<testing::NiceMock<MockAutofillClient>>();
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents != NULL);
     Observe(web_contents);
-    prefs::RegisterProfilePrefs(autofill_client_.GetPrefRegistry());
+    prefs::RegisterProfilePrefs(autofill_client().GetPrefRegistry());
 
     web_contents->RemoveUserData(
         ContentAutofillDriverFactory::
             kContentAutofillDriverFactoryWebContentsUserDataKey);
     ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-        web_contents, &autofill_client_, "en-US",
+        web_contents, &autofill_client(), "en-US",
         AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
     embedded_test_server()->AddDefaultHandlers(base::FilePath(kDocRoot));
@@ -110,8 +112,8 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
 
   void TearDownOnMainThread() override {
     // Verify the expectations here, because closing the browser may incur
-    // other calls in |autofill_client_| e.g., HideAutofillPopup.
-    testing::Mock::VerifyAndClearExpectations(&autofill_client_);
+    // other calls in |autofill_client()| e.g., HideAutofillPopup.
+    testing::Mock::VerifyAndClearExpectations(&autofill_client());
   }
 
   void OnVisibilityChanged(content::Visibility visibility) override {
@@ -169,18 +171,22 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
     }
   }
 
+  testing::NiceMock<MockAutofillClient>& autofill_client() {
+    return *autofill_client_.get();
+  }
+
  protected:
   base::Closure web_contents_hidden_callback_;
   base::Closure nav_entry_committed_callback_;
   base::Closure same_document_navigation_callback_;
   base::Closure subframe_navigation_callback_;
 
-  testing::NiceMock<MockAutofillClient> autofill_client_;
+  std::unique_ptr<testing::NiceMock<MockAutofillClient>> autofill_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
-  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(1);
+  EXPECT_CALL(autofill_client(), HideAutofillPopup()).Times(1);
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
@@ -201,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   // The Autofill popup should be hidden for same document navigations. It may
   // called twice because the zoom changed event may also fire for same-page
   // navigations.
-  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(testing::AtLeast(1));
+  EXPECT_CALL(autofill_client(), HideAutofillPopup())
+      .Times(testing::AtLeast(1));
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
@@ -222,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // The Autofill popup should NOT be hidden for subframe navigations.
-  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(0);
+  EXPECT_CALL(autofill_client(), HideAutofillPopup()).Times(0);
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
@@ -240,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
   // HideAutofillPopup is called once for each navigation.
-  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(2);
+  EXPECT_CALL(autofill_client(), HideAutofillPopup()).Times(2);
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
