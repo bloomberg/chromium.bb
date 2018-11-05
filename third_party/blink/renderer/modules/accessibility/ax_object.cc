@@ -1086,9 +1086,11 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   // that if it didn't previously exist it won't be part of the event path.
   AccessibleNode* target = GetAccessibleNode();
   if (!target) {
-    Element* element = GetElement();
-    if (element)
+    if (Element* element = GetElement()) {
       target = element->accessibleNode();
+      if (!target)
+        return false;
+    }
   }
   event.SetTarget(target);
 
