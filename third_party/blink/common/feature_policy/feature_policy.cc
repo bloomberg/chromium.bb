@@ -191,6 +191,10 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
 
   std::unique_ptr<FeaturePolicy> new_policy =
       base::WrapUnique(new FeaturePolicy(origin, features));
+  // For features which are not keys in a container policy, which is the case
+  // here *until* we call AddContainerPolicy at the end of this method,
+  // https://wicg.github.io/feature-policy/#define-inherited-policy-in-container
+  // returns true if |feature| is enabled in |parent_policy| for |origin|.
   for (const auto& feature : features) {
     if (!parent_policy ||
         parent_policy->IsFeatureEnabledForOrigin(feature.first, origin)) {
@@ -208,11 +212,16 @@ void FeaturePolicy::AddContainerPolicy(
     const ParsedFeaturePolicy& container_policy,
     const FeaturePolicy* parent_policy) {
   DCHECK(parent_policy);
+  // For features which are keys in a container policy,
+  // https://wicg.github.io/feature-policy/#define-inherited-policy-in-container
+  // returns true only if |feature| is enabled in |parent| for either |origin|
+  // or |parent|'s origin, and the allowlist for |feature| matches |origin|.
+  //
+  // Roughly, If a feature is enabled in the parent frame, and the parent
+  // chooses to delegate it to the child frame, using the iframe attribute, then
+  // the feature should be enabled in the child frame.
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        container_policy) {
-    // If a feature is enabled in the parent frame, and the parent chooses to
-    // delegate it to the child frame, using the iframe attribute, then the
-    // feature should be enabled in the child frame.
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
     // Do not allow setting a container policy for a feature which is not in the
     // feature list.
@@ -220,21 +229,13 @@ void FeaturePolicy::AddContainerPolicy(
     if (search == inherited_policies_.end())
       continue;
     bool& inherited_policy = search->second;
-    // If the parent frame does not enable the feature, then the child frame
-    // must not.
-    inherited_policy = false;
-    if (parent_policy->IsFeatureEnabled(feature)) {
-      if (parsed_declaration.matches_opaque_src && origin_.opaque()) {
-        // If the child frame has an opaque origin, and the declared container
-        // policy indicates that the feature should be enabled, enable it for
-        // the child frame.
-        inherited_policy = true;
-      } else if (AllowlistFromDeclaration(parsed_declaration)
-                     ->Contains(origin_)) {
-        // Otherwise, enbable the feature if the declared container policy
-        // includes the origin of the child frame.
-        inherited_policy = true;
-      }
+    // If enabled by |parent_policy| for either |origin| or |parent_policy|'s
+    // origin, then enable in the child iff the declared container policy
+    // matches |origin|.
+    if (inherited_policy || parent_policy->IsFeatureEnabled(feature)) {
+      inherited_policy =
+          ((parsed_declaration.matches_opaque_src && origin_.opaque()) ||
+           AllowlistFromDeclaration(parsed_declaration)->Contains(origin_));
     }
   }
 }
