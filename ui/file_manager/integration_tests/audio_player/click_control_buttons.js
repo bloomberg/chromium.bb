@@ -104,6 +104,56 @@ testcase.togglePlayState = function() {
       });
 };
 
+
+/**
+ * Confirms that native media keys are dispatched correctly.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+testcase.mediaKeyNative = function() {
+  const openAudio = launch('local', 'downloads', [ENTRIES.beautiful]);
+  let appId;
+  function ensurePlaying() {
+    return remoteCallAudioPlayer.waitForElement(appId, 'audio-player[playing]')
+        .then((element) => {
+          chrome.test.assertTrue(!!element, 'Not Playing.');
+        });
+  }
+  function ensurePaused() {
+    return remoteCallAudioPlayer
+        .waitForElement(appId, 'audio-player:not([playing])')
+        .then((element) => {
+          chrome.test.assertTrue(!!element, 'Not Paused.');
+        });
+  }
+  function sendMediaKey() {
+    return sendTestMessage({name: 'dispatchNativeMediaKey'}).then((result) => {
+      chrome.test.assertEq(
+          result, 'mediaKeyDispatched', 'Key dispatch failure');
+    });
+  }
+  function pauseAndUnpause() {
+    // Audio player should be playing when this is called,
+    return Promise.resolve()
+        .then(ensurePlaying)
+        .then(sendMediaKey)
+        .then(ensurePaused)
+        .then(sendMediaKey)
+        .then(ensurePlaying);
+  }
+  function enableTabletMode() {
+    return sendTestMessage({name: 'enableTabletMode'}).then((result) => {
+      chrome.test.assertEq(result, 'tabletModeEnabled');
+    });
+  }
+  return openAudio
+      .then((args) => {
+        appId = args[0];
+      })
+      .then(pauseAndUnpause)
+      .then(enableTabletMode)
+      .then(pauseAndUnpause);
+};
+
 /**
  * Confirms that the AudioPlayer default volume is 50, and that clicking the
  * volume button mutes / unmutes the volume.

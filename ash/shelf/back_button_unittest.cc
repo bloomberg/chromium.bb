@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -84,7 +86,15 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
 
-  // Register an accelerator that looks for back presses.
+  // Register an accelerator that looks for back presses. Note there is already
+  // an accelerator on AppListView, which will handle the accelerator since it
+  // is targeted before AcceleratorController (switching to tablet mode with no
+  // other windows activates the app list). First remove that accelerator. In
+  // release, there's only the AppList's accelerator, so it's always hit when
+  // the app list is active. (ash/accelerators.cc has VKEY_BROWSER_BACK, but it
+  // also needs Ctrl pressed).
+  GetAppListTestHelper()->GetAppListView()->ResetAccelerators();
+
   ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
   accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
   ui::TestAcceleratorTarget target_back_press;
