@@ -60,7 +60,8 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
                gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   holder->last_frame_resources_.clear();
-  holder->frame_sink_->SubmitCompositorFrame(std::move(frame));
+  holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                             /*show_hit_test_borders=*/false);
 
   // Delete sink holder immediately if not waiting for resources to be
   // reclaimed.
@@ -84,7 +85,8 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
   last_frame_resources_.clear();
   for (auto& resource : frame.resource_list)
     last_frame_resources_.push_back(resource.id);
-  frame_sink_->SubmitCompositorFrame(std::move(frame));
+  frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                     /*show_hit_test_borders=*/false);
 }
 
 void LayerTreeFrameSinkHolder::DidNotProduceFrame(
