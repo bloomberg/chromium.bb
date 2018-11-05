@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 #include <windows.h>
+#include "SkFont.h"
 #include "SkTypeface.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
@@ -70,6 +71,35 @@ void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
   font->setFlags(flags);
 
   font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+}
+
+void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
+  font->setSize(SkFloatToScalar(text_size_));
+  font->setTypeface(typeface_);
+  font->setEmbolden(synthetic_bold_);
+  font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+
+  uint32_t text_flags = PaintTextFlags();
+  font->DEPRECATED_setAntiAlias(
+      SkToBool(text_flags & SkPaint::kAntiAlias_Flag));
+  font->DEPRECATED_setLCDRender(
+      SkToBool(text_flags & SkPaint::kLCDRenderText_Flag));
+  font->setSubpixel(SkToBool(text_flags & SkPaint::kSubpixelText_Flag));
+
+  // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
+  // without font smoothing, subpixel text positioning leads to uneven spacing
+  // since subpixel test placement coordinates would be passed to Skia, which
+  // only has non-antialiased glyphs to draw, so they necessarily get clamped at
+  // pixel positions, which leads to uneven spacing, either too close or too far
+  // away from adjacent glyphs. We avoid this by linking the two flags.
+  if (text_flags & SkPaint::kAntiAlias_Flag)
+    font->setSubpixel(true);
+
+  if (LayoutTestSupport::IsRunningLayoutTest() &&
+      !LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest())
+    font->setSubpixel(false);
+
+  font->setEmbeddedBitmaps(!avoid_embedded_bitmaps_);
 }
 
 static bool IsWebFont(const String& family_name) {

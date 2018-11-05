@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
+#include "SkFont.h"
 #include "SkTypeface.h"
 #include "build/build_config.h"
 #include "hb-ot.h"
@@ -281,13 +282,9 @@ unsigned FontPlatformData::GetHash() const {
 
 #if !defined(OS_MACOSX)
 bool FontPlatformData::FontContainsCharacter(UChar32 character) {
-  SkPaint paint;
-  SetupSkPaint(&paint);
-  paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
-
-  uint16_t glyph;
-  paint.textToGlyphs(&character, sizeof(character), &glyph);
-  return glyph;
+  SkFont font;
+  SetupSkFont(&font);
+  return font.unicharToGlyph(character);
 }
 #endif
 
@@ -326,6 +323,20 @@ void FontPlatformData::SetupSkPaint(SkPaint* font,
   font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+}
+
+void FontPlatformData::SetupSkFont(SkFont* font,
+                                   float device_scale_factor,
+                                   const Font*) const {
+  style_.ApplyToSkFont(font, device_scale_factor);
+
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
+  font->setSize(SkFloatToScalar(ts));
+  font->setTypeface(typeface_);
+  font->setEmbolden(synthetic_bold_);
+  font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+
+  font->setEmbeddedBitmaps(!avoid_embedded_bitmaps_);
 }
 #endif
 

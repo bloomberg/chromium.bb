@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+class SkFont;
 class SkFontMgr;
 
 namespace blink {
@@ -72,6 +73,7 @@ struct WebFontRenderStyle {
   void OverrideWith(const WebFontRenderStyle& other);
 
   void ApplyToSkPaint(SkPaint&, float device_scale_factor) const;
+  void ApplyToSkFont(SkFont*, float device_scale_factor) const;
 
   // Each of the use* members below can take one of three values:
   //   0: off

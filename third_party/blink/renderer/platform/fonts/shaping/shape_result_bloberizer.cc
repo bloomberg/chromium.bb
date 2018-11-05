@@ -39,10 +39,9 @@ void ShapeResultBloberizer::CommitPendingRun() {
     builder_rotation_ = pending_canvas_rotation_;
   }
 
-  SkPaint run_font;
-  run_font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  pending_font_data_->PlatformData().SetupSkPaint(&run_font,
-                                                  device_scale_factor_, &font_);
+  SkFont run_font;
+  pending_font_data_->PlatformData().SetupSkFont(&run_font,
+                                                 device_scale_factor_, &font_);
 
   const auto run_size = pending_glyphs_.size();
   const auto& buffer = HasPendingVerticalOffsets()

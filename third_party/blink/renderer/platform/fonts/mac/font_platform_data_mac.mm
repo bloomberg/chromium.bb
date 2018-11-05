@@ -33,6 +33,7 @@
 #import "third_party/blink/renderer/platform/layout_test_support.h"
 #import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#import "third_party/skia/include/core/SkFont.h"
 #import "third_party/skia/include/core/SkStream.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
 
@@ -161,6 +162,58 @@ void FontPlatformData::SetupSkPaint(SkPaint* paint,
       (font->GetFontDescription().FontSmoothing() == kAntialiased ||
        font->GetFontDescription().TextRendering() == kGeometricPrecision))
     paint->setHinting(SkPaint::kNo_Hinting);
+}
+
+void FontPlatformData::SetupSkFont(SkFont* skfont,
+                                   float,
+                                   const Font* font) const {
+  bool should_smooth_fonts = true;
+  bool should_antialias = true;
+  bool should_subpixel_position = true;
+
+  if (font) {
+    switch (font->GetFontDescription().FontSmoothing()) {
+      case kAntialiased:
+        should_smooth_fonts = false;
+        break;
+      case kSubpixelAntialiased:
+        break;
+      case kNoSmoothing:
+        should_antialias = false;
+        should_smooth_fonts = false;
+        break;
+      case kAutoSmoothing:
+        // For the AutoSmooth case, don't do anything! Keep the default
+        // settings.
+        break;
+    }
+  }
+
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
+    should_smooth_fonts = false;
+    should_antialias = should_antialias &&
+                       LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+    should_subpixel_position =
+        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
+  }
+
+  skfont->DEPRECATED_setAntiAlias(should_antialias);
+  skfont->setEmbeddedBitmaps(false);
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
+  skfont->setSize(SkFloatToScalar(ts));
+  skfont->setTypeface(typeface_);
+  skfont->setEmbolden(synthetic_bold_);
+  skfont->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  skfont->DEPRECATED_setLCDRender(should_smooth_fonts);
+  skfont->setSubpixel(should_subpixel_position);
+
+  // When rendering using CoreGraphics, disable hinting when
+  // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
+  // used.  See crbug.com/152304
+  if (font &&
+      (font->GetFontDescription().FontSmoothing() == kAntialiased ||
+       font->GetFontDescription().TextRendering() == kGeometricPrecision))
+    skfont->setHinting(SkFont::kNo_Hinting);
 }
 
 FontPlatformData::FontPlatformData(NSFont* ns_font,
