@@ -8,7 +8,7 @@
     android:layout_height="wrap_content">
 
     <org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/download_toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_height_no_shadow"
         style="@style/ModernToolbar">
