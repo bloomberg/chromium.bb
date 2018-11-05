@@ -77,9 +77,9 @@ class ShellDevToolsBindings::NetworkResourceLoader
         request_id_(request_id),
         bindings_(bindings),
         loader_(std::move(loader)) {
-    loader_->DownloadAsStream(url_loader_factory, this);
     loader_->SetOnResponseStartedCallback(base::BindOnce(
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
+    loader_->DownloadAsStream(url_loader_factory, this);
   }
 
  private:
