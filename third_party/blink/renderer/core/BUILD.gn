@@ -487,14 +487,14 @@ css_properties("make_core_generated_computed_style_base") {
 }
 
 css_properties("make_core_generated_css_value_id_mappings") {
-  script = "../build/scripts/make_css_value_id_mappings.py"
+  script = "../build/scripts/core/css/make_css_value_id_mappings.py"
   in_files = [ "css/css_value_keywords.json5" ]
   other_inputs = [
-    "../build/scripts/templates/css_value_id_mappings_generated.h.tmpl",
+    "../build/scripts/core/css/templates/css_value_id_mappings_generated.h.tmpl",
     "../build/scripts/keyword_utils.py",
   ]
   outputs = [
-    "$blink_core_output_dir/css_value_id_mappings_generated.h",
+    "$blink_core_output_dir/css/css_value_id_mappings_generated.h",
   ]
 }
 
