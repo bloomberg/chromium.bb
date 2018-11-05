@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -1231,6 +1232,416 @@ IN_PROC_BROWSER_TEST_F(
       "Autofill.UploadOfferedCardOrigin",
       AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
   histogram_tester.ExpectTotalCount("Autofill.UploadAcceptedCardOrigin", 0);
+}
+
+// Tests StrikeDatabase interaction with the local save bubble. Ensures that no
+// strikes are added if the feature flag is disabled.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       StrikeDatabase_Local_StrikeNotAddedIfExperimentFlagOff) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ReturnToInitialPage();
+
+  // Ensure that no strike was added because the feature is disabled.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
+}
+
+// Tests StrikeDatabase interaction with the upload save bubble. Ensures that no
+// strikes are added if the feature flag is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    StrikeDatabase_Upload_StrikeNotAddedIfExperimentFlagOff) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ReturnToInitialPage();
+
+  // Ensure that no strike was added because the feature is disabled.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
+}
+
+// These tests pass trybots, but end up flaky on Win 7. http://crbug.com/901527
+#if defined(OS_WIN)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
+// TODO(jsaul): With the fate of the [No thanks] button currently non-existent,
+//              there's no way to test that bubble dismissal will add a strike.
+//              If the [No thanks] button makes a return (seems possible), add a
+//              matching test for that scenario.
+
+// Tests StrikeDatabase interaction with the local save bubble. Ensures that a
+// strike is added if the bubble is ignored.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       MAYBE(StrikeDatabase_Local_AddStrikeIfBubbleIgnored)) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  // Add an event observer to the controller to detect strike changes.
+  AddEventObserverToController();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
+  ReturnToInitialPage();
+  WaitForObservedEvent();
+
+  // Ensure that a strike was added due to the bubble being ignored.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
+      /*sample=*/1, /*count=*/1);
+}
+
+// Tests StrikeDatabase interaction with the upload save bubble. Ensures that a
+// strike is added if the bubble is ignored.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       MAYBE(StrikeDatabase_Upload_AddStrikeIfBubbleIgnored)) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  // Add an event observer to the controller to detect strike changes.
+  AddEventObserverToController();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
+  ReturnToInitialPage();
+  WaitForObservedEvent();
+
+  // Ensure that a strike was added due to the bubble being ignored.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
+      /*sample=*/1, /*count=*/1);
+}
+
+// Tests StrikeDatabase interaction with the upload save bubble. Ensures that a
+// strike is added if card upload to Google Payments fails.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       MAYBE(StrikeDatabase_Upload_AddStrikeIfSaveFails)) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // Set up the Payments RPCs.
+  SetUploadDetailsRpcPaymentsAccepts();
+  SetUploadCardRpcPaymentsFails();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking [Save] should accept and close it, then send an UploadCardRequest
+  // to Google Payments.
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST,
+                               DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE,
+                               DialogEvent::STRIKE_CHANGE_COMPLETE});
+  base::HistogramTester histogram_tester;
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page. Ensures that navigation does not create an additional strike.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ReturnToInitialPage();
+
+  // Ensure that a strike was added due to the upload card request failing.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
+      /*sample=*/1, /*count=*/1);
+}
+
+// TODO(crbug.com/884817): There's a lot of duplicate code in the tests that
+//                         follow. Investigate refactoring; perhaps these could
+//                         all be reduced to single tests with a local vs.
+//                         upload boolean for branching logic.
+// Tests overall StrikeDatabase interaction with the local save bubble. Runs an
+// example of ignoring the prompt three times and ensuring that the
+// offer-to-save bubble does not appear on the fourth try. Then, ensures that no
+// strikes are added if the card already has max strikes.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       MAYBE(StrikeDatabase_Local_FullFlowTest)) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+  bool controller_observer_set = false;
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Show and ignore the bubble kMaxStrikesToPreventPoppingUpOfferToSavePrompt
+  // times in order to accrue maximum strikes.
+  for (int i = 0; i < kMaxStrikesToPreventPoppingUpOfferToSavePrompt; i++) {
+    // Submitting the form and having Payments decline offering to save should
+    // show the local save bubble.
+    // (Must wait for response from Payments before accessing the controller.)
+    ResetEventWaiterForSequence(
+        {DialogEvent::REQUESTED_UPLOAD_SAVE,
+         DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+         DialogEvent::OFFERED_LOCAL_SAVE});
+    FillAndSubmitForm();
+    WaitForObservedEvent();
+    EXPECT_TRUE(
+        FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+    if (!controller_observer_set) {
+      // Add an event observer to the controller.
+      AddEventObserverToController();
+      ReduceAnimationTime();
+      controller_observer_set = true;
+    }
+
+    // Clicking the [X] close button should dismiss the bubble.
+    ClickOnCloseButton();
+
+    base::HistogramTester histogram_tester;
+
+    // Wait long enough to avoid bubble stickiness, then navigate away from the
+    // page.
+    test_clock.Advance(kCardBubbleSurviveNavigationTime);
+    ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
+    ReturnToInitialPage();
+    WaitForObservedEvent();
+
+    // Ensure that a strike was added due to the bubble being ignored.
+    // The sample logged is the Nth strike added, or (i+1).
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
+        /*sample=*/(i + 1), /*count=*/1);
+  }
+
+  // Submit the form a fourth time. Since the card now has maximum strikes (3),
+  // the icon should be shown but the bubble should not.
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+
+  // Click the icon to show the bubble.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ReturnToInitialPage();
+
+  // Ensure that no strike was added because the card already had max strikes.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
+}
+
+// Tests overall StrikeDatabase interaction with the upload save bubble. Runs an
+// example of ignoring the prompt three times and ensuring that the
+// offer-to-save bubble does not appear on the fourth try. Then, ensures that no
+// strikes are added if the card already has max strikes.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       MAYBE(StrikeDatabase_Upload_FullFlowTest)) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+  bool controller_observer_set = false;
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Show and ignore the bubble kMaxStrikesToPreventPoppingUpOfferToSavePrompt
+  // times in order to accrue maximum strikes.
+  for (int i = 0; i < kMaxStrikesToPreventPoppingUpOfferToSavePrompt; i++) {
+    // Submitting the form should show the upload save bubble and legal footer.
+    // (Must wait for response from Payments before accessing the controller.)
+    ResetEventWaiterForSequence(
+        {DialogEvent::REQUESTED_UPLOAD_SAVE,
+         DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+    FillAndSubmitForm();
+    WaitForObservedEvent();
+    EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                    ->visible());
+    EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+    if (!controller_observer_set) {
+      // Add an event observer to the controller.
+      AddEventObserverToController();
+      ReduceAnimationTime();
+      controller_observer_set = true;
+    }
+
+    // Clicking the [X] close button should dismiss the bubble.
+    ClickOnCloseButton();
+
+    base::HistogramTester histogram_tester;
+
+    // Wait long enough to avoid bubble stickiness, then navigate away from the
+    // page.
+    test_clock.Advance(kCardBubbleSurviveNavigationTime);
+    ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
+    ReturnToInitialPage();
+    WaitForObservedEvent();
+
+    // Ensure that a strike was added due to the bubble being ignored.
+    // The sample logged is the Nth strike added, or (i+1).
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
+        /*sample=*/(i + 1), /*count=*/1);
+  }
+
+  // Submit the form a fourth time. Since the card now has maximum strikes (3),
+  // the icon should be shown but the bubble should not.
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+
+  // Click the icon to show the bubble.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  ClickOnCloseButton();
+
+  base::HistogramTester histogram_tester;
+
+  // Wait long enough to avoid bubble stickiness, then navigate away from the
+  // page.
+  test_clock.Advance(kCardBubbleSurviveNavigationTime);
+  ReturnToInitialPage();
+
+  // Ensure that no strike was added because the card already had max strikes.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
 }
 
 }  // namespace autofill
