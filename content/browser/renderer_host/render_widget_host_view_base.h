@@ -409,7 +409,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // this view or the target view has no current FrameSinkId. The latter may
   // happen if either view is not currently visible in the viewport.
   // This function is useful if there are multiple points to transform between
-  // the same two views.
+  // the same two views. |target_view| must be non-null.
   bool GetTransformToViewCoordSpace(RenderWidgetHostViewBase* target_view,
                                     gfx::Transform* transform);
 
