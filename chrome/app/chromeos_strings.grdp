@@ -3499,12 +3499,6 @@
   <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
     Try Smart Lock to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> without a password when your phone is nearby.
   </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE_ALTERNATE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
-    Screen lock required
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE_ALTERNATE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
-    Make your phone more secure before connecting your Chromebook. <ph name="LINK_BEGIN">&lt;a href="$1<ex>www.google.com</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
   <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
     Start setup
   </message>
@@ -3537,13 +3531,6 @@
   </message>
   <message name="IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_MESSAGE" desc="Message for notification shown when the pairing change is applied.">
     Your <ph name="PHONE_NAME">$1<ex>Moto X</ex></ph> can now unlock this <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> too.
-  </message>
-  <!-- Other -->
-  <message name="IDS_EASY_UNLOCK_DESCRIPTION" desc="Description of feature that automatically unlocks the user's Chromebook when their phone is nearby.">
-    Use your phone to unlock your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_ON" desc="Tells the user they now have turned on the Smart Lock feature.">
-    Smart Lock is on
   </message>
 
   <!-- Strings for the Easy Unlock setup dialog -->
