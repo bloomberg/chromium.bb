@@ -13,6 +13,9 @@
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #include "url/gurl.h"
 
+@protocol WKNavigationDelegate;
+@class WKWebView;
+
 namespace web {
 
 class NavigationManagerImpl;
@@ -32,11 +35,12 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
  public:
   WebInterstitialImpl(WebStateImpl* web_state,
                       bool new_navigation,
-                      const GURL& url);
+                      const GURL& url,
+                      std::unique_ptr<WebInterstitialDelegate> delegate);
   ~WebInterstitialImpl() override;
 
   // Returns the transient content view used to display interstitial content.
-  virtual CRWContentView* GetContentView() const = 0;
+  virtual CRWContentView* GetContentView() const;
 
   // Returns the url corresponding to this interstitial.
   const GURL& GetUrl() const;
@@ -50,23 +54,16 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   // WebStateObserver implementation:
   void WebStateDestroyed(WebState* web_state) override;
 
- protected:
-  // Called before the WebInterstitialImpl is shown, giving subclasses a chance
-  // to instantiate its view.
-  virtual void PrepareForDisplay() {}
-
-  // Returns the WebInterstitialDelegate that will handle Proceed/DontProceed
-  // user actions.
-  virtual WebInterstitialDelegate* GetDelegate() const = 0;
-
-  // Convenience method for getting the WebStateImpl.
-  WebStateImpl* GetWebStateImpl() const;
+  // Called by |web_view_controller_delegate_| when |web_view_controller_|
+  // receives a JavaScript command. This method forwards the command to
+  // WebInterstitialDelegate::CommandReceived.
+  void CommandReceivedFromWebView(NSString* command);
 
   // Executes the given |script| on interstitial's web view if there is one.
   // Calls |completionHandler| with results of the evaluation.
   // The |completionHandler| can be nil. Must be used only for testing.
   virtual void ExecuteJavaScript(NSString* script,
-                                 JavaScriptResultBlock completion_handler) = 0;
+                                 JavaScriptResultBlock completion_handler);
 
  private:
   // The WebState this instance is observing. Will be null after
@@ -82,6 +79,16 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   bool new_navigation_;
   // Whether or not either Proceed() or DontProceed() has been called.
   bool action_taken_;
+
+  std::unique_ptr<WebInterstitialDelegate> delegate_;
+  // The |web_view_|'s delegate.  Used to forward JavaScript commands
+  // resulting from user interaction with the interstitial content.
+  id<WKNavigationDelegate> web_view_delegate_;
+  // The web view used to show the content. View needs to be resized by the
+  // caller.
+  WKWebView* web_view_;
+  // View that encapsulates interstitial's web view and scroll view.
+  CRWContentView* content_view_;
 
   // Must be implemented only for testing purposes.
   friend void web::ExecuteScriptForTesting(WebInterstitialImpl*,

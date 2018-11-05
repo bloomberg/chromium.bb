@@ -15,10 +15,6 @@ source_set("interstitials") {
   ]
 
   sources = [
-    "html_web_interstitial_impl.h",
-    "html_web_interstitial_impl.mm",
-    "native_web_interstitial_impl.h",
-    "native_web_interstitial_impl.mm",
     "web_interstitial_impl.h",
     "web_interstitial_impl.mm",
   ]
@@ -45,6 +41,6 @@ source_set("interstitials_unittests") {
   ]
 
   sources = [
-    "html_web_interstitial_unittest.mm",
+    "web_interstitial_unittest.mm",
   ]
 }

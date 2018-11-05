@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/interstitials/html_web_interstitial_impl.h"
+#import "ios/web/public/interstitials/web_interstitial.h"
 
 #include <memory>
 
@@ -25,8 +25,8 @@ const char kTestHostName[] = "https://chromium.test/";
 
 }  // namespace
 
-// Test fixture for HtmlWebInterstitialImpl class.
-class HtmlWebInterstitialImplTest : public WebTest {
+// Test fixture for WebInterstitial class.
+class WebInterstitialTest : public WebTest {
  protected:
   void SetUp() override {
     WebTest::SetUp();
@@ -46,7 +46,7 @@ class HtmlWebInterstitialImplTest : public WebTest {
 };
 
 // Tests that the interstitial is shown and dismissed on Proceed call.
-TEST_F(HtmlWebInterstitialImplTest, Proceed) {
+TEST_F(WebInterstitialTest, Proceed) {
   ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
 
   GURL url(kTestHostName);
@@ -55,7 +55,7 @@ TEST_F(HtmlWebInterstitialImplTest, Proceed) {
   EXPECT_CALL(*delegate.get(), OnProceed());
 
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
-  HtmlWebInterstitialImpl* interstitial = new HtmlWebInterstitialImpl(
+  WebInterstitial* interstitial = WebInterstitial::CreateInterstitial(
       web_state_.get(), true, url, std::move(delegate));
   interstitial->Show();
   ASSERT_TRUE(web_state_->IsShowingWebInterstitial());
@@ -65,7 +65,7 @@ TEST_F(HtmlWebInterstitialImplTest, Proceed) {
 }
 
 // Tests that the interstitial is shown and dismissed on DontProceed call.
-TEST_F(HtmlWebInterstitialImplTest, DontProceed) {
+TEST_F(WebInterstitialTest, DontProceed) {
   ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
 
   std::unique_ptr<MockInterstitialDelegate> delegate =
@@ -73,7 +73,7 @@ TEST_F(HtmlWebInterstitialImplTest, DontProceed) {
   EXPECT_CALL(*delegate.get(), OnDontProceed());
 
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
-  HtmlWebInterstitialImpl* interstitial = new HtmlWebInterstitialImpl(
+  WebInterstitial* interstitial = WebInterstitial::CreateInterstitial(
       web_state_.get(), true, GURL(kTestHostName), std::move(delegate));
   interstitial->Show();
   ASSERT_TRUE(web_state_->IsShowingWebInterstitial());
@@ -83,13 +83,13 @@ TEST_F(HtmlWebInterstitialImplTest, DontProceed) {
 }
 
 // Tests that presenting an interstitial changes the visible security state.
-TEST_F(HtmlWebInterstitialImplTest, VisibleSecurityStateChanged) {
+TEST_F(WebInterstitialTest, VisibleSecurityStateChanged) {
   TestWebStateObserver observer(web_state_.get());
 
   std::unique_ptr<MockInterstitialDelegate> delegate =
       std::make_unique<MockInterstitialDelegate>();
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
-  HtmlWebInterstitialImpl* interstitial = new HtmlWebInterstitialImpl(
+  WebInterstitial* interstitial = WebInterstitial::CreateInterstitial(
       web_state_.get(), true, GURL(kTestHostName), std::move(delegate));
 
   interstitial->Show();
@@ -100,14 +100,14 @@ TEST_F(HtmlWebInterstitialImplTest, VisibleSecurityStateChanged) {
 }
 
 // Tests that the interstitial is dismissed when the web state is destroyed.
-TEST_F(HtmlWebInterstitialImplTest, WebStateDestroyed) {
+TEST_F(WebInterstitialTest, WebStateDestroyed) {
   std::unique_ptr<MockInterstitialDelegate> delegate =
       std::make_unique<MockInterstitialDelegate>();
   // Interstitial should be dismissed if web state is destroyed.
   EXPECT_CALL(*delegate.get(), OnDontProceed());
 
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
-  HtmlWebInterstitialImpl* interstitial = new HtmlWebInterstitialImpl(
+  WebInterstitial* interstitial = WebInterstitial::CreateInterstitial(
       web_state_.get(), true, GURL(kTestHostName), std::move(delegate));
 
   interstitial->Show();

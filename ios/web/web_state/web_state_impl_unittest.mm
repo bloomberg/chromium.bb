@@ -16,7 +16,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#import "ios/web/interstitials/html_web_interstitial_impl.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
@@ -233,8 +233,8 @@ class WebStateImplTest
   WebInterstitialImpl* ShowInterstitial() {
     auto delegate = std::make_unique<MockInterstitialDelegate>();
     WebInterstitialImpl* result =
-        new HtmlWebInterstitialImpl(web_state_.get(), /*new_navigation=*/true,
-                                    GURL::EmptyGURL(), std::move(delegate));
+        new WebInterstitialImpl(web_state_.get(), /*new_navigation=*/true,
+                                GURL::EmptyGURL(), std::move(delegate));
     result->Show();
     return result;
   }

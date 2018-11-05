@@ -9,7 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 // A mock html web interstitial delegate.
-class MockInterstitialDelegate : public web::HtmlWebInterstitialDelegate {
+class MockInterstitialDelegate : public web::WebInterstitialDelegate {
  public:
   MockInterstitialDelegate();
   ~MockInterstitialDelegate();
