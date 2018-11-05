@@ -77,6 +77,12 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOmniboxTextField;
     case UserFriendlyElementName::kOmniboxCloseButton:
       return kOmniboxCloseButton;
+    case UserFriendlyElementName::kAppButtonExitToast:
+      return kWebVrExclusiveScreenToast;
+    case UserFriendlyElementName::kWebXrAudioIndicator:
+      return kWebVrAudioCaptureIndicator;
+    case UserFriendlyElementName::kWebXrHostedContent:
+      return kWebVrHostedUiContent;
     default:
       NOTREACHED();
       return kNone;

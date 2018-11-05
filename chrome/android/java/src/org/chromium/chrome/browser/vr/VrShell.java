@@ -136,6 +136,23 @@ public class VrShell extends GvrLayout
     private ArrayList<Integer> mUiOperationResults;
     private ArrayList<Runnable> mUiOperationResultCallbacks;
 
+    /**
+     * A struct-like object for registering UI operations during tests.
+     */
+    @VisibleForTesting
+    public static class UiOperationData {
+        // The UiTestOperationType of this operation.
+        public int actionType;
+        // The callback to run when the operation completes.
+        public Runnable resultCallback;
+        // The timeout of the operation.
+        public int timeoutMs;
+        // The UserFriendlyElementName to perform the operation on.
+        public int elementName;
+        // The desired visibility status of the element.
+        public boolean visibility;
+    }
+
     public VrShell(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
         super(activity);
@@ -1233,8 +1250,8 @@ public class VrShell extends GvrLayout
         });
     }
 
-    public void registerUiOperationCallbackForTesting(
-            int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
+    public void registerUiOperationCallbackForTesting(UiOperationData operationData) {
+        int actionType = operationData.actionType;
         assert actionType < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES;
         // Fill the ArrayLists if this is the first time the method has been called.
         if (mUiOperationResults == null) {
@@ -1248,14 +1265,15 @@ public class VrShell extends GvrLayout
             }
         }
         mUiOperationResults.set(actionType, UiTestOperationResult.UNREPORTED);
-        mUiOperationResultCallbacks.set(actionType, resultCallback);
+        mUiOperationResultCallbacks.set(actionType, operationData.resultCallback);
 
         // In the case of the UI activity quiescence callback type, we need to let the native UI
         // know how long to wait before timing out.
         if (actionType == UiTestOperationType.UI_ACTIVITY_RESULT) {
-            nativeSetUiExpectingActivityForTesting(mNativeVrShell, timeoutMs);
-        } else if (actionType == UiTestOperationType.ELEMENT_VISIBILITY_CHANGE) {
-            nativeWatchElementForVisibilityChangeForTesting(mNativeVrShell, elementName, timeoutMs);
+            nativeSetUiExpectingActivityForTesting(mNativeVrShell, operationData.timeoutMs);
+        } else if (actionType == UiTestOperationType.ELEMENT_VISIBILITY_STATUS) {
+            nativeWatchElementForVisibilityStatusForTesting(mNativeVrShell,
+                    operationData.elementName, operationData.timeoutMs, operationData.visibility);
         }
     }
 
@@ -1327,8 +1345,8 @@ public class VrShell extends GvrLayout
             long nativeVrShell, int quiescenceTimeoutMs);
     private native void nativeSaveNextFrameBufferToDiskForTesting(
             long nativeVrShell, String filepathBase);
-    private native void nativeWatchElementForVisibilityChangeForTesting(
-            long nativeVrShell, int elementName, int timeoutMs);
+    private native void nativeWatchElementForVisibilityStatusForTesting(
+            long nativeVrShell, int elementName, int timeoutMs, boolean visibility);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }

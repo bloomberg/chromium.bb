@@ -186,8 +186,8 @@ public class VrInstallUpdateInfoBarTest {
         // prompt to become visible before waiting for quiescence.
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             try {
-                NativeUiUtils.performActionAndWaitForVisibilityChange(
-                        UserFriendlyElementName.EXIT_PROMPT,
+                NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                        UserFriendlyElementName.EXIT_PROMPT, true /* visible */,
                         () -> { NativeUiUtils.clickElement(uiElementToClick, new PointF()); });
             } catch (InterruptedException e) {
                 Assert.fail("Interrupted while waiting for UI visibility change");
