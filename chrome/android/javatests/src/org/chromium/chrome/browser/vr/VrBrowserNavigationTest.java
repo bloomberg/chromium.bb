@@ -693,8 +693,8 @@ public class VrBrowserNavigationTest {
         // having suggestions present, waiting for a number of frames before committing seemed
         // stable. Adding an operation to listen for suggestion changes would also work, but
         // would add some pretty niche test-only code to the native side.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://version/"); });
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
@@ -728,8 +728,8 @@ public class VrBrowserNavigationTest {
     private void testSuggestionClickTriggersNavigationImpl() throws InterruptedException {
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://"); });
         // Blindly clicking in the center of the suggestion box should end up clicking the middle
         // suggestion, which for "chrome://" should be a valid chrome:// URL.

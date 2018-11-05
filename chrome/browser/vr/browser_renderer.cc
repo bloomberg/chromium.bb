@@ -231,7 +231,7 @@ void BrowserRenderer::SaveNextFrameBufferToDiskForTesting(
   frame_buffer_dump_filepath_base_ = filepath_base;
 }
 
-void BrowserRenderer::WatchElementForVisibilityChangeForTesting(
+void BrowserRenderer::WatchElementForVisibilityStatusForTesting(
     VisibilityChangeExpectation visibility_expectation) {
   DCHECK(ui_visibility_state_ == nullptr) << "Attempted to watch a UI element "
                                              "for visibility changes with one "
@@ -240,8 +240,7 @@ void BrowserRenderer::WatchElementForVisibilityChangeForTesting(
   ui_visibility_state_->timeout_ms =
       base::TimeDelta::FromMilliseconds(visibility_expectation.timeout_ms);
   ui_visibility_state_->element_to_watch = visibility_expectation.element_name;
-  ui_visibility_state_->initially_visible = ui_->GetElementVisibilityForTesting(
-      ui_visibility_state_->element_to_watch);
+  ui_visibility_state_->expected_visibile = visibility_expectation.visibility;
 }
 
 void BrowserRenderer::AcceptDoffPromptForTesting() {
@@ -405,13 +404,13 @@ void BrowserRenderer::ReportElementVisibilityStatusForTesting(
   base::TimeDelta time_since_start =
       current_time - ui_visibility_state_->start_time;
   if (ui_->GetElementVisibilityForTesting(
-          ui_visibility_state_->element_to_watch) !=
-      ui_visibility_state_->initially_visible) {
+          ui_visibility_state_->element_to_watch) ==
+      ui_visibility_state_->expected_visibile) {
     ReportElementVisibilityResultForTesting(
-        UiTestOperationResult::kVisibilityChange);
+        UiTestOperationResult::kVisibilityMatch);
   } else if (time_since_start > ui_visibility_state_->timeout_ms) {
     ReportElementVisibilityResultForTesting(
-        UiTestOperationResult::kTimeoutNoChange);
+        UiTestOperationResult::kTimeoutNoVisibilityMatch);
   }
 }
 
@@ -419,7 +418,7 @@ void BrowserRenderer::ReportElementVisibilityResultForTesting(
     UiTestOperationResult result) {
   ui_visibility_state_ = nullptr;
   browser_->ReportUiOperationResultForTesting(
-      UiTestOperationType::kElementVisibilityChange, result);
+      UiTestOperationType::kElementVisibilityStatus, result);
 }
 
 }  // namespace vr

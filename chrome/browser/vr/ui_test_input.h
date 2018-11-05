@@ -30,6 +30,12 @@ enum class UserFriendlyElementName : int {
   kOmniboxTextField,    // The Omnibox's text input field that shows up when the
                         // URL bar is clicked.
   kOmniboxCloseButton,  // The button the exits the omnibox's text input mode.
+  kAppButtonExitToast,  // The "Press app button to exit" toast when entring
+                        // an immersive session.
+  kWebXrAudioIndicator,  // Toast in WebXR indicating the microphone permission
+                         // is in use.
+  kWebXrHostedContent,   // Hosted content in a WebXR immersive session, e.g.
+                         // permission prompts.
 };
 
 // These are the types of actions that Java can request callbacks for once
@@ -38,7 +44,8 @@ enum class UserFriendlyElementName : int {
 enum class UiTestOperationType : int {
   kUiActivityResult = 0,     // Result after being told to wait for quiescence
   kFrameBufferDumped,        // Signal that the frame buffer was dumped to disk
-  kElementVisibilityChange,  // Signal that a watched element changed visibility
+  kElementVisibilityStatus,  // Signal that a watched element matches the
+                             // desired visibility.
   kNumUiTestOperationTypes,  // Must be last
 };
 
@@ -49,10 +56,10 @@ enum class UiTestOperationResult : int {
   kQuiescent,       // The UI reached quiescence (kUiActivityResult)
   kTimeoutNoStart,  // Timed out, UI activity never started (kUiActivityResult)
   kTimeoutNoEnd,    // Timed out, UI activity never finished (kUiActivityResult)
-  kVisibilityChange,  // The watched element's visibility changed
-                      // (kElementVisibilityChange)
-  kTimeoutNoChange,   // Timed out, visibility never changed
-                      // (kElementVisibilityChange)
+  kVisibilityMatch,  // The watched element's visibility matches the expectation
+                     // (kElementVisibilityStatus)
+  kTimeoutNoVisibilityMatch,  // Timed out, visibility doesn't match expectation
+                              // (kElementVisibilityStatus)
 };
 
 // These are used to specify what type of action should be performed on a UI
@@ -100,6 +107,7 @@ struct UiTestActivityExpectation {
 struct VisibilityChangeExpectation {
   UserFriendlyElementName element_name;
   int timeout_ms;
+  bool visibility;
 };
 
 // Holds all the information necessary to keep track of and report whether the
@@ -119,8 +127,8 @@ struct UiTestState {
 struct UiVisibilityState {
   // The UI element being watched.
   UserFriendlyElementName element_to_watch = UserFriendlyElementName::kUrl;
-  // The initial visibility state of the element.
-  bool initially_visible = false;
+  // The desired visibility state of the element.
+  bool expected_visibile = false;
   // How long to wait for a visibility change before timing out.
   base::TimeDelta timeout_ms = base::TimeDelta::Min();
   // The point in time that we started watching for visibility changes.

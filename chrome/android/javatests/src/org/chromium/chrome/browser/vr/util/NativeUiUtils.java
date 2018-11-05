@@ -223,14 +223,16 @@ public class NativeUiUtils {
             throws InterruptedException {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.UI_ACTIVITY_RESULT;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(
-                    UiTestOperationType.UI_ACTIVITY_RESULT, () -> {
-                        resultLatch.countDown();
-                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, 0 /* unused */);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
         // Wait for any outstanding animations to finish.
@@ -243,32 +245,38 @@ public class NativeUiUtils {
     }
 
     /**
-     * Runs the given Runnable and waits until the specified element changes its visibility.
+     * Runs the given Runnable and waits until the specified element matches the requested
+     * visibility.
      *
      * @param elementName The UserFriendlyElementName to wait on to change visibility.
+     * @param status The visibility status to wait for.
      * @param action A Runnable containing the action to perform.
      */
-    public static void performActionAndWaitForVisibilityChange(
-            final int elementName, Runnable action) throws InterruptedException {
+    public static void performActionAndWaitForVisibilityStatus(final int elementName,
+            final boolean visible, Runnable action) throws InterruptedException {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.ELEMENT_VISIBILITY_STATUS;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
+        operationData.elementName = elementName;
+        operationData.visibility = visible;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(
-                    UiTestOperationType.ELEMENT_VISIBILITY_CHANGE, () -> {
-                        resultLatch.countDown();
-                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, elementName);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
         // Wait for the result to be reported.
         resultLatch.await();
         int result = instance.getLastUiOperationResultForTesting(
-                UiTestOperationType.ELEMENT_VISIBILITY_CHANGE);
+                UiTestOperationType.ELEMENT_VISIBILITY_STATUS);
         Assert.assertEquals("UI reported non-visibility-changed result '"
                         + uiTestOperationResultToString(result) + "'",
-                UiTestOperationResult.VISIBILITY_CHANGE, result);
+                UiTestOperationResult.VISIBILITY_MATCH, result);
     }
 
     /**
@@ -310,13 +318,16 @@ public class NativeUiUtils {
 
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.FRAME_BUFFER_DUMPED;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
 
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(UiTestOperationType.FRAME_BUFFER_DUMPED,
-                    () -> { resultLatch.countDown(); }, 0 /* unused */, 0 /* unused */);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();
     }
@@ -372,10 +383,10 @@ public class NativeUiUtils {
                 return "Timeout (UI activity not started)";
             case UiTestOperationResult.TIMEOUT_NO_END:
                 return "Timeout (UI activity not stopped)";
-            case UiTestOperationResult.VISIBILITY_CHANGE:
-                return "Visibility change";
-            case UiTestOperationResult.TIMEOUT_NO_CHANGE:
-                return "Timeout (Element visibility did not change)";
+            case UiTestOperationResult.VISIBILITY_MATCH:
+                return "Visibility match";
+            case UiTestOperationResult.TIMEOUT_NO_VISIBILITY_MATCH:
+                return "Timeout (Element visibility did not match)";
             default:
                 return "Unknown result";
         }

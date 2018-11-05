@@ -1266,19 +1266,21 @@ void VrShell::SaveNextFrameBufferToDiskForTesting(
           base::android::ConvertJavaStringToUTF8(env, filepath_base)));
 }
 
-void VrShell::WatchElementForVisibilityChangeForTesting(
+void VrShell::WatchElementForVisibilityStatusForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint element_name,
-    jint timeout_ms) {
+    jint timeout_ms,
+    jboolean visibility) {
   VisibilityChangeExpectation visibility_expectation;
   visibility_expectation.element_name =
       static_cast<UserFriendlyElementName>(element_name);
   visibility_expectation.timeout_ms = timeout_ms;
+  visibility_expectation.visibility = visibility;
   PostToGlThread(
       FROM_HERE,
       base::BindOnce(
-          &BrowserRenderer::WatchElementForVisibilityChangeForTesting,
+          &BrowserRenderer::WatchElementForVisibilityStatusForTesting,
           gl_thread_->GetBrowserRenderer(), visibility_expectation));
 }
 

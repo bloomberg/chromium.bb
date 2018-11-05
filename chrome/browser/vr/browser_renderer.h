@@ -74,7 +74,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
   void SaveNextFrameBufferToDiskForTesting(std::string filepath_base);
-  void WatchElementForVisibilityChangeForTesting(
+  void WatchElementForVisibilityStatusForTesting(
       VisibilityChangeExpectation visibility_expectation);
   void AcceptDoffPromptForTesting();
   void ConnectPresentingService(

@@ -12,8 +12,10 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 
+import android.graphics.PointF;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.view.MotionEvent;
@@ -37,8 +39,11 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
+import org.chromium.chrome.browser.vr.util.NativeUiUtils;
+import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
@@ -47,6 +52,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -695,5 +701,172 @@ public class WebXrVrInputTest {
         mWebXrVrTestFramework.executeStepAndWait("stepAssertNumGamepadsMatchesExpectation("
                 + String.valueOf(numExpectedGamepads) + ")");
         mWebXrVrTestFramework.endTest();
+    }
+
+    /**
+     * Tests that long pressing the app button shows a toast indicating which permissions are in
+     * use, and that it disappears at the correct time.
+     */
+    @Test
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+            public void testAppButtonLongPressDisplaysPermissions() throws InterruptedException {
+        testAppButtonLongPressDisplaysPermissionsImpl();
+    }
+
+    /**
+     * Tests that long pressing the app button shows a toast indicating which permissions are in
+     * use, and that it disappears at the correct time while in incognito mode.
+     */
+    @Test
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
+            public void testAppButtonLongPressDisplaysPermissionsIncognito()
+            throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity()
+                    .getTabCreator(true /* incognito */)
+                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
+        });
+        testAppButtonLongPressDisplaysPermissionsImpl();
+    }
+
+    private void testAppButtonLongPressDisplaysPermissionsImpl() throws InterruptedException {
+        // Note that we need to pass in the WebContents to use throughout this because automatically
+        // using the first tab's WebContents doesn't work in Incognito.
+        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
+        EmbeddedTestServer server = mTestRule.getTestServer();
+        boolean teardownServer = false;
+        if (server == null) {
+            server = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+            teardownServer = true;
+        }
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                server.getURL(WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "generic_webxr_permission_page")),
+                PAGE_LOAD_TIMEOUT_S);
+        WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
+                POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
+        PermissionUtils.waitForPermissionPrompt();
+        PermissionUtils.acceptPermissionPrompt();
+        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
+        // The permission toasts automatically show for ~5 seconds when entering an immersive
+        // session, so wait for that to disappear
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
+        SystemClock.sleep(4500);
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */,
+                () -> { controller.sendAppButtonToggleEvent(); });
+        // The toast should automatically disappear after ~5 second after the button is pressed,
+        // regardless of whether it's released or not.
+        SystemClock.sleep(1000);
+        controller.sendAppButtonToggleEvent();
+        SystemClock.sleep(3500);
+        // Make sure it's still present shortly before we expect it to disappear.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
+        // Do the same, but make sure the toast disappears even with the button still held.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */,
+                () -> { controller.sendAppButtonToggleEvent(); });
+        SystemClock.sleep(4500);
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
+        if (teardownServer) {
+            server.stopAndDestroyServer();
+        }
+    }
+
+    /**
+     * Tests that permission requests while in a WebXR for VR exclusive session work as expected.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            // TODO(https://crbug.com/901494): Make this run everywhere when permissions are
+            // unbroken.
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
+            public void testInSessionPermissionRequests() throws InterruptedException {
+        testInSessionPermissionRequestsImpl();
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
+            public void testInSessionPermissionRequestsIncognito() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity()
+                    .getTabCreator(true /* incognito */)
+                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
+        });
+        testInSessionPermissionRequestsImpl();
+    }
+
+    private void testInSessionPermissionRequestsImpl() throws InterruptedException {
+        // Note that we need to pass in the WebContents to use throughout this because automatically
+        // using the first tab's WebContents doesn't work in Incognito.
+        EmbeddedTestServer server = mTestRule.getTestServer();
+        boolean teardownServer = false;
+        if (server == null) {
+            server = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+            teardownServer = true;
+        }
+
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                server.getURL(WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "generic_webxr_permission_page")),
+                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
+                    WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
+                            POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
+                });
+        // Click outside the prompt and ensure that it gets dismissed.
+        NativeUiUtils.clickElement(
+                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.55f, 0.0f));
+        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
+
+        // Accept the permission this time and ensure it propogates to the page.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
+                    WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
+                            POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
+                });
+        NativeUiUtils.clickElement(
+                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.4f, -0.4f));
+        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
+        Assert.assertTrue("Could not grant permission while in WebXR immersive session",
+                WebXrVrTestFramework
+                        .runJavaScriptOrFail("lastPermissionRequestSucceeded",
+                                POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents())
+                        .equals("true"));
+
+        if (teardownServer) {
+            server.stopAndDestroyServer();
+        }
     }
 }

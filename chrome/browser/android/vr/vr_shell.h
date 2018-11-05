@@ -285,11 +285,12 @@ class VrShell : device::GvrGamepadDataProvider,
       const base::android::JavaParamRef<jobject>& obj,
       jstring filepath_base);
 
-  void WatchElementForVisibilityChangeForTesting(
+  void WatchElementForVisibilityStatusForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint element_name,
-      jint timeout_ms);
+      jint timeout_ms,
+      jboolean visibility);
 
   void ReportUiOperationResultForTesting(UiTestOperationType action_type,
                                          UiTestOperationResult result);

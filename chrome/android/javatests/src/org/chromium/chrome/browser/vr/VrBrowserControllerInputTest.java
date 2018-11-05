@@ -409,7 +409,7 @@ public class VrBrowserControllerInputTest {
         NativeUiUtils.revertToRealInput();
         // Wait for the URL bar to re-appear, which we take as a signal that we've exited omnibox
         // text input mode.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.URL, () -> { mController.pressReleaseAppButton(); });
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(UserFriendlyElementName.URL,
+                true /* visible */, () -> { mController.pressReleaseAppButton(); });
     }
 }
