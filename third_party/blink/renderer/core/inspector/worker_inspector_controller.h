@@ -69,6 +69,7 @@ class WorkerInspectorController final
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
   void Dispose();
   void FlushProtocolNotifications();
+  void WaitForDebuggerIfNeeded();
 
  private:
   WorkerInspectorController(WorkerThread*,
@@ -99,6 +100,7 @@ class WorkerInspectorController final
   Member<InspectedFrames> inspected_frames_;
   Member<CoreProbeSink> probe_sink_;
   int session_count_ = 0;
+  bool wait_for_debugger_ = false;
 
   // These fields are set up in the constructor and then read
   // on a random thread from EmitTraceEvent().
