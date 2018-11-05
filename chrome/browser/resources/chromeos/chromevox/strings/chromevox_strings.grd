@@ -3092,6 +3092,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_CLICK_GESTURE">
         Double tap with one finger
       </message>
+      <message desc="Describes Learn Mode when the mode is initially entered." name="IDS_CHROMEVOX_LEARN_MODE_INTRO">
+        Starting Learn Mode. Press a qwerty key, refreshable braille key, or touch gesture to learn its function. Press control with w or escape to exit.
+      </message>
+      <message desc="Output when leaving Learn Mode." name="IDS_CHROMEVOX_LEARN_MODE_OUTTRO">
+        Stopping Learn Mode.
+      </message>
     </messages>
   </release>
 </grit>

@@ -265,6 +265,9 @@ automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
     // root node when nothing has focus, we need to treat those as focus
     // events but otherwise not handle blur events specially.
     var node = privates(targetTree).impl.get(eventParams.targetID);
+    if (!node)
+      return;
+
     if (node == node.root)
       automationUtil.updateFocusedNodeOnBlur();
   } else if (eventParams.eventType == 'mediaStartedPlaying' ||
