@@ -6,39 +6,68 @@
 #include <stdlib.h>
 #include <string>
 
-#include "third_party/minizip/src/ioapi.h"
-#include "third_party/minizip/src/ioapi_mem.h"
-#include "third_party/minizip/src/zip.h"
+#include "base/scoped_generic.h"
+#include "third_party/minizip/src/mz.h"
+#include "third_party/minizip/src/mz_strm_mem.h"
+#include "third_party/minizip/src/mz_zip.h"
 
 const char kTestFileName[] = "test.zip";
-const zip_fileinfo kZipFileInfo = {};
+
+namespace {
+
+struct MzTraitsBase {
+  static void* InvalidValue() { return nullptr; }
+};
+
+struct MzStreamMemTraits : public MzTraitsBase {
+  static void Free(void* stream) { mz_stream_mem_delete(&stream); }
+};
+typedef base::ScopedGeneric<void*, MzStreamMemTraits> ScopedMzStreamMem;
+
+struct MzZipTraits : public MzTraitsBase {
+  static void Free(void* stream) {
+    mz_zip_close(stream);
+    mz_zip_delete(&stream);
+  }
+};
+typedef base::ScopedGeneric<void*, MzZipTraits> ScopedMzZip;
+
+}  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  zlib_filefunc_def filefunc32 = {};
-  ourmemory_t zmem = {};
-  zmem.grow = 1;
+  ScopedMzStreamMem out_stream(mz_stream_mem_create(nullptr));
 
-  fill_memory_filefunc(&filefunc32, &zmem);
-
-  zipFile zip_file = zipOpen2(nullptr /* pathname */, APPEND_STATUS_CREATE,
-                              nullptr /* global comment */, &filefunc32);
-
-  if (zip_file) {
-    int open_result = zipOpenNewFileInZip(
-        zip_file, kTestFileName, &kZipFileInfo, nullptr /* local extra field */,
-        0u /* local extra field size*/, nullptr /* global extra field */,
-        0u /* global extra field size */, nullptr /* comment */, Z_DEFLATED,
-        Z_DEFAULT_COMPRESSION);
-
-    if (open_result == ZIP_OK) {
-      zipWriteInFileInZip(zip_file, data, size);
-      zipCloseFileInZip(zip_file);
-    }
-
-    zipClose(zip_file, nullptr /* global comment */);
+  ScopedMzZip zip_file(mz_zip_create(nullptr));
+  int result = mz_zip_open(zip_file.get(), out_stream.get(),
+                           MZ_OPEN_MODE_CREATE | MZ_OPEN_MODE_WRITE);
+  if (result != MZ_OK) {
+    return 0;
   }
 
-  free(zmem.base);
+  mz_zip_file file_info = {};
+  file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+  file_info.filename = kTestFileName;
+  file_info.filename_size = sizeof(kTestFileName);
+  result = mz_zip_entry_write_open(zip_file.get(), &file_info,
+                                   MZ_COMPRESS_LEVEL_DEFAULT, 0, nullptr);
+  if (result != MZ_OK) {
+    return 0;
+  }
+
+  result = mz_zip_entry_write(zip_file.get(), data, size);
+  if (result != MZ_OK) {
+    return 0;
+  }
+
+  result = mz_zip_entry_close(zip_file.get());
+  if (result != MZ_OK) {
+    return 0;
+  }
+
+  result = mz_zip_close(zip_file.get());
+  if (result != MZ_OK) {
+    return 0;
+  }
 
   return 0;
 }

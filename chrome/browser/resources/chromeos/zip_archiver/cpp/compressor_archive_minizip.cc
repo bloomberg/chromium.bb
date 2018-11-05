@@ -13,6 +13,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
+#include "third_party/minizip/src/mz.h"
+#include "third_party/minizip/src/mz_strm.h"
+#include "third_party/minizip/src/mz_zip.h"
 
 namespace {
 
@@ -23,126 +26,126 @@ const char kCloseArchiveError[] = "Failed to close archive.";
 // We need at least 256KB for MiniZip.
 const int64_t kMaximumDataChunkSize = 512 * 1024;
 
-uint32_t UnixToDosdate(const base::Time datetime) {
-  base::Time::Exploded exploded;
-  datetime.LocalExplode(&exploded);
-
-  return (exploded.year - 1980) << 25 | exploded.month << 21 |
-         exploded.day_of_month << 16 | exploded.hour << 11 |
-         exploded.minute << 5 | exploded.second >> 1;
-}
-
-void* MinizipOpen(void* compressor, const char* /*filename*/, int /*mode*/) {
-  return compressor;
-}
-
-uint32_t MinizipRead(void* /*compressor*/,
-                     void* /*stream*/,
-                     void* /*buffur*/,
-                     uint32_t /*size*/) {
-  NOTREACHED();
-  return 0;
-}
-
-int MinizipClose(void* /*compressor*/, void* /*stream*/) {
-  return 0;
-}
-
-int MinizipError(void* /*compressor*/, void* /*stream*/) {
-  return 0;
+int32_t MinizipIsOpen(void* stream) {
+  // The stream is always in an open state since it's tied to the life of the
+  // CompressorArchiveMinizip instance.
+  return MZ_OK;
 }
 
 };  // namespace
 
+// vtable for the archive write stream provided to minizip. Only functions which
+// are necessary for compression are implemented.
+mz_stream_vtbl CompressorArchiveMinizip::minizip_vtable = {
+    nullptr,                                          /* open */
+    MinizipIsOpen, nullptr,                           /* read */
+    MinizipWrite,  MinizipTell, MinizipSeek, nullptr, /* close */
+    nullptr,                                          /* error */
+    nullptr,                                          /* create */
+    nullptr,                                          /* destroy */
+    nullptr,                                          /* get_prop_int64 */
+    nullptr                                           /* set_prop_int64 */
+};
+
+// Stream object used by minizip to access archive files.
+struct CompressorArchiveMinizip::MinizipStream {
+  // Must be the first element because minizip internally will cast this
+  // struct into a mz_stream.
+  mz_stream stream_ = {
+      &minizip_vtable, nullptr,
+  };
+
+  CompressorArchiveMinizip* archive_;
+
+  explicit MinizipStream(CompressorArchiveMinizip* archive)
+      : archive_(archive) {
+    DCHECK(archive);
+  }
+};
+
 // Called when data chunk must be written on the archive. It copies data
 // from the given buffer processed by minizip to an array buffer and passes
 // it to compressor_stream.
-uint32_t CompressorArchiveMinizip::MinizipWrite(void* compressor,
-                                                void* /*stream*/,
-                                                const void* zip_buffer,
-                                                uint32_t zip_length) {
-  return static_cast<CompressorArchiveMinizip*>(compressor)
-      ->StreamWrite(zip_buffer, zip_length);
+int32_t CompressorArchiveMinizip::MinizipWrite(void* stream,
+                                               const void* buffer,
+                                               int32_t length) {
+  return static_cast<MinizipStream*>(stream)->archive_->StreamWrite(buffer,
+                                                                    length);
 }
 
-uint32_t CompressorArchiveMinizip::StreamWrite(const void* zip_buffer,
-                                               uint32_t zip_length) {
+int32_t CompressorArchiveMinizip::StreamWrite(const void* buffer,
+                                              int32_t write_size) {
   int64_t written_bytes = compressor_stream()->Write(
-      offset_, zip_length, static_cast<const char*>(zip_buffer));
+      offset_, write_size, static_cast<const char*>(buffer));
 
-  if (written_bytes != zip_length)
-    return 0 /* Error */;
+  if (written_bytes != write_size)
+    return MZ_STREAM_ERROR;
 
   // Update offset_ and length_.
   offset_ += written_bytes;
   if (offset_ > length_)
     length_ = offset_;
-  return static_cast<uint32_t>(written_bytes);
+  return write_size;
 }
 
 // Returns the offset from the beginning of the data.
-long CompressorArchiveMinizip::MinizipTell(void* compressor, void* /*stream*/) {
-  return static_cast<CompressorArchiveMinizip*>(compressor)->StreamTell();
+int64_t CompressorArchiveMinizip::MinizipTell(void* stream) {
+  return static_cast<MinizipStream*>(stream)->archive_->StreamTell();
 }
 
-long CompressorArchiveMinizip::StreamTell() {
-  return static_cast<long>(offset_);
+int64_t CompressorArchiveMinizip::StreamTell() {
+  return offset_;
 }
 
 // Moves the current offset to the specified position.
-long CompressorArchiveMinizip::MinizipSeek(void* compressor,
-                                           void* /*stream*/,
-                                           uint32_t offset,
-                                           int origin) {
-  return static_cast<CompressorArchiveMinizip*>(compressor)
-      ->StreamSeek(offset, origin);
+int32_t CompressorArchiveMinizip::MinizipSeek(void* stream,
+                                              int64_t offset,
+                                              int32_t origin) {
+  return static_cast<MinizipStream*>(stream)->archive_->StreamSeek(offset,
+                                                                   origin);
 }
 
-long CompressorArchiveMinizip::StreamSeek(uint32_t offset, int origin) {
-  if (origin == ZLIB_FILEFUNC_SEEK_CUR) {
-    offset_ = std::min(offset_ + static_cast<int64_t>(offset), length_);
-    return 0 /* Success */;
+int32_t CompressorArchiveMinizip::StreamSeek(int64_t offset, int32_t origin) {
+  switch (origin) {
+    case MZ_SEEK_SET:
+      offset_ = std::min(offset, length_);
+      break;
+    case MZ_SEEK_CUR:
+      offset_ = std::min(offset_ + offset, length_);
+      break;
+    case MZ_SEEK_END:
+      offset_ = std::max(length_ + offset, static_cast<int64_t>(0));
+      break;
+    default:
+      NOTREACHED();
+      return MZ_STREAM_ERROR;
   }
-  if (origin == ZLIB_FILEFUNC_SEEK_END) {
-    offset_ = std::max(length_ - static_cast<int64_t>(offset),
-                       static_cast<int64_t>(0));
-    return 0 /* Success */;
-  }
-  if (origin == ZLIB_FILEFUNC_SEEK_SET) {
-    offset_ = std::min(static_cast<int64_t>(offset), length_);
-    return 0 /* Success */;
-  }
-  return -1 /* Error */;
+
+  return MZ_OK;
 }
 
 CompressorArchiveMinizip::CompressorArchiveMinizip(
     CompressorStream* compressor_stream)
     : CompressorArchive(compressor_stream),
       compressor_stream_(compressor_stream),
+      stream_(std::make_unique<MinizipStream>(this)),
       zip_file_(nullptr),
       destination_buffer_(std::make_unique<char[]>(kMaximumDataChunkSize)),
       offset_(0),
-      length_(0) {}
+      length_(0) {
+  static_assert(offsetof(CompressorArchiveMinizip::MinizipStream, stream_) == 0,
+                "Bad mz_stream offset");
+}
 
 CompressorArchiveMinizip::~CompressorArchiveMinizip() = default;
 
 bool CompressorArchiveMinizip::CreateArchive() {
-  // Set up archive object.
-  zlib_filefunc_def zip_funcs;
-  zip_funcs.zopen_file = MinizipOpen;
-  zip_funcs.zread_file = MinizipRead;
-  zip_funcs.zwrite_file = MinizipWrite;
-  zip_funcs.ztell_file = MinizipTell;
-  zip_funcs.zseek_file = MinizipSeek;
-  zip_funcs.zclose_file = MinizipClose;
-  zip_funcs.zerror_file = MinizipError;
-  zip_funcs.opaque = this;
-
-  zip_file_ = zipOpen2(nullptr /* pathname */, APPEND_STATUS_CREATE,
-                       nullptr /* globalcomment */, &zip_funcs);
-  if (!zip_file_) {
+  zip_file_.reset(mz_zip_create(nullptr));
+  int32_t result = mz_zip_open(zip_file_.get(), stream_.get(),
+                               MZ_OPEN_MODE_WRITE | MZ_OPEN_MODE_CREATE);
+  if (result != MZ_OK) {
     set_error_message(kCreateArchiveError);
-    return false /* Error */;
+    return false;
   }
   return true /* Success */;
 }
@@ -153,49 +156,36 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
                                             bool is_directory) {
   // Minizip takes filenames that end with '/' as directories.
   std::string normalized_filename = filename;
-  if (is_directory)
+  if (is_directory) {
     normalized_filename += "/";
+    // For a directory, some file systems much give us a non-zero file size
+    // (i.e. 4096, page size). Normalize the size of a directory to zero.
+    file_size = 0;
+  }
 
-  // Fill zipfileMetadata with modification_time.
-  zip_fileinfo zipfileMetadata;
-  zipfileMetadata.dos_date = UnixToDosdate(modification_time);
-
-  // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-  // Setting the Language encoding flag so the file is told to be in utf-8.
-  const uLong LANGUAGE_ENCODING_FLAG = 0x1 << 11;
-
-  // Indicates the compatibility of the file attribute information.
-  // Attributes of files are not avaiable in the FileSystem API. Therefore
-  // we don't store file attributes to an archive. However, other apps may use
-  // this field to determine the line record format for text files etc.
-  const int HOST_SYSTEM_CODE = 3;  // UNIX
+  mz_zip_file file_info = {};
+  file_info.creation_date = modification_time.ToTimeT();
+  file_info.modified_date = file_info.creation_date;
+  file_info.accessed_date = file_info.creation_date;
+  file_info.uncompressed_size = file_size;
+  file_info.filename = normalized_filename.c_str();
+  file_info.filename_size = normalized_filename.length();
+  file_info.flag = MZ_ZIP_FLAG_UTF8;
 
   // PKWARE .ZIP File Format Specification version 6.3.x
-  const int ZIP_SPECIFICATION_VERSION_CODE = 63;
+  const uint16_t ZIP_SPECIFICATION_VERSION_CODE = 63;
+  file_info.version_madeby =
+      MZ_HOST_SYSTEM_UNIX << 8 | ZIP_SPECIFICATION_VERSION_CODE;
 
-  const int VERSION_MADE_BY =
-      HOST_SYSTEM_CODE << 8 | ZIP_SPECIFICATION_VERSION_CODE;
+  // Compression options.
+  file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+  file_info.zip64 = MZ_ZIP64_AUTO;
 
-  int open_result =
-      zipOpenNewFileInZip4(zip_file_,                    // file
-                           normalized_filename.c_str(),  // filename
-                           &zipfileMetadata,             // zipfi
-                           nullptr,                      // extrafield_local
-                           0u,                       // size_extrafield_local
-                           nullptr,                  // extrafield_global
-                           0u,                       // size_extrafield_global
-                           nullptr,                  // comment
-                           Z_DEFLATED,               // method
-                           Z_DEFAULT_COMPRESSION,    // level
-                           0,                        // raw
-                           -MAX_WBITS,               // windowBits
-                           DEF_MEM_LEVEL,            // memLevel
-                           Z_DEFAULT_STRATEGY,       // strategy
-                           nullptr,                  // password
-                           0,                        // crcForCrypting
-                           VERSION_MADE_BY,          // versionMadeBy
-                           LANGUAGE_ENCODING_FLAG);  // flagBase
-  if (open_result != ZIP_OK) {
+  int32_t open_result = mz_zip_entry_write_open(
+      zip_file_.get(), &file_info, MZ_COMPRESS_LEVEL_DEFAULT, 0 /* raw */,
+      nullptr /* password */);
+  if (open_result != MZ_OK) {
+    LOG(ERROR) << "Archive creation error " << open_result;
     CloseArchive(true /* has_error */);
     set_error_message(kAddToArchiveError);
     return false /* Error */;
@@ -222,8 +212,10 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
         break;
       }
 
-      if (zipWriteInFileInZip(zip_file_, destination_buffer_.get(),
-                              read_bytes) != ZIP_OK) {
+      int32_t write_result = mz_zip_entry_write(
+          zip_file_.get(), destination_buffer_.get(), read_bytes);
+      if (write_result != read_bytes) {
+        LOG(ERROR) << "Zip entry write error " << write_result;
         has_error = true;
         break;
       }
@@ -231,8 +223,11 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
     }
   }
 
-  if (!has_error && zipCloseFileInZip(zip_file_) != ZIP_OK)
+  int32_t close_result = mz_zip_entry_close(zip_file_.get());
+  if (close_result != MZ_OK) {
+    LOG(ERROR) << "Zip entry close error " << close_result;
     has_error = true;
+  }
 
   if (has_error) {
     CloseArchive(true /* has_error */);
@@ -249,7 +244,8 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
 }
 
 bool CompressorArchiveMinizip::CloseArchive(bool has_error) {
-  if (zipClose(zip_file_, nullptr /* global_comment */) != ZIP_OK) {
+  int32_t result = mz_zip_close(zip_file_.get());
+  if (result != MZ_OK) {
     set_error_message(kCloseArchiveError);
     return false /* Error */;
   }

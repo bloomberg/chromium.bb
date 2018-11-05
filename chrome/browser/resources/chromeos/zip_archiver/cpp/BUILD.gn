@@ -17,6 +17,7 @@ static_library("zip_archiver_library") {
     "javascript_compressor_requestor_interface.h",
     "javascript_message_sender_interface.h",
     "javascript_requestor_interface.h",
+    "minizip_helpers.h",
     "request.cc",
     "request.h",
     "volume.cc",

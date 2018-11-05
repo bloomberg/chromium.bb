@@ -360,6 +360,7 @@ if (is_linux) {
       "minizip_compress_fuzzer.cc",
     ]
     deps = [
+      "//base",
       "//third_party/minizip:minizip",
     ]
   }

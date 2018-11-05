@@ -6,39 +6,43 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "third_party/minizip/src/ioapi.h"
-#include "third_party/minizip/src/ioapi_mem.h"
-#include "third_party/minizip/src/unzip.h"
+#include "third_party/minizip/src/mz.h"
+#include "third_party/minizip/src/mz_strm_mem.h"
+#include "third_party/minizip/src/mz_zip.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  zlib_filefunc_def filefunc32 = {};
-  ourmemory_t unzmem = {};
-  unzFile handle;
-  unzmem.size = size;
-  unzmem.base = reinterpret_cast<char*>(const_cast<uint8_t*>(data));
-  unzmem.grow = 0;
-  int err = UNZ_OK;
-  unz_file_info64 file_info = {};
-  char filename_inzip[256] = {};
+  void* stream = mz_stream_mem_create(nullptr);
+  mz_stream_mem_set_buffer(
+      stream, reinterpret_cast<void*>(const_cast<uint8_t*>(data)), size);
 
-  fill_memory_filefunc(&filefunc32, &unzmem);
-  handle = unzOpen2(nullptr, &filefunc32);
-  err = unzGoToFirstFile(handle);
-  while (err == UNZ_OK) {
-    err = unzGetCurrentFileInfo64(handle, &file_info, filename_inzip,
-                                  sizeof(filename_inzip), NULL, 0, NULL, 0);
-    if (err != UNZ_OK) {
-      break;
-    }
-    err = unzOpenCurrentFile(handle);
-    if (err != UNZ_OK) {
-      break;
-    }
+  void* zip_file = mz_zip_create(nullptr);
+  int result = mz_zip_open(zip_file, stream, MZ_OPEN_MODE_READ);
+  if (result == MZ_OK) {
+    result = mz_zip_goto_first_entry(zip_file);
+    while (result == MZ_OK) {
+      result = mz_zip_entry_read_open(zip_file, 0, nullptr);
+      if (result != MZ_OK) {
+        break;
+      }
 
-    unzCloseCurrentFile(handle);
-    err = unzGoToNextFile(handle);
+      mz_zip_file* file_info = nullptr;
+      result = mz_zip_entry_get_info(zip_file, &file_info);
+      if (result != MZ_OK) {
+        break;
+      }
+
+      result = mz_zip_entry_close(zip_file);
+      if (result != MZ_OK) {
+        break;
+      }
+
+      result = mz_zip_goto_next_entry(zip_file);
+    }
+    mz_zip_close(zip_file);
   }
-  unzClose(handle);
+
+  mz_zip_delete(&zip_file);
+  mz_stream_mem_delete(&stream);
 
   return 0;
 }

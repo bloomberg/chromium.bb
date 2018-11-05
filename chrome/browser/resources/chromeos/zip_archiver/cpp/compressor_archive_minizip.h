@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive.h"
-#include "third_party/minizip/src/unzip.h"
-#include "third_party/minizip/src/zip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/minizip_helpers.h"
+#include "third_party/minizip/src/mz_strm.h"
 
 class CompressorStream;
 
@@ -36,28 +36,28 @@ class CompressorArchiveMinizip : public CompressorArchive {
                     bool is_directory) override;
 
  private:
+  static mz_stream_vtbl minizip_vtable;
+  struct MinizipStream;
+
   // Stream functions used by minizip. In all cases, |compressor| points to
-  // |this|.
-  static uint32_t MinizipWrite(void* compressor,
-                               void* stream,
-                               const void* buffer,
-                               uint32_t length);
-  static long MinizipTell(void* compressor, void* stream);
-  static long MinizipSeek(void* compressor,
-                          void* stream,
-                          uint32_t offset,
-                          int origin);
+  // |this->stream_|.
+  static int32_t MinizipWrite(void* stream, const void* buffer, int32_t length);
+  static int64_t MinizipTell(void* stream);
+  static int32_t MinizipSeek(void* stream, int64_t offset, int32_t origin);
 
   // Implementation of stream functions used by minizip.
-  uint32_t StreamWrite(const void* buffer, uint32_t length);
-  long StreamTell();
-  long StreamSeek(uint32_t offset, int origin);
+  int32_t StreamWrite(const void* buffer, int32_t length);
+  int64_t StreamTell();
+  int32_t StreamSeek(int64_t offset, int32_t origin);
 
   // An instance that takes care of all IO operations.
   CompressorStream* compressor_stream_;
 
+  // The minizip stream used to write the archive file.
+  std::unique_ptr<MinizipStream> stream_;
+
   // The minizip correspondent archive object.
-  zipFile zip_file_;
+  ScopedMzZip zip_file_;
 
   // The buffer used to store the data read from JavaScript.
   std::unique_ptr<char[]> destination_buffer_;

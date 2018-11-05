@@ -181,7 +181,7 @@ TEST_F(CompressorArchiveMinizipTest, Create) {
   TestCompressorStream stream;
   CompressorArchiveMinizip archive(&stream);
 
-  const base::Time add_time = base::Time::Now();
+  const base::Time add_time = base::Time::FromTimeT(1234567890);
   EXPECT_TRUE(archive.CreateArchive());
   stream.SetReadBuffer(kTestFileContent);
   EXPECT_TRUE(archive.AddToArchive(kTestFileName, sizeof(kTestFileContent) - 1,
@@ -210,7 +210,7 @@ TEST_F(CompressorArchiveMinizipTest, Create_WriteError) {
   TestCompressorStream stream;
   CompressorArchiveMinizip archive(&stream);
 
-  const base::Time add_time = base::Time::Now();
+  const base::Time add_time = base::Time::FromTimeT(1234567890);
   EXPECT_TRUE(archive.CreateArchive());
   stream.SetReadBuffer(kTestFileContent);
   EXPECT_TRUE(archive.AddToArchive(kTestFileName, sizeof(kTestFileContent) - 1,
@@ -226,7 +226,7 @@ TEST_F(CompressorArchiveMinizipTest, CreateAndCancel) {
   TestCompressorStream stream;
   CompressorArchiveMinizip archive(&stream);
 
-  const base::Time add_time = base::Time::Now();
+  const base::Time add_time = base::Time::FromTimeT(1234567890);
   EXPECT_TRUE(archive.CreateArchive());
   stream.SetReadBuffer(kTestFileContent);
   EXPECT_TRUE(archive.AddToArchive(kTestFileName, sizeof(kTestFileContent) - 1,
