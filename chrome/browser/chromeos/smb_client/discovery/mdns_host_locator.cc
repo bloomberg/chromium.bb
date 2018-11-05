@@ -59,14 +59,14 @@ void MDnsHostLocator::FindHosts(FindHostsCallback callback) {
     Reset();
   }
 
+  callback_ = std::move(callback);
+
   if (!(StartListening() && CreatePtrTransaction())) {
     LOG(ERROR) << "Failed to start MDnsHostLocator";
 
     FireCallback(false /* success */);
     return;
   }
-
-  callback_ = std::move(callback);
 }
 
 bool MDnsHostLocator::CreatePtrTransaction() {
