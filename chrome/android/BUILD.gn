@@ -1538,10 +1538,14 @@ android_apk("trichrome_library_apk") {
   use_chromium_linker = false
   uncompress_shared_libraries = true
 
-  _native_lib_file =
-      rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
-  native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-  native_lib_version_rule = "//build/util:chrome_version_json"
+  # Only try to generate the native library version in configurations that
+  # include a native library.
+  if (!android_64bit_target_cpu || build_apk_secondary_abi) {
+    _native_lib_file =
+        rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
+    native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+    native_lib_version_rule = "//build/util:chrome_version_json"
+  }
 
   if (android_64bit_target_cpu) {
     # Include a 64-bit placeholder library to ensure that the library is treated
