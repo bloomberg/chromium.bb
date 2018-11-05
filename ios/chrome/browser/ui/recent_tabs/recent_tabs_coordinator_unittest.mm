@@ -136,9 +136,9 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
                       BOOL syncEnabled,
                       BOOL hasForeignSessions) {
     if (signedIn) {
-      identity_test_env()->MakePrimaryAccountAvailable("test");
-    } else if (identity_test_env()->identity_manager()->HasPrimaryAccount()) {
-      identity_test_env()->identity_manager()->ClearPrimaryAccount(
+      identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
+    } else if (identity_test_env_.identity_manager()->HasPrimaryAccount()) {
+      identity_test_env_.identity_manager()->ClearPrimaryAccount(
           identity::IdentityManager::ClearAccountTokensAction::kDefault,
           signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
@@ -181,10 +181,6 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
         initWithBaseViewController:nil
                       browserState:chrome_browser_state_.get()];
     [coordinator_ start];
-  }
-
-  identity::IdentityTestEnvironment* identity_test_env() {
-    return &identity_test_env_;
   }
 
  protected:
