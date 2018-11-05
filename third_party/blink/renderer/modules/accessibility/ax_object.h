@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 
@@ -1006,6 +1007,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
                                               const AXObject& second,
                                               int* index_in_ancestor1,
                                               int* index_in_ancestor2);
+
+  // Returns a string representation of this object.
+  String ToString() const;
 
  protected:
   AXID id_;

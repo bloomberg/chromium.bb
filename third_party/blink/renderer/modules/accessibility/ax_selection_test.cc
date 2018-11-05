@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
 
 namespace blink {
+namespace test {
 
 //
 // Basic tests.
@@ -43,8 +45,10 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
   EXPECT_EQ(3, dom_selection.Base().OffsetInContainerNode());
   EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
   EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
-  EXPECT_EQ("<Paragraph: ><StaticText: Hel^lo|>",
-            GetSelectionText(ax_selection));
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hel^lo|>\n",
+      GetSelectionText(ax_selection));
 }
 
 TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
@@ -70,8 +74,10 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
   EXPECT_EQ(8, dom_selection.Base().OffsetInContainerNode());
   EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
   EXPECT_EQ(10, dom_selection.Extent().OffsetInContainerNode());
-  EXPECT_EQ("<Paragraph: ><StaticText: Hel^lo|>",
-            GetSelectionText(ax_selection));
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hel^lo|>\n",
+      GetSelectionText(ax_selection));
 }
 
 //
@@ -132,4 +138,17 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   EXPECT_EQ("", GetSelectionText(ax_selection_extend));
 }
 
+//
+// Declarative tests.
+//
+
+TEST_F(AccessibilitySelectionTest, List) {
+  RunSelectionTest("list");
+}
+
+TEST_F(AccessibilitySelectionTest, table) {
+  RunSelectionTest("table");
+}
+
+}  // namespace test
 }  // namespace blink

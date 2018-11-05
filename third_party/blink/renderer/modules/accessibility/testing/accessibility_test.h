@@ -19,6 +19,8 @@ class AXObject;
 class AXObjectCacheImpl;
 class LocalFrameClient;
 
+namespace test {
+
 class AccessibilityTest : public RenderingTest {
   USING_FAST_MALLOC(AccessibilityTest);
 
@@ -47,6 +49,7 @@ class AccessibilityTest : public RenderingTest {
   std::unique_ptr<AXContext> ax_context_;
 };
 
+}  // namespace test
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_

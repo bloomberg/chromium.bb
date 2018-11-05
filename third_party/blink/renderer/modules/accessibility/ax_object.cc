@@ -3508,6 +3508,13 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   return common_ancestor;
 }
 
+String AXObject::ToString() const {
+  return AXObject::InternalRoleName(RoleValue())
+             .GetString()
+             .EncodeForDebugging() +
+         ": " + ComputedName().EncodeForDebugging();
+}
+
 VisiblePosition AXObject::VisiblePositionForIndex(int) const {
   return VisiblePosition();
 }
@@ -3563,8 +3570,7 @@ bool operator>=(const AXObject& first, const AXObject& second) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
-  return stream << AXObject::InternalRoleName(obj.RoleValue()) << ": "
-                << obj.ComputedName();
+  return stream << obj.ToString().Utf8().data();
 }
 
 void AXObject::Trace(blink::Visitor* visitor) {

@@ -70,6 +70,12 @@ AXRange AXRange::RangeOfContents(const AXObject& container) {
                  AXPosition::CreateLastPositionInObject(container));
 }
 
+String AXRange::ToString() const {
+  if (!IsValid())
+    return "Invalid AXRange";
+  return "AXRange from " + Start().ToString() + " to " + End().ToString();
+}
+
 bool operator==(const AXRange& a, const AXRange& b) {
   DCHECK(a.IsValid() && b.IsValid());
   return a.Start() == b.Start() && a.End() == b.End();
@@ -80,9 +86,7 @@ bool operator!=(const AXRange& a, const AXRange& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXRange& range) {
-  if (!range.IsValid())
-    return ostream << "Invalid AXRange";
-  return ostream << "AXRange from " << range.Start() << " to " << range.End();
+  return ostream << range.ToString().Utf8().data();
 }
 
 }  // namespace blink
