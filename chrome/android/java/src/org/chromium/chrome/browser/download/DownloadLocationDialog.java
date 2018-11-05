@@ -131,7 +131,7 @@ public class DownloadLocationDialog extends ModalDialogView
      */
     @Nullable
     String getFileName() {
-        if (mFileName == null) return null;
+        if (mFileName == null || mFileName.getText() == null) return null;
         return mFileName.getText().toString();
     }
 
