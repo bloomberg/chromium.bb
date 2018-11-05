@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/idle_detector.h"
@@ -31,16 +30,6 @@ class DemoModeDetector {
 
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Sets an alternative clock for testing purposes.
-  void SetTickClockForTest(const base::TickClock* test_clock);
-
-  static constexpr base::TimeDelta kDerelictDetectionTimeout =
-      base::TimeDelta::FromHours(8);
-  static constexpr base::TimeDelta kDerelictIdleTimeout =
-      base::TimeDelta::FromMinutes(5);
-  static constexpr base::TimeDelta kOobeTimerUpdateInterval =
-      base::TimeDelta::FromMinutes(5);
 
  private:
   void StartIdleDetection();
@@ -67,8 +56,6 @@ class DemoModeDetector {
   base::TimeDelta oobe_timer_update_interval_;
 
   bool demo_launched_ = false;
-
-  const base::TickClock* tick_clock_;
 
   base::WeakPtrFactory<DemoModeDetector> weak_ptr_factory_;
 
