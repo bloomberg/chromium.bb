@@ -100,14 +100,14 @@ void ModulesInitializer::Initialize() {
   // Strings must be initialized before calling CoreInitializer::init().
   const unsigned kModulesStaticStringsCount =
       event_interface_names::kModulesNamesCount +
-      event_target_names::kModulesNamesCount + IndexedDBNames::kNamesCount;
+      event_target_names::kModulesNamesCount + indexed_db_names::kNamesCount;
   StringImpl::ReserveStaticStringsCapacityForSize(kModulesStaticStringsCount);
 
   event_interface_names::initModules();
   event_target_names::initModules();
   Document::RegisterEventFactory(EventModulesFactory::Create());
   ModuleBindingsInitializer::Init();
-  IndexedDBNames::init();
+  indexed_db_names::init();
   AXObjectCache::Init(AXObjectCacheImpl::Create);
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);

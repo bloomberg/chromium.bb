@@ -67,7 +67,7 @@ std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::Create(
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : request_(request) {
   probe::AsyncTaskScheduled(request_->GetExecutionContext(),
-                            IndexedDBNames::IndexedDB, this);
+                            indexed_db_names::kIndexedDB, this);
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {

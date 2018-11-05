@@ -200,9 +200,9 @@ const String& IDBRequest::readyState() const {
   DCHECK(ready_state_ == PENDING || ready_state_ == DONE);
 
   if (ready_state_ == PENDING)
-    return IndexedDBNames::pending;
+    return indexed_db_names::kPending;
 
-  return IndexedDBNames::done;
+  return indexed_db_names::kDone;
 }
 
 std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {

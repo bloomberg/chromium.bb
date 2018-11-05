@@ -63,8 +63,8 @@ unsigned long long IDBVersionChangeEvent::newVersion(bool& is_null) const {
 
 const AtomicString& IDBVersionChangeEvent::dataLoss() const {
   if (data_loss_ == kWebIDBDataLossTotal)
-    return IndexedDBNames::total;
-  return IndexedDBNames::none;
+    return indexed_db_names::kTotal;
+  return indexed_db_names::kNone;
 }
 
 const AtomicString& IDBVersionChangeEvent::InterfaceName() const {

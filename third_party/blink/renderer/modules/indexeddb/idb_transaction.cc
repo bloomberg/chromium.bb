@@ -453,11 +453,11 @@ bool IDBTransaction::HasPendingActivity() const {
 }
 
 WebIDBTransactionMode IDBTransaction::StringToMode(const String& mode_string) {
-  if (mode_string == IndexedDBNames::readonly)
+  if (mode_string == indexed_db_names::kReadonly)
     return kWebIDBTransactionModeReadOnly;
-  if (mode_string == IndexedDBNames::readwrite)
+  if (mode_string == indexed_db_names::kReadwrite)
     return kWebIDBTransactionModeReadWrite;
-  if (mode_string == IndexedDBNames::versionchange)
+  if (mode_string == indexed_db_names::kVersionchange)
     return kWebIDBTransactionModeVersionChange;
   NOTREACHED();
   return kWebIDBTransactionModeReadOnly;
@@ -470,17 +470,17 @@ WebIDBDatabase* IDBTransaction::BackendDB() const {
 const String& IDBTransaction::mode() const {
   switch (mode_) {
     case kWebIDBTransactionModeReadOnly:
-      return IndexedDBNames::readonly;
+      return indexed_db_names::kReadonly;
 
     case kWebIDBTransactionModeReadWrite:
-      return IndexedDBNames::readwrite;
+      return indexed_db_names::kReadwrite;
 
     case kWebIDBTransactionModeVersionChange:
-      return IndexedDBNames::versionchange;
+      return indexed_db_names::kVersionchange;
   }
 
   NOTREACHED();
-  return IndexedDBNames::readonly;
+  return indexed_db_names::kReadonly;
 }
 
 DOMStringList* IDBTransaction::objectStoreNames() const {

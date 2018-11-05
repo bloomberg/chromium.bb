@@ -32,13 +32,13 @@ ScriptValue IDBObservation::value(ScriptState* script_state) {
 }
 
 WebIDBOperationType IDBObservation::StringToOperationType(const String& type) {
-  if (type == IndexedDBNames::add)
+  if (type == indexed_db_names::kAdd)
     return kWebIDBAdd;
-  if (type == IndexedDBNames::put)
+  if (type == indexed_db_names::kPut)
     return kWebIDBPut;
-  if (type == IndexedDBNames::kDelete)
+  if (type == indexed_db_names::kDelete)
     return kWebIDBDelete;
-  if (type == IndexedDBNames::clear)
+  if (type == indexed_db_names::kClear)
     return kWebIDBClear;
 
   NOTREACHED();
@@ -48,20 +48,20 @@ WebIDBOperationType IDBObservation::StringToOperationType(const String& type) {
 const String& IDBObservation::type() const {
   switch (operation_type_) {
     case kWebIDBAdd:
-      return IndexedDBNames::add;
+      return indexed_db_names::kAdd;
 
     case kWebIDBPut:
-      return IndexedDBNames::put;
+      return indexed_db_names::kPut;
 
     case kWebIDBDelete:
-      return IndexedDBNames::kDelete;
+      return indexed_db_names::kDelete;
 
     case kWebIDBClear:
-      return IndexedDBNames::clear;
+      return indexed_db_names::kClear;
 
     default:
       NOTREACHED();
-      return IndexedDBNames::add;
+      return indexed_db_names::kAdd;
   }
 }
 
