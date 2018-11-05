@@ -125,8 +125,11 @@ bool ParseRequestMap(const cbor::Value& value,
     if (name_str == kMethodKey)
       continue;
 
-    // TODO(kouhei): Add spec ref here once
-    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    // https://tools.ietf.org/html/draft-yasskin-httpbis-origin-signed-exchanges-impl-02
+    // Section 3.2:
+    // "For each request header field in `exchange`, the header field's
+    // lowercase name as a byte string to the header field's value as a byte
+    // string."
     if (name_str != base::ToLowerASCII(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,
@@ -207,8 +210,11 @@ bool ParseResponseMap(const cbor::Value& value,
       return false;
     }
 
-    // TODO(kouhei): Add spec ref here once
-    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    // https://tools.ietf.org/html/draft-yasskin-httpbis-origin-signed-exchanges-impl-02
+    // Section 3.2:
+    // "For each response header field in `exchange`, the header field's
+    // lowercase name as a byte string to the header field's value as a byte
+    // string."
     if (name_str != base::ToLowerASCII(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,
