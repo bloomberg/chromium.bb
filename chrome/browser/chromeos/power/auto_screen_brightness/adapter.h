@@ -47,6 +47,14 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kLatest
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class UserAdjustment {
+    kNoPriorModelAdjustment = 0,
+    kWithPriorModelAdjustment = 1,
+    kMaxValue = kWithPriorModelAdjustment
+  };
+
   // TODO(jiameng): we currently use past 2 seconds of ambient values to
   // calculate average ambient when we predict optimal brightness. This is
   // shorter than the duration used for training data (10 seconds), because it's
