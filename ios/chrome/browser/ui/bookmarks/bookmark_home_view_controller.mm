@@ -749,6 +749,19 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
     [self navigateAway];
 
+    if (@available(iOS 11, *)) {
+      // At root, since there's a large title, the search bar is lower than on
+      // whatever destination folder it is transitioning to (root is never
+      // reachable through search). To avoid a kink in the animation, the title
+      // is set to regular size, which means the search bar is at same level at
+      // beginning and end of animation. This controller will be replaced in
+      // |stack| so there's no need to care about restoring this.
+      if (_rootNode == self.bookmarks->root_node()) {
+        self.navigationItem.largeTitleDisplayMode =
+            UINavigationItemLargeTitleDisplayModeNever;
+      }
+    }
+
     auto completion = ^{
       [self.navigationController setViewControllers:stack animated:YES];
     };
