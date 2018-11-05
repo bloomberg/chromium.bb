@@ -11,6 +11,14 @@
     {
       "name": "testJavascriptInterfaceCustomPropertiesClearedOnReload",
       "_bug_id": "crbug.com/767847"
+    },
+    {
+      "name": "testRequestImageRef",
+      "_bug_id": "crbug.com/900915"
+    },
+    {
+      "name": "testLoadDataWithBaseUrl",
+      "_bug_id": "crbug.com/900915"
     }
   ],
   "android.webkit.cts.WebSettingsTest": [
