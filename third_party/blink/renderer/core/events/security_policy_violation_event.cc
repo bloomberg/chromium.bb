@@ -36,13 +36,17 @@ const char kReport[] = "report";
 }  // namespace
 
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
-    const AtomicString& type,
-    const SecurityPolicyViolationEventInit* initializer)
+    const AtomicString& type)
     : Event(type, Bubbles::kYes, Cancelable::kNo, ComposedMode::kComposed),
       disposition_(kContentSecurityPolicyHeaderTypeEnforce),
       line_number_(0),
       column_number_(0),
-      status_code_(0) {
+      status_code_(0) {}
+
+SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
+    const AtomicString& type,
+    const SecurityPolicyViolationEventInit* initializer)
+    : SecurityPolicyViolationEvent(type) {
   if (initializer->hasDocumentURI())
     document_uri_ = initializer->documentURI();
   if (initializer->hasReferrer())
