@@ -19,6 +19,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "components/viz/common/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -45,7 +46,8 @@ class ArcAccessibilityHelperBridgeBrowserTest : public InProcessBrowserTest {
     chromeos::AccessibilityManager::Get()->SetProfileForTest(
         browser()->profile());
 
-    wm_helper_ = std::make_unique<exo::WMHelper>(ash::Shell::Get()->aura_env());
+    wm_helper_ =
+        std::make_unique<exo::WMHelperChromeOS>(ash::Shell::Get()->aura_env());
     exo::WMHelper::SetInstance(wm_helper_.get());
   }
 
