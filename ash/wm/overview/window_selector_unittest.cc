@@ -4532,25 +4532,29 @@ TEST_F(SplitViewWindowSelectorTest, OverviewUnsnappableIndicatorVisibility) {
   WindowSelectorItem* unsnappable_selector_item =
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
 
-  // Note: Check opacities of  |cannot_snap_label_view_|'s parent (which handles
-  // the padding and rounded corners) is actually the item whose layer's opacity
-  // gets altered.
-  ui::Layer* snappable_layer =
-      snappable_selector_item->cannot_snap_label_view_->parent()->layer();
-  ui::Layer* unsnappable_layer =
-      unsnappable_selector_item->cannot_snap_label_view_->parent()->layer();
-  ASSERT_TRUE(snappable_layer);
-  ASSERT_TRUE(unsnappable_layer);
-
-  EXPECT_EQ(0.f, snappable_layer->opacity());
-  EXPECT_EQ(0.f, unsnappable_layer->opacity());
+  // Note: the container for |cannot_snap_label_view_| will be created
+  // on demand, and its parent remains null until the container is created.
+  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->parent());
+  ASSERT_FALSE(unsnappable_selector_item->cannot_snap_label_view_->parent());
 
   // Snap the extra snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
-
-  EXPECT_EQ(0.f, snappable_layer->opacity());
+  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->parent());
+  ASSERT_TRUE(unsnappable_selector_item->cannot_snap_label_view_->parent());
+  ui::Layer* unsnappable_layer =
+      unsnappable_selector_item->cannot_snap_label_view_->parent()->layer();
   EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Exiting the splitview will hide the unsnappable label.
+  const gfx::Rect divider_bounds =
+      GetSplitViewDividerBounds(/*is_dragging=*/false);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->DragMouseTo(0, 0);
+
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
 }
 
 // Test that when splitview mode and overview mode are both active at the same
