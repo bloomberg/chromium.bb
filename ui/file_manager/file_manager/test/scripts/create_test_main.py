@@ -128,7 +128,7 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
     'common/js/files_app_entry_types.js',
     'common/js/util.js',
     'common/js/mock_entry.js',
-    'common/js/volume_manager_common.js',
+    '../base/js/volume_manager_types.js',
     'background/js/volume_info_impl.js',
     'background/js/volume_info_list_impl.js',
     'background/js/volume_manager_impl.js',

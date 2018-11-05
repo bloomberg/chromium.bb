@@ -56,6 +56,7 @@ group("closure_compile") {
 group("unit_test_data") {
   testonly = true
   deps = [
+    "base/js:unit_tests",
     "file_manager/background/js:unit_tests",
     "file_manager/common/js:unit_tests",
     "file_manager/foreground/js:unit_tests",

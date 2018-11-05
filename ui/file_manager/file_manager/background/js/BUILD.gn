@@ -108,7 +108,7 @@ js_library("background") {
     "../../common/js:files_app_entry_types",
     "../../common/js:metrics",
     "../../common/js:util",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -151,7 +151,7 @@ js_library("duplicate_finder") {
 
 js_library("entry_location_impl") {
   deps = [
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
   externs_list = [ "../../../externs/entry_location.js" ]
 }
@@ -274,7 +274,7 @@ js_library("test_util_base") {
 
 js_library("volume_info_impl") {
   deps = [
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
   externs_list = [ "../../../externs/volume_info.js" ]
 }
@@ -321,7 +321,7 @@ js_library("volume_manager_util") {
     "../../common/js:metrics",
     "../../common/js:metrics_events",
     "../../common/js:util",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
