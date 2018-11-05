@@ -27,8 +27,8 @@ source_set("public") {
 
 source_set("feature_flags") {
   sources = [
-    "features.cc",
     "features.h",
+    "features.mm",
   ]
   deps = [
     "//base",

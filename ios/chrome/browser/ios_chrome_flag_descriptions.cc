@@ -247,6 +247,10 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
+const char kSearchIconToggleName[] = "Change the icon for the search button";
+const char kSearchIconToggleDescription[] =
+    "Different icons for the search button.";
+
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
