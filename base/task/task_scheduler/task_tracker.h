@@ -396,9 +396,6 @@ class BASE_EXPORT TaskTracker {
   bool execution_fence_enabled_ = false;
 #endif
 
-  // Number of BLOCK_SHUTDOWN tasks posted during shutdown.
-  HistogramBase::Sample num_block_shutdown_tasks_posted_during_shutdown_ = 0;
-
   // Enforces that |max_scheduled_sequences| and
   // |max_scheduled_sequences_before_fence| in PreemptedState are only written
   // on the main sequence (determined by the first call to
