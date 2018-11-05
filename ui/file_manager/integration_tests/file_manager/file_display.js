@@ -504,14 +504,18 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = function() {
     function() {
       sendTestMessage({name: 'mountDownloads'}).then(this.next);
     },
-    // Add an entry to Downloads.
+    // Downloads should appear in My files in the directory tree.
     function() {
-      addEntries(['local'], [ENTRIES.newlyAdded], this.next);
+      remoteCall.waitForElement(appId, '[volume-type-for-testing="downloads"]')
+          .then(this.next);
     },
-    // Because Downloads is the default volume it will be automatically
-    // selected, so let's wait for its entry to appear.
     function() {
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
+      const downloadsRow = ['Downloads', '--', 'Folder'];
+      const crostiniRow = ['Linux files', '--', 'Folder'];
+      remoteCall
+          .waitForFiles(
+              appId, [downloadsRow, crostiniRow],
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
           .then(this.next);
     },
     function() {
@@ -560,8 +564,7 @@ testcase.fileDisplayWithoutVolumesThenMountDrive = function() {
     // Navigate to the Drive FakeItem.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['span[root-type-icon=\'drive\']'],
-          this.next);
+          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
     },
     // The fake Google Drive should be empty.
     function() {
@@ -630,8 +633,7 @@ testcase.fileDisplayWithoutDrive = function() {
     // Navigate to Drive.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['span[root-type-icon=\'drive\']'],
-          this.next);
+          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
     },
     function() {
       remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Google Drive')
@@ -705,8 +707,7 @@ testcase.fileDisplayWithoutDriveThenDisable = function() {
     // Navigate to Drive.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['span[root-type-icon=\'drive\']'],
-          this.next);
+          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
     },
     // The fake Google Drive should be empty.
     function() {
@@ -734,10 +735,62 @@ testcase.fileDisplayWithoutDriveThenDisable = function() {
     },
     // Wait for the fake drive to reappear.
     function() {
-      remoteCall.waitForElement(appId, ['span[root-type-icon=\'drive\']'])
+      remoteCall.waitForElement(appId, ['[root-type-icon=\'drive\']'])
           .then(this.next);
     },
     function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests Files app resisting the urge to switch to Downloads when mounts change.
+ * re-enabling Drive.
+ */
+testcase.fileDisplayMountWithFakeItemSelected = function() {
+  let appId = null;
+
+  StepsRunner.run([
+    // Open Files app on Drive with the given test files.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.newlyAdded], []);
+    },
+    // Ensure Downloads has loaded.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
+          .then(this.next);
+    },
+    // Navigate to My files.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['[root-type-icon=\'my_files\']'],
+          this.next);
+    },
+    // Wait for the navigation to complete.
+    function() {
+      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files')
+          .then(this.next);
+    },
+    // Mount a USB drive.
+    function() {
+      sendTestMessage({name: 'mountFakeUsbEmpty'}).then(this.next);
+    },
+    // Wait for the mount to appear.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId, ['#directory-tree [volume-type-icon="removable"]'])
+          .then(this.next);
+    },
+    function() {
+      remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, [])
+          .then(this.next);
+    },
+    function(path) {
+      chrome.test.assertEq('/My files', path);
       checkIfNoErrorsOccured(this.next);
     },
   ]);
