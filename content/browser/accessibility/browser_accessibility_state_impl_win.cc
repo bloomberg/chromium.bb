@@ -96,6 +96,14 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinStickyKeys",
                         0 != (sticky_keys.dwFlags & SKF_STICKYKEYSON));
 
+  // We only measure systems where SPI_GETCLIENTAREAANIMATION exists.
+  BOOL win_anim_enabled = TRUE;
+  if (SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &win_anim_enabled,
+                           0)) {
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.Win.AnimationsEnabled",
+                          win_anim_enabled);
+  }
+
   // Get the file paths of all DLLs loaded.
   HANDLE process = GetCurrentProcess();
   HMODULE* modules = NULL;
