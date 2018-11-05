@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -313,41 +314,81 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneImage) {
 }
 
 TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
+  WTF::ScopedMockClock clock;
   SetBodyInnerHTML(R"HTML(
     <div id="parent">
-      <img id="1"></img>
-      <img id="2"></img>
-      <img id="3"></img>
+      <img height="10" width="10" id="1"></img>
+      <img height="5" width="5" id="2"></img>
+      <img height="7" width="7" id="3"></img>
     </div>
   )HTML");
-  TimeTicks time1 = CurrentTimeTicks();
+  GetFrameView().UpdateAllLifecyclePhases();
   SetImageAndPaint("1", 10, 10);
-  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  GetFrameView().UpdateAllLifecyclePhases();
+  clock.Advance(TimeDelta::FromSecondsD(1));
+  InvokeCallback();
+
   ImageRecord* record;
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GE(record->first_paint_time_after_loaded, time1);
+  EXPECT_EQ(record->first_size, 100);
+  EXPECT_EQ(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(1));
 
-  TimeTicks time2 = CurrentTimeTicks();
   SetImageAndPaint("2", 5, 5);
-  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  record = FindLastPaintCandidate();
-  EXPECT_TRUE(record);
-  EXPECT_GE(record->first_paint_time_after_loaded, time2);
+  GetFrameView().UpdateAllLifecyclePhases();
+  clock.Advance(TimeDelta::FromSecondsD(1));
+  InvokeCallback();
 
-  TimeTicks time3 = CurrentTimeTicks();
-  SetImageAndPaint("3", 7, 7);
-  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GE(record->first_paint_time_after_loaded, time3);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(record->first_size, 30);
+#else
+  EXPECT_EQ(record->first_size, 25);
+#endif
+  EXPECT_EQ(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(2));
+
+  SetImageAndPaint("3", 7, 7);
+  GetFrameView().UpdateAllLifecyclePhases();
+  clock.Advance(TimeDelta::FromSecondsD(1));
+  // 6th s
+  InvokeCallback();
+  record = FindLastPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_GE(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(3));
 
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("3"));
   record = FindLastPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_GE(record->first_paint_time_after_loaded, time2);
-  EXPECT_LE(record->first_paint_time_after_loaded, time3);
+  EXPECT_GE(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(2));
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_LastBasedOnLoadTime) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img height="5" width="5" id="1"></img>
+    </div>
+  )HTML");
+  Element* image = GetDocument().CreateRawElement(html_names::kImgTag);
+  image->setAttribute(html_names::kIdAttr, "2");
+  image->setAttribute(html_names::kHeightAttr, "10");
+  image->setAttribute(html_names::kWidthAttr, "10");
+  GetDocument().getElementById("parent")->appendChild(image);
+  SetImageAndPaint("2", 10, 10);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+
+  SetImageAndPaint("1", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+
+  ImageRecord* record;
+  record = FindLastPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 25);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_IgnoreTheRemoved) {
