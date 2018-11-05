@@ -39,10 +39,12 @@ CHROME_DEV_PATH = (
 CHROME_CANARY_PATH = r"Google\Chrome SxS\Application\chrome.exe"
 CHROMIUM_PATH = r"Chromium\Application\chrome.exe"
 
-SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium']
+SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium', 'edge']
 
 
 def LocateBrowser(options_browser):
+  if options_browser == 'edge':
+    return 'edge'
   browser = None
   if not options_browser or options_browser == 'stable':
     browser = CHROME_STABLE_PATH
@@ -71,18 +73,28 @@ def LocateBrowser(options_browser):
 
 def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
   args = []
-  args.append(browser)
-  if url:
-    args.append(url)
-  if browser.endswith("chrome.exe"):
-    args.append('--user-data-dir=%s' % user_data_dir)
-    args.append('--no-first-run')
-    args.append('--no-default-browser-check')
-    args.append('--autoplay-policy=no-user-gesture-required')
-    if extra_browser_args:
-      args.extend(extra_browser_args.split(' '))
+  shell = False
+  if browser == 'edge':
+    args.append('start')
+    edge_cmd = 'microsoft-edge:'
+    if url:
+      edge_cmd = edge_cmd + url
+    args.append(edge_cmd)
+    # Without |shell| sets to true, launching Edge won't work.
+    shell = True
+  else:
+    args.append(browser)
+    if url:
+      args.append(url)
+    if browser.endswith("chrome.exe"):
+      args.append('--user-data-dir=%s' % user_data_dir)
+      args.append('--no-first-run')
+      args.append('--no-default-browser-check')
+      args.append('--autoplay-policy=no-user-gesture-required')
+      if extra_browser_args:
+        args.extend(extra_browser_args.split(' '))
   logging.debug(" ".join(args))
-  browser_proc = subprocess.Popen(args)
+  browser_proc = subprocess.Popen(args, shell=shell)
   return browser_proc
 
 
@@ -92,12 +104,18 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
   user_data_dir = tempfile.mkdtemp()
   browser_proc = LaunchBrowser(browser, user_data_dir, url, extra_browser_args)
   ipg_utils.RunIPG(duration + delay, resolution, logfile)
-  browser_proc.kill()
-  for _ in range(100):
-    if browser_proc.poll() is not None:
-      break
-    logging.debug("Waiting for browser to exit")
-    time.sleep(0.05)
+  if browser == 'edge':
+    # Because Edge is launched with |shell| set to true, browser_proc isn't
+    # the Edge process, so the following is used to kill all Edge processes
+    # in the system, including ones not launched through this script.
+    subprocess.call("taskkill /F /IM MicrosoftEdge.exe /T")
+  else:
+    browser_proc.kill()
+    for _ in range(100):
+      if browser_proc.poll() is not None:
+        break
+      logging.debug("Waiting for browser to exit")
+      time.sleep(0.05)
   try:
     shutil.rmtree(user_data_dir)
   except Exception as err:
