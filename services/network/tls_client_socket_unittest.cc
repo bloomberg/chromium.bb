@@ -167,7 +167,7 @@ class TLSClientSocketTestBase {
     base::RunLoop run_loop;
     int net_error = net::ERR_FAILED;
     proxy_resolving_factory_->CreateProxyResolvingSocket(
-        url, false /* use_tls */,
+        url, nullptr /* options */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::move(request), nullptr /* observer */,
         base::BindLambdaForTesting(

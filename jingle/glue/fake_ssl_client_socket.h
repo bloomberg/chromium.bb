@@ -51,6 +51,10 @@ class FakeSSLClientSocket : public net::StreamSocket {
   int Read(net::IOBuffer* buf,
            int buf_len,
            net::CompletionOnceCallback callback) override;
+  int ReadIfReady(net::IOBuffer* buf,
+                  int buf_len,
+                  net::CompletionOnceCallback callback) override;
+  int CancelReadIfReady() override;
   int Write(
       net::IOBuffer* buf,
       int buf_len,

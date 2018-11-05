@@ -22,11 +22,13 @@ namespace jingle_glue {
 
 NetworkServiceAsyncSocket::NetworkServiceAsyncSocket(
     GetProxyResolvingFactoryCallback get_socket_factory_callback,
+    bool use_fake_tls_handshake,
     size_t read_buf_size,
     size_t write_buf_size,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : get_socket_factory_callback_(get_socket_factory_callback),
       socket_observer_binding_(this),
+      use_fake_tls_handshake_(use_fake_tls_handshake),
       state_(STATE_CLOSED),
       error_(ERROR_NONE),
       net_error_(net::OK),
@@ -160,8 +162,12 @@ bool NetworkServiceAsyncSocket::Connect(const rtc::SocketAddress& address) {
   network::mojom::SocketObserverPtr socket_observer;
   network::mojom::SocketObserverRequest socket_observer_request =
       mojo::MakeRequest(&socket_observer);
+  network::mojom::ProxyResolvingSocketOptionsPtr options =
+      network::mojom::ProxyResolvingSocketOptions::New();
+  options->use_tls = false;
+  options->fake_tls_handshake = use_fake_tls_handshake_;
   socket_factory_->CreateProxyResolvingSocket(
-      GURL("https://" + dest_host_port_pair.ToString()), false /*use_tls*/,
+      GURL("https://" + dest_host_port_pair.ToString()), std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_),
       mojo::MakeRequest(&socket_), std::move(socket_observer),
       base::BindOnce(&NetworkServiceAsyncSocket::ProcessConnectDone,

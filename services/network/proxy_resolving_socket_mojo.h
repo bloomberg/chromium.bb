@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
       public TLSSocketFactory::Delegate {
  public:
   ProxyResolvingSocketMojo(
-      std::unique_ptr<ProxyResolvingClientSocket> socket,
+      std::unique_ptr<net::StreamSocket> socket,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::SocketObserverPtr observer,
       TLSSocketFactory* tls_socket_factory);
@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
 
   mojom::SocketObserverPtr observer_;
   TLSSocketFactory* tls_socket_factory_;
-  std::unique_ptr<ProxyResolvingClientSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   mojom::ProxyResolvingSocketFactory::CreateProxyResolvingSocketCallback
       connect_callback_;

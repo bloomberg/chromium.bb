@@ -34,6 +34,7 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
  public:
   NetworkServiceAsyncSocket(
       GetProxyResolvingFactoryCallback get_socket_factory_callback,
+      bool use_fake_tls_handshake,
       size_t read_buf_size,
       size_t write_buf_size,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
@@ -211,6 +212,8 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
 
   // Used to route error notifications here.
   mojo::Binding<network::mojom::SocketObserver> socket_observer_binding_;
+
+  bool use_fake_tls_handshake_;
 
   // buzz::AsyncSocket state.
   buzz::AsyncSocket::State state_;
