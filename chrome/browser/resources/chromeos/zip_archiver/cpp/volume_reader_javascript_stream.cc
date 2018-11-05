@@ -9,7 +9,6 @@
 
 #include "base/files/file.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
-#include "ppapi/cpp/logging.h"
 #include "third_party/minizip/src/unzip.h"
 
 VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(
@@ -54,7 +53,7 @@ int64_t VolumeReaderJavaScriptStream::archive_size() {
 void VolumeReaderJavaScriptStream::SetBufferAndSignal(
     const pp::VarArrayBuffer& array_buffer,
     int64_t read_offset) {
-  PP_DCHECK(read_offset >= 0);
+  DCHECK_GE(read_offset, 0);
 
   // Ignore read ahead in case offset was changed using Skip or Seek and in case
   // we already have available data. This can happen in case of 2+ RequestChunk
@@ -109,7 +108,7 @@ void VolumeReaderJavaScriptStream::PassphraseErrorSignal() {
 
 int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
                                            const void** destination_buffer) {
-  PP_DCHECK(bytes_to_read > 0);
+  DCHECK_GT(bytes_to_read, 0);
 
   base::AutoLock al(shared_state_lock_);
 
@@ -194,7 +193,7 @@ int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset,
       new_offset = archive_size_ + offset;
       break;
     default:
-      PP_NOTREACHED();
+      NOTREACHED();
       return -1;
   }
 

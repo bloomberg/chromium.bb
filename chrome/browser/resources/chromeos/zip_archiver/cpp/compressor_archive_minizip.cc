@@ -9,10 +9,10 @@
 #include <cstring>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
-#include "ppapi/cpp/logging.h"
 
 namespace {
 
@@ -206,7 +206,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
     int64_t remaining_size = file_size;
     while (remaining_size > 0) {
       int64_t chunk_size = std::min(remaining_size, kMaximumDataChunkSize);
-      PP_DCHECK(chunk_size > 0);
+      DCHECK_GT(chunk_size, 0);
 
       int64_t read_bytes =
           compressor_stream_->Read(chunk_size, destination_buffer_.get());

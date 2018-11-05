@@ -7,13 +7,13 @@
 #include <sstream>
 #include <utility>
 
+#include "base/logging.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/request.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/instance_handle.h"
-#include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/utility/threading/lock.h"
@@ -53,8 +53,8 @@ class JavaScriptMessageSender : public JavaScriptMessageSenderInterface {
                                     const std::string& request_id,
                                     int64_t offset,
                                     int64_t bytes_to_read) {
-    PP_DCHECK(offset >= 0);
-    PP_DCHECK(bytes_to_read > 0);
+    DCHECK_GE(offset, 0);
+    DCHECK_GT(bytes_to_read, 0);
     JavaScriptPostMessage(request::CreateReadChunkRequest(
         file_system_id, request_id, offset, bytes_to_read));
   }
@@ -161,10 +161,10 @@ class NaclArchiveInstance : public pp::Instance {
 
   // Handler for messages coming in from JS via postMessage().
   virtual void HandleMessage(const pp::Var& var_message) {
-    PP_DCHECK(var_message.is_dictionary());
+    DCHECK(var_message.is_dictionary());
     pp::VarDictionary var_dict(var_message);
 
-    PP_DCHECK(var_dict.Get(request::key::kOperation).is_int());
+    DCHECK(var_dict.Get(request::key::kOperation).is_int());
     int operation = var_dict.Get(request::key::kOperation).AsInt();
 
     if (request::IsPackRequest(operation))
@@ -177,11 +177,11 @@ class NaclArchiveInstance : public pp::Instance {
   // Processes unpack messages.
   void HandleUnpackMessage(const pp::VarDictionary& var_dict,
                            const int operation) {
-    PP_DCHECK(var_dict.Get(request::key::kFileSystemId).is_string());
+    DCHECK(var_dict.Get(request::key::kFileSystemId).is_string());
     std::string file_system_id =
         var_dict.Get(request::key::kFileSystemId).AsString();
 
-    PP_DCHECK(var_dict.Get(request::key::kRequestId).is_string());
+    DCHECK(var_dict.Get(request::key::kRequestId).is_string());
     std::string request_id = var_dict.Get(request::key::kRequestId).AsString();
 
     // Processes operation.
@@ -220,20 +220,20 @@ class NaclArchiveInstance : public pp::Instance {
         break;
 
       case request::CLOSE_VOLUME: {
-        PP_DCHECK(volumes_.find(file_system_id) != volumes_.end());
+        DCHECK(volumes_.find(file_system_id) != volumes_.end());
         volumes_.erase(file_system_id);
         break;
       }
 
       default:
-        PP_NOTREACHED();
+        NOTREACHED();
     }
   }
 
   // Processes pack messages.
   void HandlePackMessage(const pp::VarDictionary& var_dict,
                          const int operation) {
-    PP_DCHECK(var_dict.Get(request::key::kCompressorId).is_int());
+    DCHECK(var_dict.Get(request::key::kCompressorId).is_int());
     int compressor_id = var_dict.Get(request::key::kCompressorId).AsInt();
 
     switch (operation) {
@@ -273,7 +273,7 @@ class NaclArchiveInstance : public pp::Instance {
       }
 
       default:
-        PP_NOTREACHED();
+        NOTREACHED();
     }
   }
 
@@ -289,7 +289,7 @@ class NaclArchiveInstance : public pp::Instance {
                     const std::string& file_system_id,
                     const std::string& request_id) {
     // Should not call ReadMetadata for a Volume already present in NaCl.
-    PP_DCHECK(volumes_.find(file_system_id) == volumes_.end());
+    DCHECK(volumes_.find(file_system_id) == volumes_.end());
 
     std::unique_ptr<Volume> volume = std::make_unique<Volume>(
         instance_handle_, file_system_id, &message_sender_);
@@ -302,8 +302,8 @@ class NaclArchiveInstance : public pp::Instance {
     Volume* raw_volume = volume.get();
     volumes_[file_system_id] = std::move(volume);
 
-    PP_DCHECK(var_dict.Get(request::key::kEncoding).is_string());
-    PP_DCHECK(var_dict.Get(request::key::kArchiveSize).is_string());
+    DCHECK(var_dict.Get(request::key::kEncoding).is_string());
+    DCHECK(var_dict.Get(request::key::kArchiveSize).is_string());
 
     raw_volume->ReadMetadata(
         request_id, var_dict.Get(request::key::kEncoding).AsString(),
@@ -313,10 +313,10 @@ class NaclArchiveInstance : public pp::Instance {
   void ReadChunkDone(const pp::VarDictionary& var_dict,
                      const std::string& file_system_id,
                      const std::string& request_id) {
-    PP_DCHECK(var_dict.Get(request::key::kChunkBuffer).is_array_buffer());
+    DCHECK(var_dict.Get(request::key::kChunkBuffer).is_array_buffer());
     pp::VarArrayBuffer array_buffer(var_dict.Get(request::key::kChunkBuffer));
 
-    PP_DCHECK(var_dict.Get(request::key::kOffset).is_string());
+    DCHECK(var_dict.Get(request::key::kOffset).is_string());
     int64_t read_offset =
         request::GetInt64FromString(var_dict, request::key::kOffset);
 
@@ -341,7 +341,7 @@ class NaclArchiveInstance : public pp::Instance {
   void ReadPassphraseDone(const pp::VarDictionary& var_dict,
                           const std::string& file_system_id,
                           const std::string& request_id) {
-    PP_DCHECK(var_dict.Get(request::key::kPassphrase).is_string());
+    DCHECK(var_dict.Get(request::key::kPassphrase).is_string());
     std::string passphrase(var_dict.Get(request::key::kPassphrase).AsString());
 
     volume_iterator iterator = volumes_.find(file_system_id);
@@ -363,32 +363,32 @@ class NaclArchiveInstance : public pp::Instance {
   void OpenFile(const pp::VarDictionary& var_dict,
                 const std::string& file_system_id,
                 const std::string& request_id) {
-    PP_DCHECK(var_dict.Get(request::key::kIndex).is_string());
+    DCHECK(var_dict.Get(request::key::kIndex).is_string());
     int64_t index = request::GetInt64FromString(var_dict, request::key::kIndex);
 
-    PP_DCHECK(var_dict.Get(request::key::kEncoding).is_string());
+    DCHECK(var_dict.Get(request::key::kEncoding).is_string());
     std::string encoding(var_dict.Get(request::key::kEncoding).AsString());
 
-    PP_DCHECK(var_dict.Get(request::key::kArchiveSize).is_string());
+    DCHECK(var_dict.Get(request::key::kArchiveSize).is_string());
     int64_t archive_size =
         request::GetInt64FromString(var_dict, request::key::kArchiveSize);
 
     volume_iterator iterator = volumes_.find(file_system_id);
-    PP_DCHECK(iterator != volumes_.end());  // Should call OpenFile after
-                                            // ReadMetadata.
+    // Should call OpenFile after ReadMetadata.
+    DCHECK(iterator != volumes_.end());
     iterator->second->OpenFile(request_id, index, encoding, archive_size);
   }
 
   void CloseFile(const pp::VarDictionary& var_dict,
                  const std::string& file_system_id,
                  const std::string& request_id) {
-    PP_DCHECK(var_dict.Get(request::key::kOpenRequestId).is_string());
+    DCHECK(var_dict.Get(request::key::kOpenRequestId).is_string());
     std::string open_request_id(
         var_dict.Get(request::key::kOpenRequestId).AsString());
 
     volume_iterator iterator = volumes_.find(file_system_id);
-    PP_DCHECK(iterator !=
-              volumes_.end());  // Should call CloseFile after OpenFile.
+    DCHECK(iterator !=
+           volumes_.end());  // Should call CloseFile after OpenFile.
 
     iterator->second->CloseFile(request_id, open_request_id);
   }
@@ -396,13 +396,12 @@ class NaclArchiveInstance : public pp::Instance {
   void ReadFile(const pp::VarDictionary& var_dict,
                 const std::string& file_system_id,
                 const std::string& request_id) {
-    PP_DCHECK(var_dict.Get(request::key::kOpenRequestId).is_string());
-    PP_DCHECK(var_dict.Get(request::key::kOffset).is_string());
-    PP_DCHECK(var_dict.Get(request::key::kLength).is_string());
+    DCHECK(var_dict.Get(request::key::kOpenRequestId).is_string());
+    DCHECK(var_dict.Get(request::key::kOffset).is_string());
+    DCHECK(var_dict.Get(request::key::kLength).is_string());
 
     volume_iterator iterator = volumes_.find(file_system_id);
-    PP_DCHECK(iterator !=
-              volumes_.end());  // Should call ReadFile after OpenFile.
+    DCHECK(iterator != volumes_.end());  // Should call ReadFile after OpenFile.
 
     // Passing the entire dictionary because pp::CompletionCallbackFactory
     // cannot create callbacks with more than 3 parameters. Here we need 4:
@@ -429,7 +428,7 @@ class NaclArchiveInstance : public pp::Instance {
 
   void AddToArchive(const pp::VarDictionary& var_dict, int compressor_id) {
     compressor_iterator iterator = compressors_.find(compressor_id);
-    PP_DCHECK(iterator != compressors_.end());
+    DCHECK(iterator != compressors_.end());
 
     iterator->second->AddToArchive(var_dict);
   }
@@ -437,14 +436,14 @@ class NaclArchiveInstance : public pp::Instance {
   void ReadFileChunkDone(const pp::VarDictionary& var_dict,
                          const int compressor_id) {
     compressor_iterator iterator = compressors_.find(compressor_id);
-    PP_DCHECK(iterator != compressors_.end());
+    DCHECK(iterator != compressors_.end());
 
     iterator->second->ReadFileChunkDone(var_dict);
   }
 
   void WriteChunkDone(const pp::VarDictionary& var_dict, int compressor_id) {
     compressor_iterator iterator = compressors_.find(compressor_id);
-    PP_DCHECK(iterator != compressors_.end());
+    DCHECK(iterator != compressors_.end());
 
     iterator->second->WriteChunkDone(var_dict);
   }
