@@ -51,6 +51,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // moment during startup. AwContentBrowserClient owns the result.
   AwBrowserContext* InitBrowserContext();
 
+  network::mojom::NetworkContextPtr CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
+
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
