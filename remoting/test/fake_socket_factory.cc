@@ -96,8 +96,7 @@ void FakeUdpSocket::ReceivePacket(const rtc::SocketAddress& from,
                                   const rtc::SocketAddress& to,
                                   const scoped_refptr<net::IOBuffer>& data,
                                   int data_size) {
-  SignalReadPacket(
-      this, data->data(), data_size, from, rtc::CreatePacketTime(0));
+  SignalReadPacket(this, data->data(), data_size, from, rtc::TimeMicros());
 }
 
 rtc::SocketAddress FakeUdpSocket::GetLocalAddress() const {

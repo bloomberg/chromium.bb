@@ -369,7 +369,7 @@ void UdpPacketSocket::HandleReadResult(int result) {
       return;
     }
     SignalReadPacket(this, receive_buffer_->data(), result, address,
-                     rtc::CreatePacketTime(0));
+                     rtc::TimeMicros());
   } else {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }

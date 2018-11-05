@@ -65,7 +65,7 @@ TEST_F(TransportChannelSocketAdapterTest, Read) {
   ASSERT_EQ(net::ERR_IO_PENDING, result);
 
   channel_.SignalReadPacket(&channel_, kTestData, kTestDataSize,
-                            rtc::CreatePacketTime(0), 0);
+                            rtc::TimeMicros(), 0);
   EXPECT_EQ(kTestDataSize, callback_result_);
 }
 

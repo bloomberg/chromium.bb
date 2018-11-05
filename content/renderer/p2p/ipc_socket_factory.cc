@@ -648,9 +648,8 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
     }
   }
 
-  rtc::PacketTime packet_time(timestamp.ToInternalValue(), 0);
   SignalReadPacket(this, reinterpret_cast<const char*>(&data[0]), data.size(),
-                   address_lj, packet_time);
+                   address_lj, timestamp.since_origin().InMicroseconds());
 }
 
 AsyncAddressResolverImpl::AsyncAddressResolverImpl(
