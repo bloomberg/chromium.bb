@@ -1139,8 +1139,7 @@ ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
   CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
   sheet->SetText(text, true /* allow_import_rules */, exception_state);
   sheet->SetAssociatedDocument(this);
-  return ScriptPromise::Cast(script_state,
-                             ScriptValue::From(script_state, sheet));
+  return ScriptPromise::Cast(script_state, ToV8(sheet, script_state));
 }
 
 CSSStyleSheet* Document::createCSSStyleSheetSync(
