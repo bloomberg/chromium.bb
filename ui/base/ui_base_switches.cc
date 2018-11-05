@@ -73,6 +73,21 @@ const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
 // Enables top Chrome material design elements.
 const char kTopChromeMD[] = "top-chrome-md";
 
+// Material design mode for the |kTopChromeMD| switch.
+const char kTopChromeMDMaterial[] = "material";
+
+// Auto-switching mode |kTopChromeMD| switch. This mode toggles between
+// material and material-hybrid depending on device.
+const char kTopChromeMDMaterialAuto[] = "material-auto";
+
+// Material design hybrid mode for the |kTopChromeMD| switch. Targeted for
+// mouse/touch hybrid devices.
+const char kTopChromeMDMaterialHybrid[] = "material-hybrid";
+
+// Material design mode that is more optimized for touch devices for the
+// |kTopChromeMD| switch.
+const char kTopChromeMDMaterialTouchOptimized[] = "material-touch-optimized";
+
 // Material design mode that represents a refresh of the Chrome UI for the
 // |kTopChromeMD| switch.
 const char kTopChromeMDMaterialRefresh[] = "material-refresh";

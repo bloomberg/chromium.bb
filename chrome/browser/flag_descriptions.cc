@@ -1851,9 +1851,15 @@ const char kTintGlCompositedContentDescription[] =
 
 const char kTopChromeMd[] = "UI Layout for the browser's top chrome";
 const char kTopChromeMdDescription[] =
-    "Toggles between 1) Material Design refresh, 2) Touchable Material Design "
-    "refresh and 3) Switching automatically between Touchable and "
-    "non-Touchable modes.";
+    "Toggles between 1) Normal - for clamshell devices, 2) Hybrid (previously "
+    "touch) - middle point for devices with a touch screen, 3) Touchable "
+    "- new unified interface for touch and convertibles (Chrome OS), 4) "
+    "Material Design refresh and 5) Touchable Material Design refresh. "
+    "Enabling #upcoming-ui-features forces the Material Design refresh option.";
+const char kTopChromeMdMaterial[] = "Normal";
+const char kTopChromeMdMaterialAuto[] = "Auto";
+const char kTopChromeMdMaterialHybrid[] = "Hybrid";
+const char kTopChromeMdMaterialTouchOptimized[] = "Touchable";
 const char kTopChromeMdMaterialRefresh[] = "Refresh";
 const char kTopChromeMdMaterialRefreshTouchOptimized[] = "Touchable Refresh";
 const char kTopChromeMdMaterialRefreshDynamic[] = "Dynamic Refresh";

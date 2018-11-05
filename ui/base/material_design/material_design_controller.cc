@@ -117,6 +117,26 @@ void MaterialDesignController::Initialize() {
 
     // TabletModeClient's default state is in non-tablet mode.
     SetMode(MATERIAL_REFRESH);
+  } else if (force_material_refresh) {
+    bool has_touchscreen = false;
+#if defined(OS_CHROMEOS)
+    has_touchscreen = HasTouchscreen();
+#endif
+    SetMode(has_touchscreen ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
+  } else if (switch_value == switches::kTopChromeMDMaterial) {
+    SetMode(MATERIAL_NORMAL);
+  } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
+    SetMode(MATERIAL_HYBRID);
+  } else if (switch_value == switches::kTopChromeMDMaterialTouchOptimized) {
+    SetMode(MATERIAL_TOUCH_OPTIMIZED);
+  } else if (switch_value == switches::kTopChromeMDMaterialAuto) {
+#if defined(OS_WIN)
+    // TODO(thomasanderson): add support for switching between modes when the
+    // device switches to "tablet mode".
+    if (base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()))
+      SetMode(MATERIAL_HYBRID);
+#endif
+    SetMode(DefaultMode());
   } else {
     if (!switch_value.empty()) {
       LOG(ERROR) << "Invalid value='" << switch_value
