@@ -377,7 +377,11 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
-  // TODO(pdr): Do not attach cc::Layers when using layer lists.
+  // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    return;
+  }
 
   cc::Layer* child_host = layer_.get();
   child_host->RemoveAllChildren();
