@@ -24,6 +24,8 @@
 #include "ui/base/page_transition_types.h"
 #include "v8/include/v8.h"
 
+class GURL;
+
 namespace blink {
 class WebDocumentLoader;
 class WebFormElement;
@@ -143,6 +145,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Complete or Cancel is guaranteed to be called for a response that started.
   // |request_id| uniquely identifies the request within this render frame.
   virtual void DidStartResponse(
+      const GURL& response_url,
       int request_id,
       const network::ResourceResponseHead& response_head,
       content::ResourceType resource_type) {}

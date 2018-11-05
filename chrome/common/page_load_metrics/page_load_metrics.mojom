@@ -204,6 +204,12 @@ struct ResourceDataUpdate {
 
   // Mime type for the resource found in the network response header.
   string mime_type;
+
+  // Whether the scheme of this resource indicates a secure connection.
+  bool is_secure_scheme;
+
+  // Whether this resource was fetched via proxy.
+  bool proxy_used;
 };
 
 // Metrics about how the page rendered during the browsing session.
