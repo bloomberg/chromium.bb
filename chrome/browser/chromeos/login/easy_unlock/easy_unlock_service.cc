@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "apps/app_lifetime_monitor.h"
-#include "apps/app_lifetime_monitor_factory.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
