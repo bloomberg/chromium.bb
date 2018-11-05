@@ -38,10 +38,10 @@ Polymer({
               return;
 
             this.$.emailChooser.bookmarkBarWasShown = bookmarkBarShown;
-            this.$.emailChooser.addBookmark();
+            this.$.emailChooser.initializeSection();
           });
     } else {
-      this.$.emailChooser.removeBookmark();
+      this.$.emailChooser.finalizeSection();
     }
   },
 });
