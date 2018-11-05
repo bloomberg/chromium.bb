@@ -26,7 +26,6 @@
 
 // https://svgwg.org/specs/animations/#InterfaceSVGAnimationElement
 
-[RuntimeEnabled=SMIL]
 interface SVGAnimationElement : SVGElement {
     readonly attribute SVGElement targetElement;
 

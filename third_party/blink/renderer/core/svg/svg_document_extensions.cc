@@ -43,7 +43,6 @@ void SVGDocumentExtensions::RemoveTimeContainer(SVGSVGElement* element) {
 
 void SVGDocumentExtensions::AddWebAnimationsPendingSVGElement(
     SVGElement& element) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsSVGEnabled());
   web_animations_pending_svg_elements_.insert(&element);
 }
 
@@ -54,12 +53,10 @@ void SVGDocumentExtensions::ServiceOnAnimationFrame(Document& document) {
 }
 
 void SVGDocumentExtensions::ServiceAnimations() {
-  if (RuntimeEnabledFeatures::SMILEnabled()) {
-    HeapVector<Member<SVGSVGElement>> time_containers;
-    CopyToVector(time_containers_, time_containers);
-    for (const auto& container : time_containers)
-      container->TimeContainer()->ServiceAnimations();
-  }
+  HeapVector<Member<SVGSVGElement>> time_containers;
+  CopyToVector(time_containers_, time_containers);
+  for (const auto& container : time_containers)
+    container->TimeContainer()->ServiceAnimations();
 
   SVGElementSet web_animations_pending_svg_elements;
   web_animations_pending_svg_elements.swap(
