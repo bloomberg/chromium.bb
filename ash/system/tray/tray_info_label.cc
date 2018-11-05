@@ -12,7 +12,7 @@
 namespace ash {
 
 TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)
-    : ActionableView(nullptr /* owner */, TrayPopupInkDropStyle::FILL_BOUNDS),
+    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       label_(TrayPopupUtils::CreateDefaultLabel()),
       message_id_(message_id),
       delegate_(delegate) {

@@ -172,7 +172,7 @@ class CloseBubbleObserver : public ui::ImplicitAnimationObserver {
 
 TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
     // Note the ink drop style is ignored.
-    : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
+    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       shelf_(shelf),
       tray_container_(new TrayContainer(shelf)),
       background_(new TrayBackground(this)),

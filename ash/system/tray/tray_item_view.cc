@@ -6,8 +6,6 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -24,9 +22,6 @@ namespace {
 const int kTrayItemAnimationDurationMS = 200;
 
 }  // namespace
-
-TrayItemView::TrayItemView(SystemTrayItem* owner)
-    : shelf_(owner->system_tray()->shelf()) {}
 
 TrayItemView::TrayItemView(Shelf* shelf)
     : shelf_(shelf), label_(NULL), image_view_(NULL) {

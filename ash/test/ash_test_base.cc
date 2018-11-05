@@ -199,11 +199,6 @@ Shelf* AshTestBase::GetPrimaryShelf() {
 }
 
 // static
-SystemTray* AshTestBase::GetPrimarySystemTray() {
-  return Shell::Get()->GetPrimarySystemTray();
-}
-
-// static
 UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
   return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
 }

@@ -10,7 +10,6 @@
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
-#include "ash/system/tray_tracing.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 
 namespace ash {

@@ -511,10 +511,6 @@ bool Shell::HasPrimaryStatusArea() {
   return !!GetPrimaryRootWindowController()->GetStatusAreaWidget();
 }
 
-SystemTray* Shell::GetPrimarySystemTray() {
-  return GetPrimaryRootWindowController()->GetSystemTray();
-}
-
 void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
   window_tree_host_manager_->cursor_window_controller()
       ->SetLargeCursorSizeInDip(large_cursor_size_in_dip);

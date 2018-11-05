@@ -13,28 +13,18 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_detailed_view.h"
-#include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
-#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/separator.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -57,77 +47,9 @@ enum AccessibilityState {
   A11Y_DICTATION = 1 << 13,
 };
 
-uint32_t GetAccessibilityState() {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  uint32_t state = A11Y_NONE;
-  if (controller->IsSpokenFeedbackEnabled())
-    state |= A11Y_SPOKEN_FEEDBACK;
-  if (controller->IsHighContrastEnabled())
-    state |= A11Y_HIGH_CONTRAST;
-  if (delegate->IsMagnifierEnabled())
-    state |= A11Y_SCREEN_MAGNIFIER;
-  if (controller->IsLargeCursorEnabled())
-    state |= A11Y_LARGE_CURSOR;
-  if (controller->IsAutoclickEnabled())
-    state |= A11Y_AUTOCLICK;
-  if (controller->IsVirtualKeyboardEnabled())
-    state |= A11Y_VIRTUAL_KEYBOARD;
-  if (controller->IsMonoAudioEnabled())
-    state |= A11Y_MONO_AUDIO;
-  if (controller->IsCaretHighlightEnabled())
-    state |= A11Y_CARET_HIGHLIGHT;
-  if (controller->IsCursorHighlightEnabled())
-    state |= A11Y_HIGHLIGHT_MOUSE_CURSOR;
-  if (controller->IsFocusHighlightEnabled())
-    state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
-  if (controller->IsStickyKeysEnabled())
-    state |= A11Y_STICKY_KEYS;
-  if (controller->IsSelectToSpeakEnabled())
-    state |= A11Y_SELECT_TO_SPEAK;
-  if (controller->IsDictationEnabled())
-    state |= A11Y_DICTATION;
-  if (features::IsDockedMagnifierEnabled() &&
-      Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
-    state |= A11Y_DOCKED_MAGNIFIER;
-  }
-  return state;
-}
-
-LoginStatus GetCurrentLoginStatus() {
-  return Shell::Get()->session_controller()->login_status();
-}
-
 }  // namespace
 
 namespace tray {
-
-class DefaultAccessibilityView : public TrayItemMore {
- public:
-  explicit DefaultAccessibilityView(SystemTrayItem* owner)
-      : TrayItemMore(owner) {
-    base::string16 label =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
-    SetLabel(label);
-    SetAccessibleName(label);
-    set_id(VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
-  }
-
-  ~DefaultAccessibilityView() override = default;
-
- protected:
-  // TrayItemMore:
-  void UpdateStyle() override {
-    TrayItemMore::UpdateStyle();
-    std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
-    SetImage(gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon,
-                                   style->GetIconColor()));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityView);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityDetailedView
@@ -454,105 +376,4 @@ void AccessibilityDetailedView::ShowHelp() {
 }
 
 }  // namespace tray
-
-////////////////////////////////////////////////////////////////////////////////
-// ash::TrayAccessibility
-
-TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
-    : TrayImageItem(system_tray,
-                    kSystemTrayAccessibilityIcon,
-                    SystemTrayItemUmaType::UMA_ACCESSIBILITY),
-      default_(nullptr),
-      detailed_menu_(nullptr),
-      tray_icon_visible_(false),
-      login_(GetCurrentLoginStatus()),
-      show_a11y_menu_on_lock_screen_(true),
-      detailed_view_delegate_(
-          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
-  DCHECK(system_tray);
-  Shell::Get()->accessibility_controller()->AddObserver(this);
-}
-
-TrayAccessibility::~TrayAccessibility() {
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
-}
-
-void TrayAccessibility::SetTrayIconVisible(bool visible) {
-  if (tray_view())
-    tray_view()->SetVisible(visible);
-
-  SetIconColor(TrayIconColor(
-      ash::Shell::Get()->session_controller()->GetSessionState()));
-  tray_icon_visible_ = visible;
-}
-
-tray::AccessibilityDetailedView* TrayAccessibility::CreateDetailedMenu() {
-  return new tray::AccessibilityDetailedView(detailed_view_delegate_.get());
-}
-
-bool TrayAccessibility::GetInitialVisibility() {
-  // Shows accessibility icon if any accessibility feature is enabled.
-  // Otherwise, doen't show it.
-  return GetAccessibilityState() != A11Y_NONE;
-}
-
-views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
-  CHECK(default_ == nullptr);
-
-  // Shows accessibility menu if:
-  // - on login screen (not logged in);
-  // - "Enable accessibility menu" on chrome://settings is checked;
-  // - or any of accessibility features is enabled
-  // Otherwise, not shows it.
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  if (login_ != LoginStatus::NOT_LOGGED_IN &&
-      !delegate->ShouldShowAccessibilityMenu() &&
-      // On login screen, keeps the initial visibility of the menu.
-      (status != LoginStatus::LOCKED || !show_a11y_menu_on_lock_screen_))
-    return nullptr;
-
-  CHECK(default_ == nullptr);
-  default_ = new tray::DefaultAccessibilityView(this);
-
-  return default_;
-}
-
-views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
-  CHECK(detailed_menu_ == nullptr);
-
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_DETAILED_ACCESSIBILITY);
-  detailed_menu_ = CreateDetailedMenu();
-  return detailed_menu_;
-}
-
-void TrayAccessibility::OnDefaultViewDestroyed() {
-  default_ = nullptr;
-}
-
-void TrayAccessibility::OnDetailedViewDestroyed() {
-  detailed_menu_ = nullptr;
-}
-
-void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {
-  // Stores the a11y feature status on just entering the lock screen.
-  if (login_ != LoginStatus::LOCKED && status == LoginStatus::LOCKED)
-    show_a11y_menu_on_lock_screen_ = (GetAccessibilityState() != A11Y_NONE);
-
-  login_ = status;
-  SetTrayIconVisible(GetInitialVisibility());
-}
-
-void TrayAccessibility::OnAccessibilityStatusChanged() {
-  SetTrayIconVisible(GetInitialVisibility());
-
-  if (detailed_menu_)
-    detailed_menu_->OnAccessibilityStatusChanged();
-}
-
-void TrayAccessibility::OnSessionStateChanged(
-    session_manager::SessionState state) {
-  SetTrayIconVisible(GetInitialVisibility());
-}
-
 }  // namespace ash

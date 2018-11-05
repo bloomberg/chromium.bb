@@ -18,7 +18,6 @@
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/ime_mode_view.h"

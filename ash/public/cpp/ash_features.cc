@@ -93,10 +93,6 @@ bool IsNotificationScrollBarEnabled() {
   return base::FeatureList::IsEnabled(kNotificationScrollBar);
 }
 
-bool IsSystemTrayUnifiedEnabled() {
-  return true;
-}
-
 bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);

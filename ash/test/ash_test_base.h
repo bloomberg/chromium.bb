@@ -60,7 +60,6 @@ class AppListTestHelper;
 class AshTestEnvironment;
 class AshTestHelper;
 class Shelf;
-class SystemTray;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 class UnifiedSystemTray;
@@ -76,9 +75,6 @@ class AshTestBase : public testing::Test {
 
   // Returns the Shelf for the primary display.
   static Shelf* GetPrimaryShelf();
-
-  // Returns the system tray on the primary display.
-  static SystemTray* GetPrimarySystemTray();
 
   // Returns the unified system tray on the primary display.
   static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();

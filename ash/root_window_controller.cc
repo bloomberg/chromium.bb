@@ -36,7 +36,6 @@
 #include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_observer_hud.h"
@@ -362,13 +361,6 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
 StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
   ShelfWidget* shelf_widget = shelf_->shelf_widget();
   return shelf_widget ? shelf_widget->status_area_widget() : nullptr;
-}
-
-SystemTray* RootWindowController::GetSystemTray() {
-  // We assume in throughout the code that this will not return NULL. If code
-  // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(shelf_->shelf_widget()->status_area_widget());
-  return shelf_->shelf_widget()->status_area_widget()->system_tray();
 }
 
 bool RootWindowController::IsSystemTrayVisible() {

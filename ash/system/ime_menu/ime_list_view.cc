@@ -52,7 +52,7 @@ class ImeListItemView : public ActionableView {
                   bool selected,
                   const SkColor button_color,
                   bool use_unified_theme)
-      : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
+      : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
     SetInkDropMode(InkDropMode::ON);

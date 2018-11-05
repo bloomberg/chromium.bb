@@ -11,7 +11,6 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/tray/tray_detailed_view.h"
-#include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
@@ -102,52 +101,6 @@ class ASH_EXPORT AccessibilityDetailedView : public TrayDetailedView {
 };
 
 }  // namespace tray
-
-class TrayAccessibility : public TrayImageItem,
-                          public AccessibilityObserver,
-                          public SessionObserver {
- public:
-  explicit TrayAccessibility(SystemTray* system_tray);
-  ~TrayAccessibility() override;
-
- private:
-  friend class TrayAccessibilityLoginScreenTest;
-  friend class TrayAccessibilityTest;
-  friend class chromeos::TrayAccessibilityTest;
-
-  void SetTrayIconVisible(bool visible);
-  tray::AccessibilityDetailedView* CreateDetailedMenu();
-
-  // Overridden from TrayImageItem.
-  bool GetInitialVisibility() override;
-  views::View* CreateDefaultView(LoginStatus status) override;
-  views::View* CreateDetailedView(LoginStatus status) override;
-  void OnDefaultViewDestroyed() override;
-  void OnDetailedViewDestroyed() override;
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
-
-  // Overridden from AccessibilityObserver.
-  void OnAccessibilityStatusChanged() override;
-
-  // Overridden from SessionObserver:
-  void OnSessionStateChanged(session_manager::SessionState state) override;
-
-  views::View* default_;
-  tray::AccessibilityDetailedView* detailed_menu_;
-
-  bool tray_icon_visible_;
-  LoginStatus login_;
-
-  // A11y feature status on just entering the lock screen.
-  bool show_a11y_menu_on_lock_screen_;
-
-  ScopedSessionObserver session_observer_{this};
-
-  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
-};
-
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_ACCESSIBILITY_TRAY_ACCESSIBILITY_H_
