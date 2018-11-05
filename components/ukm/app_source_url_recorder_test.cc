@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ukm/content/app_source_url_recorder.h"
+#include "components/ukm/app_source_url_recorder.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/test/test_renderer_host.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace ukm {
 
-class AppSourceUrlRecorderTest : public content::RenderViewHostTestHarness {
+class AppSourceUrlRecorderTest : public testing::Test {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(kUkmAppLogging);
-    content::RenderViewHostTestHarness::SetUp();
   }
 
  protected:
@@ -30,6 +29,7 @@ class AppSourceUrlRecorderTest : public content::RenderViewHostTestHarness {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestAutoSetUkmRecorder test_ukm_recorder_;
 };
 
