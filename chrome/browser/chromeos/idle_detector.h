@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_IDLE_DETECTOR_H_
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -16,10 +16,14 @@ namespace chromeos {
 
 class IdleDetector : public ui::UserActivityObserver {
  public:
-  explicit IdleDetector(const base::Closure& on_idle_callback);
+  IdleDetector(const base::RepeatingClosure& on_idle_callback,
+               const base::TickClock* tick_clock);
+
   ~IdleDetector() override;
 
   void Start(const base::TimeDelta& timeout);
+
+  void SetTickClockForTest(const base::TickClock* test_clock);
 
  private:
   // ui::UserActivityObserver overrides:
@@ -28,9 +32,9 @@ class IdleDetector : public ui::UserActivityObserver {
   // Resets |timer_| to fire when we reach our idle timeout.
   void ResetTimer();
 
-  base::OneShotTimer timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
-  base::Closure idle_callback_;
+  base::RepeatingClosure idle_callback_;
 
   base::TimeDelta timeout_;
 
