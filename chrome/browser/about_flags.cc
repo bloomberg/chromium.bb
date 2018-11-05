@@ -755,10 +755,10 @@ const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
      switches::kEnableUseZoomForDSF, "false"},
 };
 
-const FeatureEntry::Choice kSiteIsolationTrialOptOutChoices[] = {
-    {flag_descriptions::kSiteIsolationTrialOptOutChoiceDefault, "", ""},
-    {flag_descriptions::kSiteIsolationTrialOptOutChoiceOptOut,
-     switches::kDisableSiteIsolationTrials, ""},
+const FeatureEntry::Choice kSiteIsolationOptOutChoices[] = {
+    {flag_descriptions::kSiteIsolationOptOutChoiceDefault, "", ""},
+    {flag_descriptions::kSiteIsolationOptOutChoiceOptOut,
+     switches::kDisableSiteIsolation, ""},
 };
 
 const FeatureEntry::Choice kTLS13VariantChoices[] = {
@@ -2206,9 +2206,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStrictSiteIsolationDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
     {"site-isolation-trial-opt-out",
-     flag_descriptions::kSiteIsolationTrialOptOutName,
-     flag_descriptions::kSiteIsolationTrialOptOutDescription, kOsAll,
-     MULTI_VALUE_TYPE(kSiteIsolationTrialOptOutChoices)},
+     flag_descriptions::kSiteIsolationOptOutName,
+     flag_descriptions::kSiteIsolationOptOutDescription, kOsAll,
+     MULTI_VALUE_TYPE(kSiteIsolationOptOutChoices)},
     {"enable-use-zoom-for-dsf", flag_descriptions::kEnableUseZoomForDsfName,
      flag_descriptions::kEnableUseZoomForDsfDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},

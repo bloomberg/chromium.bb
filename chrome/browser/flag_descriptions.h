@@ -1051,10 +1051,10 @@ extern const char kSingleTabModeDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
-extern const char kSiteIsolationTrialOptOutName[];
-extern const char kSiteIsolationTrialOptOutDescription[];
-extern const char kSiteIsolationTrialOptOutChoiceDefault[];
-extern const char kSiteIsolationTrialOptOutChoiceOptOut[];
+extern const char kSiteIsolationOptOutName[];
+extern const char kSiteIsolationOptOutDescription[];
+extern const char kSiteIsolationOptOutChoiceDefault[];
+extern const char kSiteIsolationOptOutChoiceOptOut[];
 
 extern const char kSiteSettings[];
 extern const char kSiteSettingsDescription[];
