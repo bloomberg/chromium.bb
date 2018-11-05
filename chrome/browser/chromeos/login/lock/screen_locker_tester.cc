@@ -98,9 +98,6 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
   void SetPassword(const std::string& password) override;
   std::string GetPassword() override;
   void EnterPassword(const std::string& password) override;
-  void EmulateWindowManagerReady() override;
-  views::Widget* GetWidget() const override;
-  views::Widget* GetChildWidget() const override;
 
  private:
   friend class chromeos::ScreenLocker;
@@ -157,16 +154,6 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 
   // Wait for login attempt.
   login.WaitForAttempt();
-}
-
-void WebUIScreenLockerTester::EmulateWindowManagerReady() {}
-
-views::Widget* WebUIScreenLockerTester::GetWidget() const {
-  return webui_screen_locker()->lock_window_;
-}
-
-views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
-  return webui_screen_locker()->lock_window_;
 }
 
 content::RenderFrameHost* WebUIScreenLockerTester::GetMainFrame() const {

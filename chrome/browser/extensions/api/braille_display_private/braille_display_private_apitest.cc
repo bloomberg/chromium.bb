@@ -306,7 +306,6 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 
   void LockScreen(ScreenLockerTester* tester) {
     ScreenLocker::Show();
-    tester->EmulateWindowManagerReady();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
         content::NotificationService::AllSources());

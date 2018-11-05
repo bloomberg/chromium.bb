@@ -102,7 +102,6 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
   void LockScreen(test::ScreenLockerTester* tester) {
     ScreenLocker::Show();
-    tester->EmulateWindowManagerReady();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
         content::NotificationService::AllSources());
@@ -158,7 +157,6 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
     return;
   ScreenLocker::Show();
   std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  tester->EmulateWindowManagerReady();
   content::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
@@ -166,13 +164,6 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
     lock_state_observer.Wait();
   EXPECT_EQ(session_manager::SessionState::LOCKED,
             session_manager::SessionManager::Get()->session_state());
-
-  // Test to make sure that the widget is actually appearing and is of
-  // reasonable size, preventing a regression of
-  // http://code.google.com/p/chromium-os/issues/detail?id=5987
-  gfx::Rect lock_bounds = tester->GetChildWidget()->GetWindowBoundsInScreen();
-  EXPECT_GT(lock_bounds.width(), 10);
-  EXPECT_GT(lock_bounds.height(), 10);
 
   UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
                            user_manager::StubAccountId());
@@ -238,7 +229,6 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   {
     Waiter waiter(browser());
     ScreenLocker::Show();
-    tester->EmulateWindowManagerReady();
     waiter.Wait(true /* locked */, true /* full screen */);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
@@ -284,7 +274,6 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   {
     Waiter waiter(browser());
     ScreenLocker::Show();
-    tester->EmulateWindowManagerReady();
     waiter.Wait(true /* locked */, false /* full screen */);
     EXPECT_FALSE(browser_window->IsFullscreen());
     EXPECT_TRUE(tester->IsLocked());
@@ -319,29 +308,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_TRUE(tester->IsLocked());
   EXPECT_EQ(
       2, fake_session_manager_client_->notify_lock_screen_shown_call_count());
-
-  // Close the locker to match expectations.
-  ScreenLocker::Hide();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(tester->IsLocked());
-  EXPECT_TRUE(VerifyLockScreenDismissed());
-}
-
-// TODO(flackr): Find out why the RenderView isn't getting the escape press
-// and re-enable this test (currently this test is flaky).
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
-  std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  LockScreen(tester.get());
-
-  EXPECT_EQ(
-      1, fake_session_manager_client_->notify_lock_screen_shown_call_count());
-
-  tester->SetPassword("password");
-  EXPECT_EQ("password", tester->GetPassword());
-  // Escape clears the password.
-  SimulateKeyPress(tester->GetWidget(), ui::VKEY_ESCAPE);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_EQ("", tester->GetPassword());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();

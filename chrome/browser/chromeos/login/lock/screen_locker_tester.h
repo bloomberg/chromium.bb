@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace chromeos {
 
 class UserContext;
@@ -38,14 +34,6 @@ class ScreenLockerTester {
 
   // Emulates entring a password.
   virtual void EnterPassword(const std::string& password) = 0;
-
-  // Emulates the ready message from window manager.
-  virtual void EmulateWindowManagerReady() = 0;
-
-  // Returns the widget for screen locker window.
-  virtual views::Widget* GetWidget() const = 0;
-
-  virtual views::Widget* GetChildWidget() const = 0;
 };
 
 }  // namespace test
