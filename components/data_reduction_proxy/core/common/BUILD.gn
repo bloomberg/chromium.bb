@@ -127,6 +127,7 @@ mojom("interfaces") {
   ]
 
   deps = [
+    "//mojo/public/mojom/base",
     "//services/network/public/mojom",
   ]
 }
