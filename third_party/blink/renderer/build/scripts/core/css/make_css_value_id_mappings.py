@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
 from blinkbuild.name_style_converter import NameStyleConverter
 import json5_generator
 import template_expander
@@ -115,7 +119,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         css_properties = keyword_utils.sort_keyword_properties_by_canonical_order(
             css_properties, json5_file_paths[2], self.default_parameters)
 
-    @template_expander.use_jinja('templates/css_value_id_mappings_generated.h.tmpl')
+    @template_expander.use_jinja('core/css/templates/css_value_id_mappings_generated.h.tmpl')
     def generate_css_value_mappings(self):
         mappings = {}
         include_paths = set()
