@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.HashMap;
 import java.util.Map;

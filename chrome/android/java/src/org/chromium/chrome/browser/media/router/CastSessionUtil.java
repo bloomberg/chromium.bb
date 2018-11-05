@@ -8,7 +8,7 @@ import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.RemoteMediaPlayer;
 
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 /**
  * Helper class that implements functions useful to all CastSession types.
