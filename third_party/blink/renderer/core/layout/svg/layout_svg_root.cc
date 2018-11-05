@@ -469,19 +469,6 @@ LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
   return LayoutRect(EnclosingIntRect(visual_rect));
 }
 
-bool LayoutSVGRoot::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // The rule extends LayoutBox's instead of LayoutReplaced's.
-  if (!LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return false;
-
-  if (SVGResources* resources =
-          SVGResourcesCache::CachedResourcesForLayoutObject(*this)) {
-    if (resources->Masker())
-      return false;
-  }
-  return true;
-}
-
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the
 // localToBorderBoxTransform to convert from SVG viewport coordinates to local
