@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
@@ -67,6 +68,13 @@ namespace {
 // The minimum capacity we reserve in the Apps container which will be filled
 // with extensions and ARC apps, to avoid successive reallocation.
 constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
+
+// Relevance threshold to use when Crostini has not yet been enabled. This value
+// is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
+constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
+// These are added to the localized values for convenience. The leading space
+// is as we just append this to the localized version of 'Linux'.
+constexpr char kExtraCrostiniTerminalKeywords[] = " linux terminal crostini";
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -162,8 +170,9 @@ class AppSearchProvider::App {
       tokenized_indexed_searchable_text_ =
           std::make_unique<TokenizedString>(searchable_text_);
     }
-    return TokenizedStringMatch().Calculate(
-        query, *tokenized_indexed_searchable_text_);
+    TokenizedStringMatch match;
+    match.Calculate(query, *tokenized_indexed_searchable_text_);
+    return match.relevance() > relevance_threshold();
   }
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
@@ -183,9 +192,11 @@ class AppSearchProvider::App {
     searchable_text_ = searchable_text;
   }
 
-  bool require_exact_match() const { return require_exact_match_; }
-  void set_require_exact_match(bool require_exact_match) {
-    require_exact_match_ = require_exact_match;
+  // Relevance must exceed the threshold to appear as a search result. Exact
+  // matches are always surfaced.
+  float relevance_threshold() const { return relevance_threshold_; }
+  void set_relevance_threshold(float threshold) {
+    relevance_threshold_ = threshold;
   }
 
   bool installed_internally() const { return installed_internally_; }
@@ -201,7 +212,7 @@ class AppSearchProvider::App {
   bool recommendable_ = true;
   bool searchable_ = true;
   base::string16 searchable_text_;
-  bool require_exact_match_ = false;
+  float relevance_threshold_ = 0.f;
   // Set to true in case app was installed internally, by sync, policy or as a
   // default app.
   const bool installed_internally_;
@@ -473,12 +484,18 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
           this, app_id, registration.Name(), registration.LastLaunchTime(),
           registration.InstallTime(), false /* installed_internally */));
 
-      // Until it's been installed, the Terminal is hidden unless you search
-      // for 'Terminal' exactly (case insensitive).
-      if (app_id == crostini::kCrostiniTerminalId &&
-          !crostini::IsCrostiniEnabled(profile())) {
-        apps->back()->set_recommendable(false);
-        apps->back()->set_require_exact_match(true);
+      if (app_id == crostini::kCrostiniTerminalId) {
+        base::string16 searchable_text =
+            l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS);
+        searchable_text += base::UTF8ToUTF16(kExtraCrostiniTerminalKeywords);
+        apps->back()->set_searchable_text(searchable_text);
+        // Until it's been installed, the Terminal is hidden and requires
+        // a few characters before being shown in search results.
+        if (!crostini::IsCrostiniEnabled(profile())) {
+          apps->back()->set_recommendable(false);
+          apps->back()->set_relevance_threshold(
+              kCrostiniTerminalRelevanceThreshold);
+        }
       }
     }
   }
@@ -621,16 +638,21 @@ void AppSearchProvider::UpdateQueriedResults() {
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
-    if (!app->searchable() ||
-        (app->require_exact_match() &&
-         !base::EqualsCaseInsensitiveASCII(query_, app->name()))) {
+    if (!app->searchable())
       continue;
-    }
 
     TokenizedStringMatch match;
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
-    if (!match.Calculate(query_terms, *indexed_name) &&
-        !app->MatchSearchableText(query_terms)) {
+
+    if (match.Calculate(query_terms, *indexed_name)) {
+      // Exact matches should be shown even if the threshold isn't reached, e.g.
+      // due to a localized name being particularly short.
+      if (match.relevance() <= app->relevance_threshold() &&
+          !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
+          !app->MatchSearchableText(query_terms)) {
+        continue;
+      }
+    } else if (!app->MatchSearchableText(query_terms)) {
       continue;
     }
 
