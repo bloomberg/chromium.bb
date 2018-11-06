@@ -36,13 +36,12 @@ mojom::blink::StoragePartitionServicePtr GetAndCreateStorageInterface() {
 
 // static
 StorageController* StorageController::GetInstance() {
-  DEFINE_STATIC_LOCAL(
-      StorageController, gCachedStorageAreaController,
-      (Platform::Current()->MainThread()->Scheduler()->IPCTaskRunner(),
-       GetAndCreateStorageInterface(),
-       base::SysInfo::IsLowEndDevice()
-           ? kStorageControllerTotalCacheLimitInBytesLowEnd
-           : kStorageControllerTotalCacheLimitInBytes));
+  DEFINE_STATIC_LOCAL(StorageController, gCachedStorageAreaController,
+                      (Thread::MainThread()->Scheduler()->IPCTaskRunner(),
+                       GetAndCreateStorageInterface(),
+                       base::SysInfo::IsLowEndDevice()
+                           ? kStorageControllerTotalCacheLimitInBytesLowEnd
+                           : kStorageControllerTotalCacheLimitInBytes));
   return &gCachedStorageAreaController;
 }
 

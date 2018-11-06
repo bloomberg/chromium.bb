@@ -202,7 +202,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
-          Platform::Current()->CurrentThread()->GetTaskRunner(),
+          Thread::Current()->GetTaskRunner(),
           this,
           &WaitUntilObserver::ConsumeWindowInteraction) {}
 

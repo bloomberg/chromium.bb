@@ -161,7 +161,7 @@ void BackgroundFetchIconLoader::DidFinishLoading(
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
 
   background_scheduler::PostOnBackgroundThread(
       FROM_HERE,

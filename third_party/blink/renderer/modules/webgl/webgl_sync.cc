@@ -23,7 +23,7 @@ WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx,
         ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kInternalDefault);
   } else {
     // Fallback for OffscreenCanvas (no frame scheduler)
-    task_runner_ = Platform::Current()->CurrentThread()->GetTaskRunner();
+    task_runner_ = Thread::Current()->GetTaskRunner();
   }
   ScheduleAllowCacheUpdate();
 }
