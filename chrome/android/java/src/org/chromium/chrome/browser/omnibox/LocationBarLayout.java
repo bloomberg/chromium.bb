@@ -167,11 +167,6 @@ public class LocationBarLayout extends FrameLayout
                     }
 
                     @Override
-                    public boolean isIncognito() {
-                        return mToolbarDataProvider.isIncognito();
-                    }
-
-                    @Override
                     public WindowDelegate getWindowDelegate() {
                         return mWindowDelegate;
                     }
@@ -371,7 +366,6 @@ public class LocationBarLayout extends FrameLayout
      * @return Whether the URL focus change is taking place, e.g. a focus animation is running on
      *         a phone device.
      */
-    @Override
     public boolean isUrlFocusChangeInProgress() {
         return mUrlFocusChangeInProgress;
     }
