@@ -47,9 +47,20 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
   // receive a stream frame with the FIN bit.
   void OnFinRead() override;
 
+  //  Called by the quic::QuicSession. This means the stream is closed for
+  //  reading and writing, and can now be deleted by the quic::QuicSession.
+  void OnClose() override;
+
+  // For testing purposes. This is returns true after quic::QuicStream::OnClose
+  bool IsClosedForTesting();
+
  private:
   using quic::QuicStream::Reset;
+
   Delegate* delegate_;
+
+  // Set after OnClose gets called.
+  bool closed_ = false;
 };
 
 }  // namespace blink
