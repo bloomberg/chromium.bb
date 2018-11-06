@@ -58,7 +58,7 @@ static jboolean JNI_TranslateBridge_ShouldShowManualTranslateIPH(
 
   return base::StartsWith(page_lang, "en",
                           base::CompareCase::INSENSITIVE_ASCII) &&
-         language::ShouldForceTriggerTranslateOnEnglishPages(
+         !language::ShouldForceTriggerTranslateOnEnglishPages(
              translate_prefs->GetForceTriggerOnEnglishPagesCount()) &&
-         manager->GetLanguageState().translate_enabled();
+         !manager->GetLanguageState().translate_enabled();
 }

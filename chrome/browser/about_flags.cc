@@ -1187,6 +1187,10 @@ const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishGeo[] = {
     {language::kOverrideModelKey, language::kOverrideModelGeoValue},
     {language::kEnforceRankerKey, "false"}};
+const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishBackoff[] = {
+    {language::kOverrideModelKey, language::kOverrideModelDefaultValue},
+    {language::kEnforceRankerKey, "false"},
+    {language::kBackoffThresholdKey, "0"}};
 const FeatureEntry::FeatureVariation
     kTranslateForceTriggerOnEnglishVariations[] = {
         {"(Heuristic model without Ranker)",
@@ -1194,7 +1198,8 @@ const FeatureEntry::FeatureVariation
          arraysize(kTranslateForceTriggerOnEnglishHeuristic), nullptr},
         {"(Geo model without Ranker)", kTranslateForceTriggerOnEnglishGeo,
          arraysize(kTranslateForceTriggerOnEnglishGeo), nullptr},
-};
+        {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
+         arraysize(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
