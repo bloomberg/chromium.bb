@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -79,6 +80,7 @@ public class VrBrowserJavaScriptModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
+    @DisabledTest
     public void testPromptModalDialog() throws ExecutionException, IOException {
         testModalDialogImpl(
                 "js_modal_view_vr_prompt", "prompt('Is the tree closed?', 'Hopefully not')");
