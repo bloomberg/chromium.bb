@@ -39,13 +39,14 @@ class TickClock;
 namespace viz {
 
 class Surface;
+class SurfaceManagerDelegate;
 struct BeginFrameAck;
 struct BeginFrameArgs;
 
 class VIZ_SERVICE_EXPORT SurfaceManager {
  public:
-  explicit SurfaceManager(
-      base::Optional<uint32_t> activation_deadline_in_frames);
+  SurfaceManager(SurfaceManagerDelegate* delegate,
+                 base::Optional<uint32_t> activation_deadline_in_frames);
   ~SurfaceManager();
 
 #if DCHECK_IS_ON()
@@ -269,6 +270,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns true if |surface_id| is in the garbage collector's queue.
   bool IsMarkedForDestruction(const SurfaceId& surface_id);
+
+  // Can be nullptr.
+  SurfaceManagerDelegate* const delegate_;
 
   base::Optional<uint32_t> activation_deadline_in_frames_;
 

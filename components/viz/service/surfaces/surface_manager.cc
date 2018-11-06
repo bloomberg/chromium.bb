@@ -20,6 +20,7 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_client.h"
+#include "components/viz/service/surfaces/surface_manager_delegate.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
@@ -41,8 +42,10 @@ const char kUmaRemovedTemporaryReference[] =
 }  // namespace
 
 SurfaceManager::SurfaceManager(
+    SurfaceManagerDelegate* delegate,
     base::Optional<uint32_t> activation_deadline_in_frames)
-    : activation_deadline_in_frames_(activation_deadline_in_frames),
+    : delegate_(delegate),
+      activation_deadline_in_frames_(activation_deadline_in_frames),
       dependency_tracker_(this),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
@@ -480,7 +483,13 @@ void SurfaceManager::ExpireOldTemporaryReferences() {
       // The temporary reference has existed for more than 10 seconds, a surface
       // reference should have replaced it by now. To avoid permanently leaking
       // memory delete the temporary reference.
-      DLOG(ERROR) << "Old/orphaned temporary reference to " << surface_id;
+      base::StringPiece frame_sink_debug_label;
+      if (delegate_) {
+        frame_sink_debug_label =
+            delegate_->GetFrameSinkDebugLabel(surface_id.frame_sink_id());
+      }
+      DLOG(ERROR) << "Old/orphaned temporary reference to "
+                  << surface_id.ToString(frame_sink_debug_label);
       temporary_references_to_delete.push_back(surface_id);
     } else if (IsMarkedForDestruction(surface_id)) {
       // Never mark live surfaces as old, they can't be garbage collected.

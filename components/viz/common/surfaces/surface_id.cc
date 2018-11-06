@@ -17,6 +17,14 @@ std::string SurfaceId::ToString() const {
                             local_surface_id_.ToString().c_str());
 }
 
+std::string SurfaceId::ToString(
+    base::StringPiece frame_sink_debug_label) const {
+  return base::StringPrintf(
+      "SurfaceId(%s, %s)",
+      frame_sink_id_.ToString(frame_sink_debug_label).c_str(),
+      local_surface_id_.ToString().c_str());
+}
+
 SurfaceId SurfaceId::ToSmallestId() const {
   return SurfaceId(frame_sink_id_, local_surface_id_.ToSmallestId());
 }

@@ -48,7 +48,7 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(
     DisplayProvider* display_provider)
     : shared_bitmap_manager_(shared_bitmap_manager),
       display_provider_(display_provider),
-      surface_manager_(activation_deadline_in_frames),
+      surface_manager_(this, activation_deadline_in_frames),
       hit_test_manager_(surface_manager()),
       binding_(this) {
   surface_manager_.AddObserver(&hit_test_manager_);
@@ -341,6 +341,14 @@ void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
   }
 }
 
+base::StringPiece FrameSinkManagerImpl::GetFrameSinkDebugLabel(
+    const FrameSinkId& frame_sink_id) const {
+  auto it = frame_sink_data_.find(frame_sink_id);
+  if (it != frame_sink_data_.end())
+    return it->second.debug_label;
+  return base::StringPiece();
+}
+
 void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {
@@ -535,14 +543,6 @@ void FrameSinkManagerImpl::AddObserver(FrameSinkObserver* obs) {
 
 void FrameSinkManagerImpl::RemoveObserver(FrameSinkObserver* obs) {
   observer_list_.RemoveObserver(obs);
-}
-
-base::StringPiece FrameSinkManagerImpl::GetFrameSinkDebugLabel(
-    const FrameSinkId& frame_sink_id) const {
-  auto it = frame_sink_data_.find(frame_sink_id);
-  if (it != frame_sink_data_.end())
-    return it->second.debug_label;
-  return base::StringPiece();
 }
 
 std::vector<FrameSinkId> FrameSinkManagerImpl::GetCreatedFrameSinkIds() const {
