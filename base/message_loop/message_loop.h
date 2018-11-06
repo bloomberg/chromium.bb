@@ -78,12 +78,8 @@ class SequenceManagerImpl;
 //   // Process |hr| (the result returned by DoDragDrop()).
 //
 // Please be SURE your task is reentrant (nestable) and all global variables
-// are stable and accessible before using ScopedNestableTaskAllower.
-//
-// TODO(gab): MessageLoop doesn't need to be a MessageLoopCurrent once callers
-// that store MessageLoop::current() in a MessageLoop* variable have been
-// updated to use a MessageLoopCurrent variable.
-class BASE_EXPORT MessageLoop : public MessageLoopCurrent {
+// are stable and accessible before calling SetNestableTasksAllowed(true).
+class BASE_EXPORT MessageLoop {
  public:
   // TODO(gab): Migrate usage of this class to MessageLoopCurrent and remove
   // this forwarded declaration.

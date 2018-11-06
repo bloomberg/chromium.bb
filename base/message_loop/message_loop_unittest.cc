@@ -2049,7 +2049,7 @@ TEST_F(MessageLoopTest, DestructionObserverTest) {
   bool destruction_observer_called = false;
 
   MLDestructionObserver observer(&task_destroyed, &destruction_observer_called);
-  loop->AddDestructionObserver(&observer);
+  MessageLoopCurrent::Get()->AddDestructionObserver(&observer);
   loop->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&DestructionObserverProbe::Run,
