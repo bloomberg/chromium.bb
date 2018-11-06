@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//third_party/icu/config.gni")
@@ -326,7 +325,6 @@ if (current_cpu != "x64") {
     target = ":chromium_linker_test_apk__apk"
     output =
         "$root_gen_dir/content/shell/android/linker_test_apk/${target_name}.h"
-    exception_files = jni_exception_files
   }
 }
 

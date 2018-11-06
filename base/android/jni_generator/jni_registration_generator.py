@@ -71,6 +71,9 @@ def GenerateJNIHeader(java_file_paths, output_file, args):
 def _DictForPath(path):
   with open(path) as f:
     contents = jni_generator.RemoveComments(f.read())
+    if '@JniIgnoreNatives' in contents:
+      return None
+
   fully_qualified_class = jni_generator.ExtractFullyQualifiedJavaClassName(
       path, contents)
   natives = jni_generator.ExtractNatives(contents, 'long')
