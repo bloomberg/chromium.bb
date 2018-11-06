@@ -47,6 +47,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A model class that parses the incoming intent for Custom Tabs specific customization data.
@@ -128,6 +129,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER =
             "android.support.customtabs.extra.SEND_TO_EXTERNAL_HANDLER";
 
+    /** Extra that defines the module managed URLs regex. */
+    public static final String EXTRA_MODULE_MANAGED_URLS_REGEX =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_URLS_REGEX";
+
     /** The APK package to load the module from. */
     private static final String EXTRA_MODULE_PACKAGE_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
@@ -177,6 +182,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private PendingIntent mRemoteViewsPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
+    @Nullable
+    private Pattern mModuleManagedUrlsPattern;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
@@ -288,6 +295,13 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
         } else {
             mModuleComponentName = null;
+        }
+        String moduleManagedUrlsRegex =
+                IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
+        if (moduleManagedUrlsRegex != null) {
+            mModuleManagedUrlsPattern = Pattern.compile(moduleManagedUrlsRegex);
+        } else {
+            mModuleManagedUrlsPattern = null;
         }
     }
 
@@ -761,5 +775,15 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     ComponentName getModuleComponentName() {
         return mModuleComponentName;
+    }
+
+    /**
+     * See {@link #EXTRA_MODULE_MANAGED_URLS_REGEX}.
+     * @return The pattern compiled from the regex that defines the module managed URLs,
+     * or null if not specified.
+     */
+    @Nullable
+    Pattern getExtraModuleManagedUrlsPattern() {
+        return mModuleManagedUrlsPattern;
     }
 }

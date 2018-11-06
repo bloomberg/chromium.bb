@@ -1118,6 +1118,7 @@ public class CustomTabActivityTest {
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNotNull(topBar);
             Assert.assertThat(anyView.getParent(), equalTo(topBar));
+            Assert.assertEquals(View.GONE, anyView.getVisibility());
         });
     }
 
@@ -1134,6 +1135,28 @@ public class CustomTabActivityTest {
             cctActivity.setTopBarContentView(anyView);
             // Second call will not crash.
             cctActivity.setTopBarContentView(anyView);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testSetTopBarContentView_moduleManagedUrl_topBarVisible() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
+            Assert.assertEquals(View.VISIBLE, anyView.getVisibility());
         });
     }
 

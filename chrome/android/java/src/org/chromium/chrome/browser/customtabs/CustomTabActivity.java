@@ -114,6 +114,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -404,7 +405,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     public void setTopBarContentView(View view) {
         mTopBarDelegate.setTopBarContentView(view);
-        mTopBarDelegate.showTopBarIfNecessary();
+        mTopBarDelegate.showTopBarIfNecessary(
+                isModuleManagedUrl(mIntentDataProvider.getUrlToLoad()));
     }
 
     @Override
@@ -787,6 +789,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             public void onUrlUpdated(Tab tab) {
                 // Update the color on every new URL.
                 updateColor(tab);
+                mTopBarDelegate.showTopBarIfNecessary(isModuleManagedUrl(tab.getUrl()));
             }
 
             /**
@@ -1502,5 +1505,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 new CustomTabActivityModule(mIntentDataProvider, mTabObserverRegistrar);
         return ChromeApplication.getComponent().createCustomTabActivityComponent(
                 commonsModule, contextualSuggestionsModule, customTabsModule);
+    }
+
+    private boolean isModuleManagedUrl(String url) {
+        Pattern urlsPattern = mIntentDataProvider.getExtraModuleManagedUrlsPattern();
+        return !TextUtils.isEmpty(url) && urlsPattern != null && urlsPattern.matcher(url).matches();
     }
 }

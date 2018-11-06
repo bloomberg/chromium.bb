@@ -26,11 +26,14 @@ class CustomTabTopBarDelegate {
     }
 
     /**
-     * Makes the top bar area to show, if any.
+     * Adds the top bar, if any, to the view hierarchy and updates its visibility.
      */
-    public void showTopBarIfNecessary() {
+    public void showTopBarIfNecessary(boolean isVisible) {
         if (mTopBarContentView != null && mTopBarContentView.getParent() == null) {
             getTopBarView().addView(mTopBarContentView);
+        }
+        if (mTopBarContentView != null) {
+            mTopBarContentView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }
 
