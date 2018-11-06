@@ -38,6 +38,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,6 +88,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "net/android/network_library.h"
 #endif
 
@@ -262,18 +264,6 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
     }                                                              \
     UMA_HISTOGRAM_LONG_TIMES_100(basename, time);                  \
   } while (0)
-
-// Record time from Request creation until a valid DNS response.
-void RecordTotalTime(bool speculative,
-                     bool from_cache,
-                     base::TimeDelta duration) {
-  if (!speculative) {
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
-
-    if (!from_cache)
-      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached", duration);
-  }
-}
 
 void RecordTTL(base::TimeDelta ttl) {
   UMA_HISTOGRAM_CUSTOM_TIMES("AsyncDNS.TTL", ttl,
@@ -581,6 +571,22 @@ void MakeNotStale(HostCache::EntryStaleness* stale_info) {
   stale_info->expired_by = base::TimeDelta::FromSeconds(-1);
   stale_info->network_changes = 0;
   stale_info->stale_hits = 0;
+}
+
+// Is |dns_server| within the list of known DNS servers that also support
+// DNS-over-HTTPS?
+bool DnsServerSupportsDoh(const IPAddress& dns_server) {
+  const static base::NoDestructor<std::unordered_set<std::string>>
+      upgradable_servers({
+          // Google Public DNS
+          "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844",
+          // Cloudflare DNS
+          "1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001",
+          // Quad9 DNS
+          "9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9",
+      });
+  return upgradable_servers->find(dns_server.ToString()) !=
+         upgradable_servers->end();
 }
 
 }  // namespace
@@ -2049,9 +2055,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       LogFinishRequest(req->source_net_log(), entry.error());
       if (did_complete) {
         // Record effective total time from creation to completion.
-        RecordTotalTime(req->parameters().is_speculative,
-                        false /* from_cache */,
-                        tick_clock_->NowTicks() - req->request_time());
+        resolver_->RecordTotalTime(
+            req->parameters().is_speculative, false /* from_cache */,
+            tick_clock_->NowTicks() - req->request_time());
       }
       if (entry.error() == OK && !req->parameters().is_speculative) {
         req->set_address_results(EnsurePortOnAddressList(
@@ -2209,6 +2215,7 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     received_dns_config_ = dns_config.IsValid();
     // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
     use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
+    UpdateModeForHistogram(dns_config);
   }
 
   allow_fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
@@ -2730,6 +2737,39 @@ void HostResolverImpl::CacheResult(const Key& key,
     cache_->Set(key, entry, tick_clock_->NowTicks(), ttl);
 }
 
+// Record time from Request creation until a valid DNS response.
+void HostResolverImpl::RecordTotalTime(bool speculative,
+                                       bool from_cache,
+                                       base::TimeDelta duration) const {
+  if (!speculative) {
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
+
+    switch (mode_for_histogram_) {
+      case MODE_FOR_HISTOGRAM_SYSTEM:
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.System", duration);
+        break;
+      case MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH:
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.SystemSupportsDoh",
+                                   duration);
+        break;
+      case MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS:
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.SystemPrivate",
+                                   duration);
+        break;
+      case MODE_FOR_HISTOGRAM_ASYNC_DNS:
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.Async", duration);
+        break;
+      case MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Net.DNS.TotalTimeTyped.AsyncPrivateSupportsDoh", duration);
+        break;
+    }
+
+    if (!from_cache)
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached", duration);
+  }
+}
+
 std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
   DCHECK(job);
   std::unique_ptr<Job> retval;
@@ -3007,6 +3047,8 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     if (self.get())
       TryServingAllJobsFromHosts();
   }
+
+  UpdateModeForHistogram(dns_config);
 }
 
 bool HostResolverImpl::HaveDnsConfig() const {
@@ -3062,6 +3104,37 @@ MDnsClient* HostResolverImpl::GetOrCreateMdnsClient() {
   NOTREACHED();
   return nullptr;
 #endif
+}
+
+void HostResolverImpl::UpdateModeForHistogram(const DnsConfig& dns_config) {
+  // Resolving with Async DNS resolver?
+  if (HaveDnsConfig()) {
+    mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS;
+    for (const auto& dns_server : dns_client_->GetConfig()->nameservers) {
+      if (DnsServerSupportsDoh(dns_server.address())) {
+        mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH;
+        break;
+      }
+    }
+  } else {
+    mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM;
+    for (const auto& dns_server : dns_config.nameservers) {
+      if (DnsServerSupportsDoh(dns_server.address())) {
+        mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH;
+        break;
+      }
+    }
+#if defined(OS_ANDROID)
+    if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+        base::android::SDK_VERSION_P) {
+      std::vector<IPEndPoint> dns_servers;
+      if (net::android::GetDnsServers(&dns_servers) ==
+          internal::CONFIG_PARSE_POSIX_PRIVATE_DNS_ACTIVE) {
+        mode_for_histogram_ = MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS;
+      }
+    }
+#endif  // defined(OS_ANDROID)
+  }
 }
 
 HostResolverImpl::RequestImpl::~RequestImpl() {
