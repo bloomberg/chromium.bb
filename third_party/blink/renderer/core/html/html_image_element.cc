@@ -445,15 +445,11 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     }
   }
 
-  // If we have been inserted from a layoutObject-less document,
-  // our loader may have not fetched the image, so do it now.
-  if ((insertion_point.isConnected() && !GetImageLoader().GetContent() &&
-       !GetImageLoader().HasPendingActivity()) ||
-      image_was_modified) {
+  if (image_was_modified ||
+      GetImageLoader().ShouldUpdateOnInsertedInto(insertion_point)) {
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal,
                                        referrer_policy_);
   }
-
   return HTMLElement::InsertedInto(insertion_point);
 }
 

@@ -298,6 +298,25 @@ void ImageLoader::SetImageForTest(ImageResourceContent* new_image) {
   SetImageWithoutConsideringPendingLoadEvent(new_image);
 }
 
+bool ImageLoader::ShouldUpdateOnInsertedInto(
+    ContainerNode& insertion_point) const {
+  // If we're being inserted into a disconnected tree, we don't need to update.
+  if (!insertion_point.isConnected())
+    return false;
+
+  // If the base element URL changed, it means that we might be in the process
+  // of fetching a wrong image. We should update to ensure we fetch the correct
+  // image. This can happen when inserting content into an iframe which has a
+  // base element. See crbug.com/897545 for more details.
+  if (element_->GetDocument().ValidBaseElementURL() != last_base_element_url_)
+    return true;
+
+  // Finally, try to update if we're idle (that is, we have neither the image
+  // contents nor any activity). This could be an indication that we skipped a
+  // previous load when inserted into an inactive document.
+  return !image_content_ && !HasPendingActivity();
+}
+
 void ImageLoader::ClearImage() {
   SetImageWithoutConsideringPendingLoadEvent(nullptr);
 }
@@ -562,6 +581,8 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
                                     ReferrerPolicy referrer_policy) {
   AtomicString image_source_url = element_->ImageSourceURL();
   suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
+  last_base_element_url_ =
+      element_->GetDocument().ValidBaseElementURL().GetString();
 
   if (update_behavior == kUpdateIgnorePreviousError)
     ClearFailedLoadURL();

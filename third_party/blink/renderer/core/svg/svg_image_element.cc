@@ -223,8 +223,7 @@ Node::InsertionNotificationRequest SVGImageElement::InsertedInto(
   // A previous loader update may have failed to actually fetch the image if
   // the document was inactive. In that case, force a re-update (but don't
   // clear previous errors).
-  if (root_parent.isConnected() && !GetImageLoader().GetContent() &&
-      !GetImageLoader().HasPendingActivity())
+  if (GetImageLoader().ShouldUpdateOnInsertedInto(root_parent))
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal);
 
   return SVGGraphicsElement::InsertedInto(root_parent);
