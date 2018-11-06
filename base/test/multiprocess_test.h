@@ -81,6 +81,11 @@ bool TerminateMultiProcessTestChild(const Process& process,
                                     int exit_code,
                                     bool wait);
 
+#if defined(OS_ANDROID)
+// Returns whether the child process exited cleanly from the main runloop.
+bool MultiProcessTestChildHasCleanExit(const Process& process);
+#endif
+
 // MultiProcessTest ------------------------------------------------------------
 
 // A MultiProcessTest is a test class which makes it easier to
