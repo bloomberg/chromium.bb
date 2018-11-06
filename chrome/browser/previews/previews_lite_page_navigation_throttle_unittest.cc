@@ -24,6 +24,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
     std::string previews_host;
     std::string original_url;
     std::string previews_url;
+    std::string experiment;
   };
   const TestCase kTestCases[]{
       // Use https://play.golang.org/p/HUM2HxmUTOW to compute |previews_url|.
@@ -33,6 +34,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
       },
       {
           "https://previews.host.com",
@@ -40,6 +42,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://6p7dar4ju6r4ynz7x3pucmlcltuqsf7z5auhvckzln7voglkt56q."
           "previews.host.com/p?u="
           "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
       },
       {
           "https://previews.host.com",
@@ -47,6 +50,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://mil6oxtqb4zpsbmutm4d7wrx5nlr6tzlxjp7y44u55zqhzsdzjpq."
           "previews.host.com/p?u=https%3A%2F%2Foriginal.host.com%3A1443"
           "%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
       },
       {
           "https://previews.host.com:1443",
@@ -54,6 +58,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://6p7dar4ju6r4ynz7x3pucmlcltuqsf7z5auhvckzln7voglkt56q."
           "previews.host.com:1443/p?u="
           "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
       },
       {
           "https://previews.host.com:1443",
@@ -61,6 +66,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://mil6oxtqb4zpsbmutm4d7wrx5nlr6tzlxjp7y44u55zqhzsdzjpq."
           "previews.host.com:1443/p?u=https%3A%2F%2Foriginal.host.com%3A1443"
           "%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
       },
       {
           "https://previews.host.com",
@@ -69,6 +75,16 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
           "%23fragment",
+          "",
+      },
+      {
+          "https://previews.host.com",
+          "https://original.host.com/path/path/path?query=yes",
+          "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
+          "previews.host.com/p?u="
+          "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
+          "&x=enable_HTCPCP",
+          "enable_HTCPCP",
       },
   };
 
@@ -76,7 +92,8 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews,
-        {{"previews_host", test_case.previews_host}});
+        {{"previews_host", test_case.previews_host},
+         {"lite_page_preview_experiment", test_case.experiment}});
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                   GURL(test_case.original_url)),
