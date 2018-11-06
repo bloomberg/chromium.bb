@@ -21,10 +21,6 @@
 -CrossSiteDocumentBlockingIsolatedOriginTest.BlockDocumentsFromIsolatedOrigin
 -CrossSiteDocumentBlockingServiceWorkerTest.NoNetwork
 
-# Flakes on Android.
-# https://crbug.com/827318
--RenderThreadImplBrowserTest.NonResourceDispatchIPCTasksDontGoThroughScheduler
-
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
