@@ -150,7 +150,9 @@ std::string DoGetCurrentNetworkID(
       case network::mojom::ConnectionType::CONNECTION_ETHERNET:
         break;
       case network::mojom::ConnectionType::CONNECTION_WIFI:
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
+// Get WiFi SSID only on Android since calling it on non-Android
+// platforms may result in hung IO loop. See https://crbg.com/896296.
+#if defined(OS_ANDROID)
         ssid_mccmnc = net::GetWifiSSID();
 #endif
         break;
