@@ -94,11 +94,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Processes the Report-To header, if one exists. This header configures where
   // the Reporting API (in //net/reporting) will send reports for the origin.
   void ProcessReportToHeader();
-
-  // Processes the NEL header, if one exists. This header configures whether
-  // network errors will be reported to a specified group of endpoints using the
-  // Reporting API.
-  void ProcessNetworkErrorLoggingHeader();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // |result| should be OK, or the request is canceled.

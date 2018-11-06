@@ -501,7 +501,6 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessExpectCTHeader();
 #if BUILDFLAG(ENABLE_REPORTING)
   ProcessReportToHeader();
-  ProcessNetworkErrorLoggingHeader();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // The HTTP transaction may be restarted several times for the purposes
@@ -885,46 +884,6 @@ void URLRequestHttpJob::ProcessReportToHeader() {
   }
 
   service->ProcessHeader(request_info_.url.GetOrigin(), value);
-}
-
-void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
-  DCHECK(response_info_);
-
-  HttpResponseHeaders* headers = GetResponseHeaders();
-  std::string value;
-  if (!headers->GetNormalizedHeader(NetworkErrorLoggingService::kHeaderName,
-                                    &value)) {
-    return;
-  }
-
-  NetworkErrorLoggingService* service =
-      request_->context()->network_error_logging_service();
-  if (!service) {
-    NetworkErrorLoggingService::
-        RecordHeaderDiscardedForNoNetworkErrorLoggingService();
-    return;
-  }
-
-  // Only accept NEL headers on HTTPS connections that have no certificate
-  // errors.
-  const SSLInfo& ssl_info = response_info_->ssl_info;
-  if (!ssl_info.is_valid()) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForInvalidSSLInfo();
-    return;
-  }
-  if (IsCertStatusError(ssl_info.cert_status)) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForCertStatusError();
-    return;
-  }
-
-  IPEndPoint endpoint;
-  if (!GetRemoteEndpoint(&endpoint)) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForMissingRemoteEndpoint();
-    return;
-  }
-
-  service->OnHeader(url::Origin::Create(request_info_.url), endpoint.address(),
-                    value);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

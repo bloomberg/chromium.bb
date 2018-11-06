@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "build/buildflag.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
@@ -27,6 +28,7 @@
 #include "net/http/http_stream_request.h"
 #include "net/http/http_transaction.h"
 #include "net/log/net_log_with_source.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/channel_id_service.h"
@@ -201,6 +203,13 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoDrainBodyForAuthRestartComplete(int result);
 
   int BuildRequestHeaders(bool using_http_proxy_without_tunnel);
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Processes the NEL header, if one exists. This header configures whether
+  // network errors will be reported to a specified group of endpoints using the
+  // Reporting API.
+  void ProcessNetworkErrorLoggingHeader();
+#endif
 
   // Writes a log message to help debugging in the field when we block a proxy
   // response to a CONNECT request.

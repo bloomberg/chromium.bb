@@ -22,12 +22,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "build/buildflag.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_stream_factory.h"
+#include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -56,6 +58,9 @@ class HttpProxyClientSocketPool;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
+#if BUILDFLAG(ENABLE_REPORTING)
+class NetworkErrorLoggingService;
+#endif
 class NetworkQualityEstimator;
 class ProxyResolutionService;
 }  // namespace net
@@ -258,6 +263,9 @@ class NET_EXPORT HttpNetworkSession {
     NetLog* net_log;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     NetworkQualityEstimator* network_quality_estimator;
+#if BUILDFLAG(ENABLE_REPORTING)
+    NetworkErrorLoggingService* network_error_logging_service;
+#endif
 
     // Source of time for QUIC connections.
     quic::QuicClock* quic_clock;
@@ -320,6 +328,11 @@ class NET_EXPORT HttpNetworkSession {
   NetLog* net_log() {
     return net_log_;
   }
+#if BUILDFLAG(ENABLE_REPORTING)
+  NetworkErrorLoggingService* network_error_logging_service() const {
+    return network_error_logging_service_;
+  }
+#endif
 
   // Creates a Value summary of the state of the socket pools.
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const;
@@ -377,6 +390,9 @@ class NET_EXPORT HttpNetworkSession {
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  NetworkErrorLoggingService* const network_error_logging_service_;
+#endif
   ProxyResolutionService* const proxy_resolution_service_;
   SSLConfigService* const ssl_config_service_;
 

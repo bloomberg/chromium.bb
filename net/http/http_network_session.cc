@@ -166,10 +166,14 @@ HttpNetworkSession::Context::Context()
       net_log(nullptr),
       socket_performance_watcher_factory(nullptr),
       network_quality_estimator(nullptr),
+#if BUILDFLAG(ENABLE_REPORTING)
+      network_error_logging_service(nullptr),
+#endif
       quic_clock(nullptr),
       quic_random(nullptr),
       quic_crypto_client_stream_factory(
-          QuicCryptoClientStreamFactory::GetDefaultFactory()) {}
+          QuicCryptoClientStreamFactory::GetDefaultFactory()) {
+}
 
 HttpNetworkSession::Context::Context(const Context& other) = default;
 
@@ -182,6 +186,9 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       http_server_properties_(context.http_server_properties),
       cert_verifier_(context.cert_verifier),
       http_auth_handler_factory_(context.http_auth_handler_factory),
+#if BUILDFLAG(ENABLE_REPORTING)
+      network_error_logging_service_(context.network_error_logging_service),
+#endif
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       websocket_endpoint_lock_manager_(

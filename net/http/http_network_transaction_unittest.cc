@@ -26,6 +26,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -106,6 +107,11 @@
 #include "base/base64.h"
 #include "net/ntlm/ntlm_test_data.h"
 #endif
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/network_error_logging_test_util.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -17310,5 +17316,122 @@ TEST_F(HttpNetworkTransactionTest, NoSupportedProxies) {
 
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NO_SUPPORTED_PROXIES));
 }
+
+//-----------------------------------------------------------------------------
+// Network Error Logging tests
+
+#if BUILDFLAG(ENABLE_REPORTING)
+class HttpNetworkTransactionNetworkErrorLoggingTest
+    : public HttpNetworkTransactionTest {
+ protected:
+  void SetUp() override {
+    auto network_error_logging_service =
+        std::make_unique<TestNetworkErrorLoggingService>();
+    test_network_error_logging_service_ = network_error_logging_service.get();
+    session_deps_.network_error_logging_service =
+        std::move(network_error_logging_service);
+  }
+
+  TestNetworkErrorLoggingService* network_error_logging_service() const {
+    return test_network_error_logging_service_;
+  }
+
+  void clear_network_error_logging_service() {
+    session_deps_.network_error_logging_service.reset();
+    test_network_error_logging_service_ = nullptr;
+  }
+
+  // Makes an HTTPS request that should install a valid NEL policy.
+  void RequestPolicy() {
+    MockRead data_reads[] = {
+        MockRead("HTTP/1.0 200 OK\r\n"),
+        MockRead("NEL: {\"report_to\": \"nel\", \"max_age\": 86400}\r\n"),
+        MockRead("\r\n"),
+        MockRead("hello world"),
+        MockRead(SYNCHRONOUS, OK),
+    };
+    MockWrite data_writes[] = {
+        MockWrite("GET / HTTP/1.1\r\n"
+                  "Host: www.example.org\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL(url_);
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    SSLSocketDataProvider ssl(ASYNC, OK);
+    if (request.url.SchemeIsCryptographic()) {
+      ssl.ssl_info.cert =
+          ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+      ASSERT_TRUE(ssl.ssl_info.cert);
+      ssl.ssl_info.cert_status = cert_status_;
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+    }
+
+    StaticSocketDataProvider reads(data_reads, data_writes);
+    session_deps_.socket_factory->AddSocketDataProvider(&reads);
+
+    TestCompletionCallback callback;
+    auto session = CreateSession(&session_deps_);
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+    int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+  }
+
+ protected:
+  std::string url_ = "https://www.example.org/";
+  CertStatus cert_status_ = 0;
+
+ private:
+  TestNetworkErrorLoggingService* test_network_error_logging_service_;
+};
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       DontProcessNelHeaderNoService) {
+  base::HistogramTester histograms;
+  clear_network_error_logging_service();
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      NetworkErrorLoggingService::kHeaderOutcomeHistogram,
+      NetworkErrorLoggingService::HeaderOutcome::
+          DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE,
+      1);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       DontProcessNelHeaderHttp) {
+  base::HistogramTester histograms;
+  url_ = "http://www.example.org/";
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      NetworkErrorLoggingService::kHeaderOutcomeHistogram,
+      NetworkErrorLoggingService::HeaderOutcome::DISCARDED_INVALID_SSL_INFO, 1);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ProcessNelHeaderHttps) {
+  RequestPolicy();
+  ASSERT_EQ(1u, network_error_logging_service()->headers().size());
+  const auto& header = network_error_logging_service()->headers()[0];
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.org/")),
+            header.origin);
+  EXPECT_EQ(IPAddress::IPv4Localhost(), header.received_ip_address);
+  EXPECT_EQ("{\"report_to\": \"nel\", \"max_age\": 86400}", header.value);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       DontProcessNelHeaderInvalidHttps) {
+  base::HistogramTester histograms;
+  cert_status_ = CERT_STATUS_COMMON_NAME_INVALID;
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      NetworkErrorLoggingService::kHeaderOutcomeHistogram,
+      NetworkErrorLoggingService::HeaderOutcome::DISCARDED_CERT_STATUS_ERROR,
+      1);
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 }  // namespace net
