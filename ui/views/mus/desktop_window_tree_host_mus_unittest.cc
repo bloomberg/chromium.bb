@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "services/ws/test_ws/test_ws.mojom.h"
@@ -22,10 +23,12 @@
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_recognizer_observer.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
@@ -410,6 +413,50 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
     EXPECT_TRUE(widget.IsFullscreen())
         << "Fullscreen creation failed for type=" << widget_type;
   }
+}
+
+// DesktopWindowTreeHostMusTest with --force-device-scale-factor=2.
+class DesktopWindowTreeHostMusTestHighDPI
+    : public DesktopWindowTreeHostMusTest {
+ public:
+  DesktopWindowTreeHostMusTestHighDPI() = default;
+  ~DesktopWindowTreeHostMusTestHighDPI() override = default;
+
+  // DesktopWindowTreeHostMusTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "2");
+    DesktopWindowTreeHostMusTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTestHighDPI);
+};
+
+// Ensure menu widgets correctly scale initial bounds: http://crbug.com/899084
+TEST_F(DesktopWindowTreeHostMusTestHighDPI, InitializeMenuWithDIPBounds) {
+  // Swap the WindowTree implementation to verify SetWindowBounds() is called
+  // with the correct DIP bounds, using the host's cached device_scale_factor.
+  aura::TestWindowTree test_window_tree;
+  aura::WindowTreeClientTestApi test_api(
+      MusClient::Get()->window_tree_client());
+  ws::mojom::WindowTree* old_tree = test_api.SwapTree(&test_window_tree);
+
+  Widget widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_MENU);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(2, 4, 60, 80);
+  widget.Init(params);
+
+  // Check the second-last set window bounds (for the frame, not the content).
+  EXPECT_EQ(params.bounds, test_window_tree.second_last_set_window_bounds());
+  EXPECT_EQ(params.bounds, widget.GetWindowBoundsInScreen());
+  EXPECT_EQ(2.0f, widget.GetNativeWindow()->GetHost()->device_scale_factor());
+  gfx::Rect pixels(gfx::ConvertRectToPixel(2.0f, params.bounds));
+  EXPECT_EQ(pixels, widget.GetNativeWindow()->GetHost()->GetBoundsInPixels());
+
+  widget.CloseNow();
+  test_api.SwapTree(old_tree);
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
