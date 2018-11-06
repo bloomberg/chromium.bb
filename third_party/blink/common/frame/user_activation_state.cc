@@ -9,8 +9,7 @@ namespace blink {
 // The expiry time should be long enough to allow network round trips even in a
 // very slow connection (to support xhr-like calls with user activation), yet
 // not too long to make an "unattneded" page feel activated.
-constexpr base::TimeDelta kActivationLifespan =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kActivationLifespan = base::TimeDelta::FromSeconds(1);
 
 void UserActivationState::Activate() {
   has_been_active_ = true;
