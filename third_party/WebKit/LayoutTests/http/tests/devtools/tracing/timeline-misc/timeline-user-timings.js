@@ -68,7 +68,7 @@
 
   function testEventTree(type) {
     const flameChart = timeline._flameChart._mainFlameChart;
-    flameChart._selectGroup(flameChart._rawTimelineData.groups.findIndex(group => group.name === 'User Timing'));
+    flameChart._selectGroup(flameChart._rawTimelineData.groups.findIndex(group => group.name === 'Timings'));
     TestRunner.addResult('');
     TestRunner.addResult(type);
     const tree = getTreeView(type);
