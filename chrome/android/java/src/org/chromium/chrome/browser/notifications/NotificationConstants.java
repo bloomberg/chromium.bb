@@ -69,6 +69,12 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_WEBAPP_ACTIONS = 5;
 
     /**
+     * Unique identifier for the persistent notification displayed while a Trusted Web Activity is
+     * in foreground.
+     */
+    public static final int NOTIFICATION_ID_TWA_PERSISTENT = 6;
+
+    /**
      * Unique identifier for the summary notification for downloads.  Using the ID this summary was
      * going to have before it was migrated here.
      * TODO(dtrainor): Clean up this ID and make sure it's in line with existing id counters without

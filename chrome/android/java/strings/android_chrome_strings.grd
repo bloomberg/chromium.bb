@@ -3596,6 +3596,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_CLEAR_RELATED_DATA" desc="Notification text asking if the user wants to clear data for the given url as they have just uninstalled/cleared an app linked to that URL.">
         Would you like to clear data for <ph name="URL">%1$s<ex>youtube.com</ex></ph>?
       </message>
+      <message name="IDS_TWA_MANAGE_DATA" desc="Text on button of the notification that would direct the user to site settings for the site being run in a Trusted Web Activity" translateable="false">
+        Manage data
+      </message>
 
       <message name="IDS_WEBAPP_TAP_TO_COPY_URL" desc="Message on the notification that indicates that taping it will copy a Web App's URL into the clipboard.">
         Tap to copy the URL for this app
