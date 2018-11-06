@@ -318,7 +318,7 @@ void AssistantUiController::ShowUi(AssistantSource source) {
 }
 
 void AssistantUiController::HideUi(AssistantSource source) {
-  if (model_.visibility() == AssistantVisibility::kHidden)
+  if (model_.visibility() != AssistantVisibility::kVisible)
     return;
 
   if (container_view_)
