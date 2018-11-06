@@ -40,9 +40,8 @@ Polymer({
 
   /** @private {NuxOnboardingModules} */
   modules_: {
-    'new-user': loadTimeData.getString('new_user_modules').split(','),
-    'returning-user':
-        loadTimeData.getString('returning_user_modules').split(','),
+    'new-user': loadTimeData.getString('newUserModules').split(','),
+    'returning-user': loadTimeData.getString('returningUserModules').split(','),
   },
 
   properties: {

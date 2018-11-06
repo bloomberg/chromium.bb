@@ -172,12 +172,16 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
 
     html_source->AddString(
-        "new_user_modules",
+        "newUserModules",
         nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
-    html_source->AddString("returning_user_modules",
+    html_source->AddString("returningUserModules",
                            nux::GetNuxOnboardingModules(profile)
                                .FindKey("returning-user")
                                ->GetString());
+    html_source->AddBoolean("showEmailInterstitial",
+                            nux::GetNuxOnboardingModules(profile)
+                                .FindKey("show-email-interstitial")
+                                ->GetBool());
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);

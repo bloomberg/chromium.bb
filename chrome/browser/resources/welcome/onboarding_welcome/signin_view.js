@@ -7,9 +7,9 @@ Polymer({
 
   behaviors: [welcome.NavigationBehavior],
 
-  // TODO(scottchen): read this from a nux onboarding feature param via
-  //     loadTimeData.
-  shouldShowEmailInterstitial_: true,
+  /** @private {boolean} */
+  shouldShowEmailInterstitial_:
+      loadTimeData.getBoolean('showEmailInterstitial'),
 
   /**
    * When the user clicks sign-in, check whether or not they previously
