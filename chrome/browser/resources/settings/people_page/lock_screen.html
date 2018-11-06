@@ -30,14 +30,6 @@
         padding-top: 24px;
       }
 
-      #easyUnlock .start {
-        /* When the easy unlock toggle is shown, the easy unlock section's
-         * content becomes squashed to the top and bottom edges. Use padding to
-         * ensure the easy unlock content looks correct.
-         */
-        padding: 11px 0;
-      }
-
       #lockOptionsDiv {
         display: block;
       }
@@ -54,14 +46,6 @@
       #pinPasswordDiv,
       #pinPasswordSecondaryActionDiv {
         margin: auto;
-      }
-
-      #easyUnlockSettingsCollapsible {
-        @apply --settings-list-frame-padding;
-      }
-
-      .no-padding {
-        padding: 0;
       }
 
       .underbar {
@@ -168,41 +152,6 @@
             </paper-button>
           </div>
         </div>
-      </template>
-
-      <template is="dom-if" if="[[easyUnlockAvailable_(
-          multideviceSettingsEnabled_, easyUnlockAllowed_,
-          easyUnlockInLegacyHostMode_)]]">
-        <div id="easyUnlock" class="settings-box two-line">
-          <div class="start">
-            <div>$i18n{easyUnlockSectionTitle}</div>
-            <div class="secondary">
-              [[getEasyUnlockDescription_(easyUnlockEnabled_,
-                  '$i18nPolymer{easyUnlockDescription}',
-                  '$i18nPolymer{easyUnlockSetupIntro}')]]
-              <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
-                $i18n{learnMore}
-              </a>
-            </div>
-          </div>
-        </div>
-        <iron-collapse opened="[[easyUnlockEnabled_]]"
-            id="easyUnlockSettingsCollapsible">
-          <settings-toggle-button
-              class="continuation no-padding underbar"
-              pref="{{prefs.proximity_auth.is_chromeos_login_enabled}}"
-              label="$i18n{easyUnlockAllowSignInLabel}">
-          </settings-toggle-button>
-          <div class="settings-box continuation no-padding">
-            <div class="start">
-              $i18n{easyUnlockProximityThresholdLabel}
-            </div>
-            <settings-dropdown-menu
-              pref="{{prefs.easy_unlock.proximity_threshold}}"
-              menu-options="[[easyUnlockProximityThresholdMapping_]]">
-            </settings-dropdown-menu>
-          </div>
-        </iron-collapse>
       </template>
 
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
