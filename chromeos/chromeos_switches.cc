@@ -315,11 +315,6 @@ const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 
-// Shows additional checkboxes in Settings to enable Chrome OS accessibility
-// features that haven't launched yet.
-const char kEnableExperimentalAccessibilityFeatures[] =
-    "enable-experimental-accessibility-features";
-
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
@@ -695,11 +690,6 @@ bool IsSigninFrameClientCertsEnabled() {
 bool IsSigninFrameClientCertUserSelectionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCertUserSelection);
-}
-
-bool AreExperimentalAccessibilityFeaturesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableExperimentalAccessibilityFeatures);
 }
 
 bool ShouldHideActiveAppsFromShelf() {

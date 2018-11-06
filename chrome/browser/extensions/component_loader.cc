@@ -41,6 +41,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -359,7 +360,7 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
                           weak_factory_.GetWeakPtr(),
                           extension_misc::kGoogleSpeechSynthesisExtensionId));
 
-  if (chromeos::switches::AreExperimentalAccessibilityFeaturesEnabled()) {
+  if (::switches::AreExperimentalAccessibilityFeaturesEnabled()) {
     AddComponentFromDir(
         base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
         extension_misc::kEspeakSpeechSynthesisExtensionId,

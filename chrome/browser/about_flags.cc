@@ -131,6 +131,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/libaom/av1_buildflags.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -2766,12 +2767,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
      FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#if defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,
      flag_descriptions::kExperimentalAccessibilityFeaturesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableExperimentalAccessibilityFeatures)},
+     SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityFeatures)},
+#if defined(OS_CHROMEOS)
     {"opt-in-ime-menu", flag_descriptions::kEnableImeMenuName,
      flag_descriptions::kEnableImeMenuDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kOptInImeMenu)},

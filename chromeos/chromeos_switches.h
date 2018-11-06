@@ -94,7 +94,6 @@ CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kEnableDiscoverApp[];
 CHROMEOS_EXPORT extern const char kEnableEncryptionMigration[];
-CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFileManagerTouchMode[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
@@ -209,9 +208,6 @@ CHROMEOS_EXPORT bool IsSigninFrameClientCertsEnabled();
 // Returns true if user selection of certificates is enabled for the sign-in
 // frame on the Chrome OS sign-in screen.
 CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
-
-// Returns true if experimental accessibility features are enabled.
-CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
 
 // Returns true if we should hide open apps that aren't pinned from the shelf.
 CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();

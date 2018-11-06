@@ -85,6 +85,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -871,7 +872,7 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
   // even if the preference is enabled, if the flag isn't also set.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
+          ::switches::kEnableExperimentalAccessibilityFeatures)) {
     if (enabled) {
       LOG(WARNING) << "Switch access enabled but experimental accessibility "
                    << "features flag is not set.";

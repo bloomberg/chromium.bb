@@ -225,6 +225,7 @@ source_set("chromeos") {
     "//third_party/webrtc_overrides",
     "//third_party/zlib",
     "//third_party/zlib/google:compression_utils",
+    "//ui/accessibility",
     "//ui/aura",
     "//ui/base",
     "//ui/chromeos",
