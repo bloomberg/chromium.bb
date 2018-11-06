@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_IMAGE_DATA_SOURCE_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_IMAGE_DATA_SOURCE_H_
+#ifndef IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_FAVICON_DATA_SOURCE_H_
+#define IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_FAVICON_DATA_SOURCE_H_
 
 #import <UIKit/UIKit.h>
 
 class GURL;
 @class FaviconAttributes;
 
-// Protocol that the history UI uses to retrieve images.
-@protocol HistoryImageDataSource
+// Protocol that Tableview UI uses to retrieve favicons for its cells.
+@protocol TableViewFaviconDataSource<NSObject>
 // Requests the receiver to provide a favicon image for |URL|. A
 // FaviconAttributes instance with non-nil properties is synchronously returned
 // for immediate use. |completion| is called asynchronously with a
@@ -23,4 +23,4 @@ class GURL;
                          completion:(void (^)(FaviconAttributes*))completion;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_IMAGE_DATA_SOURCE_H_
+#endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_FAVICON_DATA_SOURCE_H_

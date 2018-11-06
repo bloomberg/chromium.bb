@@ -38,7 +38,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
   return self;
 }
 
-#pragma mark - HistoryImageDataSource
+#pragma mark - TableViewFaviconDataSource
 
 - (FaviconAttributes*)faviconForURL:(const GURL&)URL
                          completion:(void (^)(FaviconAttributes*))completion {
