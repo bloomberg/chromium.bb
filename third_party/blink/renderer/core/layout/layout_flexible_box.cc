@@ -1064,18 +1064,10 @@ bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
     const LayoutBox& child) const {
   // This function implements section 9.8. Definite and Indefinite Sizes, case
   // 2) of the flexbox spec.
-  // We need to check for the flexbox to have a definite main size, and for the
-  // flex item to have a definite flex basis.
-  const Length& flex_basis = FlexBasisForChild(child);
-  if (!MainAxisLengthIsDefinite(child, flex_basis))
+  // We need to check for the flexbox to have a definite main size.
+  // We make up a percentage to check whether we have a definite size.
+  if (!MainAxisLengthIsDefinite(child, Length(0, kPercent)))
     return false;
-  if (!flex_basis.IsPercentOrCalc()) {
-    // If flex basis had a percentage, our size is guaranteed to be definite or
-    // the flex item's size could not be definite. Otherwise, we make up a
-    // percentage to check whether we have a definite size.
-    if (!MainAxisLengthIsDefinite(child, Length(0, kPercent)))
-      return false;
-  }
 
   if (HasOrthogonalFlow(child))
     return child.HasOverrideLogicalHeight();
