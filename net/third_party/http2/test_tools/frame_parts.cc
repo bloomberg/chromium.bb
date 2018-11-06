@@ -508,7 +508,7 @@ AssertionResult FrameParts::InPaddedFrame() {
 
 AssertionResult FrameParts::AppendString(Http2StringPiece source,
                                          Http2String* target,
-                                         base::Optional<size_t>* opt_length) {
+                                         Http2Optional<size_t>* opt_length) {
   target->append(source.data(), source.size());
   if (opt_length != nullptr) {
     VERIFY_TRUE(*opt_length) << "Length is not set yet\n" << *this;
