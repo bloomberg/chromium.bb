@@ -96,3 +96,43 @@ TEST_F(DynamicTypeUtilTest, TestFontSize) {
       UIContentSizeCategoryAccessibilityExtraExtraExtraLarge);
   EXPECT_EQ(53.f, testLabel.font.pointSize);
 }
+
+// Tests that the clamped version of the font size multipler is working.
+TEST_F(DynamicTypeUtilTest, TestClampedFontSize) {
+  // Test that the bigger categories are truncated.
+  float multiplier = SystemSuggestedFontSizeMultiplier(
+      UIContentSizeCategoryAccessibilityExtraExtraLarge,
+      UIContentSizeCategoryLarge, UIContentSizeCategoryExtraExtraLarge);
+  EXPECT_EQ(
+      SystemSuggestedFontSizeMultiplier(UIContentSizeCategoryExtraExtraLarge),
+      multiplier);
+
+  // Test that the smallest categories are truncated.
+  multiplier = SystemSuggestedFontSizeMultiplier(
+      UIContentSizeCategoryExtraSmall, UIContentSizeCategoryLarge,
+      UIContentSizeCategoryExtraExtraLarge);
+  EXPECT_EQ(SystemSuggestedFontSizeMultiplier(UIContentSizeCategoryLarge),
+            multiplier);
+
+  // Test that the categories in the range are unchanged.
+  multiplier = SystemSuggestedFontSizeMultiplier(
+      UIContentSizeCategoryExtraLarge, UIContentSizeCategoryLarge,
+      UIContentSizeCategoryExtraExtraLarge);
+  EXPECT_EQ(SystemSuggestedFontSizeMultiplier(UIContentSizeCategoryExtraLarge),
+            multiplier);
+
+  // Test that the categories on the border of the range are unchanged.
+  multiplier = SystemSuggestedFontSizeMultiplier(
+      UIContentSizeCategoryLarge, UIContentSizeCategoryLarge,
+      UIContentSizeCategoryExtraExtraLarge);
+  EXPECT_EQ(SystemSuggestedFontSizeMultiplier(UIContentSizeCategoryLarge),
+            multiplier);
+
+  // Test that the categories on the border of the range are unchanged.
+  multiplier = SystemSuggestedFontSizeMultiplier(
+      UIContentSizeCategoryExtraExtraLarge, UIContentSizeCategoryLarge,
+      UIContentSizeCategoryExtraExtraLarge);
+  EXPECT_EQ(
+      SystemSuggestedFontSizeMultiplier(UIContentSizeCategoryExtraExtraLarge),
+      multiplier);
+}

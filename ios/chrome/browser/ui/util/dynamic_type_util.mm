@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 
-#import <UIKit/UIKit.h>
-
 #include "base/metrics/histogram_macros.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,6 +11,11 @@
 #endif
 
 float SystemSuggestedFontSizeMultiplier() {
+  return SystemSuggestedFontSizeMultiplier(
+      UIApplication.sharedApplication.preferredContentSizeCategory);
+}
+
+float SystemSuggestedFontSizeMultiplier(UIContentSizeCategory category) {
   // Scaling numbers are calculated by [UIFont
   // preferredFontForTextStyle:UIFontTextStyleBody].pointSize, which are [14,
   // 15, 16, 17(default), 19, 21, 23, 28, 33, 40, 47, 53].
@@ -31,15 +34,26 @@ float SystemSuggestedFontSizeMultiplier() {
     UIContentSizeCategoryAccessibilityExtraExtraLarge : @2.76,
     UIContentSizeCategoryAccessibilityExtraExtraExtraLarge : @3.12,
   };
-  UIContentSizeCategory category =
-      UIApplication.sharedApplication.preferredContentSizeCategory;
   NSNumber* font_size = font_size_map[category];
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
     // In case there is a new accessibility value, log if there is a value we
-    // are missing.
+    // are missing. Use the sharedApplication value as this method can be called
+    // with an explicit value for the first time.
     UMA_HISTOGRAM_BOOLEAN("Accessibility.iOS.NewLargerTextCategory",
-                          !font_size);
+                          !font_size_map[UIApplication.sharedApplication
+                                             .preferredContentSizeCategory]);
   });
   return font_size ? font_size.floatValue : 1;
+}
+
+float SystemSuggestedFontSizeMultiplier(UIContentSizeCategory category,
+                                        UIContentSizeCategory min_category,
+                                        UIContentSizeCategory max_category) {
+  float min_multiplier = SystemSuggestedFontSizeMultiplier(min_category);
+  float max_multiplier = SystemSuggestedFontSizeMultiplier(max_category);
+  DCHECK(min_multiplier < max_multiplier);
+  return std::min(
+      max_multiplier,
+      std::max(min_multiplier, SystemSuggestedFontSizeMultiplier(category)));
 }

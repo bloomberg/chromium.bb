@@ -81,6 +81,8 @@ source_set("toolbar_ui") {
     "toolbar_consumer.h",
     "toolbar_progress_bar.h",
     "toolbar_progress_bar.mm",
+    "toolbar_utils.h",
+    "toolbar_utils.mm",
   ]
   deps = [
     "//base",

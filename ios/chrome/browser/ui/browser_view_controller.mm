@@ -202,10 +202,12 @@
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/page_animation_util.h"
@@ -1836,6 +1838,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     contentPadding.bottom = AlignValueToPixel(
         self.footerFullscreenProgress * [self secondaryToolbarHeightWithInset]);
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
+  }
+
+  if (self.traitCollection.preferredContentSizeCategory !=
+      previousTraitCollection.preferredContentSizeCategory) {
+    [_toolbarUIUpdater updateState];
   }
 
   // If the device's size class has changed from RegularXRegular to another and
@@ -3911,19 +3918,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       IsVisibleUrlNewTabPage(self.currentWebState)) {
     return 0;
   }
-  // kToolbarHeightFullscreen is still visible after scroll events.
-  CGFloat minHeight = kToolbarHeightFullscreen;
-  // |minHeight| describes the distance past the top safe area.  If the browser
-  // container view is laid out using the full screen, it extends past the
-  // status bar, so that additional overlap is added here.
+  CGFloat collapsedToolbarHeight =
+      ToolbarCollapsedHeight(self.traitCollection.preferredContentSizeCategory);
+  // |collapsedToolbarHeight| describes the distance past the top safe area.  If
+  // the browser container view is laid out using the full screen, it extends
+  // past the status bar, so that additional overlap is added here.
   if (self.usesFullscreenContainer) {
     if (@available(iOS 11, *)) {
-      minHeight += self.view.safeAreaInsets.top;
+      collapsedToolbarHeight += self.view.safeAreaInsets.top;
     } else {
-      minHeight += StatusBarHeight();
+      collapsedToolbarHeight += StatusBarHeight();
     }
   }
-  return minHeight;
+  return collapsedToolbarHeight;
 }
 
 - (CGFloat)expandedTopToolbarHeight {
@@ -3931,7 +3938,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       IsVisibleUrlNewTabPage(self.currentWebState)) {
     return 0;
   }
-  return self.headerHeight;
+  return [self primaryToolbarHeightWithInset] +
+         CGRectGetMaxY(self.tabStripView.frame);
 }
 
 - (CGFloat)bottomToolbarHeight {
