@@ -501,8 +501,8 @@ bool ImageResourceContent::IsAcceptableContentType() {
 }
 
 // Return true if the image content is well-compressed (and not full of
-// extraneous metadata). This is currently defined as no using more than 10 bits
-// per pixel of image data.
+// extraneous metadata). This is currently defined as no using more than 0.5
+// byte per pixel of image data with approximate header size(1KB) removed.
 // TODO(crbug.com/838263): Support site-defined bit-per-pixel ratio through
 // feature policy declarations.
 bool ImageResourceContent::IsAcceptableCompressionRatio() {
@@ -512,7 +512,7 @@ bool ImageResourceContent::IsAcceptableCompressionRatio() {
   DCHECK(image_);
   double resource_length = image_->Data() ? image_->Data()->size() : 0;
   // Allow no more than 10 bits per compressed pixel
-  return resource_length / pixels <= 1.25;
+  return (resource_length - 1024) / pixels <= 0.5;
 }
 
 void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,
