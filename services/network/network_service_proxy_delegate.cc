@@ -81,6 +81,20 @@ void AddProxies(const net::ProxyList& proxies,
   }
 }
 
+// Merges headers from |in| to |out|. If the header already exists in |out| they
+// are combined.
+void MergeRequestHeaders(net::HttpRequestHeaders* out,
+                         const net::HttpRequestHeaders& in) {
+  for (net::HttpRequestHeaders::Iterator it(in); it.GetNext();) {
+    std::string old_value;
+    if (out->GetHeader(it.name(), &old_value)) {
+      out->SetHeader(it.name(), old_value + ", " + it.value());
+    } else {
+      out->SetHeader(it.name(), it.value());
+    }
+  }
+}
+
 }  // namespace
 
 NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
@@ -96,14 +110,14 @@ void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
   if (!MayProxyURL(request->url()))
     return;
 
-  headers->MergeFrom(proxy_config_->pre_cache_headers);
+  MergeRequestHeaders(headers, proxy_config_->pre_cache_headers);
 
   auto* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
     if (url_loader->custom_proxy_use_alternate_proxy_list()) {
       should_use_alternate_proxy_list_cache_.Put(request->url().spec(), true);
     }
-    headers->MergeFrom(url_loader->custom_proxy_pre_cache_headers());
+    MergeRequestHeaders(headers, url_loader->custom_proxy_pre_cache_headers());
   }
 }
 
@@ -113,10 +127,11 @@ void NetworkServiceProxyDelegate::OnBeforeSendHeaders(
     net::HttpRequestHeaders* headers) {
   auto* url_loader = URLLoader::ForRequest(*request);
   if (IsInProxyConfig(proxy_info.proxy_server())) {
-    headers->MergeFrom(proxy_config_->post_cache_headers);
+    MergeRequestHeaders(headers, proxy_config_->post_cache_headers);
 
     if (url_loader) {
-      headers->MergeFrom(url_loader->custom_proxy_post_cache_headers());
+      MergeRequestHeaders(headers,
+                          url_loader->custom_proxy_post_cache_headers());
     }
   } else if (MayHaveProxiedURL(request->url())) {
     for (const auto& kv : proxy_config_->pre_cache_headers.GetHeaderVector()) {
