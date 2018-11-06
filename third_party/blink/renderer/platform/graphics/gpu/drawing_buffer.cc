@@ -466,9 +466,15 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
         color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
         is_overlay_candidate);
     out_resource->color_space = sampler_color_space_;
-    out_resource->format = viz::RGBA_8888;
-    if (use_half_float_storage_)
-      out_resource->format = viz::RGBA_F16;
+    if (allocate_alpha_channel_) {
+      if (use_half_float_storage_)
+        out_resource->format = viz::RGBA_F16;
+      else
+        out_resource->format = viz::RGBA_8888;
+    } else {
+      DCHECK(!use_half_float_storage_);
+      out_resource->format = viz::RGBX_8888;
+    }
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).

@@ -66,7 +66,9 @@ bool GetGrBackendTexture(GLenum target,
   switch (sk_color_type) {
     case kARGB_4444_SkColorType:
       if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
-        LOG(ERROR) << "GetGrBackendTexture: color type mismatch.";
+        LOG(ERROR)
+            << "GetGrBackendTexture: color type mismatch. internal_format=0x"
+            << std::hex << internal_format;
         return false;
       }
       if (texture_info.fFormat == GL_RGBA)
@@ -74,15 +76,29 @@ bool GetGrBackendTexture(GLenum target,
       break;
     case kRGBA_8888_SkColorType:
       if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
-        LOG(ERROR) << "GetGrBackendTexture: missing texture type info.";
+        LOG(ERROR)
+            << "GetGrBackendTexture: color type mismatch. internal_format=0x"
+            << std::hex << internal_format;
         return false;
       }
       if (texture_info.fFormat == GL_RGBA)
         texture_info.fFormat = GL_RGBA8_OES;
       break;
+    case kRGB_888x_SkColorType:
+      if (internal_format != GL_RGB8_OES && internal_format != GL_RGB) {
+        LOG(ERROR)
+            << "GetGrBackendTexture: color type mismatch. internal_format=0x"
+            << std::hex << internal_format;
+        return false;
+      }
+      if (texture_info.fFormat == GL_RGB)
+        texture_info.fFormat = GL_RGB8_OES;
+      break;
     case kBGRA_8888_SkColorType:
       if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
-        LOG(ERROR) << "GetGrBackendTexture: missing texture type info.";
+        LOG(ERROR)
+            << "GetGrBackendTexture: color type mismatch. internal_format=0x"
+            << std::hex << internal_format;
         return false;
       }
       if (texture_info.fFormat == GL_BGRA_EXT)
