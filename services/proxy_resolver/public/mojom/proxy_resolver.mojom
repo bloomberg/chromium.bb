@@ -8,26 +8,10 @@
 module proxy_resolver.mojom;
 
 import "net/interfaces/address_family.mojom";
-import "net/interfaces/address_list.mojom";
+import "net/interfaces/host_resolver_service.mojom";
 import "url/mojom/url.mojom";
 
 const string kProxyResolverServiceName = "proxy_resolver";
-
-// Mirror of net::HostResolver::RequestInfo.
-// TODO(mmenke): Remove this struct, in favor of passing values directly.
-struct HostResolverRequestInfo {
-  string host;
-  uint16 port;
-  net.interfaces.AddressFamily address_family;
-  bool is_my_ip_address;
-};
-
-// Interface for waiting for the result of a HostResolver query.
-// TODO(mmenke): Remove this struct, in favor of callbacks.
-interface HostResolverRequestClient {
-  // |error| is a value in net::Error.
-  ReportResult(int32 error, net.interfaces.AddressList result);
-};
 
 // Mirror of net::ProxyServer::Scheme.
 enum ProxyScheme {
@@ -65,8 +49,8 @@ interface ProxyResolverRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
+  ResolveDns(net.interfaces.HostResolverRequestInfo request_info,
+             net.interfaces.HostResolverRequestClient client);
 };
 
 // Creates a ProxyResolver that uses the provided PAC script. The ProxyResolver
@@ -86,6 +70,6 @@ interface ProxyResolverFactoryRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
+  ResolveDns(net.interfaces.HostResolverRequestInfo request_info,
+             net.interfaces.HostResolverRequestClient client);
 };

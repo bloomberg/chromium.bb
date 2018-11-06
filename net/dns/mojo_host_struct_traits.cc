@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/mojo_host_struct_traits.h"
+#include "net/dns/mojo_host_struct_traits.h"
 
 #include <utility>
 
@@ -12,9 +12,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<proxy_resolver::mojom::HostResolverRequestInfoDataView,
+bool StructTraits<net::interfaces::HostResolverRequestInfoDataView,
                   std::unique_ptr<net::HostResolver::RequestInfo>>::
-    Read(proxy_resolver::mojom::HostResolverRequestInfoDataView data,
+    Read(net::interfaces::HostResolverRequestInfoDataView data,
          std::unique_ptr<net::HostResolver::RequestInfo>* out) {
   base::StringPiece host;
   if (!data.ReadHost(&host))

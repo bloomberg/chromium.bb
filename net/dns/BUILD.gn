@@ -190,10 +190,6 @@ source_set("host_resolver") {
     "//components/cronet/*",
     "//net/*",
     "//services/network/*",
-
-    # The proxy resolution service uses its own host cache and HostResolver Mojo
-    # wrapper.
-    "//services/proxy_resolver/*",
   ]
 
   sources = []
@@ -346,6 +342,51 @@ source_set("mdns_client") {
   ]
 }
 
+if (enable_net_mojo) {
+  # A host resolver implementation that forwards resolve requests to a mojo
+  # service, thus acting as a client library to a servicified host resolver.
+  # TODO(crbug.com/821021): Decide if this has any place in the generalized
+  # host resolver servicification.
+  source_set("mojo_client") {
+    sources = [
+      "host_resolver_mojo.cc",
+      "host_resolver_mojo.h",
+    ]
+
+    deps = [
+      "//base",
+      "//net",
+    ]
+
+    public_deps = [
+      "//mojo/public/cpp/bindings",
+      "//net/interfaces",
+    ]
+  }
+
+  # A utility to handle host resolver requests coming into the network service
+  # via mojo and pass the requests on to the actual host resolver. This utility
+  # therefore acts as the service side of mojo interactions for host resolver.
+  # TODO(crbug.com/821021): Decide if this has any place in the generalized
+  # host resolver servicification.
+  source_set("mojo_service") {
+    sources = [
+      "mojo_host_resolver_impl.cc",
+      "mojo_host_resolver_impl.h",
+    ]
+
+    deps = [
+      "//base",
+      "//net",
+    ]
+
+    public_deps = [
+      "//mojo/public/cpp/bindings",
+      "//net/interfaces",
+    ]
+  }
+}
+
 source_set("tests") {
   testonly = true
   sources = [
@@ -377,6 +418,13 @@ source_set("tests") {
     }
   }
 
+  if (enable_net_mojo) {
+    sources += [
+      "host_resolver_mojo_unittest.cc",
+      "mojo_host_resolver_impl_unittest.cc",
+    ]
+  }
+
   if (enable_mdns) {
     sources += [
       "mdns_cache_unittest.cc",
@@ -391,6 +439,13 @@ source_set("tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (enable_net_mojo) {
+    deps += [
+      "//net/dns:mojo_client",
+      "//net/dns:mojo_service",
+    ]
+  }
 }
 
 source_set("test_support") {

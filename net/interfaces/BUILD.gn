@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "address_family.mojom",
     "address_list.mojom",
+    "host_resolver_service.mojom",
     "ip_address.mojom",
     "ip_endpoint.mojom",
   ]
