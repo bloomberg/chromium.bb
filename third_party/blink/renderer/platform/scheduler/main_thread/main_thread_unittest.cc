@@ -173,10 +173,9 @@ TEST_F(MainThreadTest, TestWorkBatchWithThreeTasks) {
 void EnterRunLoop(base::MessageLoop* message_loop, Thread* thread) {
   // Note: blink::Threads do not support nested run loops, which is why we use a
   // run loop directly.
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   message_loop->task_runner()->PostTask(
       FROM_HERE, WTF::Bind(&base::RunLoop::Quit, WTF::Unretained(&run_loop)));
-  message_loop->SetNestableTasksAllowed(true);
   run_loop.Run();
 }
 

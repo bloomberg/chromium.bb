@@ -99,28 +99,21 @@ void MessageLoopCurrent::SetAddQueueTimeToTasks(bool enable) {
 
 void MessageLoopCurrent::SetNestableTasksAllowed(bool allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
-  if (allowed) {
-    // Kick the native pump just in case we enter a OS-driven nested message
-    // loop that does not go through RunLoop::Run().
-    current_->pump_->ScheduleWork();
-  }
-
   current_->SetTaskExecutionAllowed(allowed);
 }
 
 bool MessageLoopCurrent::NestableTasksAllowed() const {
-  DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
   return current_->IsTaskExecutionAllowed();
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
     : loop_(GetTLSMessageLoop()->Get()),
-      old_state_(loop_->NestableTasksAllowed()) {
-  loop_->SetNestableTasksAllowed(true);
+      old_state_(loop_->IsTaskExecutionAllowed()) {
+  loop_->SetTaskExecutionAllowed(true);
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
-  loop_->SetNestableTasksAllowed(old_state_);
+  loop_->SetTaskExecutionAllowed(old_state_);
 }
 
 // static

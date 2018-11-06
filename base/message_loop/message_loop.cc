@@ -181,8 +181,7 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 }
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : MessageLoopCurrent(this),
-      pump_(nullptr),
+    : pump_(nullptr),
       message_loop_impl_(std::make_unique<MessageLoopImpl>()),
       type_(type),
       pump_factory_(std::move(pump_factory)) {
@@ -257,10 +256,14 @@ bool MessageLoop::HasTasks() const {
 }
 
 void MessageLoop::SetTaskExecutionAllowed(bool allowed) {
-  return message_loop_impl_->SetTaskExecutionAllowed(allowed);
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  if (allowed)
+    pump_->ScheduleWork();
+  message_loop_impl_->SetTaskExecutionAllowed(allowed);
 }
 
 bool MessageLoop::IsTaskExecutionAllowed() const {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   return message_loop_impl_->IsTaskExecutionAllowed();
 }
 

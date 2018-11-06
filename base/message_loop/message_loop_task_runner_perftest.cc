@@ -157,7 +157,7 @@ class IntegratedPostTaskPerfTest : public testing::Test {
     do {
       for (int i = 0; i < batch_size; ++i) {
         for (int j = 0; j < tasks_per_reload; ++j) {
-          loop->task_runner()->PostTask(FROM_HERE, DoNothing());
+          loop.task_runner()->PostTask(FROM_HERE, DoNothing());
           num_posted++;
         }
         RunLoop().RunUntilIdle();
