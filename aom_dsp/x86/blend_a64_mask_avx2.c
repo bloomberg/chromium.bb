@@ -1100,10 +1100,16 @@ static INLINE void highbd_blend_a64_d16_mask_subw0_subh0_w8_avx2(
   do {
     // Load 8x u8 pixels from each of 4 rows in the mask
     const __m128i mask0a8 =
-        _mm_set_epi64x(*(uint64_t *)mask, *(uint64_t *)(mask + mask_stride));
+        _mm_set_epi32(*(uint32_t *)(mask + 0 * mask_stride + 4),
+                      *(uint32_t *)(mask + 0 * mask_stride),
+                      *(uint32_t *)(mask + 1 * mask_stride + 4),
+                      *(uint32_t *)(mask + 1 * mask_stride));
     const __m128i mask0b8 =
-        _mm_set_epi64x(*(uint64_t *)(mask + 2 * mask_stride),
-                       *(uint64_t *)(mask + 3 * mask_stride));
+        _mm_set_epi32(*(uint32_t *)(mask + 2 * mask_stride + 4),
+                      *(uint32_t *)(mask + 2 * mask_stride),
+                      *(uint32_t *)(mask + 3 * mask_stride + 4),
+                      *(uint32_t *)(mask + 3 * mask_stride));
+
     const __m256i mask0a = _mm256_cvtepu8_epi16(mask0a8);
     const __m256i mask0b = _mm256_cvtepu8_epi16(mask0b8);
 

@@ -1119,14 +1119,22 @@ static INLINE void highbd_blend_a64_d16_mask_w4_sse4_1(
     const __m128i *clip_low, const __m128i *clip_high,
     const __m128i *mask_max) {
   // Load 4 pixels from each of 4 rows from each source
-  const __m128i s0a =
-      _mm_set_epi64x(*(uint64_t *)src0, *(uint64_t *)(src0 + src0_stride));
-  const __m128i s0b = _mm_set_epi64x(*(uint64_t *)(src0 + 2 * src0_stride),
-                                     *(uint64_t *)(src0 + 3 * src0_stride));
-  const __m128i s1a =
-      _mm_set_epi64x(*(uint64_t *)(src1), *(uint64_t *)(src1 + src1_stride));
-  const __m128i s1b = _mm_set_epi64x(*(uint64_t *)(src1 + 2 * src1_stride),
-                                     *(uint64_t *)(src1 + 3 * src1_stride));
+  const __m128i s0a = _mm_set_epi32(*(uint32_t *)(src0 + 0 * src0_stride + 2),
+                                    *(uint32_t *)(src0 + 0 * src0_stride),
+                                    *(uint32_t *)(src0 + 1 * src0_stride + 2),
+                                    *(uint32_t *)(src0 + 1 * src0_stride));
+  const __m128i s0b = _mm_set_epi32(*(uint32_t *)(src0 + 2 * src0_stride + 2),
+                                    *(uint32_t *)(src0 + 2 * src0_stride),
+                                    *(uint32_t *)(src0 + 3 * src0_stride + 2),
+                                    *(uint32_t *)(src0 + 3 * src0_stride));
+  const __m128i s1a = _mm_set_epi32(*(uint32_t *)(src1 + 0 * src1_stride + 2),
+                                    *(uint32_t *)(src1 + 0 * src1_stride),
+                                    *(uint32_t *)(src1 + 1 * src1_stride + 2),
+                                    *(uint32_t *)(src1 + 1 * src1_stride));
+  const __m128i s1b = _mm_set_epi32(*(uint32_t *)(src1 + 2 * src1_stride + 2),
+                                    *(uint32_t *)(src1 + 2 * src1_stride),
+                                    *(uint32_t *)(src1 + 3 * src1_stride + 2),
+                                    *(uint32_t *)(src1 + 3 * src1_stride));
 
   // Generate the inverse masks
   const __m128i mask1a = _mm_sub_epi16(*mask_max, *mask0a);
@@ -1217,16 +1225,24 @@ static INLINE void highbd_blend_a64_d16_mask_subw1_subh1_w4_sse4_1(
     // Load 8 pixels from each of 8 rows of mask,
     // (saturating) add together rows then use madd to add adjacent pixels
     // Finally, divide each value by 4 (with rounding)
-    const __m128i m02 = _mm_set_epi64x(*(uint64_t *)(mask),
-                                       *(uint64_t *)(mask + 2 * mask_stride));
-    const __m128i m13 = _mm_set_epi64x(*(uint64_t *)(mask + mask_stride),
-                                       *(uint64_t *)(mask + 3 * mask_stride));
+    const __m128i m02 = _mm_set_epi32(*(uint32_t *)(mask + 0 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 0 * mask_stride),
+                                      *(uint32_t *)(mask + 2 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 2 * mask_stride));
+    const __m128i m13 = _mm_set_epi32(*(uint32_t *)(mask + 1 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 1 * mask_stride),
+                                      *(uint32_t *)(mask + 3 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 3 * mask_stride));
     const __m128i m0123 = _mm_maddubs_epi16(_mm_adds_epu8(m02, m13), one_b);
     const __m128i mask_0a = _mm_srli_epi16(_mm_add_epi16(m0123, two_w), 2);
-    const __m128i m46 = _mm_set_epi64x(*(uint64_t *)(mask + 4 * mask_stride),
-                                       *(uint64_t *)(mask + 6 * mask_stride));
-    const __m128i m57 = _mm_set_epi64x(*(uint64_t *)(mask + 5 * mask_stride),
-                                       *(uint64_t *)(mask + 7 * mask_stride));
+    const __m128i m46 = _mm_set_epi32(*(uint32_t *)(mask + 4 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 4 * mask_stride),
+                                      *(uint32_t *)(mask + 6 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 6 * mask_stride));
+    const __m128i m57 = _mm_set_epi32(*(uint32_t *)(mask + 5 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 5 * mask_stride),
+                                      *(uint32_t *)(mask + 7 * mask_stride + 4),
+                                      *(uint32_t *)(mask + 7 * mask_stride));
     const __m128i m4567 = _mm_maddubs_epi16(_mm_adds_epu8(m46, m57), one_b);
     const __m128i mask_0b = _mm_srli_epi16(_mm_add_epi16(m4567, two_w), 2);
 
