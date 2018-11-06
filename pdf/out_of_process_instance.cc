@@ -1385,7 +1385,7 @@ void OutOfProcessInstance::ScrollBy(const pp::Point& point) {
 }
 
 void OutOfProcessInstance::ScrollToPage(int page) {
-  if (engine_->GetNumberOfPages() == 0)
+  if (!engine_ || engine_->GetNumberOfPages() == 0)
     return;
 
   pp::VarDictionary message;
@@ -1582,8 +1582,9 @@ void OutOfProcessInstance::Email(const std::string& to,
 }
 
 void OutOfProcessInstance::Print() {
-  if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+  if (!engine_ ||
+      (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+       !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))) {
     return;
   }
 
