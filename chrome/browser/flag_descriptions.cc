@@ -713,6 +713,11 @@ const char kEnableOverviewSwipeToCloseDescription[] =
     "Enables closing of items in overview mode by dragging or flinging "
     "vertically.";
 
+const char kExperimentalAccessibilityFeaturesName[] =
+    "Experimental accessibility features";
+const char kExperimentalAccessibilityFeaturesDescription[] =
+    "Enable additional accessibility features in the Settings page.";
+
 const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
 const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
@@ -3348,11 +3353,6 @@ const char kEnableZeroStateSuggestionsDescription[] =
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =
     "Disable Notifcation when Device is End of Life.";
-
-const char kExperimentalAccessibilityFeaturesName[] =
-    "Experimental accessibility features";
-const char kExperimentalAccessibilityFeaturesDescription[] =
-    "Enable additional accessibility features in the Settings page.";
 
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =

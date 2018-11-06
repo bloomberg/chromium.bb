@@ -50,6 +50,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "google_apis/google_api_keys.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
@@ -507,7 +508,7 @@ void CoreOobeHandler::UpdateA11yState() {
   a11y_info.SetBoolean(
       "enableExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures));
+          ::switches::kEnableExperimentalAccessibilityFeatures));
   if (!features::IsMultiProcessMash()) {
     DCHECK(MagnificationManager::Get());
     a11y_info.SetBoolean("screenMagnifierEnabled",

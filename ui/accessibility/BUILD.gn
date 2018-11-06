@@ -31,6 +31,8 @@ mojom("ax_enums_mojo") {
 
 jumbo_component("accessibility") {
   sources = [
+    "accessibility_switches.cc",
+    "accessibility_switches.h",
     "ax_action_data.cc",
     "ax_action_data.h",
     "ax_enum_util.cc",

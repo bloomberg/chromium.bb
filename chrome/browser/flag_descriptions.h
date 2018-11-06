@@ -155,6 +155,9 @@ extern const char kCloudImportDescription[];
 extern const char kCloudPrinterHandlerName[];
 extern const char kCloudPrinterHandlerDescription[];
 
+extern const char kExperimentalAccessibilityFeaturesName[];
+extern const char kExperimentalAccessibilityFeaturesDescription[];
+
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
@@ -2035,9 +2038,6 @@ extern const char kEnableZeroStateSuggestionsDescription[];
 
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];
-
-extern const char kExperimentalAccessibilityFeaturesName[];
-extern const char kExperimentalAccessibilityFeaturesDescription[];
 
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];

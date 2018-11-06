@@ -47,6 +47,7 @@
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -314,7 +315,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures));
+          ::switches::kEnableExperimentalAccessibilityFeatures));
 
   html_source->AddBoolean("dockedMagnifierFeatureEnabled",
                           ash::features::IsDockedMagnifierEnabled());
