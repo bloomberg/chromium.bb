@@ -14,18 +14,23 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include <string>
 
+#include "absl/types/optional.h"
 #include "modules/video_coding/internal_defines.h"
 #include "modules/video_coding/rtt_filter.h"
+#include "rtc_base/experiments/jitter_upper_bound_experiment.h"
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
-
-enum { kStartupDelaySamples = 30 };
-enum { kFsAccuStartupSamples = 5 };
-enum { kMaxFramerateEstimate = 200 };
+namespace {
+static constexpr uint32_t kStartupDelaySamples = 30;
+static constexpr int64_t kFsAccuStartupSamples = 5;
+static constexpr double kMaxFramerateEstimate = 200.0;
+static constexpr double kDefaultMaxTimestampDeviationInSigmas = 3.5;
+}  // namespace
 
 VCMJitterEstimator::VCMJitterEstimator(const Clock* clock,
                                        int32_t vcmId,
@@ -45,7 +50,9 @@ VCMJitterEstimator::VCMJitterEstimator(const Clock* clock,
       _rttFilter(),
       fps_counter_(30),  // TODO(sprang): Use an estimator with limit based on
                          // time, rather than number of samples.
-      low_rate_experiment_(kInit),
+      time_deviation_upper_bound_(
+          JitterUpperBoundExperiment::GetUpperBoundSigmas().value_or(
+              kDefaultMaxTimestampDeviationInSigmas)),
       clock_(clock) {
   Reset();
 }
@@ -75,6 +82,7 @@ VCMJitterEstimator& VCMJitterEstimator::operator=(
     _latestNackTimestamp = rhs._latestNackTimestamp;
     _nackCount = rhs._nackCount;
     _rttFilter = rhs._rttFilter;
+    clock_ = rhs.clock_;
   }
   return *this;
 }
@@ -154,6 +162,12 @@ void VCMJitterEstimator::UpdateEstimate(int64_t frameDelayMS,
     return;
   }
   _prevFrameSize = frameSizeBytes;
+
+  // Cap frameDelayMS based on the current time deviation noise.
+  int64_t max_time_deviation_ms =
+      static_cast<int64_t>(time_deviation_upper_bound_ * sqrt(_varNoise) + 0.5);
+  frameDelayMS = std::max(std::min(frameDelayMS, max_time_deviation_ms),
+                          -max_time_deviation_ms);
 
   // Only update the Kalman filter if the sample is not considered
   // an extreme outlier. Even if it is an extreme outlier from a
@@ -309,22 +323,20 @@ void VCMJitterEstimator::EstimateRandomJitter(double d_dT,
   if (_alphaCount > _alphaCountMax)
     _alphaCount = _alphaCountMax;
 
-  if (LowRateExperimentEnabled()) {
-    // In order to avoid a low frame rate stream to react slower to changes,
-    // scale the alpha weight relative a 30 fps stream.
-    double fps = GetFrameRate();
-    if (fps > 0.0) {
-      double rate_scale = 30.0 / fps;
-      // At startup, there can be a lot of noise in the fps estimate.
-      // Interpolate rate_scale linearly, from 1.0 at sample #1, to 30.0 / fps
-      // at sample #kStartupDelaySamples.
-      if (_alphaCount < kStartupDelaySamples) {
-        rate_scale =
-            (_alphaCount * rate_scale + (kStartupDelaySamples - _alphaCount)) /
-            kStartupDelaySamples;
-      }
-      alpha = pow(alpha, rate_scale);
+  // In order to avoid a low frame rate stream to react slower to changes,
+  // scale the alpha weight relative a 30 fps stream.
+  double fps = GetFrameRate();
+  if (fps > 0.0) {
+    double rate_scale = 30.0 / fps;
+    // At startup, there can be a lot of noise in the fps estimate.
+    // Interpolate rate_scale linearly, from 1.0 at sample #1, to 30.0 / fps
+    // at sample #kStartupDelaySamples.
+    if (_alphaCount < kStartupDelaySamples) {
+      rate_scale =
+          (_alphaCount * rate_scale + (kStartupDelaySamples - _alphaCount)) /
+          kStartupDelaySamples;
     }
+    alpha = pow(alpha, rate_scale);
   }
 
   double avgNoise = alpha * _avgNoise + (1 - alpha) * d_dT;
@@ -391,41 +403,25 @@ int VCMJitterEstimator::GetJitterEstimate(double rttMultiplier) {
   if (_nackCount >= _nackLimit)
     jitterMS += _rttFilter.RttMs() * rttMultiplier;
 
-  if (LowRateExperimentEnabled()) {
-    static const double kJitterScaleLowThreshold = 5.0;
-    static const double kJitterScaleHighThreshold = 10.0;
-    double fps = GetFrameRate();
-    // Ignore jitter for very low fps streams.
-    if (fps < kJitterScaleLowThreshold) {
-      if (fps == 0.0) {
-        return jitterMS;
-      }
-      return 0;
+  static const double kJitterScaleLowThreshold = 5.0;
+  static const double kJitterScaleHighThreshold = 10.0;
+  double fps = GetFrameRate();
+  // Ignore jitter for very low fps streams.
+  if (fps < kJitterScaleLowThreshold) {
+    if (fps == 0.0) {
+      return rtc::checked_cast<int>(std::max(0.0, jitterMS) + 0.5);
     }
-
-    // Semi-low frame rate; scale by factor linearly interpolated from 0.0 at
-    // kJitterScaleLowThreshold to 1.0 at kJitterScaleHighThreshold.
-    if (fps < kJitterScaleHighThreshold) {
-      jitterMS =
-          (1.0 / (kJitterScaleHighThreshold - kJitterScaleLowThreshold)) *
-          (fps - kJitterScaleLowThreshold) * jitterMS;
-    }
+    return 0;
   }
 
-  return static_cast<uint32_t>(jitterMS + 0.5);
-}
-
-bool VCMJitterEstimator::LowRateExperimentEnabled() {
-  if (low_rate_experiment_ == kInit) {
-    std::string group =
-        webrtc::field_trial::FindFullName("WebRTC-ReducedJitterDelay");
-    if (group == "Disabled") {
-      low_rate_experiment_ = kDisabled;
-    } else {
-      low_rate_experiment_ = kEnabled;
-    }
+  // Semi-low frame rate; scale by factor linearly interpolated from 0.0 at
+  // kJitterScaleLowThreshold to 1.0 at kJitterScaleHighThreshold.
+  if (fps < kJitterScaleHighThreshold) {
+    jitterMS = (1.0 / (kJitterScaleHighThreshold - kJitterScaleLowThreshold)) *
+               (fps - kJitterScaleLowThreshold) * jitterMS;
   }
-  return low_rate_experiment_ == kEnabled ? true : false;
+
+  return rtc::checked_cast<int>(std::max(0.0, jitterMS) + 0.5);
 }
 
 double VCMJitterEstimator::GetFrameRate() const {
