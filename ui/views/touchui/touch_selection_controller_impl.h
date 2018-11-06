@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/base/touch/touch_editing_controller.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"

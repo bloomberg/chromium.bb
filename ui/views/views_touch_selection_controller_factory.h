@@ -5,7 +5,7 @@
 #ifndef UI_UI_VIEWS_VIEWS_TOUCH_SELECTION_CONTROLLER_FACTORY_H_
 #define UI_UI_VIEWS_VIEWS_TOUCH_SELECTION_CONTROLLER_FACTORY_H_
 
-#include "ui/base/touch/touch_editing_controller.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/views/views_export.h"
 
 namespace views {

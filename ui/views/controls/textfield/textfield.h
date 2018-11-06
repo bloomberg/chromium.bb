@@ -21,7 +21,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/touch/touch_editing_controller.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/range/range.h"

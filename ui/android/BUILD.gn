@@ -109,7 +109,7 @@ java_cpp_enum("java_enums_srcjar") {
   sources = [
     "../base/ime/text_input_type.h",
     "../base/page_transition_types.h",
-    "../base/touch/touch_device.h",
+    "../base/pointer/pointer_device.h",
     "../base/ui_base_types.h",
     "../events/android/gesture_event_type.h",
     "../gfx/android/java_bitmap.h",

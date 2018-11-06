@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/touch/touch_device.h"
+#include "ui/base/pointer/pointer_device.h"
 
 namespace ui {
 
@@ -11,7 +11,7 @@ namespace {
 int available_pointer_types_for_testing = POINTER_TYPE_NONE;
 int available_hover_types_for_testing = HOVER_TYPE_NONE;
 bool return_available_pointer_and_hover_types_for_testing = false;
-}
+}  // namespace
 
 void SetAvailablePointerAndHoverTypesForTesting(int available_pointer_types,
                                                 int available_hover_types) {

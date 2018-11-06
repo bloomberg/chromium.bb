@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TOUCH_TOUCH_DEVICE_H_
-#define UI_BASE_TOUCH_TOUCH_DEVICE_H_
+#ifndef UI_BASE_POINTER_POINTER_DEVICE_H_
+#define UI_BASE_POINTER_POINTER_DEVICE_H_
 
 #include <tuple>
 
@@ -13,9 +13,6 @@
 #if defined(OS_ANDROID)
 #include <jni.h>
 #endif
-
-// TODO(mustaq@chromium.org): This covers more than just touches. Rename to
-// input_device? crbug.com/438794
 
 namespace ui {
 
@@ -72,4 +69,4 @@ UI_BASE_EXPORT HoverType GetPrimaryHoverType(int available_hover_types);
 
 }  // namespace ui
 
-#endif  // UI_BASE_TOUCH_TOUCH_DEVICE_H_
+#endif  // UI_BASE_POINTER_POINTER_DEVICE_H_

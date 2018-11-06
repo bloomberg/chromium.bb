@@ -351,12 +351,12 @@ jumbo_component("base") {
       "idle/idle_linux.cc",
       "idle/idle_mac.mm",
       "idle/idle_win.cc",
+      "pointer/pointer_device.h",
+      "pointer/pointer_device_util.cc",
+      "pointer/touch_editing_controller.cc",
+      "pointer/touch_editing_controller.h",
       "text/bytes_formatting.cc",
       "text/bytes_formatting.h",
-      "touch/touch_device.h",
-      "touch/touch_device_util.cc",
-      "touch/touch_editing_controller.cc",
-      "touch/touch_editing_controller.h",
     ]
   }
 
@@ -378,17 +378,17 @@ jumbo_component("base") {
   }
 
   if (is_win) {
-    sources += [ "touch/touch_device_win.cc" ]
+    sources += [ "pointer/pointer_device_win.cc" ]
   } else if (is_android) {
-    sources += [ "touch/touch_device_android.cc" ]
+    sources += [ "pointer/pointer_device_android.cc" ]
   } else if (is_ios) {
-    sources += [ "touch/touch_device_ios.cc" ]
+    sources += [ "pointer/pointer_device_ios.cc" ]
   } else if (is_linux) {
-    sources += [ "touch/touch_device_linux.cc" ]
+    sources += [ "pointer/pointer_device_linux.cc" ]
   } else {
     # Empty implementation for all other cases.
-    sources += [ "touch/touch_device.cc" ]
-    sources -= [ "touch/touch_device_util.cc" ]
+    sources += [ "pointer/pointer_device.cc" ]
+    sources -= [ "pointer/pointer_device_util.cc" ]
   }
 
   if (is_fuchsia) {
@@ -627,8 +627,8 @@ jumbo_component("base") {
       "l10n/l10n_font_util.cc",
       "models/button_menu_item_model.cc",
       "models/dialog_model.cc",
+      "pointer/touch_editing_controller.cc",
       "theme_provider.cc",
-      "touch/touch_editing_controller.cc",
       "ui_base_types.cc",
     ]
   }
