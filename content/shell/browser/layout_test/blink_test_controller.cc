@@ -536,8 +536,8 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   main_frame_dump_ = nullptr;
   waiting_for_pixel_results_ = false;
   waiting_for_main_frame_dump_ = false;
-  composite_all_frames_node_storage_.clear();
   composite_all_frames_node_queue_ = std::queue<Node*>();
+  composite_all_frames_node_storage_.clear();
   weak_factory_.InvalidateWeakPtrs();
 
 #if defined(OS_ANDROID)
@@ -657,11 +657,20 @@ void BlinkTestController::EnqueueSurfaceCopyRequest() {
 
 void BlinkTestController::CompositeAllFramesThen(
     base::OnceCallback<void()> callback) {
-  // Start with fresh storage and queue.
-  DCHECK(composite_all_frames_node_storage_.empty())
-      << "Attempted to composite twice in one test";
-  DCHECK(composite_all_frames_node_queue_.empty())
-      << "Attempted to composite twice in one test";
+  // Only allow a single call to CompositeAllFramesThen(), without a call to
+  // ResetAfterLayoutTest() in between. More than once risks overlapping calls,
+  // due to the asynchronous nature of CompositeNodeQueueThen(), which can lead
+  // to use-after-free, e.g.
+  // https://clusterfuzz.com/v2/testcase-detail/4929420383748096
+  if (!composite_all_frames_node_storage_.empty() ||
+      !composite_all_frames_node_queue_.empty()) {
+    // Using NOTREACHED + return here because we want to disallow the second
+    // call if this happens in release builds, while still catching this
+    // condition in debug builds.
+    NOTREACHED();
+    return;
+  }
+  // Build the frame storage and depth first queue.
   Node* root = BuildFrameTree(main_window_->web_contents()->GetAllFrames());
   BuildDepthFirstQueue(root);
   // Now asynchronously run through the node queue.
