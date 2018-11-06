@@ -1483,8 +1483,21 @@ bool ProfileSyncService::IsCryptographerReady(
 
 void ProfileSyncService::SetSyncAllowedByPlatform(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (sync_allowed_by_platform_ == allowed) {
+    return;
+  }
+
   sync_allowed_by_platform_ = allowed;
-  // TODO(crbug.com/867901): Start or stop Sync as needed here.
+
+  if (!sync_allowed_by_platform_) {
+    StopImpl(KEEP_DATA);
+    // TODO(crbug.com/856179): Evaluate whether we can get away without a full
+    // restart (i.e. just reconfigure plus whatever cleanup is necessary). See
+    // also similar comment in RequestStop.
+    if (IsStandaloneTransportEnabled()) {
+      startup_controller_->TryStart(/*force_immediate=*/false);
+    }
+  }
 }
 
 void ProfileSyncService::ConfigureDataTypeManager(
