@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -902,6 +904,11 @@ void NavigationRequest::OnResponseStarted(
     bool is_download,
     bool is_stream,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+  if (state_ != STARTED) {
+    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
+    base::debug::DumpWithoutCrashing();
+  }
   DCHECK_EQ(state_, STARTED);
   DCHECK(response);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -1635,6 +1642,12 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host ==
              frame_tree_node_->render_manager()->speculative_frame_host());
+
+  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+  if (!frame_tree_node_->navigation_request()) {
+    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
+    base::debug::DumpWithoutCrashing();
+  }
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&

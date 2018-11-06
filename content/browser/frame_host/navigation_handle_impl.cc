@@ -7,6 +7,7 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -867,8 +868,13 @@ void NavigationHandleImpl::WillProcessResponse(
   // If the navigation is done processing the response, then it's ready to
   // commit. Inform observers that the navigation is now ready to commit, unless
   // it is not set to commit (204/205s/downloads).
-  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
+  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_) {
+    base::WeakPtr<NavigationHandleImpl> weak_ptr = weak_factory_.GetWeakPtr();
     ReadyToCommitNavigation(render_frame_host_, false);
+    // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+    if (!weak_ptr)
+      base::debug::DumpWithoutCrashing();
+  }
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "ProcessResponse", "result", result.action());
