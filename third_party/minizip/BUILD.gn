@@ -104,6 +104,7 @@ fuzzer_test("minizip_compress_fuzzer") {
   deps = [
     ":minizip",
     "//base",
+    "//base/test:test_support",
   ]
 }
 
