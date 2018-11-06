@@ -6,58 +6,63 @@
 
 #include <memory>
 
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/account_info.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-class SignInObserver;
+class IdentityManagerObserver;
 }  // namespace
 
 @interface BookmarkPromoController ()<SigninPromoViewConsumer> {
   bool _isIncognito;
   ios::ChromeBrowserState* _browserState;
-  std::unique_ptr<SignInObserver> _signinObserver;
+  std::unique_ptr<IdentityManagerObserver> _identityManagerObserver;
 }
 
 // Mediator to use for the sign-in promo view displayed in the bookmark view.
 @property(nonatomic, readwrite, strong)
     SigninPromoViewMediator* signinPromoViewMediator;
 
-// SignInObserver Callbacks
+// IdentityManagerObserver Callbacks
 
 // Called when a user signs into Google services such as sync.
-- (void)googleSigninSucceededWithAccountId:(const std::string&)account_id
-                                  username:(const std::string&)username;
+- (void)onPrimaryAccountSetWithAccountId:(const std::string&)account_id
+                                username:(const std::string&)username;
 
 // Called when the currently signed-in user for a user has been signed out.
-- (void)googleSignedOutWithAcountId:(const std::string&)account_id
-                           username:(const std::string&)username;
+- (void)onPrimaryAccountClearedWithAccountId:(const std::string&)account_id
+                                    username:(const std::string&)username;
 
 @end
 
 namespace {
-class SignInObserver : public SigninManagerBase::Observer {
+class IdentityManagerObserver : public identity::IdentityManager::Observer {
  public:
-  SignInObserver(BookmarkPromoController* controller)
+  IdentityManagerObserver(BookmarkPromoController* controller)
       : controller_(controller) {}
 
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override {
-    [controller_ googleSigninSucceededWithAccountId:account_id
-                                           username:username];
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
+    [controller_
+        onPrimaryAccountSetWithAccountId:primary_account_info.account_id
+                                username:primary_account_info.email];
   }
 
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override {
-    [controller_ googleSignedOutWithAcountId:account_id username:username];
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override {
+    [controller_
+        onPrimaryAccountClearedWithAccountId:previous_primary_account_info
+                                                 .account_id
+                                    username:previous_primary_account_info
+                                                 .email];
   }
 
  private:
@@ -83,10 +88,10 @@ class SignInObserver : public SigninManagerBase::Observer {
     _isIncognito = browserState->IsOffTheRecord();
     if (!_isIncognito) {
       _browserState = browserState;
-      _signinObserver.reset(new SignInObserver(self));
-      SigninManager* signinManager =
-          ios::SigninManagerFactory::GetForBrowserState(_browserState);
-      signinManager->AddObserver(_signinObserver.get());
+      _identityManagerObserver.reset(new IdentityManagerObserver(self));
+      identity::IdentityManager* identityManager =
+          IdentityManagerFactory::GetForBrowserState(_browserState);
+      identityManager->AddObserver(_identityManagerObserver.get());
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
           initWithBrowserState:_browserState
                    accessPoint:signin_metrics::AccessPoint::
@@ -103,9 +108,9 @@ class SignInObserver : public SigninManagerBase::Observer {
   [_signinPromoViewMediator signinPromoViewRemoved];
   if (!_isIncognito) {
     DCHECK(_browserState);
-    SigninManager* signinManager =
-        ios::SigninManagerFactory::GetForBrowserState(_browserState);
-    signinManager->RemoveObserver(_signinObserver.get());
+    identity::IdentityManager* identityManager =
+        IdentityManagerFactory::GetForBrowserState(_browserState);
+    identityManager->RemoveObserver(_identityManagerObserver.get());
   }
 }
 
@@ -132,24 +137,24 @@ class SignInObserver : public SigninManagerBase::Observer {
           shouldDisplaySigninPromoViewWithAccessPoint:
               signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
                                          browserState:_browserState]) {
-    SigninManager* signinManager =
-        ios::SigninManagerFactory::GetForBrowserState(_browserState);
-    self.shouldShowSigninPromo = !signinManager->IsAuthenticated();
+    identity::IdentityManager* identityManager =
+        IdentityManagerFactory::GetForBrowserState(_browserState);
+    self.shouldShowSigninPromo = !identityManager->HasPrimaryAccount();
   }
 }
 
-#pragma mark - SignInObserver
+#pragma mark - IdentityManagerObserver
 
 // Called when a user signs into Google services such as sync.
-- (void)googleSigninSucceededWithAccountId:(const std::string&)account_id
-                                  username:(const std::string&)username {
+- (void)onPrimaryAccountSetWithAccountId:(const std::string&)account_id
+                                username:(const std::string&)username {
   if (!self.signinPromoViewMediator.isSigninInProgress)
     self.shouldShowSigninPromo = NO;
 }
 
 // Called when the currently signed-in user for a user has been signed out.
-- (void)googleSignedOutWithAcountId:(const std::string&)account_id
-                           username:(const std::string&)username {
+- (void)onPrimaryAccountClearedWithAccountId:(const std::string&)account_id
+                                    username:(const std::string&)username {
   [self updateShouldShowSigninPromo];
 }
 
