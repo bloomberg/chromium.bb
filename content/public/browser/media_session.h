@@ -10,12 +10,6 @@
 #include "content/common/content_export.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
-namespace blink {
-namespace mojom {
-enum class MediaSessionAction;
-}  // namespace mojom
-}  // namespace blink
-
 namespace content {
 
 class MediaSessionObserver;
@@ -52,7 +46,8 @@ class MediaSession : public media_session::mojom::MediaSession {
   virtual bool IsActuallyPaused() const = 0;
 
   // Tell the media session a user action has performed.
-  virtual void DidReceiveAction(blink::mojom::MediaSessionAction action) = 0;
+  virtual void DidReceiveAction(
+      media_session::mojom::MediaSessionAction action) = 0;
 
   // Set the volume multiplier applied during ducking.
   virtual void SetDuckingVolumeMultiplier(double multiplier) = 0;

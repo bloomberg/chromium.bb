@@ -64,19 +64,19 @@ size_t ComputeFrameDepth(RenderFrameHost* rfh,
 }
 
 MediaSessionUserAction MediaSessionActionToUserAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   switch (action) {
-    case blink::mojom::MediaSessionAction::PLAY:
+    case media_session::mojom::MediaSessionAction::kPlay:
       return MediaSessionUserAction::Play;
-    case blink::mojom::MediaSessionAction::PAUSE:
+    case media_session::mojom::MediaSessionAction::kPause:
       return MediaSessionUserAction::Pause;
-    case blink::mojom::MediaSessionAction::PREVIOUS_TRACK:
+    case media_session::mojom::MediaSessionAction::kPreviousTrack:
       return MediaSessionUserAction::PreviousTrack;
-    case blink::mojom::MediaSessionAction::NEXT_TRACK:
+    case media_session::mojom::MediaSessionAction::kNextTrack:
       return MediaSessionUserAction::NextTrack;
-    case blink::mojom::MediaSessionAction::SEEK_BACKWARD:
+    case media_session::mojom::MediaSessionAction::kSeekBackward:
       return MediaSessionUserAction::SeekBackward;
-    case blink::mojom::MediaSessionAction::SEEK_FORWARD:
+    case media_session::mojom::MediaSessionAction::kSeekForward:
       return MediaSessionUserAction::SeekForward;
   }
   NOTREACHED();
@@ -189,7 +189,7 @@ void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
       routed_service_ ? routed_service_->metadata() : base::nullopt);
   observer->MediaSessionActionsChanged(
       routed_service_ ? routed_service_->actions()
-                      : std::set<blink::mojom::MediaSessionAction>());
+                      : std::set<media_session::mojom::MediaSessionAction>());
   observer->MediaSessionStateChanged(IsControllable(), IsActuallyPaused());
 }
 
@@ -200,7 +200,7 @@ void MediaSessionImpl::NotifyMediaSessionMetadataChange(
 }
 
 void MediaSessionImpl::NotifyMediaSessionActionsChange(
-    const std::set<blink::mojom::MediaSessionAction>& actions) {
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
   for (auto& observer : observers_)
     observer.MediaSessionActionsChanged(actions);
 }
@@ -740,11 +740,11 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
 }
 
 void MediaSessionImpl::PreviousTrack() {
-  DidReceiveAction(blink::mojom::MediaSessionAction::PREVIOUS_TRACK);
+  DidReceiveAction(media_session::mojom::MediaSessionAction::kPreviousTrack);
 }
 
 void MediaSessionImpl::NextTrack() {
-  DidReceiveAction(blink::mojom::MediaSessionAction::NEXT_TRACK);
+  DidReceiveAction(media_session::mojom::MediaSessionAction::kNextTrack);
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
@@ -874,7 +874,7 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 }
 
 void MediaSessionImpl::DidReceiveAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   MediaSessionUmaHelper::RecordMediaSessionUserAction(
       MediaSessionActionToUserAction(action));
 
@@ -891,7 +891,7 @@ void MediaSessionImpl::DidReceiveAction(
   // OneShot players are not really suspended, so that the session is still
   // active after this. See https://crbug.com/619084 and
   // https://crbug.com/596516.
-  if (blink::mojom::MediaSessionAction::PAUSE == action) {
+  if (media_session::mojom::MediaSessionAction::kPause == action) {
     RenderFrameHost* rfh_of_routed_service =
         routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
     for (const auto& player : normal_players_) {

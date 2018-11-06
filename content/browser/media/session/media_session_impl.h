@@ -91,7 +91,7 @@ class MediaSessionImpl : public MediaSession,
   void NotifyMediaSessionMetadataChange(
       const base::Optional<MediaMetadata>& metadata);
   void NotifyMediaSessionActionsChange(
-      const std::set<blink::mojom::MediaSessionAction>& actions);
+      const std::set<media_session::mojom::MediaSessionAction>& actions);
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -193,7 +193,8 @@ class MediaSessionImpl : public MediaSession,
 
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.
-  void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
+  void DidReceiveAction(
+      media_session::mojom::MediaSessionAction action) override;
 
   // Set the volume multiplier applied during ducking.
   CONTENT_EXPORT void SetDuckingVolumeMultiplier(double multiplier) override;

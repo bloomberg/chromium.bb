@@ -4,6 +4,7 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/gc.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/media_session/public/mojom/media_session.mojom.js"></script>
 <script src="file:///gen/third_party/blink/public/platform/modules/mediasession/media_session.mojom.js"></script>
 <script src="resources/mediasessionservice-mock.js"></script>
 <script src="resources/utils.js"></script>
@@ -16,7 +17,7 @@ async_test(function(t) {
   mock.setClientCallback(_ => {
     gc();
     setTimeout(_ => {
-      mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
+      mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kPlay);
     });
   });
   window.navigator.mediaSession.setActionHandler("play", _ => { t.done(); });

@@ -3,6 +3,7 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/media_session/public/mojom/media_session.mojom.js"></script>
 <script src="file:///gen/third_party/blink/public/platform/modules/mediasession/media_session.mojom.js"></script>
 <script src="resources/mediasessionservice-mock.js"></script>
 <script src="resources/utils.js"></script>
@@ -42,12 +43,12 @@ function runTests(t) {
   window.navigator.mediaSession.setActionHandler(
       "seekforward", t.step_func(checkExpectation.bind(null, t, "seekforward")));
 
-  mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
-  mock.getClient().didReceiveAction(MediaSessionAction.PAUSE);
-  mock.getClient().didReceiveAction(MediaSessionAction.PREVIOUS_TRACK);
-  mock.getClient().didReceiveAction(MediaSessionAction.NEXT_TRACK);
-  mock.getClient().didReceiveAction(MediaSessionAction.SEEK_BACKWARD);
-  mock.getClient().didReceiveAction(MediaSessionAction.SEEK_FORWARD);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kPlay);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kPause);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kPreviousTrack);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kNextTrack);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kSeekBackward);
+  mock.getClient().didReceiveAction(mediaSession.mojom.MediaSessionAction.kSeekForward);
 }
 
 // Use async_test to do asynchronous setup since setup() only works for

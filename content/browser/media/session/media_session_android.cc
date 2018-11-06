@@ -101,7 +101,7 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
 }
 
 void MediaSessionAndroid::MediaSessionActionsChanged(
-    const std::set<blink::mojom::MediaSessionAction>& actions) {
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -160,7 +160,7 @@ void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int action) {
   media_session()->DidReceiveAction(
-      static_cast<blink::mojom::MediaSessionAction>(action));
+      static_cast<media_session::mojom::MediaSessionAction>(action));
 }
 
 void MediaSessionAndroid::RequestSystemAudioFocus(

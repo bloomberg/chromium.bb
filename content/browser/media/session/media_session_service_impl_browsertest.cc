@@ -29,7 +29,8 @@ class MockMediaSessionObserver : public MediaSessionObserver {
         closure_on_actions_change_(closure_on_actions_change) {}
 
   void MediaSessionActionsChanged(
-      const std::set<blink::mojom::MediaSessionAction>& actions) override {
+      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      override {
     // The actions might be empty when the service becomes routed for the first
     // time.
     if (actions.size() == 1)

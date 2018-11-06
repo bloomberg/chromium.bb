@@ -37,7 +37,8 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD0(StartDucking, void());
   MOCK_METHOD0(StopDucking, void());
   MOCK_METHOD1(SetDuckingVolumeMultiplier, void(double));
-  MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction));
+  MOCK_METHOD1(DidReceiveAction,
+               void(media_session::mojom::MediaSessionAction));
   MOCK_METHOD1(AddObserver, void(content::MediaSessionObserver*));
   MOCK_METHOD1(AddObserver,
                void(media_session::mojom::MediaSessionObserverPtr));

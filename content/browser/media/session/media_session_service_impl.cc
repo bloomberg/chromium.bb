@@ -85,7 +85,7 @@ void MediaSessionServiceImpl::SetMetadata(
 }
 
 void MediaSessionServiceImpl::EnableAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   actions_.insert(action);
   MediaSessionImpl* session = GetMediaSession();
   if (session)
@@ -93,7 +93,7 @@ void MediaSessionServiceImpl::EnableAction(
 }
 
 void MediaSessionServiceImpl::DisableAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   actions_.erase(action);
   MediaSessionImpl* session = GetMediaSession();
   if (session)
