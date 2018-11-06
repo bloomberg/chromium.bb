@@ -94,11 +94,6 @@ int64_t XRDevice::GetSourceId() const {
   return xr_->GetSourceId();
 }
 
-const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
-XRDevice::xrEnvironmentProviderPtr() {
-  return environment_provider_;
-}
-
 ScriptPromise XRDevice::requestSession(
     ScriptState* script_state,
     const XRSessionCreationOptions* options) {
@@ -156,7 +151,8 @@ ScriptPromise XRDevice::requestSession(
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
   session_options->immersive = options->immersive();
-  session_options->environment_integration = options->environmentIntegration();
+  session_options->provide_passthrough_camera =
+      options->environmentIntegration();
   session_options->has_user_activation = has_user_activation;
 
   XRPresentationContext* output_context =
@@ -189,13 +185,6 @@ void XRDevice::OnRequestSessionReturned(
     return;
   }
 
-  // immersive sessions must supply display info.
-  DCHECK(session_ptr->display_info);
-  // If the session supports environment integration, ensure the device does
-  // as well.
-  DCHECK(!environment_integration || session_ptr->display_info->capabilities
-                                         ->canProvideEnvironmentIntegration);
-
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
@@ -203,17 +192,17 @@ void XRDevice::OnRequestSessionReturned(
   XRSession* session =
       new XRSession(this, std::move(session_ptr->client_request), immersive,
                     environment_integration, output_context, blend_mode);
-  session->SetXRDisplayInfo(std::move(session_ptr->display_info));
+  // immersive sessions must supply display info.
+  DCHECK(!immersive || session_ptr->display_info);
+  if (session_ptr->display_info)
+    session->SetXRDisplayInfo(std::move(session_ptr->display_info));
   sessions_.insert(session);
 
   if (immersive) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    if (environment_integration) {
-      magic_window_provider_->GetEnvironmentIntegrationProvider(
-          mojo::MakeRequest(&environment_provider_));
-    }
+    environment_provider_.Bind(std::move(session_ptr->environment_provider));
   }
 
   resolver->Resolve(session);

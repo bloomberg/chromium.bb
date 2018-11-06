@@ -13,7 +13,6 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 
@@ -32,12 +31,10 @@ class DEVICE_VR_EXPORT VRDisplayImpl
  public:
   VRDisplayImpl(VRDeviceBase* device,
                 mojom::XRFrameDataProviderRequest,
+                mojom::XREnvironmentIntegrationProviderRequest,
                 mojom::XRSessionControllerRequest);
   ~VRDisplayImpl() override;
 
-  void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) override;
   gfx::Size sessionFrameSize() { return session_frame_size_; };
   display::Display::Rotation sessionRotation() { return session_rotation_; };
 
@@ -58,8 +55,7 @@ class DEVICE_VR_EXPORT VRDisplayImpl
   void OnMojoConnectionError();
 
   mojo::Binding<mojom::XRFrameDataProvider> magic_window_binding_;
-  mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
-      environment_binding_;
+  mojo::Binding<mojom::XREnvironmentIntegrationProvider> environment_binding_;
   mojo::Binding<mojom::XRSessionController> session_controller_binding_;
   device::VRDeviceBase* device_;
   bool restrict_frame_data_ = true;
