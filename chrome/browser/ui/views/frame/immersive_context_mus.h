@@ -21,7 +21,6 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
       bool entering) override;
   gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) override;
   bool DoesAnyWindowHaveCapture() override;
-  bool IsMouseEventsEnabled() override;
 
  private:
   static ImmersiveContextMus* instance_;

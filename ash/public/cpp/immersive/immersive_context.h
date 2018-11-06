@@ -39,9 +39,6 @@ class ASH_PUBLIC_EXPORT ImmersiveContext {
 
   // Returns true if any window has capture.
   virtual bool DoesAnyWindowHaveCapture() = 0;
-
-  // See Shell::IsMouseEventsEnabled() for details.
-  virtual bool IsMouseEventsEnabled() = 0;
 };
 
 }  // namespace ash

@@ -15,6 +15,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_state.h"
+#include "ash/wm/immersive_gesture_drag_handler.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
@@ -451,7 +452,7 @@ void WindowState::SetCanConsumeSystemKeys(bool can_consume_system_keys) {
 }
 
 bool WindowState::IsInImmersiveFullscreen() const {
-  return window_->GetProperty(ash::kImmersiveIsActive);
+  return window_->GetProperty(kImmersiveIsActive);
 }
 
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
@@ -733,6 +734,7 @@ const WindowState* GetWindowState(const aura::Window* window) {
 void WindowState::OnWindowPropertyChanged(aura::Window* window,
                                           const void* key,
                                           intptr_t old) {
+  DCHECK_EQ(window_, window);
   if (key == aura::client::kShowStateKey) {
     if (!ignore_property_change_) {
       WMEvent event(WMEventTypeFromShowState(GetShowState()));
@@ -764,11 +766,21 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kHideShelfWhenFullscreenKey || key == ash::kImmersiveIsActive) {
+  if (key == kHideShelfWhenFullscreenKey || key == kImmersiveIsActive) {
     if (!ignore_property_change_) {
       // This change came from outside ash. Update our shelf visibility based
       // on our changed state.
       ash::Shell::Get()->UpdateShelfVisibility();
+    }
+    if (key == kImmersiveIsActive) {
+      if (IsInImmersiveFullscreen()) {
+        if (!immersive_gesture_drag_handler_) {
+          immersive_gesture_drag_handler_ =
+              std::make_unique<ImmersiveGestureDragHandler>(window);
+        }
+      } else {
+        immersive_gesture_drag_handler_.reset();
+      }
     }
     return;
   }
@@ -783,6 +795,7 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void WindowState::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window_, window);
+  immersive_gesture_drag_handler_.reset();
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
 }

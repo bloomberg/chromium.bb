@@ -40,9 +40,3 @@ gfx::Rect ImmersiveContextMus::GetDisplayBoundsInScreen(views::Widget* widget) {
 bool ImmersiveContextMus::DoesAnyWindowHaveCapture() {
   return views::DesktopCaptureClient::GetCaptureWindowGlobal() != nullptr;
 }
-
-bool ImmersiveContextMus::IsMouseEventsEnabled() {
-  // TODO: http://crbug.com/640374.
-  NOTIMPLEMENTED();
-  return true;
-}

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_gesture_handler_classic.h"
+#include "ash/wm/immersive_gesture_drag_handler.h"
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
@@ -46,14 +46,31 @@ bool CanBeginGestureDrag(ui::GestureEvent* event) {
   // There may be a bezel sensor off screen logically above
   // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
   // triggerd in the bezel area too.
-  return (location_in_screen.y() < hit_bounds_in_screen.y() &&
-          location_in_screen.x() >= hit_bounds_in_screen.x() &&
-          location_in_screen.x() < hit_bounds_in_screen.right());
+  return location_in_screen.y() < hit_bounds_in_screen.y() &&
+         location_in_screen.x() >= hit_bounds_in_screen.x() &&
+         location_in_screen.x() < hit_bounds_in_screen.right();
 }
 
 }  // namespace
 
-bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
+ImmersiveGestureDragHandler::ImmersiveGestureDragHandler(aura::Window* window)
+    : window_(window) {
+  Shell::Get()->AddPreTargetHandler(this);
+}
+
+ImmersiveGestureDragHandler::~ImmersiveGestureDragHandler() {
+  Shell::Get()->RemovePreTargetHandler(this);
+}
+
+void ImmersiveGestureDragHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (CanDrag(event)) {
+    DCHECK(tablet_mode_app_window_drag_controller_);
+    if (tablet_mode_app_window_drag_controller_->DragWindowFromTop(event))
+      event->SetHandled();
+  }
+}
+
+bool ImmersiveGestureDragHandler::CanDrag(ui::GestureEvent* event) {
   if (!base::FeatureList::IsEnabled(ash::features::kDragAppsInTabletMode))
     return false;
 
@@ -62,15 +79,12 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   if (!widget)
     return false;
 
-  aura::Window* window = widget->GetNativeWindow();
-  // Only process the event if its target has the same native window as
-  // |immersive_fullscreen_controller_->widget()|.
-  if (window != immersive_fullscreen_controller_->widget()->GetNativeWindow())
+  if (widget->GetNativeWindow() != window_)
     return false;
 
   // Maximized, fullscreened and snapped windows in tablet mode are allowed to
   // be dragged.
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  wm::WindowState* window_state = wm::GetWindowState(window_);
   if (!window_state ||
       (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
        !window_state->IsSnapped()) ||
@@ -83,7 +97,7 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   // Fullscreen browser windows are not draggable. Dragging from top should show
   // the frame.
   if (window_state->IsFullscreen() &&
-      window->GetProperty(aura::client::kAppType) ==
+      window_->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::BROWSER)) {
     return false;
   }
@@ -105,26 +119,6 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   }
 
   return true;
-}
-
-ImmersiveGestureHandlerClassic::ImmersiveGestureHandlerClassic(
-    ImmersiveFullscreenController* controller)
-    : immersive_fullscreen_controller_(controller) {
-  Shell::Get()->AddPreTargetHandler(this);
-}
-
-ImmersiveGestureHandlerClassic::~ImmersiveGestureHandlerClassic() {
-  Shell::Get()->RemovePreTargetHandler(this);
-}
-
-void ImmersiveGestureHandlerClassic::OnGestureEvent(ui::GestureEvent* event) {
-  if (CanDrag(event)) {
-    DCHECK(tablet_mode_app_window_drag_controller_);
-    if (tablet_mode_app_window_drag_controller_->DragWindowFromTop(event))
-      event->SetHandled();
-    return;
-  }
-  immersive_fullscreen_controller_->OnGestureEvent(event);
 }
 
 }  // namespace ash
