@@ -27,6 +27,7 @@ using ::testing::MakePolymorphicAction;
 using ::testing::PolymorphicAction;
 
 const std::string kTriggerRemoteStreamPhrase = "open sesame";
+const uint32_t kWriteBufferSize = 100 * 1024;
 
 // A custom gmock Action that fires the given callback. This is used in
 // conjuction with the CallbackRunLoop in order to drive the TestTaskRunner
@@ -389,7 +390,7 @@ class P2PQuicTransportTest : public testing::Test {
     client_certificates.push_back(client_cert);
     P2PQuicTransportConfig client_config(client_quic_transport_delegate.get(),
                                          client_packet_transport.get(),
-                                         client_certificates);
+                                         client_certificates, kWriteBufferSize);
     client_config.is_server = false;
     client_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
@@ -416,7 +417,7 @@ class P2PQuicTransportTest : public testing::Test {
     server_certificates.push_back(server_cert);
     P2PQuicTransportConfig server_config(server_quic_transport_delegate.get(),
                                          server_packet_transport.get(),
-                                         server_certificates);
+                                         server_certificates, kWriteBufferSize);
     server_config.is_server = true;
     server_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
@@ -523,8 +524,10 @@ class P2PQuicTransportTest : public testing::Test {
           callback.Run();
         }));
 
-    client_peer_->stream()->WriteOrBufferData(kTriggerRemoteStreamPhrase,
-                                              /*fin=*/false, nullptr);
+    client_peer_->stream()->WriteData(
+        std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
+                             kTriggerRemoteStreamPhrase.end()),
+        /*fin=*/false);
     run_loop.RunUntilCallbacksFired();
     // Set the stream and delegate to the |server_peer_|, so that it can be
     // accessed by tests later.
@@ -862,8 +865,10 @@ TEST_F(P2PQuicTransportTest, ClientCreatesStream) {
             callback.Run();
           }));
 
-  client_peer()->stream()->WriteOrBufferData(kTriggerRemoteStreamPhrase,
-                                             /*fin=*/false, nullptr);
+  client_peer()->stream()->WriteData(
+      std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
+                           kTriggerRemoteStreamPhrase.end()),
+      /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
   EXPECT_TRUE(server_peer()->quic_transport()->HasOpenDynamicStreams());
@@ -897,8 +902,10 @@ TEST_F(P2PQuicTransportTest, ServerCreatesStream) {
             callback.Run();
           }));
 
-  server_peer()->stream()->WriteOrBufferData(kTriggerRemoteStreamPhrase,
-                                             /*fin=*/false, nullptr);
+  server_peer()->stream()->WriteData(
+      std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
+                           kTriggerRemoteStreamPhrase.end()),
+      /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
   EXPECT_TRUE(client_peer()->quic_transport()->HasOpenDynamicStreams());
@@ -967,8 +974,8 @@ TEST_F(P2PQuicTransportTest, ServerStreamReset) {
   ExpectStreamsClosed();
 }
 
-// Tests the basic case for calling Finish() on both sides.
-TEST_F(P2PQuicTransportTest, StreamFinishHandshake) {
+// Tests the basic case for sending a FIN bit on both sides.
+TEST_F(P2PQuicTransportTest, StreamClosedAfterSendingAndReceivingFin) {
   Initialize();
   Connect();
   SetupConnectedStreams();
@@ -977,7 +984,7 @@ TEST_F(P2PQuicTransportTest, StreamFinishHandshake) {
   EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  client_peer()->stream()->Finish();
+  client_peer()->stream()->WriteData({}, /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   ASSERT_EQ(1u, server_peer()->quic_transport()->GetNumActiveStreams());
@@ -994,7 +1001,7 @@ TEST_F(P2PQuicTransportTest, StreamFinishHandshake) {
   EXPECT_CALL(*client_peer()->stream_delegate(), OnRemoteFinish())
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  server_peer()->stream()->Finish();
+  server_peer()->stream()->WriteData({}, /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   // This is required so that the client acks the FIN back to the server side
@@ -1009,9 +1016,9 @@ TEST_F(P2PQuicTransportTest, StreamFinishHandshake) {
       client_peer()->stream_id()));
 }
 
-// Tests that if a Reset() is called after Finish(), both sides close down
-// properly.
-TEST_F(P2PQuicTransportTest, StreamResetAfterFinish) {
+// Tests that if a Reset() is called after sending a FIN bit, both sides close
+// down properly.
+TEST_F(P2PQuicTransportTest, StreamResetAfterSendingFin) {
   Initialize();
   Connect();
   SetupConnectedStreams();
@@ -1020,7 +1027,7 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterFinish) {
   EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  client_peer()->stream()->Finish();
+  client_peer()->stream()->WriteData({}, /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteReset())
@@ -1035,7 +1042,7 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterFinish) {
 
 // Tests that if a Reset() is called after receiving a stream frame with the FIN
 // bit set from the remote side, both sides close down properly.
-TEST_F(P2PQuicTransportTest, StreamResetAfterRemoteFinish) {
+TEST_F(P2PQuicTransportTest, StreamResetAfterReceivingFin) {
   Initialize();
   Connect();
   SetupConnectedStreams();
@@ -1044,7 +1051,7 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterRemoteFinish) {
   EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  client_peer()->stream()->Finish();
+  client_peer()->stream()->WriteData({}, /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   EXPECT_CALL(*client_peer()->stream_delegate(), OnRemoteReset())

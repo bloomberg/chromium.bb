@@ -14,6 +14,7 @@ class MockP2PQuicStreamDelegate
     : public testing::NiceMock<P2PQuicStream::Delegate> {
  public:
   // P2PQuicStream::Delegate overrides.
+  MOCK_METHOD1(OnWriteDataConsumed, void(uint32_t));
   MOCK_METHOD0(OnRemoteReset, void());
   MOCK_METHOD0(OnRemoteFinish, void());
 };

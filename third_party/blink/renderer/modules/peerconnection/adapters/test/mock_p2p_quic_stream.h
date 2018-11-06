@@ -16,6 +16,8 @@ class MockP2PQuicStream : public testing::NiceMock<P2PQuicStream> {
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Finish, void());
   MOCK_METHOD1(SetDelegate, void(Delegate*));
+  MOCK_METHOD1(MarkDataConsumed, void(uint32_t));
+  MOCK_METHOD2(WriteData, void(std::vector<uint8_t>, bool));
 };
 
 }  // namespace blink
