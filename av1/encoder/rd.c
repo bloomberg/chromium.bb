@@ -468,13 +468,6 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
   }
 }
 
-void av1_set_mvcost(MACROBLOCK *x, int ref, int ref_mv_idx) {
-  (void)ref;
-  (void)ref_mv_idx;
-  x->mvcost = x->mv_cost_stack;
-  x->nmvjointcost = x->nmv_vec_cost;
-}
-
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
                           const int num_planes) {
   const int nplanes = AOMMIN(num_planes, PLANE_TYPES);
@@ -574,9 +567,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   set_block_thresholds(cm, rd);
 
   av1_initialize_cost_tables(cm, x);
-
-  x->mvcost = x->mv_cost_stack;
-  x->nmvjointcost = x->nmv_vec_cost;
 
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       cpi->oxcf.pass != 1) {

@@ -262,12 +262,10 @@ struct macroblock {
   unsigned int pred_sse[REF_FRAMES];
   int pred_mv_sad[REF_FRAMES];
 
-  int *nmvjointcost;
   int nmv_vec_cost[MV_JOINTS];
   int *nmvcost[2];
   int *nmvcost_hp[2];
   int **mv_cost_stack;
-  int **mvcost;
 
   int32_t *wsrc_buf;
   int32_t *mask_buf;
