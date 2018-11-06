@@ -1606,13 +1606,6 @@ config("no_chromium_code") {
       # suppressing them individually, we just blanket suppress them here.
       "-Wno-unused-variable",
     ]
-
-    if (!is_nacl) {
-      cflags += [
-        # TODO(hans): https://crbug.com/681136
-        "-Wno-unused-lambda-capture",
-      ]
-    }
   }
 
   configs = [ ":default_warnings" ]
