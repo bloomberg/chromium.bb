@@ -213,9 +213,7 @@ void CameraDeviceDelegate::TakePhoto(
     return;
   }
 
-  camera_3a_controller_->Stabilize3AForStillCapture(
-      base::BindOnce(&CameraDeviceDelegate::ConstructDefaultRequestSettings,
-                     GetWeakPtr(), StreamType::kStillCapture));
+  TakePhotoImpl();
 }
 
 void CameraDeviceDelegate::GetPhotoState(
@@ -281,6 +279,30 @@ void CameraDeviceDelegate::SetRotation(int rotation) {
 
 base::WeakPtr<CameraDeviceDelegate> CameraDeviceDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void CameraDeviceDelegate::TakePhotoImpl() {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  auto construct_request_cb =
+      base::BindOnce(&CameraDeviceDelegate::ConstructDefaultRequestSettings,
+                     GetWeakPtr(), StreamType::kStillCapture);
+
+  if (stream_buffer_manager_->GetStreamNumber() >= kMaxConfiguredStreams) {
+    camera_3a_controller_->Stabilize3AForStillCapture(
+        std::move(construct_request_cb));
+    return;
+  }
+
+  SetPhotoOptions(
+      mojom::PhotoSettings::New(),
+      base::BindOnce(
+          [](base::WeakPtr<Camera3AController> controller,
+             base::OnceClosure callback, bool result) {
+            controller->Stabilize3AForStillCapture(std::move(callback));
+          },
+          camera_3a_controller_->GetWeakPtr(),
+          std::move(construct_request_cb)));
 }
 
 void CameraDeviceDelegate::OnMojoConnectionError() {
@@ -594,9 +616,7 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
   stream_buffer_manager_->StartPreview(std::move(settings));
 
   if (!take_photo_callbacks_.empty()) {
-    camera_3a_controller_->Stabilize3AForStillCapture(
-        base::BindOnce(&CameraDeviceDelegate::ConstructDefaultRequestSettings,
-                       GetWeakPtr(), StreamType::kStillCapture));
+    TakePhotoImpl();
   }
 
   if (set_photo_option_callback_) {
