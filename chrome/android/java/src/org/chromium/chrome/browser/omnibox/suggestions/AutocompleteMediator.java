@@ -15,7 +15,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -42,7 +41,7 @@ import java.util.Map;
 class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private final Context mContext;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
-    private final Callback<List<PropertyModel>> mModelsChangedCallback;
+    private final PropertyModel mListPropertyModel;
     private final List<Pair<OmniboxSuggestion, PropertyModel>> mCurrentModels;
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final AnswersImageFetcher mImageFetcher;
@@ -54,10 +53,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private boolean mPreventSuggestionListPropertyChanges;
 
     public AutocompleteMediator(Context context, UrlBarEditingTextStateProvider textProvider,
-            Callback<List<PropertyModel>> onModelsChanged) {
+            PropertyModel listPropertyModel) {
         mContext = context;
         mUrlBarEditingTextProvider = textProvider;
-        mModelsChangedCallback = onModelsChanged;
+        mListPropertyModel = listPropertyModel;
         mCurrentModels = new ArrayList<>();
         mPendingAnswerRequestUrls = new HashMap<>();
         mImageFetcher = new AnswersImageFetcher();
@@ -113,7 +112,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         if (mPreventSuggestionListPropertyChanges) return;
         List<PropertyModel> models = new ArrayList<>(mCurrentModels.size());
         for (int i = 0; i < mCurrentModels.size(); i++) models.add(mCurrentModels.get(i).second);
-        mModelsChangedCallback.onResult(models);
+        mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
 
     private void populateModelForSuggestion(
@@ -425,6 +424,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
      */
     public void setUseDarkColors(boolean useDarkColors) {
         mUseDarkColors = useDarkColors;
+        mListPropertyModel.set(SuggestionListProperties.USE_DARK_BACKGROUND, !useDarkColors);
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).second;
             model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
