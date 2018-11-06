@@ -1276,6 +1276,169 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
   }
 }
 
+struct ArcSessionRetryTestParam {
+  enum class Negotiation {
+    // Negotiation is required for provisioning.
+    REQUIRED,
+    // Negotiation is not required and not shown for provisioning.
+    SKIPPED,
+  };
+
+  Negotiation negotiation;
+
+  // Provisioning error to test.
+  ProvisioningResult error;
+
+  // Whether ARC++ container is alive on error.
+  bool container_alive;
+
+  // Whether data is removed on error.
+  bool data_removed;
+};
+
+constexpr ArcSessionRetryTestParam kRetryTestCases[] = {
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::UNKNOWN_ERROR, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_NETWORK_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SERVICE_UNAVAILABLE, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_BAD_AUTHENTICATION, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_FAILED, true, false},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::MOJO_VERSION_MISMATCH, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::MOJO_CALL_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_FAILED, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT, true, true},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::ARC_STOPPED, false, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, false, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::NO_NETWORK_CONNECTION, true, false},
+};
+
+class ArcSessionRetryTest
+    : public ArcSessionManagerTest,
+      public testing::WithParamInterface<ArcSessionRetryTestParam> {
+ public:
+  ArcSessionRetryTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTest::SetUp();
+
+    GetFakeUserManager()->set_current_user_new(true);
+
+    // Make negotiation not needed by switching to managed flow with other
+    // preferences under the policy, similar to google.com provisioning case.
+    if (GetParam().negotiation ==
+        ArcSessionRetryTestParam::Negotiation::SKIPPED) {
+      policy::ProfilePolicyConnector* const connector =
+          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+              profile());
+      connector->OverrideIsManagedForTesting(true);
+
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcEnabled, std::make_unique<base::Value>(true));
+      // Set all prefs as managed to simulate google.com account provisioning.
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcBackupRestoreEnabled,
+          std::make_unique<base::Value>(false));
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcLocationServiceEnabled,
+          std::make_unique<base::Value>(false));
+      EXPECT_FALSE(arc::IsArcTermsOfServiceNegotiationNeeded(profile()));
+    }
+  }
+
+  void TearDown() override {
+    // Correctly stop service.
+    arc_session_manager()->Shutdown();
+    ArcSessionManagerTest::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        ArcSessionRetryTest,
+                        ::testing::ValuesIn(kRetryTestCases));
+
+// Verifies that Android container behaves as expected.* This checks:
+//   * Whether ARC++ container alive or not on error.
+//   * Whether Android data is removed or not on error.
+//   * ARC++ Container is restared on retry.
+TEST_P(ArcSessionRetryTest, ContainerRestarted) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+
+  if (GetParam().negotiation ==
+      ArcSessionRetryTestParam::Negotiation::REQUIRED) {
+    EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+              arc_session_manager()->state());
+    arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  }
+
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->OnProvisioningFinished(GetParam().error);
+
+  // In case of permanent error data removal request is scheduled.
+  EXPECT_EQ(GetParam().data_removed,
+            profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  if (GetParam().container_alive) {
+    // We don't stop ARC due to let user submit user feedback with alive Android
+    // container.
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  } else {
+    // Container is stopped automatically on this error.
+    EXPECT_EQ(ArcSessionManager::State::STOPPED,
+              arc_session_manager()->state());
+  }
+
+  arc_session_manager()->OnRetryClicked();
+
+  if (GetParam().data_removed) {
+    // Check state goes from REMOVING_DATA_DIR to CHECKING_ANDROID_MANAGEMENT
+    EXPECT_TRUE(WaitForDataRemoved(
+        ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT));
+  }
+
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Successful retry keeps ARC++ container running.
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
 }  // namespace
 
 }  // namespace arc
