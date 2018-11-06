@@ -174,6 +174,10 @@ class SequenceManager {
   // expired delay are not).
   virtual bool IsIdleForTesting() const = 0;
 
+  // When this functionality is enabled, the queue time will be recorded for
+  // posted tasks.
+  virtual void SetAddQueueTimeToTasks(bool enable) = 0;
+
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) = 0;

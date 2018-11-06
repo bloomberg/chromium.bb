@@ -123,6 +123,7 @@ class BASE_EXPORT SequenceManagerImpl
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
   void DeletePendingTasks() override;
+  void SetAddQueueTimeToTasks(bool enable) override;
   bool HasTasks() override;
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
@@ -292,6 +293,8 @@ class BASE_EXPORT SequenceManagerImpl
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
+  bool GetAddQueueTimeToTasks();
+
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
@@ -351,6 +354,9 @@ class BASE_EXPORT SequenceManagerImpl
   }
 
   const MetricRecordingSettings metric_recording_settings_;
+
+  // Whether to add the queue time to tasks.
+  base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940

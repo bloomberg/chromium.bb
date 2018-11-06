@@ -176,12 +176,16 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
   CHECK(task.callback);
 
   TimeTicks now;
-  if (delayed_fence_allowed_) {
+  bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
+  if (delayed_fence_allowed_ || add_queue_time_to_tasks) {
     if (current_thread == CurrentThread::kMainThread) {
       now = main_thread_only().time_domain->Now();
     } else {
       AutoLock lock(any_thread_lock_);
       now = any_thread().time_domain->Now();
+    }
+    if (add_queue_time_to_tasks) {
+      task.queue_time = now;
     }
   }
 
@@ -244,6 +248,10 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
 
     TimeTicks time_domain_now = main_thread_only().time_domain->Now();
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
+    if (sequence_manager_->GetAddQueueTimeToTasks()) {
+      task.queue_time = time_domain_now;
+    }
+
     PushOntoDelayedIncomingQueueFromMainThread(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number,
              EnqueueOrder(), resolution),
@@ -258,6 +266,10 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
 
     TimeTicks time_domain_now = any_thread().time_domain->Now();
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
+    if (sequence_manager_->GetAddQueueTimeToTasks()) {
+      task.queue_time = time_domain_now;
+    }
+
     PushOntoDelayedIncomingQueueLocked(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number,
              EnqueueOrder(), resolution));
