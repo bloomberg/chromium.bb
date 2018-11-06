@@ -11,6 +11,10 @@ function log(message)
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
+    // Disable console messages because console errors about worker script
+    // fetching can be printed depending on timing of worker termination and
+    // that confuses the test expectations.
+    testRunner.setDumpConsoleMessages(false);
 }
 
 var worker = new Worker('resources/worker-common.js');
