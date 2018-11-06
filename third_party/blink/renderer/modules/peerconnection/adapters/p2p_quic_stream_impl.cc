@@ -63,4 +63,13 @@ void P2PQuicStreamImpl::OnFinRead() {
   delegate_->OnRemoteFinish();
 }
 
+void P2PQuicStreamImpl::OnClose() {
+  closed_ = true;
+  quic::QuicStream::OnClose();
+}
+
+bool P2PQuicStreamImpl::IsClosedForTesting() {
+  return closed_;
+}
+
 }  // namespace blink
