@@ -138,7 +138,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
                           bios_bin, bios_out])
@@ -165,7 +165,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', dev_fw_key.private,
                           '--devkeyblock', dev_fw_key.keyblock,
                           bios_bin, bios_out])
@@ -206,7 +206,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
                           '--loemdir', loem_dir,

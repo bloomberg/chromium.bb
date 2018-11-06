@@ -86,8 +86,36 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     """Test init with minimal arguments."""
     k1 = keys.KeyPair('key1', self.tempdir)
     self.assertEqual(k1.name, 'key1')
-    self.assertEqual(k1.version, '1')
+    self.assertEqual(k1.version, 1)
     self.assertEqual(k1.keydir, self.tempdir)
+
+  def testRejectsEmptyName(self):
+    with self.assertRaises(ValueError):
+      keys.KeyPair('', self.tempdir, version=1)
+
+  def testRejectsNameWithSlash(self):
+    with self.assertRaises(ValueError):
+      keys.KeyPair('/foo', self.tempdir, version=1)
+    with self.assertRaises(ValueError):
+      keys.KeyPair('foo/bar', self.tempdir, version=1)
+
+  def testRejectsLeadingDot(self):
+    with self.assertRaises(ValueError):
+      keys.KeyPair('.foo', self.tempdir, version=1)
+
+  def testCoercesVersionToInt(self):
+    k1 = keys.KeyPair('key1', self.tempdir, version='1')
+    self.assertEqual(k1.name, 'key1')
+    self.assertEqual(k1.version, 1)
+    self.assertEqual(k1.keydir, self.tempdir)
+
+  def testAssertsValueErrorOnNonNumericVersion(self):
+    with self.assertRaises(ValueError):
+      keys.KeyPair('key1', self.tempdir, version='blah')
+
+  def testAssertsValueErrorOnEmptyStringVersion(self):
+    with self.assertRaises(ValueError):
+      keys.KeyPair('key1', self.tempdir, version='')
 
   def testPrivateKey(self):
     k1 = keys.KeyPair('key1', self.tempdir)

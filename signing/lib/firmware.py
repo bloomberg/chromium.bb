@@ -57,7 +57,7 @@ class BiosSigner(signer.FutilitySigner):
             '--signprivate', fw_key.private,
             '--keyblock', fw_key.keyblock,
             '--kernelkey', kernel_key.public,
-            '--version', fw_key.version,
+            '--version', str(fw_key.version),
             '--devsign', dev_fw_key.private,
             '--devkeyblock', dev_fw_key.keyblock]
 
