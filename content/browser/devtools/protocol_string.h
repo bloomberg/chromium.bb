@@ -96,6 +96,7 @@ class CONTENT_EXPORT Binary {
 
   const uint8_t* data() const { return bytes_->front(); }
   size_t size() const { return bytes_->size(); }
+  scoped_refptr<base::RefCountedMemory> bytes() const { return bytes_; }
 
   String toBase64() const;
 

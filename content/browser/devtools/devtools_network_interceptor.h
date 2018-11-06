@@ -78,7 +78,7 @@ class DevToolsNetworkInterceptor {
     explicit Modifications(
         std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
     Modifications(scoped_refptr<net::HttpResponseHeaders> response_headers,
-                  std::unique_ptr<std::string> response_body);
+                  scoped_refptr<base::RefCountedMemory> response_body);
     Modifications(protocol::Maybe<std::string> modified_url,
                   protocol::Maybe<std::string> modified_method,
                   protocol::Maybe<std::string> modified_post_data,
@@ -86,7 +86,8 @@ class DevToolsNetworkInterceptor {
     Modifications(
         base::Optional<net::Error> error_reason,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
-        std::unique_ptr<std::string> response_body,
+        scoped_refptr<base::RefCountedMemory> response_body,
+        size_t body_offset,
         protocol::Maybe<std::string> modified_url,
         protocol::Maybe<std::string> modified_method,
         protocol::Maybe<std::string> modified_post_data,
@@ -100,7 +101,8 @@ class DevToolsNetworkInterceptor {
     // If either of the below fields is set, complete the request by
     // responding with the provided headers and body.
     scoped_refptr<net::HttpResponseHeaders> response_headers;
-    std::unique_ptr<std::string> response_body;
+    scoped_refptr<base::RefCountedMemory> response_body;
+    size_t body_offset = 0;
 
     // Optionally modify before sending to network.
     protocol::Maybe<std::string> modified_url;

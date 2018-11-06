@@ -44,7 +44,7 @@ DevToolsNetworkInterceptor::Modifications::Modifications(
 
 DevToolsNetworkInterceptor::Modifications::Modifications(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    std::unique_ptr<std::string> response_body)
+    scoped_refptr<base::RefCountedMemory> response_body)
     : response_headers(std::move(response_headers)),
       response_body(std::move(response_body)) {}
 
@@ -65,7 +65,8 @@ DevToolsNetworkInterceptor::Modifications::Modifications(
 DevToolsNetworkInterceptor::Modifications::Modifications(
     base::Optional<net::Error> error_reason,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    std::unique_ptr<std::string> response_body,
+    scoped_refptr<base::RefCountedMemory> response_body,
+    size_t body_offset,
     protocol::Maybe<std::string> modified_url,
     protocol::Maybe<std::string> modified_method,
     protocol::Maybe<std::string> modified_post_data,
@@ -74,6 +75,7 @@ DevToolsNetworkInterceptor::Modifications::Modifications(
     : error_reason(std::move(error_reason)),
       response_headers(std::move(response_headers)),
       response_body(std::move(response_body)),
+      body_offset(body_offset),
       modified_url(std::move(modified_url)),
       modified_method(std::move(modified_method)),
       modified_post_data(std::move(modified_post_data)),

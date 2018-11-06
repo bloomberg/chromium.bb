@@ -386,7 +386,8 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::ReadIntoBuffer() {
 class DevToolsURLInterceptorRequestJob::MockResponseDetails {
  public:
   MockResponseDetails(scoped_refptr<net::HttpResponseHeaders> response_headers,
-                      std::string response_bytes);
+                      scoped_refptr<base::RefCountedMemory> response_bytes,
+                      size_t response_bytes_offset);
 
   ~MockResponseDetails();
 
@@ -400,17 +401,18 @@ class DevToolsURLInterceptorRequestJob::MockResponseDetails {
 
  private:
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  std::string response_bytes_;
+  scoped_refptr<base::RefCountedMemory> response_bytes_;
   size_t read_offset_;
   base::TimeTicks response_time_;
 };
 
 DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    std::string response_bytes)
+    scoped_refptr<base::RefCountedMemory> response_bytes,
+    size_t repsonse_bytes_offset)
     : response_headers_(std::move(response_headers)),
       response_bytes_(std::move(response_bytes)),
-      read_offset_(0),
+      read_offset_(repsonse_bytes_offset),
       response_time_(base::TimeTicks::Now()) {
   if (!response_headers) {
     static const char kDummyHeaders[] = "HTTP/1.1 200 OK\0\0";
@@ -424,11 +426,13 @@ DevToolsURLInterceptorRequestJob::MockResponseDetails::~MockResponseDetails() {}
 int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
     net::IOBuffer* buf,
     int buf_size) {
-  size_t bytes_available = response_bytes_.size() - read_offset_;
+  if (!response_bytes_)
+    return 0;
+  size_t bytes_available = response_bytes_->size() - read_offset_;
   size_t bytes_to_copy =
       std::min(static_cast<size_t>(buf_size), bytes_available);
   if (bytes_to_copy > 0) {
-    std::memcpy(buf->data(), &response_bytes_.data()[read_offset_],
+    std::memcpy(buf->data(), response_bytes_->front() + read_offset_,
                 bytes_to_copy);
     read_offset_ += bytes_to_copy;
   }
@@ -971,7 +975,8 @@ void DevToolsURLInterceptorRequestJob::ProcessRedirect(
   raw_headers.append(new_url);
   raw_headers.append(2, '\0');
   mock_response_details_ = std::make_unique<MockResponseDetails>(
-      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "");
+      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers),
+      nullptr /* response_bytes */, 0 /* response_bytes_offset */);
 
   NotifyHeadersComplete();
 }
@@ -1047,8 +1052,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
   if (modifications->response_headers || modifications->response_body) {
     mock_response_details_ = std::make_unique<MockResponseDetails>(
         std::move(modifications->response_headers),
-        modifications->response_body ? std::move(*modifications->response_body)
-                                     : "");
+        std::move(modifications->response_body), modifications->body_offset);
 
     // Set cookies in the network stack.
     net::CookieOptions options;

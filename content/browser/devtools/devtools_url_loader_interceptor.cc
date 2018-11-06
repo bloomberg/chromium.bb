@@ -68,7 +68,8 @@ struct CreateLoaderParameters {
 class BodyReader : public mojo::DataPipeDrainer::Client {
  public:
   explicit BodyReader(base::OnceClosure download_complete_callback)
-      : download_complete_callback_(std::move(download_complete_callback)) {}
+      : download_complete_callback_(std::move(download_complete_callback)),
+        body_(base::MakeRefCounted<base::RefCountedString>()) {}
 
   void StartReading(mojo::ScopedDataPipeConsumerHandle body);
 
@@ -85,7 +86,11 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   }
 
   bool data_complete() const { return data_complete_; }
-  const std::string& body() const { return body_; }
+
+  scoped_refptr<base::RefCountedMemory> body() const {
+    DCHECK(data_complete_);
+    return body_;
+  }
 
   void CancelWithError(std::string error) {
     base::PostTaskWithTraits(
@@ -104,7 +109,8 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
 
   void OnDataAvailable(const void* data, size_t num_bytes) override {
     DCHECK(!data_complete_);
-    body_.append(std::string(static_cast<const char*>(data), num_bytes));
+    body_->data().append(
+        std::string(static_cast<const char*>(data), num_bytes));
   }
 
   void OnDataComplete() override;
@@ -112,7 +118,7 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   std::unique_ptr<mojo::DataPipeDrainer> body_pipe_drainer_;
   CallbackVector callbacks_;
   base::OnceClosure download_complete_callback_;
-  std::string body_;
+  scoped_refptr<base::RefCountedString> body_;
   std::string encoded_body_;
   bool data_complete_ = false;
 };
@@ -130,7 +136,7 @@ void BodyReader::OnDataComplete() {
   data_complete_ = true;
   body_pipe_drainer_.reset();
   // TODO(caseq): only encode if necessary.
-  base::Base64Encode(body_, &encoded_body_);
+  base::Base64Encode(body_->data(), &encoded_body_);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BodyReader::DispatchBodyOnUI, std::move(callbacks_),
@@ -218,11 +224,12 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
           auth_challenge_response);
   Response ProcessResponseOverride(
       scoped_refptr<net::HttpResponseHeaders> headers,
-      std::unique_ptr<std::string> body);
+      scoped_refptr<base::RefCountedMemory> body,
+      size_t response_body_offset);
   void ProcessRedirectByClient(const GURL& redirect_url);
   void ProcessSetCookies(const net::HttpResponseHeaders& response_headers,
                          base::OnceClosure callback);
-  void SendResponse(const base::StringPiece& body);
+  void SendResponse(scoped_refptr<base::RefCountedMemory> body, size_t offset);
   void ApplyModificationsToRequest(
       std::unique_ptr<Modifications> modifications);
 
@@ -831,7 +838,8 @@ Response InterceptionJob::InnerContinueRequest(
 
   if (modifications->response_headers || modifications->response_body)
     return ProcessResponseOverride(std::move(modifications->response_headers),
-                                   std::move(modifications->response_body));
+                                   std::move(modifications->response_body),
+                                   modifications->body_offset);
 
   if (state_ == State::kFollowRedirect) {
     if (modifications->modified_url.isJust()) {
@@ -866,7 +874,7 @@ Response InterceptionJob::InnerContinueRequest(
 
   if (body_reader_) {
     if (body_reader_->data_complete())
-      SendResponse(body_reader_->body());
+      SendResponse(body_reader_->body(), 0);
 
     // There are read callbacks pending, so let the reader do its job and come
     // back when it's done.
@@ -943,12 +951,12 @@ void InterceptionJob::ProcessAuthResponse(
 
 Response InterceptionJob::ProcessResponseOverride(
     scoped_refptr<net::HttpResponseHeaders> headers,
-    std::unique_ptr<std::string> maybe_body) {
+    scoped_refptr<base::RefCountedMemory> body,
+    size_t response_body_offset) {
   CancelRequest();
 
-  std::string body = maybe_body ? std::move(*maybe_body) : "";
-  size_t body_size = body.size();
-
+  DCHECK_LE(response_body_offset, body ? body->size() : 0);
+  size_t body_size = body ? body->size() - response_body_offset : 0;
   response_metadata_ = std::make_unique<ResponseMetadata>();
   network::ResourceResponseHead* head = &response_metadata_->head;
 
@@ -969,12 +977,13 @@ Response InterceptionJob::ProcessResponseOverride(
         base::MakeRefCounted<net::HttpResponseHeaders>(kDummyHeaders);
   }
   head->headers->GetMimeTypeAndCharset(&head->mime_type, &head->charset);
-  if (head->mime_type.empty()) {
+  if (head->mime_type.empty() && body_size) {
     size_t bytes_to_sniff =
         std::min(body_size, static_cast<size_t>(net::kMaxBytesToSniff));
-    net::SniffMimeType(
-        body.data(), bytes_to_sniff, create_loader_params_->request.url, "",
-        net::ForceSniffFileUrlsForHtml::kDisabled, &head->mime_type);
+    net::SniffMimeType(body->front_as<const char>() + response_body_offset,
+                       bytes_to_sniff, create_loader_params_->request.url, "",
+                       net::ForceSniffFileUrlsForHtml::kDisabled,
+                       &head->mime_type);
     head->did_mime_sniff = true;
   }
   // TODO(caseq): we're cheating here a bit, raw_headers() have \0's
@@ -1007,7 +1016,7 @@ Response InterceptionJob::ProcessResponseOverride(
   if (!continue_after_cookies_set) {
     continue_after_cookies_set =
         base::BindOnce(&InterceptionJob::SendResponse, base::Unretained(this),
-                       std::move(body));
+                       std::move(body), response_body_offset);
   }
   ProcessSetCookies(*head->headers, std::move(continue_after_cookies_set));
 
@@ -1070,26 +1079,29 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
                              response_metadata_->head);
 }
 
-void InterceptionJob::SendResponse(const base::StringPiece& body) {
+void InterceptionJob::SendResponse(scoped_refptr<base::RefCountedMemory> body,
+                                   size_t offset) {
   client_->OnReceiveResponse(response_metadata_->head);
-
-  // We shouldn't be able to transfer a string that big over the protocol,
-  // but just in case...
-  DCHECK_LE(body.size(), UINT32_MAX)
-      << "Response bodies larger than " << UINT32_MAX << " are not supported";
-  mojo::DataPipe pipe(body.size());
-  uint32_t num_bytes = body.size();
-  MojoResult res = pipe.producer_handle->WriteData(body.data(), &num_bytes,
-                                                   MOJO_WRITE_DATA_FLAG_NONE);
-  DCHECK_EQ(0u, res);
-  DCHECK_EQ(num_bytes, body.size());
-
   if (!response_metadata_->cached_metadata.empty())
     client_->OnReceiveCachedMetadata(response_metadata_->cached_metadata);
-  client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+
+  if (body) {
+    DCHECK_LE(offset, body->size());
+    size_t body_size = body->size() - offset;
+    // We shouldn't be able to transfer a string that big over the protocol,
+    // but just in case...
+    DCHECK_LE(body_size, UINT32_MAX)
+        << "Response bodies larger than " << UINT32_MAX << " are not supported";
+    mojo::DataPipe pipe(body_size);
+    uint32_t num_bytes = body_size;
+    MojoResult res = pipe.producer_handle->WriteData(
+        body->front() + offset, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    DCHECK_EQ(0u, res);
+    DCHECK_EQ(num_bytes, body_size);
+    client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+  }
   if (response_metadata_->transfer_size)
     client_->OnTransferSizeUpdated(response_metadata_->transfer_size);
-
   client_->OnComplete(response_metadata_->status);
   Shutdown();
 }
@@ -1099,7 +1111,7 @@ void InterceptionJob::ResponseBodyComplete() {
     return;
   // We're here only if client has already told us to proceed with unmodified
   // response.
-  SendResponse(body_reader_->body());
+  SendResponse(body_reader_->body(), 0);
 }
 
 void InterceptionJob::StartRequest() {
