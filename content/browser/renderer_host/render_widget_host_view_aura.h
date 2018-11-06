@@ -465,11 +465,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
 
-  bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
-                                   const base::Optional<viz::LocalSurfaceId>&
-                                       child_allocated_local_surface_id,
-                                   const base::Optional<base::TimeTicks>&
-                                       child_local_surface_id_allocation_time);
+  bool SynchronizeVisualProperties(
+      const cc::DeadlinePolicy& deadline_policy,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          child_local_surface_id_allocation);
 
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);

@@ -1091,6 +1091,9 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
 
   GetWebContents()->SendScreenRects();
   local_surface_id_ = local_surface_id;
+  local_surface_id_allocation_time_ =
+      visual_properties.local_surface_id_allocation_time.value_or(
+          base::TimeTicks());
   bool capture_sequence_number_changed =
       capture_sequence_number_ != visual_properties.capture_sequence_number;
   capture_sequence_number_ = visual_properties.capture_sequence_number;

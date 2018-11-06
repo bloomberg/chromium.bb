@@ -8,6 +8,7 @@
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/cursor_client.h"
@@ -90,8 +91,10 @@ void WindowPortLocal::OnDeviceScaleFactorChanged(
       IsEmbeddingExternalContent()) {
     last_device_scale_factor_ = new_device_scale_factor;
     parent_local_surface_id_allocator_->GenerateId();
-    if (frame_sink_)
-      frame_sink_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
+    if (frame_sink_) {
+      frame_sink_->SetLocalSurfaceId(
+          GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+    }
   }
 
   ScopedCursorHider hider(window_);
@@ -116,8 +119,10 @@ void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
       IsEmbeddingExternalContent()) {
     last_size_ = new_bounds.size();
     parent_local_surface_id_allocator_->GenerateId();
-    if (frame_sink_)
-      frame_sink_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
+    if (frame_sink_) {
+      frame_sink_->SetLocalSurfaceId(
+          GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+    }
   }
 }
 
@@ -201,24 +206,18 @@ viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
 }
 
 void WindowPortLocal::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const viz::LocalSurfaceId& embedded_client_local_surface_id,
-    base::TimeTicks embedded_client_local_surface_id_allocation_time) {
+    const viz::LocalSurfaceIdAllocation&
+        embedded_client_local_surface_id_allocation) {
   parent_local_surface_id_allocator_->UpdateFromChild(
-      embedded_client_local_surface_id,
-      embedded_client_local_surface_id_allocation_time);
+      embedded_client_local_surface_id_allocation);
   UpdateLocalSurfaceId();
 }
 
-const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
+const viz::LocalSurfaceIdAllocation&
+WindowPortLocal::GetLocalSurfaceIdAllocation() {
   if (!parent_local_surface_id_allocator_)
     AllocateLocalSurfaceId();
-  return GetCurrentLocalSurfaceId();
-}
-
-base::TimeTicks WindowPortLocal::GetLocalSurfaceIdAllocationTime() const {
-  if (!parent_local_surface_id_allocator_)
-    return base::TimeTicks();
-  return parent_local_surface_id_allocator_->allocation_time();
+  return GetCurrentLocalSurfaceIdAllocation();
 }
 
 void WindowPortLocal::OnEventTargetingPolicyChanged() {}
@@ -246,12 +245,16 @@ void WindowPortLocal::OnFrameTokenChanged(uint32_t frame_token) {}
 void WindowPortLocal::UpdateLocalSurfaceId() {
   last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
   last_size_ = window_->bounds().size();
-  if (frame_sink_)
-    frame_sink_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
+  if (frame_sink_) {
+    frame_sink_->SetLocalSurfaceId(
+        GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+  }
 }
 
-const viz::LocalSurfaceId& WindowPortLocal::GetCurrentLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+const viz::LocalSurfaceIdAllocation&
+WindowPortLocal::GetCurrentLocalSurfaceIdAllocation() const {
+  return parent_local_surface_id_allocator_
+      ->GetCurrentLocalSurfaceIdAllocation();
 }
 
 bool WindowPortLocal::IsEmbeddingExternalContent() const {

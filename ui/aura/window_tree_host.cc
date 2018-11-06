@@ -63,11 +63,13 @@ class ScopedLocalSurfaceIdValidator {
  public:
   explicit ScopedLocalSurfaceIdValidator(Window* window)
       : window_(window),
-        local_surface_id_(window ? window->GetLocalSurfaceId()
-                                 : viz::LocalSurfaceId()) {}
+        local_surface_id_(
+            window ? window->GetLocalSurfaceIdAllocation().local_surface_id()
+                   : viz::LocalSurfaceId()) {}
   ~ScopedLocalSurfaceIdValidator() {
     if (window_ && ShouldAllocateLocalSurfaceId(window_))
-      DCHECK_EQ(local_surface_id_, window_->GetLocalSurfaceId());
+      DCHECK_EQ(local_surface_id_,
+                window_->GetLocalSurfaceIdAllocation().local_surface_id());
   }
 
  private:
@@ -411,9 +413,10 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
-  compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
-                               window()->GetLocalSurfaceId(),
-                               window()->GetLocalSurfaceIdAllocationTime());
+  compositor_->SetScaleAndSize(
+      device_scale_factor_, GetBoundsInPixels().size(),
+      window()->GetLocalSurfaceIdAllocation().local_surface_id(),
+      window()->GetLocalSurfaceIdAllocation().allocation_time());
   compositor_->SetRootLayer(window()->layer());
 
   display::Display display =
@@ -453,8 +456,9 @@ void WindowTreeHost::OnHostResizedInPixels(
   if (ShouldAllocateLocalSurfaceId(window()) &&
       !new_local_surface_id.is_valid()) {
     window_->AllocateLocalSurfaceId();
-    local_surface_id = window_->GetLocalSurfaceId();
-    allocation_time = window_->GetLocalSurfaceIdAllocationTime();
+    local_surface_id =
+        window_->GetLocalSurfaceIdAllocation().local_surface_id();
+    allocation_time = window_->GetLocalSurfaceIdAllocation().allocation_time();
   }
   ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,

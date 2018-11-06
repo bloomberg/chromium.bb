@@ -123,6 +123,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void UnlockMouse() override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;

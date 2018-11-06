@@ -67,7 +67,8 @@ void VideoFrameSubmitter::EnableSubmission(
   frame_sink_id_ = surface_id.frame_sink_id();
   frame_sink_destroyed_callback_ = frame_sink_destroyed_callback;
   child_local_surface_id_allocator_.UpdateFromParent(
-      surface_id.local_surface_id(), local_surface_id_allocation_time);
+      viz::LocalSurfaceIdAllocation(surface_id.local_surface_id(),
+                                    local_surface_id_allocation_time));
   if (resource_provider_->IsInitialized())
     StartSubmitting();
 }
@@ -413,7 +414,8 @@ void VideoFrameSubmitter::SetSurfaceIdForTesting(
     base::TimeTicks allocation_time) {
   frame_sink_id_ = surface_id.frame_sink_id();
   child_local_surface_id_allocator_.UpdateFromParent(
-      surface_id.local_surface_id(), allocation_time);
+      viz::LocalSurfaceIdAllocation(surface_id.local_surface_id(),
+                                    allocation_time));
 }
 
 }  // namespace blink

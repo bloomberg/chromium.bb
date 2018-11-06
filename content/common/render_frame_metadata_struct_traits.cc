@@ -40,9 +40,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
          data.ReadRootLayerSize(&out->root_layer_size) &&
 #endif
          data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
-         data.ReadLocalSurfaceId(&out->local_surface_id) &&
-         data.ReadLocalSurfaceIdAllocationTimeFromChild(
-             &out->local_surface_id_allocation_time_from_child);
+         data.ReadLocalSurfaceIdAllocation(&out->local_surface_id_allocation);
 }
 
 }  // namespace mojo

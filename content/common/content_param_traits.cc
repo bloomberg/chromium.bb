@@ -10,6 +10,7 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/frame_message_structs.h"
@@ -331,6 +332,38 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
   LogParam(p.child_sequence_number(), l);
   l->append(", ");
   LogParam(p.embed_token(), l);
+  l->append(")");
+}
+
+void ParamTraits<viz::LocalSurfaceIdAllocation>::Write(base::Pickle* m,
+                                                       const param_type& p) {
+  DCHECK(p.IsValid());
+  WriteParam(m, p.local_surface_id());
+  WriteParam(m, p.allocation_time());
+}
+
+bool ParamTraits<viz::LocalSurfaceIdAllocation>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* p) {
+  viz::LocalSurfaceId local_surface_id;
+  if (!ReadParam(m, iter, &local_surface_id))
+    return false;
+
+  base::TimeTicks allocation_time;
+  if (!ReadParam(m, iter, &allocation_time))
+    return false;
+
+  *p = viz::LocalSurfaceIdAllocation(local_surface_id, allocation_time);
+  return p->IsValid();
+}
+
+void ParamTraits<viz::LocalSurfaceIdAllocation>::Log(const param_type& p,
+                                                     std::string* l) {
+  l->append("viz::LocalSurfaceIdAllocation(");
+  LogParam(p.local_surface_id(), l);
+  l->append(", ");
+  LogParam(p.allocation_time(), l);
   l->append(")");
 }
 

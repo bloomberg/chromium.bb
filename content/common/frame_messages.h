@@ -266,7 +266,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(is_mobile_optimized)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(viewport_size_in_pixels)
-  IPC_STRUCT_TRAITS_MEMBER(local_surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)

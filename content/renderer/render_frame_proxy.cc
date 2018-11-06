@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -597,9 +598,8 @@ void RenderFrameProxy::OnBubbleLogicalScroll(
 void RenderFrameProxy::OnDidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()),
-          metadata.local_surface_id_allocation_time_from_child.value_or(
-              base::TimeTicks()))) {
+          metadata.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()))) {
     return;
   }
 

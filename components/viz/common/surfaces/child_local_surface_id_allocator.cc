@@ -25,10 +25,11 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
     : ChildLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
 
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
-    const LocalSurfaceId& parent_allocated_local_surface_id,
-    base::TimeTicks parent_local_surface_id_allocation_time) {
+    const LocalSurfaceIdAllocation& parent_local_surface_id_allocation) {
   const LocalSurfaceId& current_local_surface_id =
       current_local_surface_id_allocation_.local_surface_id_;
+  const LocalSurfaceId& parent_allocated_local_surface_id =
+      parent_local_surface_id_allocation.local_surface_id();
 
   // If the parent has not incremented its parent sequence number or updated its
   // embed token then there is nothing to do here. This allocator already has
@@ -50,7 +51,7 @@ bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
         tick_clock_->NowTicks();
   } else {
     current_local_surface_id_allocation_.allocation_time_ =
-        parent_local_surface_id_allocation_time;
+        parent_local_surface_id_allocation.allocation_time();
   }
 
   current_local_surface_id_allocation_.local_surface_id_

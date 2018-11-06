@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom-shared.h"
-#include "services/viz/public/cpp/compositing/local_surface_id_struct_traits.h"
+#include "services/viz/public/cpp/compositing/local_surface_id_allocation_struct_traits.h"
 
 namespace mojo {
 
@@ -49,15 +49,9 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.viewport_size_in_pixels;
   }
 
-  static const base::Optional<viz::LocalSurfaceId>& local_surface_id(
-      const cc::RenderFrameMetadata& metadata) {
-    return metadata.local_surface_id;
-  }
-
-  static base::Optional<base::TimeTicks>
-  local_surface_id_allocation_time_from_child(
-      const cc::RenderFrameMetadata& metadata) {
-    return metadata.local_surface_id_allocation_time_from_child;
+  static const base::Optional<viz::LocalSurfaceIdAllocation>&
+  local_surface_id_allocation(const cc::RenderFrameMetadata& metadata) {
+    return metadata.local_surface_id_allocation;
   }
 
   static float page_scale_factor(const cc::RenderFrameMetadata& metadata) {

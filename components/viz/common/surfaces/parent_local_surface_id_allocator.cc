@@ -10,7 +10,7 @@
 
 namespace viz {
 
-constexpr LocalSurfaceId g_invalid_local_surface_id;
+constexpr LocalSurfaceIdAllocation g_invalid_local_surface_id_allocation;
 
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator(
     const base::TickClock* tick_clock)
@@ -27,10 +27,11 @@ ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
     : ParentLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
 
 bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
-    const LocalSurfaceId& child_allocated_local_surface_id,
-    base::TimeTicks child_local_surface_id_allocation_time) {
+    const LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
   const LocalSurfaceId& current_local_surface_id =
       current_local_surface_id_allocation_.local_surface_id_;
+  const LocalSurfaceId& child_allocated_local_surface_id =
+      child_local_surface_id_allocation.local_surface_id();
 
   // If the child has not incremented its child sequence number then there is
   // nothing to do here. This allocator already has the latest LocalSurfaceId.
@@ -50,7 +51,7 @@ bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
         tick_clock_->NowTicks();
   } else {
     current_local_surface_id_allocation_.allocation_time_ =
-        child_local_surface_id_allocation_time;
+        child_local_surface_id_allocation.allocation_time();
   }
 
   current_local_surface_id_allocation_.local_surface_id_
@@ -71,7 +72,10 @@ bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
 
 void ParentLocalSurfaceIdAllocator::Reset(
     const LocalSurfaceId& local_surface_id) {
+  is_invalid_ = false;
   current_local_surface_id_allocation_.local_surface_id_ = local_surface_id;
+  current_local_surface_id_allocation_.allocation_time_ =
+      tick_clock_->NowTicks();
 }
 
 void ParentLocalSurfaceIdAllocator::Invalidate() {
@@ -110,13 +114,20 @@ void ParentLocalSurfaceIdAllocator::GenerateId() {
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceId()
     const {
   if (is_invalid_)
-    return g_invalid_local_surface_id;
+    return g_invalid_local_surface_id_allocation.local_surface_id();
   return current_local_surface_id_allocation_.local_surface_id_;
+}
+
+const LocalSurfaceIdAllocation&
+ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceIdAllocation() const {
+  if (is_invalid_)
+    return g_invalid_local_surface_id_allocation;
+  return current_local_surface_id_allocation_;
 }
 
 // static
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId() {
-  return g_invalid_local_surface_id;
+  return g_invalid_local_surface_id_allocation.local_surface_id();
 }
 
 }  // namespace viz

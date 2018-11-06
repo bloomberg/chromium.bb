@@ -7956,7 +7956,7 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
   void BeginTest() override {
     expected_local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
     EXPECT_TRUE(child_allocator_.UpdateFromParent(
-        expected_local_surface_id_, allocator_.allocation_time()));
+        allocator_.GetCurrentLocalSurfaceIdAllocation()));
     child_allocator_.GenerateId();
     child_local_surface_id_ = child_allocator_.GetCurrentLocalSurfaceId();
     EXPECT_NE(expected_local_surface_id_, child_local_surface_id_);

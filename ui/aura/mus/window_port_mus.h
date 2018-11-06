@@ -259,9 +259,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceId& embedded_client_local_surface_id,
-      base::TimeTicks embedded_client_local_surface_id_allocation_time)
-      override;
+      const viz::LocalSurfaceIdAllocation&
+          embedded_client_local_surface_id_allocation) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -297,8 +296,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void AllocateLocalSurfaceId() override;
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() override;
-  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
   void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
@@ -330,7 +328,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   viz::SurfaceId primary_surface_id_;
 
-  viz::LocalSurfaceId local_surface_id_;
   // TODO(sad, fsamuel): For 'mash' mode, where the embedder is responsible for
   // allocating the LocalSurfaceIds, this should use a
   // ChildLocalSurfaceIdAllocator instead.

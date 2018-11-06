@@ -45,7 +45,7 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          root_layer_size == other.root_layer_size &&
          has_transparent_background == other.has_transparent_background &&
 #endif
-         local_surface_id == other.local_surface_id;
+         local_surface_id_allocation == other.local_surface_id_allocation;
 }
 
 bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) const {

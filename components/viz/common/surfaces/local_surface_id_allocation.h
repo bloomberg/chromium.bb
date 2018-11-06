@@ -11,8 +11,13 @@
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/viz_common_export.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace viz {
+
+namespace mojom {
+class LocalSurfaceIdAllocationDataView;
+}
 
 class ChildLocalSurfaceIdAllocator;
 class ParentLocalSurfaceIdAllocator;
@@ -21,6 +26,8 @@ class ParentLocalSurfaceIdAllocator;
 // It holds both the LocalSurfaceId, along with the allocation time.
 class VIZ_COMMON_EXPORT LocalSurfaceIdAllocation {
  public:
+  constexpr LocalSurfaceIdAllocation() = default;
+
   LocalSurfaceIdAllocation(const LocalSurfaceId& local_surface_id,
                            base::TimeTicks allocation_time);
 
@@ -32,7 +39,18 @@ class VIZ_COMMON_EXPORT LocalSurfaceIdAllocation {
   const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
   base::TimeTicks allocation_time() const { return allocation_time_; }
 
+  bool operator==(const LocalSurfaceIdAllocation& other) const {
+    return local_surface_id_ == other.local_surface_id_ &&
+           allocation_time_ == other.allocation_time_;
+  }
+
+  bool operator!=(const LocalSurfaceIdAllocation& other) const {
+    return !(*this == other);
+  }
+
  private:
+  friend struct mojo::StructTraits<mojom::LocalSurfaceIdAllocationDataView,
+                                   LocalSurfaceIdAllocation>;
   friend class ChildLocalSurfaceIdAllocator;
   friend class ParentLocalSurfaceIdAllocator;
 

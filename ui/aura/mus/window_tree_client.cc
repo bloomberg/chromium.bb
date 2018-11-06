@@ -678,7 +678,8 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     const gfx::Rect& new_bounds) {
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
-          this, window, old_bounds, window->GetLocalSurfaceId()));
+          this, window, old_bounds,
+          window->GetLocalSurfaceIdAllocation().local_surface_id()));
   base::Optional<viz::LocalSurfaceId> local_surface_id;
   if (window->GetWindow()->IsEmbeddingClient() ||
       window->HasLocalLayerTreeFrameSink()) {

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/ws/public/mojom/cursor/cursor.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
@@ -103,10 +104,11 @@ class AURA_EXPORT WindowMus {
   virtual ChangeSource OnTransientChildAdded(WindowMus* child) = 0;
   virtual ChangeSource OnTransientChildRemoved(WindowMus* child) = 0;
 
-  // Returns the currently used viz::LocalSurfaceId to embed this Window. Local
-  // windows or windows that have not been embedded yet will have an invalid
-  // viz::LocalSurfaceId.
-  virtual const viz::LocalSurfaceId& GetLocalSurfaceId() = 0;
+  // Returns the currently used viz::LocalSurfaceIdAllocation to embed this
+  // Window. Local windows or windows that have not been embedded yet will have
+  // an invalid viz::LocalSurfaceIdAllocaton.
+  virtual const viz::LocalSurfaceIdAllocation&
+  GetLocalSurfaceIdAllocation() = 0;
 
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally
