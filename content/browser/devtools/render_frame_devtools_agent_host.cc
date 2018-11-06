@@ -220,8 +220,7 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
-                                                 TargetRegistry* registry) {
+bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (!ShouldAllowSession(session))
     return false;
 
@@ -247,7 +246,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
       session->client()->MayDiscoverTargets()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), GetRendererChannel(), registry)));
+      GetId(), GetRendererChannel(), session->GetRootSession())));
   session->AddHandler(base::WrapUnique(new protocol::PageHandler(
       emulation_handler, session->client()->MayAffectLocalFiles())));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));

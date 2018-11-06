@@ -75,11 +75,10 @@ bool WorkerDevToolsAgentHost::Close() {
   return false;
 }
 
-bool WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
-                                            TargetRegistry* registry) {
+bool WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
-      GetRendererChannel(), registry));
+      GetRendererChannel(), session->GetRootSession()));
   return true;
 }
 
