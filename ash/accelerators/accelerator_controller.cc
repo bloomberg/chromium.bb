@@ -799,6 +799,16 @@ bool CanHandleToggleDockedMagnifier() {
   return features::IsDockedMagnifierEnabled();
 }
 
+bool CanHandleToggleOverview() {
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  // Do not toggle overview if there is a window being dragged.
+  for (auto* window : windows) {
+    if (wm::GetWindowState(window)->is_dragged())
+      return false;
+  }
+  return true;
+}
+
 void CreateAndShowStickyNotification(const int title_id,
                                      const int message_id,
                                      const std::string& notification_id) {
@@ -1314,6 +1324,8 @@ bool AcceleratorController::CanPerformAction(
       return true;
     case TOGGLE_MIRROR_MODE:
       return true;
+    case TOGGLE_OVERVIEW:
+      return CanHandleToggleOverview();
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
@@ -1369,7 +1381,6 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_FULLSCREEN:
     case TOGGLE_HIGH_CONTRAST:
     case TOGGLE_MAXIMIZED:
-    case TOGGLE_OVERVIEW:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_SYSTEM_TRAY_BUBBLE:
     case TOGGLE_WIFI:

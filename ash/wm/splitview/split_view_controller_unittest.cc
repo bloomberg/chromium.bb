@@ -3329,6 +3329,28 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
   EXPECT_EQ(window2->bounds(), snapped_bounds2);
 }
 
+// Tests that press overview key in keyboard during drag should not put the
+// dragged window into overview.
+TEST_F(SplitViewTabDraggingTest, PressOverviewKeyDuringDrag) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  wm::GetWindowState(dragged_window.get())->Maximize();
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_window.get(), dragged_window.get());
+  DragWindowTo(resizer.get(), gfx::Point(300, 300));
+  EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  GetEventGenerator()->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()
+                   ->window_selector_controller()
+                   ->window_selector()
+                   ->IsWindowInOverview(dragged_window.get()));
+  EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
+  resizer->CompleteDrag();
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)
