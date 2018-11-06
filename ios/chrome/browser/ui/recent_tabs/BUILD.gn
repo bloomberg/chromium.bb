@@ -46,7 +46,6 @@ source_set("recent_tabs_ui") {
     "recent_tabs_constants.h",
     "recent_tabs_constants.mm",
     "recent_tabs_consumer.h",
-    "recent_tabs_image_data_source.h",
     "recent_tabs_presentation_delegate.h",
     "recent_tabs_table_view_controller.h",
     "recent_tabs_table_view_controller.mm",

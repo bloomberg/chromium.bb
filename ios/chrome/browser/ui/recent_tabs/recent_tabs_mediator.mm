@@ -113,7 +113,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
   [self.consumer setTabRestoreService:nullptr];
 }
 
-#pragma mark - RecentTabsImageDataSource
+#pragma mark - TableViewFaviconDataSource
 
 - (FaviconAttributes*)faviconForURL:(const GURL&)URL
                          completion:(void (^)(FaviconAttributes*))completion {

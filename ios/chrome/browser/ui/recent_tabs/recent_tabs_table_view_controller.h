@@ -16,7 +16,7 @@ class ChromeBrowserState;
 @protocol RecentTabsTableViewControllerDelegate;
 @protocol RecentTabsPresentationDelegate;
 @protocol UrlLoader;
-@protocol RecentTabsImageDataSource;
+@protocol TableViewFaviconDataSource;
 
 @interface RecentTabsTableViewController
     : ChromeTableViewController<RecentTabsConsumer>
@@ -35,7 +35,7 @@ class ChromeBrowserState;
     presentationDelegate;
 
 // Data source for images.
-@property(nonatomic, weak) id<RecentTabsImageDataSource> imageDataSource;
+@property(nonatomic, weak) id<TableViewFaviconDataSource> imageDataSource;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
