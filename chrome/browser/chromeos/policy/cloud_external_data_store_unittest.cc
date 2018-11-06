@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "crypto/sha2.h"
@@ -57,7 +58,8 @@ CouldExternalDataStoreTest::CouldExternalDataStoreTest()
 
 void CouldExternalDataStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
+  resource_cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_,
+                                          /* max_cache_size */ base::nullopt));
 }
 
 TEST_F(CouldExternalDataStoreTest, StoreAndLoad) {

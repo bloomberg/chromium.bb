@@ -5,8 +5,10 @@
 #include "components/policy/core/common/cloud/resource_cache.h"
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -41,9 +43,18 @@ bool Base64UrlEncode(const std::set<std::string>& input,
 
 ResourceCache::ResourceCache(
     const base::FilePath& cache_dir,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::Optional<int64_t> max_cache_size)
     : cache_dir_(cache_dir),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      max_cache_size_(max_cache_size) {
+  // Safe to post this without a WeakPtr because this class must be destructed
+  // on the same thread.
+  if (max_cache_size_.has_value()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&ResourceCache::InitCurrentCacheSize,
+                                          base::Unretained(this)));
+  }
 }
 
 ResourceCache::~ResourceCache() {
@@ -55,19 +66,18 @@ bool ResourceCache::Store(const std::string& key,
                           const std::string& data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::FilePath subkey_path;
-  // Delete the file before writing to it. This ensures that the write does not
-  // follow a symlink planted at |subkey_path|, clobbering a file outside the
-  // cache directory. The mechanism is meant to foil file-system-level attacks
-  // where a symlink is planted in the cache directory before Chrome has
-  // started. An attacker controlling a process running concurrently with Chrome
-  // would be able to race against the protection by re-creating the symlink
-  // between these two calls. There is nothing in file_util that could be used
-  // to protect against such races, especially as the cache is cross-platform
-  // and therefore cannot use any POSIX-only tricks.
-  int size = base::checked_cast<int>(data.size());
-  return VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path) &&
-         base::DeleteFile(subkey_path, false) &&
-         (base::WriteFile(subkey_path, data.data(), size) == size);
+  if (!VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path))
+    return false;
+  int64_t size = base::checked_cast<int64_t>(data.size());
+  if (max_cache_size_.has_value() &&
+      current_cache_size_ - GetCacheDirectoryOrFileSize(subkey_path) + size >
+          max_cache_size_.value()) {
+    LOG(ERROR) << "Data (" << key << ", " << subkey << ") with size " << size
+               << " bytes doesn't fit in cache, left size: "
+               << max_cache_size_.value() - current_cache_size_ << " bytes";
+    return false;
+  }
+  return WriteCacheFile(subkey_path, data);
 }
 
 bool ResourceCache::Load(const std::string& key,
@@ -115,18 +125,20 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::FilePath subkey_path;
   if (VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path))
-    base::DeleteFile(subkey_path, false);
-  // Delete() does nothing if the directory given to it is not empty. Hence, the
-  // call below deletes the directory representing |key| if its last subkey was
-  // just removed and does nothing otherwise.
-  base::DeleteFile(subkey_path.DirName(), false);
+    DeleteCacheFile(subkey_path, false);
+  base::FilePath key_path;
+  // DeleteCacheFile() does nothing if the directory given to it is not empty.
+  // Hence, the call below deletes the directory representing |key| if its last
+  // subkey was just removed and does nothing otherwise.
+  if (VerifyKeyPath(key, false, &key_path))
+    DeleteCacheFile(key_path, false);
 }
 
 void ResourceCache::Clear(const std::string& key) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::FilePath key_path;
   if (VerifyKeyPath(key, false, &key_path))
-    base::DeleteFile(key_path, true);
+    DeleteCacheFile(key_path, true);
 }
 
 void ResourceCache::FilterSubkeys(const std::string& key,
@@ -147,14 +159,14 @@ void ResourceCache::FilterSubkeys(const std::string& key,
                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                                &subkey) ||
         subkey.empty() || test.Run(subkey)) {
-      base::DeleteFile(subkey_path, true);
+      DeleteCacheFile(subkey_path, true);
     }
   }
 
   // Delete() does nothing if the directory given to it is not empty. Hence, the
   // call below deletes the directory representing |key| if all of its subkeys
   // were just removed and does nothing otherwise.
-  base::DeleteFile(key_path, false);
+  DeleteCacheFile(key_path, false);
 }
 
 void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
@@ -169,7 +181,7 @@ void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
        path = enumerator.Next()) {
     const std::string name(path.BaseName().MaybeAsASCII());
     if (encoded_keys_to_keep.find(name) == encoded_keys_to_keep.end())
-      base::DeleteFile(path, true);
+      DeleteCacheFile(path, true);
   }
 }
 
@@ -190,12 +202,12 @@ void ResourceCache::PurgeOtherSubkeys(
        path = enumerator.Next()) {
     const std::string name(path.BaseName().MaybeAsASCII());
     if (encoded_subkeys_to_keep.find(name) == encoded_subkeys_to_keep.end())
-      base::DeleteFile(path, false);
+      DeleteCacheFile(path, false);
   }
   // Delete() does nothing if the directory given to it is not empty. Hence, the
   // call below deletes the directory representing |key| if all of its subkeys
   // were just removed and does nothing otherwise.
-  base::DeleteFile(key_path, false);
+  DeleteCacheFile(key_path, false);
 }
 
 bool ResourceCache::VerifyKeyPath(const std::string& key,
@@ -236,5 +248,54 @@ bool ResourceCache::VerifyKeyPathAndGetSubkeyPath(const std::string& key,
   return true;
 }
 
+void ResourceCache::InitCurrentCacheSize() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  current_cache_size_ = GetCacheDirectoryOrFileSize(cache_dir_);
+}
+
+bool ResourceCache::WriteCacheFile(const base::FilePath& path,
+                                   const std::string& data) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(cache_dir_.IsParent(path));
+  bool success = DeleteCacheFile(path, false);
+  int size = base::checked_cast<int>(data.size());
+  int bytes_written = base::WriteFile(path, data.data(), size);
+  if (max_cache_size_.has_value())
+    current_cache_size_ += bytes_written;
+  return success && bytes_written == size;
+}
+
+bool ResourceCache::DeleteCacheFile(const base::FilePath& path,
+                                    bool recursive) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(cache_dir_.IsParent(path));
+  int64_t size = GetCacheDirectoryOrFileSize(path);
+  bool success = base::DeleteFile(path, recursive);
+  if (success && max_cache_size_.has_value())
+    current_cache_size_ -= size;
+  return success;
+}
+
+int64_t ResourceCache::GetCacheDirectoryOrFileSize(
+    const base::FilePath& path) const {
+  DCHECK(path == cache_dir_ || cache_dir_.IsParent(path));
+  if (base::IsLink(path)) {
+    DLOG(WARNING) << "Symlink " << path.LossyDisplayName()
+                  << " detected in cache directory";
+    return 0;
+  }
+  int64_t path_size = 0;
+  if (base::DirectoryExists(path)) {
+    int types = base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES;
+    base::FileEnumerator enumerator(path, /* recursive */ false, types);
+    for (base::FilePath path = enumerator.Next(); !path.empty();
+         path = enumerator.Next()) {
+      path_size += GetCacheDirectoryOrFileSize(path);
+    }
+  } else if (!base::GetFileSize(path, &path_size)) {
+    path_size = 0;
+  }
+  return path_size;
+}
 
 }  // namespace policy
