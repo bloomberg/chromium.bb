@@ -165,6 +165,7 @@ viz_component("service") {
     "surfaces/surface_hittest_delegate.h",
     "surfaces/surface_manager.cc",
     "surfaces/surface_manager.h",
+    "surfaces/surface_manager_delegate.h",
     "surfaces/surface_reference.cc",
     "surfaces/surface_reference.h",
     "viz_service_export.h",

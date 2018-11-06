@@ -29,6 +29,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/service/surfaces/surface_manager_delegate.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -50,7 +51,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     : public SurfaceObserver,
       public FrameSinkVideoCapturerManager,
       public mojom::FrameSinkManager,
-      public HitTestAggregatorDelegate {
+      public HitTestAggregatorDelegate,
+      public SurfaceManagerDelegate {
  public:
   explicit FrameSinkManagerImpl(
       SharedBitmapManager* shared_bitmap_manager,
@@ -123,6 +125,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& frame_sink_id,
       const std::vector<AggregatedHitTestRegion>& hit_test_data) override;
 
+  // SurfaceManagerDelegate implementation:
+  base::StringPiece GetFrameSinkDebugLabel(
+      const FrameSinkId& frame_sink_id) const override;
+
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.
   //
@@ -174,10 +180,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   void AddObserver(FrameSinkObserver* obs);
   void RemoveObserver(FrameSinkObserver* obs);
-
-  // Returns the debug label associated with |frame_sink_id| if any.
-  base::StringPiece GetFrameSinkDebugLabel(
-      const FrameSinkId& frame_sink_id) const;
 
   // Returns ids of all FrameSinks that were created.
   std::vector<FrameSinkId> GetCreatedFrameSinkIds() const;

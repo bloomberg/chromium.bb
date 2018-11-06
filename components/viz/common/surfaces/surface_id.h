@@ -59,6 +59,8 @@ class VIZ_COMMON_EXPORT SurfaceId {
 
   std::string ToString() const;
 
+  std::string ToString(base::StringPiece frame_sink_debug_label) const;
+
   // Returns whether this SurfaceId was generated after |other|.
   bool IsNewerThan(const SurfaceId& other) const;
 

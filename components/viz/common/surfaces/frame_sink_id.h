@@ -12,6 +12,7 @@
 #include <tuple>
 
 #include "base/hash.h"
+#include "base/strings/string_piece.h"
 #include "components/viz/common/viz_common_export.h"
 
 namespace viz {
@@ -62,6 +63,8 @@ class VIZ_COMMON_EXPORT FrameSinkId {
   size_t hash() const { return base::HashInts(client_id_, sink_id_); }
 
   std::string ToString() const;
+
+  std::string ToString(base::StringPiece debug_label) const;
 
  private:
   uint32_t client_id_;
