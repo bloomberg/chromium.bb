@@ -1316,8 +1316,8 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
   void SetupTree() override {
     root_ = Layer::Create();
 
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
 
     layer_tree_host()->SetRootLayer(root_);
 
@@ -1413,8 +1413,8 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
     child_ = Layer::Create();
     root_->AddChild(child_);
 
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(100, 100), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(100, 100), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
 
     layer_tree_host()->SetRootLayer(root_);
     root_->SetBounds(gfx::Size(50, 50));
@@ -1501,8 +1501,8 @@ class LayerTreeHostTestPrepareTilesWithoutDraw : public LayerTreeHostTest {
     child_layer_ = Layer::Create();
     layer_tree_host()->root_layer()->AddChild(child_layer_);
 
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
 
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(50, 50));
     child_layer_->SetBounds(gfx::Size(50, 50));
@@ -2333,8 +2333,8 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetViewportSizeAndScale(
-        bounds_, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(bounds_, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
     client_.set_bounds(root_layer_->bounds());
   }
@@ -2398,8 +2398,8 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     root_layer_->SetTransform(transform);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetViewportSizeAndScale(
-        bounds_, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(bounds_, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
 
     PostSetNeedsCommitToMainThread();
     client_.set_bounds(root_layer_->bounds());
@@ -2435,7 +2435,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     // On the second commit, resize the viewport.
     if (num_draws_ == 1) {
       layer_tree_host()->SetViewportSizeAndScale(
-          gfx::Size(400, 64), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+          gfx::Size(400, 64), 1.f, viz::LocalSurfaceIdAllocation());
     }
     if (num_draws_ < 2) {
       layer_tree_host()->SetNeedsRedrawRect(invalid_rect_);
@@ -2550,8 +2550,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
         // a second commit as a result.
         layer_tree_host()->SetViewportSizeAndScale(
             layer_tree_host()->device_viewport_size(), 4.f,
-            layer_tree_host()->local_surface_id_from_parent(),
-            layer_tree_host()->local_surface_id_allocation_time_from_parent());
+            layer_tree_host()->local_surface_id_allocation_from_parent());
         break;
       default:
         // No extra commits.
@@ -2596,8 +2595,7 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       layer_tree_host()->SetViewportSizeAndScale(
           layer_tree_host()->device_viewport_size(), 4.f,
-          layer_tree_host()->local_surface_id_from_parent(),
-          layer_tree_host()->local_surface_id_allocation_time_from_parent());
+          layer_tree_host()->local_surface_id_allocation_from_parent());
     }
   }
 
@@ -2775,8 +2773,8 @@ class LayerTreeHostTestSetNeedsCommitWithForcedRedraw
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetViewportSizeAndScale(
-        bounds_, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(bounds_, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
     client_.set_bounds(root_layer_->bounds());
   }
@@ -3064,8 +3062,8 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   LayerTreeHostTestCommit() = default;
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(20, 20), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(20, 20), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     layer_tree_host()->set_background_color(SK_ColorGRAY);
     layer_tree_host()->SetEventListenerProperties(
         EventListenerClass::kMouseWheel, EventListenerProperties::kPassive);
@@ -3112,8 +3110,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
       : frame_count_with_pending_tree_(0) {}
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(20, 20), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(20, 20), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     layer_tree_host()->set_background_color(SK_ColorGRAY);
 
     PostSetNeedsCommitToMainThread();
@@ -3166,8 +3164,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
   LayerTreeHostTestFrameTimeUpdatesAfterDraw() : frame_(0) {}
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(20, 20), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(20, 20), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     layer_tree_host()->set_background_color(SK_ColorGRAY);
 
     PostSetNeedsCommitToMainThread();
@@ -3380,8 +3378,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     root_layer_ = FakePictureLayer::Create(&client_);
     child_layer_ = FakePictureLayer::Create(&client_);
 
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(60, 60), 1.5f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(60, 60), 1.5f,
+                                               viz::LocalSurfaceIdAllocation());
     EXPECT_EQ(gfx::Size(60, 60), layer_tree_host()->device_viewport_size());
 
     root_layer_->AddChild(child_layer_);
@@ -3477,8 +3475,8 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
       : num_commit_complete_(0), num_draw_layers_(0) {}
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
     layer_ = FakePictureLayer::Create(&client_);
@@ -4484,7 +4482,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         break;
       case 10:
         layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(20, 20), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+            gfx::Size(20, 20), 1.f, viz::LocalSurfaceIdAllocation());
         // No layers need commit.
         break;
       case 11:
@@ -5505,8 +5503,8 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
   void BeginTest() override {
     // The viewport is empty, but we still need to update layers on the main
     // thread.
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(0, 0), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(0, 0), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -5837,8 +5835,8 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
     layer_->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(layer_);
     gfx::Size bounds(100, 100);
-    layer_tree_host()->SetViewportSizeAndScale(
-        bounds, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -5934,8 +5932,8 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
     layer_->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(layer_);
     gfx::Size bounds(100, 100);
-    layer_tree_host()->SetViewportSizeAndScale(
-        bounds, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -6877,12 +6875,12 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
         // Setting an empty viewport causes draws to get skipped, so the active
         // tree won't update draw properties.
         layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+            gfx::Size(), 1.f, viz::LocalSurfaceIdAllocation());
         child_->SetForceRenderSurfaceForTesting(false);
         break;
       case 3:
         layer_tree_host()->SetViewportSizeAndScale(
-            root_->bounds(), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+            root_->bounds(), 1.f, viz::LocalSurfaceIdAllocation());
     }
   }
 
@@ -7320,8 +7318,8 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
-    layer_tree_host()->SetViewportSizeAndScale(
-        viewport_size_, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(viewport_size_, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     client_.set_bounds(root->bounds());
   }
 
@@ -7546,8 +7544,8 @@ class LayerTreeHostTestOneActivatePerPrepareTiles : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(16, 16), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(16, 16), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -7928,7 +7926,9 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     EXPECT_EQ(expected_local_surface_id_,
-              host_impl->active_tree()->local_surface_id_from_parent());
+              host_impl->active_tree()
+                  ->local_surface_id_allocation_from_parent()
+                  .local_surface_id());
     return draw_result;
   }
 
@@ -7970,7 +7970,9 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     // We should not be picking up the newer |child_local_surface_id_|.
     EXPECT_EQ(expected_local_surface_id_,
-              host_impl->active_tree()->local_surface_id_from_parent());
+              host_impl->active_tree()
+                  ->local_surface_id_allocation_from_parent()
+                  .local_surface_id());
     return draw_result;
   }
 
@@ -8008,7 +8010,9 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     EXPECT_EQ(expected_parent_local_surface_id_,
-              host_impl->active_tree()->local_surface_id_from_parent());
+              host_impl->active_tree()
+                  ->local_surface_id_allocation_from_parent()
+                  .local_surface_id());
     return draw_result;
   }
 
@@ -8077,8 +8081,8 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
-    layer_tree_host()->SetViewportSizeAndScale(
-        viewport_size_, 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(viewport_size_, 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     client_.set_bounds(root->bounds());
   }
 
@@ -8886,8 +8890,8 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSizeAndScale(
-        gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
     allocator_.GenerateId();
     local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();

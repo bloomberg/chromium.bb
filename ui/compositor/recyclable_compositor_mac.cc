@@ -74,11 +74,10 @@ void RecyclableCompositorMac::UpdateSurface(const gfx::Size& size_pixels,
     size_pixels_ = size_pixels;
     scale_factor_ = scale_factor;
     local_surface_id_allocator_.GenerateId();
-    viz::LocalSurfaceId local_surface_id =
-        local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    compositor()->SetScaleAndSize(
-        scale_factor_, size_pixels_, local_surface_id,
-        local_surface_id_allocator_.allocation_time());
+    viz::LocalSurfaceIdAllocation local_surface_id_allocation =
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+    compositor()->SetScaleAndSize(scale_factor_, size_pixels_,
+                                  local_surface_id_allocation);
   }
 }
 
@@ -88,8 +87,7 @@ void RecyclableCompositorMac::InvalidateSurface() {
   local_surface_id_allocator_.Invalidate();
   compositor()->SetScaleAndSize(
       scale_factor_, size_pixels_,
-      local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      local_surface_id_allocator_.allocation_time());
+      local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
 }
 
 void RecyclableCompositorMac::OnCompositingDidCommit(

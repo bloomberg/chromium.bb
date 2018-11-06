@@ -68,7 +68,6 @@ namespace viz {
 class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
-class LocalSurfaceId;
 }
 
 namespace ui {
@@ -228,9 +227,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id);
 
-  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id,
-                         base::TimeTicks local_surface_id_allocation_time);
-
   void SetLayerTreeFrameSink(std::unique_ptr<cc::LayerTreeFrameSink> surface);
 
   // Called when a child surface is about to resize.
@@ -283,10 +279,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetLatencyInfo(const LatencyInfo& latency_info);
 
   // Sets the compositor's device scale factor and size.
-  void SetScaleAndSize(float scale,
-                       const gfx::Size& size_in_pixel,
-                       const viz::LocalSurfaceId& local_surface_id,
-                       base::TimeTicks local_surface_id_allocation_time);
+  void SetScaleAndSize(
+      float scale,
+      const gfx::Size& size_in_pixel,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
 
   // Set the output color profile into which this compositor should render.
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);

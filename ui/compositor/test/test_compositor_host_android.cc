@@ -31,7 +31,7 @@ class TestCompositorHostAndroid : public TestCompositorHost {
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
     compositor_->SetScaleAndSize(1.0f,
                                  gfx::Size(bounds.width(), bounds.height()),
-                                 viz::LocalSurfaceId(), base::TimeTicks());
+                                 viz::LocalSurfaceIdAllocation());
   }
 
   // Overridden from TestCompositorHost:

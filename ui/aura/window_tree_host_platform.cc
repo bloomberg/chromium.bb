@@ -121,11 +121,9 @@ gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
 
 void WindowTreeHostPlatform::SetBoundsInPixels(
     const gfx::Rect& bounds,
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks local_surface_id_allocation_time) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   pending_size_ = bounds.size();
-  pending_local_surface_id_ = local_surface_id;
-  pending_local_surface_id_allocation_time_ = local_surface_id_allocation_time;
+  pending_local_surface_id_allocation_ = local_surface_id_allocation;
   platform_window_->SetBounds(bounds);
 }
 
@@ -205,18 +203,14 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   bounds_ = new_bounds;
   if (bounds_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_.origin());
-  if (pending_local_surface_id_.is_valid() ||
+  if (pending_local_surface_id_allocation_.IsValid() ||
       bounds_.size() != old_bounds.size() || current_scale != new_scale) {
-    viz::LocalSurfaceId local_surface_id;
-    base::TimeTicks allocation_time;
-    if (bounds_.size() == pending_size_) {
-      local_surface_id = pending_local_surface_id_;
-      allocation_time = pending_local_surface_id_allocation_time_;
-    }
-    pending_local_surface_id_ = viz::LocalSurfaceId();
-    pending_local_surface_id_allocation_time_ = base::TimeTicks();
+    viz::LocalSurfaceIdAllocation local_surface_id_allocation;
+    if (bounds_.size() == pending_size_)
+      local_surface_id_allocation = pending_local_surface_id_allocation_;
+    pending_local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
     pending_size_ = gfx::Size();
-    OnHostResizedInPixels(bounds_.size(), local_surface_id, allocation_time);
+    OnHostResizedInPixels(bounds_.size(), local_surface_id_allocation);
   }
 }
 

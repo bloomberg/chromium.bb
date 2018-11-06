@@ -82,9 +82,8 @@ class PageOverlayTest : public testing::Test {
     content::LayerTreeView* layer_tree_view = helper_.GetLayerTreeView();
     layer_tree_view->SetViewportSizeAndScale(
         static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-        layer_tree_view->layer_tree_host()->local_surface_id_from_parent(),
         layer_tree_view->layer_tree_host()
-            ->local_surface_id_allocation_time_from_parent());
+            ->local_surface_id_allocation_from_parent());
   }
 
   template <typename OverlayType>

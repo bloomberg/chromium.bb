@@ -187,8 +187,9 @@ class InteractiveRenderWidget : public RenderWidget {
     return mock_input_handler_host_.get();
   }
 
-  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
-    return local_surface_id_from_parent_;
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
+      const {
+    return local_surface_id_allocation_from_parent_;
   }
 
  protected:
@@ -371,9 +372,11 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
   visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
   visual_properties.local_surface_id = allocator.GetCurrentLocalSurfaceId();
+  visual_properties.local_surface_id_allocation_time =
+      allocator.allocation_time();
   widget()->SynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
-            widget()->local_surface_id_from_parent());
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
+            widget()->local_surface_id_allocation_from_parent());
   EXPECT_FALSE(widget()
                    ->layer_tree_view()
                    ->layer_tree_host()
@@ -381,8 +384,8 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
 
   constexpr gfx::Size size(200, 200);
   widget()->DidAutoResize(size);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
-            widget()->local_surface_id_from_parent());
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
+            widget()->local_surface_id_allocation_from_parent());
   EXPECT_TRUE(widget()
                   ->layer_tree_view()
                   ->layer_tree_host()

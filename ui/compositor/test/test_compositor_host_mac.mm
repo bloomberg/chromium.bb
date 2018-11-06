@@ -161,8 +161,8 @@ void TestCompositorHostMac::Show() {
       std::make_unique<TestAcceleratedWidgetMacNSView>(view);
   accelerated_widget_.SetNSView(test_accelerated_widget_nsview_.get());
   compositor_.SetAcceleratedWidget(accelerated_widget_.accelerated_widget());
-  compositor_.SetScaleAndSize(1.0f, bounds_.size(), viz::LocalSurfaceId(),
-                              base::TimeTicks());
+  compositor_.SetScaleAndSize(1.0f, bounds_.size(),
+                              viz::LocalSurfaceIdAllocation());
   [view setCompositor:&compositor_];
   [window_ setContentView:view];
   [window_ orderFront:nil];

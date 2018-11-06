@@ -202,8 +202,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // when the size change takes effect.
   virtual void SetBoundsInPixels(
       const gfx::Rect& bounds_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId(),
-      base::TimeTicks allocation_time = base::TimeTicks()) = 0;
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation()) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
 
   // Sets the OS capture to the root window.
@@ -275,8 +275,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
   void OnHostResizedInPixels(
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId(),
-      base::TimeTicks new_allocation_time = base::TimeTicks());
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation());
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();

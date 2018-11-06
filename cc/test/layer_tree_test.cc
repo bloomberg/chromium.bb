@@ -870,9 +870,9 @@ void LayerTreeTest::SetupTree() {
   gfx::Size root_bounds = layer_tree_host()->root_layer()->bounds();
   gfx::Size device_root_bounds =
       gfx::ScaleToCeiledSize(root_bounds, initial_device_scale_factor_);
-  layer_tree_host()->SetViewportSizeAndScale(
-      device_root_bounds, initial_device_scale_factor_, viz::LocalSurfaceId(),
-      base::TimeTicks());
+  layer_tree_host()->SetViewportSizeAndScale(device_root_bounds,
+                                             initial_device_scale_factor_,
+                                             viz::LocalSurfaceIdAllocation());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
@@ -925,8 +925,9 @@ void LayerTreeTest::DispatchSetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetLocalSurfaceIdFromParent(local_surface_id,
-                                                  base::TimeTicks());
+    layer_tree_host_->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(local_surface_id,
+                                      base::TimeTicks::Now()));
 }
 
 void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {

@@ -120,9 +120,10 @@ void WindowTreeHostMus::SetBoundsFromServerInPixels(
     const gfx::Rect& bounds_in_pixels,
     const viz::LocalSurfaceId& local_surface_id) {
   base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
-  // TODO(jonross): Update Mus to pass allocation time for Server allocated
-  // viz::LocalSurfaceIds.
-  SetBoundsInPixels(bounds_in_pixels, local_surface_id);
+  // TODO(jonross): Update Mus to pass the correct allocation time.
+  SetBoundsInPixels(
+      bounds_in_pixels,
+      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now()));
 }
 
 void WindowTreeHostMus::SetClientArea(
@@ -173,12 +174,11 @@ void WindowTreeHostMus::HideImpl() {
 
 void WindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds,
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks allocation_time) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   if (!in_set_bounds_from_server_)
     delegate_->OnWindowTreeHostBoundsWillChange(this, bounds);
-  WindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id,
-                                            allocation_time);
+  WindowTreeHostPlatform::SetBoundsInPixels(bounds,
+                                            local_surface_id_allocation);
 }
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {

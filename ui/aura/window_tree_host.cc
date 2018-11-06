@@ -415,10 +415,8 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
-  compositor_->SetScaleAndSize(
-      device_scale_factor_, GetBoundsInPixels().size(),
-      window()->GetLocalSurfaceIdAllocation().local_surface_id(),
-      window()->GetLocalSurfaceIdAllocation().allocation_time());
+  compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
+                               window()->GetLocalSurfaceIdAllocation());
   compositor_->SetRootLayer(window()->layer());
 
   display::Display display =
@@ -443,8 +441,7 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels,
-    const viz::LocalSurfaceId& new_local_surface_id,
-    base::TimeTicks new_allocation_time) {
+    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation) {
   // TODO(jonross) Unify all OnHostResizedInPixels to have both
   // viz::LocalSurfaceId and allocation time as optional parameters.
   display::Display display =
@@ -453,18 +450,16 @@ void WindowTreeHost::OnHostResizedInPixels(
   UpdateRootWindowSizeInPixels();
 
   // Allocate a new LocalSurfaceId for the new state.
-  auto local_surface_id = new_local_surface_id;
-  auto allocation_time = new_allocation_time;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation(
+      new_local_surface_id_allocation);
   if (ShouldAllocateLocalSurfaceId(window()) &&
-      !new_local_surface_id.is_valid()) {
+      !new_local_surface_id_allocation.IsValid()) {
     window_->AllocateLocalSurfaceId();
-    local_surface_id =
-        window_->GetLocalSurfaceIdAllocation().local_surface_id();
-    allocation_time = window_->GetLocalSurfaceIdAllocation().allocation_time();
+    local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
   }
   ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               local_surface_id, allocation_time);
+                               local_surface_id_allocation);
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);

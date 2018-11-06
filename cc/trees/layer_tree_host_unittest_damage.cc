@@ -109,7 +109,7 @@ class LayerTreeHostDamageTestSetViewportSizeAndScale
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(15, 15), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
+            gfx::Size(15, 15), 1.f, viz::LocalSurfaceIdAllocation());
         break;
     }
   }

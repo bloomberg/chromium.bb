@@ -534,7 +534,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
       case 1:
         gfx::Size double_root_size(200, 200);
         layer_tree_host()->SetViewportSizeAndScale(
-            double_root_size, 2.f, viz::LocalSurfaceId(), base::TimeTicks());
+            double_root_size, 2.f, viz::LocalSurfaceIdAllocation());
         break;
     }
   }

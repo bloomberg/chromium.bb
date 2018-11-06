@@ -94,10 +94,9 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
 
 void AshWindowTreeHostUnified::SetBoundsInPixels(
     const gfx::Rect& bounds,
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks allocation_time) {
-  AshWindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id,
-                                               allocation_time);
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  AshWindowTreeHostPlatform::SetBoundsInPixels(bounds,
+                                               local_surface_id_allocation);
   OnHostResizedInPixels(bounds.size());
 }
 

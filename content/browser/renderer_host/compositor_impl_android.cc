@@ -49,6 +49,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -835,8 +836,7 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
   }
   host_->SetRootLayer(root_window_->GetLayer());
   host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                 GenerateLocalSurfaceId(),
-                                 GetLocalSurfaceIdAllocationTime());
+                                 GenerateLocalSurfaceId());
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -917,8 +917,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
   DCHECK(!host_->IsVisible());
   host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                 GenerateLocalSurfaceId(),
-                                 GetLocalSurfaceIdAllocationTime());
+                                 GenerateLocalSurfaceId());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -996,8 +995,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (host_) {
     // TODO(ccameron): Ensure a valid LocalSurfaceId here.
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                   GenerateLocalSurfaceId(),
-                                   GetLocalSurfaceIdAllocationTime());
+                                   GenerateLocalSurfaceId());
   }
   if (display_)
     display_->Resize(size);
@@ -1315,8 +1313,7 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                   GenerateLocalSurfaceId(),
-                                   GetLocalSurfaceIdAllocationTime());
+                                   GenerateLocalSurfaceId());
   }
 }
 
@@ -1420,21 +1417,15 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
 }
 
-viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
+viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() const {
   if (enable_surface_synchronization_) {
     viz::ParentLocalSurfaceIdAllocator& allocator =
         CompositorDependencies::Get().surface_id_allocator;
     allocator.GenerateId();
-    return allocator.GetCurrentLocalSurfaceId();
+    return allocator.GetCurrentLocalSurfaceIdAllocation();
   }
 
-  return viz::LocalSurfaceId();
-}
-
-base::TimeTicks CompositorImpl::GetLocalSurfaceIdAllocationTime() const {
-  if (enable_surface_synchronization_)
-    return CompositorDependencies::Get().surface_id_allocator.allocation_time();
-  return base::TimeTicks();
+  return viz::LocalSurfaceIdAllocation();
 }
 
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
