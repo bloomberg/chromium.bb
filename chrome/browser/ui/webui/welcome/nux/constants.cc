@@ -19,5 +19,7 @@ const base::FeatureParam<std::string> kNuxOnboardingNewUserModules{
     "nux-email,nux-google-apps,nux-set-as-default,signin-view"};
 const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
     &kNuxOnboardingFeature, "returning-user-modules", "nux-set-as-default"};
+const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial{
+    &kNuxOnboardingFeature, "show-email-interstitial", true};
 
 }  // namespace nux

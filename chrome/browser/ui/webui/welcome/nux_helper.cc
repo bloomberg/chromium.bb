@@ -27,6 +27,8 @@ const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
+const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
+    {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
 bool IsNuxOnboardingEnabled(Profile* profile) {
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
@@ -59,10 +61,14 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                       kNuxOnboardingForceEnabledNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingForceEnabledReturningUserModules.Get());
+    modules.SetBoolean("show-email-interstitial",
+                       kNuxOnboardingForceEnabledShowEmailInterstitial.Get());
   } else {  // This means nux::kNuxOnboardingFeature is enabled.
     modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingReturningUserModules.Get());
+    modules.SetBoolean("show-email-interstitial",
+                       kNuxOnboardingShowEmailInterstitial.Get());
   }
 
   return modules;

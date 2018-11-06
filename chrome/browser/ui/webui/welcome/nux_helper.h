@@ -22,6 +22,8 @@ extern const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledNewUserModules;
 extern const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules;
+extern const base::FeatureParam<bool>
+    kNuxOnboardingForceEnabledShowEmailInterstitial;
 
 bool IsNuxOnboardingEnabled(Profile* profile);
 
