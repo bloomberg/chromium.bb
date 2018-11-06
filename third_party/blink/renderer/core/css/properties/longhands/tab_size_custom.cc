@@ -15,11 +15,11 @@ const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
   CSSPrimitiveValue* parsed_value =
-      CSSPropertyParserHelpers::ConsumeInteger(range, 0);
+      css_property_parser_helpers::ConsumeInteger(range, 0);
   if (parsed_value)
     return parsed_value;
-  return CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
-                                                 kValueRangeNonNegative);
+  return css_property_parser_helpers::ConsumeLength(range, context.Mode(),
+                                                    kValueRangeNonNegative);
 }
 
 const CSSValue* TabSize::CSSValueFromComputedStyleInternal(

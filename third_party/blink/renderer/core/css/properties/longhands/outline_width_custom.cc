@@ -15,8 +15,9 @@ const CSSValue* OutlineWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLineWidth(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  return css_property_parser_helpers::ConsumeLineWidth(
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* OutlineWidth::CSSValueFromComputedStyleInternal(

@@ -32,26 +32,31 @@ bool WebkitMaskBoxImage::ParseShorthand(
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage,
       source ? *source : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage,
       slice ? *slice : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage,
       width ? *width : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage,
       outset ? *outset : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage,
       repeat ? *repeat : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }

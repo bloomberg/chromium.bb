@@ -17,7 +17,7 @@ const CSSValue* TransitionProperty::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  CSSValueList* list = CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
+  CSSValueList* list = css_property_parser_helpers::ConsumeCommaSeparatedList(
       css_parsing_utils::ConsumeTransitionProperty, range);
   if (!list || !css_parsing_utils::IsValidPropertyList(*list))
     return nullptr;

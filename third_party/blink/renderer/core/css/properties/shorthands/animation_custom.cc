@@ -23,16 +23,16 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                 bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyAnimationDelay:
-      return CSSPropertyParserHelpers::ConsumeTime(range, kValueRangeAll);
+      return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
     case CSSPropertyAnimationDirection:
-      return CSSPropertyParserHelpers::ConsumeIdent<
+      return css_property_parser_helpers::ConsumeIdent<
           CSSValueNormal, CSSValueAlternate, CSSValueReverse,
           CSSValueAlternateReverse>(range);
     case CSSPropertyAnimationDuration:
-      return CSSPropertyParserHelpers::ConsumeTime(range,
-                                                   kValueRangeNonNegative);
+      return css_property_parser_helpers::ConsumeTime(range,
+                                                      kValueRangeNonNegative);
     case CSSPropertyAnimationFillMode:
-      return CSSPropertyParserHelpers::ConsumeIdent<
+      return css_property_parser_helpers::ConsumeIdent<
           CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(
           range);
     case CSSPropertyAnimationIterationCount:
@@ -41,8 +41,8 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
       return css_parsing_utils::ConsumeAnimationName(range, context,
                                                      use_legacy_parsing);
     case CSSPropertyAnimationPlayState:
-      return CSSPropertyParserHelpers::ConsumeIdent<CSSValueRunning,
-                                                    CSSValuePaused>(range);
+      return css_property_parser_helpers::ConsumeIdent<CSSValueRunning,
+                                                       CSSValuePaused>(range);
     case CSSPropertyAnimationTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
@@ -72,9 +72,10 @@ bool Animation::ParseShorthand(
   }
 
   for (unsigned i = 0; i < longhand_count; ++i) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         shorthand.properties()[i]->PropertyID(), shorthand.id(), *longhands[i],
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
   return range.AtEnd();

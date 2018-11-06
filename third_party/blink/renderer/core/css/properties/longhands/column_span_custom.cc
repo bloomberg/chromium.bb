@@ -13,7 +13,7 @@ const CSSValue* ColumnSpan::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAll, CSSValueNone>(
+  return css_property_parser_helpers::ConsumeIdent<CSSValueAll, CSSValueNone>(
       range);
 }
 

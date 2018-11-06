@@ -16,12 +16,12 @@ const CSSValue* VerticalAlign::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  CSSValue* parsed_value = CSSPropertyParserHelpers::ConsumeIdentRange(
+  CSSValue* parsed_value = css_property_parser_helpers::ConsumeIdentRange(
       range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
   if (!parsed_value) {
-    parsed_value = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+    parsed_value = css_property_parser_helpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
-        CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+        css_property_parser_helpers::UnitlessQuirk::kAllow);
   }
   return parsed_value;
 }

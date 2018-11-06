@@ -31,13 +31,13 @@ bool GridRow::ParseShorthand(
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[0]->PropertyID(), CSSPropertyGridRow, *start_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[1]->PropertyID(), CSSPropertyGridRow, *end_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

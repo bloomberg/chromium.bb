@@ -16,8 +16,8 @@ const CSSValue* OffsetDistance::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(range, context.Mode(),
-                                                          kValueRangeAll);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
+      range, context.Mode(), kValueRangeAll);
 }
 
 const CSSValue* OffsetDistance::CSSValueFromComputedStyleInternal(

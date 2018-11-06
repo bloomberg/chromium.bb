@@ -17,7 +17,7 @@ const CSSValue* PaintOrder::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   Vector<CSSValueID, 3> paint_type_list;
   CSSIdentifierValue* fill = nullptr;
@@ -26,11 +26,11 @@ const CSSValue* PaintOrder::ParseSingleValue(
   do {
     CSSValueID id = range.Peek().Id();
     if (id == CSSValueFill && !fill)
-      fill = CSSPropertyParserHelpers::ConsumeIdent(range);
+      fill = css_property_parser_helpers::ConsumeIdent(range);
     else if (id == CSSValueStroke && !stroke)
-      stroke = CSSPropertyParserHelpers::ConsumeIdent(range);
+      stroke = css_property_parser_helpers::ConsumeIdent(range);
     else if (id == CSSValueMarkers && !markers)
-      markers = CSSPropertyParserHelpers::ConsumeIdent(range);
+      markers = css_property_parser_helpers::ConsumeIdent(range);
     else
       return nullptr;
     paint_type_list.push_back(id);

@@ -14,9 +14,9 @@ const CSSValue* WebkitFontSizeDelta::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLength(
+  return css_property_parser_helpers::ConsumeLength(
       range, context.Mode(), kValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 }  // namespace CSSLonghand

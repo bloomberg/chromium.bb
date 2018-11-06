@@ -16,14 +16,14 @@ const CSSValue* ScrollSnapAlign::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  CSSValue* block_value = CSSPropertyParserHelpers::ConsumeIdent<
+  CSSValue* block_value = css_property_parser_helpers::ConsumeIdent<
       CSSValueNone, CSSValueStart, CSSValueEnd, CSSValueCenter>(range);
   if (!block_value)
     return nullptr;
   if (range.AtEnd())
     return block_value;
 
-  CSSValue* inline_value = CSSPropertyParserHelpers::ConsumeIdent<
+  CSSValue* inline_value = css_property_parser_helpers::ConsumeIdent<
       CSSValueNone, CSSValueStart, CSSValueEnd, CSSValueCenter>(range);
   if (!inline_value)
     return block_value;

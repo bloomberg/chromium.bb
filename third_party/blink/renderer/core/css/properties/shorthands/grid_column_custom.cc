@@ -31,14 +31,16 @@ bool GridColumn::ParseShorthand(
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[0]->PropertyID(), CSSPropertyGridColumn,
       *start_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[1]->PropertyID(), CSSPropertyGridColumn,
       *end_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }

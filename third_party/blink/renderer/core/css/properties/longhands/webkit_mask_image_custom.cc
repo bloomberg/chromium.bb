@@ -15,8 +15,8 @@ const CSSValue* WebkitMaskImage::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyParserHelpers::ConsumeImageOrNone, range, &context);
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_property_parser_helpers::ConsumeImageOrNone, range, &context);
 }
 
 const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(

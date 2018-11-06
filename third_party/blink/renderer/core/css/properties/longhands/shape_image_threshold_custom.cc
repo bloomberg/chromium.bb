@@ -14,7 +14,7 @@ const CSSValue* ShapeImageThreshold::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
 }
 
 const CSSValue* ShapeImageThreshold::CSSValueFromComputedStyleInternal(

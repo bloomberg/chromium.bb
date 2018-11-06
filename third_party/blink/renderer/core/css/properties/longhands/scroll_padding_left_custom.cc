@@ -17,7 +17,7 @@ const CSSValue* ScrollPaddingLeft::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* ScrollPaddingLeft::CSSValueFromComputedStyleInternal(

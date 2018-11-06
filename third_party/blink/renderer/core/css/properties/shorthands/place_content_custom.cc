@@ -41,14 +41,15 @@ bool PlaceContent::ParseShorthand(
   DCHECK(align_content_value);
   DCHECK(justify_content_value);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyAlignContent, CSSPropertyPlaceContent, *align_content_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyJustifyContent, CSSPropertyPlaceContent,
       *justify_content_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }

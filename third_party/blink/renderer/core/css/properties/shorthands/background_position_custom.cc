@@ -23,19 +23,19 @@ bool BackgroundPosition::ParseShorthand(
   CSSValue* result_y = nullptr;
 
   if (!css_parsing_utils::ConsumeBackgroundPosition(
-          range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow,
+          range, context, css_property_parser_helpers::UnitlessQuirk::kAllow,
           result_x, result_y) ||
       !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundPositionX, CSSPropertyBackgroundPosition, *result_x,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundPositionY, CSSPropertyBackgroundPosition, *result_y,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

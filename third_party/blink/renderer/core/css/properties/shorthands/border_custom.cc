@@ -23,18 +23,18 @@ bool Border::ParseShorthand(
   const CSSValue* style = nullptr;
   const CSSValue* color = nullptr;
 
-  if (!CSSPropertyParserHelpers::ConsumeBorderShorthand(range, context, width,
-                                                        style, color)) {
+  if (!css_property_parser_helpers::ConsumeBorderShorthand(
+          range, context, width, style, color)) {
     return false;
   };
 
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderWidth, *width, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderStyle, *style, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderColor, *color, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderImage, *CSSInitialValue::Create(), important,
       properties);
 

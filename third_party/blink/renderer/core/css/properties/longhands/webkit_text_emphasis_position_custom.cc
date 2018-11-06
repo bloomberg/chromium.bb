@@ -22,13 +22,13 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSIdentifierValue* values[2] = {
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueOver, CSSValueUnder,
-                                             CSSValueRight, CSSValueLeft>(
+      css_property_parser_helpers::ConsumeIdent<CSSValueOver, CSSValueUnder,
+                                                CSSValueRight, CSSValueLeft>(
           range),
       nullptr};
   if (!values[0])
     return nullptr;
-  values[1] = CSSPropertyParserHelpers::ConsumeIdent<
+  values[1] = css_property_parser_helpers::ConsumeIdent<
       CSSValueOver, CSSValueUnder, CSSValueRight, CSSValueLeft>(range);
   CSSIdentifierValue* over_under = nullptr;
   CSSIdentifierValue* left_right = nullptr;

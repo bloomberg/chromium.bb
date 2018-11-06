@@ -23,20 +23,20 @@ const CSSValue* Translate::ParseSingleValue(
   DCHECK(RuntimeEnabledFeatures::CSSIndependentTransformPropertiesEnabled());
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSValue* translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  CSSValue* translate = css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeAll);
   if (!translate)
     return nullptr;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*translate);
-  translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  translate = css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeAll);
   if (translate) {
     list->Append(*translate);
-    translate = CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
-                                                        kValueRangeAll);
+    translate = css_property_parser_helpers::ConsumeLength(
+        range, context.Mode(), kValueRangeAll);
     if (translate)
       list->Append(*translate);
   }

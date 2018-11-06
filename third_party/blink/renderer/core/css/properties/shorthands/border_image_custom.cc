@@ -33,35 +33,35 @@ bool BorderImage::ParseShorthand(
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageSource, CSSPropertyBorderImage,
       source ? *source
              : *ToLonghand(&GetCSSPropertyBorderImageSource())->InitialValue(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
       slice ? *slice
             : *ToLonghand(&GetCSSPropertyBorderImageSlice())->InitialValue(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
       width ? *width
             : *ToLonghand(&GetCSSPropertyBorderImageWidth())->InitialValue(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
       outset ? *outset
              : *ToLonghand(&GetCSSPropertyBorderImageOutset())->InitialValue(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
       repeat ? *repeat
              : *ToLonghand(&GetCSSPropertyBorderImageRepeat())->InitialValue(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

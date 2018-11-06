@@ -33,7 +33,7 @@ namespace blink {
 
 using namespace cssvalue;
 
-namespace CSSPropertyParserHelpers {
+namespace css_property_parser_helpers {
 
 namespace {
 
@@ -85,7 +85,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
   CSSValueID filter_type = range.Peek().FunctionId();
   if (filter_type < CSSValueInvert || filter_type > CSSValueDropShadow)
     return nullptr;
-  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
   CSSFunctionValue* filter_value = CSSFunctionValue::Create(filter_type);
   CSSValue* parsed_value = nullptr;
 
@@ -100,23 +101,23 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
     if (filter_type == CSSValueBrightness) {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
       parsed_value =
-          CSSPropertyParserHelpers::ConsumePercent(args, kValueRangeAll);
+          css_property_parser_helpers::ConsumePercent(args, kValueRangeAll);
       if (!parsed_value) {
-        parsed_value = CSSPropertyParserHelpers::ConsumeNumber(
+        parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
       }
     } else if (filter_type == CSSValueHueRotate) {
-      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
+      parsed_value = css_property_parser_helpers::ConsumeAngle(
           args, &context, WebFeature::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueBlur) {
-      parsed_value = CSSPropertyParserHelpers::ConsumeLength(
+      parsed_value = css_property_parser_helpers::ConsumeLength(
           args, kHTMLStandardMode, kValueRangeNonNegative);
     } else {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-      parsed_value = CSSPropertyParserHelpers::ConsumePercent(
+      parsed_value = css_property_parser_helpers::ConsumePercent(
           args, kValueRangeNonNegative);
       if (!parsed_value) {
-        parsed_value = CSSPropertyParserHelpers::ConsumeNumber(
+        parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
       }
       if (parsed_value && filter_type != CSSValueSaturate &&
@@ -1008,21 +1009,21 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
                             const CSSValue*& result_color) {
   while (!result_width || !result_style || !result_color) {
     if (!result_width) {
-      result_width = CSSPropertyParserHelpers::ConsumeLineWidth(
+      result_width = css_property_parser_helpers::ConsumeLineWidth(
           range, context.Mode(),
-          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+          css_property_parser_helpers::UnitlessQuirk::kForbid);
       if (result_width)
         continue;
     }
     if (!result_style) {
-      result_style = CSSPropertyParserHelpers::ParseLonghand(
+      result_style = css_property_parser_helpers::ParseLonghand(
           CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
       if (result_style)
         continue;
     }
     if (!result_color) {
       result_color =
-          CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+          css_property_parser_helpers::ConsumeColor(range, context.Mode());
       if (result_color)
         continue;
     }
@@ -1931,6 +1932,6 @@ void AddExpandedPropertyForValue(
   }
 }
 
-}  // namespace CSSPropertyParserHelpers
+}  // namespace css_property_parser_helpers
 
 }  // namespace blink

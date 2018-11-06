@@ -18,18 +18,18 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSIdentifierValue* under_value =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnder>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueUnder>(range);
   CSSIdentifierValue* left_or_right_value = nullptr;
   if (RuntimeEnabledFeatures::TextUnderlinePositionLeftRightEnabled()) {
     left_or_right_value =
-        CSSPropertyParserHelpers::ConsumeIdent<CSSValueLeft, CSSValueRight>(
+        css_property_parser_helpers::ConsumeIdent<CSSValueLeft, CSSValueRight>(
             range);
     if (left_or_right_value && !under_value) {
       under_value =
-          CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnder>(range);
+          css_property_parser_helpers::ConsumeIdent<CSSValueUnder>(range);
     }
   }
   if (!under_value && !left_or_right_value) {

@@ -13,7 +13,7 @@ namespace CSSLonghand {
 const CSSValue* Order::ParseSingleValue(CSSParserTokenRange& range,
                                         const CSSParserContext& context,
                                         const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeInteger(range);
+  return css_property_parser_helpers::ConsumeInteger(range);
 }
 
 const CSSValue* Order::CSSValueFromComputedStyleInternal(

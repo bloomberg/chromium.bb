@@ -20,15 +20,16 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserLocalContext&) const {
   bool in_quirks_mode = IsQuirksModeBehavior(context.Mode());
   CSSValueList* list = nullptr;
-  while (CSSValue* image = CSSPropertyParserHelpers::ConsumeImage(
-             range, &context,
-             CSSPropertyParserHelpers::ConsumeGeneratedImagePolicy::kForbid)) {
+  while (
+      CSSValue* image = css_property_parser_helpers::ConsumeImage(
+          range, &context,
+          css_property_parser_helpers::ConsumeGeneratedImagePolicy::kForbid)) {
     double num;
     IntPoint hot_spot(-1, -1);
     bool hot_spot_specified = false;
-    if (CSSPropertyParserHelpers::ConsumeNumberRaw(range, num)) {
+    if (css_property_parser_helpers::ConsumeNumberRaw(range, num)) {
       hot_spot.SetX(clampTo<int>(num));
-      if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, num))
+      if (!css_property_parser_helpers::ConsumeNumberRaw(range, num))
         return nullptr;
       hot_spot.SetY(clampTo<int>(num));
       hot_spot_specified = true;
@@ -39,7 +40,7 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
 
     list->Append(*cssvalue::CSSCursorImageValue::Create(
         *image, hot_spot_specified, hot_spot));
-    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range))
+    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
   }
 
@@ -62,7 +63,7 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
     range.ConsumeIncludingWhitespace();
   } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) ||
              id == CSSValueCopy || id == CSSValueNone) {
-    cursor_type = CSSPropertyParserHelpers::ConsumeIdent(range);
+    cursor_type = css_property_parser_helpers::ConsumeIdent(range);
   } else {
     return nullptr;
   }

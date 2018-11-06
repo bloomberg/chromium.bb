@@ -17,11 +17,11 @@ const CSSValue* Quotes::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   while (!range.AtEnd()) {
     CSSStringValue* parsed_value =
-        CSSPropertyParserHelpers::ConsumeString(range);
+        css_property_parser_helpers::ConsumeString(range);
     if (!parsed_value)
       return nullptr;
     values->Append(*parsed_value);

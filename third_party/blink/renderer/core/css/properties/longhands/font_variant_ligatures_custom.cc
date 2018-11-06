@@ -17,7 +17,7 @@ const CSSValue* FontVariantLigatures::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal || range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   FontVariantLigaturesParser ligatures_parser;
   do {

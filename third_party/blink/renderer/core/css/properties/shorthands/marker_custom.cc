@@ -15,20 +15,23 @@ bool Marker::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  const CSSValue* marker = CSSPropertyParserHelpers::ParseLonghand(
+  const CSSValue* marker = css_property_parser_helpers::ParseLonghand(
       CSSPropertyMarkerStart, CSSPropertyMarker, context, range);
   if (!marker || !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyMarkerStart, CSSPropertyMarker, *marker, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyMarkerMid, CSSPropertyMarker, *marker, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyMarkerEnd, CSSPropertyMarker, *marker, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

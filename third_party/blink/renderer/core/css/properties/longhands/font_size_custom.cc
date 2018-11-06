@@ -17,7 +17,8 @@ const CSSValue* FontSize::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeFontSize(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 const CSSValue* FontSize::CSSValueFromComputedStyleInternal(

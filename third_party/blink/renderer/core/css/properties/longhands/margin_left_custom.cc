@@ -20,7 +20,8 @@ const CSSValue* MarginLeft::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeMarginOrOffset(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 bool MarginLeft::IsLayoutDependent(const ComputedStyle* style,

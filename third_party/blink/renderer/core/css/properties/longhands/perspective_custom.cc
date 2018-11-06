@@ -19,13 +19,13 @@ const CSSValue* Perspective::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext& localContext) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  CSSPrimitiveValue* parsed_value = CSSPropertyParserHelpers::ConsumeLength(
+    return css_property_parser_helpers::ConsumeIdent(range);
+  CSSPrimitiveValue* parsed_value = css_property_parser_helpers::ConsumeLength(
       range, context.Mode(), kValueRangeAll);
   bool use_legacy_parsing = localContext.UseAliasParsing();
   if (!parsed_value && use_legacy_parsing) {
     double perspective;
-    if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, perspective))
+    if (!css_property_parser_helpers::ConsumeNumberRaw(range, perspective))
       return nullptr;
     context.Count(WebFeature::kUnitlessPerspectiveInPerspectiveProperty);
     parsed_value = CSSPrimitiveValue::Create(

@@ -34,12 +34,14 @@ bool Columns::ParseShorthand(
     column_width = CSSIdentifierValue::Create(CSSValueAuto);
   if (!column_count)
     column_count = CSSIdentifierValue::Create(CSSValueAuto);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnWidth, CSSPropertyInvalid, *column_width, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnCount, CSSPropertyInvalid, *column_count, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

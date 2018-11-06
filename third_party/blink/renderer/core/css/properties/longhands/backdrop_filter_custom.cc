@@ -16,7 +16,7 @@ const CSSValue* BackdropFilter::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeFilterFunctionList(range, context);
+  return css_property_parser_helpers::ConsumeFilterFunctionList(range, context);
 }
 
 const CSSValue* BackdropFilter::CSSValueFromComputedStyleInternal(

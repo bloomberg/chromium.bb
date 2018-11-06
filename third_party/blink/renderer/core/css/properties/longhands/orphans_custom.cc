@@ -13,7 +13,7 @@ namespace CSSLonghand {
 const CSSValue* Orphans::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+  return css_property_parser_helpers::ConsumePositiveInteger(range);
 }
 
 const CSSValue* Orphans::CSSValueFromComputedStyleInternal(

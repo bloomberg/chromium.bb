@@ -16,7 +16,7 @@ bool WebkitTextEmphasis::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghands(
+  return css_property_parser_helpers::ConsumeShorthandGreedilyViaLonghands(
       webkitTextEmphasisShorthand(), important, context, range, properties);
 }
 

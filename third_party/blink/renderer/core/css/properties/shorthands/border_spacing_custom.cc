@@ -20,25 +20,27 @@ bool BorderSpacing::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* horizontal_spacing =
       ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
-                    CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+                    css_property_parser_helpers::UnitlessQuirk::kAllow);
   if (!horizontal_spacing)
     return false;
   CSSValue* vertical_spacing = horizontal_spacing;
   if (!range.AtEnd()) {
     vertical_spacing =
         ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
-                      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+                      css_property_parser_helpers::UnitlessQuirk::kAllow);
   }
   if (!vertical_spacing || !range.AtEnd())
     return false;
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitBorderHorizontalSpacing, CSSPropertyBorderSpacing,
       *horizontal_spacing, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitBorderVerticalSpacing, CSSPropertyBorderSpacing,
       *vertical_spacing, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

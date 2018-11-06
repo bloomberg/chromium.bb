@@ -59,7 +59,7 @@ class FontVariantNumericParser {
       default:
         return ParseResult::kUnknownValue;
     }
-    result_->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    result_->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return ParseResult::kConsumedValue;
   }
 

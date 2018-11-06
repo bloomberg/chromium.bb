@@ -19,8 +19,8 @@ const CSSValue* BaselineShift::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll);
 }
 

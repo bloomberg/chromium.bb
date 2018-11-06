@@ -27,15 +27,15 @@ bool GridArea::ParseShorthand(
   CSSValue* column_start_value = nullptr;
   CSSValue* row_end_value = nullptr;
   CSSValue* column_end_value = nullptr;
-  if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
+  if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
     column_start_value = css_parsing_utils::ConsumeGridLine(range);
     if (!column_start_value)
       return false;
-    if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
+    if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
       row_end_value = css_parsing_utils::ConsumeGridLine(range);
       if (!row_end_value)
         return false;
-      if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
+      if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
         column_end_value = css_parsing_utils::ConsumeGridLine(range);
         if (!column_end_value)
           return false;
@@ -60,19 +60,21 @@ bool GridArea::ParseShorthand(
                            : CSSIdentifierValue::Create(CSSValueAuto);
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridRowStart, CSSPropertyGridArea, *row_start_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
-      CSSPropertyGridColumnStart, CSSPropertyGridArea, *column_start_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
+      CSSPropertyGridColumnStart, CSSPropertyGridArea, *column_start_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridRowEnd, CSSPropertyGridArea, *row_end_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridColumnEnd, CSSPropertyGridArea, *column_end_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

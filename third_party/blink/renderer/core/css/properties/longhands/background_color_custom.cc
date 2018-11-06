@@ -18,7 +18,7 @@ const CSSValue* BackgroundColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeColor(
+  return css_property_parser_helpers::ConsumeColor(
       range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
 }
 

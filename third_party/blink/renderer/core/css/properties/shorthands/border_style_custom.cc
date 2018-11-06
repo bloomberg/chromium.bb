@@ -18,7 +18,7 @@ bool BorderStyle::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia4Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia4Longhands(
       borderStyleShorthand(), important, context, range, properties);
 }
 

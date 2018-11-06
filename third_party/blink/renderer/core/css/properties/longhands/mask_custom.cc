@@ -17,8 +17,8 @@ const CSSValue* Mask::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
                                        const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeUrl(range, &context);
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeUrl(range, &context);
 }
 
 const CSSValue* Mask::CSSValueFromComputedStyleInternal(

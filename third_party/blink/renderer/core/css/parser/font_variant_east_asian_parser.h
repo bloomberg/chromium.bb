@@ -33,18 +33,20 @@ class FontVariantEastAsianParser {
       case CSSValueTraditional:
         if (east_asian_form_value_)
           return ParseResult::kDisallowedValue;
-        east_asian_form_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        east_asian_form_value_ =
+            css_property_parser_helpers::ConsumeIdent(range);
         return ParseResult::kConsumedValue;
       case CSSValueFullWidth:
       case CSSValueProportionalWidth:
         if (east_asian_width_value_)
           return ParseResult::kDisallowedValue;
-        east_asian_width_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        east_asian_width_value_ =
+            css_property_parser_helpers::ConsumeIdent(range);
         return ParseResult::kConsumedValue;
       case CSSValueRuby:
         if (ruby_value_)
           return ParseResult::kDisallowedValue;
-        ruby_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        ruby_value_ = css_property_parser_helpers::ConsumeIdent(range);
         return ParseResult::kConsumedValue;
       default:
         return ParseResult::kUnknownValue;

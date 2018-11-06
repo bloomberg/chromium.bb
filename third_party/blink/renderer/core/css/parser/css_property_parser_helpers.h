@@ -30,7 +30,7 @@ class StylePropertyShorthand;
 // tokens from the range and also consume any whitespace which follows. When
 // the start of the range doesn't match the type we're looking for, the range
 // will not be modified.
-namespace CSSPropertyParserHelpers {
+namespace css_property_parser_helpers {
 
 void Complete4Sides(CSSValue* side[4]);
 
@@ -208,7 +208,7 @@ CSSValue* ConsumeTransformList(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange&,
                                     const CSSParserContext&);
 
-}  // namespace CSSPropertyParserHelpers
+}  // namespace css_property_parser_helpers
 
 }  // namespace blink
 

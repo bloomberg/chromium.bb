@@ -14,7 +14,8 @@ namespace CSSLonghand {
 const CSSValue* FlexGrow::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext&,
                                            const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+  return css_property_parser_helpers::ConsumeNumber(range,
+                                                    kValueRangeNonNegative);
 }
 
 const CSSValue* FlexGrow::CSSValueFromComputedStyleInternal(

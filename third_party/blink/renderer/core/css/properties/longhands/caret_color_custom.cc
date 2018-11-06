@@ -18,8 +18,8 @@ const CSSValue* CaretColor::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color CaretColor::ColorIncludingFallback(

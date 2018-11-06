@@ -29,29 +29,29 @@ bool BorderRadius::ParseShorthand(
                                        local_context.UseAliasParsing()))
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderTopLeftRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderTopRightRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderBottomRightRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

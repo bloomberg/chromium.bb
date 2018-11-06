@@ -20,7 +20,7 @@ const CSSValue* MinHeight::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeWidthOrHeight(
-      range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      range, context, css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 const CSSValue* MinHeight::CSSValueFromComputedStyleInternal(

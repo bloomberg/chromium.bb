@@ -15,7 +15,7 @@ namespace CSSLonghand {
 const CSSValue* Filter::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeFilterFunctionList(range, context);
+  return css_property_parser_helpers::ConsumeFilterFunctionList(range, context);
 }
 
 const CSSValue* Filter::CSSValueFromComputedStyleInternal(

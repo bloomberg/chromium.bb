@@ -16,7 +16,7 @@ bool WebkitTextStroke::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghands(
+  return css_property_parser_helpers::ConsumeShorthandGreedilyViaLonghands(
       webkitTextStrokeShorthand(), important, context, range, properties);
 }
 

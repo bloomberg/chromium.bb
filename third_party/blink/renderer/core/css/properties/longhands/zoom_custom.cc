@@ -18,13 +18,13 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {
-    zoom = CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal>(range);
+    zoom = css_property_parser_helpers::ConsumeIdent<CSSValueNormal>(range);
   } else {
-    zoom =
-        CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
+    zoom = css_property_parser_helpers::ConsumePercent(range,
+                                                       kValueRangeNonNegative);
     if (!zoom) {
-      zoom = CSSPropertyParserHelpers::ConsumeNumber(range,
-                                                     kValueRangeNonNegative);
+      zoom = css_property_parser_helpers::ConsumeNumber(range,
+                                                        kValueRangeNonNegative);
     }
   }
   if (zoom) {

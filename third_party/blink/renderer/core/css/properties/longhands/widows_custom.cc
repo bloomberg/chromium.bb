@@ -13,7 +13,7 @@ namespace CSSLonghand {
 const CSSValue* Widows::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+  return css_property_parser_helpers::ConsumePositiveInteger(range);
 }
 
 const CSSValue* Widows::CSSValueFromComputedStyleInternal(

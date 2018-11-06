@@ -23,7 +23,7 @@
 
 namespace blink {
 
-using namespace CSSPropertyParserHelpers;
+using namespace css_property_parser_helpers;
 
 class CSSIdentifierValue;
 

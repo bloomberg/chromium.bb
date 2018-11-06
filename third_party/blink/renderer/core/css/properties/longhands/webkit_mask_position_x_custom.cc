@@ -17,7 +17,7 @@ const CSSValue* WebkitMaskPositionX::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
       css_parsing_utils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>,
       range, context.Mode());
 }

@@ -18,7 +18,7 @@ const CSSValue* ScrollPaddingBlockEnd::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 }  // namespace CSSLonghand

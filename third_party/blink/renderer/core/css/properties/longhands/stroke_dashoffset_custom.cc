@@ -14,9 +14,9 @@ const CSSValue* StrokeDashoffset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* StrokeDashoffset::CSSValueFromComputedStyleInternal(
