@@ -138,18 +138,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke, at der startes gæsteprofiler.</translation>
 <translation id="1363275621236827384">Aktivér forespørgsler til Quirks Server om hardwareprofiler</translation>
-<translation id="1372267489642113556">
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
@@ -966,12 +954,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
-<translation id="3746590506846867985">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites på en kommasepareret liste sin egen proces. Dette isolerer også websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives, isoleres https://foo.eksempel.dk/ også som en del af websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af websites på loginskærmen.
-      </translation>
 <translation id="3748900290998155147">Angiver, om aktiveringslåse er tilladt. Udvidelser kan anmode om aktiveringslåse via Power Management Extension API og ARC-apps.
 
           Hvis denne politik er angivet som sand eller ikke er angivet, indfries aktiveringslåse i forbindelse med strømstyring.
@@ -2556,15 +2538,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Siden Ny fane</translation>
 <translation id="7788511847830146438">Pr. profil</translation>
-<translation id="7788872453000173219">
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken  <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Deaktiverer håndhævelse af krav vedrørende Certifikatgennemsigtighed for en liste over hash-koder fra subjectPublicKeyInfo.
 
       Politikken tillader, at kravene om offentliggørelse via Certifikatgennemsigtighed ikke håndhæves for certifikatkæder, der indeholder certifikater med en af de angivne hash-koder fra subjectPublicKeyInfo. Dermed kan certifikater, der ellers ikke ville være godkendt, fordi de ikke er blevet offentliggjort korrekt, fortsat anvendes til virksomhedshosts.
@@ -2600,13 +2573,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
 <translation id="7882857838942884046">Hvis du deaktiverer Google Sync, fungerer Android-tjenesten til backup og gendannelse ikke korrekt.</translation>
 <translation id="7882890448959833986">Ignorer advarslen om manglende understøttelse af OS</translation>
-<translation id="7892077286206685156">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan den enkelte bruger ændre denne indstilling.
-      </translation>
 <translation id="7902255855035461275">Mønstre på denne liste sammenlignes med sikkerhedskilden for den anmodende webadresse. Hvis der findes et match, gives der adgang til videooptagelsesenheder, uden at du behøver give tilladelse til det.
 
 BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilstand.</translation>
@@ -2624,19 +2590,6 @@ BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilsta
 <translation id="793473937901685727">Indstil certifikattilgængelighed for ARC-apps</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
-<translation id="7952880400776676958">
-      Hvis politikken er aktiveret, kører hvert af de angivne websites på en
-      kommasepareret liste sin egen proces. Dette isolerer også
-      websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/
-      angives, isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOriginsAndroid og SitePerProcessAndroid deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, kan brugeren ændre denne indstilling.
-
-      BEMÆRK! I Android er isolering af website eksperimentel. Understøttelsen bliver bedre med tiden, men den kan i øjeblikket forårsage problemer med ydeevnen.
-
-      BEMÆRK! Politikken gælder kun for Chrome på Android-enheder med mere end 1 GB RAM. Hvis du vil anvende denne politik på andre platforme, skal du bruge IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
 <translation id="7961779417826583251">Deaktiver håndhævelse af Certifikatgennemsigtighed for en liste over forældede certifikatautoriteter</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>

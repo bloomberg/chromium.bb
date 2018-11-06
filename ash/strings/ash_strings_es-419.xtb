@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Biblioteca</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
 <translation id="2865888419503095837">Información de red</translation>
-<translation id="287224423103674444">Presionaste la combinación de teclas para girar la pantalla. ¿Quieres llevar a cabo esta acción?</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2878884018241093801">No hay elementos recientes</translation>
 <translation id="2903844815300039659">Conectado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -190,7 +189,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una app}other{Desactivadas para # apps}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
-<translation id="4200057768455216496">Presionaste la combinación de teclas para activar la lupa con vista acoplada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4261870227682513959">Mostrar la configuración de las notificaciones: Están desactivadas</translation>
 <translation id="4269883910223712419">El administrador de este dispositivo puede hacer lo siguiente:</translation>
@@ -343,7 +341,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
 <translation id="7015766095477679451">Regresa a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
-<translation id="7037152028959403492">Presionaste la combinación de teclas para activar el modo de contraste alto. ¿Quieres activarlo?</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7068360136237591149">Abrir archivos</translation>
@@ -411,7 +408,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Red privada</translation>
-<translation id="8152119955266188852">Presionaste la combinación de teclas para activar la lupa de pantalla completa. ¿Quieres activarla?</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8236042855478648955">Es hora de descansar</translation>

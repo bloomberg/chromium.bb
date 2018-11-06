@@ -2583,7 +2583,6 @@
 <translation id="4941246025622441835">መሣሪያው ለድርጅት አስተዳደር ሲያስመዘግቡት ይህን የመሣሪያ መውረሻ ይጠቀሙ፦</translation>
 <translation id="4941627891654116707">የቅርፀ-ቁምፊ መጠን</translation>
 <translation id="494286511941020793">የተኪ ውቅር እገዛ</translation>
-<translation id="4945444280533270988">Smart Lock በርቷል</translation>
 <translation id="4953689047182316270">ለተደራሽነት ክስተቶች ምላሽ መስጠት</translation>
 <translation id="4953808748584563296">ነባሪ ብርቱካናማ አምሳያ</translation>
 <translation id="4955710816792587366">የእርስዎን ፒን ይምረጡ</translation>
@@ -4115,7 +4114,6 @@
 <translation id="7262004276116528033">ይህ የመለያ መግቢያ አገልግሎት በ<ph name="SAML_DOMAIN" /> የሚስተናገድ ነው</translation>
 <translation id="7268365133021434339">ትሮችን ዝጋ</translation>
 <translation id="7268659760406822741">የሚገኙ አገልግሎቶች</translation>
-<translation id="7269733644823798215">ከእርስዎ Chromebook ጋር ከማገናኘትዎ በፊት የእርስዎ ስልክ ይበልጥ ደህንነቱ የተጠበቀ መሆኑን ያረጋግጡ። <ph name="LINK_BEGIN" />የበለጠ ለመረዳት<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">አንድ ጣቢያ የMIDI መሣሪያዎችን ለመድረስ ለሚመለከተው ሥርዓት ብቻ የተወሰኑ መልእክቶችን ለመጠቀም ሲፈልግ ጠይቅ</translation>
 <translation id="7272674038937250585">ምንም መግለጫ አልቀረበም</translation>
 <translation id="7273110280511444812">ለመጨረሻ ጊዜ የተያያዘው በ<ph name="DATE" /> ላይ</translation>
@@ -4721,7 +4719,6 @@ nil</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">አዲስ ማስታወሻ ፍጠር</translation>
 <translation id="8168435359814927499">ይዘት</translation>
-<translation id="8170451533020515291">የእርስዎን <ph name="DEVICE_TYPE" /> ለማስከፈት ስልክዎን ይጠቀሙ</translation>
 <translation id="8174047975335711832">የመሣሪያ መረጃ</translation>
 <translation id="8177196903785554304">የአውታረመረብ ዝርዝሮች</translation>
 <translation id="8179976553408161302">አስገባ</translation>
@@ -5426,7 +5423,6 @@ nil</translation>
 <translation id="981121421437150478">ከመስመር ውጪ</translation>
 <translation id="983511809958454316">ይህ ባህሪ በቪአር ውስጥ አይደገፍም</translation>
 <translation id="984275831282074731">የመክፈያ ዘዴዎች</translation>
-<translation id="984982042683741464">ማያ ገጽ መቆለፊያ ያስፈልጋል</translation>
 <translation id="98515147261107953">በወርድ</translation>
 <translation id="987897973846887088">ምንም ምስሎች አይገኙም</translation>
 <translation id="988978206646512040">ባዶ የይለፍ ሐረግ አይፈቀድም</translation>

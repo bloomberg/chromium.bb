@@ -2586,7 +2586,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4941246025622441835">Jelen eszközigénylés használata az eszköz regisztrálásakor vállalati felügyelet céljából:</translation>
 <translation id="4941627891654116707">Betűméret</translation>
 <translation id="494286511941020793">Proxykonfigurációs súgó</translation>
-<translation id="4945444280533270988">Smart Lock bekapcsolva</translation>
 <translation id="4953689047182316270">Válasz kisegítő lehetőségekkel kapcsolatos eseményekre</translation>
 <translation id="4953808748584563296">Alapértelmezett narancssárga avatar</translation>
 <translation id="4955710816792587366">PIN-kód kiválasztása</translation>
@@ -4121,7 +4120,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7262004276116528033">Ezt a bejelentkezési szolgáltatást a(z) <ph name="SAML_DOMAIN" /> biztosítja</translation>
 <translation id="7268365133021434339">Lapok bezárása</translation>
 <translation id="7268659760406822741">Igénybe vehető szolgáltatások</translation>
-<translation id="7269733644823798215">Tegye biztonságosabbá telefonját, mielőtt csatlakoztatná Chromebookját. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="7270858098575133036">Kérdezzen meg, amikor egy webhely exkluzív rendszerüzenetekkel szeretné elérni a MIDI-eszközöket</translation>
 <translation id="7272674038937250585">Nincs leírás</translation>
 <translation id="7273110280511444812">legutóbb csatlakoztatva ekkor: <ph name="DATE" /></translation>
@@ -4723,7 +4721,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Új jegyzet létrehozása</translation>
 <translation id="8168435359814927499">Tartalom</translation>
-<translation id="8170451533020515291">Telefon használatával oldhatja fel a <ph name="DEVICE_TYPE" /> zárolását.</translation>
 <translation id="8174047975335711832">Eszközadatok</translation>
 <translation id="8177196903785554304">Hálózat részletei</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5428,7 +5425,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Ez a funkció nem támogatott VR-módban</translation>
 <translation id="984275831282074731">Fizetési módok</translation>
-<translation id="984982042683741464">Képernyőzár használata szükséges</translation>
 <translation id="98515147261107953">Fekvő</translation>
 <translation id="987897973846887088">Nincs rendelkezésre álló kép</translation>
 <translation id="988978206646512040">Üres összetett jelszó nem engedélyezett</translation>

@@ -149,18 +149,6 @@
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
-<translation id="1372267489642113556">
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
-      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
-      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
-      spowoduje, że także adres https://foo.example.com/ będzie izolowany jako
-      część witryny https://example.com/
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie na tę samą wartość zasady <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> dotyczącej urządzeń. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
-
-      UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins w Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Odniesienie: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
@@ -977,12 +965,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3711895659073496551">Wstrzymaj</translation>
 <translation id="3715569262675717862">Uwierzytelnianie na podstawie certyfikatów klienta</translation>
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
-<translation id="3746590506846867985">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje, że także adres https://foo.example.com/ będzie izolowany jako część witryny https://example.com/
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
-      Jeśli zasada nie jest skonfigurowana, do ekranu logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
-      </translation>
 <translation id="3748900290998155147">Określa, czy jest dozwolona blokada uśpienia. Takie żądania mogą być wysyłane przez rozszerzenia (przy użyciu interfejsu API zarządzania energią) oraz aplikacje ARC.
 
           Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, żądania blokady uśpienia będą respektowane przez mechanizm zarządzania energią.
@@ -2562,15 +2544,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Strona Nowa karta</translation>
 <translation id="7788511847830146438">Według profilu</translation>
-<translation id="7788872453000173219">
-      Możesz dostosować ustawienie zasady IsolateOrigins, by jak najlepiej wykorzystać oba sposoby działania (izolację i ograniczony wpływ na użytkowników). W zasadzie IsolateOrigins użyj listy witryn, które chcesz izolować. To ustawienie, SitePerProcess, izoluje wszystkie witryny.
-      Jeśli zasada jest włączona, każda witryna uruchamia się w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę SitePerProcess ręcznie.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> dotyczącej urządzeń na tę samą wartość. Jeśli wartości określone przez te dwie zasady nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
-
-      UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję SitePerProcess w Androidzie, użyj ustawienia zasady SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych skrótów subjectPublicKeyInfo.
 
       Ta zasada umożliwia wyłączenie wymogów ujawnienia protokołu Certificate Transparency w odniesieniu do łańcuchów certyfikatów zawierających certyfikaty z jednym z określonych skrótów subjectPublicKeyInfo. Umożliwia to dalsze stosowanie certyfikatów, które w przeciwnym razie byłyby niezaufane (ponieważ nie zostały odpowiednio ujawnione publicznie), na potrzeby hostów korporacyjnych.
@@ -2606,14 +2579,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>
 <translation id="7882857838942884046">Wyłączenie Google Sync spowoduje, że tworzenie i przywracanie kopii zapasowej Androida nie będzie działać prawidłowo.</translation>
 <translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
-<translation id="7892077286206685156">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
-      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać
-optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. To ustawienie, SitePerProcess, izoluje wszystkie witryny.
-      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie SitePerProcess.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      </translation>
 <translation id="7902255855035461275">Wzorce na tej liście są porównywane ze źródłem zabezpieczeń adresu URL,
       z którego pochodzi żądanie. Jeśli URL będzie pasować do któregoś wzorca,
       dostęp do urządzeń rejestrujących wideo zostanie przyznany bez pytania.
@@ -2633,19 +2598,6 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 <translation id="793473937901685727">Ustaw dostępność certyfikatu dla aplikacji ARC</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="7941975817681987555">Nie przewiduj działań w sieci dla żadnego połączenia sieciowego</translation>
-<translation id="7952880400776676958">
-      Jeśli ta zasada jest włączona, każde nazwane źródło z listy oddzielonej przecinkami
-      działa w obrębie własnego procesu. Powoduje to też izolację źródeł
-      z nazwami subdomen, np. określenie https://example.com/ spowoduje,
-      że adres https://foo.example.com/ będzie także izolowany jako część witryny
-      https://example.com/.
-      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOriginsAndroid i SitePerProcessAndroid. Użytkownicy nadal mogą włączyć zasadę IsolateOrigins ręcznie.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-
-      UWAGA: funkcja izolacji witryn na urządzeniach z Androidem jest eksperymentalna. Z czasem będzie działać lepiej, ale obecnie może powodować problemy z wydajnością.
-
-      UWAGA: ta zasada ma zastosowanie tylko do Chrome na urządzeniach z Androidem wyposażonych w więcej niż 1 GB pamięci RAM. Aby zasada mogła mieć zastosowanie na platformach, które nie wykorzystują systemu Android, należy użyć ustawienia IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7961779417826583251">Wyłącz egzekwowanie protokołu Certificate Transparency dla starych urzędów certyfikacji z listy</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>

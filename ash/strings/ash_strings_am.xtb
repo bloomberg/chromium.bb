@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">መደርደሪያ</translation>
 <translation id="2844169650293029770">USB-C መሣሪያ (የግራ ጎን የፊት ወደብ)</translation>
 <translation id="2865888419503095837">የአውታረ መረብ መረጃ</translation>
-<translation id="287224423103674444">ለማያ ገጽ ማሽከርከር አቋራጩን ተጭነውታል። ማያ ገጹን ማሽከርከር ይፈልጋሉ?</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
 <translation id="2878884018241093801">ምንም የቅርብ ጊዜ ንጥሎች የሉም</translation>
 <translation id="2903844815300039659">ከ<ph name="NAME" /> ጋር ተገናኝቷል፣ <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
-<translation id="4200057768455216496">የተተከለውን የማጉያ አቋራጭ ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">አንዴ ይህ ተጠቃሚ ከተወገደ በኋላ ከዚህ ተጠቃሚ ጋር የተጎዳኙ ሁሉም ፋይሎች እና አካባቢያዊ ውሂብ በቋሚነት ይሰረዛሉ።</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
-<translation id="7037152028959403492">የከፍተኛ ንጽጽር አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="7066646422045619941">ይህ አውታረ መረብ በአስተዳዳሪዎ ነው የተሰናከለው።</translation>
 <translation id="7067196344162293536">በራስ-አሽከርክር</translation>
 <translation id="7068360136237591149">ፋይሎችን ይክፈቱ</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">ከ<ph name="NAME" /> ጋር ተገናኝቷል</translation>
 <translation id="813913629614996137">በማስጀመር ላይ…</translation>
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
-<translation id="8152119955266188852">የሙሉ ማያ ገጽ ማጉያውን አቋራጭ ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8192202700944119416">ማሳወቂያዎች ተደብቀዋል</translation>
 <translation id="8236042855478648955">የዕረፍት ጊዜ</translation>

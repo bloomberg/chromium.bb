@@ -164,7 +164,7 @@
     আপনাকে আপনার প্রোফাইল আবার সেট আপ করতে হবে।<ph name="BR" />
     <ph name="BR" />
     পরবর্তী স্ক্রীনে, আমাদেরকে সমস্যাটি সমাধানে সাহায্য করতে দয়া করে প্রতিক্রিয়া পাঠান।</translation>
-<translation id="1217668622537098248">অ্যাকশনের পরে লেফট ক্লিকে ফিরে যান</translation>
+<translation id="1217668622537098248">কাজটি হয়ে গেলে লেফ্ট ক্লিকে ফিরে যান</translation>
 <translation id="121783623783282548">পাসওয়ার্ডগুলি মেলে না৷</translation>
 <translation id="1218860753635451122">“আমি সম্মত” বোতামে ক্লিক করার অর্থ আপনি এই Google পরিষেবাগুলির জন্য উপরে বর্ণিত প্রক্রিয়াগুলিতে আপনি সম্মতি দেন।</translation>
 <translation id="122082903575839559">শংসাপত্র স্বাক্ষর অ্যালগরিদম</translation>
@@ -2207,7 +2207,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> একটি উইন্ডো শেয়ার করছে।</translation>
 <translation id="4364830672918311045">বিজ্ঞপ্তিগুলি প্রদর্শন করুন</translation>
 <translation id="4365673000813822030">উপস, সিঙ্ক কাজ করা বন্ধ করে দিয়েছে৷</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> সহ <ph name="APP_NAME" />।</translation>
+<translation id="4366956553771076218"><ph name="APP_NAME" />-এর মাধ্যমে <ph name="ACTION_NAME" />।</translation>
 <translation id="4370975561335139969">আপনার লেখা ইমেল আইডি এবং পাসওয়ার্ড মিলছে না</translation>
 <translation id="437184764829821926">উন্নত ফন্ট সেটিংস</translation>
 <translation id="4372884569765913867">১x১</translation>
@@ -2582,7 +2582,6 @@
 <translation id="4941246025622441835">এন্টারপ্রাইজ ব্যবস্থাপনার জন্য নথিভুক্ত করার সময় এই ডিভাইস দাবি ব্যবহার করুন:</translation>
 <translation id="4941627891654116707">হরফের মাপ</translation>
 <translation id="494286511941020793">প্রক্সি কনফিগারেশন সহায়তা</translation>
-<translation id="4945444280533270988">Smart Lock চালু রয়েছে</translation>
 <translation id="4953689047182316270">অ্যাক্সেসযোগ্যতা সংক্রান্ত ইভেন্টে প্রতিক্রিয়া দিতে চায়</translation>
 <translation id="4953808748584563296">ডিফল্ট কমলা রঙের অবতার</translation>
 <translation id="4955710816792587366">আপনার পিন বেছে নিন</translation>
@@ -4116,7 +4115,6 @@
 <translation id="7262004276116528033">এই প্রবেশ করা পরিষেবাটি <ph name="SAML_DOMAIN" /> দ্বারা হোস্ট করা হয়</translation>
 <translation id="7268365133021434339">ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="7268659760406822741">উপলব্ধ পরিষেবাসমূহ</translation>
-<translation id="7269733644823798215">Chromebook-এ কানেক্ট করার আগে ফোনকে আরও নিরাপদ করুন। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">যখন কোনো সাইট MIDI ডিভাইসগুলি অ্যাক্সেস করার জন্য সিস্টেমের বিশিষ্ট বার্তাগুলি ব্যবহার করতে চায় তখন জিজ্ঞাসা করুন</translation>
 <translation id="7272674038937250585">কোনও বিবরণ নেই</translation>
 <translation id="7273110280511444812">সর্বশেষ <ph name="DATE" /> এ সংযুক্ত হয়েছে</translation>
@@ -4716,7 +4714,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">নতুন নোট তৈরি করুন</translation>
 <translation id="8168435359814927499">সামগ্রী</translation>
-<translation id="8170451533020515291">আপনার <ph name="DEVICE_TYPE" /> আনলক করতে ফোন ব্যবহার করুন</translation>
 <translation id="8174047975335711832">ডিভাইস সংক্রান্ত তথ্য</translation>
 <translation id="8177196903785554304">নেটওয়ার্কের বিশদ বিবরণ</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5422,7 +5419,6 @@
 <translation id="981121421437150478">অফলাইন</translation>
 <translation id="983511809958454316">এই বৈশিষ্ট্য VR এ সমর্থিত নয়</translation>
 <translation id="984275831282074731">পেমেন্ট পদ্ধতি</translation>
-<translation id="984982042683741464">স্ক্রিন লক প্রয়োজন</translation>
 <translation id="98515147261107953">ল্যান্ডস্কেপ</translation>
 <translation id="987897973846887088">কোনও ছবি নেই</translation>
 <translation id="988978206646512040">পাসফ্রেজ ফাঁকা রাখা চলবে না</translation>

@@ -149,18 +149,6 @@
 
 このポリシーが false に設定されている場合、ゲストモードのプロフィールで <ph name="PRODUCT_NAME" /> を使用することはできません。</translation>
 <translation id="1363275621236827384">ハードウェア プロファイルを Quirks サーバーに問い合わせられるようにする</translation>
-<translation id="1372267489642113556">
-      このポリシーが有効に設定されている場合、カンマ区切りのリストで指定された
-      発行元が各自のプロセスで実行されます。また、サブドメインによって指定された
-      発行元も分離されます。たとえば、https://example.com/ と指定すると、
-      https://foo.example.com/ も https://example.com/ サイトの一部として
-      分離されます。
-      このポリシーが無効に設定されている場合、明示的なサイト分離は行われず、IsolateOrigins と SitePerProcess のフィールドテストは無効になります。ただしユーザーは IsolateOrigins を手動で有効にできます。
-      このポリシーが未設定の場合、ユーザーはこの設定を変更できます。
-      <ph name="PRODUCT_OS_NAME" /> では、<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> デバイス ポリシーも同じ値に設定することをおすすめします。この 2 つのポリシーの値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
-
-      注: このポリシーは Android には適用されません。Android で IsolateOrigins を有効にするには、IsolateOriginsAndroid ポリシーの設定を使用してください。
-      </translation>
 <translation id="1384459581748403878">参考: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation の古い PKI インフラストラクチャを信頼するかどうか</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
@@ -973,12 +961,6 @@
 <translation id="3711895659073496551">停止する</translation>
 <translation id="3715569262675717862">クライアント証明書に基づく認証</translation>
 <translation id="3736879847913515635">ユーザー管理画面でのユーザー追加を許可する</translation>
-<translation id="3746590506846867985">
-      このポリシーはログイン画面に適用されます。ユーザー セッションに適用される <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> ポリシーもご覧になり、両方のポリシーを同じ値に設定することをおすすめします。値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
-      このポリシーが有効に設定されている場合、カンマ区切りのリストで指定された発行元が各自のプロセスで実行されます。また、サブドメインによって指定された発行元も分離されます。たとえば、https://example.com/ と指定すると、https://foo.example.com/ も https://example.com/ サイトの一部として分離されます。
-      このポリシーが無効に設定されている場合、明示的なサイト分離は行われず、IsolateOrigins と SitePerProcess のフィールドテストは無効になります。ただしユーザーは IsolateOrigins を手動で有効にできます。
-      このポリシーが未設定の場合、ログイン画面ではプラットフォームのデフォルトのサイト分離設定が使用されます。
-      </translation>
 <translation id="3748900290998155147">起動ロックを許可するかどうかを指定します。起動ロックは拡張機能から Power Management Extension API を使って、または ARC アプリからリクエストされます。
 
           このポリシーが true に設定されているか未設定の場合、電源管理で起動ロックが有効となります。
@@ -2563,15 +2545,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">新しいタブページ</translation>
 <translation id="7788511847830146438">プロフィール単位</translation>
-<translation id="7788872453000173219">
-      IsolateOrigins ポリシーの設定も参照し、状況に応じて使い分けてください。IsolateOrigins ポリシーでは、分離するサイトのリストを指定して、ユーザーへの影響を限定します。この設定（SitePerProcess）では、すべてのサイトを分離します。
-      このポリシーが有効に設定されている場合、サイトは各自のプロセスで実行されます。
-      このポリシーが無効に設定されている場合、明示的なサイト分離は行われず、IsolateOrigins と SitePerProcess のフィールドテストは無効になります。ただしユーザーは SitePerProcess を手動で有効にできます。
-      このポリシーが未設定の場合、ユーザーはこの設定を変更できます。
-      <ph name="PRODUCT_OS_NAME" /> では、<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> デバイス ポリシーも同じ値に設定することをおすすめします。この 2 つのポリシーの値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
-
-      注: このポリシーは Android には適用されません。Android で SitePerProcess を有効にするには、SitePerProcessAndroid ポリシーの設定を使用してください。
-      </translation>
 <translation id="780603170519840350">リストで指定された subjectPublicKeyInfo ハッシュに対して、Certificate Transparency（証明書の透明性）の要件の適用を無効にします。
 
       このポリシーを使用すると、指定された subjectPublicKeyInfo ハッシュの 1 つを使用している証明書を含む証明書チェーンに対して、Certificate Transparency（証明書の透明性）の開示要件を無効にできます。これにより、適切に公開されていないことを理由に通常であれば信頼できないものとして扱われる証明書を、企業のホストで引き続き使用できるようになります。
@@ -2607,13 +2580,6 @@
       ログイン画面のスクリーンセーバーとして使用する拡張機能の ID を指定します。拡張機能は、DeviceAppPack ポリシーを使用してこのドメインに設定されている AppPack のものである必要があります。</translation>
 <translation id="7882857838942884046">Google Sync を無効にすると、Android のバックアップと復旧が適切に機能しなくなります。</translation>
 <translation id="7882890448959833986">サポート外の OS の警告を表示しない</translation>
-<translation id="7892077286206685156">
-      このポリシーはログイン画面に適用されます。ユーザー セッションに適用される <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ポリシーもご覧になり、両方のポリシーを同じ値に設定することをおすすめします。値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
-      IsolateOrigins ポリシーの設定も参照し、状況に応じて使い分けてください。IsolateOrigins ポリシーでは、分離するサイトのリストを指定して、ユーザーへの影響を限定します。この設定（SitePerProcess）では、すべてのサイトを分離します。
-      このポリシーが有効に設定されている場合、サイトは各自のプロセスで実行されます。
-      このポリシーが無効に設定されている場合、明示的なサイト分離は行われず、IsolateOrigins と SitePerProcess のフィールドテストは無効になります。ただしユーザーは SitePerProcess を手動で有効にできます。
-      このポリシーが未設定の場合、ユーザーはこの設定を変更できます。
-      </translation>
 <translation id="7902255855035461275">このリストに指定されているパターンが、リクエスト元 URL の
       セキュリティ オリジンと照合されます。一致するものが見つかった場合は、
       動画キャプチャ デバイスへのアクセスが許可されます。その際、確認のメッセージは表示されません。
@@ -2633,19 +2599,6 @@
 <translation id="793473937901685727">ARC アプリで証明書を使用できるかどうかを設定します</translation>
 <translation id="7937766917976512374">動画キャプチャを許可または拒否する</translation>
 <translation id="7941975817681987555">ネットワーク接続でネットワーク動作を予測しない</translation>
-<translation id="7952880400776676958">
-      このポリシーが有効に設定されている場合、カンマ区切りのリストで
-      指定された発行元が各自のプロセスで実行されます。また、サブドメインによって指定された発行元も分離されます。
-      たとえば、https://example.com/ と指定すると、
-      https://foo.example.com/ も https://example.com/ サイトの一部として
-      分離されます。
-      このポリシーが無効に設定されている場合は、サイトごとの分離プロセス管理のロジックが適用され、IsolateOriginsAndroid と SitePerProcessAndroid のフィールドテストは無効になります。ただしユーザーは IsolateOrigins を手動で有効にできます。
-      このポリシーが未設定の場合、ユーザーはこの設定を変更できます。
-
-      注: Android では、サイト分離は試験運用版の機能になります。この機能のサポートは今後強化されますが、現時点ではこの機能によりパフォーマンスの問題が発生することもあります。
-
-      注: このポリシーは、厳密に 1 GB より大きい RAM を搭載した Android 端末の Chrome のみに適用されます。Android 以外のプラットフォームにこのポリシーを適用するには、IsolateOrigins を使用してください。
-      </translation>
 <translation id="7953256619080733119">管理対象ユーザーの手動による例外管理 - ホスト</translation>
 <translation id="7961779417826583251">リストで指定されたレガシー認証局に対して Certificate Transparency（証明書の透明性）の適用を無効にする</translation>
 <translation id="7974114691960514888">このポリシーは現在サポートされていません。リモート クライアントに接続するときの STUN とリレー サーバーの使用を有効にします。この設定が有効になっている場合は、間にファイアウォールがあるかどうかにかかわらず、このコンピュータがリモート ホスト コンピュータを検出して接続することができます。この設定が無効であり、かつ発信 UDP 接続がファイアウォールによってフィルタリングされている場合は、このコンピュータから接続できるのはローカル ネットワーク内のホスト コンピュータのみとなります。</translation>

@@ -2586,7 +2586,6 @@
 <translation id="4941246025622441835">Χρησιμοποιήστε αυτήν την επίταξη συσκευής κατά την εγγραφή της συσκευής στο πρόγραμμα εταιρικής διαχείρισης:</translation>
 <translation id="4941627891654116707">Μέγεθος γραμματοσειράς</translation>
 <translation id="494286511941020793">Βοήθεια για τη διαμόρφωση διακομιστή μεσολάβησης</translation>
-<translation id="4945444280533270988">Το Smart Lock είναι ενεργό</translation>
 <translation id="4953689047182316270">Απάντηση σε συμβάντα προσβασιμότητας</translation>
 <translation id="4953808748584563296">Προεπιλεγμένο πορτοκαλί avatar</translation>
 <translation id="4955710816792587366">Επιλογή PIN</translation>
@@ -4120,7 +4119,6 @@
 <translation id="7262004276116528033">Η υπηρεσία σύνδεσης φιλοξενείται από τον τομέα <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Κλείσιμο καρτελών</translation>
 <translation id="7268659760406822741">Διαθέσιμες υπηρεσίες</translation>
-<translation id="7269733644823798215">Κάντε το τηλέφωνό σας πιο ασφαλές προτού συνδέσετε το Chromebook. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Να γίνεται ερώτηση όταν ένας ιστότοπος θέλει να χρησιμοποιήσει αποκλειστικά μηνύματα συστήματος για την πρόσβαση σε συσκευές MIDI</translation>
 <translation id="7272674038937250585">Χωρίς περιγραφή</translation>
 <translation id="7273110280511444812">τελευταία σύνδεση στις <ph name="DATE" /></translation>
@@ -4722,7 +4720,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Δημιουργία νέας σημείωσης</translation>
 <translation id="8168435359814927499">Περιεχόμενο</translation>
-<translation id="8170451533020515291">Χρησιμοποιήστε το τηλέφωνό σας για το ξεκλείδωμα της συσκευής <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">Στοιχεία συσκευής</translation>
 <translation id="8177196903785554304">Λεπτομέρειες δικτύου</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5425,7 +5422,6 @@
 <translation id="981121421437150478">Εκτός σύνδεσης</translation>
 <translation id="983511809958454316">Αυτή η λειτουργία δεν υποστηρίζεται σε VR</translation>
 <translation id="984275831282074731">Τρόποι πληρωμής</translation>
-<translation id="984982042683741464">Απαιτείται κλείδωμα οθόνης</translation>
 <translation id="98515147261107953">Οριζόντια</translation>
 <translation id="987897973846887088">Δεν υπάρχουν διαθέσιμες εικόνες</translation>
 <translation id="988978206646512040">Δεν επιτρέπεται να είναι κενή η φράση πρόσβασης</translation>

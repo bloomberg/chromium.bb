@@ -2586,7 +2586,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4941246025622441835">Kasutage seadme registreerimisel ettevõttehalduses seda seadmenõuet:</translation>
 <translation id="4941627891654116707">Fondi suurus</translation>
 <translation id="494286511941020793">Puhverserveri konfigureerimise abi</translation>
-<translation id="4945444280533270988">Smart Lock on sisse lülitatud</translation>
 <translation id="4953689047182316270">Juurdepääsetavuse sündmustele vastamine</translation>
 <translation id="4953808748584563296">Oranž vaikeavatar</translation>
 <translation id="4955710816792587366">Valige PIN-kood</translation>
@@ -4119,7 +4118,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7262004276116528033">Sisselogimisteenust hostib <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Sule vahelehed</translation>
 <translation id="7268659760406822741">Saadaolevad teenused</translation>
-<translation id="7269733644823798215">Muutke oma telefon enne Chromebookiga ühendamist turvalisemaks. <ph name="LINK_BEGIN" />Lisateave<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Küsi, kui sait tahab kasutada MIDI-seadmetele juurdepääsu saamiseks süsteemi eksklusiivseid sõnumeid</translation>
 <translation id="7272674038937250585">Kirjeldust ei ole sisestatud</translation>
 <translation id="7273110280511444812">viimati ühendatud kuupäeval <ph name="DATE" /></translation>
@@ -4721,7 +4719,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Uue märke loomine</translation>
 <translation id="8168435359814927499">Sisu</translation>
-<translation id="8170451533020515291">Kasutage oma telefoni seadme <ph name="DEVICE_TYPE" /> avamiseks</translation>
 <translation id="8174047975335711832">Seadme teave</translation>
 <translation id="8177196903785554304">Võrgu üksikasjad</translation>
 <translation id="8179976553408161302">Sisestusklahv</translation>
@@ -5427,7 +5424,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="981121421437150478">Võrguühenduseta</translation>
 <translation id="983511809958454316">Seda funktsiooni VR-režiimis ei toetata</translation>
 <translation id="984275831282074731">Makseviisid</translation>
-<translation id="984982042683741464">Ekraanilukk on nõutav</translation>
 <translation id="98515147261107953">Horisontaalpaigutus</translation>
 <translation id="987897973846887088">Kujutisi pole saadaval</translation>
 <translation id="988978206646512040">Tühi parool ei ole lubatud</translation>

@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">檔案櫃</translation>
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
 <translation id="2865888419503095837">網路資訊</translation>
-<translation id="287224423103674444">你按下了旋轉螢幕的快速鍵。確定要旋轉螢幕嗎？</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2878884018241093801">最近沒有任何項目</translation>
 <translation id="2903844815300039659">已連上 <ph name="NAME" />，<ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{針對 1 個應用程式關閉}other{針對 # 個應用程式關閉}}</translation>
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4146833061457621061">播放音樂</translation>
-<translation id="4200057768455216496">你按下了停駐放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4217571870635786043">語音輸入</translation>
 <translation id="4261870227682513959">顯示通知設定。已關閉所有通知</translation>
 <translation id="4269883910223712419">這部裝置的管理員擁有下列權限：</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
-<translation id="7037152028959403492">你按下了高對比的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7068360136237591149">開啟檔案</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化...</translation>
 <translation id="8142699993796781067">私人網路</translation>
-<translation id="8152119955266188852">你按下了全螢幕放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
 <translation id="8236042855478648955">休息時間到了</translation>

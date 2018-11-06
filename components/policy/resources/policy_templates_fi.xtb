@@ -148,18 +148,6 @@
 
       Jos tämän käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei salli kirjautumista vierasprofiililla.</translation>
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
-<translation id="1372267489642113556">
-      Jos tämä käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon
-      nimetyistä alkuperistä suorittavat oman prosessinsa. Tämä eristää myös
-      aliverkkotunnusten mukaan nimetyt alkuperät, esim. jos https://example.com/
-      määritetään, https://foo.example.com/ eristetään myös osana
-      https://example.com/-sivustoa.
-      Jos tämä käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa IsolateOrigins-asetuksen käyttöön manuaalisesti.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-
-      HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa IsolateOrigins-asetuksen käyttöön Androidilla, käytä IsolateOriginsAndroid-käytännön asetusta.
-      </translation>
 <translation id="1384459581748403878">Viite: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
@@ -977,12 +965,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3711895659073496551">Keskeytä</translation>
 <translation id="3715569262675717862">Käyttöoikeusvarmenteisiin perustuva todennus</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
-<translation id="3746590506846867985">
-      Tätä käytäntöä sovelletaan kirjautumisnäytöllä. Tutustu myös käytäntöön <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-      Jos käytäntö on käytössä, jokainen pilkuilla erotetussa luettelossa nimetty alkuperäkohde suoritetaan omana prosessinaan. Tällöin myös nimettyjen kohteiden aliverkkotunnukset eristetään. Esimerkiksi jos luetteloon lisätään osoite https://example.com/, myös https://foo.example.com/ eristetään osana https://example.com/-sivustoa.
-      Jos käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa IsolateOrigins-asetuksen käyttöön.
-      Jos käytäntöä ei määritetä, kirjautumisnäytöllä käytetään alustan oletusarvoisia sivustojen eristysasetuksia.
-      </translation>
 <translation id="3748900290998155147">Määrittää, sallitaanko lepotilan estot. Laajennukset voivat pyytää lepotilan estoa virranhallintalaajennuksen sovellusliittymän kautta. Myös ARC-sovellukset voivat pyytää sitä.
 
           Jos käytännön arvo on Tosi tai sillä ei ole arvoa, virranhallinta noudattaa lepotilan estoja.
@@ -2564,15 +2546,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Uusi välilehti -sivu</translation>
 <translation id="7788511847830146438">Profiilikohtainen</translation>
-<translation id="7788872453000173219">
-      Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen saadaksesi molempien parhaat puolet, eristämisen ja rajallisen vaikutuksen käyttäjille, käyttämällä IsolateOrigins-käytäntöä eristettävien sivustojen luettelon kanssa. Tämä asetus, SitePerProcess, eristää kaikki sivustot.
-      Jos käytäntö on otettu käyttöön, kaikki sivustot suorittavat oman prosessinsa.
-      Jos tämä käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa SitePerProcess-asetuksen käyttöön manuaalisesti.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-
-      HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa SitePerProcess-asetuksen käyttöön Androidilla, käytä SitePerProcessAndroid-käytännön asetusta.
-      </translation>
 <translation id="780603170519840350">Poista käytöstä Certificate Transparency ‑noudattamisvaatimukset tietyiltä subjectPublicKeyInfo-hajautusarvoilta.
 
       Tämä käytäntö sallii Certificate Transparencyn tietojenluovutusvaatimusten poistamisen käytöstä varmenneketjuilta, joiden sisältämissä varmenteissa on jokin määritetyistä subjectPublicKeyInfo-hajautusarvoista. Tällöin Enterprise-isäntien kanssa voidaan jatkaa sellaisten varmenteiden käyttöä, joita ei muuten pidettäisi luotettavina puuttuvien julkisten tietojen vuoksi.
@@ -2608,13 +2581,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Määrittää tunnuksen perusteella laajennuksen, jota käytetään kirjautumisruudulla näytönsäästäjänä. Laajennuksen täytyy kuulua AppPack-sovelluspakettiin, joka on määritetty käytössä olevalle toimialueelle DeviceAppPack-käytännön kautta.</translation>
 <translation id="7882857838942884046">Jos poistat Google-synkronoinnin käytöstä, Androidin Varmuuskopioi ja palauta ‑toiminto ei toimi oikein.</translation>
 <translation id="7882890448959833986">Älä näytä varoitusta käyttöjärjestelmän tuen päättymisestä</translation>
-<translation id="7892077286206685156">
-      Tätä käytäntöä sovelletaan kirjautumisnäytöllä. Tutustu myös käytäntöön <ph name="SITE_PER_PROCESS_POLICY_NAME" />, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-      On suositeltavaa tarkistaa IsolateOrigins-käytännön asetus, jotta voidaan päästä parhaaseen lopputulokseen ja huolehtia sivustojen eristyksestä pienentäen samalla käyttäjille aiheutuvaa haittaa. IsolateOrigins-käytäntöön lisätään luettelo kaikista eristettävistä sivustoista. Tämä asetus (SitePerProcess) eristää kaikki sivustot.
-      Jos käytäntö on käytössä, jokainen sivusto suoritetaan omana prosessinaan.
-      Jos käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa SitePerProcess-asetuksen käyttöön manuaalisesti.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-      </translation>
 <translation id="7902255855035461275">Tähän luetteloon merkittyjä malleja verrataan pyynnön tehneen
       URL-osoitteen suojaustiedon alkuperään. Jos vastaavuus löydetään,
       videontallennuslaitteiden käyttöoikeus myönnetään ilman erillistä kehotetta.
@@ -2634,19 +2600,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="793473937901685727">Määritä ARC-sovellusten oikeus käyttää varmenteita</translation>
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
-<translation id="7952880400776676958">
-      Jos tämä käytäntö on käytössä, jokainen pilkuilla erotetussa luettelossa nimetty  
-      alkuperäkohde suoritetaan omana prosessinaan. Tämä eristää myös 
-      aliverkkotunnusten mukaan nimetyt alkuperät, esim. jos https://example.com/ 
-      määritetään, https://foo.example.com/ eristetään myös osana 
-      https://example.com/-sivustoa.
-      Jos käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOriginsAndroid- ja SitePerProcessAndroid-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa SitePerProcess-asetuksen käyttöön manuaalisesti.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-
-      HUOM. Sivustojen eristäminen on kokeellinen ominaisuus Androidissa. Sen tuki paranee ajan myötä, mutta toistaiseksi suorituskyvyssä saattaa ilmetä ongelmia.
-
-      HUOM. Tämä käytäntö koskee vain Chromen Android-versiota, jossa on yli 1 Gt RAM-muistia. Jos haluat käyttää käytäntöä muilla kuin Android-alustoilla, käytä IsolateOriginsia.
-      </translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7961779417826583251">Poista Certificate Transparency ‑noudattamisvaatimukset käytöstä tietyiltä vanhoilta varmenteen myöntäjiltä</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>

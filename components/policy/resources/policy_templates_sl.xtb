@@ -150,18 +150,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
-<translation id="1372267489642113556">
-      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama,
-      ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi
-      izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
-      https://foo.example.com/.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo lahko še vedno ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bo lahko uporabnik to nastavitev spremenil.
-      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-
-      OPOMBA: ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
@@ -1008,16 +996,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3711895659073496551">Prekinitev</translation>
 <translation id="3715569262675717862">Preverjanje pristnosti glede na potrdila odjemalca</translation>
 <translation id="3736879847913515635">Omogočanje dodajanja oseb v upravitelju uporabnikov</translation>
-<translation id="3746590506846867985">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      Če je pravilnik omogočen, se bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/, bo kot
-      del spletnega mesta https://example.com/ osamljeno
-      tudi spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest v okolju.
-      </translation>
 <translation id="3748900290998155147">Določa, ali so omogočena zaklepanja prebujanja. Zaklepanja prebujanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje energije in aplikacije ARC.
 
           Če je ta pravilnik omogočen ali ni nastavljen, bodo za upravljanje energije uporabljena zaklepanja prebujanja.
@@ -2671,15 +2649,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Nov zavihek s povezavami</translation>
 <translation id="7788511847830146438">Za profil</translation>
-<translation id="7788872453000173219">
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti obeh funkcij, osamitve in omejenega vpliva za uporabnike, tako, da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev, SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
-      Če pravilnik ni konfiguriran, bo lahko uporabnik to nastavitev spremenil.
-      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-
-      OPOMBA: ta pravilnik se ne uporablja za Android. Če želite SitePerProcess omogočiti za Android, uporabite nastavitev pravilnika SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Onemogoči uveljavljanje zahtev za preglednost potrdil za seznam zgoščevalnih vrednosti subjectPublicKeyInfo.
 
       S tem pravilnikom lahko onemogočite zahteve za razkritje za preglednost potrdil za verige potrdil, ki vsebujejo potrdila z eno od navedenih zgoščevalnih vrednosti subjectPublicKeyInfo. To omogoča, da potrdila, ki sicer ne bi bila zaupanja vredna, ker niso bila pravilno javno razkrita, še naprej uporabljate za gostitelje v poslovnih okoljih.
@@ -2714,13 +2683,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Določa ID razširitve, ki se uporabi kot ohranjevalnik zaslona na zaslonu za prijavo. Razširitev mora biti del paketa AppPack, ki je za to domeno nastavljen s pravilnikom »DeviceAppPack«.</translation>
 <translation id="7882857838942884046">Če onemogočite storitev Google Sync, Androidovi storitvi varnostnega kopiranja in obnovitve ne bosta pravilno delovali.</translation>
 <translation id="7882890448959833986">Onemogočanje opozorila glede nepodprtega operacijskega sistema</translation>
-<translation id="7892077286206685156">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti obeh funkcij, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev, SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="7902255855035461275">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če je najdeno ujemanje, bo dostop do naprav
       za zajem videa dovoljen brez poziva.
@@ -2740,19 +2702,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
-<translation id="7952880400776676958">
-      Če je pravilnik omogočen, se bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
-      https://foo.example.com/.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOriginsAndroid in SitePerProcessAndroid so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bo uporabnik to nastavitev lahko spremenil.
-
-      OPOMBA: v Androidu je osamitev spletnih mest poskusna. Podpora se bo sčasoma izboljšala, vendar lahko v tem trenutku pride do težav pri delovanju.
-
-      OPOMBA: ta pravilnik se uporablja samo za Chrome v Androidu v napravah, ki imajo več kot 1 GB RAM-a. Če želite pravilnik uporabljati v okoljih, ki niso Android, uporabite IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="7961779417826583251">Onemogoči uveljavljanje preglednosti potrdila za seznam starejših overiteljev potrdil</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.

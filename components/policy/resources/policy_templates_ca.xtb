@@ -138,14 +138,6 @@
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
-<translation id="1372267489642113556">
-      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
-      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant IsolateOrigins manualment.
-      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
-      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política d'usuari.
-
-      NOTA: aquesta política no s'aplica a Android. S'hi pot substituir per IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referència: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
@@ -957,12 +949,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3711895659073496551">Suspèn</translation>
 <translation id="3715569262675717862">Autenticació basada en certificats del client</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
-<translation id="3746590506846867985">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
-      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
-      Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar IsolateOrigins manualment.
-      Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminada a la plataforma.
-      </translation>
 <translation id="3748900290998155147">Especifica si es permeten els wake locks. Els poden sol·licitar les aplicacions ARC, així com les extensions a través de l'API de l'extensió de gestió de l'alimentació.
 
           Si aquesta política s'estableix en "true" o es deixa sense establir, es compliran els wake locks per a la gestió d'alimentació.
@@ -2541,15 +2527,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pàgina Pestanya nova</translation>
 <translation id="7788511847830146438">Per perfil</translation>
-<translation id="7788872453000173219">
-      Per aconseguir l'aïllament dels llocs web i un impacte mínim per als usuaris, pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar. L'opció de configuració SitePerProcess aïlla tots els llocs web.
-      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
-      Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant SitePerProcess manualment.
-      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
-      A <ph name="PRODUCT_OS_NAME" />, es recomana definir el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
-
-      NOTA: aquesta política no s'aplica a Android. Per activar SitePerProcess a Android, utilitza la política SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Desactiva l'aplicació dels requisits de Transparència de certificats als resums de subjectPublicKeyInfo inclosos en una llista.
 
       Aquesta política permet desactivar els requisits de divulgació de Transparència de certificats en cadenes de certificats que contenen certificats amb un dels resums de subjectPublicKeyInfo especificats. Això permet continuar utilitzant en amfitrions empresarials els certificats que, d'una altra manera, no es considerarien de confiança per no haver-se divulgat correctament.
@@ -2585,13 +2562,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a estalvi de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882857838942884046">Si desactives Google Sync, l'opció Còpia de seguretat i restauració d'Android no funcionarà correctament.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
-<translation id="7892077286206685156">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
-      Per aconseguir l'aïllament dels llocs web i un impacte mínim per als usuaris, pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar. L'opció de configuració SitePerProcess aïlla tots els llocs web.
-      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
-      Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant SitePerProcess manualment.
-      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
-      </translation>
 <translation id="7902255855035461275">Els patrons d'aquesta llista es compararan amb l'origen de seguretat
       de l'URL que has sol·licitat. Si es troba alguna coincidència, es permetrà l'accés
       als dispositius de captura de vídeo sense confirmació.
@@ -2611,15 +2581,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="793473937901685727">Estableix la disponibilitat de certificats per a aplicacions ARC</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
-<translation id="7952880400776676958">
-      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
-      Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOriginsAndroid i SitePerProcessAndroid. Els usuaris podran continuar activant IsolateOrigins manualment.
-      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
-
-NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n millorarà la compatibilitat, però actualment pot provocar problemes de rendiment.
-
-      NOTA: aquesta política només s'aplica a Chrome als dispositius Android amb més d'1 GB de RAM. Per aplicar-la en altres plataformes que no siguin d'Android, fes servir IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7961779417826583251">Desactiva l'aplicació de la Transparència de certificats a les autoritats certificadores heretades incloses en una llista</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>

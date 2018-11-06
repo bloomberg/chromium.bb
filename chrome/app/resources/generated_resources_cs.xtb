@@ -2582,7 +2582,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4941246025622441835">Použít tento požadavek zařízení při registraci zařízení do podnikové správy.</translation>
 <translation id="4941627891654116707">Velikost písma</translation>
 <translation id="494286511941020793">Nápověda ke konfiguraci proxy serveru</translation>
-<translation id="4945444280533270988">Funkce Smart Lock je zapnutá</translation>
 <translation id="4953689047182316270">Reagovat na události přístupnosti</translation>
 <translation id="4953808748584563296">Výchozí oranžový avatar</translation>
 <translation id="4955710816792587366">Zvolte kód PIN</translation>
@@ -4114,7 +4113,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7262004276116528033">Přihlašovací služba je hostována doménou <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Zavřít karty</translation>
 <translation id="7268659760406822741">Dostupné služby</translation>
-<translation id="7269733644823798215">Před připojením Chromebooku telefon lépe zabezpečte. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Zeptat se, když chce web využít exkluzivní zprávy systému pro přístup k zařízením MIDI</translation>
 <translation id="7272674038937250585">K dispozici není žádný popis</translation>
 <translation id="7273110280511444812">naposledy připojeno <ph name="DATE" /></translation>
@@ -4713,7 +4711,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Vytvořit novou poznámku</translation>
 <translation id="8168435359814927499">Obsah</translation>
-<translation id="8170451533020515291">Odemykejte zařízení <ph name="DEVICE_TYPE" /> telefonem</translation>
 <translation id="8174047975335711832">Informace o zařízení</translation>
 <translation id="8177196903785554304">Podrobnosti o síti</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5418,7 +5415,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Tato funkce ve virtuální realitě není podporována</translation>
 <translation id="984275831282074731">Platební metody</translation>
-<translation id="984982042683741464">Je vyžadován zámek obrazovky</translation>
 <translation id="98515147261107953">Na šířku</translation>
 <translation id="987897973846887088">Nejsou k dispozici žádné obrázky</translation>
 <translation id="988978206646512040">Prázdné přístupové heslo není povoleno</translation>

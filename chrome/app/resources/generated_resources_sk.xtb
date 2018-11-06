@@ -2585,7 +2585,6 @@ dotyku</translation>
 <translation id="4941246025622441835">Pri zaraďovaní zariadenia do správy firmy použite nasledujúcu rekvizíciu zariadenia:</translation>
 <translation id="4941627891654116707">Veľkosť písma</translation>
 <translation id="494286511941020793">Pomocník konfigurácie servera proxy</translation>
-<translation id="4945444280533270988">Funkcia Smart Lock je zapnutá</translation>
 <translation id="4953689047182316270">Reagovať na udalosti dostupnosti</translation>
 <translation id="4953808748584563296">Predvolený oranžový avatar</translation>
 <translation id="4955710816792587366">Vyberte si PIN</translation>
@@ -4118,7 +4117,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7262004276116528033">Túto prihlasovaciu službu hostí doména <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zavrieť karty</translation>
 <translation id="7268659760406822741">Dostupné služby</translation>
-<translation id="7269733644823798215">Zvýšte zabezpečenie svojho telefónu ešte predtým, než ho pripojíte k Chromebooku. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Opýtať sa, keď bude chcieť web použiť na prístup k zariadeniam MIDI správy exkluzívne pre systém</translation>
 <translation id="7272674038937250585">Popis nie je k dispozícii</translation>
 <translation id="7273110280511444812">naposledy pripojené dňa <ph name="DATE" /></translation>
@@ -4719,7 +4717,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Vytvoriť novú poznámku</translation>
 <translation id="8168435359814927499">Obsah</translation>
-<translation id="8170451533020515291">Odomkýnať zariadenie <ph name="DEVICE_TYPE" /> pomocou telefónu</translation>
 <translation id="8174047975335711832">Informácie o zariadení</translation>
 <translation id="8177196903785554304">Podrobnosti o sieti</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5424,7 +5421,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Táto funkcia nie je v režime VR podporovaná</translation>
 <translation id="984275831282074731">Spôsoby platby</translation>
-<translation id="984982042683741464">Vyžaduje sa zámka obrazovky</translation>
 <translation id="98515147261107953">Na šírku</translation>
 <translation id="987897973846887088">K dispozícii nie sú žiadne obrázky</translation>
 <translation id="988978206646512040">Prístupová fráza nemôže byť prázdna</translation>

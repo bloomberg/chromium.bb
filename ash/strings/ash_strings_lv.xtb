@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Plaukts</translation>
 <translation id="2844169650293029770">USB-C ierīce (pieslēgvieta kreisajā pusē priekšā)</translation>
 <translation id="2865888419503095837">Tīkla informācija</translation>
-<translation id="287224423103674444">Jūs nospiedāt ekrāna pagriešanas īsinājumtaustiņu. Vai vēlaties pagriezt ekrānu?</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2878884018241093801">Nav nesenu vienumu</translation>
 <translation id="2903844815300039659">Izveidots savienojums ar <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izslēgt lietotnē}zero{Izslēgt # lietotnēs}one{Izslēgt # lietotnē}other{Izslēgt # lietotnēs}}</translation>
 <translation id="4072264167173457037">Vidēji spēcīgs signāls</translation>
 <translation id="4146833061457621061">Atskaņot mūziku</translation>
-<translation id="4200057768455216496">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4217571870635786043">Diktēšana</translation>
 <translation id="4261870227682513959">Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti</translation>
 <translation id="4269883910223712419">Ierīces administrators var veikt šādas darbības:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
-<translation id="7037152028959403492">Jūs nospiedāt augsta kontrasta īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7068360136237591149">Atvērt failus</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
 <translation id="813913629614996137">Notiek inicializēšana...</translation>
 <translation id="8142699993796781067">Privāts tīkls</translation>
-<translation id="8152119955266188852">Jūs nospiedāt pilnekrāna lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
 <translation id="8192202700944119416">Paziņojumi ir paslēpti.</translation>
 <translation id="8236042855478648955">Laiks pārtraukumam</translation>

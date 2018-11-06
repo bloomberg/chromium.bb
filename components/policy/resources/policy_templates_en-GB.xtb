@@ -150,18 +150,6 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
-<translation id="1372267489642113556">
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-
-      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
-      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
@@ -1008,12 +996,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3715569262675717862">Authentication based on client certificates</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
-<translation id="3746590506846867985">
-      This policy applies to the sign-in screen. Please also see the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended that both policies are set to the same value. If the values don't match, a delay may be incurred when entering a user session due to the value specified by user policy being applied.
-      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. However, users will still be able to facilitate IsolateOrigins manually.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
-      </translation>
 <translation id="3748900290998155147">Specifies whether wake locks are allowed. Wake locks can be requested by extensions via the power management extension API and by ARC apps.
 
           If this policy is set to true or left not set, wake locks will be honoured for power management.
@@ -2665,15 +2647,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
-<translation id="7788872453000173219">
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds – isolation and limited impact for users – by using IsolateOrigins, with a list of sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. However, users will still be able to facilitate SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session, due to the value specified by user policy being applied.
-
-      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
-      </translation>
 <translation id="780603170519840350">Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
 
       This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.
@@ -2709,13 +2682,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
 <translation id="7882857838942884046">Disabling Google Sync will cause Android Backup and Restore to not function properly.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
-<translation id="7892077286206685156">
-      This policy applies to the sign-in screen. Please also see the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session, due to the value specified by user policy being applied.
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds– isolation and limited impact for users – by using IsolateOrigins, with a list of sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. However, users will still be able to facilitate SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="7902255855035461275">Patterns in this list will be matched against the security
       origin of the requesting URL. If a match is found, access to video
       capture devices will be granted without prompt.
@@ -2735,19 +2701,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
-<translation id="7952880400776676958">
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. However, users will still be able to facilitate IsolateOrigins manually.
-      If the policy is not configured, the user will be able to change this setting.
-
-      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
-
-      NOTE: This policy only applies to Chrome on Android, running on devices with strictly more than 1 GB of RAM. To apply the policy on non-Android platforms, use IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
 <translation id="7961779417826583251">Disable Certificate Transparency enforcement for a list of Legacy Certificate Authorities</translation>
 <translation id="7974114691960514888">This policy is no longer supported.

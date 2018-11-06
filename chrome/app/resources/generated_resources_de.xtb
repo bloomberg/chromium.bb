@@ -2581,7 +2581,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4941246025622441835">Diese Geräteanforderung beim Registrieren des Geräts für die Unternehmensverwaltung verwenden:</translation>
 <translation id="4941627891654116707">Schriftgröße</translation>
 <translation id="494286511941020793">Proxy-Konfigurationshilfe</translation>
-<translation id="4945444280533270988">Smart Lock ist an</translation>
 <translation id="4953689047182316270">Auf Bedienungshilfen reagieren</translation>
 <translation id="4953808748584563296">Orangefarbener Standardavatar</translation>
 <translation id="4955710816792587366">PIN wählen</translation>
@@ -4114,7 +4113,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7262004276116528033">Dieser Anmeldedienst wird von <ph name="SAML_DOMAIN" /> gehostet.</translation>
 <translation id="7268365133021434339">Tabs schließen</translation>
 <translation id="7268659760406822741">Verfügbare Dienste</translation>
-<translation id="7269733644823798215">Machen Sie Ihr Smartphone sicherer, bevor Sie Ihr Chromebook damit verbinden. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Nachfragen, wenn eine Website versucht, mit systemexklusiven Meldungen auf MIDI-Geräte zuzugreifen</translation>
 <translation id="7272674038937250585">Keine Beschreibung vorhanden</translation>
 <translation id="7273110280511444812">Zuletzt angeschlossen am <ph name="DATE" /></translation>
@@ -4715,7 +4713,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Neue Notiz erstellen</translation>
 <translation id="8168435359814927499">Inhalte</translation>
-<translation id="8170451533020515291">Ihr <ph name="DEVICE_TYPE" /> mit dem Smartphone entsperren</translation>
 <translation id="8174047975335711832">Gerätebezogene Informationen</translation>
 <translation id="8177196903785554304">Netzwerkdetails</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5422,7 +5419,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Diese Funktion wird im VR-Modus nicht unterstützt</translation>
 <translation id="984275831282074731">Zahlungsmethoden</translation>
-<translation id="984982042683741464">Displaysperre erforderlich</translation>
 <translation id="98515147261107953">Querformat</translation>
 <translation id="987897973846887088">Keine Bilder verfügbar</translation>
 <translation id="988978206646512040">Eine leere Passphrase ist nicht zulässig</translation>

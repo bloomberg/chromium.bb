@@ -2586,7 +2586,6 @@
 <translation id="4941246025622441835">エンタープライズ管理のためにデバイスを登録するときにこのデバイス利用申請を使用する:</translation>
 <translation id="4941627891654116707">フォントサイズ</translation>
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
-<translation id="4945444280533270988">Smart Lock がオンになっています</translation>
 <translation id="4953689047182316270">ユーザー補助機能のイベントへの応答</translation>
 <translation id="4953808748584563296">デフォルトのオレンジのアバター</translation>
 <translation id="4955710816792587366">PIN の選択</translation>
@@ -4119,7 +4118,6 @@
 <translation id="7262004276116528033">このログイン サービスは <ph name="SAML_DOMAIN" /> でホストされています</translation>
 <translation id="7268365133021434339">複数のタブを閉じる</translation>
 <translation id="7268659760406822741">利用可能なサービス</translation>
-<translation id="7269733644823798215">Chromebook と接続する前に、スマートフォンのセキュリティを高めることをおすすめします。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">サイトがシステム エクスクルーシブ メッセージを使用して MIDI デバイスにアクセスする際に確認する</translation>
 <translation id="7272674038937250585">説明が提供されていません</translation>
 <translation id="7273110280511444812">前回接続した日: <ph name="DATE" /></translation>
@@ -4722,7 +4720,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />（<ph name="TIME_REMAINING" />）</translation>
 <translation id="8162857629993139764">新しいメモを作成</translation>
 <translation id="8168435359814927499">コンテンツ</translation>
-<translation id="8170451533020515291">スマートフォンを使って <ph name="DEVICE_TYPE" /> のロックを解除します</translation>
 <translation id="8174047975335711832">デバイス情報</translation>
 <translation id="8177196903785554304">ネットワークの詳細</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5427,7 +5424,6 @@
 <translation id="981121421437150478">オフライン</translation>
 <translation id="983511809958454316">この機能は VR ではサポートされていません</translation>
 <translation id="984275831282074731">お支払い方法</translation>
-<translation id="984982042683741464">画面ロックが必要です</translation>
 <translation id="98515147261107953">横</translation>
 <translation id="987897973846887088">使用できる画像がありません</translation>
 <translation id="988978206646512040">パスフレーズは必ず指定してください</translation>

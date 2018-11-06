@@ -2586,7 +2586,6 @@
 <translation id="4941246025622441835">Sử dụng yêu cầu thiết bị này khi đăng ký thiết bị để quản lý doanh nghiệp:</translation>
 <translation id="4941627891654116707">Cỡ chữ</translation>
 <translation id="494286511941020793">Trợ giúp Cấu hình Proxy</translation>
-<translation id="4945444280533270988">Smart Lock đang bật</translation>
 <translation id="4953689047182316270">Phản hồi các sự kiện trợ năng</translation>
 <translation id="4953808748584563296">Hình đại diện màu cam mặc định</translation>
 <translation id="4955710816792587366">Chọn mã PIN</translation>
@@ -3184,7 +3183,7 @@
 <translation id="5832976493438355584">Đã khóa</translation>
 <translation id="5833397272224757657">Dùng nội dung trên trang web bạn truy cập cũng như các tương tác và hoạt động trên trình duyệt để cá nhân hóa</translation>
 <translation id="5833610766403489739">Tệp này đã thất lạc ở đâu đó. Vui lòng kiểm tra cài đặt vị trí tải xuống của bạn và thử lại.</translation>
-<translation id="5833726373896279253">Chỉ có chủ nhân mới có thể sửa đổi các cài đặt này:</translation>
+<translation id="5833726373896279253">Chỉ chủ sở hữu mới có thể sửa đổi các tùy chọn cài đặt này:</translation>
 <translation id="5834581999798853053">Còn khoảng <ph name="TIME" /> phút</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Đang ghi âm hoặc quay phim</translation>
 <translation id="5835754902560991078">cực ngắn (0,6 giây)</translation>
@@ -4119,7 +4118,6 @@
 <translation id="7262004276116528033">Dịch vụ đăng nhập này do <ph name="SAML_DOMAIN" /> lưu trữ</translation>
 <translation id="7268365133021434339">Đóng tab</translation>
 <translation id="7268659760406822741">Dịch vụ khả dụng</translation>
-<translation id="7269733644823798215">Đảm bảo an toàn hơn cho điện thoại của bạn trước khi kết nối với Chromebook. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Hỏi tôi khi có trang web muốn sử dụng thông báo dành riêng cho hệ thống để truy cập thiết bị MIDI</translation>
 <translation id="7272674038937250585">Chưa có mô tả</translation>
 <translation id="7273110280511444812">được đính kèm lần cuối vào <ph name="DATE" /></translation>
@@ -4721,7 +4719,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Tạo ghi chú mới</translation>
 <translation id="8168435359814927499">Nội dung</translation>
-<translation id="8170451533020515291">Dùng điện thoại của bạn để mở khóa <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">Thông tin về thiết bị</translation>
 <translation id="8177196903785554304">Chi tiết mạng</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5426,7 +5423,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="983511809958454316">Tính năng này không được hỗ trợ trong VR</translation>
 <translation id="984275831282074731">Phương thức thanh toán</translation>
-<translation id="984982042683741464">Cần có khóa màn hình</translation>
 <translation id="98515147261107953">Khổ ngang</translation>
 <translation id="987897973846887088">Không có hình ảnh</translation>
 <translation id="988978206646512040">Không cho phép cụm mật khẩu trống</translation>

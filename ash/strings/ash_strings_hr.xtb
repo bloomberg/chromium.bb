@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">USB-C uređaj (prednji lijevi priključak)</translation>
 <translation id="2865888419503095837">Podaci o mreži</translation>
-<translation id="287224423103674444">Pritisnuli ste prečac za zakretanje zaslona. Želite li zakrenuti zaslon?</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2878884018241093801">Nema nedavnih stavki</translation>
 <translation id="2903844815300039659">Povezani ste s mrežom <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za jednu aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
 <translation id="4146833061457621061">Pusti glazbu</translation>
-<translation id="4200057768455216496">Pritisnuli ste prečac za usidreno povećalo. Želite li ga uključiti?</translation>
 <translation id="4217571870635786043">Diktat</translation>
 <translation id="4261870227682513959">Prikaz postavki obavijesti. Obavijesti su isključene</translation>
 <translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Sve datoteke i lokalni podaci povezani s ovim korisnikom trajno će se izbrisati nakon uklanjanja korisnika.</translation>
 <translation id="7015766095477679451">Vratite se u <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
-<translation id="7037152028959403492">Pritisnuli ste prečac za visoki kontrast. Želite li ga uključiti?</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
 <translation id="7067196344162293536">Automatski izmjenjuj</translation>
 <translation id="7068360136237591149">Otvori datoteke</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Povezano s <ph name="NAME" /></translation>
 <translation id="813913629614996137">Pokretanje...</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
-<translation id="8152119955266188852">Pritisnuli ste prečac za povećalo za cijeli zaslon. Želite li ga uključiti?</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="8192202700944119416">Obavijesti su skrivene.</translation>
 <translation id="8236042855478648955">Vrijeme je za pauzu</translation>

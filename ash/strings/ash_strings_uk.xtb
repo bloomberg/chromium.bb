@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Полиця</translation>
 <translation id="2844169650293029770">Пристрій, під’єднаний до порту USB-C (ліворуч на передній панелі)</translation>
 <translation id="2865888419503095837">Інформація про мережу</translation>
-<translation id="287224423103674444">Ви натиснули комбінацію клавіш для обертання екрана. Обертати?</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="2878884018241093801">Нічого немає</translation>
 <translation id="2903844815300039659">Під’єдано до мережі "<ph name="NAME" />", <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Вимкнено для додатка}one{Вимкнено для # додатка}few{Вимкнено для # додатків}many{Вимкнено для # додатків}other{Вимкнено для # додатка}}</translation>
 <translation id="4072264167173457037">середній сигнал</translation>
 <translation id="4146833061457621061">Увімкни музику</translation>
-<translation id="4200057768455216496">Ви натиснули комбінацію клавіш для закріпленої лупи. Увімкнути?</translation>
 <translation id="4217571870635786043">Диктування</translation>
 <translation id="4261870227682513959">Показати налаштування сповіщень. Сповіщення вимкнено</translation>
 <translation id="4269883910223712419">Адміністратор цього пристрою може:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Якщо видалити цього користувача, усі файли та локальні дані, зв’язані з ним, буде видалено назавжди.</translation>
 <translation id="7015766095477679451">Поверніться о <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
-<translation id="7037152028959403492">Ви натиснули комбінацію клавіш для високого контрасту. Увімкнути?</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7067196344162293536">Автоматичне обертання</translation>
 <translation id="7068360136237591149">Відкрий файли</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">З'єднано з <ph name="NAME" /></translation>
 <translation id="813913629614996137">Ініціалізація...</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>
-<translation id="8152119955266188852">Ви натиснули комбінацію клавіш для лупи на весь екран. Увімкнути?</translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
 <translation id="8192202700944119416">Сповіщення сховано.</translation>
 <translation id="8236042855478648955">Час зробити перерву</translation>

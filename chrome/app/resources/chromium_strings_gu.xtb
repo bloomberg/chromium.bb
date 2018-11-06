@@ -40,7 +40,7 @@
 <translation id="2396765026452590966">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે <ph name="EXTENSION_NAME" /> એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="2483889755041906834">Chromium માં</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટૉલ કરો</translation>
-<translation id="2527042973354814951"><ph name="PLUGIN_NAME" /> ને સક્ષમ કરવા માટે Chromium પુનઃપ્રારંભ કરો</translation>
+<translation id="2527042973354814951"><ph name="PLUGIN_NAME" />ને ચાલુ કરવા માટે Chromium ફરી શરૂ કરો</translation>
 <translation id="2535480412977113886">તમારી એકાઉન્ટ સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium OS તમારા ડેટાને સિંક કરી શક્યું નથી.</translation>
 <translation id="2560420686485554789">ફાઇલો ડાઉનલોડ કરવા માટે Chromiumને સ્ટોરેજના ઍક્સેસની જરૂર પડે છે</translation>
 <translation id="2572494885440352020">Chromium હેલ્પર</translation>
@@ -219,7 +219,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="761356813943268536">Chromium તમારા કેમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="7617377681829253106">Chromium હવે પહેલાંથી બહેતર બન્યું છે</translation>
 <translation id="7686590090926151193">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર નથી</translation>
-<translation id="7689606757190482937">તમારા બધા ઉપકરણો પર Chromiumને સિંક અને વ્યક્તિગત કરો</translation>
+<translation id="7689606757190482937">તમારા બધા ડિવાઇસ પર Chromiumને સિંક કરો અને મનગમતું બનાવો</translation>
 <translation id="7729447699958282447">Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી કારણ કે તમારા ડોમેન માટે સમન્વયન ઉપલબ્ધ નથી.</translation>
 <translation id="7745317241717453663">આ તમારા બ્રાઉઝિંગ ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે. પછીથી તમારો ડેટા ફરીથી મેળવવા માટે, Chromium માં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="7747138024166251722">ઇન્સ્ટૉલર અસ્થાયી ડિરેક્ટરી બનાવી શક્યું નથી. કૃપા કરીને ખાલી ડિસ્ક સ્પેસ માટે અને સૉફ્ટવેર ઇન્સ્ટૉલ કરવાની પરવાનગી માટે તપાસો.</translation>
@@ -239,7 +239,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8222496066431494154">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા એકાઉન્ટને પાછું મેળવવા ફોન નંબર પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8290862415967981663">આ ફાઇલ જોખમી હોઈ શકે છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
-<translation id="8330519371938183845">તમારા બધા ઉપકરણો પર Chromiumને સિંક અને વ્યક્તિગત કરવા માટે સાઇન ઇન કરો</translation>
+<translation id="8330519371938183845">તમારા બધા ડિવાઇસ પર Chromiumને સિંક કરો અને મનગમતું બનાવવા માટે સાઇન ઇન કરો</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />, પહેલાં Chromium નો ઉપયોગ કરી રહ્યાં હતાં</translation>
 <translation id="8375950122744241554">Chromium 70 શરૂ થવાથી, નિરીક્ષિત વપરાશકર્તા પ્રોફાઇલો હવેથી ઉપલબ્ધ નહીં રહે.</translation>
 <translation id="8379713241968949941">{0,plural, =1{Chromium એક કલાકમાં ફરીથી લૉન્ચ થશે}one{Chromium # કલાકમાં ફરીથી લૉન્ચ થશે}other{Chromium # કલાકમાં ફરીથી લૉન્ચ થશે}}</translation>

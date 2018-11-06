@@ -2183,7 +2183,7 @@
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4316850752623536204">Utviklernettsted</translation>
 <translation id="4320177379694898372">Ingen Internett-tilkobling</translation>
-<translation id="4320948194796820126">Legg til et bokmerke til e-posten din</translation>
+<translation id="4320948194796820126">Legg til et bokmerke i e-posten din</translation>
 <translation id="4322394346347055525">Lukk andre faner</translation>
 <translation id="4324577459193912240">Filen er ufullstendig</translation>
 <translation id="4330387663455830245">Oversett aldri <ph name="LANGUAGE" /></translation>
@@ -2579,7 +2579,6 @@
 <translation id="4941246025622441835">Bruk denne enhetsrekvisisjonen når du registrerer enheten for bedriftsadministrering.</translation>
 <translation id="4941627891654116707">Skriftstørrelse</translation>
 <translation id="494286511941020793">Hjelp for konfigurering av mellomtjenere</translation>
-<translation id="4945444280533270988">Smart Lock er på</translation>
 <translation id="4953689047182316270">Svar på tilgjengelighetshendelser</translation>
 <translation id="4953808748584563296">Oransje standardbrukerbilde</translation>
 <translation id="4955710816792587366">Velg PIN-koden din</translation>
@@ -4112,7 +4111,6 @@
 <translation id="7262004276116528033">Verten for denne påloggingstjenesten er <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Lukk faner</translation>
 <translation id="7268659760406822741">Tilgjengelige tjenester</translation>
-<translation id="7269733644823798215">Gjør telefonen din sikrere før du kobler til Chromebooken. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Spør når nettsteder vil bruke systemeksklusive meldinger for å få tilgang til MIDI-enheter</translation>
 <translation id="7272674038937250585">Ingen beskrivelse er oppgitt</translation>
 <translation id="7273110280511444812">sist vedlagt <ph name="DATE" /></translation>
@@ -4712,7 +4710,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Opprett et nytt notat</translation>
 <translation id="8168435359814927499">Innhold</translation>
-<translation id="8170451533020515291">Bruk telefonen din til å låse opp <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">Enhetsinformasjon</translation>
 <translation id="8177196903785554304">Nettverksdetaljer</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5417,7 +5414,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="981121421437150478">Uten nett</translation>
 <translation id="983511809958454316">Denne funksjonen støttes ikke i VR</translation>
 <translation id="984275831282074731">Betalingsmåter</translation>
-<translation id="984982042683741464">Skjermlås kreves</translation>
 <translation id="98515147261107953">Liggende</translation>
 <translation id="987897973846887088">Ingen bilder er tilgjengelige</translation>
 <translation id="988978206646512040">Tomme passordfraser er ikke tillatt</translation>

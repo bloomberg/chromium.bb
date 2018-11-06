@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क जानकारी</translation>
-<translation id="287224423103674444">आपने स्क्रीन घुमाने का शॉर्टकट दबाया है. क्या आप स्क्रीन को घुमाना चाहते हैं?</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="2878884018241093801">हाल का कोई आइटम नहीं</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> से जुड़ गया है, <ph name="STRENGTH" /></translation>
@@ -190,7 +189,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एक ऐप्लिकेशन के लिए बंद है}one{# ऐप्लिकेशन के लिए बंद है}other{# ऐप्लिकेशन के लिए बंद है}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
-<translation id="4200057768455216496">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
@@ -343,7 +341,6 @@
 <translation id="698231206551913481">इस उपयोगकर्ता को हटाए जाने पर, इससे जुड़ीं सभी फ़ाइलों और स्थानीय डेटा को हमेशा के लिए मिटा दिया जाएगा.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> बजे फिर से देखें.</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
-<translation id="7037152028959403492">आपने 'हाई कंट्रास्ट' का शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7068360136237591149">फ़ाइल खोलो</translation>
@@ -411,7 +408,6 @@
 <translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
 <translation id="813913629614996137">शुरू हो रहा है...</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>
-<translation id="8152119955266188852">आपने 'सामग्री को फ़ुल-स्क्रीन पर बड़ा दिखाने वाली सेवा' का शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8192202700944119416">सूचनाएं छिपी हुई हैं.</translation>
 <translation id="8236042855478648955">ब्रेक लेने का समय हो गया</translation>

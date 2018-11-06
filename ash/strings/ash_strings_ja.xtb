@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">シェルフ</translation>
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
 <translation id="2865888419503095837">ネットワーク情報</translation>
-<translation id="287224423103674444">画面回転のショートカットを押しました。画面を回転しますか？</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="2878884018241093801">最近使用されたアイテムはありません</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> に接続されています（<ph name="STRENGTH" />）</translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{1 件のアプリでオフ}other{# 件のアプリでオフ}}</translation>
 <translation id="4072264167173457037">電波: 中程度</translation>
 <translation id="4146833061457621061">音楽を再生して</translation>
-<translation id="4200057768455216496">拡大鏡（ドッキング）のショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4217571870635786043">音声入力</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
 <translation id="4269883910223712419">この端末の管理者は以下を行うことができます。</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">このユーザーを削除すると、このユーザーに関連付けられているファイルとローカルデータもすべて完全に削除されます。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
-<translation id="7037152028959403492">ハイ コントラストのショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7068360136237591149">ファイルを開いて</translation>
@@ -411,7 +408,6 @@
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
-<translation id="8152119955266188852">拡大鏡（全画面）のショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>
 <translation id="8236042855478648955">休憩の時間です</translation>

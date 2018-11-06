@@ -150,18 +150,6 @@
 
       Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép bắt đầu hồ sơ khách.</translation>
 <translation id="1363275621236827384">Bật truy vấn cấu hình Máy chủ Quirks cho phần cứng</translation>
-<translation id="1372267489642113556">
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách được phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Tùy chọn này cũng sẽ cách ly
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến https://foo.example.com/ bị cách ly vì là một phần của trang web
-      https://example.com/.
-      Nếu bạn tắt chính sách này, sẽ không có hoạt động Cách ly trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> về cùng một giá trị. Nếu các giá trị do hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi đang áp dụng giá trị do chính sách người dùng chỉ định.
-
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy sử dụng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
@@ -1006,12 +994,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3711895659073496551">Tạm ngừng</translation>
 <translation id="3715569262675717862">Xác thực dựa trên chứng chỉ ứng dụng khách</translation>
 <translation id="3736879847913515635">Cho phép thêm người trong trình quản lý người dùng</translation>
-<translation id="3746590506846867985">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ khiến cho https://foo.example.com/ bị cô lập vì là một phần của trang web https://example.com/.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì tùy chọn cài đặt cô lập trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
-      </translation>
 <translation id="3748900290998155147">Nêu rõ có cho phép tính năng khóa chế độ thức hay không. Các ứng dụng ARC và các tiện ích (thông qua API tiện ích quản lý điện năng) có thể yêu cầu tính năng khóa chế độ thức.
 
           Nếu bạn đặt chính sách này thành true, hoặc không đặt chính sách này, thì tính năng khóa chế độ thức sẽ được triển khai để quản lý điện năng.
@@ -2655,15 +2637,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Trang tab mới</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
-<translation id="7788872453000173219">
-      Bạn nên xem xét tùy chọn cài đặt chính sách IsolateOrigins để khai thác tối đa cả hai khía cạnh, việc cô lập và việc hạn chế tác động đến người dùng, bằng việc sử dụng IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt này, SitePerProcess, sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, thì mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị do 2 chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật SitePerProcess trên Android, hãy sử dụng tùy chọn cài đặt chính sách SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các hàm băm subjectPublicKeyInfo.
 
       Chính sách này cho phép tắt các yêu cầu tiết lộ Tính minh bạch của chứng chỉ cho các chuỗi chứng chỉ chứa chứng chỉ có một trong các hàm băm subjectPublicKeyInfo đã được chỉ định. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng cho các máy chủ Doanh nghiệp.
@@ -2699,13 +2672,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
 <translation id="7882857838942884046">Việc tắt Google Sync sẽ khiến Sao lưu và khôi phục trên Android không hoạt động bình thường.</translation>
 <translation id="7882890448959833986">Ẩn cảnh báo hệ điều hành không được hỗ trợ</translation>
-<translation id="7892077286206685156">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách thành cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Bạn nên xem tùy chọn cài đặt của chính sách IsolateOrigins để khai thác tối đa cả hai khía cạnh, cách cô lập và cách hạn chế tác động đến người dùng, bằng việc sử dụng IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt này, SitePerProcess, sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      </translation>
 <translation id="7902255855035461275">Các mẫu trong danh sách này sẽ được so khớp dựa trên nguồn gốc bảo mật
       của URL yêu cầu. Nếu tìm thấy mẫu phù hợp, quyền truy cập
       vào thiết bị quay video sẽ được cấp mà không có lời nhắc.
@@ -2725,19 +2691,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
-<translation id="7952880400776676958">
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong danh sách
-      phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến cho https://foo.example.com/ bị cô lập vì là một phần của trang web
-      https://example.com/.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOriginsAndroid và SitePerProcessAndroid sẽ bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-
-      LƯU Ý: Trên Android, tính năng Cô lập trang web vẫn đang trong giai đoạn thử nghiệm. Khả năng hỗ trợ sẽ cải thiện theo thời gian nhưng hiện tính năng này có thể gây ra các vấn đề về hiệu suất.
-
-      LƯU Ý: Chính sách này chỉ áp dụng cho Chrome trên Android đang chạy trên các thiết bị chắc chắn có RAM lớn hơn 1 GB. Để áp dụng chính sách này trên các nền tảng không phải là Android, hãy sử dụng IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="7961779417826583251">Tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ cho một danh sách Tổ chức phát hành chứng chỉ kế thừa</translation>
 <translation id="7974114691960514888">Chính sách này không còn được hỗ trợ.

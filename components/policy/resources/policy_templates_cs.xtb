@@ -137,14 +137,6 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
-<translation id="1372267489642113556">
-      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami poběží ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud tuto zásadu zakážete, nebude docházet k žádné explicitní izolaci webů a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé však zásadu IsolateOrigins budou moci aktivovat ručně.
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-      V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Pokud se hodnoty obou zásad nebudou shodovat, při zahájení uživatelské relace může dojít k prodlevě, zatímco se bude přecházet na hodnotu nastavenou zásadou pro uživatele.
-
-      POZNÁMKA: Tato zásada nefunguje na zařízeních Android. K aktivaci zásady IsolateOrigins na zařízeních Android použijte zásadu IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
@@ -966,12 +958,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
-<translation id="3746590506846867985">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
-      Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
-      </translation>
 <translation id="3748900290998155147">Určuje, zda je povoleno blokování přechodu do režimu spánku. O blokování přechodu do režimu spánku mohou žádat aplikace ARC a rozšíření prostřednictvím rozhraní API pro řízení spotřeby.
 
           Pokud tato zásada není nastavena na hodnotu true nebo je ponechána nenastavená, blokování přechodu do režimu spánku budou při řízení spotřeby dodržována.
@@ -2609,15 +2595,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Stránka Nová karta</translation>
 <translation id="7788511847830146438">Podle profilu</translation>
-<translation id="7788872453000173219">
-      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení (SitePerProcess) izoluje všechny weby.
-      Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
-      Pokud tuto zásadu zakážete, nebude docházet k žádné explicitní izolaci webů a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé však zásadu SitePerProcess budou moci aktivovat ručně.
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-
-      POZNÁMKA: Tato zásada nefunguje na zařízeních Android. K aktivaci zásady SitePerProcess na zařízeních Android použijte zásadu SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Deaktivuje vynucování požadavků Certificate Transparency pro seznam hodnot hash údaje subjectPublicKeyInfo.
 
       Tato zásada umožňuje deaktivovat požadavky Certificate Transparency na zveřejnění pro řetězce certifikátů, které obsahují certifikáty s některou ze zadaných hodnot hash údaje subjectPublicKeyInfo. Pro podnikové hostitelské servery je pak možné používat certifikáty, které by jinak byly považovány za nedůvěryhodné, protože nebyly zveřejněny.
@@ -2652,13 +2629,6 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882857838942884046">Deaktivace služby Google Sync způsobí, že zálohování a obnovení systému Android nebude fungovat správně.</translation>
 <translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
-<translation id="7892077286206685156">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
-      Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
-      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-      </translation>
 <translation id="7902255855035461275">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam videa bude udělen bez zobrazení výzvy.
 
       POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veřejného terminálu.</translation>
@@ -2676,15 +2646,6 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
 <translation id="793473937901685727">Nastavení dostupnosti certifikátů pro aplikace ARC</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
-<translation id="7952880400776676958">
-      Pokud tuto zásadu povolíte, bude se každý z uvedených zdrojů v seznamu odděleném čárkami spouštět ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud tuto zásadu zakážete, nebude se provádět žádná explicitní izolace webů a zkušební verze zásad IsolateOriginsAndroid a SitePerProcessAndroid budou zakázány. Uživatelé však zásadu IsolateOrigins budou moci aktivovat ručně.
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-
-      POZNÁMKA: Na zařízeních Android je izolace webů experimentální. Podpora se postupně bude zlepšovat, ale v současné době tato funkce může způsobovat problémy s výkonem.
-
-      POZNÁMKA: Tato zásada se vztahuje pouze na Chrome pro Android na zařízeních s více než 1 GB paměti RAM. Na jiných platformách než Android použijte zásadu IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
 <translation id="7961779417826583251">Deaktivovat vynucování zásad Certificate Transparency pro seznam starších certifikačních autorit</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.

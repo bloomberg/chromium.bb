@@ -1183,7 +1183,7 @@
 <translation id="2755628026949580719">Jika kunci keselamatan anda tidak tersenarai, tekan butang kunci selama sekurang-kurangnya 5 saat.</translation>
 <translation id="275662540872599901">skrin dimatikan</translation>
 <translation id="2761898608071930085">Gunakan Akaun Lain</translation>
-<translation id="276233135255363312">{0,plural, =1{Anda mempunyai satu tetingkap inkognito.}other{Anda mempunyai # tingkap inkognito.}}</translation>
+<translation id="276233135255363312">{0,plural, =1{Satu tetingkap inkognito sedang terbuka.}other{# tetingkap inkognito sedang terbuka.}}</translation>
 <translation id="2762441749940182211">Kamera disekat</translation>
 <translation id="2765217105034171413">Kecil</translation>
 <translation id="2766006623206032690">Ta&amp;mpal dan pergi</translation>
@@ -2587,7 +2587,6 @@
 <translation id="4941246025622441835">Gunakan permintaan peranti ini apabila mendaftarkan peranti untuk pengurusan perusahaan:</translation>
 <translation id="4941627891654116707">Saiz fon</translation>
 <translation id="494286511941020793">Bantuan Konfigurasi Proksi</translation>
-<translation id="4945444280533270988">Smart Lock dihidupkan</translation>
 <translation id="4953689047182316270">Jawab Acara Kebolehaksesan</translation>
 <translation id="4953808748584563296">Avatar jingga lalai</translation>
 <translation id="4955710816792587366">Pilih PIN anda</translation>
@@ -4120,7 +4119,6 @@
 <translation id="7262004276116528033">Perkhidmatan log masuk ini dihoskan oleh <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Tutup Tab</translation>
 <translation id="7268659760406822741">Perkhidmatan yang tersedia</translation>
-<translation id="7269733644823798215">Jadikan telefon anda lebih selamat sebelum menyambungkan Chromebook anda. <ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Tanya apabila tapak mahu menggunakan mesej eksklusif sistem untuk mengakses peranti MIDI</translation>
 <translation id="7272674038937250585">Tiada perihalan disediakan</translation>
 <translation id="7273110280511444812">kali terakhir dilampirkan pada <ph name="DATE" /></translation>
@@ -4722,7 +4720,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Buat nota baharu</translation>
 <translation id="8168435359814927499">Kandungan</translation>
-<translation id="8170451533020515291">Gunakan telefon anda untuk membuka kunci <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="8174047975335711832">Maklumat peranti</translation>
 <translation id="8177196903785554304">Butiran Rangkaian</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5428,7 +5425,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="981121421437150478">Luar talian</translation>
 <translation id="983511809958454316">Ciri ini tidak disokong dalam VR</translation>
 <translation id="984275831282074731">Kaedah pembayaran</translation>
-<translation id="984982042683741464">Kunci skrin diperlukan</translation>
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="987897973846887088">Tiada imej tersedia</translation>
 <translation id="988978206646512040">Ungkapan laluan yang dikosongkan tidak dibenarkan</translation>

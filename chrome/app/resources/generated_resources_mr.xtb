@@ -2585,7 +2585,6 @@
 <translation id="4941246025622441835">एंटरप्राइज व्यवस्थापनासाठी डिव्हाइसची नोंदणी करताना ही डिव्हाइस मागणी वापरा:</translation>
 <translation id="4941627891654116707">फॉन्ट आकार</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फिगरेशन मदत</translation>
-<translation id="4945444280533270988">Smart Lock सुरू आहे</translation>
 <translation id="4953689047182316270">प्रवेशयोग्यता कार्यक्रमांना प्रतिसाद द्या</translation>
 <translation id="4953808748584563296">डीफॉल्ट नारिंगी अवतार</translation>
 <translation id="4955710816792587366">तुमचा पिन निवडा</translation>
@@ -4119,7 +4118,6 @@
 <translation id="7262004276116528033">ही साइन-इन सेवा <ph name="SAML_DOMAIN" /> द्वारे होस्ट केली जाते</translation>
 <translation id="7268365133021434339">टॅब बंद करा</translation>
 <translation id="7268659760406822741">उपलब्ध सेवा</translation>
-<translation id="7269733644823798215">तुमचे Chromebook कनेक्ट करण्याआधी तुमचा फोन आणखी सुरक्षित करा. <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">MIDI डिव्हाइसमध्‍ये प्रवेश करण्यासाठी जेव्हा एखादी साइट सिस्टम अनन्य संदेश वापरू इच्छिते तेव्हा विचारा</translation>
 <translation id="7272674038937250585">वर्णन दिलेले नाही</translation>
 <translation id="7273110280511444812"><ph name="DATE" /> रोजी अंतिम संलग्न केले</translation>
@@ -4719,7 +4717,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">नवीन टीप तयार करा</translation>
 <translation id="8168435359814927499">सामग्री</translation>
-<translation id="8170451533020515291">तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करण्यासाठी तुमचा फोन वापरा</translation>
 <translation id="8174047975335711832">डिव्हाइस माहिती</translation>
 <translation id="8177196903785554304">नेटवर्क तपशील</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5425,7 +5422,6 @@
 <translation id="981121421437150478">ऑफलाइन</translation>
 <translation id="983511809958454316">हे वैशिष्ट्य VR मध्ये सपोर्ट करत नाही</translation>
 <translation id="984275831282074731">पेमेंट पद्धती</translation>
-<translation id="984982042683741464">स्क्रीन लॉक आवश्यक</translation>
 <translation id="98515147261107953">लँडस्केप</translation>
 <translation id="987897973846887088">इमेज उपलब्ध नाहीत</translation>
 <translation id="988978206646512040">रिक्त सांकेतिक वाक्यांशाची परवानगी नाही</translation>

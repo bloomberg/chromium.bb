@@ -151,14 +151,6 @@
 
       Als dit beleid is ingesteld op 'False', staat <ph name="PRODUCT_NAME" /> niet toe dat er gastprofielen worden gestart.</translation>
 <translation id="1363275621236827384">Query's naar de Quirks Server inschakelen voor hardwareprofielen</translation>
-<translation id="1372267489642113556">
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten (origins) in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      Het is aan te raden om in <ph name="PRODUCT_OS_NAME" /> ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> op dezelfde waarde in te stellen. Als de voor beide beleidsregels opgegeven waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-
-      OPMERKING: Dit beleid is niet van toepassing op Android. Als je IsolateOrigins wilt inschakelen op Android, gebruik je de beleidsinstelling IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referentie: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Of je vertrouwen wilt stellen in de Legacy PKI-infrastructuur van Symantec Corporation</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
@@ -1004,12 +996,6 @@
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
-<translation id="3746590506846867985">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten (origins) in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, worden de standaardinstellingen voor site-isolatie van het platform gebruikt voor het inlogscherm.
-      </translation>
 <translation id="3748900290998155147">Geeft aan of wake locks zijn toegestaan. Wake locks kunnen door extensies worden aangevraagd via de API voor de stroombeheerextensie en door ARC-apps.
 
           Als dit beleid is ingesteld op 'true' of als het niet is ingesteld, worden wake locks ingesteld voor stroombeheer.
@@ -2653,15 +2639,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Pagina 'Nieuw tabblad'</translation>
 <translation id="7788511847830146438">Per profiel</translation>
-<translation id="7788872453000173219">
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site in een eigen proces uitgevoerd.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      Het is aan te raden om in <ph name="PRODUCT_OS_NAME" /> ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> op dezelfde waarde in te stellen. Als de voor beide beleidsregels opgegeven waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-
-      OPMERKING: Dit beleid is niet van toepassing op Android. Als je SitePerProcess wilt inschakelen op Android, gebruik je de beleidsinstelling SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Hiermee schakel je de handhaving van de Certificaattransparantie voor een lijst met subjectPublicKeyInfo-hashes uit.
 
       Met dit beleid kun je de vereisten voor openbaarmaking van certificaattransparantie uitschakelen voor certificaatreeksen die certificaten bevatten met een van de aangegeven subjectPublicKeyInfo-hashes. Zodoende kun je certificaten voor Enterprise-hosts blijven gebruiken die anders niet zouden worden vertrouwd omdat ze niet goed openbaar zijn gemaakt.
@@ -2697,13 +2674,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
 <translation id="7882857838942884046">Als je de synchronisatie met Google uitschakelt, werkt de Android-functie 'Back-up maken en resetten' niet meer naar behoren.</translation>
 <translation id="7882890448959833986">De waarschuwing voor een niet-ondersteund besturingssysteem negeren</translation>
-<translation id="7892077286206685156">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site in een eigen proces uitgevoerd.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="7902255855035461275">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van video zonder prompt toegestaan.
 
       OPMERKING: Tot versie 45 werd dit beleid alleen ondersteund in de kioskmodus.</translation>
@@ -2721,15 +2691,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="793473937901685727">Certificaatbeschikbaarheid instellen voor ARC-apps</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
-<translation id="7952880400776676958">
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten (origins) in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOriginsAndroid en SitePerProcessAndroid uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen.
-      Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
-
-      OPMERKING: Site-isolatie op Android is experimenteel. De ondersteuning zal in de loop der tijd verbeteren, maar kan op dit moment prestatieproblemen veroorzaken.
-
-      OPMERKING: Dit beleid is uitsluitend van toepassing op Chrome op Android met meer dan 1 GB RAM. Als je het beleid op andere platforms wilt toepassen, gebruik je SitePerProcess.
-      </translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="7961779417826583251">Handhaving van Certificaattransparantie voor een lijst met certificeringsinstanties uitschakelen</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.

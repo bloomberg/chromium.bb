@@ -150,18 +150,6 @@
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
 <translation id="1363275621236827384">Activer l'envoi de requêtes de profils matériels à Quirks Server</translation>
-<translation id="1372267489642113556">
-      Si cette règle est activée, chacune des origines définies et répertoriées dans une
-      liste d'éléments séparés par des virgules exécute son propre processus. Elle isole également
-      les origines par sous-domaines. Par exemple, si vous indiquez "https://example.com/",
-      "https://foo.example.com/" est également isolé en tant que partie du site
-      https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOrigins et de SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas sur Android. Pour activer IsolateOrigins sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
@@ -1016,12 +1004,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
-<translation id="3746590506846867985">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui concerne la session utilisateur. Nous vous recommandons de définir ces deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par une virgule exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez https://example.com/, https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOrigins et de SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de sites par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="3748900290998155147">Indique si les wakelocks sont autorisés. Les wakelocks peuvent être demandés par des extensions par le biais de l'API d'extension de gestion de l'alimentation et par les applications ARC.
 
           Si cette règle est définie sur "True" ou si elle n'est pas définie, les wakelocks seront pris en compte pour la gestion de l'alimentation.
@@ -2673,15 +2655,6 @@ au maximum si un utilisateur se sert de l'appareil.
            <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Page Nouvel onglet</translation>
 <translation id="7788511847830146438">Par profil</translation>
-<translation id="7788872453000173219">
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOrigins et de SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer SitePerProcess sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Désactive l'application des règles de transparence des certificats pour une liste de hachages subjectPublicKeyInfo.
 
       Cette règle permet de désactiver les exigences de divulgation stipulées dans les règles de transparence des certificats concernant les chaînes de certificat qui contiennent des certificats avec un des hachages subjectPublicKeyInfo spécifiés. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés concernant les hôtes Enterprise.
@@ -2717,13 +2690,6 @@ au maximum si un utilisateur se sert de l'appareil.
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
 <translation id="7882857838942884046">Si vous désactivez Google Sync, sachez que la sauvegarde et la restauration Android ne fonctionneront pas correctement.</translation>
 <translation id="7882890448959833986">Supprimer l'avertissement relatif au système d'exploitation non compatible</translation>
-<translation id="7892077286206685156">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" /> qui concerne la session utilisateur. Nous vous recommandons de définir ces deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOrigins et de SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="7902255855035461275">Les modèles de cette liste sont rapprochés de la source de sécurité
       de l'URL à l'origine de la demande. En cas de correspondance, l'accès
       aux appareils d'enregistrement vidéo est autorisé sans confirmation requise.
@@ -2743,19 +2709,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
-<translation id="7952880400776676958">
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par des virgules exécute son propre processus.
-      Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
-      https://example.com/, https://foo.example.com/ est également isolé en tant que partie
-      du site https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOriginsAndroid et de SitePerProcessAndroid sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-
-      REMARQUE : Pour Android, l'isolation des sites est une fonctionnalité expérimentale. Nous allons améliorer sa compatibilité au fil du temps. Toutefois, elle peut actuellement entraîner des problèmes de performances.
-
-      REMARQUE : Cette règle ne s'applique qu'à Chrome sur les appareils Android possédant plus de 1 Go de RAM. Pour l'appliquer sur d'autres plates-formes, utilisez IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
 <translation id="7961779417826583251">Désactiver l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 

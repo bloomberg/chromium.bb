@@ -137,14 +137,6 @@
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
 <translation id="1363275621236827384">Quirks Server'dan donanım profillerini sorgulamayı etkinleştir</translation>
-<translation id="1372267489642113556">
-      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede adı verilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politikanın devre dışı bırakılması halinde hiçbir Site İzolasyonu yapılmaz ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
-      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-
-      NOT: Bu politika Android için geçerli değildir. Android'de IsolateOrigins'i etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
-      </translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
@@ -988,12 +980,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3715569262675717862">İstemci sertifikalarına dayalı kimlik doğrulama</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
-<translation id="3746590506846867985">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      Bu politika etkinleştirilirse virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politika devre dışı bırakılırsa herhangi bir Site İzolasyonu yapılmaz ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de IsolateOrigins'i, manuel olarak etkinleştirebilirler.
-      Bu politikanın yapılandırılmazsa oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
-      </translation>
 <translation id="3748900290998155147">Uyanık kalma kilitlerine izin verilip verilmeyeceğini belirtir. Uyanık kalma kilitleri, güç yönetimi uzantı API'si yoluyla uzantılar tarafından ve ARC uygulamaları tarafından istenebilir.
 
           Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için uyanık kalma kilitleri kullanılır.
@@ -2639,15 +2625,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Yeni Sekme Sayfası</translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
-<translation id="7788872453000173219">
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak amacıyla IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
-      Bu politika etkinleştirilirse her site kendi işleminde çalışır.
-      Bu politika devre dışı bırakılırsa hiçbir Site İzolasyonu yapılmaz  ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
-      Politika yapılandırılmazsa, kullanıcı bu ayarı değiştirebilir. 
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-
-      NOT: Bu politika Android için geçerli değildir. Android'de SitePerProcess'i etkinleştirmek için SitePerProcessAndroid politika ayarını kullanın.
-      </translation>
 <translation id="780603170519840350">subjectPublicKeyInfo karmalarından oluşan bir liste için Sertifika Şeffaflığı gereksinimlerinin uygulamasını devre dışı bırakır.
 
       Bu politika, belirtilen subjectPublicKeyInfo karmalarından birine sahip sertifikalar içeren sertifika zincirleri için Sertifika Şeffaflığı açıklama gereksinimlerinin devre dışı bırakılmasına olanak tanır. Bu, uygun bir şekilde herkese açık olarak açıklanmadıkları için aksi halde güvenilmeyecek olan sertifikaların Kurumsal ana makinelerde kullanılmaya devam etmesine olanak tanır.
@@ -2683,13 +2660,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
 <translation id="7882857838942884046">Google Sync'in devre dışı bırakılması, Android Yedekleme ve Geri Yükleme özelliğinin düzgün çalışmamasına neden olur.</translation>
 <translation id="7882890448959833986">Desteklenmeyen OS uyarısını gizle</translation>
-<translation id="7892077286206685156">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
-      Bu politika etkinleştirilirse her site kendi işleminde çalışır.
-      Bu politika devre dışı bırakılırsa herhangi bir Site İzolasyonu yapılmaz ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de SitePerProcess'i manuel olarak etkinleştirebilirler.
-      Bu politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      </translation>
 <translation id="7902255855035461275">Bu listedeki kalıplar, istek yapan URL'nin güvenlik
       kaynağı ile karşılaştırılır. Bir eşleşme bulunursa, herhangi bir istemde
       bulunulmadan görüntü yakalama cihazlarına erişim izni verilir.
@@ -2709,15 +2679,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="793473937901685727">ARC uygulamaları için sertifika kullanılabilirliğini ayarla</translation>
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
-<translation id="7952880400776676958">
-      Bu politika etkinleştirilirse virgülle ayrılmış listede adı verilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politika devre dışı bırakılırsa hiçbir Site İzolasyonu yapılmaz ve IsolateOriginsAndroid ile SitePerProcessAndroid'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
-      Politika yapılandırılmazsa, kullanıcı bu ayarı değiştirebilir. 
-
-      NOT: Android'de Site İzolasyonu deneme aşamasındadır. Destek zaman içinde iyileşecektir ancak şu anda performans sorunlarına neden olabilir.
-
-      NOT: Bu politika yalnızca 1 GB'tan daha fazla RAM'e sahip cihazlarda çalıştırılan Android işletim sistemindeki Chrome tarayıcı için geçerlidir. Bu politikayı Android dışındaki platformlarda uygulamak için IsolateOrigins'i kullanın.
-      </translation>
 <translation id="7953256619080733119">Yönetilen kullanıcı manuel istisna ana makineleri</translation>
 <translation id="7961779417826583251">Eski Sertifika Yetkilileri listesinin Sertifika Şeffaflığı uygulamasını devre dışı bırak</translation>
 <translation id="7974114691960514888">Bu politika artık desteklenmiyor.

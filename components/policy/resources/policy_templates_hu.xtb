@@ -150,19 +150,6 @@
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
-<translation id="1372267489642113556">
-      Ha a házirend engedélyezve van, a vesszővel tagolt
-      listában szereplő összes megnevezett eredet önálló folyamatként fut majd.
-      Ez aldomainek szerint is letiltja a megnevezett eredeteket; pl. a
-      https://example.com/ megadása a https://foo.example.com/ webhely
-      izolálását is eredményezi, mert ez a https://example.com/ webhely része.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az
-      IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik az IsolateOrigins házirendet.
-      Ha a házirend nincs beállítva, a felhasználó módosítani tudja a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> alatt javasolt a <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-
-      FONTOS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja az IsolateOrigins házirendet Android rendszeren, használja az IsolateOriginsAndroid házirend-beállítást.
-      </translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
@@ -976,12 +963,6 @@
 <translation id="3711895659073496551">Felfüggesztés</translation>
 <translation id="3715569262675717862">Klienstanúsítványokon alapuló hitelesítés</translation>
 <translation id="3736879847913515635">Engedélyezi a személyek hozzáadását a felhasználókezelőben</translation>
-<translation id="3746590506846867985">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha nem egyeznek az értékek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is elkülöníti a megnevezett eredeteket; pl. a https://example.com/ megadása a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a https://example.com/ webhely része.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik az IsolateOrigins házirendet.
-      Ha nem állítja be a házirendet, akkor a platformra vonatkozó alapértelmezett webhely-izolációs beállítások lesznek érvényesek a bejelentkezési képernyőn.
-      </translation>
 <translation id="3748900290998155147">Megadja, hogy az ébrentartási műveletek engedélyezettek-e. Ébrentartási műveletet kérhetnek bővítmények (az energiagazdálkodási bővítmény API-n keresztül) és ARC-alkalmazások.
 
           Ha a házirend beállítása igaz, vagy ha nincs beállítva, a rendszer figyelembe veszi az ébrentartási kéréseket az energiagazdálkodás során.
@@ -2565,15 +2546,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Új lap oldal</translation>
 <translation id="7788511847830146438">Profilonként</translation>
-<translation id="7788872453000173219">
-      Nézze át az IsolateOrigins házirend beállításait, és annak érdekében, hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> alatt javasolt a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirend azonos értékre való beállítása. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-
-      FONTOS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja a SitePerProcess házirendet Android rendszeren, használja a SitePerProcessAndroid házirend-beállítást.
-      </translation>
 <translation id="780603170519840350">Kikapcsolja A tanúsítványok átláthatósága keretrendszer követelményeinek betartatását a listán szereplő subjectPublicKeyInfo kivonatok számára.
 
       Ez a házirend engedélyezi A tanúsítványok átláthatósága keretrendszer nyilvánosságra hozatali követelményeinek letiltását olyan tanúsítványláncok számára, amelyek a megadott subjectPublicKeyInfo kivonatú tanúsítványok egyikével rendelkeznek. Ez engedélyezi a másképp (nem megfelelő nyilvánosságra hozatal miatt) nem megbízhatónak minősülő tanúsítványok további használatát a vállalati gazdagépek számára.
@@ -2609,13 +2581,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
 <translation id="7882857838942884046">A Google Sync szolgáltatása esetén az Android Backup és az Android Restore szolgáltatás nem fog megfelelően működni.</translation>
 <translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
-<translation id="7892077286206685156">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre a <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Nézze át az IsolateOrigins házirend beállításait, és annak érdekében, hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="7902255855035461275">A listában szereplő mintákat a böngésző egyezteti a kérelmező URL
       biztonsági eredetével. Egyezés esetén a videorögzítő
       eszközökhöz való hozzáférést kérdés nélkül engedélyezi.
@@ -2635,19 +2600,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="793473937901685727">Tanúsítvány rendelkezésre állásának beállítása az ARC-alkalmazások számára</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
-<translation id="7952880400776676958">
-      Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő
-      összes megnevezett eredet önálló folyamatként fut majd. Ez aldomainek
-      szerint is elkülöníti a megnevezett eredeteket; pl. a https://example.com/
-      megadása a https://foo.example.com/ webhely izolálását is eredményezi,
-      mert ez a https://example.com/ webhely része.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOriginsAndroid és SitePerProcessAndroid házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik az IsolateOrigins házirendet.
-      Ha nem állítja be a házirendet, akkor a felhasználó módosítani tudja a házirendet.
-
-      MEGJEGYZÉS: Android rendszeren a webhely-izoláció kísérleti funkció. A támogatás idővel javul, de a funkció jelenleg teljesítményproblémákat okozhat.
-
-      MEGJEGYZÉS: Ez a házirend csak az Android rendszeren futó Chrome böngészőre vonatkozik, kizárólag olyan eszközökön, amelyek több mint 1 GB RAM-mal rendelkeznek. Ha nem Android platformon is alkalmazni szeretné a házirendet, használja az IsolateOrigins beállítást.
-      </translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7961779417826583251">A tanúsítványok átláthatósága keretrendszer betartatásának kikapcsolása a régi tanúsítványkibocsátók adott listájánál</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>

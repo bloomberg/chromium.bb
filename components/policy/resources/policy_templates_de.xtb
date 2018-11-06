@@ -150,17 +150,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Ist für die Richtlinie "false" festgelegt, erlaubt <ph name="PRODUCT_NAME" /> das Erstellen von Gastprofilen nicht.</translation>
 <translation id="1363275621236827384">Abfragen an Quirks-Server für Hardwareprofile aktivieren</translation>
-<translation id="1372267489642113556">
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
-      durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch
-      durch Subdomains benannte Ursprünge isoliert; wenn Sie z. B. https://example.com/ angeben,
-      wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
-      </translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Festlegen, ob der veralteten Symantec-PKI vertraut werden soll</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
@@ -968,12 +957,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
-<translation id="3746590506846867985">
-      Diese Richtlinie gilt für die Anmeldeseite. Bitte sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
-      </translation>
 <translation id="3748900290998155147">Gibt an, ob Wakelocks zulässig sind. Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Wakelocks bei der Energieverwaltung berücksichtigt.
@@ -2555,15 +2538,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
-<translation id="7788872453000173219">
-      Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOrigins" anzusehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "SitePerProcess" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "SitePerProcessAndroid" verwendet werden.
-      </translation>
 <translation id="780603170519840350">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste mit subjectPublicKeyInfo-Hashes deaktiviert.
 
       Diese Richtlinie ermöglicht es, Zertifikatstransparenz-Offenlegungsanforderungen für jene Zertifikatsketten zu deaktivieren, die Zertifikate mit einem der angegebenen subjectPublicKeyInfo-Hashes enthalten. Dadurch werden Zertifikate erlaubt, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Diese Zertifikate können dann weiterhin für Unternehmenshosts verwendet werden.
@@ -2599,13 +2573,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
 <translation id="7882857838942884046">Wenn Sie Google Sync deaktivieren, funktioniert die Android Sicherung &amp; Wiederherstellung nicht mehr richtig.</translation>
 <translation id="7882890448959833986">Warnung für nicht unterstützte Betriebssysteme unterdrücken</translation>
-<translation id="7892077286206685156">
-      Diese Richtlinie gilt für die Anmeldeseite. Bitte sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Sie sollten sich außerdem die "IsolateOrigins"-Richtlinieneinstellung ansehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      </translation>
 <translation id="7902255855035461275">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der
       Zugriff auf Videoaufnahmegeräte ohne Nachfrage gestattet.
@@ -2625,18 +2592,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 <translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
-<translation id="7952880400776676958">
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
-      durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch
-      durch Subdomains benannte Ursprünge isoliert; wenn Sie z. B. https://example.com/ angeben,
-      wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOriginsAndroid" und "SitePerProcessAndroid" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-
-      HINWEIS: Unter Android ist die Website-Isolierung eine experimentelle Funktion. Die Unterstützung wird in Zukunft verbessert, aktuell kann sie aber Probleme mit der Leistung verursachen.
-
-      HINWEIS: Diese Richtlinie funktioniert nur für Chrome unter Android auf Geräten, die mehr als 1 GB RAM aufweisen. Damit die Richtlinie auf anderen Plattformen als Android genutzt werden kann, muss "IsolateOrigins" verwendet werden.
-      </translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
 <translation id="7961779417826583251">Erzwingung der Zertifikatstransparenz für eine Liste alter Zertifizierungsstellen deaktivieren</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>

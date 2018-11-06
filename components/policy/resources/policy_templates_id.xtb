@@ -138,18 +138,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
-<translation id="1372267489642113556">
-      Jika kebijakan ini diaktifkan, tiap asal yang diberi nama dalam
-      daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomain; mis., menentukan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan dilakukan dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-
-      CATATAN: Kebijakan ini tidak berlaku di Android. Untuk mengaktifkan IsolateOrigins di Android, gunakan setelan kebijakan IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
@@ -966,12 +954,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3711895659073496551">Tangguhkan</translation>
 <translation id="3715569262675717862">Autentikasi berdasarkan sertifikat klien</translation>
 <translation id="3736879847913515635">Mengaktifkan penambahan orang di pengelola pengguna</translation>
-<translation id="3746590506846867985">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan dengan nilai yang sama. Jika nilainya tidak sama, mungkin terjadi penundaan saat memasukkan sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      Jika kebijakan ini diaktifkan, tiap asal yang diberi nama di daftar yang dipisahkan koma akan dijalankan dalam prosesnya masing-masing. Tindakan ini juga akan mengisolasi asal yang diberi nama oleh subdomain; misalnya, menentukan https://example.com/ juga akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari situs https://example.com/.
-      Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
-      Jika kebijakan tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
-      </translation>
 <translation id="3748900290998155147">Menentukan apakah penguncian layar saat aktif diizinkan. Penguncian layar saat aktif dapat diminta dengan ekstensi melalui power management extension API dan dengan aplikasi ARC.
 
 Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat aktif akan diterima untuk pengelolaan daya.
@@ -2554,15 +2536,6 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Halaman Tab Baru</translation>
 <translation id="7788511847830146438">Per Profil</translation>
-<translation id="7788872453000173219">
-      Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini, SitePerProcess, mengisolasi semua situs.
-      Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri.
-      Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi penundaan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-
-      CATATAN: Kebijakan ini tidak berlaku di Android. Untuk mengaktifkan SitePerProcess di Android, gunakan setelan kebijakan SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo.
 
       Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu hash subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat yang dapat dianggap tidak tepercaya, karena tidak diungkapkan secara publik dengan sesuai, terus digunakan untuk host Perusahaan.
@@ -2598,13 +2571,6 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
 <translation id="7882857838942884046">Menonaktifkan Google Sync akan menyebabkan Backup dan Pemulihan Android tidak berfungsi dengan benar.</translation>
 <translation id="7882890448959833986">Sembunyikan peringatan OS tidak didukung</translation>
-<translation id="7892077286206685156">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ini ke nilai yang sama. Jika nilai tidak sama, mungkin terjadi penundaan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini, SitePerProcess, mengisolasi semua situs.
-      Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri.
-      Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      </translation>
 <translation id="7902255855035461275">Pola dalam daftar ini akan dicocokkan dengan asal
       keamanan URL yang meminta.  Jika ditemukan kecocokan, akses ke perangkat
       yang merekam audio akan diberikan tanpa permintaan.
@@ -2624,19 +2590,6 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
 <translation id="793473937901685727">Menyetel ketersediaan sertifikat untuk aplikasi ARC</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
-<translation id="7952880400776676958">
-      Jika kebijakan diaktifkan, tiap asal yang diberi nama dalam
-      daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomain; mis., menentukan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOriginsAndroid dan SitePerProcessAndroid akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-
-      CATATAN: Di Android, Isolasi Situs bersifat eksperimental. Dukungan akan disempurnakan seiring waktu, namun saat ini dapat menyebabkan masalah performa.
-
-      CATATAN: Kebijakan ini hanya berlaku untuk Chrome di Android yang berjalan di perangkat dengan RAM harus di atas 1 GB. Untuk menerapkan kebijakan di platform non-Android, gunakan IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
 <translation id="7961779417826583251">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar Otoritas Sertifikat Lama</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>

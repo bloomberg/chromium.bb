@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
 <translation id="2865888419503095837">Informace o síti</translation>
-<translation id="287224423103674444">Stiskli jste klávesovou zkratku pro otočení obrazovky. Chcete otočit obrazovku?</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="2878884018241093801">Žádné nedávné položky</translation>
 <translation id="2903844815300039659">Jste připojeni k síti <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Vypnuto pro aplikaci}few{Vypnuto pro # aplikace}many{Vypnuto pro # aplikace}other{Vypnuto pro # aplikací}}</translation>
 <translation id="4072264167173457037">Střední signál</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
-<translation id="4200057768455216496">Stiskli jste klávesovou zkratku pro zadokovanou lupu. Chcete ji zapnout?</translation>
 <translation id="4217571870635786043">Diktování</translation>
 <translation id="4261870227682513959">Zobrazit nastavení oznámení. Oznámení jsou vypnutá</translation>
 <translation id="4269883910223712419">Administrátor zařízení má následující možnosti:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Po odebrání tohoto uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena.</translation>
 <translation id="7015766095477679451">Vraťte se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
-<translation id="7037152028959403492">Stiskli jste klávesovou zkratku pro vysoký kontrast. Chcete ho zapnout?</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
 <translation id="7067196344162293536">Automatické otáčení</translation>
 <translation id="7068360136237591149">Otevřít soubory</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>
 <translation id="8142699993796781067">Soukromá síť</translation>
-<translation id="8152119955266188852">Stiskli jste klávesovou zkratku pro lupu celé obrazovky. Chcete ji zapnout?</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>
 <translation id="8236042855478648955">Čas na přestávku</translation>

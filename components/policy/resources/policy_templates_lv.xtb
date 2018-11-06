@@ -138,18 +138,6 @@
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, pārlūkā <ph name="PRODUCT_NAME" /> nevar izveidot viesu profilus.</translation>
 <translation id="1363275621236827384">Iespējot Quirks servera vaicājumus aparatūras profiliem</translation>
-<translation id="1372267489642113556">
-      Ja šī politika ir iespējota, katram komatatdalītā sarakstā norādītajam
-      sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti
-      sākumpunkti, kas nosaukti pēc apakšdomēniem, piemēram,
-      norādot https://example.com/, arī adrese https://foo.example.com/ tiks izolēta
-      kā daļa no vietnes https://example.com/.
-      Ja šī politika ir atspējota, nenotiks tieša vietnes izolācija un IsolateOrigins un SitePerProcess eksperimenti tiks atspējoti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ir ieteicams arī iestatīt to pašu vērtību <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ierīces politikai. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-
-      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku IsolateOrigins operētājsistēmā Android, izmantojiet politikas IsolateOriginsAndroid iestatījumu.
-      </translation>
 <translation id="1384459581748403878">Informācija: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
@@ -994,12 +982,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3711895659073496551">Darbības apturēšana</translation>
 <translation id="3715569262675717862">Uz klientu sertifikātiem balstīta autentifikācija</translation>
 <translation id="3736879847913515635">Iespēja pievienot personu lietotāju pārvaldniekā</translation>
-<translation id="3746590506846867985">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem, piemēram, norādot https://example.com/, tiks izolēta arī vietne https://foo.example.com/ kā daļa no vietnes https://example.com/.
-      Ja šī politika ir atspējota, nenotiks tieša vietnes izolācija un IsolateOrigins un SitePerProcess eksperimenti tiks atspējoti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantotas platformas vietņu izolēšanas noklusējuma iestatījumi.
-      </translation>
 <translation id="3748900290998155147">Norāda, vai ir atļauti aktivizēšanas gadījumi. Izmantojot barošanas pārvaldības paplašinājuma API un ARC lietotnes, aktivizēšanas gadījumus var pieprasīt paplašinājumi.
 
           Ja politikai ir iestatīta vērtība “True” vai politika nav iestatīta, aktivizēšanas gadījumi tiks veikti barošanas pārvaldībā.
@@ -2646,15 +2628,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Jaunas cilnes lapa</translation>
 <translation id="7788511847830146438">Katram profilam</translation>
-<translation id="7788872453000173219">
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot politiku SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja šī politika ir atspējota, nenotiks tieša vietnes izolācija un IsolateOrigins un SitePerProcess eksperimenti tiks atspējoti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ir ieteicams arī iestatīt to pašu vērtību <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> ierīces politikai. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-
-      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku SitePerProcess operētājsistēmā Android, izmantojiet politikas SitePerProcessAndroid iestatījumu.
-      </translation>
 <translation id="780603170519840350">Atspējo Certificate Transparency prasību piemērošanu “subjectPublicKeyInfo” jaucējkodiem.
 
       Šī politika ļauj atspējot Certificate Transparency atklāšanas prasības sertifikātu ķēdēm, kurās ir sertifikāti ar vienu no norādītajiem “subjectPublicKeyInfo” jaucējkodiem. Tādējādi uzņēmumu saimniekdatoriem var izmantot sertifikātus, kas citādi tiktu uzskatīti par neuzticamiem, jo to informācija nav pareizi publiski atklāta.
@@ -2690,13 +2663,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
 <translation id="7882857838942884046">Atspējojot Google Sync, Android dublēšana un atjaunošana nedarbosies pareizi.</translation>
 <translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
-<translation id="7892077286206685156">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot politiku SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="7902255855035461275">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL
       drošības avotam. Ja tiek atrasta atbilstība, piekļuve video
       ierakstīšanas ierīcēm tiek nodrošināta bez uzaicinājuma.
@@ -2716,19 +2682,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="793473937901685727">Iestatīt sertifikātu pieejamību ARC lietotnēm</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
-<translation id="7952880400776676958">
-      Ja šī politika ir iespējota, katram komatatdalītā
-      sarakstā norādītajam sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti
-      sākumpunkti, kas nosaukti pēc apakšdomēniem. Piemēram, norādot https://example.com/,
-      arī adrese https://foo.example.com/ tiks izolēta kā daļa no vietnes
-      https://example.com/.
-      Ja šī politika ir atspējota, nenotiks tieša vietnes izolācija un IsolateOriginsAndroid un SitePerProcessAndroid eksperimenti tiks atspējoti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-
-      PIEZĪME. Operētājsistēmā Android vietņu izolēšana ir eksperimentāla. Ar laiku atbalsts tiks uzlabots, tomēr pašlaik var rasties veiktspējas problēmas.
-
-      PIEZĪME. Šī politika attiecas tikai uz pārlūku Chrome operētājsistēmā Android ierīcēs, kuru RAM atmiņas ietilpība pārsniedz 1 GB. Lai izmantotu politiku platformās, kas nav Android platformas, izmantojiet politikas iestatījumu IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Pārvaldīto lietotāju manuālo izņēmumu saimniekdatori</translation>
 <translation id="7961779417826583251">Certificate Transparency piemērošanas atspējošana mantotajām sertificēšanas iestādēm</translation>
 <translation id="7974114691960514888">Šī politika vairs netiek atbalstīta.

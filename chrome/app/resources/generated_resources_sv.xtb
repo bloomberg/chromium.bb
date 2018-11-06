@@ -2585,7 +2585,6 @@
 <translation id="4941246025622441835">Använd den här enhetsanmälan när enheten upptas för företagshantering:</translation>
 <translation id="4941627891654116707">Teckenstorlek</translation>
 <translation id="494286511941020793">Hjälp för proxykonfiguration</translation>
-<translation id="4945444280533270988">Smart Lock har aktiverats</translation>
 <translation id="4953689047182316270">Svara på tillgänglighetshändelser</translation>
 <translation id="4953808748584563296">Orange standardavatar</translation>
 <translation id="4955710816792587366">Välj en pinkod</translation>
@@ -4118,7 +4117,6 @@
 <translation id="7262004276116528033">Inloggningstjänsten tillhandahålls av <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Stäng flikar</translation>
 <translation id="7268659760406822741">Tillgängliga tjänster</translation>
-<translation id="7269733644823798215">Gör mobilen säkrare innan du ansluter Chromebook. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Fråga när en webbplats vill använda systemexklusiva meddelanden för att komma åt MIDI-enheter</translation>
 <translation id="7272674038937250585">Ingen beskrivning har angetts</translation>
 <translation id="7273110280511444812">senast ansluten den <ph name="DATE" /></translation>
@@ -4720,7 +4718,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Skapa ny anteckning</translation>
 <translation id="8168435359814927499">Innehåll</translation>
-<translation id="8170451533020515291">Lås upp denna <ph name="DEVICE_TYPE" /> med hjälp av mobilen</translation>
 <translation id="8174047975335711832">Enhetsinformation</translation>
 <translation id="8177196903785554304">Nätverksuppgifter</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5425,7 +5422,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Den här funktionen stöds inte i VR-läget</translation>
 <translation id="984275831282074731">Betalningsmetoder</translation>
-<translation id="984982042683741464">Skärmlås krävs</translation>
 <translation id="98515147261107953">Liggande</translation>
 <translation id="987897973846887088">Det finns inga bilder</translation>
 <translation id="988978206646512040">Lösenfrasen får inte vara tom</translation>
