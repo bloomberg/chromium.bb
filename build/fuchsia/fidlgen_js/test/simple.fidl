@@ -38,7 +38,7 @@ struct StructWithBool {
 };
 
 struct StructWithUint {
-  uint32 length;
+  uint32 num;
 };
 
 struct LargerStructWithArray {
@@ -84,5 +84,8 @@ interface Testola {
 
   11: SendVectorsOfString(vector<string> unsized,
                           vector<string?> nullable,
-                          vector<string:10> sized10);
+                          vector<string:10> max_strlen);
+
+  12: VectorOfStruct(vector<StructWithUint> stuff)
+        -> (vector<StructWithUint> result);
 };
