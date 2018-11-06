@@ -7,7 +7,6 @@
 
 namespace blink {
 
-class LayoutBox;
 class Node;
 class PaintLayer;
 
@@ -17,10 +16,6 @@ namespace root_scroller_util {
 // <html> element and document Node, this returns the LayoutView's PaintLayer
 // rather than <html>'s since scrolling is handled by LayoutView.
 PaintLayer* PaintLayerForRootScroller(const Node*);
-
-bool IsGlobal(const LayoutBox&);
-bool IsGlobal(const PaintLayer&);
-bool IsGlobal(const Node*);
 
 }  // namespace root_scroller_util
 

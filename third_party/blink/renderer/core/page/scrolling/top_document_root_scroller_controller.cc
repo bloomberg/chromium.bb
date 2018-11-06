@@ -178,12 +178,26 @@ void TopDocumentRootScrollerController::UpdateGlobalRootScroller(
   SetNeedsCompositingUpdateOnAncestors(old_root_scroller);
   SetNeedsCompositingUpdateOnAncestors(new_global_root_scroller);
 
+  UpdateCachedBits(old_root_scroller, new_global_root_scroller);
   if (ScrollableArea* area = GetScrollableArea(old_root_scroller)) {
     if (old_root_scroller->GetDocument().IsActive())
       area->DidChangeGlobalRootScroller();
   }
 
   target_scroller->DidChangeGlobalRootScroller();
+}
+
+void TopDocumentRootScrollerController::UpdateCachedBits(Node* old_global,
+                                                         Node* new_global) {
+  if (old_global) {
+    if (LayoutObject* object = old_global->GetLayoutObject())
+      object->SetIsGlobalRootScroller(false);
+  }
+
+  if (new_global) {
+    if (LayoutObject* object = new_global->GetLayoutObject())
+      object->SetIsGlobalRootScroller(true);
+  }
 }
 
 Document* TopDocumentRootScrollerController::TopDocument() const {
@@ -235,6 +249,9 @@ void TopDocumentRootScrollerController::InitializeViewportScrollCallback(
       &page_->GetBrowserControls(), &page_->GetOverscrollController(),
       root_frame_viewport);
 
+  // Initialize global_root_scroller_ to the default; the main document node.
+  // We can't yet reliably compute this because the frame we're loading may not
+  // be swapped into the main frame yet so TopDocument returns nullptr.
   UpdateGlobalRootScroller(&main_document);
 }
 

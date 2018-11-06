@@ -32,37 +32,6 @@ PaintLayer* PaintLayerForRootScroller(const Node* node) {
   return box->Layer();
 }
 
-bool IsGlobal(const LayoutBox& box) {
-  if (!box.GetNode() || !box.GetNode()->GetDocument().GetPage())
-    return false;
-
-  return box.GetNode() == box.GetDocument()
-                              .GetPage()
-                              ->GlobalRootScrollerController()
-                              .GlobalRootScroller();
-}
-
-bool IsGlobal(const PaintLayer& layer) {
-  if (!layer.GetLayoutBox())
-    return false;
-
-  PaintLayer* root_scroller_layer =
-      PaintLayerForRootScroller(layer.GetLayoutBox()
-                                    ->GetDocument()
-                                    .GetPage()
-                                    ->GlobalRootScrollerController()
-                                    .GlobalRootScroller());
-
-  return &layer == root_scroller_layer;
-}
-
-bool IsGlobal(const Node* node) {
-  return node->GetDocument()
-             .GetPage()
-             ->GlobalRootScrollerController()
-             .GlobalRootScroller() == node;
-}
-
 }  // namespace root_scroller_util
 
 }  // namespace blink

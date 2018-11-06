@@ -96,6 +96,10 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // all appropriate state changes are made if it changes.
   void UpdateGlobalRootScroller(Node* new_global_root_scroller);
 
+  // Updates the is_global_root_scroller bits in all the necessary places when
+  // the global root scsroller changes.
+  void UpdateCachedBits(Node* old_global, Node* new_global);
+
   Document* TopDocument() const;
 
   // The apply-scroll callback that moves browser controls and produces

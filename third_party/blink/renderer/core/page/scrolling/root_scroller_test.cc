@@ -2527,7 +2527,7 @@ TEST_F(ImplicitRootScrollerSimTest, AppliedAtFractionalZoom) {
 
 class RootScrollerHitTest : public RootScrollerSimTest {
  public:
-  void CheckHitTestAtBottomOfScreen() {
+  void CheckHitTestAtBottomOfScreen(Element* target) {
     HideTopControlsWithMaximalScroll();
 
     // Do a hit test at the very bottom of the screen. This should be outside
@@ -2539,8 +2539,6 @@ class RootScrollerHitTest : public RootScrollerSimTest {
     WebHitTestResult result = WebView().HitTestResultForTap(point, tap_area);
 
     Node* hit_node = result.GetNode().Unwrap<Node>();
-    Element* target = GetDocument().getElementById("target");
-    ASSERT_TRUE(target);
     EXPECT_EQ(target, hit_node);
   }
 
@@ -2574,8 +2572,7 @@ class RootScrollerHitTest : public RootScrollerSimTest {
 // Test that hit testing in the area revealed at the bottom of the screen
 // revealed by hiding the URL bar works properly when using a root scroller
 // when the target and scroller are in the same PaintLayer.
-// TODO(chrishtr): fix this for root scrollers.
-TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
+TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarSameLayer) {
   WebView().ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
   GetBrowserControls().SetShownRatio(1);
   SimRequest request("https://example.com/test.html", "text/html");
@@ -2622,7 +2619,7 @@ TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
   ASSERT_EQ(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),
             ToLayoutBox(container->GetLayoutObject())->Layer());
 
-  CheckHitTestAtBottomOfScreen();
+  CheckHitTestAtBottomOfScreen(target);
 }
 
 // Test that hit testing in the area revealed at the bottom of the screen
@@ -2675,7 +2672,168 @@ TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
   ASSERT_NE(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),
             ToLayoutBox(container->GetLayoutObject())->Layer());
 
-  CheckHitTestAtBottomOfScreen();
+  CheckHitTestAtBottomOfScreen(target);
+}
+
+// Test that hit testing in the area revealed at the bottom of the screen
+// revealed by hiding the URL bar works properly when using a root scroller
+// inside an iframe, when the target and scroller are in different PaintLayers.
+TEST_F(RootScrollerHitTest, HitTestHideURLBarDifferentLayerIframe) {
+  WebView().ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
+  GetBrowserControls().SetShownRatio(1);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+
+  // Add a target at the bottom of the root scroller that's the size of the url
+  // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
+  // that we can hit this target.
+  child_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              height: 100%;
+              margin: 0px;
+            }
+            #spacer {
+              height: 1000px;
+            }
+            #container {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #target {
+              width: 100%;
+              height: 50px;
+              will-change: transform;
+            }
+          </style>
+          <div id='container'>
+            <div id='spacer'></div>
+            <div id='target'></div>
+          </div>
+      )HTML");
+
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  Document* child_document =
+      ToHTMLFrameOwnerElement(container)->contentDocument();
+  Element* child_container = child_document->getElementById("container");
+  child_document->setRootScroller(child_container, ASSERT_NO_EXCEPTION);
+
+  Compositor().BeginFrame();
+
+  // Ensure the target and container weren't put into the same layer.
+  Element* target = child_document->getElementById("target");
+  ASSERT_NE(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),
+            ToLayoutBox(child_container->GetLayoutObject())->Layer());
+
+  CheckHitTestAtBottomOfScreen(target);
+}
+
+// Test that hit testing in the area revealed at the bottom of the screen
+// revealed by hiding the URL bar works properly when using a root scroller
+// inside an iframe, when the target and scroller are in the same PaintLayer.
+TEST_F(RootScrollerHitTest, HitTestHideURLBarSameLayerIframe) {
+  WebView().ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
+  GetBrowserControls().SetShownRatio(1);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+
+  // Add a target at the bottom of the root scroller that's the size of the url
+  // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
+  // that we can hit this target.
+  child_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              height: 100%;
+              margin: 0px;
+            }
+            #spacer {
+              height: 1000px;
+            }
+            #container {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #target {
+              width: 100%;
+              height: 50px;
+            }
+          </style>
+          <div id='container'>
+            <div id='spacer'></div>
+            <div id='target'></div>
+          </div>
+      )HTML");
+
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  Document* child_document =
+      ToHTMLFrameOwnerElement(container)->contentDocument();
+  Element* child_container = child_document->getElementById("container");
+  child_document->setRootScroller(child_container, ASSERT_NO_EXCEPTION);
+
+  Compositor().BeginFrame();
+
+  // Ensure the target and container weren't put into the same layer.
+  Element* target = child_document->getElementById("target");
+  ASSERT_EQ(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),
+            ToLayoutBox(child_container->GetLayoutObject())->Layer());
+
+  CheckHitTestAtBottomOfScreen(target);
 }
 
 }  // namespace

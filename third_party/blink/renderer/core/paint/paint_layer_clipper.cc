@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -524,12 +525,12 @@ void PaintLayerClipper::InitializeCommonClipRectState(
 LayoutRect PaintLayerClipper::LocalVisualRect(
     const ClipRectsContext& context) const {
   const LayoutObject& layout_object = layer_.GetLayoutObject();
-  // The LayoutView is special since its overflow clipping rect may be larger
-  // than its box rect (crbug.com/492871).
+  // The LayoutView or Global Root Scroller is special since its overflow
+  // clipping rect may be larger than its box rect (crbug.com/492871).
+  bool affected_by_url_bar = layout_object.IsGlobalRootScroller();
   LayoutRect layer_bounds_with_visual_overflow =
-      layout_object.IsLayoutView()
-          ? ToLayoutView(layout_object).ViewRect()
-          : ToLayoutBox(layout_object).VisualOverflowRect();
+      affected_by_url_bar ? layout_object.View()->ViewRect()
+                          : ToLayoutBox(layout_object).VisualOverflowRect();
   ToLayoutBox(layout_object)
       .FlipForWritingMode(
           // PaintLayer are in physical coordinates, so the overflow has to be
