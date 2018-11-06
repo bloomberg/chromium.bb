@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1993,36 +1994,56 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay) {
   // Set the browser's window bounds such that the majority of its bounds
   // resides in the second display.
-  display::Screen* screen = display::Screen::GetScreen();
-  ASSERT_EQ(2, screen->GetNumDisplays());
-  const std::pair<Display, Display> displays = GetDisplays(screen);
-  gfx::Rect browser_bounds =
-      browser()->window()->GetNativeWindow()->GetBoundsInScreen();
-  browser_bounds.set_x(displays.first.bounds().right() -
-                       (browser_bounds.width() / 2) + 20);
-  browser()->window()->GetNativeWindow()->SetBounds(browser_bounds);
-  EXPECT_EQ(
-      displays.first.id(),
-      screen->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
-          .id());
+  const std::pair<Display, Display> displays =
+      GetDisplays(display::Screen::GetScreen());
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  {
+    // Moves the browser window through dragging so that the majority of its
+    // bounds are in the secondary display but it's still be in the primary
+    // display. Do not use SetBounds() or related, it may move the browser
+    // window to the secondary display in some configurations like Mash.
+    int target_x = displays.first.bounds().right() -
+                   browser()->window()->GetBounds().width() / 2 + 20;
+    const gfx::Point tab_0_center =
+        GetCenterInScreenCoordinates(tab_strip->tab_at(0));
+    gfx::Point target_point = tab_0_center;
+    target_point.Offset(target_x - browser()->window()->GetBounds().x(),
+                        GetDetachY(tab_strip));
+
+    ASSERT_TRUE(PressInput(tab_0_center));
+    ASSERT_TRUE(DragInputToNotifyWhenDone(
+        tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+        base::BindRepeating(&DragSingleTabToSeparateWindowInSecondDisplayStep2,
+                            this, target_point)));
+    QuitWhenNotDragging();
+    StopAnimating(tab_strip);
+  }
+  EXPECT_EQ(displays.first.id(),
+            browser()->window()->GetNativeWindow()->GetHost()->GetDisplayId());
 
   // Start dragging the window by the tab strip, and move it only to the edge
   // of the first display. Expect at that point mouse would warp and the window
   // will therefore reside in the second display when mouse is released.
-  TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(0));
-  gfx::Point target_point = tab_0_center;
-  target_point.Offset(0, GetDetachY(tab_strip));
+  const int offset_x = tab_0_center.x() - browser()->window()->GetBounds().x();
+  const int detach_y = tab_0_center.y() + GetDetachY(tab_strip);
   const int first_display_warp_edge_x = displays.first.bounds().right() - 1;
-  target_point.set_x(first_display_warp_edge_x);
+  const gfx::Point warped_point(displays.second.bounds().x() + 1, detach_y);
 
   ASSERT_TRUE(PressInput(tab_0_center));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
-      base::Bind(&DragSingleTabToSeparateWindowInSecondDisplayStep2, this,
-                 target_point)));
-
+      tab_0_center.x(), detach_y, base::BindLambdaForTesting([&]() {
+        // This makes another event on the warped location because the test
+        // system does not create it automatically as the result of pointer
+        // warp.
+        ASSERT_TRUE(DragInputToNotifyWhenDone(
+            first_display_warp_edge_x, detach_y,
+            base::BindRepeating(
+                &DragSingleTabToSeparateWindowInSecondDisplayStep2, this,
+                warped_point)));
+      })));
   QuitWhenNotDragging();
 
   // Should no longer be dragging.
@@ -2036,10 +2057,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
 
   // Browser now resides in display 2.
-  EXPECT_EQ(
-      displays.second.id(),
-      screen->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
-          .id());
+  EXPECT_EQ(warped_point.x() - offset_x, browser()->window()->GetBounds().x());
+  EXPECT_EQ(displays.second.id(),
+            browser()->window()->GetNativeWindow()->GetHost()->GetDisplayId());
 }
 
 // Drags from browser to another browser on a second display and releases input.
