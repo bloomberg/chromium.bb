@@ -4845,7 +4845,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // decrease_ref_count(). If frame_bufs[cm->new_fb_idx].raw_frame_buffer
       // has already been allocated, it will not be released by ref_cnt_fb()!
       assert(!frame_bufs[cm->new_fb_idx].raw_frame_buffer.data);
-      ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
+      assign_frame_buffer(frame_bufs, &cm->new_fb_idx, frame_to_show);
       cm->reset_decoder_state =
           frame_bufs[frame_to_show].frame_type == KEY_FRAME;
       unlock_buffer_pool(pool);

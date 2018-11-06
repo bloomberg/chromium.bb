@@ -1043,18 +1043,6 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate);
 
 #define LAYER_IDS_TO_IDX(sl, tl, num_tl) ((sl) * (num_tl) + (tl))
 
-// Update up-sampled reference frame index.
-static INLINE void uref_cnt_fb(EncRefCntBuffer *ubufs, int *uidx,
-                               int new_uidx) {
-  const int ref_index = *uidx;
-
-  if (ref_index >= 0 && ubufs[ref_index].ref_count > 0)
-    ubufs[ref_index].ref_count--;
-
-  *uidx = new_uidx;
-  ubufs[new_uidx].ref_count++;
-}
-
 // Returns 1 if a frame is scaled and 0 otherwise.
 static INLINE int av1_resize_scaled(const AV1_COMMON *cm) {
   return !(cm->superres_upscaled_width == cm->render_width &&

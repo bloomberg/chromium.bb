@@ -2936,7 +2936,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                            "Buffer %d does not contain a reconstructed frame",
                            frame_to_show);
       }
-      ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
+      assign_frame_buffer(frame_bufs, &cm->new_fb_idx, frame_to_show);
 
       aom_wb_write_bit(wb, 1);  // show_existing_frame
       aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);

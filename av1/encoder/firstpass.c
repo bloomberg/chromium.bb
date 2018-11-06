@@ -1060,9 +1060,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
        ((twopass->this_frame_stats.intra_error /
          DOUBLE_DIVIDE_CHECK(twopass->this_frame_stats.coded_error)) > 2.0))) {
     if (gld_yv12 != NULL) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
-                 cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]]);
+      assign_frame_buffer(
+          pool->frame_bufs,
+          &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
+          cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]]);
     }
     twopass->sr_update_lag = 1;
   } else {
@@ -1072,17 +1073,18 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   aom_extend_frame_borders(new_yv12, num_planes);
 
   // The frame we just compressed now becomes the last frame.
-  ref_cnt_fb(pool->frame_bufs,
-             &cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]],
-             cm->new_fb_idx);
+  assign_frame_buffer(pool->frame_bufs,
+                      &cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]],
+                      cm->new_fb_idx);
 
   // Special case for the first frame. Copy into the GF buffer as a second
   // reference.
   if (cm->current_video_frame == 0 &&
       cpi->remapped_ref_idx[GOLDEN_FRAME - 1] != INVALID_IDX) {
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
-               cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]]);
+    assign_frame_buffer(
+        pool->frame_bufs,
+        &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
+        cm->ref_frame_map[cpi->remapped_ref_idx[LAST_FRAME - 1]]);
   }
 
   // Use this to see what the first pass reconstruction looks like.

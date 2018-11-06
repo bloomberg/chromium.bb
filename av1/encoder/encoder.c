@@ -3519,9 +3519,9 @@ static void update_reference_frames(AV1_COMP *cpi) {
   // show_frame. This ensures a fwd keyframe does not update all of the buffers
   if ((cm->frame_type == KEY_FRAME && cm->show_frame) || frame_is_sframe(cm)) {
     for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->remapped_ref_idx[ref_frame]],
-                 cm->new_fb_idx);
+      assign_frame_buffer(pool->frame_bufs,
+                          &cm->ref_frame_map[cpi->remapped_ref_idx[ref_frame]],
+                          cm->new_fb_idx);
     }
     return;
   }
@@ -3541,9 +3541,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // reference instead of replacing it with overlay.
 
     if (!cpi->preserve_arf_as_gld) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]],
-                 cm->new_fb_idx);
+      assign_frame_buffer(
+          pool->frame_bufs,
+          &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]],
+          cm->new_fb_idx);
     }
 
     tmp = cpi->remapped_ref_idx[ALTREF_FRAME - 1];
@@ -3592,7 +3593,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
       int arf_idx = cpi->remapped_ref_idx[ALTREF_FRAME - 1];
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[arf_idx], cm->new_fb_idx);
+      assign_frame_buffer(pool->frame_bufs, &cm->ref_frame_map[arf_idx],
+                          cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
              cpi->interp_filter_selected[0],
@@ -3601,9 +3603,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === GOLDEN_FRAME ===
     if (cpi->refresh_golden_frame) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
-                 cm->new_fb_idx);
+      assign_frame_buffer(
+          pool->frame_bufs,
+          &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
+          cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
              cpi->interp_filter_selected[0],
@@ -3619,15 +3622,17 @@ static void update_reference_frames(AV1_COMP *cpi) {
         // and assign the newly coded frame to BWDREF so that it always
         // keeps the nearest future frame
         int tmp = cpi->remapped_ref_idx[EXTREF_FRAME - 1];
-        ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[tmp], cm->new_fb_idx);
+        assign_frame_buffer(pool->frame_bufs, &cm->ref_frame_map[tmp],
+                            cm->new_fb_idx);
 
         rshift_bwd_ref_frames(cpi);
         cpi->remapped_ref_idx[BWDREF_FRAME - 1] = tmp;
       } else {
 #endif  // USE_SYMM_MULTI_LAYER
-        ref_cnt_fb(pool->frame_bufs,
-                   &cm->ref_frame_map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]],
-                   cm->new_fb_idx);
+        assign_frame_buffer(
+            pool->frame_bufs,
+            &cm->ref_frame_map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]],
+            cm->new_fb_idx);
 #if USE_SYMM_MULTI_LAYER
       }
 #endif
@@ -3638,9 +3643,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === ALTREF2_FRAME ===
     if (cpi->refresh_alt2_ref_frame) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]],
-                 cm->new_fb_idx);
+      assign_frame_buffer(
+          pool->frame_bufs,
+          &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]],
+          cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
              cpi->interp_filter_selected[0],
@@ -3681,9 +3687,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // remapped_ref_idx[2],   remapped_ref_idx[0],     remapped_ref_idx[1]
     int tmp;
 
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->remapped_ref_idx[LAST_REF_FRAMES - 1]],
-               cm->new_fb_idx);
+    assign_frame_buffer(
+        pool->frame_bufs,
+        &cm->ref_frame_map[cpi->remapped_ref_idx[LAST_REF_FRAMES - 1]],
+        cm->new_fb_idx);
 
     tmp = cpi->remapped_ref_idx[LAST_REF_FRAMES - 1];
 
