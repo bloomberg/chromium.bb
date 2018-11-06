@@ -94,17 +94,17 @@ cca.views.GalleryBase.prototype.exportSelection = function() {
   if (!selectedIndexes.length)
     return;
 
-  chrome.fileSystem.chooseEntry({type: 'openDirectory'}, dirEntry => {
+  chrome.fileSystem.chooseEntry({type: 'openDirectory'}, (dirEntry) => {
     if (!dirEntry)
       return;
 
-    this.selectedPictures().forEach(domPicture => {
+    this.selectedPictures().forEach((domPicture) => {
       var picture = domPicture.picture;
       // TODO(yuli): Use FileSystem.getFile_ to handle name conflicts.
       dirEntry.getFile(
           cca.models.FileSystem.regulatePictureName(picture.pictureEntry),
-          {create: true, exclusive: false}, entry => {
-        this.model_.exportPicture(picture, entry).catch(error => {
+          {create: true, exclusive: false}, (entry) => {
+        this.model_.exportPicture(picture, entry).catch((error) => {
           console.error(error);
           cca.toast.show(chrome.i18n.getMessage(
               'errorMsgGalleryExportFailed', entry.name));
@@ -131,12 +131,12 @@ cca.views.GalleryBase.prototype.deleteSelection = function() {
     type: cca.views.Dialog.Type.CONFIRMATION,
     message: chrome.i18n.getMessage(multi ?
         'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param),
-  }, result => {
+  }, (result) => {
     if (!result.isPositive)
       return;
     var selectedPictures = this.selectedPictures();
     for (var i = selectedPictures.length - 1; i >= 0; i--) {
-      this.model_.deletePicture(selectedPictures[i].picture).catch(error => {
+      this.model_.deletePicture(selectedPictures[i].picture).catch((error) => {
         console.error(error);
         // TODO(yuli): Move Toast out of views/ and show a toast message here.
       });

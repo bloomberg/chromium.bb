@@ -176,7 +176,7 @@ cca.views.Camera.prototype = {
  */
 cca.views.Camera.prototype.prepare = function() {
   // Monitor the states to stop camera when locked/minimized.
-  chrome.idle.onStateChanged.addListener(newState => {
+  chrome.idle.onStateChanged.addListener((newState) => {
     this.locked_ = (newState == 'locked');
     if (this.locked_) {
       this.stop_();
@@ -293,11 +293,11 @@ cca.views.Camera.prototype.beginTake_ = function() {
     this.takeTimeout_ = setTimeout(() => {
       if (this.recordMode) {
         // Take of recording will be ended by another shutter click.
-        this.take_ = this.createRecordingBlob_().catch(error => {
+        this.take_ = this.createRecordingBlob_().catch((error) => {
           throw [error, 'errorMsgEmptyRecording'];
         });
       } else {
-        this.take_ = this.createPhotoBlob_().catch(error => {
+        this.take_ = this.createPhotoBlob_().catch((error) => {
           throw [error, 'errorMsgTakePhotoFailed'];
         });
         this.endTake_();
@@ -324,7 +324,7 @@ cca.views.Camera.prototype.endTake_ = function() {
     this.mediaRecorder_.stop();
   }
 
-  return Promise.resolve(this.take_).then(blob => {
+  return Promise.resolve(this.take_).then((blob) => {
     if (blob && !blob.handled) {
       // Play a sound and save the result after a successful take.
       blob.handled = true;
@@ -332,7 +332,7 @@ cca.views.Camera.prototype.endTake_ = function() {
       this.options_.playSound(recordMode ?
           cca.views.camera.Options.Sound.RECORDEND :
           cca.views.camera.Options.Sound.SHUTTER);
-      return this.model_.savePicture(blob, recordMode).catch(error => {
+      return this.model_.savePicture(blob, recordMode).catch((error) => {
         throw [error, 'errorMsgSaveFileFailed'];
       });
     }
@@ -402,7 +402,7 @@ cca.views.Camera.prototype.createPhotoBlob_ = function() {
       }
       return this.photoCapabilities_;
     };
-    return getPhotoCapabilities().then(photoCapabilities => {
+    return getPhotoCapabilities().then((photoCapabilities) => {
       // Set to take the highest resolution, but the photo to be taken will
       // still have the same aspect ratio with the preview.
       var photoSettings = {

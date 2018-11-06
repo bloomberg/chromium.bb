@@ -54,10 +54,10 @@ cca.views.camera.GalleryButton = function(router, model) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.button_.addEventListener('click', event => {
+  this.button_.addEventListener('click', (event) => {
     // Check if the last picture still exists before opening it in the gallery.
     // TODO(yuli): Remove this workaround for unable watching changed-files.
-    this.model_.checkLastPicture().then(picture => {
+    this.model_.checkLastPicture().then((picture) => {
       if (picture) {
         this.openGallery_(picture);
       }
@@ -76,13 +76,13 @@ cca.views.camera.GalleryButton.prototype = {
  * @private
  */
 cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
-  this.model_.lastPicture().then(picture => {
+  this.model_.lastPicture().then((picture) => {
     if (picture != this.lastPicture_) {
       this.lastPicture_ = picture;
       return true;
     }
     return false;
-  }).then(changed => {
+  }).then((changed) => {
     if (!changed) {
       return;
     }
@@ -101,7 +101,7 @@ cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
   if (cca.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     chrome.fileManagerPrivate.executeTask(
-        id, [picture.pictureEntry], result => {
+        id, [picture.pictureEntry], (result) => {
       if (result != 'opened' && result != 'message_sent') {
         console.warn('Unable to open picture: ' + result);
       }

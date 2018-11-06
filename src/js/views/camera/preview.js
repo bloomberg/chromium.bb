@@ -180,7 +180,7 @@ cca.views.camera.Preview.prototype.toImage = function() {
   canvas.height = this.video_.videoHeight;
   ctx.drawImage(this.video_, 0, 0);
   return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
+    canvas.toBlob((blob) => {
       if (blob) {
         resolve(blob);
       } else {
@@ -214,7 +214,7 @@ cca.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
     clone.style.top = `${y * 100}%`;
     clone.hidden = false;
     aim.parentElement.replaceChild(clone, aim);
-  }).catch(error => console.error(error));
+  }).catch((error) => console.error(error));
   this.focus_ = focus;
 };
 

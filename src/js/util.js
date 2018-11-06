@@ -63,7 +63,7 @@ cca.util.getPhotoOrientation = function(blob) {
     reader.readAsArrayBuffer(blob);
   });
 
-  return getOrientation.then(orientation => {
+  return getOrientation.then((orientation) => {
     switch (orientation) {
       case 1:
         return {rotation: 0, flip: false};
@@ -142,7 +142,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
     }, 'image/jpeg');
   };
 
-  cca.util.getPhotoOrientation(blob).then(orientation => {
+  cca.util.getPhotoOrientation(blob).then((orientation) => {
     if (orientation.rotation == 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
@@ -162,12 +162,12 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
  * @return {!Promise<boolean>} Promise for the result.
  */
 cca.util.isChromeOSDevice = function(ids) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (!chrome.chromeosInfoPrivate) {
       resolve(false);
       return;
     }
-    chrome.chromeosInfoPrivate.get(['customizationId'], values => {
+    chrome.chromeosInfoPrivate.get(['customizationId'], (values) => {
       var device = values['customizationId'];
       resolve(device && ids.indexOf(device) >= 0);
     });
