@@ -1380,7 +1380,7 @@
             'code-coverage',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_linux_coverage_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         }
       },
       'linux-tcmalloc-rel': {
