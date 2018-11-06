@@ -488,7 +488,7 @@ void ServiceWorkerContextWrapper::
     return;
   }
 
-  context_core_->storage()->FindRegistrationForScope(
+  FindReadyRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
       base::BindOnce(&ServiceWorkerContextWrapper::
                          DidFindRegistrationForLongRunningMessage,
