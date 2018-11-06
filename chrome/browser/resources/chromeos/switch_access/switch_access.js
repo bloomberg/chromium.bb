@@ -41,6 +41,12 @@ class SwitchAccess {
      */
     this.navigationManager_ = null;
 
+    /**
+     * Callback for testing use only.
+     * @private {?function()}
+     */
+    this.onMoveForwardForTesting_ = null;
+
     this.init_();
   }
 
@@ -78,6 +84,7 @@ class SwitchAccess {
   moveForward() {
     if (this.navigationManager_)
       this.navigationManager_.moveForward();
+    this.onMoveForwardForTesting_ && this.onMoveForwardForTesting_();
   }
 
   /**
