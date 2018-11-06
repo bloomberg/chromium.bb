@@ -112,9 +112,9 @@ Touch::Touch(LocalFrame* frame, const TouchInit* initializer)
       absolute_location_(PageToAbsolute(frame, page_pos_)) {}
 
 Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
-  return new Touch(event_target, identifier_, client_pos_, screen_pos_,
-                   page_pos_, radius_, rotation_angle_, force_, region_,
-                   absolute_location_);
+  return MakeGarbageCollected<Touch>(
+      event_target, identifier_, client_pos_, screen_pos_, page_pos_, radius_,
+      rotation_angle_, force_, region_, absolute_location_);
 }
 
 void Touch::Trace(blink::Visitor* visitor) {
