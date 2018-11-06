@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
@@ -114,7 +115,8 @@ void LayoutSVGText::InvalidatePositioningValues(
     LayoutInvalidationReasonForTracing reason) {
   descendant_text_nodes_.clear();
   SetNeedsPositioningValuesUpdate();
-  SetNeedsLayoutAndFullPaintInvalidation(reason);
+  // TODO(fs): Restore the passing of |reason| here.
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this);
 }
 
 void LayoutSVGText::SubtreeChildWasAdded() {
