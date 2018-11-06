@@ -3540,7 +3540,7 @@ const char kUiModeDescription[] =
     R"*(means that the chromebook will act as if it were in clamshell )*"
     R"*(mode . "Auto" means that the chromebook will alternate between )*"
     R"*(the two, based on its orientation.)*";
-const char kUiModeTablet[] = "TouchView";
+const char kUiModeTablet[] = "Tablet";
 const char kUiModeClamshell[] = "Clamshell";
 const char kUiModeAuto[] = "Auto (default)";
 
