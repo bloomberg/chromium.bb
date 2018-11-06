@@ -1019,7 +1019,11 @@ if (enable_java_templates) {
   #    }
   #  }
   template("java_group") {
-    forward_variables_from(invoker, [ "testonly" ])
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "input_jars_paths",
+                           ])
     write_build_config("${target_name}__build_config") {
       type = "group"
       build_config = "$target_gen_dir/${invoker.target_name}.build_config"
