@@ -44,7 +44,6 @@
 -TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/0
 -TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/1
 -TabDragging/DetachToBrowserTabDragControllerTestTouch.PressSecondFingerWhileDetached/0
--TabDragging/DetachToBrowserTabDragControllerTestTouch.SecondFingerPressTest/0
 
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen

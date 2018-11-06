@@ -91,6 +91,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
       aura::WindowEventDispatcher* dispatcher) override;
   void OnWindowEventDispatcherDispatchedHeldEvents(
       aura::WindowEventDispatcher* dispatcher) override;
+  void OnWindowEventDispatcherIgnoredEvent(
+      aura::WindowEventDispatcher* dispatcher) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

@@ -98,6 +98,15 @@ void InjectedEventHandler::OnWindowEventDispatcherDispatchedHeldEvents(
     NotifyCallback();
 }
 
+void InjectedEventHandler::OnWindowEventDispatcherIgnoredEvent(
+    aura::WindowEventDispatcher* dispatcher) {
+  // The event turns out to be invalid, no event processing happens anymore.
+  // It's okay to notify the callback.
+  DCHECK(!event_id_);
+  if (dispatcher->host() == window_tree_host_)
+    NotifyCallback();
+}
+
 void InjectedEventHandler::OnWindowDestroying(aura::Window* window) {
   // This is called when the WindowTreeHost has been destroyed. Assume we won't
   // be getting an ack from the client.

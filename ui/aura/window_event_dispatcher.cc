@@ -1076,6 +1076,8 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
     // The event is invalid - ignore it.
     event->StopPropagation();
     event->DisableSynchronousHandling();
+    for (auto& observer : env_->window_event_dispatcher_observers())
+      observer.OnWindowEventDispatcherIgnoredEvent(this);
     return DispatchDetails();
   }
 
