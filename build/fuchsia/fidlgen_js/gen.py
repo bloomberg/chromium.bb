@@ -74,9 +74,16 @@ def _InlineSizeOfType(t):
     raise NotImplementedError()
 
 
-def _CompileConstant(val):
+def _CompileConstant(val, assignment_type):
+  """|assignment_type| is the TypeClass to which |val| will be assigned. This is
+  is currently used to scope identifiers to their enum."""
   if val.kind == fidl.ConstantKind.IDENTIFIER:
-    raise NotImplementedError()
+    if not assignment_type:
+      raise Exception('Need assignment_type for IDENTIFIER constant')
+    type_compound = _ParseCompoundIdentifier(assignment_type.identifier)
+    type_name = _CompileCompoundIdentifier(type_compound)
+    val_compound = _ParseCompoundIdentifier(val.identifier)
+    return type_name + '.' + val_compound.name
   elif val.kind == fidl.ConstantKind.LITERAL:
     return _CompileLiteral(val.literal)
   else:
@@ -136,7 +143,7 @@ class Compiler(object):
   def _CompileConst(self, const):
     compound = _ParseCompoundIdentifier(const.name)
     name = _CompileCompoundIdentifier(compound)
-    value = _CompileConstant(const.value)
+    value = _CompileConstant(const.value, None)
     self.f.write('''/**
  * @const
  */
@@ -158,8 +165,8 @@ const %(name)s = %(value)s;
 const %(name)s = {
 ''' % data)
     for member in enum.members:
-      self.f.write(
-          '''  %s: %s,\n''' % (member.name, _CompileConstant(member.value)))
+      self.f.write('''  %s: %s,\n''' % (member.name,
+                                        _CompileConstant(member.value, None)))
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
@@ -190,7 +197,8 @@ const %(name)s = {
           'member_name': member_name,
       })
 
-    self.f.write('''\
+    self.f.write(
+        '''\
 const _kTT_%(name)s = {
   enc: function(e, o, v) {
     if (v.$tag === $fidl__kInvalidUnionTag) throw "invalid tag";
@@ -238,11 +246,11 @@ function %(name)s() { this.reset(); }
 %(name)s.prototype.reset = function(i) {
   this.$tag = (i === undefined) ? $fidl__kInvalidUnionTag : i;
 ''' % {
-        'name': name,
-        'size': union.size,
-        'enc_cases': '\n'.join(enc_cases),
-        'dec_cases': '\n'.join(dec_cases),
-    })
+            'name': name,
+            'size': union.size,
+            'enc_cases': '\n'.join(enc_cases),
+            'dec_cases': '\n'.join(dec_cases),
+        })
     for m in member_names:
       self.f.write('  this.%s = null;\n' % m)
     self.f.write('}\n\n')
@@ -283,7 +291,7 @@ function %(name)s(%(param_names)s) {
       value = '%(member_name)s'
       if member.maybe_default_value:
         value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' +
-                 _CompileConstant(member.maybe_default_value))
+                 _CompileConstant(member.maybe_default_value, member.type))
       elif self.fidl.declarations.get(member.type.identifier) == \
           fidl.DeclarationsMap.UNION:
         union_compound = _ParseCompoundIdentifier(member.type.identifier)
