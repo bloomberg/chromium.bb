@@ -63,8 +63,7 @@ void MockCanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     base::OnceClosure task,
     double delay_ms) {
   DCHECK(IsMainThread());
-  Platform::Current()->MainThread()->GetTaskRunner()->PostTask(location,
-                                                               std::move(task));
+  Thread::Current()->GetTaskRunner()->PostTask(location, std::move(task));
 }
 
 //==============================================================================
@@ -99,7 +98,7 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
 
  protected:
   void ScheduleInitiateEncoding(double quality) override {
-    Platform::Current()->MainThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
                   WrapPersistent(this), quality, TimeTicks::Max()));

@@ -39,7 +39,7 @@ void IdlenessDetector::DomContentLoadedEventFired() {
     return;
 
   if (!task_observer_added_) {
-    Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
+    Thread::Current()->AddTaskTimeObserver(this);
     task_observer_added_ = true;
   }
 
@@ -187,7 +187,7 @@ void IdlenessDetector::Stop() {
   network_quiet_timer_.Stop();
   if (!task_observer_added_)
     return;
-  Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
+  Thread::Current()->RemoveTaskTimeObserver(this);
   task_observer_added_ = false;
 }
 

@@ -203,14 +203,14 @@ void CanvasRenderingContext::StartListeningForDidProcessTask() {
     return;
 
   listening_for_did_process_task_ = true;
-  Platform::Current()->CurrentThread()->AddTaskObserver(this);
+  Thread::Current()->AddTaskObserver(this);
 }
 
 void CanvasRenderingContext::StopListeningForDidProcessTask() {
   if (!listening_for_did_process_task_)
     return;
 
-  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  Thread::Current()->RemoveTaskObserver(this);
   listening_for_did_process_task_ = false;
 }
 

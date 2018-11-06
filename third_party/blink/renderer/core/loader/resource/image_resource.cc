@@ -313,7 +313,7 @@ void ImageResource::AllClientsAndObserversRemoved() {
   // after a conservative GC prevents resetAnimation() from upsetting ongoing
   // animation updates (crbug.com/613709)
   if (!ThreadHeap::WillObjectBeLazilySwept(this)) {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
                              WrapWeakPersistent(GetContent())));
   } else {

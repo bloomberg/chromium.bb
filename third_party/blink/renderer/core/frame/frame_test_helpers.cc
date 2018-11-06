@@ -514,7 +514,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
 
   layer_tree_view_ = std::make_unique<content::LayerTreeView>(
       specified_delegate ? specified_delegate : &delegate_,
-      Platform::Current()->CurrentThread()->GetTaskRunner(),
+      Thread::Current()->GetTaskRunner(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
       &fake_renderer_scheduler_);
   layer_tree_view_->Initialize(settings,
