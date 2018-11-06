@@ -9,6 +9,8 @@
 #include "services/ws/window_service.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
+#include "ui/events/event.h"
 
 namespace {
 
@@ -20,10 +22,35 @@ bool IsTopLevelWindow(aura::Window* window) {
          ws::WindowService::HasRemoteClient(window);
 }
 
+// Returns true if |window| can be a target at |screen_point| by |targeter|.
+// If |targeter| is null, it will check with Window::GetEventHandlerForPoint().
+bool IsWindowTargeted(aura::Window* window,
+                      const gfx::Point& screen_point,
+                      aura::WindowTargeter* targeter) {
+  aura::client::ScreenPositionClient* client =
+      aura::client::GetScreenPositionClient(window->GetRootWindow());
+  gfx::Point local_point = screen_point;
+  if (targeter) {
+    client->ConvertPointFromScreen(window->parent(), &local_point);
+    // TODO(mukai): consider the hittest differences between mouse and touch.
+    gfx::Point point_in_root = local_point;
+    aura::Window::ConvertPointToTarget(window, window->GetRootWindow(),
+                                       &point_in_root);
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, local_point, point_in_root,
+                         base::TimeTicks::Now(), 0, 0);
+    return targeter->SubtreeShouldBeExploredForEvent(window, event);
+  }
+  // TODO(mukai): maybe we can remove this, simply return false if targeter does
+  // not exist.
+  client->ConvertPointFromScreen(window, &local_point);
+  return window->GetEventHandlerForPoint(local_point);
+}
+
 // Get the toplevel window at |screen_point| among the descendants of |window|.
 aura::Window* GetTopmostWindowAtPointWithinWindow(
     const gfx::Point& screen_point,
     aura::Window* window,
+    aura::WindowTargeter* targeter,
     const std::set<aura::Window*> ignore,
     aura::Window** real_topmost) {
   if (!window->IsVisible())
@@ -35,11 +62,7 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
     return nullptr;
 
   if (IsTopLevelWindow(window)) {
-    aura::client::ScreenPositionClient* client =
-        aura::client::GetScreenPositionClient(window->GetRootWindow());
-    gfx::Point local_point = screen_point;
-    client->ConvertPointFromScreen(window, &local_point);
-    if (window->GetEventHandlerForPoint(local_point)) {
+    if (IsWindowTargeted(window, screen_point, targeter)) {
       if (real_topmost && !(*real_topmost))
         *real_topmost = window;
       return (ignore.find(window) == ignore.end()) ? window : nullptr;
@@ -50,8 +73,10 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
   for (aura::Window::Windows::const_reverse_iterator i =
            window->children().rbegin();
        i != window->children().rend(); ++i) {
+    aura::WindowTargeter* child_targeter =
+        (*i)->targeter() ? (*i)->targeter() : targeter;
     aura::Window* result = GetTopmostWindowAtPointWithinWindow(
-        screen_point, *i, ignore, real_topmost);
+        screen_point, *i, child_targeter, ignore, real_topmost);
     if (result)
       return result;
   }
@@ -68,8 +93,9 @@ aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
                                       aura::Window** real_topmost) {
   if (real_topmost)
     *real_topmost = nullptr;
+  aura::Window* root = GetRootWindowAt(screen_point);
   return GetTopmostWindowAtPointWithinWindow(
-      screen_point, GetRootWindowAt(screen_point), ignore, real_topmost);
+      screen_point, root, root->targeter(), ignore, real_topmost);
 }
 
 }  // namespace wm
