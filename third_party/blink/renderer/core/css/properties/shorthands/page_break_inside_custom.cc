@@ -19,7 +19,7 @@ bool PageBreakInside::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
-  if (!CSSParsingUtils::ConsumeFromColumnOrPageBreakInside(range, value)) {
+  if (!css_parsing_utils::ConsumeFromColumnOrPageBreakInside(range, value)) {
     return false;
   }
 

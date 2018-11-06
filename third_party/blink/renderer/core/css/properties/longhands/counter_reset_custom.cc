@@ -17,7 +17,7 @@ const CSSValue* CounterReset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeCounter(range, kCounterResetDefaultValue);
+  return css_parsing_utils::ConsumeCounter(range, kCounterResetDefaultValue);
 }
 
 const CSSValue* CounterReset::CSSValueFromComputedStyleInternal(

@@ -15,7 +15,7 @@ const CSSValue* BackgroundBlendMode::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeBackgroundBlendMode, range);
+      css_parsing_utils::ConsumeBackgroundBlendMode, range);
 }
 
 const CSSValue* BackgroundBlendMode::CSSValueFromComputedStyleInternal(

@@ -14,7 +14,7 @@ namespace CSSLonghand {
 const CSSValue* Stroke::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ParsePaintStroke(range, context);
+  return css_parsing_utils::ParsePaintStroke(range, context);
 }
 
 const CSSValue* Stroke::CSSValueFromComputedStyleInternal(

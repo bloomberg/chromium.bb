@@ -17,8 +17,8 @@ const CSSValue* GridTemplateRows::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(range,
-                                                            context.Mode());
+  return css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(range,
+                                                              context.Mode());
 }
 
 bool GridTemplateRows::IsLayoutDependent(const ComputedStyle* style,

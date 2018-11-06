@@ -15,7 +15,8 @@ const CSSValue* WebkitTransformOriginX::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>(
+  return css_parsing_utils::ConsumePositionLonghand<CSSValueLeft,
+                                                    CSSValueRight>(
       range, context.Mode());
 }
 

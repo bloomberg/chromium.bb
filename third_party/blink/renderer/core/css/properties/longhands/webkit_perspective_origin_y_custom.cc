@@ -15,7 +15,8 @@ const CSSValue* WebkitPerspectiveOriginY::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumePositionLonghand<CSSValueTop, CSSValueBottom>(
+  return css_parsing_utils::ConsumePositionLonghand<CSSValueTop,
+                                                    CSSValueBottom>(
       range, context.Mode());
 }
 

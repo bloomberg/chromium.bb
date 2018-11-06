@@ -24,9 +24,9 @@ bool BorderRadius::ParseShorthand(
   CSSValue* horizontal_radii[4] = {nullptr};
   CSSValue* vertical_radii[4] = {nullptr};
 
-  if (!CSSParsingUtils::ConsumeRadii(horizontal_radii, vertical_radii, range,
-                                     context.Mode(),
-                                     local_context.UseAliasParsing()))
+  if (!css_parsing_utils::ConsumeRadii(horizontal_radii, vertical_radii, range,
+                                       context.Mode(),
+                                       local_context.UseAliasParsing()))
     return false;
 
   CSSPropertyParserHelpers::AddProperty(

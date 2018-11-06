@@ -31,13 +31,13 @@ bool Offset::ParseShorthand(
       ToLonghand(GetCSSPropertyOffsetPosition())
           .ParseSingleValue(range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
-      CSSParsingUtils::ConsumeOffsetPath(range, context);
+      css_parsing_utils::ConsumeOffsetPath(range, context);
   const CSSValue* offset_distance = nullptr;
   const CSSValue* offset_rotate = nullptr;
   if (offset_path) {
     offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll);
-    offset_rotate = CSSParsingUtils::ConsumeOffsetRotate(range, context);
+    offset_rotate = css_parsing_utils::ConsumeOffsetRotate(range, context);
     if (offset_rotate && !offset_distance) {
       offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
           range, context.Mode(), kValueRangeAll);

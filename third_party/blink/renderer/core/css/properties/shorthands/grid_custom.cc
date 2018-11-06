@@ -54,7 +54,7 @@ bool Grid::ParseShorthand(bool important,
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;
 
-  if (CSSParsingUtils::ConsumeGridTemplateShorthand(
+  if (css_parsing_utils::ConsumeGridTemplateShorthand(
           important, range, context, template_rows, template_columns,
           template_areas)) {
     DCHECK(template_rows);
@@ -109,21 +109,22 @@ bool Grid::ParseShorthand(bool important,
     if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
       auto_rows_value = CSSInitialValue::Create();
     } else {
-      auto_rows_value = CSSParsingUtils::ConsumeGridTrackList(
-          range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
+      auto_rows_value = css_parsing_utils::ConsumeGridTrackList(
+          range, context.Mode(), css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
         return false;
     }
-    if (!(template_columns = CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(
-              range, context.Mode())))
+    if (!(template_columns =
+              css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
+                  range, context.Mode())))
       return false;
     template_rows = CSSInitialValue::Create();
     auto_columns_value = CSSInitialValue::Create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
-    template_rows = CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(
+    template_rows = css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
         range, context.Mode());
     if (!template_rows)
       return false;
@@ -136,8 +137,8 @@ bool Grid::ParseShorthand(bool important,
     if (range.AtEnd()) {
       auto_columns_value = CSSInitialValue::Create();
     } else {
-      auto_columns_value = CSSParsingUtils::ConsumeGridTrackList(
-          range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
+      auto_columns_value = css_parsing_utils::ConsumeGridTrackList(
+          range, context.Mode(), css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }

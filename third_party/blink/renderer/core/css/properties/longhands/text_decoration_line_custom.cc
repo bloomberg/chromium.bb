@@ -15,7 +15,7 @@ const CSSValue* TextDecorationLine::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeTextDecorationLine(range);
+  return css_parsing_utils::ConsumeTextDecorationLine(range);
 }
 
 const CSSValue* TextDecorationLine::CSSValueFromComputedStyleInternal(

@@ -24,7 +24,7 @@ class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
 
-namespace CSSParsingUtils {
+namespace css_parsing_utils {
 
 enum class AllowInsetAndSpread { kAllow, kForbid };
 enum class AllowTextValue { kAllow, kForbid };
@@ -254,7 +254,7 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
       range, css_parser_mode, kValueRangeAll);
 }
 
-}  // namespace CSSParsingUtils
+}  // namespace css_parsing_utils
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_

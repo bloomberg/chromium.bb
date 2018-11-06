@@ -26,7 +26,7 @@ bool GridColumn::ParseShorthand(
 
   CSSValue* start_value = nullptr;
   CSSValue* end_value = nullptr;
-  if (!CSSParsingUtils::ConsumeGridItemPositionShorthand(
+  if (!css_parsing_utils::ConsumeGridItemPositionShorthand(
           important, range, start_value, end_value)) {
     return false;
   }

@@ -21,22 +21,22 @@ bool GridArea::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(gridAreaShorthand().length(), 4u);
 
-  CSSValue* row_start_value = CSSParsingUtils::ConsumeGridLine(range);
+  CSSValue* row_start_value = css_parsing_utils::ConsumeGridLine(range);
   if (!row_start_value)
     return false;
   CSSValue* column_start_value = nullptr;
   CSSValue* row_end_value = nullptr;
   CSSValue* column_end_value = nullptr;
   if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-    column_start_value = CSSParsingUtils::ConsumeGridLine(range);
+    column_start_value = css_parsing_utils::ConsumeGridLine(range);
     if (!column_start_value)
       return false;
     if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-      row_end_value = CSSParsingUtils::ConsumeGridLine(range);
+      row_end_value = css_parsing_utils::ConsumeGridLine(range);
       if (!row_end_value)
         return false;
       if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-        column_end_value = CSSParsingUtils::ConsumeGridLine(range);
+        column_end_value = css_parsing_utils::ConsumeGridLine(range);
         if (!column_end_value)
           return false;
       }

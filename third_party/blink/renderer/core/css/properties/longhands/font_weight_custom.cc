@@ -16,7 +16,7 @@ const CSSValue* FontWeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeFontWeight(range, context.Mode());
+  return css_parsing_utils::ConsumeFontWeight(range, context.Mode());
 }
 
 const CSSValue* FontWeight::CSSValueFromComputedStyleInternal(

@@ -17,7 +17,7 @@ const CSSValue* TransitionTimingFunction::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeAnimationTimingFunction, range);
+      css_parsing_utils::ConsumeAnimationTimingFunction, range);
 }
 
 const CSSValue* TransitionTimingFunction::CSSValueFromComputedStyleInternal(

@@ -18,7 +18,7 @@ const CSSValue* AnimationIterationCount::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeAnimationIterationCount, range);
+      css_parsing_utils::ConsumeAnimationIterationCount, range);
 }
 
 const CSSValue* AnimationIterationCount::CSSValueFromComputedStyleInternal(

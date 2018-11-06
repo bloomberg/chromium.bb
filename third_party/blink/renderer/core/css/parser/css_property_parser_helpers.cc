@@ -90,8 +90,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
   CSSValue* parsed_value = nullptr;
 
   if (filter_type == CSSValueDropShadow) {
-    parsed_value = CSSParsingUtils::ParseSingleShadow(
-        args, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kForbid);
+    parsed_value = css_parsing_utils::ParseSingleShadow(
+        args, context.Mode(), css_parsing_utils::AllowInsetAndSpread::kForbid);
   } else {
     if (args.AtEnd()) {
       context.Count(WebFeature::kCSSFilterFunctionNoArguments);
@@ -1684,14 +1684,14 @@ void AddProperty(CSSPropertyID resolved_property,
 CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   bool use_legacy_parsing = false;
-  return CSSParsingUtils::ConsumeTransformValue(range, context,
-                                                use_legacy_parsing);
+  return css_parsing_utils::ConsumeTransformValue(range, context,
+                                                  use_legacy_parsing);
 }
 
 CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
-  return CSSParsingUtils::ConsumeTransformList(range, context,
-                                               CSSParserLocalContext());
+  return css_parsing_utils::ConsumeTransformList(range, context,
+                                                 CSSParserLocalContext());
 }
 
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange& range,

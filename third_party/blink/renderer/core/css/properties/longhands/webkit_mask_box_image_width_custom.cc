@@ -15,7 +15,7 @@ const CSSValue* WebkitMaskBoxImageWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeBorderImageWidth(range);
+  return css_parsing_utils::ConsumeBorderImageWidth(range);
 }
 
 const CSSValue* WebkitMaskBoxImageWidth::CSSValueFromComputedStyleInternal(

@@ -35,7 +35,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 
   CSSValue* mask = nullptr;
   if (!range.AtEnd()) {
-    mask = CSSParsingUtils::ConsumeWebkitBorderImage(range, context);
+    mask = css_parsing_utils::ConsumeWebkitBorderImage(range, context);
     if (!mask)
       return nullptr;
   }

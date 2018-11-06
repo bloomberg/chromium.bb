@@ -15,7 +15,7 @@ const CSSValue* WebkitMaskComposite::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeBackgroundComposite, range);
+      css_parsing_utils::ConsumeBackgroundComposite, range);
 }
 
 const CSSValue* WebkitMaskComposite::CSSValueFromComputedStyleInternal(

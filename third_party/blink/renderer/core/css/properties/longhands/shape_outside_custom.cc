@@ -26,7 +26,7 @@ const CSSValue* ShapeOutside::ParseSingleValue(
   if (CSSValue* box_value = ConsumeShapeBox(range))
     list->Append(*box_value);
   if (CSSValue* shape_value =
-          CSSParsingUtils::ConsumeBasicShape(range, context)) {
+          css_parsing_utils::ConsumeBasicShape(range, context)) {
     list->Append(*shape_value);
     if (list->length() < 2) {
       if (CSSValue* box_value = ConsumeShapeBox(range))

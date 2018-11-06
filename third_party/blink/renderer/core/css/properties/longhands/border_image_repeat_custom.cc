@@ -15,7 +15,7 @@ const CSSValue* BorderImageRepeat::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeBorderImageRepeat(range);
+  return css_parsing_utils::ConsumeBorderImageRepeat(range);
 }
 
 const CSSValue* BorderImageRepeat::CSSValueFromComputedStyleInternal(

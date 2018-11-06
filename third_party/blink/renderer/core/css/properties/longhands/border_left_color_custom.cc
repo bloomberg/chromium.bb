@@ -21,7 +21,8 @@ const CSSValue* BorderLeftColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ConsumeBorderColorSide(range, context, local_context);
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
 }
 
 const blink::Color BorderLeftColor::ColorIncludingFallback(

@@ -13,7 +13,7 @@ const CSSValue* MaxInlineSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeMaxWidthOrHeight(range, context);
+  return css_parsing_utils::ConsumeMaxWidthOrHeight(range, context);
 }
 
 }  // namespace CSSLonghand

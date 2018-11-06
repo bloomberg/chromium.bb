@@ -15,7 +15,7 @@ const CSSValue* BorderTopRightRadius::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ParseBorderRadiusCorner(range, context);
+  return css_parsing_utils::ParseBorderRadiusCorner(range, context);
 }
 
 const CSSValue* BorderTopRightRadius::CSSValueFromComputedStyleInternal(

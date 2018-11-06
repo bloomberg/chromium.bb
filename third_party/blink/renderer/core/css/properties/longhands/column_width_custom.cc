@@ -15,7 +15,7 @@ const CSSValue* ColumnWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeColumnWidth(range);
+  return css_parsing_utils::ConsumeColumnWidth(range);
 }
 
 const CSSValue* ColumnWidth::CSSValueFromComputedStyleInternal(

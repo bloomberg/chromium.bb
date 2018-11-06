@@ -31,7 +31,7 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
       return CSSPropertyParserHelpers::ConsumeIdent(range);
     }
     CSSIdentifierValue* font_variant =
-        CSSParsingUtils::ConsumeFontVariantCSS21(range);
+        css_parsing_utils::ConsumeFontVariantCSS21(range);
     if (font_variant)
       values->Append(*font_variant);
   } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
@@ -103,7 +103,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
         arg.Value().ToString(), should_check_content_security_policy);
   }
   if (args.Peek().GetType() == kIdentToken) {
-    String family_name = CSSParsingUtils::ConcatenateFamilyName(args);
+    String family_name = css_parsing_utils::ConcatenateFamilyName(args);
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
@@ -141,9 +141,9 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
   range.ConsumeWhitespace();
   switch (id) {
     case AtRuleDescriptorID::FontFamily:
-      if (CSSParsingUtils::ConsumeGenericFamily(range))
+      if (css_parsing_utils::ConsumeGenericFamily(range))
         return nullptr;
-      parsed_value = CSSParsingUtils::ConsumeFamilyName(range);
+      parsed_value = css_parsing_utils::ConsumeFamilyName(range);
       break;
     case AtRuleDescriptorID::Src:  // This is a list of urls or local
                                    // references.
@@ -157,21 +157,21 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
       break;
     case AtRuleDescriptorID::FontStretch:
       parsed_value =
-          CSSParsingUtils::ConsumeFontStretch(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontStretch(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontStyle:
       parsed_value =
-          CSSParsingUtils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontVariant:
       parsed_value = ConsumeFontVariantList(range);
       break;
     case AtRuleDescriptorID::FontWeight:
       parsed_value =
-          CSSParsingUtils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontFeatureSettings:
-      parsed_value = CSSParsingUtils::ConsumeFontFeatureSettings(range);
+      parsed_value = css_parsing_utils::ConsumeFontFeatureSettings(range);
       break;
     default:
       break;

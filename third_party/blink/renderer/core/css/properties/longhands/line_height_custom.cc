@@ -16,7 +16,7 @@ const CSSValue* LineHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeLineHeight(range, context.Mode());
+  return css_parsing_utils::ConsumeLineHeight(range, context.Mode());
 }
 
 const CSSValue* LineHeight::CSSValueFromComputedStyleInternal(

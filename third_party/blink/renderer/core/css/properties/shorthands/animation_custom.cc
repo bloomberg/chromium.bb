@@ -36,15 +36,15 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
           CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(
           range);
     case CSSPropertyAnimationIterationCount:
-      return CSSParsingUtils::ConsumeAnimationIterationCount(range);
+      return css_parsing_utils::ConsumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
-      return CSSParsingUtils::ConsumeAnimationName(range, context,
-                                                   use_legacy_parsing);
+      return css_parsing_utils::ConsumeAnimationName(range, context,
+                                                     use_legacy_parsing);
     case CSSPropertyAnimationPlayState:
       return CSSPropertyParserHelpers::ConsumeIdent<CSSValueRunning,
                                                     CSSValuePaused>(range);
     case CSSPropertyAnimationTimingFunction:
-      return CSSParsingUtils::ConsumeAnimationTimingFunction(range);
+      return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
       NOTREACHED();
       return nullptr;
@@ -63,9 +63,9 @@ bool Animation::ParseShorthand(
   const StylePropertyShorthand shorthand = animationShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
 
-  HeapVector<Member<CSSValueList>, CSSParsingUtils::kMaxNumAnimationLonghands>
+  HeapVector<Member<CSSValueList>, css_parsing_utils::kMaxNumAnimationLonghands>
       longhands(longhand_count);
-  if (!CSSParsingUtils::ConsumeAnimationShorthand(
+  if (!css_parsing_utils::ConsumeAnimationShorthand(
           shorthand, longhands, ConsumeAnimationValue, range, context,
           local_context.UseAliasParsing())) {
     return false;

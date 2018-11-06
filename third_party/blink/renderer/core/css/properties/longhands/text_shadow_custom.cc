@@ -16,8 +16,8 @@ const CSSValue* TextShadow::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeShadow(
-      range, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kForbid);
+  return css_parsing_utils::ConsumeShadow(
+      range, context.Mode(), css_parsing_utils::AllowInsetAndSpread::kForbid);
 }
 
 const CSSValue* TextShadow::CSSValueFromComputedStyleInternal(

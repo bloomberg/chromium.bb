@@ -19,7 +19,7 @@ bool WebkitColumnBreakBefore::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
-  if (!CSSParsingUtils::ConsumeFromColumnBreakBetween(range, value)) {
+  if (!css_parsing_utils::ConsumeFromColumnBreakBetween(range, value)) {
     return false;
   }
 

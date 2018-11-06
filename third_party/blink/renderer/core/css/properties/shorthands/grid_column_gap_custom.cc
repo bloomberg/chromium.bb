@@ -18,7 +18,7 @@ bool GridColumnGap::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValue* gap_length = CSSParsingUtils::ConsumeGapLength(range, context);
+  CSSValue* gap_length = css_parsing_utils::ConsumeGapLength(range, context);
   if (!gap_length || !range.AtEnd())
     return false;
 

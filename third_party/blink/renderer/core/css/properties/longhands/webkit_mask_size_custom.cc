@@ -16,7 +16,7 @@ const CSSValue* WebkitMaskSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundOrMaskSize(
+  return css_parsing_utils::ParseBackgroundOrMaskSize(
       range, context, local_context, WebFeature::kNegativeMaskSize);
 }
 

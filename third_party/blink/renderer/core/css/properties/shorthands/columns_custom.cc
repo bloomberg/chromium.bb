@@ -23,10 +23,11 @@ bool Columns::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
-  if (!CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width,
-                                                  column_count))
+  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+                                                    column_count))
     return false;
-  CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width, column_count);
+  css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+                                               column_count);
   if (!range.AtEnd())
     return false;
   if (!column_width)

@@ -16,7 +16,7 @@ const CSSValue* InsetBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeMarginOrOffset(
+  return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 

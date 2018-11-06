@@ -14,7 +14,7 @@ const CSSValue* ColumnCount::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeColumnCount(range);
+  return css_parsing_utils::ConsumeColumnCount(range);
 }
 
 const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(

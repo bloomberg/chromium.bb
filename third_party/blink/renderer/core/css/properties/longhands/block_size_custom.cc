@@ -15,7 +15,7 @@ const CSSValue* BlockSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeWidthOrHeight(range, context);
+  return css_parsing_utils::ConsumeWidthOrHeight(range, context);
 }
 
 bool BlockSize::IsLayoutDependent(const ComputedStyle* style,

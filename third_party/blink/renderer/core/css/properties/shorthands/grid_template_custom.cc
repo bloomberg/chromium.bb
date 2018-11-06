@@ -24,7 +24,7 @@ bool GridTemplate::ParseShorthand(
   CSSValue* template_rows = nullptr;
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;
-  if (!CSSParsingUtils::ConsumeGridTemplateShorthand(
+  if (!css_parsing_utils::ConsumeGridTemplateShorthand(
           important, range, context, template_rows, template_columns,
           template_areas))
     return false;

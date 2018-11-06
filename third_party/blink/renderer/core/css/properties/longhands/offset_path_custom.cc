@@ -14,7 +14,7 @@ const CSSValue* OffsetPath::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeOffsetPath(range, context);
+  return css_parsing_utils::ConsumeOffsetPath(range, context);
 }
 
 const CSSValue* OffsetPath::CSSValueFromComputedStyleInternal(

@@ -17,8 +17,8 @@ const CSSValue* WebkitMaskClip::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumePrefixedBackgroundBox, range,
-      CSSParsingUtils::AllowTextValue::kAllow);
+      css_parsing_utils::ConsumePrefixedBackgroundBox, range,
+      css_parsing_utils::AllowTextValue::kAllow);
 }
 
 const CSSValue* WebkitMaskClip::CSSValueFromComputedStyleInternal(
