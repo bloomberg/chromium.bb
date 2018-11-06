@@ -101,7 +101,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   virtual ~ContentVerifyJob();
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
 
-  void DidGetContentHashOnIO(const scoped_refptr<const ContentHash>& hash);
+  void DidGetContentHashOnIO(scoped_refptr<const ContentHash> hash);
 
   // Same as BytesRead, but is run without acquiring lock.
   void BytesReadImpl(int count, const char* data);

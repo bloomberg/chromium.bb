@@ -88,7 +88,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   //   - |was_cancelled| Indicates whether or not the request was cancelled
   //     through |is_cancelled|, while it was being processed.
   using CreatedCallback =
-      base::OnceCallback<void(const scoped_refptr<ContentHash>& hash,
+      base::OnceCallback<void(scoped_refptr<ContentHash> hash,
                               bool was_cancelled)>;
   static void Create(const ExtensionKey& key,
                      FetchParams fetch_params,
