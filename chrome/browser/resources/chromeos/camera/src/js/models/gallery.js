@@ -152,11 +152,11 @@ cca.models.Gallery.prototype.load = function(observers) {
     return this.loadStoredPictures_(pictureEntries, thumbnailEntriesByName);
   });
 
-  this.loaded_.then(pictures => {
-    pictures.forEach(picture => {
+  this.loaded_.then((pictures) => {
+    pictures.forEach((picture) => {
       this.notifyObservers_('onPictureAdded', picture);
     });
-  }).catch(error => {
+  }).catch((error) => {
     console.warn(error);
   });
 };
@@ -172,7 +172,7 @@ cca.models.Gallery.prototype.load = function(observers) {
  */
 cca.models.Gallery.prototype.loadStoredPictures_ = function(
     pictureEntries, thumbnailEntriesByName) {
-  var wrapped = pictureEntries.filter(entry => entry.name).map(entry => {
+  var wrapped = pictureEntries.filter((entry) => entry.name).map((entry) => {
     // Create the thumbnail if it's not cached. Ignore errors since it is
     // better to load something than nothing.
     // TODO(yuli): Remove unused thumbnails.
@@ -181,7 +181,7 @@ cca.models.Gallery.prototype.loadStoredPictures_ = function(
     return this.wrapPicture_(entry, thumbnailEntry);
   });
 
-  return Promise.all(wrapped).then(pictures => {
+  return Promise.all(wrapped).then((pictures) => {
     // Sort pictures by timestamps. The most recent picture will be at the end.
     return pictures.sort((a, b) => {
       if (a.timestamp == null) {
@@ -200,7 +200,7 @@ cca.models.Gallery.prototype.loadStoredPictures_ = function(
  * @return {!Promise<cca.models.Gallery.Picture>} Promise for the result.
  */
 cca.models.Gallery.prototype.lastPicture = function() {
-  return this.loaded_.then(pictures => {
+  return this.loaded_.then((pictures) => {
     return pictures[pictures.length - 1];
   });
 };
@@ -210,12 +210,12 @@ cca.models.Gallery.prototype.lastPicture = function() {
  * @return {!Promise<cca.models.Gallery.Picture>} Promise for the result.
  */
 cca.models.Gallery.prototype.checkLastPicture = function() {
-  return this.lastPicture().then(picture => {
+  return this.lastPicture().then((picture) => {
     // Assume only external pictures were removed without updating the model.
     if (cca.models.FileSystem.externalFs && picture) {
       var name = picture.pictureEntry.name;
       return cca.models.FileSystem.getFile_(
-          cca.models.FileSystem.externalFs, name, false).then(entry => {
+          cca.models.FileSystem.externalFs, name, false).then((entry) => {
         return [picture, (entry != null)];
       });
     } else {
@@ -265,7 +265,7 @@ cca.models.Gallery.prototype.deletePicture = function(
  */
 cca.models.Gallery.prototype.exportPicture = function(picture, entry) {
   return new Promise((resolve, reject) => {
-    entry.getParent(directory => {
+    entry.getParent((directory) => {
       picture.pictureEntry.copyTo(directory, entry.name, resolve, reject);
     }, reject);
   });
@@ -286,7 +286,7 @@ cca.models.Gallery.prototype.wrapPicture_ = function(
     return cca.models.FileSystem.saveThumbnail(
         isMotionPicture, pictureEntry).catch(() => null);
   };
-  return Promise.resolve(thumbnailEntry || saved()).then(thumbnailEntry => {
+  return Promise.resolve(thumbnailEntry || saved()).then((thumbnailEntry) => {
     return new cca.models.Gallery.Picture(
         thumbnailEntry, pictureEntry, isMotionPicture);
   });
@@ -313,7 +313,7 @@ cca.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
 cca.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
   // and then add a new picture into the model.
-  var saved = new Promise(resolve => {
+  var saved = new Promise((resolve) => {
     if (isMotionPicture) {
       resolve(blob);
     } else {
@@ -323,9 +323,9 @@ cca.models.Gallery.prototype.savePicture = function(blob, isMotionPicture) {
         resolve(blob);
       });
     }
-  }).then(blob => {
+  }).then((blob) => {
     return cca.models.FileSystem.savePicture(isMotionPicture, blob);
-  }).then(pictureEntry => {
+  }).then((pictureEntry) => {
     return this.wrapPicture_(pictureEntry);
   });
   return Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {

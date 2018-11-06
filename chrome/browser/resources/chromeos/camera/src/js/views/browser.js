@@ -294,7 +294,7 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
       var picture = domPicture.picture;
       var thumbnailURL = picture.thumbnailURL;
       if (domPicture == selectedPicture || !thumbnailURL) {
-        picture.pictureURL().then(url => {
+        picture.pictureURL().then((url) => {
           if (picture.isMotionPicture) {
             updateVideo(wrapper, url);
           } else {
@@ -404,7 +404,7 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
   // Display high-res picture if no cached thumbnail.
   // TODO(yuli): Fix wrappers' size to avoid scrolling for changed elements.
   var thumbnailURL = picture.thumbnailURL;
-  Promise.resolve(thumbnailURL || picture.pictureURL()).then(url => {
+  Promise.resolve(thumbnailURL || picture.pictureURL()).then((url) => {
     var isVideo = !thumbnailURL && picture.isMotionPicture;
     var element = wrapper.appendChild(document.createElement(
         isVideo ? 'video' : 'img'));
@@ -436,7 +436,7 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
     var domPicture = new cca.views.GalleryBase.DOMPicture(picture, wrapper);
     this.pictures.splice(index + 1, 0, domPicture);
 
-    wrapper.addEventListener('click', event => {
+    wrapper.addEventListener('click', (event) => {
       // If scrolled while clicking, then discard this selection, since another
       // one will be choosen in the onScrollEnded handler.
       if (this.scrollTracker_.scrolling &&

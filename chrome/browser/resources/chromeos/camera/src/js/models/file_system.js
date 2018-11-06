@@ -74,12 +74,12 @@ cca.models.FileSystem.initInternalFs_ = function() {
  * @private
  */
 cca.models.FileSystem.initExternalFs_ = function() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (!cca.util.isChromeOS()) {
       resolve(null);
       return;
     }
-    chrome.fileSystem.getVolumeList(volumes => {
+    chrome.fileSystem.getVolumeList((volumes) => {
       if (volumes) {
         for (var i = 0; i < volumes.length; i++) {
           if (volumes[i].volumeId.indexOf('downloads:Downloads') !== -1) {
@@ -101,15 +101,15 @@ cca.models.FileSystem.initExternalFs_ = function() {
  * @return {!Promise<>} Promise for the operation.
  */
 cca.models.FileSystem.initialize = function(promptMigrate) {
-  var checkAcked = new Promise(resolve => {
+  var checkAcked = new Promise((resolve) => {
     // ackMigratePictures 1: User acknowledges to migrate pictures to Downloads.
-    chrome.storage.local.get({ackMigratePictures: 0}, values => {
+    chrome.storage.local.get({ackMigratePictures: 0}, (values) => {
       resolve(values.ackMigratePictures >= 1);
     });
   });
-  var checkMigrated = new Promise(resolve => {
+  var checkMigrated = new Promise((resolve) => {
     if (chrome.chromeosInfoPrivate) {
-      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'], values => {
+      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'], (values) => {
         resolve(values['cameraMediaConsolidated']);
       });
     } else {
@@ -141,7 +141,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
     if (migrated || !cca.models.FileSystem.externalFs) {
       return [false, false];
     } else {
-      return cca.models.FileSystem.hasInternalPictures_().then(result => {
+      return cca.models.FileSystem.hasInternalPictures_().then((result) => {
         if (result) {
           return [!acked, true];
         } else {
@@ -162,7 +162,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
       });
     }
     return migrateNeeded;
-  }).then(migrateNeeded => {
+  }).then((migrateNeeded) => {
     if (migrateNeeded) {
       return cca.models.FileSystem.migratePictures().then(doneMigrate);
     }
@@ -181,7 +181,7 @@ cca.models.FileSystem.readFs_ = function(fs) {
       var dirReader = fs.root.createReader();
       var entries = [];
       var readEntries = () => {
-        dirReader.readEntries(inEntries => {
+        dirReader.readEntries((inEntries) => {
           if (inEntries.length == 0) {
             resolve(entries);
             return;
@@ -204,7 +204,7 @@ cca.models.FileSystem.readFs_ = function(fs) {
  */
 cca.models.FileSystem.hasInternalPictures_ = function() {
   var fs = cca.models.FileSystem.internalFs;
-  return cca.models.FileSystem.readFs_(fs).then(entries => {
+  return cca.models.FileSystem.readFs_(fs).then((entries) => {
     for (var index = entries.length - 1; index >= 0; index--) {
       // Check if there is any picture other than thumbnail in file entries.
       // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
@@ -227,9 +227,9 @@ cca.models.FileSystem.migratePictures = function() {
   var migratePicture = (pictureEntry, thumbnailEntry) => {
     var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
     return cca.models.FileSystem.getFile_(
-        externalFs, name, true).then(entry => {
+        externalFs, name, true).then((entry) => {
       return new Promise((resolve, reject) => {
-        pictureEntry.copyTo(externalFs.root, entry.name, result => {
+        pictureEntry.copyTo(externalFs.root, entry.name, (result) => {
           if (result.name != pictureEntry.name && thumbnailEntry) {
             // Thumbnails can be recreated later if failing to rename them here.
             thumbnailEntry.moveTo(internalFs.root,
@@ -242,7 +242,7 @@ cca.models.FileSystem.migratePictures = function() {
     });
   };
 
-  return cca.models.FileSystem.readFs_(internalFs).then(internalEntries => {
+  return cca.models.FileSystem.readFs_(internalFs).then((internalEntries) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
     cca.models.FileSystem.parseInternalEntries_(
@@ -316,9 +316,9 @@ cca.models.FileSystem.regulatePictureName = function(entry) {
  * @private
  */
 cca.models.FileSystem.saveToFile_ = function(fs, name, blob) {
-  return cca.models.FileSystem.getFile_(fs, name, true).then(entry => {
+  return cca.models.FileSystem.getFile_(fs, name, true).then((entry) => {
     return new Promise((resolve, reject) => {
-      entry.createWriter(fileWriter => {
+      entry.createWriter((fileWriter) => {
         fileWriter.onwriteend = () => {
           resolve(entry);
         };
@@ -370,7 +370,7 @@ cca.models.FileSystem.createThumbnail_ = function(isVideo, url) {
     canvas.height = thumbnailHeight;
     context.drawImage(element, 0, 0, thumbnailWidth, thumbnailHeight);
     return new Promise((resolve, reject) => {
-      canvas.toBlob(blob => {
+      canvas.toBlob((blob) => {
         if (blob) {
           resolve(blob);
         } else {
@@ -399,9 +399,9 @@ cca.models.FileSystem.getThumbnailName = function(entry) {
  * @return {!Promise<FileEntry>} Promise for the result.
  */
 cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
-  return cca.models.FileSystem.pictureURL(entry).then(url => {
+  return cca.models.FileSystem.pictureURL(entry).then((url) => {
     return cca.models.FileSystem.createThumbnail_(isVideo, url);
-  }).then(blob => {
+  }).then((blob) => {
     var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
     return cca.models.FileSystem.saveToFile_(
         cca.models.FileSystem.internalFs, thumbnailName, blob);
@@ -483,7 +483,7 @@ cca.models.FileSystem.getEntries = function() {
     var thumbnailEntriesByName = {};
 
     if (cca.models.FileSystem.externalFs) {
-      pictureEntries = externalEntries.filter(entry => {
+      pictureEntries = externalEntries.filter((entry) => {
         if (!cca.models.FileSystem.hasVideoPrefix(entry) &&
             !cca.models.FileSystem.hasImagePrefix_(entry)) {
           return false;
@@ -506,9 +506,9 @@ cca.models.FileSystem.getEntries = function() {
  * @return {!Promise<string>} Promise for the result.
  */
 cca.models.FileSystem.pictureURL = function(entry) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (cca.models.FileSystem.externalFs) {
-      entry.file(file => {
+      entry.file((file) => {
         resolve(URL.createObjectURL(file));
       });
     } else {
@@ -529,7 +529,7 @@ cca.models.FileSystem.getFile_ = function(fs, name, create) {
   return new Promise((resolve, reject) => {
     var options = create ? {create: true, exclusive: true} : {create: false};
     fs.root.getFile(name, options, resolve, reject);
-  }).catch(error => {
+  }).catch((error) => {
     if (create && error.name == 'InvalidModificationError') {
       // Avoid name conflicts for creating files.
       return cca.models.FileSystem.getFile_(fs,

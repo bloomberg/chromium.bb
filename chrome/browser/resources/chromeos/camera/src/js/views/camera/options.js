@@ -190,7 +190,7 @@ cca.views.camera.Options.prototype.prepare = function() {
     toggleTimer: false,
     toggleGrid: false,
     mirroringToggles: {}, // Manually mirroring states per video device.
-  }, values => {
+  }, (values) => {
     this.changeToggle_(this.toggleMic_, values.toggleMic);
     this.changeToggle_(this.toggleTimer_, values.toggleTimer);
     this.changeToggle_(this.toggleGrid_, values.toggleGrid);
@@ -301,7 +301,7 @@ cca.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
  */
 cca.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
   Array.from(document.querySelector('#preview-grid').children).forEach(
-      grid => cca.util.animateOnce(grid));
+      (grid) => cca.util.animateOnce(grid));
   chrome.storage.local.set({toggleGrid: this.toggleGrid_.checked});
 };
 

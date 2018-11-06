@@ -93,7 +93,7 @@ cca.App.ViewsStack.prototype = {
     return this.stack_.length ? this.stack_[this.stack_.length - 1].view : null;
   },
   get all() {
-    return this.stack_.map(entry => entry.view);
+    return this.stack_.map((entry) => entry.view);
   },
 };
 
@@ -154,7 +154,7 @@ cca.App.prototype.start = function() {
       this.router_.navigate(cca.Router.ViewIdentifier.DIALOG, {
         type: cca.views.Dialog.Type.ALERT,
         message: chrome.i18n.getMessage('migratePicturesMsg'),
-      }, result => {
+      }, (result) => {
         if (!result.isPositive) {
           var error = new Error('Did not acknowledge migrate-prompt.');
           error.exitApp = true;
@@ -260,7 +260,7 @@ cca.App.prototype.onWindowResize_ = function(aspectRatio) {
   // Resize all stacked views rather than just the current-view to avoid
   // camera-preview not being resized if a dialog or settings' menu is shown on
   // top of the camera-view.
-  this.viewsStack_.all.forEach(view => {
+  this.viewsStack_.all.forEach((view) => {
     view.onResize();
   });
 };
