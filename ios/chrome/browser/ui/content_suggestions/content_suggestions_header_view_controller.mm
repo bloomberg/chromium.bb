@@ -62,9 +62,6 @@ using base::UserMetricsAction;
 @property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
-@property(nonatomic, strong) UILabel* searchHintLabel;
-@property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fakeOmniboxWidthConstraint;
@@ -79,7 +76,6 @@ using base::UserMetricsAction;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
-@synthesize searchHintLabel = _searchHintLabel;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
 @synthesize toolbarDelegate = _toolbarDelegate;
@@ -94,8 +90,6 @@ using base::UserMetricsAction;
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
 @synthesize accessibilityButton = _accessibilityButton;
-@synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
-@synthesize voiceTapTrailingConstraint = _voiceTapTrailingConstraint;
 @synthesize doodleHeightConstraint = _doodleHeightConstraint;
 @synthesize doodleTopMarginConstraint = _doodleTopMarginConstraint;
 @synthesize fakeOmniboxWidthConstraint = _fakeOmniboxWidthConstraint;
@@ -159,14 +153,9 @@ using base::UserMetricsAction;
     }
   }
 
-  NSArray* constraints =
-      @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
-
   [self.headerView updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
                                    height:self.fakeOmniboxHeightConstraint
                                 topMargin:self.fakeOmniboxTopMarginConstraint
-                                hintLabel:self.searchHintLabel
-                       subviewConstraints:constraints
                                 forOffset:offset
                               screenWidth:screenWidth
                            safeAreaInsets:safeAreaInsets];
@@ -247,7 +236,6 @@ using base::UserMetricsAction;
                         fakeOmnibox:self.fakeOmnibox
                       andHeaderView:self.headerView];
 
-    [self.headerView addViewsToSearchField:self.fakeOmnibox];
     [self.logoVendor fetchDoodle];
   }
   return self.headerView;
@@ -265,21 +253,10 @@ using base::UserMetricsAction;
   self.fakeOmnibox.accessibilityIdentifier =
       ntp_home::FakeOmniboxAccessibilityID();
 
-  // Set up fakebox hint label.
-  self.searchHintLabel = [[UILabel alloc] init];
-  content_suggestions::configureSearchHintLabel(self.searchHintLabel,
-                                                self.fakeOmnibox);
-
-  self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
-      constraintGreaterThanOrEqualToAnchor:[self.fakeOmnibox leadingAnchor]
-                                  constant:ntp_header::kHintLabelSidePadding];
-  self.hintLabelLeadingConstraint.active = YES;
-
   // Set a button the same size as the fake omnibox as the accessibility
   // element. If the hint is the only accessible element, when the fake omnibox
   // is taking the full width, there are few points that are not accessible and
   // allow to select the content below it.
-  self.searchHintLabel.isAccessibilityElement = NO;
   self.accessibilityButton = [[UIButton alloc] init];
   [self.accessibilityButton addTarget:self
                                action:@selector(fakeboxTapped)
@@ -298,28 +275,17 @@ using base::UserMetricsAction;
   self.accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.fakeOmnibox, self.accessibilityButton);
 
-  // Add a voice search button.
-  UIButton* voiceTapTarget = [[UIButton alloc] init];
-  content_suggestions::configureVoiceSearchButton(voiceTapTarget,
-                                                  self.fakeOmnibox);
-
-  self.voiceTapTrailingConstraint = [voiceTapTarget.trailingAnchor
-      constraintEqualToAnchor:[self.fakeOmnibox trailingAnchor]];
-  [NSLayoutConstraint activateConstraints:@[
-    [self.searchHintLabel.trailingAnchor
-        constraintLessThanOrEqualToAnchor:voiceTapTarget.leadingAnchor],
-    _voiceTapTrailingConstraint
-  ]];
+  [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
   if (self.voiceSearchIsEnabled) {
-    [voiceTapTarget addTarget:self
-                       action:@selector(loadVoiceSearch:)
-             forControlEvents:UIControlEventTouchUpInside];
-    [voiceTapTarget addTarget:self
-                       action:@selector(preloadVoiceSearch:)
-             forControlEvents:UIControlEventTouchDown];
+    [self.headerView.voiceSearchButton addTarget:self
+                                          action:@selector(loadVoiceSearch:)
+                                forControlEvents:UIControlEventTouchUpInside];
+    [self.headerView.voiceSearchButton addTarget:self
+                                          action:@selector(preloadVoiceSearch:)
+                                forControlEvents:UIControlEventTouchDown];
   } else {
-    [voiceTapTarget setEnabled:NO];
+    [self.headerView.voiceSearchButton setEnabled:NO];
   }
 }
 

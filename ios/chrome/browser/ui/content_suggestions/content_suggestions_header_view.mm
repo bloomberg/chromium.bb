@@ -39,23 +39,36 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 
 @interface ContentSuggestionsHeaderView ()
 
+@property(nonatomic, strong, readwrite) UIButton* voiceSearchButton;
+
 // Layout constraints for fake omnibox background image and blur.
-@property(nonatomic, strong) NSLayoutConstraint* backgroundHeightConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* backgroundLeadingConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* backgroundTrailingConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* blurTopConstraint;
-@property(nonatomic, strong) UIView* backgroundContainer;
+@property(nonatomic, strong)
+    NSLayoutConstraint* fakeLocationBarHeightConstraint;
+@property(nonatomic, strong)
+    NSLayoutConstraint* fakeLocationBarLeadingConstraint;
+@property(nonatomic, strong)
+    NSLayoutConstraint* fakeLocationBarTrailingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* fakeToolbarTopConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* voiceSearchTrailingConstraint;
+@property(nonatomic, strong) UIView* fakeLocationBar;
+@property(nonatomic, strong) UILabel* searchHintLabel;
 
 @end
 
 @implementation ContentSuggestionsHeaderView
 
-@synthesize backgroundContainer = _backgroundContainer;
-@synthesize backgroundHeightConstraint = _backgroundHeightConstraint;
-@synthesize backgroundLeadingConstraint = _backgroundLeadingConstraint;
-@synthesize backgroundTrailingConstraint = _backgroundTrailingConstraint;
-@synthesize blurTopConstraint = _blurTopConstraint;
+@synthesize fakeLocationBar = _fakeLocationBar;
+@synthesize fakeLocationBarHeightConstraint = _fakeLocationBarHeightConstraint;
+@synthesize fakeLocationBarLeadingConstraint =
+    _fakeLocationBarLeadingConstraint;
+@synthesize fakeLocationBarTrailingConstraint =
+    _fakeLocationBarTrailingConstraint;
+@synthesize fakeToolbarTopConstraint = _fakeToolbarTopConstraint;
+@synthesize voiceSearchTrailingConstraint = _voiceSearchTrailingConstraint;
+@synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
 @synthesize toolBarView = _toolBarView;
+@synthesize searchHintLabel = _searchHintLabel;
 
 #pragma mark - Public
 
@@ -81,56 +94,80 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
+  // Fake Toolbar.
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
   UIBlurEffect* blurEffect = buttonFactory.toolbarConfiguration.blurEffect;
-  UIView* blur = nil;
+  UIView* fakeToolbar = nil;
+  UIView* fakeToolbarContentView;
   if (blurEffect) {
-    blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    UIVisualEffectView* visualEffectView =
+        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    fakeToolbar = visualEffectView;
+    fakeToolbarContentView = visualEffectView.contentView;
   } else {
-    blur = [[UIView alloc] init];
+    fakeToolbar = [[UIView alloc] init];
+    fakeToolbarContentView = fakeToolbar;
   }
-  blur.backgroundColor = buttonFactory.toolbarConfiguration.blurBackgroundColor;
-  [searchField insertSubview:blur atIndex:0];
-  blur.translatesAutoresizingMaskIntoConstraints = NO;
-  self.blurTopConstraint =
-      [blur.topAnchor constraintEqualToAnchor:searchField.topAnchor];
+  fakeToolbar.backgroundColor =
+      buttonFactory.toolbarConfiguration.blurBackgroundColor;
+  [searchField insertSubview:fakeToolbar atIndex:0];
+  fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+
+  // Fake location bar.
+  [fakeToolbarContentView addSubview:self.fakeLocationBar];
+
+  // Hint label.
+  self.searchHintLabel = [[UILabel alloc] init];
+  content_suggestions::configureSearchHintLabel(self.searchHintLabel,
+                                                searchField);
+  self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
+      constraintGreaterThanOrEqualToAnchor:[searchField leadingAnchor]
+                                  constant:ntp_header::kHintLabelSidePadding];
+  self.hintLabelLeadingConstraint.active = YES;
+  // Set a button the same size as the fake omnibox as the accessibility
+  // element. If the hint is the only accessible element, when the fake omnibox
+  // is taking the full width, there are few points that are not accessible and
+  // allow to select the content below it.
+  self.searchHintLabel.isAccessibilityElement = NO;
+
+  // Voice search.
+  self.voiceSearchButton = [[UIButton alloc] init];
+  content_suggestions::configureVoiceSearchButton(self.voiceSearchButton,
+                                                  searchField);
+
+  // Constraints.
+  self.fakeToolbarTopConstraint =
+      [fakeToolbar.topAnchor constraintEqualToAnchor:searchField.topAnchor];
   [NSLayoutConstraint activateConstraints:@[
-    [blur.leadingAnchor constraintEqualToAnchor:searchField.leadingAnchor],
-    [blur.trailingAnchor constraintEqualToAnchor:searchField.trailingAnchor],
-    self.blurTopConstraint,
-    [blur.bottomAnchor constraintEqualToAnchor:searchField.bottomAnchor]
+    [fakeToolbar.leadingAnchor
+        constraintEqualToAnchor:searchField.leadingAnchor],
+    [fakeToolbar.trailingAnchor
+        constraintEqualToAnchor:searchField.trailingAnchor],
+    self.fakeToolbarTopConstraint,
+    [fakeToolbar.bottomAnchor constraintEqualToAnchor:searchField.bottomAnchor]
   ]];
 
-  UIVisualEffect* vibrancy = [buttonFactory.toolbarConfiguration
-      vibrancyEffectForBlurEffect:blurEffect];
-  UIVisualEffectView* vibrancyView =
-      [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-  [searchField insertSubview:vibrancyView atIndex:1];
-  vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(vibrancyView, searchField);
-
-  self.backgroundContainer = [[UIView alloc] init];
-  self.backgroundContainer.userInteractionEnabled = NO;
-  self.backgroundContainer.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
-  self.backgroundContainer.layer.cornerRadius =
-      kAdaptiveLocationBarCornerRadius;
-  [vibrancyView.contentView addSubview:self.backgroundContainer];
-
-  self.backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  self.backgroundLeadingConstraint = [self.backgroundContainer.leadingAnchor
+  self.fakeLocationBarLeadingConstraint = [self.fakeLocationBar.leadingAnchor
       constraintEqualToAnchor:searchField.leadingAnchor];
-  self.backgroundTrailingConstraint = [self.backgroundContainer.trailingAnchor
+  self.fakeLocationBarTrailingConstraint = [self.fakeLocationBar.trailingAnchor
       constraintEqualToAnchor:searchField.trailingAnchor];
-  self.backgroundHeightConstraint = [self.backgroundContainer.heightAnchor
+  self.fakeLocationBarHeightConstraint = [self.fakeLocationBar.heightAnchor
       constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
   [NSLayoutConstraint activateConstraints:@[
-    [self.backgroundContainer.centerYAnchor
+    [self.fakeLocationBar.centerYAnchor
         constraintEqualToAnchor:searchField.centerYAnchor],
-    self.backgroundLeadingConstraint,
-    self.backgroundTrailingConstraint,
-    self.backgroundHeightConstraint,
+    self.fakeLocationBarLeadingConstraint,
+    self.fakeLocationBarTrailingConstraint,
+    self.fakeLocationBarHeightConstraint,
+  ]];
+
+  self.voiceSearchTrailingConstraint = [self.voiceSearchButton.trailingAnchor
+      constraintEqualToAnchor:[searchField trailingAnchor]];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.searchHintLabel.trailingAnchor
+        constraintLessThanOrEqualToAnchor:self.voiceSearchButton.leadingAnchor],
+    self.voiceSearchTrailingConstraint
   ]];
 }
 
@@ -159,8 +196,6 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
-                     hintLabel:(UILabel*)hintLabel
-            subviewConstraints:(NSArray*)constraints
                      forOffset:(CGFloat)offset
                    screenWidth:(CGFloat)screenWidth
                 safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
@@ -177,12 +212,12 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   if (!IsSplitToolbarMode(self)) {
     self.alpha = 1 - percent;
     widthConstraint.constant = searchFieldNormalWidth;
-    self.backgroundHeightConstraint.constant =
+    self.fakeLocationBarHeightConstraint.constant =
         content_suggestions::kSearchFieldHeight;
-    self.backgroundContainer.layer.cornerRadius =
+    self.fakeLocationBar.layer.cornerRadius =
         content_suggestions::kSearchFieldHeight / 2;
-    [self scaleHintLabel:hintLabel percent:percent];
-    self.blurTopConstraint.constant = 0;
+    [self scaleHintLabelForPercent:percent];
+    self.fakeToolbarTopConstraint.constant = 0;
 
     return;
   } else {
@@ -190,7 +225,7 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   }
 
   // Grow the blur to cover the safeArea top.
-  self.blurTopConstraint.constant = -safeAreaInsets.top * percent;
+  self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
@@ -208,10 +243,10 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   // Calculate the amount to shrink the width and height of background so that
   // it's where the focused adapative toolbar focuses.
   CGFloat inset = !IsSplitToolbarMode() ? kBackgroundLandscapeInset : 0;
-  self.backgroundLeadingConstraint.constant =
+  self.fakeLocationBarLeadingConstraint.constant =
       (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin + inset) *
       percent;
-  self.backgroundTrailingConstraint.constant =
+  self.fakeLocationBarTrailingConstraint.constant =
       -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin + inset) *
       percent;
 
@@ -219,23 +254,20 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
       kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin;
   CGFloat minHeightDiff =
       kLocationBarHeight - content_suggestions::kSearchFieldHeight;
-  self.backgroundHeightConstraint.constant =
+  self.fakeLocationBarHeightConstraint.constant =
       content_suggestions::kSearchFieldHeight + minHeightDiff * percent;
-  self.backgroundContainer.layer.cornerRadius =
-      self.backgroundHeightConstraint.constant / 2;
+  self.fakeLocationBar.layer.cornerRadius =
+      self.fakeLocationBarHeightConstraint.constant / 2;
 
   // Scale the hintLabel, and make sure the frame stays left aligned.
-  [self scaleHintLabel:hintLabel percent:percent];
+  [self scaleHintLabelForPercent:percent];
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff = -maxXInset * percent;
-  for (NSLayoutConstraint* constraint in constraints) {
-    if (constraint.constant > 0)
-      constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
-    else
-      constraint.constant = -constantDiff;
-  }
+  CGFloat subviewsDiff = -maxXInset * percent;
+  self.voiceSearchTrailingConstraint.constant = -subviewsDiff;
+  self.hintLabelLeadingConstraint.constant =
+      subviewsDiff + ntp_header::kHintLabelSidePadding;
 }
 
 - (void)setFakeboxHighlighted:(BOOL)highlighted {
@@ -246,19 +278,34 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
                      CGFloat alpha = kAdaptiveLocationBarBackgroundAlpha;
                      if (highlighted)
                        alpha += kFakeboxHighlightIncrease;
-                     self.backgroundContainer.backgroundColor =
+                     self.fakeLocationBar.backgroundColor =
                          [UIColor colorWithWhite:0 alpha:alpha];
                    }
                    completion:nil];
 }
 
+#pragma mark - Property accessors
+
+- (UIView*)fakeLocationBar {
+  if (!_fakeLocationBar) {
+    _fakeLocationBar = [[UIView alloc] init];
+    _fakeLocationBar.userInteractionEnabled = NO;
+    _fakeLocationBar.backgroundColor =
+        [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
+    _fakeLocationBar.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
+    _fakeLocationBar.translatesAutoresizingMaskIntoConstraints = NO;
+  }
+  return _fakeLocationBar;
+}
+
 #pragma mark - Private
 
 // Scale the the hint label down to at most content_suggestions::kHintTextScale.
-- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
+- (void)scaleHintLabelForPercent:(CGFloat)percent {
   CGFloat scaleValue =
       1 + (content_suggestions::kHintTextScale * (1 - percent));
-  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
+  self.searchHintLabel.transform =
+      CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
 
 @end

@@ -147,7 +147,7 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
 }
 
 void configureSearchHintLabel(UILabel* searchHintLabel,
-                              UIButton* searchTapTarget) {
+                              UIView* searchTapTarget) {
   [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:searchHintLabel];
 
@@ -172,7 +172,7 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
 }
 
 void configureVoiceSearchButton(UIButton* voiceSearchButton,
-                                UIButton* searchTapTarget) {
+                                UIView* searchTapTarget) {
   [voiceSearchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:voiceSearchButton];
 
