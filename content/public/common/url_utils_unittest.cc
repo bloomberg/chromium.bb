@@ -5,7 +5,6 @@
 #include "content/public/common/url_utils.h"
 
 #include "build/build_config.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

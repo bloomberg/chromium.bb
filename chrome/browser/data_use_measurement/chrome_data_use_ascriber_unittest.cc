@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/mock_resource_context.h"

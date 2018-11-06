@@ -6,7 +6,6 @@
 
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"

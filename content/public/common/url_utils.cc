@@ -13,7 +13,6 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_util.h"

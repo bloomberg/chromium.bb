@@ -12,7 +12,6 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
 #include "url/url_constants.h"
