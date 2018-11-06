@@ -65,7 +65,7 @@ Element* GetPointerLockedElement(LocalFrame* frame) {
 PointerEventManager::PointerEventManager(LocalFrame& frame,
                                          MouseEventManager& mouse_event_manager)
     : frame_(frame),
-      touch_event_manager_(new TouchEventManager(frame)),
+      touch_event_manager_(MakeGarbageCollected<TouchEventManager>(frame)),
       mouse_event_manager_(mouse_event_manager) {
   Clear();
 }
