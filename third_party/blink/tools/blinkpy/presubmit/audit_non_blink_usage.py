@@ -86,6 +86,9 @@ _CONFIG = [
             # //base/allocator/partition_allocator/oom_callback.h.
             'base::SetPartitionAllocOomCallback',
 
+            # //base/metrics/histogram_functions.h
+            'base::UmaHistogram.+',
+
             # //base/metrics/field_trial_params.h.
             'base::GetFieldTrialParamValueByFeature',
             'base::GetFieldTrialParamByFeatureAsBool',
