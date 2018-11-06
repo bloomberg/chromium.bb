@@ -108,20 +108,24 @@
                 android:orientation="vertical">
                 <TextView
                     android:id="@+id/details_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:minWidth="184dp"
+                    android:layout_height="16dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="7dp"
                     android:gravity="bottom"
-                    android:textAppearance="@style/BlackTitle2"
+                    android:textAppearance="@style/BlackCaptionDefault"
+                    android:textStyle="bold"
                     android:maxLines="1"
+                    android:background="@color/modern_grey_100"
                     android:ellipsize="end"/>
                 <TextView
                     android:id="@+id/details_text"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="16dp"
                     android:gravity="top"
-                    android:textAppearance="@style/BlackBody"
+                    android:textAppearance="@style/BlackCaption"
+                    android:background="@color/modern_grey_100"
                     android:maxLines="1"
                     android:ellipsize="end"/>
             </LinearLayout>

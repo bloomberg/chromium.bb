@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -145,35 +147,50 @@ class AutofillAssistantUiDelegate {
     /**
      * Java side equivalent of autofill_assistant::DetailsProto.
      */
-    protected static class Details {
+    static class Details {
         private final String mTitle;
         private final String mUrl;
         @Nullable
         private final Date mDate;
         private final String mDescription;
+        private final boolean mIsFinal;
 
-        public Details(String title, String url, @Nullable Date date, String description) {
+        public Details(String title, String url, @Nullable Date date, String description,
+                boolean isFinal) {
             this.mTitle = title;
             this.mUrl = url;
             this.mDate = date;
             this.mDescription = description;
+            this.mIsFinal = isFinal;
         }
 
-        public String getTitle() {
+        String getTitle() {
             return mTitle;
         }
 
-        public String getUrl() {
+        String getUrl() {
             return mUrl;
         }
 
         @Nullable
-        public Date getDate() {
+        Date getDate() {
             return mDate;
         }
 
-        public String getDescription() {
+        String getDescription() {
             return mDescription;
+        }
+
+        /**
+         * Whether the details are not subject to change anymore. If set to false the animated
+         * placeholders will be displayed in place of missing data.
+         */
+        boolean isFinal() {
+            return mIsFinal;
+        }
+
+        boolean isEmpty() {
+            return mTitle.isEmpty() && mUrl.isEmpty() && mDescription.isEmpty() && mDate == null;
         }
     }
 
@@ -381,10 +398,19 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show contextual information. */
     public void showDetails(Details details) {
+        // TODO(crbug.com/806868): Add loading animation for placeholders if isFinal == false.
         mDetailsTitle.setText(details.getTitle());
-        mDetailsText.setText(getDetailsText(details));
+        if (!details.getTitle().isEmpty() || details.isFinal()) {
+            mDetailsTitle.setBackgroundColor(Color.WHITE);
+        }
 
-        mDetailsImage.setVisibility(View.INVISIBLE);
+        String detailsText = getDetailsText(details);
+        mDetailsText.setText(detailsText);
+        if (!detailsText.isEmpty() || details.isFinal()) {
+            mDetailsText.setBackgroundColor(Color.WHITE);
+        }
+
+        mDetailsImage.setVisibility(View.GONE);
         mDetails.setVisibility(View.VISIBLE);
         setCarouselTopPadding();
         show();
@@ -397,6 +423,10 @@ class AutofillAssistantUiDelegate {
                 mDetailsImage.setImageDrawable(getRoundedImage(image));
                 mDetailsImage.setVisibility(View.VISIBLE);
             }, ignoredError -> {});
+        } else if (!details.isFinal()) {
+            mDetailsImage.setImageDrawable(AppCompatResources.getDrawable(
+                    mActivity, R.drawable.autofill_assistant_default_details));
+            mDetailsImage.setVisibility(View.VISIBLE);
         }
     }
 
