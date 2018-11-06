@@ -22,10 +22,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
-#if defined(OS_ANDROID)
-#include "base/path_service.h"
-#endif
-
 namespace image_fetcher {
 
 namespace {
@@ -41,6 +37,13 @@ std::unique_ptr<ImageDecoder> CreateImageDecoderImpl() {
 
 }  // namespace
 
+// static
+base::FilePath CachedImageFetcherServiceFactory::GetCachePath(
+    Profile* profile) {
+  return profile->GetCachePath().Append(kImageCacheSubdir);
+}
+
+// static
 CachedImageFetcherService*
 CachedImageFetcherServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
@@ -48,6 +51,7 @@ CachedImageFetcherServiceFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+// static
 CachedImageFetcherServiceFactory*
 CachedImageFetcherServiceFactory::GetInstance() {
   return base::Singleton<CachedImageFetcherServiceFactory>::get();
@@ -62,17 +66,8 @@ CachedImageFetcherServiceFactory::~CachedImageFetcherServiceFactory() = default;
 
 KeyedService* CachedImageFetcherServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  base::FilePath cache_path;
-#if defined(OS_ANDROID)
-  // On Android, get a special cache directory that is cleared under pressure.
-  // The subdirectory under needs to be registered file_paths.xml as well.
-  if (base::PathService::Get(base::DIR_CACHE, &cache_path)) {
-    cache_path = cache_path.Append(kImageCacheSubdir);
-  }
-#else
-  // On other platforms, GetCachePath can be cleared by the user.
-  cache_path = context->GetCachePath().Append(kImageCacheSubdir);
-#endif
+  Profile* profile = Profile::FromBrowserContext(context);
+  base::FilePath cache_path = GetCachePath(profile);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -84,7 +79,6 @@ KeyedService* CachedImageFetcherServiceFactory::BuildServiceInstanceFor(
   auto data_store =
       std::make_unique<ImageDataStoreDisk>(cache_path, task_runner);
 
-  Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<ImageCache> image_cache = base::MakeRefCounted<ImageCache>(
       std::move(data_store), std::move(metadata_store), profile->GetPrefs(),
       clock, task_runner);
