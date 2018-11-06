@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -424,6 +425,37 @@ TEST_F(AppSearchProviderTest, FetchInternalApp) {
   // Search Settings.
   EXPECT_EQ(kSettingsInternalName, RunQuery("Settings"));
   EXPECT_EQ(kSettingsInternalName, RunQuery("Set"));
+}
+
+TEST_F(AppSearchProviderTest, Crostini) {
+  CreateSearch();
+
+  // Crostini UI is not allowed yet.
+  EXPECT_EQ("", RunQuery("terminal"));
+  EXPECT_EQ("", RunQuery("linux"));
+
+  // This both allows Crostini UI and enables Crostini.
+  crostini::CrostiniTestHelper crostini_test_helper(profile());
+  CreateSearch();
+  EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
+  EXPECT_EQ("Terminal", RunQuery("ter"));
+  EXPECT_EQ("Terminal", RunQuery("terminal"));
+  EXPECT_EQ("Terminal", RunQuery("li"));
+  EXPECT_EQ("Terminal", RunQuery("linux"));
+  EXPECT_EQ("Terminal", RunQuery("crosti"));
+
+  // If Crostini UI is allowed but disabled (i.e. not installed), a match score
+  // of 0.8 is required before surfacing search results.
+  crostini::CrostiniTestHelper::DisableCrostini(profile());
+  CreateSearch();
+  EXPECT_EQ("Hosted App", RunQuery("te"));
+  EXPECT_EQ("Terminal", RunQuery("ter"));
+  EXPECT_EQ("Terminal", RunQuery("terminal"));
+  EXPECT_EQ("", RunQuery("li"));
+  EXPECT_EQ("Terminal", RunQuery("lin"));
+  EXPECT_EQ("Terminal", RunQuery("linux"));
+  EXPECT_EQ("", RunQuery("cro"));
+  EXPECT_EQ("Terminal", RunQuery("cros"));
 }
 
 enum class TestExtensionInstallType {
