@@ -90,11 +90,13 @@ class Controller : public ScriptExecutorDelegate,
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
   // Overrides content::WebContentsObserver:
+  void DidAttachInterstitialPage() override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void WebContentsDestroyed() override;
   void DocumentAvailableInMainFrame() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void WebContentsDestroyed() override;
 
   // Overrides content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,

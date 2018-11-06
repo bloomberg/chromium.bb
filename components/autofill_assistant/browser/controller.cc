@@ -274,6 +274,10 @@ void Controller::OnDestroy() {
   delete this;
 }
 
+void Controller::DidAttachInterstitialPage() {
+  GetUiController()->Shutdown();
+}
+
 void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
   switch (type) {
     case blink::WebInputEvent::kTouchStart:
@@ -354,6 +358,10 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
   // Note that we also check for scripts in LoadProgressChanged below. This is
   // the last attempt and occurs later than a load progress of 1.0.
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+}
+
+void Controller::RenderProcessGone(base::TerminationStatus status) {
+  GetUiController()->Shutdown();
 }
 
 void Controller::WebContentsDestroyed() {
