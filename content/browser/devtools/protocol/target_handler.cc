@@ -15,7 +15,6 @@
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -267,10 +266,13 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     DevToolsAgentHostImpl* agent_host_impl =
         static_cast<DevToolsAgentHostImpl*>(agent_host);
     if (flatten_protocol) {
-      handler->target_registry_->AttachSubtargetSession(
-          id, agent_host_impl, session,
-          base::BindOnce(&Session::ResumeIfThrottled,
-                         base::Unretained(session)));
+      DevToolsSession* devtools_session =
+          handler->root_session_->AttachChildSession(id, agent_host_impl,
+                                                     session);
+      if (devtools_session) {
+        devtools_session->SetRuntimeResumeCallback(base::BindOnce(
+            &Session::ResumeIfThrottled, base::Unretained(session)));
+      }
     } else {
       agent_host_impl->AttachClient(session);
     }
@@ -282,20 +284,19 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   ~Session() override {
     if (!agent_host_)
       return;
-    if (handler_->target_registry_)
-      handler_->target_registry_->DetachSubtargetSession(id_);
+    if (flatten_protocol_)
+      handler_->root_session_->DetachChildSession(id_);
     agent_host_->DetachClient(this);
   }
 
   void Detach(bool host_closed) {
     handler_->frontend_->DetachedFromTarget(id_, agent_host_->GetId());
+    if (flatten_protocol_)
+      handler_->root_session_->DetachChildSession(id_);
     if (host_closed)
       handler_->auto_attacher_.AgentHostClosed(agent_host_.get());
-    else {
-      if (handler_->target_registry_)
-        handler_->target_registry_->DetachSubtargetSession(id_);
+    else
       agent_host_->DetachClient(this);
-    }
     handler_->auto_attached_sessions_.erase(agent_host_.get());
     agent_host_ = nullptr;
     handler_->attached_sessions_.erase(id_);
@@ -311,7 +312,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   void SendMessageToAgentHost(const std::string& message) {
     if (throttle_) {
       std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-      if (TargetRegistry::IsRuntimeResumeCommand(value.get()))
+      if (DevToolsSession::IsRuntimeResumeCommand(value.get()))
         ResumeIfThrottled();
     }
 
@@ -339,7 +340,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                                const std::string& message) override {
     DCHECK(agent_host == agent_host_.get());
     if (flatten_protocol_) {
-      handler_->target_registry_->SendMessageToClient(id_, message);
+      handler_->root_session_->SendMessageFromChildSession(id_, message);
       return;
     }
 
@@ -422,7 +423,7 @@ void TargetHandler::Throttle::Clear() {
 TargetHandler::TargetHandler(AccessMode access_mode,
                              const std::string& owner_target_id,
                              DevToolsRendererChannel* renderer_channel,
-                             TargetRegistry* target_registry)
+                             DevToolsSession* root_session)
     : DevToolsDomainHandler(Target::Metainfo::domainName),
       auto_attacher_(base::BindRepeating(&TargetHandler::AutoAttach,
                                          base::Unretained(this)),
@@ -432,7 +433,7 @@ TargetHandler::TargetHandler(AccessMode access_mode,
       discover_(false),
       access_mode_(access_mode),
       owner_target_id_(owner_target_id),
-      target_registry_(target_registry),
+      root_session_(root_session),
       weak_factory_(this) {}
 
 TargetHandler::~TargetHandler() {
@@ -541,10 +542,6 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
 Response TargetHandler::SetAutoAttach(bool auto_attach,
                                       bool wait_for_debugger_on_start,
                                       Maybe<bool> flatten) {
-  if (flatten.fromMaybe(false) && !target_registry_) {
-    return Response::InvalidParams(
-        "Will only provide flatten access for browser endpoint");
-  }
   flatten_auto_attach_ = flatten.fromMaybe(false);
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
@@ -567,10 +564,6 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
-  if (flatten.fromMaybe(false) && !target_registry_) {
-    return Response::InvalidParams(
-        "Will only provide flatten access for browser endpoint");
-  }
   *out_session_id =
       Session::Attach(this, agent_host.get(), false, flatten.fromMaybe(false));
   return Response::OK();

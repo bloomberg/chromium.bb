@@ -24,7 +24,6 @@
 namespace content {
 
 class BrowserContext;
-class TargetRegistry;
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
@@ -70,13 +69,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   static bool ShouldForceCreation();
 
   // Returning |false| will block the attach.
-  virtual bool AttachSession(DevToolsSession* session,
-                             TargetRegistry* registry);
+  virtual bool AttachSession(DevToolsSession* session);
   virtual void DetachSession(DevToolsSession* session);
-  virtual bool DispatchProtocolMessage(
-      DevToolsAgentHostClient* client,
-      const std::string& message,
-      std::unique_ptr<base::DictionaryValue> parsed_message);
   virtual void UpdateRendererChannel(bool force);
 
   void NotifyCreated();
@@ -92,20 +86,15 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
  private:
   friend class DevToolsAgentHost;  // for static methods
-  friend class TargetRegistry;  // for subtarget management
+  friend class DevToolsSession;
   friend class DevToolsRendererChannel;
 
-  bool InnerAttachClient(DevToolsAgentHostClient* client,
-                         TargetRegistry* registry);
-  void InnerDetachClient(DevToolsAgentHostClient* client);
+  bool AttachInternal(std::unique_ptr<DevToolsSession> session);
+  void DetachInternal(DevToolsSession* session);
   void NotifyAttached();
   void NotifyDetached();
   void NotifyDestroyed();
   DevToolsSession* SessionByClient(DevToolsAgentHostClient* client);
-
-  // TargetRegistry API for subtarget management.
-  void AttachSubtargetClient(DevToolsAgentHostClient* client,
-                             TargetRegistry* registry);
 
   const std::string id_;
   std::vector<DevToolsSession*> sessions_;

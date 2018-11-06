@@ -19,10 +19,10 @@ namespace content {
 
 class DevToolsAgentHostImpl;
 class DevToolsRendererChannel;
+class DevToolsSession;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
-class TargetRegistry;
 
 namespace protocol {
 
@@ -43,7 +43,7 @@ class TargetHandler : public DevToolsDomainHandler,
   TargetHandler(AccessMode access_mode,
                 const std::string& owner_target_id,
                 DevToolsRendererChannel* renderer_channel,
-                TargetRegistry* target_registry);
+                DevToolsSession* root_session);
   ~TargetHandler() override;
 
   static std::vector<TargetHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -127,7 +127,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::set<DevToolsAgentHost*> reported_hosts_;
   AccessMode access_mode_;
   std::string owner_target_id_;
-  TargetRegistry* target_registry_;
+  DevToolsSession* root_session_;
   base::flat_set<Throttle*> throttles_;
   base::WeakPtrFactory<TargetHandler> weak_factory_;
 

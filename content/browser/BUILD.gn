@@ -719,8 +719,6 @@ jumbo_source_set("browser") {
     "devtools/shared_worker_devtools_agent_host.h",
     "devtools/shared_worker_devtools_manager.cc",
     "devtools/shared_worker_devtools_manager.h",
-    "devtools/target_registry.cc",
-    "devtools/target_registry.h",
     "devtools/worker_devtools_agent_host.cc",
     "devtools/worker_devtools_agent_host.h",
     "discardable_shared_memory_manager.cc",
