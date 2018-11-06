@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -41,10 +40,6 @@ gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
 
 bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
   return wm::GetCaptureWindow() != nullptr;
-}
-
-bool ImmersiveContextAsh::IsMouseEventsEnabled() {
-  return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
 }  // namespace ash

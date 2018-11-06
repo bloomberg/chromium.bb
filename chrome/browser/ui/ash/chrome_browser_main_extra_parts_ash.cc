@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
-#include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
@@ -188,8 +187,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (!features::IsMultiProcessMash()) {
     ash_shell_init_ = std::make_unique<AshShellInit>();
   } else {
-    immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryMus>();
-
     // Enterprise support in the browser can monitor user activity. Connect to
     // the UI service to monitor activity. The ash process has its own monitor.
     // TODO(jamescook): Figure out if we need this for SingleProcessMash.

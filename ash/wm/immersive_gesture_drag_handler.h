@@ -2,31 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
-#define ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
+#ifndef ASH_WM_IMMERSIVE_GESTURE_DRAG_HANDLER_H_
+#define ASH_WM_IMMERSIVE_GESTURE_DRAG_HANDLER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "ui/events/event_handler.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ash {
 
-class ImmersiveFullscreenController;
 class TabletModeAppWindowDragController;
 
 // ImmersiveGestureHandler is responsible for calling
-// ImmersiveFullscreenController::OnGestureEvent() to show/hide the title bar or
 // TabletAppModeWindowDragController::DragWindowFromTop() to drag the window
 // from the top if CanDrag is true when a gesture is received.
-class ASH_EXPORT ImmersiveGestureHandlerClassic
-    : public ImmersiveGestureHandler,
-      public ui::EventHandler {
+class ASH_EXPORT ImmersiveGestureDragHandler : public ui::EventHandler {
  public:
-  explicit ImmersiveGestureHandlerClassic(
-      ImmersiveFullscreenController* controller);
-  ~ImmersiveGestureHandlerClassic() override;
+  explicit ImmersiveGestureDragHandler(aura::Window* window);
+  ~ImmersiveGestureDragHandler() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -35,15 +33,14 @@ class ASH_EXPORT ImmersiveGestureHandlerClassic
   // Returns true if the target of |event| can be dragged.
   bool CanDrag(ui::GestureEvent* event);
 
-  ImmersiveFullscreenController*
-      immersive_fullscreen_controller_;  // Not owned.
-
   std::unique_ptr<TabletModeAppWindowDragController>
       tablet_mode_app_window_drag_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveGestureHandlerClassic);
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveGestureDragHandler);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
+#endif  // ASH_WM_IMMERSIVE_GESTURE_DRAG_HANDLER_H_

@@ -125,7 +125,6 @@ class HighlighterController;
 class ImeController;
 class ImeFocusHandler;
 class ImmersiveContext;
-class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class AshKeyboardController;
@@ -874,8 +873,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
-
-  std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
 

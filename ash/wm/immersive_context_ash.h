@@ -21,7 +21,6 @@ class ASH_EXPORT ImmersiveContextAsh : public ImmersiveContext {
                                     bool entering) override;
   gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) override;
   bool DoesAnyWindowHaveCapture() override;
-  bool IsMouseEventsEnabled() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveContextAsh);
