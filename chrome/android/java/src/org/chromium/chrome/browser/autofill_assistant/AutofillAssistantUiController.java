@@ -27,10 +27,13 @@ import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -53,6 +56,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
+
+    private static final String RFC_3339_FORMAT = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ";
 
     private final WebContents mWebContents;
     private final long mUiControllerAndroid;
@@ -102,6 +107,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
+
+        AutofillAssistantUiDelegate.Details initialDetails = makeDetailsFromParameters(parameters);
+        if (!initialDetails.isEmpty()) {
+            mUiDelegateHolder.performUiOperation(
+                    uiDelegate -> uiDelegate.showDetails(initialDetails));
+        }
 
         Tab activityTab = activity.getActivityTab();
         mWebContents = activityTab.getWebContents();
@@ -172,6 +183,37 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         return result;
     }
 
+    // TODO(crbug.com/806868): Create a fallback when there are no parameters for details.
+    private static AutofillAssistantUiDelegate.Details makeDetailsFromParameters(
+            Map<String, String> parameters) {
+        String title = "";
+        String description = "";
+        Date date = null;
+        for (String key : parameters.keySet()) {
+            if (key.contains("E_NAME")) {
+                title = parameters.get(key);
+                continue;
+            }
+
+            if (key.contains("R_NAME")) {
+                description = parameters.get(key);
+                continue;
+            }
+
+            if (key.contains("DATETIME")) {
+                try {
+                    date = new SimpleDateFormat(RFC_3339_FORMAT, Locale.getDefault())
+                                   .parse(parameters.get(key));
+                } catch (ParseException e) {
+                    // Ignore.
+                }
+            }
+        }
+
+        return new AutofillAssistantUiDelegate.Details(
+                title, /* url= */ "", date, description, /* isFinal= */ false);
+    }
+
     @Override
     public void onClickOverlay() {
         // TODO(crbug.com/806868): Notify native side.
@@ -225,7 +267,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         // TODO(crbug.com/806868): Remove this method once all scripts use payment request.
         mUiDelegateHolder.performUiOperation(uiDelegate
                 -> uiDelegate.showProfiles(PersonalDataManager.getInstance().getProfilesToSuggest(
-                        true /* includeNameInLabel */)));
+                        /* includeNameInLabel= */ true)));
     }
 
     @CalledByNative
@@ -233,7 +275,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         // TODO(crbug.com/806868): Remove this method once all scripts use payment request.
         mUiDelegateHolder.performUiOperation(uiDelegate
                 -> uiDelegate.showCards(PersonalDataManager.getInstance().getCreditCardsToSuggest(
-                        true /* includeServerCards */)));
+                        /* includeServerCards= */ true)));
     }
 
     @CalledByNative
@@ -284,8 +326,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
 
         mUiDelegateHolder.performUiOperation(uiDelegate
-                -> uiDelegate.showDetails(
-                        new AutofillAssistantUiDelegate.Details(title, url, date, description)));
+                -> uiDelegate.showDetails(new AutofillAssistantUiDelegate.Details(
+                        title, url, date, description, /* isFinal= */ true)));
     }
 
     @CalledByNative
