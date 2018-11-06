@@ -87,6 +87,8 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
     is_cleared_ = true;
   }
 
+  void Update() override {}
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(hardware_buffer_handle_.is_valid());
     if (!GenGLTexture())
@@ -362,5 +364,19 @@ SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
 
 SharedImageBackingFactoryAHardwareBuffer::FormatInfo::FormatInfo() = default;
 SharedImageBackingFactoryAHardwareBuffer::FormatInfo::~FormatInfo() = default;
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
+    const Mailbox& mailbox,
+    int client_id,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat buffer_format,
+    SurfaceHandle surface_handle,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 
 }  // namespace gpu

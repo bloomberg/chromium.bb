@@ -56,6 +56,8 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
 
   void SetCleared() override {}
 
+  void Update() override {}
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     return false;
   }

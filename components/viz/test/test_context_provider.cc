@@ -122,6 +122,17 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     return gpu::Mailbox::Generate();
   }
 
+  gpu::Mailbox CreateSharedImage(
+      gfx::GpuMemoryBuffer* gpu_memory_buffer,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) override {
+    return gpu::Mailbox::Generate();
+  }
+
+  void UpdateSharedImage(const gpu::SyncToken& sync_token,
+                         const gpu::Mailbox& mailbox) override {}
+
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override {}
 

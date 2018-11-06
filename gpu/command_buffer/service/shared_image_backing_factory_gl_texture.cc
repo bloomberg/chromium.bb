@@ -25,10 +25,66 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
+
+namespace {
+
+class ScopedRestoreTexture {
+ public:
+  ScopedRestoreTexture(gl::GLApi* api, GLenum target)
+      : api_(api), target_(target) {
+    GLenum get_target = GL_TEXTURE_BINDING_2D;
+    switch (target) {
+      case GL_TEXTURE_2D:
+        get_target = GL_TEXTURE_BINDING_2D;
+        break;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        get_target = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+        break;
+      case GL_TEXTURE_EXTERNAL_OES:
+        get_target = GL_TEXTURE_BINDING_EXTERNAL_OES;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    GLint old_texture_binding = 0;
+    api->glGetIntegervFn(get_target, &old_texture_binding);
+    old_binding_ = old_texture_binding;
+  }
+
+  ~ScopedRestoreTexture() { api_->glBindTextureFn(target_, old_binding_); }
+
+ private:
+  gl::GLApi* api_;
+  GLenum target_;
+  GLuint old_binding_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(ScopedRestoreTexture);
+};
+
+GLuint MakeTextureAndSetParameters(gl::GLApi* api,
+                                   GLenum target,
+                                   bool framebuffer_attachment_angle) {
+  GLuint service_id = 0;
+  api->glGenTexturesFn(1, &service_id);
+  api->glBindTextureFn(target, service_id);
+  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  if (framebuffer_attachment_angle) {
+    api->glTexParameteriFn(target, GL_TEXTURE_USAGE_ANGLE,
+                           GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+  }
+  return service_id;
+}
+
+}  // anonymous namespace
+
 // Representation of a SharedImageBackingGLTexture as a GL Texture.
 class SharedImageRepresentationGLTextureImpl
     : public SharedImageRepresentationGLTexture {
@@ -172,6 +228,24 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     texture_->SetLevelCleared(texture_->target(), 0, true);
   }
 
+  void Update() override {
+    GLenum target = texture_->target();
+    gl::GLApi* api = gl::g_current_gl_context;
+    ScopedRestoreTexture scoped_restore(api, target);
+    api->glBindTextureFn(target, texture_->service_id());
+
+    gles2::Texture::ImageState old_state = gles2::Texture::UNBOUND;
+    gl::GLImage* image = texture_->GetLevelImage(target, 0, &old_state);
+    if (!image)
+      return;
+    image->ReleaseTexImage(target);
+    gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
+    if (image->BindTexImage(target))
+      new_state = gles2::Texture::BOUND;
+    if (old_state != new_state)
+      texture_->SetLevelImage(target, 0, image, new_state);
+  }
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(texture_);
     mailbox_manager->ProduceTexture(mailbox(), texture_);
@@ -258,6 +332,20 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
   bool IsCleared() const override { return is_cleared_; }
   void SetCleared() override { is_cleared_ = true; }
 
+  void Update() override {
+    GLenum target = texture_passthrough_->target();
+    gl::GLApi* api = gl::g_current_gl_context;
+    ScopedRestoreTexture scoped_restore(api, target);
+    api->glBindTextureFn(target, texture_passthrough_->service_id());
+
+    gl::GLImage* image = texture_passthrough_->GetLevelImage(target, 0);
+    if (!image)
+      return;
+    image->ReleaseTexImage(target);
+    if (!image->BindTexImage(target))
+      image->CopyTexImage(target);
+  }
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(texture_passthrough_);
     mailbox_manager->ProduceTexture(mailbox(), texture_passthrough_.get());
@@ -314,6 +402,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
   feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2,
                            use_passthrough_, gles2::DisallowedFeatures());
+  gpu_memory_buffer_formats_ =
+      feature_info->feature_flags().gpu_memory_buffer_formats;
   texture_usage_angle_ = feature_info->feature_flags().angle_texture_usage;
   es3_capable_ = feature_info->IsES3Capable();
   bool enable_texture_storage =
@@ -421,60 +511,30 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   GLenum target = use_buffer ? format_info.target_for_scanout : GL_TEXTURE_2D;
 
-  GLenum get_target = GL_TEXTURE_BINDING_2D;
-  switch (target) {
-    case GL_TEXTURE_2D:
-      get_target = GL_TEXTURE_BINDING_2D;
-      break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      get_target = GL_TEXTURE_BINDING_RECTANGLE_ARB;
-      break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      get_target = GL_TEXTURE_BINDING_EXTERNAL_OES;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
   gl::GLApi* api = gl::g_current_gl_context;
-  GLuint service_id = 0;
-  api->glGenTexturesFn(1, &service_id);
-  GLint old_texture_binding = 0;
-  api->glGetIntegervFn(get_target, &old_texture_binding);
-  api->glBindTextureFn(target, service_id);
-  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ScopedRestoreTexture scoped_restore(api, target);
 
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
-  if (for_framebuffer_attachment && texture_usage_angle_) {
-    api->glTexParameteriFn(target, GL_TEXTURE_USAGE_ANGLE,
-                           GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
-  }
+  GLuint service_id = MakeTextureAndSetParameters(
+      api, target, for_framebuffer_attachment && texture_usage_angle_);
 
-  gfx::Rect cleared_rect;
   scoped_refptr<gl::GLImage> image;
   // TODO(piman): We pretend the texture was created in an ES2 context, so that
   // it can be used in other ES2 contexts, and so we have to pass gl_format as
   // the internal format in the LevelInfo. https://crbug.com/628064
   GLuint level_info_internal_format = format_info.gl_format;
+  bool is_cleared = false;
   if (use_buffer) {
-    bool is_cleared = false;
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
         &is_cleared);
     if (!image || !image->BindTexImage(target)) {
       LOG(ERROR) << "CreateSharedImage: Failed to create image";
-      api->glBindTextureFn(target, old_texture_binding);
       api->glDeleteTexturesFn(1, &service_id);
       return nullptr;
     }
-    if (is_cleared)
-      cleared_rect = gfx::Rect(size);
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
@@ -500,13 +560,127 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_pixel_unpack_buffer);
   }
 
+  return MakeBacking(mailbox, target, service_id, image, gles2::Texture::BOUND,
+                     level_info_internal_format, format_info.gl_format,
+                     format_info.gl_type, format_info.swizzle, is_cleared,
+                     format, size, color_space, usage);
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryGLTexture::CreateSharedImage(
+    const Mailbox& mailbox,
+    int client_id,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat buffer_format,
+    SurfaceHandle surface_handle,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
+  if (!gpu_memory_buffer_formats_.Has(buffer_format)) {
+    LOG(ERROR) << "CreateSharedImage: unsupported buffer format";
+    return nullptr;
+  }
+
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
+    LOG(ERROR) << "Invalid image size for format.";
+    return nullptr;
+  }
+
+  GLenum target = handle.type == gfx::SHARED_MEMORY_BUFFER
+                      ? GL_TEXTURE_2D
+                      : gpu::GetPlatformSpecificTextureTarget();
+  scoped_refptr<gl::GLImage> image = MakeGLImage(
+      client_id, std::move(handle), buffer_format, surface_handle, size);
+  if (!image) {
+    LOG(ERROR) << "Failed to create image.";
+    return nullptr;
+  }
+  if (color_space.IsValid())
+    image->SetColorSpace(color_space);
+
+  viz::ResourceFormat format = viz::GetResourceFormat(buffer_format);
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  ScopedRestoreTexture scoped_restore(api, target);
+
+  const bool for_framebuffer_attachment =
+      (usage & (SHARED_IMAGE_USAGE_RASTER |
+                SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
+  GLuint service_id = MakeTextureAndSetParameters(
+      api, target, for_framebuffer_attachment && texture_usage_angle_);
+
+  // TODO(piman): RGB emulation
+  gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
+  if (image->BindTexImage(target)) {
+    image_state = gles2::Texture::BOUND;
+  } else if (use_passthrough_) {
+    image->CopyTexImage(target);
+    image_state = gles2::Texture::COPIED;
+  }
+
+  // TODO(piman): this is consistent with
+  // GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl or
+  // RasterDecoderImpl::DoBindTexImage2DCHROMIUM but seems wrong:
+  //
+  // - internalformat might be sized, which is wrong for format
+  // - gl_type shouldn't be GL_UNSIGNED_BYTE for RGBA4444 for example.
+  GLuint internal_format = image->GetInternalFormat();
+  GLenum gl_format = internal_format;
+  GLenum gl_type = GL_UNSIGNED_BYTE;
+
+  return MakeBacking(mailbox, target, service_id, image, image_state,
+                     internal_format, gl_format, gl_type, nullptr, true, format,
+                     size, color_space, usage);
+}
+
+scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
+    int client_id,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat format,
+    SurfaceHandle surface_handle,
+    const gfx::Size& size) {
+  if (!image_factory_)
+    return nullptr;
+  switch (handle.type) {
+    case gfx::SHARED_MEMORY_BUFFER: {
+      if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
+        return nullptr;
+      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
+      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
+                             handle.stride)) {
+        return nullptr;
+      }
+
+      return image;
+    }
+    default:
+      return image_factory_->CreateImageForGpuMemoryBuffer(
+          std::move(handle), size, format, client_id, surface_handle);
+  }
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryGLTexture::MakeBacking(
+    const Mailbox& mailbox,
+    GLenum target,
+    GLuint service_id,
+    scoped_refptr<gl::GLImage> image,
+    gles2::Texture::ImageState image_state,
+    GLuint level_info_internal_format,
+    GLuint gl_format,
+    GLuint gl_type,
+    const gles2::Texture::CompatibilitySwizzle* swizzle,
+    bool is_cleared,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
   // Calculate |driver_internal_format| here rather than caching on
   // format_info, as we need to use the |level_info_internal_format| which may
   // depend on the generated |image|.
   GLenum driver_internal_format =
       gl::GetInternalFormat(gl::GLContext::GetCurrent()->GetVersionInfo(),
                             level_info_internal_format);
-  std::unique_ptr<SharedImageBacking> backing;
   if (use_passthrough_) {
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture =
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
@@ -515,11 +689,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
     // Get the texture size from ANGLE and set it on the passthrough texture.
     GLint texture_memory_size = 0;
+    gl::GLApi* api = gl::g_current_gl_context;
     api->glGetTexParameterivFn(target, GL_MEMORY_SIZE_ANGLE,
                                &texture_memory_size);
     passthrough_texture->SetEstimatedSize(texture_memory_size);
 
-    backing = std::make_unique<SharedImageBackingPassthroughGLTexture>(
+    return std::make_unique<SharedImageBackingPassthroughGLTexture>(
         mailbox, format, size, color_space, usage,
         std::move(passthrough_texture), level_info_internal_format,
         driver_internal_format);
@@ -532,20 +707,18 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
     texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
     texture->SetLevelInfo(target, 0, level_info_internal_format, size.width(),
-                          size.height(), 1, 0, format_info.gl_format,
-                          format_info.gl_type, cleared_rect);
-    if (format_info.swizzle)
-      texture->SetCompatibilitySwizzle(format_info.swizzle);
+                          size.height(), 1, 0, gl_format, gl_type,
+                          is_cleared ? gfx::Rect(size) : gfx::Rect());
+    if (swizzle)
+      texture->SetCompatibilitySwizzle(swizzle);
     if (image)
-      texture->SetLevelImage(target, 0, image.get(), gles2::Texture::BOUND);
+      texture->SetLevelImage(target, 0, image.get(), image_state);
     texture->SetImmutable(true);
-    backing = std::make_unique<SharedImageBackingGLTexture>(
+
+    return std::make_unique<SharedImageBackingGLTexture>(
         mailbox, format, size, color_space, usage, texture,
         level_info_internal_format, driver_internal_format);
   }
-
-  api->glBindTextureFn(target, old_texture_binding);
-  return backing;
 }
 
 SharedImageBackingFactoryGLTexture::FormatInfo::FormatInfo() = default;

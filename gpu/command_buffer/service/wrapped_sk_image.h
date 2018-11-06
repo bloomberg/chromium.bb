@@ -33,6 +33,15 @@ class GPU_GLES2_EXPORT WrappedSkImageFactory
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
+  std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
+      int client_id,
+      gfx::GpuMemoryBufferHandle handle,
+      gfx::BufferFormat format,
+      SurfaceHandle surface_handle,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) override;
 
  private:
   RasterDecoderContextState* const context_state_;

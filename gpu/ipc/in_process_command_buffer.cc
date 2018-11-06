@@ -145,6 +145,55 @@ class InProcessCommandBuffer::SharedImageInterface
     return mailbox;
   }
 
+  Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
+                            GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage) override {
+    DCHECK(gpu_memory_buffer_manager);
+
+    // TODO(piman): DCHECK GMB format support.
+    DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+        gpu_memory_buffer->GetSize(), gpu_memory_buffer->GetFormat()));
+
+    auto mailbox = Mailbox::Generate();
+    gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
+    bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
+    SyncToken sync_token;
+    {
+      base::AutoLock lock(lock_);
+      sync_token = MakeSyncToken(next_fence_sync_release_++);
+      // Note: we enqueue the task under the lock to guarantee monotonicity of
+      // the release ids as seen by the service. Unretained is safe because
+      // InProcessCommandBuffer synchronizes with the GPU thread at destruction
+      // time, cancelling tasks, before |this| is destroyed.
+      parent_->ScheduleGpuTask(base::BindOnce(
+          &InProcessCommandBuffer::CreateGMBSharedImageOnGpuThread,
+          parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(), mailbox,
+          std::move(handle), gpu_memory_buffer->GetFormat(),
+          gpu_memory_buffer->GetSize(), color_space, usage, sync_token));
+    }
+    if (requires_sync_token) {
+      sync_token.SetVerifyFlush();
+      gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
+                                                         sync_token);
+    }
+    return mailbox;
+  }
+
+  void UpdateSharedImage(const SyncToken& sync_token,
+                         const Mailbox& mailbox) override {
+    base::AutoLock lock(lock_);
+    // Note: we enqueue the task under the lock to guarantee monotonicity of
+    // the release ids as seen by the service. Unretained is safe because
+    // InProcessCommandBuffer synchronizes with the GPU thread at destruction
+    // time, cancelling tasks, before |this| is destroyed.
+    parent_->ScheduleGpuTask(
+        base::BindOnce(&InProcessCommandBuffer::UpdateSharedImageOnGpuThread,
+                       parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(),
+                       mailbox, MakeSyncToken(next_fence_sync_release_++)),
+        {sync_token});
+  }
+
   void DestroySharedImage(const SyncToken& sync_token,
                           const Mailbox& mailbox) override {
     // Use sync token dependency to ensure that the destroy task does not run
@@ -1241,6 +1290,17 @@ void InProcessCommandBuffer::GetGpuFenceOnGpuThread(
       base::BindOnce(std::move(callback), std::move(gpu_fence)));
 }
 
+void InProcessCommandBuffer::LazyCreateSharedImageFactory() {
+  if (shared_image_factory_)
+    return;
+
+  shared_image_factory_ = std::make_unique<SharedImageFactory>(
+      GetGpuPreferences(), context_group_->feature_info()->workarounds(),
+      GetGpuFeatureInfo(), context_state_.get(),
+      context_group_->mailbox_manager(), task_executor_->shared_image_manager(),
+      image_factory_, nullptr);
+}
+
 void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
@@ -1251,15 +1311,50 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   if (!MakeCurrent())
     return;
-  if (!shared_image_factory_) {
-    shared_image_factory_ = std::make_unique<SharedImageFactory>(
-        GetGpuPreferences(), context_group_->feature_info()->workarounds(),
-        GetGpuFeatureInfo(), context_state_.get(),
-        context_group_->mailbox_manager(),
-        task_executor_->shared_image_manager(), image_factory_, nullptr);
-  }
+  LazyCreateSharedImageFactory();
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage)) {
+    // Signal errors by losing the command buffer.
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+  context_group_->mailbox_manager()->PushTextureUpdates(sync_token);
+  shared_image_client_state_->ReleaseFenceSync(sync_token.release_count());
+}
+
+void InProcessCommandBuffer::CreateGMBSharedImageOnGpuThread(
+    const Mailbox& mailbox,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!MakeCurrent())
+    return;
+  LazyCreateSharedImageFactory();
+  // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
+  SurfaceHandle surface_handle = kNullSurfaceHandle;
+  if (!shared_image_factory_->CreateSharedImage(
+          mailbox, kInProcessCommandBufferClientId, std::move(handle), format,
+          surface_handle, size, color_space, usage)) {
+    // Signal errors by losing the command buffer.
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+  context_group_->mailbox_manager()->PushTextureUpdates(sync_token);
+  shared_image_client_state_->ReleaseFenceSync(sync_token.release_count());
+}
+
+void InProcessCommandBuffer::UpdateSharedImageOnGpuThread(
+    const Mailbox& mailbox,
+    const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!MakeCurrent())
+    return;
+  if (!shared_image_factory_ ||
+      !shared_image_factory_->UpdateSharedImage(mailbox)) {
     // Signal errors by losing the command buffer.
     command_buffer_->SetParseError(error::kLostContext);
     return;

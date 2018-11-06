@@ -63,6 +63,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // unintiailized pixels.
   virtual void SetCleared() = 0;
 
+  virtual void Update() = 0;
+
   // Destroys the underlying backing. Must be called before destruction.
   virtual void Destroy() = 0;
 

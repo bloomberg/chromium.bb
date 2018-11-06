@@ -50,6 +50,8 @@ class WrappedSkImage : public SharedImageBacking {
 
   void SetCleared() override { cleared_ = true; }
 
+  void Update() override {}
+
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
@@ -231,6 +233,19 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
   if (!texture->Initialize(info))
     return nullptr;
   return texture;
+}
+
+std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
+    const Mailbox& mailbox,
+    int client_id,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat buffer_format,
+    SurfaceHandle surface_handle,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
+  NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(

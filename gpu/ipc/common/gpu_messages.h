@@ -83,6 +83,16 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
+  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferHandle, handle)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
+  IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
+  IPC_STRUCT_MEMBER(uint32_t, usage)
+  IPC_STRUCT_MEMBER(uint32_t, release_id)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(GpuChannelMsg_ScheduleImageDecode_Params)
   IPC_STRUCT_MEMBER(std::vector<uint8_t>, encoded_data)
   IPC_STRUCT_MEMBER(gfx::Size, output_size)
@@ -126,6 +136,11 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushDeferredMessages,
 
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImage,
                     GpuChannelMsg_CreateSharedImage_Params /* params */)
+IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateGMBSharedImage,
+                    GpuChannelMsg_CreateGMBSharedImage_Params /* params */)
+IPC_MESSAGE_ROUTED2(GpuChannelMsg_UpdateSharedImage,
+                    gpu::Mailbox /* id */,
+                    uint32_t /* release_id */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 
 // Schedules a hardware-accelerated image decode in the GPU process. Renderers

@@ -74,12 +74,6 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
-  if (shared_image_manager_->IsSharedImage(mailbox)) {
-    LOG(ERROR) << "CreateSharedImage: mailbox is already associated with a "
-                  "SharedImage";
-    return false;
-  }
-
   std::unique_ptr<SharedImageBacking> backing;
   bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
                                 (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
@@ -91,31 +85,40 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                                   color_space, usage);
   }
 
-  if (!backing) {
-    LOG(ERROR) << "CreateSharedImage: could not create backing.";
+  return RegisterBacking(std::move(backing), !using_wrapped_sk_image);
+}
+
+bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
+                                           int client_id,
+                                           gfx::GpuMemoryBufferHandle handle,
+                                           gfx::BufferFormat format,
+                                           SurfaceHandle surface_handle,
+                                           const gfx::Size& size,
+                                           const gfx::ColorSpace& color_space,
+                                           uint32_t usage) {
+  // TODO(piman): depending on handle.type, choose platform-specific backing
+  // factory, e.g. SharedImageBackingFactoryAHardwareBuffer.
+  std::unique_ptr<SharedImageBacking> backing =
+      backing_factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
+                                          format, surface_handle, size,
+                                          color_space, usage);
+  return RegisterBacking(std::move(backing), true);
+}
+
+bool SharedImageFactory::UpdateSharedImage(const Mailbox& mailbox) {
+  auto it = shared_images_.find(mailbox);
+  if (it == shared_images_.end()) {
+    LOG(ERROR) << "UpdateSharedImage: Could not find shared image mailbox";
     return false;
   }
-
-  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_->Register(std::move(backing),
-                                      memory_tracker_.get());
-
-  // TODO(ericrk): Remove this once no legacy cases remain.
-  if (!using_wrapped_sk_image &&
-      !shared_image->ProduceLegacyMailbox(mailbox_manager_)) {
-    LOG(ERROR) << "CreateSharedImage: could not convert shared_image to legacy "
-                  "mailbox.";
-    return false;
-  }
-
-  shared_images_.emplace(std::move(shared_image));
+  (*it)->Update();
   return true;
 }
 
 bool SharedImageFactory::DestroySharedImage(const Mailbox& mailbox) {
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
-    LOG(ERROR) << "Could not find shared image mailbox";
+    LOG(ERROR) << "DestroySharedImage: Could not find shared image mailbox";
     return false;
   }
   shared_images_.erase(it);
@@ -141,6 +144,37 @@ bool SharedImageFactory::OnMemoryDump(
                                         client_tracing_id);
   }
 
+  return true;
+}
+
+bool SharedImageFactory::RegisterBacking(
+    std::unique_ptr<SharedImageBacking> backing,
+    bool legacy_mailbox) {
+  if (!backing) {
+    LOG(ERROR) << "CreateSharedImage: could not create backing.";
+    return false;
+  }
+
+  Mailbox mailbox = backing->mailbox();
+  if (shared_image_manager_->IsSharedImage(mailbox)) {
+    LOG(ERROR) << "CreateSharedImage: mailbox is already associated with a "
+                  "SharedImage";
+    backing->Destroy();
+    return false;
+  }
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_tracker_.get());
+
+  // TODO(ericrk): Remove this once no legacy cases remain.
+  if (legacy_mailbox && !shared_image->ProduceLegacyMailbox(mailbox_manager_)) {
+    LOG(ERROR) << "CreateSharedImage: could not convert shared_image to legacy "
+                  "mailbox.";
+    return false;
+  }
+
+  shared_images_.emplace(std::move(shared_image));
   return true;
 }
 

@@ -60,6 +60,7 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   const Mailbox& mailbox() const { return backing()->mailbox(); }
+  void Update() { backing()->Update(); }
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
     return backing()->ProduceLegacyMailbox(mailbox_manager);
   }

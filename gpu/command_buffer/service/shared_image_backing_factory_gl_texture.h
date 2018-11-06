@@ -48,8 +48,37 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
+  std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
+      int client_id,
+      gfx::GpuMemoryBufferHandle handle,
+      gfx::BufferFormat format,
+      SurfaceHandle surface_handle,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) override;
 
  private:
+  scoped_refptr<gl::GLImage> MakeGLImage(int client_id,
+                                         gfx::GpuMemoryBufferHandle handle,
+                                         gfx::BufferFormat format,
+                                         SurfaceHandle surface_handle,
+                                         const gfx::Size& size);
+  std::unique_ptr<SharedImageBacking> MakeBacking(
+      const Mailbox& mailbox,
+      GLenum target,
+      GLuint service_id,
+      scoped_refptr<gl::GLImage> image,
+      gles2::Texture::ImageState image_state,
+      GLuint internal_format,
+      GLuint gl_format,
+      GLuint gl_type,
+      const gles2::Texture::CompatibilitySwizzle* swizzle,
+      bool is_cleared,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage);
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();
@@ -89,6 +118,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   ImageFactory* image_factory_ = nullptr;
 
   FormatInfo format_info_[viz::RESOURCE_FORMAT_MAX + 1];
+  GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
   bool es3_capable_ = false;
