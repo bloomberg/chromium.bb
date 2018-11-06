@@ -1708,7 +1708,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_play_core',
-              'version': 'version:1.3.0-cr0',
+              'version': 'version:1.3.5-cr0',
           },
       ],
       'condition': 'checkout_android',
