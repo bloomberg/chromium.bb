@@ -83,7 +83,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
 
   // IndexedDBContext implementation:
   base::SequencedTaskRunner* TaskRunner() const override;
-  std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
+  std::vector<StorageUsageInfo> GetAllOriginsInfo() override;
   void DeleteForOrigin(const GURL& origin_url) override;
   void CopyOriginData(const GURL& origin_url,
                       IndexedDBContext* dest_context) override;

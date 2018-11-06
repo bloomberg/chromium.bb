@@ -22,7 +22,7 @@ class MockBrowsingDataCacheStorageHelper
  public:
   explicit MockBrowsingDataCacheStorageHelper(Profile* profile);
 
-  // Adds some CacheStorageUsageInfo samples.
+  // Adds some StorageUsageInfo samples.
   void AddCacheStorageSamples();
 
   // Notifies the callback.
@@ -45,7 +45,7 @@ class MockBrowsingDataCacheStorageHelper
   FetchCallback callback_;
   bool fetched_ = false;
   std::map<GURL, bool> origins_;
-  std::list<content::CacheStorageUsageInfo> response_;
+  std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataCacheStorageHelper);
 };

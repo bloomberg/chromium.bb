@@ -44,7 +44,7 @@ class MockBrowsingDataServiceWorkerHelper
 
   FetchCallback callback_;
   std::map<GURL, bool> origins_;
-  std::list<content::ServiceWorkerUsageInfo> response_;
+  std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataServiceWorkerHelper);
 };

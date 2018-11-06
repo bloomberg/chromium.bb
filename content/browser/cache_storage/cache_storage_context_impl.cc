@@ -88,8 +88,7 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
   if (!cache_manager_) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback),
-                       std::vector<CacheStorageUsageInfo>()));
+        base::BindOnce(std::move(callback), std::vector<StorageUsageInfo>()));
     return;
   }
 

@@ -15,8 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/indexed_db_context.h"
-#include "content/public/browser/indexed_db_info.h"
 #include "url/gurl.h"
+
+namespace content {
+struct StorageUsageInfo;
+}
 
 // BrowsingDataIndexedDBHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored in indexed databases.  A
@@ -27,7 +30,7 @@ class BrowsingDataIndexedDBHelper
     : public base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper> {
  public:
   using FetchCallback =
-      base::Callback<void(const std::list<content::IndexedDBInfo>&)>;
+      base::Callback<void(const std::list<content::StorageUsageInfo>&)>;
 
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |context|'s associated profile's user data directory.

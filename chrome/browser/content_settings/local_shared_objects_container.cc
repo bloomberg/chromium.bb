@@ -124,8 +124,9 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count indexed dbs for the domain of the given |origin|.
-  typedef CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo IndexedDBInfo;
-  const std::set<IndexedDBInfo>& indexed_db_info =
+  typedef CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo
+      StorageUsageInfo;
+  const std::set<StorageUsageInfo>& indexed_db_info =
       indexed_dbs()->GetIndexedDBInfo();
   for (auto it = indexed_db_info.begin(); it != indexed_db_info.end(); ++it) {
     if (SameDomainOrHost(origin, it->origin))

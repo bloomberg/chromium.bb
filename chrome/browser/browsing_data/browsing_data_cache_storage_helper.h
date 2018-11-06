@@ -16,8 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 #include "url/gurl.h"
+
+namespace content {
+struct StorageUsageInfo;
+}
 
 // BrowsingDataCacheStorageHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored for Cache Storage.
@@ -27,8 +30,8 @@
 class BrowsingDataCacheStorageHelper
     : public base::RefCountedThreadSafe<BrowsingDataCacheStorageHelper> {
  public:
-  using FetchCallback = base::OnceCallback<void(
-      const std::list<content::CacheStorageUsageInfo>&)>;
+  using FetchCallback =
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   // Create a BrowsingDataCacheStorageHelper instance for the Cache Storage
   // stored in |context|'s associated profile's user data directory.

@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/cache_storage_usage_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/origin.h"
@@ -159,7 +159,7 @@ class CONTENT_EXPORT CacheStorageManager
   void GetAllOriginsUsage(CacheStorageOwner owner,
                           CacheStorageContext::GetUsageInfoCallback callback);
   void GetAllOriginsUsageGetSizes(
-      std::unique_ptr<std::vector<CacheStorageUsageInfo>> usage_info,
+      std::unique_ptr<std::vector<StorageUsageInfo>> usage_info,
       CacheStorageContext::GetUsageInfoCallback callback);
 
   void GetOriginUsage(const url::Origin& origin_url,

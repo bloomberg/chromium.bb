@@ -14,21 +14,22 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_usage_info.h"
 
 using content::BrowserThread;
 using content::ServiceWorkerContext;
-using content::ServiceWorkerUsageInfo;
+using content::StorageUsageInfo;
 
 namespace {
 
 void GetAllOriginsInfoForServiceWorkerCallback(
     const BrowsingDataServiceWorkerHelper::FetchCallback& callback,
-    const std::vector<ServiceWorkerUsageInfo>& origins) {
+    const std::vector<StorageUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  std::list<ServiceWorkerUsageInfo> result;
-  for (const ServiceWorkerUsageInfo& origin : origins) {
+  std::list<StorageUsageInfo> result;
+  for (const StorageUsageInfo& origin : origins) {
     if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
@@ -143,11 +144,10 @@ void CannedBrowsingDataServiceWorkerHelper::StartFetching(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<ServiceWorkerUsageInfo> result;
+  std::list<StorageUsageInfo> result;
   for (const PendingServiceWorkerUsageInfo& pending_info :
        pending_service_worker_info_) {
-    ServiceWorkerUsageInfo info(pending_info.origin, pending_info.scopes);
-    result.push_back(info);
+    result.emplace_back(pending_info.origin, 0, base::Time());
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},

@@ -22,8 +22,8 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/generated_code_cache_settings.h"
-#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -266,7 +266,7 @@ class RemoveLocalStorageTester {
   }
 
   void OnGotLocalStorageUsage(
-      const std::vector<content::LocalStorageUsageInfo>& infos) {
+      const std::vector<content::StorageUsageInfo>& infos) {
     infos_ = infos;
     await_completion_.Notify();
   }
@@ -278,7 +278,7 @@ class RemoveLocalStorageTester {
   FakeLevelDBDatabase mock_db_;
   mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
-  std::vector<content::LocalStorageUsageInfo> infos_;
+  std::vector<content::StorageUsageInfo> infos_;
 
   AwaitCompletionHelper await_completion_;
 

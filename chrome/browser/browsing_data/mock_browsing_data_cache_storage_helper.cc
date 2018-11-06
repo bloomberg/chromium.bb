@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataCacheStorageHelper::MockBrowsingDataCacheStorageHelper(
@@ -36,10 +37,10 @@ void MockBrowsingDataCacheStorageHelper::DeleteCacheStorage(
 void MockBrowsingDataCacheStorageHelper::AddCacheStorageSamples() {
   const GURL kOrigin1("https://cshost1:1/");
   const GURL kOrigin2("https://cshost2:2/");
-  content::CacheStorageUsageInfo info1(kOrigin1, 1, base::Time());
+  content::StorageUsageInfo info1(kOrigin1, 1, base::Time());
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::CacheStorageUsageInfo info2(kOrigin2, 2, base::Time());
+  content::StorageUsageInfo info2(kOrigin2, 2, base::Time());
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }
