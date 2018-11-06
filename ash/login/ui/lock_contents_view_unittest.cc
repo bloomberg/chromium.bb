@@ -2138,4 +2138,17 @@ TEST_F(LockContentsViewUnitTest,
   Shell::Get()->power_button_controller()->OnTabletModeEnded();
 }
 
+TEST_F(LockContentsViewUnitTest, RightAndLeftAcceleratorsWithNoUser) {
+  // Show lock screen but do *not* initialize any users.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // Nothing to validate except that there is no crash.
+  lock->AcceleratorPressed(ui::Accelerator(ui::VKEY_RIGHT, 0));
+  lock->AcceleratorPressed(ui::Accelerator(ui::VKEY_LEFT, 0));
+}
+
 }  // namespace ash
