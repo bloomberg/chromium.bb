@@ -138,18 +138,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
-<translation id="1372267489642113556">
-      Dacă politica este activată, fiecare dintre originile indicate
-      într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va
-      izola, de asemenea, originile denumite după subdomenii; de exemplu, specificarea
-      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a
-      site-ului https://example.com/.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-
-      NOTĂ: această politică nu se aplică pentru Android. Pentru a activa IsolateOrigins pe Android, folosește setarea politicii IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referință: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
@@ -969,12 +957,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
-<translation id="3746590506846867985">
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a site-ului https://example.com/.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa IsolateOrigins manual.
-      Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
-      </translation>
 <translation id="3748900290998155147">Indică dacă stările de activare sunt permise. Stările de activare pot fi solicitate de extensii prin API-ul extensiei de gestionare a consumului de energie și prin aplicațiile ARC.
 
           Dacă această politică este activată sau nu este setată, se vor permite stările de activare pentru gestionarea consumului de energie.
@@ -2560,14 +2542,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Filă nouă</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7788872453000173219">
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a beneficia la maximum atât de izolare, cât și de impact limitat asupra utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare, SitePerProcess, izolează toate site-urile.
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual SitePerProcess.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      NOTĂ: această politică nu se aplică pentru Android. Pentru a activa SitePerProcess pe Android, folosește setarea politicii SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Dezactivează aplicarea cerințelor privind Transparența certificatului pentru o listă de coduri hash subjectPublicKeyInfo.
 
       Această politică permite dezactivarea cerințelor de dezvăluire privind Transparența certificatului pentru lanțurile de certificate ce conțin certificate cu unul dintre codurile hash subjectPublicKeyInfo specificate. Astfel, certificatele care altfel nu ar fi de încredere, deoarece nu au fost dezvăluite public corespunzător, pot fi folosite în continuare pentru gazdele Enterprise.
@@ -2603,13 +2577,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
 <translation id="7882857838942884046">Dacă dezactivezi Google Sync, funcția Android „Backup și restabilire” nu va funcționa corespunzător.</translation>
 <translation id="7882890448959833986">Elimină avertismentul privind sistemul de operare neacceptat</translation>
-<translation id="7892077286206685156">
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a beneficia la maximum atât de izolare, cât și de impact limitat asupra utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare, SitePerProcess, izolează toate site-urile.
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual SitePerProcess.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      </translation>
 <translation id="7902255855035461275">Șabloanele din această listă vor fi comparate cu originea
       de securitate a adresei URL solicitante. Dacă este identificată o potrivire,
       accesul la dispozitivele de capturare a conținutului video va fi acordat automat.
@@ -2629,19 +2596,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="793473937901685727">Setează disponibilitatea certificatelor pentru aplicațiile ARC</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
-<translation id="7952880400776676958">
-      Dacă politica este activată, fiecare dintre originile indicate
-      într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și
-      originile denumite după subdomenii; de exemplu, specificarea https://example.com/
-      va cauza și izolarea https://foo.example.com/ ca parte a site-ului
-      https://example.com/.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările pentru IsolateOriginsAndroid și SitePerProcessAndroid vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-
-      NOTĂ: pe Android, Izolarea site-ului este experimentală. Compatibilitatea se va îmbunătăți în timp, dar în prezent poate cauza probleme privind performanța.
-
-      NOTĂ: această politică se aplică numai pentru Chrome pe Android ce rulează pe dispozitive cu peste 1 GB de RAM. Pentru a aplica politica pe platforme diferite de Android, folosește IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7961779417826583251">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de autorități de certificare vechi</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>

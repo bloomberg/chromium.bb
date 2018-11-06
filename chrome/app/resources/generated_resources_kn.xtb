@@ -2583,7 +2583,6 @@
 <translation id="4941246025622441835">ಎಂಟರ್‌ಪ್ರೈಸ್ ನಿರ್ವಹಣೆಗಾಗಿ ಸಾಧನವನ್ನು ದಾಖಲಿಸುತ್ತಿರುವಾಗ ಈ ಸಾಧನದ ನಿಯೋಜನೆಯನ್ನು ಬಳಸಿ:</translation>
 <translation id="4941627891654116707">ಫಾಂಟ್ ಗಾತ್ರ</translation>
 <translation id="494286511941020793">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಸಹಾಯ</translation>
-<translation id="4945444280533270988">Smart Lock ಆನ್ ಆಗಿದೆ</translation>
 <translation id="4953689047182316270">ಪ್ರವೇಶಿಸುವಿಕೆ ಈವೆಂಟ್‌ಗಳಿಗೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ</translation>
 <translation id="4953808748584563296">ಡಿಫಾಲ್ಟ್ ಕೇಸರಿ ಅವತಾರ್</translation>
 <translation id="4955710816792587366">ನಿಮ್ಮ ಪಿನ್‌ ಆಯ್ಕೆಮಾಡಿ</translation>
@@ -4117,7 +4116,6 @@
 <translation id="7262004276116528033">ಈ ಸೈನ್ ಇನ್ ಸೇವೆಯನ್ನು <ph name="SAML_DOMAIN" /> ಮೂಲಕ ಹೋಸ್ಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7268365133021434339">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="7268659760406822741">ಲಭ್ಯವಿರುವ ಸೇವೆಗಳು</translation>
-<translation id="7269733644823798215">ನಿಮ್ಮ Chromebook ಅನ್ನು ಸಂಪರ್ಕಿಸುವ ಮೊದಲು ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಇನ್ನಷ್ಟು ಸುರಕ್ಷಿತಗೊಳಿಸಿ. ಇದರ ಬಗ್ಗೆ<ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">MIDI ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ವೊಂದು ಸಿಸ್ಟಮ್‌ನ ಪ್ರತ್ಯೇಕ ಸಂದೇಶಗಳನ್ನು ಬಳಸಬೇಕೆಂದಾಗ ನನ್ನನ್ನು ಕೇಳಿ</translation>
 <translation id="7272674038937250585">ಯಾವುದೇ ವಿವರಣೆಯನ್ನು ಒದಗಿಸಿಲ್ಲ</translation>
 <translation id="7273110280511444812"><ph name="DATE" /> ರಂದು ಅಂತಿಮವಾಗಿ ಲಗತ್ತಿಸಲಾಯಿತು</translation>
@@ -4710,7 +4708,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">ಹೊಸ ಟಿಪ್ಪಣಿ ರಚಿಸಿ</translation>
 <translation id="8168435359814927499">ವಿಷಯ</translation>
-<translation id="8170451533020515291">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಲು ನಿಮ್ಮ ಫೋನ್ ಬಳಸಿ</translation>
 <translation id="8174047975335711832">ಸಾಧನದ ಮಾಹಿತಿ</translation>
 <translation id="8177196903785554304">ನೆಟ್‌ವರ್ಕ್ ವಿವರಗಳು</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5419,7 +5416,6 @@
 <translation id="981121421437150478">ಆಫ್‌ಲೈನ್</translation>
 <translation id="983511809958454316">ಈ ವೈಶಿಷ್ಟ್ಯವು VR ನಲ್ಲಿ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ</translation>
 <translation id="984275831282074731">ಪಾವತಿ ವಿಧಾನಗಳು</translation>
-<translation id="984982042683741464">ಸ್ಕ್ರೀನ್‌ ಲಾಕ್‌ನ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="98515147261107953">ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್</translation>
 <translation id="987897973846887088">ಯಾವುದೇ ಚಿತ್ರಗಳು ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="988978206646512040">ಖಾಲಿ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ</translation>

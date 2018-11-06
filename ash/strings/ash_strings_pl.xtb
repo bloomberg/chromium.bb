@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Półka</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
 <translation id="2865888419503095837">Informacje o sieci</translation>
-<translation id="287224423103674444">Naciśnięto skrót obrotu ekranu. Czy chcesz obrócić ekran?</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2878884018241093801">Brak ostatnich elementów</translation>
 <translation id="2903844815300039659">Połączono z siecią <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączono w przypadku jednej aplikacji}few{Wyłączono w przypadku # aplikacji}many{Wyłączono w przypadku # aplikacji}other{Wyłączono w przypadku # aplikacji}}</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
 <translation id="4146833061457621061">Włącz muzykę</translation>
-<translation id="4200057768455216496">Naciśnięto skrót lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
 <translation id="4261870227682513959">Pokaż ustawienia powiadomień. Powiadomienia są wyłączone.</translation>
 <translation id="4269883910223712419">Administrator tego urządzenia może:</translation>
@@ -343,7 +341,6 @@
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
-<translation id="7037152028959403492">Naciśnięto skrót wysokiego kontrastu. Czy chcesz go włączyć?</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
 <translation id="7068360136237591149">Otwórz pliki</translation>
@@ -411,7 +408,6 @@
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>
-<translation id="8152119955266188852">Naciśnięto skrót lupy pełnoekranowej. Czy chcesz ją włączyć?</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8192202700944119416">Powiadomienia są ukryte.</translation>
 <translation id="8236042855478648955">Czas na przerwę</translation>

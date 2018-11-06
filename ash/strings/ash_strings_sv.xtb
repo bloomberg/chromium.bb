@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Hylla</translation>
 <translation id="2844169650293029770">USB-C-enhet (främre porten på vänster sida)</translation>
 <translation id="2865888419503095837">Nätverksinformation</translation>
-<translation id="287224423103674444">Du tryckte på kortkommandot för skärmrotation. Vill du rotera skärmen?</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2878884018241093801">Listan med de senaste åtgärderna är tom</translation>
 <translation id="2903844815300039659">Ansluten till <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Av för en app}other{Av för # appar}}</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
 <translation id="4146833061457621061">Spela upp musik</translation>
-<translation id="4200057768455216496">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Visa aviseringsinställningar. Aviseringar har inaktiverats</translation>
 <translation id="4269883910223712419">Enhetens administratör kan</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
 <translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
-<translation id="7037152028959403492">Du tryckte på kortkommandot för högkontrastläge. Vill du aktivera funktionen?</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
 <translation id="7068360136237591149">Öppna filer</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initierar …</translation>
 <translation id="8142699993796781067">Privat nätverk</translation>
-<translation id="8152119955266188852">Du tryckte på kortkommandot för helskärmsförstoring. Vill du aktivera funktionen?</translation>
 <translation id="8190698733819146287">Anpassa språk och inmatning...</translation>
 <translation id="8192202700944119416">Aviseringar har dolts.</translation>
 <translation id="8236042855478648955">Dags för en paus</translation>

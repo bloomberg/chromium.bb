@@ -138,20 +138,6 @@
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
-<translation id="1372267489642113556">
-      Ako je pravilo omogućeno, svako od navedenih polazišta
-      na popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se
-      također izolirati polazišta navedena prema poddomenama, npr. ako se navede
-      https://example.com/ izolirat će se i https://foo.example.com/ kao dio web-lokacije 
-      https://example.com/.
-      Ako je pravilo onemogućeno, neće doći do eksplicitne izolacije web-lokacije i radne verzije IsolateOrigins i SitePerProcess bit će onemogućene. Korisnici će i dalje
-      moći ručno omogućiti IsolateOrigins.
-      Ako se to pravilo ne konfigurira, korisnik će moći izmijeniti tu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučuje se postaviti pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> s istim vrijednostima.
-      Ako se vrijednosti navedene u pravilima ne podudaraju, može doći do zastoja pri unošenju korisničke sesije dok se ne primijeni vrijednost određena korisničkim pravilom.
-
-      NAPOMENA: ovo pravilo ne odnosi se na Android. Da biste omogućili IsolateOrigins na Androidu, upotrijebite postavku pravila IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referenca: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
@@ -965,12 +951,6 @@
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3715569262675717862">Autentifikacija na temelju korisničkih certifikata</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
-<translation id="3746590506846867985">
-      Ovo se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      Ako se to pravilo omogući, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se također izolirati izvori navedeni prema poddomenama, npr. ako se navede https://example.com/ izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
-      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije pravila IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
-      Ako se to pravilo ne konfigurira, za zaslon za prijavu upotrebljavat će se zadane postavke platforme za izolaciju web-lokacija.
-      </translation>
 <translation id="3748900290998155147">Određuje jesu li dopuštena zaključavanja aktivacije. Ta zaključavanja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem i ARC aplikacije.
 
           Ako se pravilo postavi na True ili se ne postavi, zaključavanja aktivacije primjenjivat će se za upravljanje napajanjem.
@@ -2560,15 +2540,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Web-stranica nove kartice</translation>
 <translation id="7788511847830146438">Po profilu</translation>
-<translation id="7788872453000173219">
-      Možda biste trebali pogledati postavke pravila IsolateOrigins da biste iskoristili prednosti obiju značajki, izolacije i ograničenog utjecaja za korisnike koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako je pravilo omogućeno, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako je pravilo onemogućeno, neće doći do eksplicitne izolacije web-lokacije i radne verzije pravila IsolateOrigins i SitePerProcess bit će onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
-      Ako se to pravilo ne konfigurira, korisnik će moći izmijeniti ovu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučuje se također postaviti pravilo uređaja <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-
-      NAPOMENA: ovo pravilo ne primjenjuje se na Android. Da biste omogućili SitePerProcess za Android, upotrijebite postavku pravila SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za popis hashiranja za subjectPublicKeyInfo.
 
       To pravilo omogućuje da se zahtjevi za otkrivanje Transparentnosti certifikata ne otkrivaju za lance certifikata koji sadrže certifikate s jednim od navedenih hashiranja za subjectPublicKeyInfo. To omogućuje da se certifikati koji se inače ne bi smatrali pouzdanima (jer nisu pravilno javno otkriveni) nastave upotrebljavati za hostove Enterprisea.
@@ -2604,13 +2575,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
 <translation id="7882857838942884046">Onemogućivanje Google sinkronizacije uzrokovat će nepravilno funkcioniranje izrade sigurnosnih kopija i vraćanja na Androidu.</translation>
 <translation id="7882890448959833986">Spriječi upozorenje o nepodržanom OS-u</translation>
-<translation id="7892077286206685156">
-      Ovo se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste iskoristili prednosti obiju značajki, izolacije i ograničenog utjecaja za korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije pravila IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
-      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      </translation>
 <translation id="7902255855035461275">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem
       URL-a koji šalje zahtjev. Ako se pronađe podudaranje, pristup uređajima
       za snimanje videozapisa dopuštat će se bez upita.
@@ -2630,18 +2594,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="793473937901685727">Postavi dostupnost certifikata za ARC aplikacije</translation>
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
-<translation id="7952880400776676958">
-      Ako se ovo pravilo omogući, svaki od navedenih izvora na
-      popisu odijeljenom zarezima izvodit će se u svom procesu. Time će se također
-      izolirati izvori navedeni prema poddomenama, npr. ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio
-      web-lokacije https://example.com/.
-      Ako je pravilo onemogućeno, neće doći do eksplicitne izolacije web-lokacije i radne verzije pravila IsolateOriginsAndroid i SitePerProcessAndroid bit će onemogućene. Korisnici će još uvijek moći ručno omogućiti IsolateOrigins.
-      Ako se to pravilo ne konfigurira, korisnik će moći izmijeniti tu postavku.
-
-      NAPOMENA: izolacija web-lokacija na Androidu je eksperimentalna. Podrška će se s vremenom poboljšati, ali trenutačno može uzrokovati probleme s izvedbom.
-
-      NAPOMENA: ovo pravilo primjenjuje se samo na Chrome na Androidu koji se izvodi na uređajima koji moraju imati više od 1 GB RAM-a. Da bi se pravilo primijenilo na druge platforme, upotrijebite IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7961779417826583251">Onemogući provedbu Transparentnosti certifikata za popis starih tijela za izdavanje certifikata</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>

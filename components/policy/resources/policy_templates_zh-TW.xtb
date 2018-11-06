@@ -139,17 +139,6 @@
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
-<translation id="1372267489642113556">
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/ 也會造成
-      https://foo.example.com/ 遭到隔離，因為後者同樣屬於
-      https://example.com/ 網站。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      注意：這項政策不適用於 Android 裝置。如要在 Android 裝置上啟用 IsolateOrigins，請改用 IsolateOriginsAndroid 政策設定。
-      </translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
@@ -965,12 +954,6 @@
 <translation id="3711895659073496551">暫停</translation>
 <translation id="3715569262675717862">根據用戶端憑證進行驗證</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
-<translation id="3746590506846867985">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      如果啟用這項政策，逗號分隔的清單中的已命名來源就會以獨立程序執行。這也會隔離使用子網域名稱的來源；例如，指定 https://example.com/ 也會造成 https://foo.example.com/ 遭到隔離，因為後者同樣屬於 https://example.com/ 網站。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
-      </translation>
 <translation id="3748900290998155147">指定是否允許使用 Wake Lock。擴充功能如要使用 Wake Lock，可以透過電源管理擴充功能 API 以及 ARC 應用程式提出要求。
 
           如果這項政策設為「True」或未設定，系統的電源管理機制將採用 Wake Lock。
@@ -2551,15 +2534,6 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新分頁</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
-<translation id="7788872453000173219">
-      為了盡可能減少隔離功能對使用者的影響，建議你先查看 IsolateOrigins 政策設定，瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-
-      注意：這項政策不適用於 Android 裝置。如要在 Android 裝置上啟用 SitePerProcess，請改用 SitePerProcessAndroid 政策設定。
-      </translation>
 <translation id="780603170519840350">不強制要求列出的 subjectPublicKeyInfo 雜湊符合憑證透明化規定。
 
       使用這項政策時，如果憑證鏈結中的憑證包含其中一種指定 subjectPublicKeyInfo 雜湊，系統就不會強制要求這類憑證鏈結符合憑證透明化規定。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續供企業主機使用。
@@ -2595,13 +2569,6 @@
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於你透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
 <translation id="7882857838942884046">停用 Google Sync 會造成 Android 備份與還原功能無法正常運作。</translation>
 <translation id="7882890448959833986">偵測到不支援的作業系統時不顯示警告</translation>
-<translation id="7892077286206685156">
-      這項政策適用於登入畫面；另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      為了盡可能減少隔離功能對使用者的影響，建議你先查看 IsolateOrigins 政策設定，瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      </translation>
 <translation id="7902255855035461275">系統會將這份清單中的模式與要求網址的安全性
       來源進行比對。如果找到相符的結果，系統就會授權存取
       影片擷取裝置，並且不會提示使用者。
@@ -2621,19 +2588,6 @@
 <translation id="793473937901685727">設定 ARC 應用程式的憑證可用性</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
-<translation id="7952880400776676958">
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/ 也會造成
-      https://foo.example.com/ 遭到隔離，因為後者同樣屬於
-      https://example.com/ 網站。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，使用者將可以變更這項設定。
-
-      注意：在 Android 裝置上，網站隔離為實驗功能。我們會逐步提供更完善的支援，但這項功能目前可能會造成效能問題。
-
-      注意：這項政策僅適用於 Android 裝置上的 Chrome，而且裝置一定要有超過 1GB 的 RAM。如要在非 Android 平台上套用這項政策，請使用 IsolateOrigins。
-      </translation>
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="7961779417826583251">不針對列出的舊版憑證授權單位強制執行憑證透明化政策</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>

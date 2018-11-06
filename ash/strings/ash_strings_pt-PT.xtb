@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Prateleira</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal do lado esquerdo)</translation>
 <translation id="2865888419503095837">Informações da rede</translation>
-<translation id="287224423103674444">Premiu o atalho da rotação do ecrã. Pretende rodar o ecrã?</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2878884018241093801">Nenhum item recente</translation>
 <translation id="2903844815300039659">Ligado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4146833061457621061">Tocar música</translation>
-<translation id="4200057768455216496">Premiu o atalho da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4261870227682513959">Mostrar definições de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Todos os ficheiros e dados locais associados a este utilizador são permanentemente eliminados assim que este utilizador é removido.</translation>
 <translation id="7015766095477679451">Volte à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
-<translation id="7037152028959403492">Premiu o atalho de alto contraste. Pretende ativá-lo?</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7068360136237591149">Abrir ficheiros</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Ligado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">A inicializar...</translation>
 <translation id="8142699993796781067">Rede privada</translation>
-<translation id="8152119955266188852">Premiu o atalho da lupa de ecrã inteiro. Pretende ativá-la?</translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdução...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>
 <translation id="8236042855478648955">Hora de fazer uma pausa</translation>

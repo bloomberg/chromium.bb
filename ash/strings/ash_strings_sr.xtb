@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Полица</translation>
 <translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
 <translation id="2865888419503095837">Информације о мрежи</translation>
-<translation id="287224423103674444">Притиснули сте пречицу за ротацију екрана. Желите ли да ротирате екран?</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="2878884018241093801">Нема недавних ставки</translation>
 <translation id="2903844815300039659">Повезано на мрежу <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
-<translation id="4200057768455216496">Притиснули сте пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4217571870635786043">Диктирање</translation>
 <translation id="4261870227682513959">Прегледајте подешавања обавештења. Обавештења су искључена</translation>
 <translation id="4269883910223712419">Администратор овог уређаја може:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7015766095477679451">Вратите се у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
-<translation id="7037152028959403492">Притиснули сте пречицу за високи контраст. Желите ли да је укључите?</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7068360136237591149">Отвори датотеке</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
-<translation id="8152119955266188852">Притиснули сте пречицу за лупу за цео екран. Желите ли да је укључите?</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="8192202700944119416">Обавештења су сакривена.</translation>
 <translation id="8236042855478648955">Време је за паузу</translation>

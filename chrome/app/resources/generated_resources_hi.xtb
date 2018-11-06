@@ -2585,7 +2585,6 @@
 <translation id="4941246025622441835">एंटरप्राइज़ प्रबंधन के लिए डिवाइस को नामांकित करते समय इस डिवाइस अनुरोध का उपयोग करें:</translation>
 <translation id="4941627891654116707">फ़ॉन्ट का आकार</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फ़िगरेशन सहायता</translation>
-<translation id="4945444280533270988">Smart Lock चालू है</translation>
 <translation id="4953689047182316270">सुलभता इवेंट का जवाब दें</translation>
 <translation id="4953808748584563296">डिफ़ॉल्ट नारंगी अवतार</translation>
 <translation id="4955710816792587366">अनलॉक करने के लिए अपना पिन चुनें</translation>
@@ -4118,7 +4117,6 @@
 <translation id="7262004276116528033">यह प्रवेश सेवा <ph name="SAML_DOMAIN" /> द्वारा होस्‍ट की गई है</translation>
 <translation id="7268365133021434339">टैब बंद करें</translation>
 <translation id="7268659760406822741">उपलब्ध सेवाएं</translation>
-<translation id="7269733644823798215">अपना Chromebook कनेक्ट करने से पहले अपने फ़ोन को ज़्यादा सुरक्षित बनाएं. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">जब साइट MIDI डिवाइस को एक्सेस करने के लिए सिस्टम अनन्य संदेशों का उपयोग करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="7272674038937250585">कोई विवरण नहीं दिया गया है</translation>
 <translation id="7273110280511444812">पिछली बार <ph name="DATE" /> को अनुलग्न किया गया</translation>
@@ -4720,7 +4718,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">नया नोट बनाएं</translation>
 <translation id="8168435359814927499">सामग्री</translation>
-<translation id="8170451533020515291">आपके <ph name="DEVICE_TYPE" /> को अनलॉक करने के लिए अपने फ़ोन का इस्तेमाल करें</translation>
 <translation id="8174047975335711832">डिवाइस जानकारी</translation>
 <translation id="8177196903785554304">नेटवर्क विवरण</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5425,7 +5422,6 @@
 <translation id="981121421437150478">ऑफ़लाइन</translation>
 <translation id="983511809958454316">यह सुविधा VR में काम नहीं करती</translation>
 <translation id="984275831282074731">भुगतान के तरीके</translation>
-<translation id="984982042683741464">स्क्रीन लॉक ज़रूरी है</translation>
 <translation id="98515147261107953">भू-दृश्य</translation>
 <translation id="987897973846887088">कोई इमेज उपलब्ध नहीं है</translation>
 <translation id="988978206646512040">खाली पासफ़्रेज़ की अनुमति नहीं है</translation>

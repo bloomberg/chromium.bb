@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
 <translation id="2865888419503095837">Thông tin mạng</translation>
-<translation id="287224423103674444">Bạn đã nhấn phím tắt để xoay màn hình. Bạn có muốn xoay màn hình không?</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2878884018241093801">Không có mục nào gần đây</translation>
 <translation id="2903844815300039659">Đã kết nối tới <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tắt thông báo của một ứng dụng}other{Tắt thông báo của # ứng dụng}}</translation>
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
-<translation id="4200057768455216496">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
 <translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
@@ -343,7 +341,6 @@
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
-<translation id="7037152028959403492">Bạn đã nhấn phím tắt để có độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7068360136237591149">Mở tệp</translation>
@@ -411,7 +408,6 @@
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
-<translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn màn hình. Bạn có muốn bật chế độ này không?</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8192202700944119416">Đã ẩn thông báo.</translation>
 <translation id="8236042855478648955">Giờ nghỉ giải lao</translation>

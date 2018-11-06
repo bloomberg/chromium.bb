@@ -150,18 +150,6 @@
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
-<translation id="1372267489642113556">
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
-      į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal subdomenus, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir subdomenas https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandymai bus išjungti. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Sistemoje „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos nustatytos vertės neatitinka viena kitos, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-
-      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „IsolateOrigins“ sistemoje „Android“, naudokite politikos nustatymą „IsolateOriginsAndroid“.
-      </translation>
 <translation id="1384459581748403878">Nuoroda: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
@@ -1006,12 +994,6 @@
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3715569262675717862">Autentifikavimas atsižvelgiant į klientų sertifikatus</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
-<translation id="3746590506846867985">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiems politikoms nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat bus atskiriamas https://foo.example.com/ kaip svetainės https://example.com/ dalis.
-      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“.
-      Nesukonfigūravus politikos prisijungimo ekrane bus naudojami numatytieji platformos svetainių atskyrimo nustatymai.
-      </translation>
 <translation id="3748900290998155147">Nurodoma, ar leidžiami pažadinimo užraktai. Pažadinimo užraktų užklausas gali teikti plėtiniai, naudodami energijos tvarkymo plėtinio API, ir ARC programos.
 
           Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, pažadinimo užraktams leidžiama tvarkyti energiją.
@@ -2664,15 +2646,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Naujo skirtuko puslapis</translation>
 <translation id="7788511847830146438">Vienam profiliui</translation>
-<translation id="7788872453000173219">
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad efektyviai panaudotumėte atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Sistemoje „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos nustatytos vertės neatitinka viena kitos, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-
-      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „SitePerProcess“ sistemoje „Android“, naudokite politikos nustatymą „SitePerProcessAndroid“.
-      </translation>
 <translation id="780603170519840350">Išjungiamas sąraše nurodytų „subjectPublicKeyInfo“ maišų sertifikato skaidrumo reikalavimų įgyvendinimas.
 
       Naudojant šią politiką galima išjungti sertifikato skaidrumo atskleidimo reikalavimus, skirtus sertifikatų grandinėms, kuriose yra sertifikatų su viena iš nurodytų „subjectPublicKeyInfo“ maišų. Taip leidžiama naudoti sertifikatus, kurie kitaip būtų nepatikimi, nes nėra tinkamai viešai atskleisti, kad būtų galima toliau naudoti įmonės prieglobos serveriuose.
@@ -2708,13 +2681,6 @@
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
 <translation id="7882857838942884046">Išjungus „Google“ sinchronizavimą „Android“ atsarginė kopija ir atkūrimas neveiks tinkamai.</translation>
 <translation id="7882890448959833986">Nerodyti nepalaikomos OS įspėjimo</translation>
-<translation id="7892077286206685156">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiems politikoms nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte efektyviai naudoti atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      </translation>
 <translation id="7902255855035461275">Šiame sąraše pateikti šablonai bus palyginti su užklausą pateikusio
       URL saugos šaltiniu. Jei bus rasta atitiktis, galimybė pasiekti vaizdo įrašą
       fiksuojančius įrenginius bus suteikta be raginimo.
@@ -2734,19 +2700,6 @@
 <translation id="793473937901685727">Nustatykite, ar sertifikatai bus prieinami ARC programose</translation>
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
-<translation id="7952880400776676958">
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
-      į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOriginsAndroid“ ir „SitePerProcessAndroid“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-
-      PASTABA: sistemoje „Android“ svetainių atskyrimas yra eksperimentinis. Palaikymas bus pagerintas laikui bėgant, bet šiuo metu tai gali sukelti našumo problemų.
-
-      PASTABA: ši politika taikoma tik naršyklei „Chrome“ sistemoje „Android“, įrenginiuose, kuriuose būtinai yra daugiau nei 1 GB laisvosios prieigos atminties. Kad politiką pritaikytumėte ne „Android“ platformose, naudokite „IsolateOrigins“.
-      </translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
 <translation id="7961779417826583251">Išjungti sąraše nurodytų pasenusių sertifikavimo institucijų sertifikato skaidrumo reikalavimų įgyvendinimą</translation>
 <translation id="7974114691960514888">Ši politika nebepalaikoma.

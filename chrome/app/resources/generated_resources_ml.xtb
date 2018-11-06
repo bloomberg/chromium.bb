@@ -2582,7 +2582,6 @@
 <translation id="4941246025622441835">ഉപകരണ എന്റർപ്രൈസ് മാനേജുമെന്റിനായി എൻറോൾ ചെയ്യുമ്പോൾ ഈ ഉപകരണ അഭ്യർത്ഥന ഉപയോഗിക്കുക:</translation>
 <translation id="4941627891654116707">ഫോണ്ട് വലുപ്പം</translation>
 <translation id="494286511941020793">പ്രോക്സി ക്രമീകരണ സഹായം</translation>
-<translation id="4945444280533270988">Smart Lock ഓണാണ്</translation>
 <translation id="4953689047182316270">ഉപയോഗസഹായി ഇവന്‍റുകളോട് പ്രതികരിക്കുക</translation>
 <translation id="4953808748584563296">ഡിഫോൾട്ടായ ഓറഞ്ച് അവതാർ</translation>
 <translation id="4955710816792587366">നിങ്ങളുടെ പിൻ തിരഞ്ഞെടുക്കുക</translation>
@@ -3263,7 +3262,7 @@
 <translation id="5946591249682680882">റിപ്പോർട്ട് ഐഡി <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">ഫയലിനെ വിശകലനം ചെയ്യാനായില്ല</translation>
 <translation id="5955282598396714173">നിങ്ങളുടെ പാസ്‌വേഡ് കാലഹരണപ്പെട്ടിരിക്കുന്നു. അത് മാറ്റുന്നതിന്, സൈൻ ഔട്ട് ചെയ്യുക, തുടർന്ന് സൈൻ ഇൻ ചെയ്യുക.</translation>
-<translation id="5955809630138889698">ഓൺലൈൻ ഡെമോ മോഡിനായി മാത്രമേ ഈ ഉപകരണത്തിന് യോഗ്യത ഉണ്ടാകാനിടയുള്ളൂ. കൂടുതൽ വിശദാംശങ്ങൾക്കായി നിങ്ങളുടെ പിന്തുണാ പ്രതിനിധിയുമായി ബന്ധപ്പെടുക.</translation>
+<translation id="5955809630138889698">ഓൺലൈൻ ഡെമോ മോഡിനു മാത്രമേ ഈ ഉപകരണത്തിന് യോഗ്യത ഉണ്ടാകാനിടയുള്ളൂ. കൂടുതൽ വിശദാംശങ്ങൾക്കായി നിങ്ങളുടെ പിന്തുണാ പ്രതിനിധിയുമായി ബന്ധപ്പെടുക.</translation>
 <translation id="5956585768868398362">നിങ്ങൾ പ്രതീക്ഷിക്കുന്ന തിരയൽ പേജ് ഇതാണോ?</translation>
 <translation id="5957613098218939406">കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="5957987129450536192">പ്രൊഫൈൽ ചിത്രത്തിനടുത്തുള്ള വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക ടാപ്പ് ചെയ്‌ത് കേൾക്കേണ്ടത് തിരഞ്ഞെടുക്കുക.</translation>
@@ -4117,7 +4116,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7262004276116528033">ഈ സൈൻ ഇൻ സേവനം ഹോസ്റ്റുചെയ്‌തിരിക്കുന്നത് <ph name="SAML_DOMAIN" /> ആണ്.</translation>
 <translation id="7268365133021434339">ടാബുകള്‍ അടയ്ക്കുക</translation>
 <translation id="7268659760406822741">ലഭ്യമായ സേവനങ്ങൾ</translation>
-<translation id="7269733644823798215">നിങ്ങളുടെ Chromebook കണക്‌റ്റ് ചെയ്യുന്നതിന് മുമ്പ് നിങ്ങളുടെ ഫോൺ കൂടുതൽ സുരക്ഷിതമാക്കുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">MIDI ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യാൻ ഒരു സൈറ്റിന് സിസ്റ്റം എക്‌സ്‌ക്ലൂസീവ് സന്ദേശങ്ങൾ ഉപയോഗിക്കേണ്ട സാഹചര്യത്തിൽ അത് ആവശ്യപ്പെടുക</translation>
 <translation id="7272674038937250585">വിവരണമൊന്നും നൽകിയിട്ടില്ല</translation>
 <translation id="7273110280511444812">അവസാനം അറ്റാച്ചുചെയ്‌ത തീയതി <ph name="DATE" /> ആണ്</translation>
@@ -4719,7 +4717,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">പുതിയ കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="8168435359814927499">ഉള്ളടക്കം</translation>
-<translation id="8170451533020515291">നിങ്ങളുടെ ഫോൺ ഉപയോഗിച്ച് <ph name="DEVICE_TYPE" /> അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="8174047975335711832">ഉപകരണ വിവരങ്ങൾ</translation>
 <translation id="8177196903785554304">നെറ്റ്‌വർക്ക് വിശദാംശങ്ങൾ</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5423,7 +5420,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="981121421437150478">ഓഫ്‌ലൈൻ</translation>
 <translation id="983511809958454316">ഈ ഫീച്ചർ VR-ൽ പ്രവർത്തിക്കില്ല</translation>
 <translation id="984275831282074731">പേയ്‌മെന്റ് രീതികൾ</translation>
-<translation id="984982042683741464">സ്‌ക്രീൻ ലോക്ക് ആവശ്യമാണ്</translation>
 <translation id="98515147261107953">ലാന്‍ഡ്സ്കേപ്പ്</translation>
 <translation id="987897973846887088">ചിത്രങ്ങളൊന്നും ലഭ്യമല്ല</translation>
 <translation id="988978206646512040">പാസ്‌ഫ്രെയ്‌സ് പൂരിപ്പിക്കാതിരിക്കാൻ കഴിയില്ല</translation>

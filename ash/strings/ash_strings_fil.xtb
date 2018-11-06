@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
 <translation id="2865888419503095837">Impormasyon ng network</translation>
-<translation id="287224423103674444">Napindot mo ang shortcut para sa pag-rotate ng screen. Gusto mo bang i-rotate ang screen?</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2878884018241093801">Walang kamakailang item</translation>
 <translation id="2903844815300039659">Nakakonekta sa <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Naka-off para sa isang app}one{Naka-off para sa # app}other{Naka-off para sa # na app}}</translation>
 <translation id="4072264167173457037">Katamtaman ang signal</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
-<translation id="4200057768455216496">Napindot mo ang shortcut para sa naka-dock na magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="4217571870635786043">Pagdidikta</translation>
 <translation id="4261870227682513959">Ipakita ang mga setting ng notification. Naka-off ang mga notification</translation>
 <translation id="4269883910223712419">May kakayahan ang admin ng device na ito na:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
 <translation id="7015766095477679451">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
-<translation id="7037152028959403492">Napindot mo ang shortcut para sa mataas na contrast. Gusto mo ba itong i-on?</translation>
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
 <translation id="7067196344162293536">Awtomatikong pag-rotate</translation>
 <translation id="7068360136237591149">Magbukas ng mga file</translation>
@@ -410,7 +407,6 @@
 <translation id="8132793192354020517">Kumukonekta sa <ph name="NAME" /></translation>
 <translation id="813913629614996137">Sinisimulan...</translation>
 <translation id="8142699993796781067">Pribadong network</translation>
-<translation id="8152119955266188852">Napindot mo ang shortcut para sa full-screen magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>
 <translation id="8236042855478648955">Oras na para magpahinga</translation>

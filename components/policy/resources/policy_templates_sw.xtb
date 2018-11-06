@@ -136,14 +136,6 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu wasifu wa wageni kuanzishwa.</translation>
 <translation id="1363275621236827384">Washa kipengele cha hoja za Seva ya Quirks ya wasifu wa maunzi</translation>
-<translation id="1372267489642113556">
-      Ikiwa sera imewashwa, kila mojawapo ya chanzo kilichotajwa katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenga vyanzo vilivyotajwa kulingana na vikoa vidogo; k.m. kubainisha https://example.com/ pia kutasababisha https://foo.example.com/ itengwe ili isiwe sehemu ya tovuti ya https://example.com/.
-      Ikiwa sera imezimwa, hamna dhana ya Utengaji wa Tovuti itakayotumika kwa njia dhahiri na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Bado watumiaji wataweza kuwasha IsolateOrigins wenyewe.
-      Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kuwa thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, huenda ucheleweshaji ukatokea wakati wa kuweka kipindi cha mtumiaji huku thamani iliyobainishwa na sera ya mtumiaji ikitumika.
-
-      KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Marejeleo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ikiwa utaruhusu uaminifu katika sera ya Muundomsingi wa PKI ya Symantec Corporation Legacy</translation>
 <translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
@@ -979,13 +971,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3711895659073496551">Sitisha</translation>
 <translation id="3715569262675717862">Uthibitishaji kulingana na vyeti vya kiteja</translation>
 <translation id="3736879847913515635">Washa kipengele cha kuongeza wasifu katika kidhibiti cha mtumiaji</translation>
-<translation id="3746590506846867985">
-      Sera hii inatumika kwenye skrini unayotumia kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> ambayo inatumiwa katika kipindi cha mtumiaji. Tunapendekeza uweke sera zote kuwa thamani sawa. Kama thamani hazilingani, ucheleweshaji huenda ukatokea wakati kipindi cha mtumiaji kinawekwa huku thamani inayobainishwa na sera ya mtumiaji ikitumika.
-      Ikiwa sera imewashwa, kila chanzo ulichotaja katika orodha inayotenganishwa kwa 
-      koma kitatumia mchakato wake. Hii pia itatenga vyanzo vilivyotajwa 
-      kulingana na vikoa vidogo; kwa mfano, kubainisha https://example.com/ kutasababisha pia https://foo.example.com/ kutengwa kama sehemu ya tovuti ya https://example.com/.
-Ikiwa sera hii imezimwa, hakuna Utengaji kwa kila Tovuti utaokaotokea waziwazi na majaribio ya IsolateOrigins na SitePerProcess yatazimwa. Watumiaji bado wataweza kuwasha IsolateOrigins wenyewe. Ikiwa mipangilio ya sera haijawekwa, mipangilio chaguomsingi ya jukwaa la Utengaji wa Tovuti itatumika kama skrini ya kuingia kwenye akaunti.
-      </translation>
 <translation id="3748900290998155147">Hubainisha iwapo wake lock zinaruhusiwa. Wake lock zinaweza kuombwa na viendelezi kupitia API ya kiendelezi cha udhibiti wa nishati na programu za ARC.
 
           Iwapo sera hii imewekwa kuwa ndivyo au haijawekwa, wake lock hazitatekelezwa katika udhibiti wa nishati.
@@ -2624,16 +2609,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Ukurasa wa Kichupo Kipya</translation>
 <translation id="7788511847830146438">Kwa Kila Wasifu</translation>
-<translation id="7788872453000173219">
-      Tunapendekeza uangalie mipangilio ya sera ya IsolateOrigins 
-ili upate hali iliyo bora kati ya mbili zilizopo, utengaji na athari ndogo kwa watumiaji kwa kutumia IsolateOrigins kwenye orodha ya tovuti ambazo ungependa kutenga. Mipangilio hii, 
-      SitePerProcess, hutenga tovuti zote.
-      Ikiwa sera imewashwa, kila tovuti itatumia mchakato wake.
-      Ikiwa sera imezimwa, hamna dhana ya Utengaji wa Tovuti itakayotumika kwa njia dhahiri na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Bado watumiaji wataweza kuwasha SitePerProcess wenyewe.
-      Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kuwa thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, huenda ucheleweshaji ukatokea wakati wa kuweka kipindi cha mtumiaji huku thamani iliyobainishwa na sera ya mtumiaji ikitumika.
-KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Huzima masharti ya kutumia Uwazi wa Vyeti katika orodha hashi za subjectPublicKeyInfo.
 
       Sera hii huruhusu uzimaji wa masharti ya kufichua Uwazi wa Vyeti katika mfululizo wa vyeti vilivyo na vyeti vyenye hashi za subjectPublicKeyInfo. Hali hii inaruhusu vyeti ambavyo havingeaminika, kwa sababu havikufichuliwa kwa umma ipasavyo, viendelee kutumika kwenye Seva pangishi za Kampuni.
@@ -2669,13 +2644,6 @@ KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye And
       Inaamua kitambulisho cha kiendelezi cha kutumiwa kama taswira ya skrini kwenye skrini ya kuingia. Lazima kiendelezi kiwe kimoja wapo cha AppPack inayosanidiwa kwa ajili ya kikoa hiki kupitia kwenye sera ya DeviceAppPack.</translation>
 <translation id="7882857838942884046">Kuzima kipengele cha Usawazishaji wa Google kutasababisha kipengele cha Hifadhi Rudufu ya Android na Kurejesha kisifanye kazi vizuri.</translation>
 <translation id="7882890448959833986">Kandamiza onyo la Mfumo wa Uendeshaji usiotumika</translation>
-<translation id="7892077286206685156">
-      Sera hii inatumika kwenye skrini unayotumia kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ambayo inatumiwa katika kipindi cha mtumiaji. Tunapendekeza uweke sera zote ziwe thamani sawa. Kama thamani hazilingani, ucheleweshaji unaweza kutokea wakati wa kuweka kipindi cha mtumiaji huku thamani iliyobainshwa na sera ya mtumiaji ikitumika.
-      Angalia mipangilio ya sera ya IsolateOrigins ili upate sehemu bora kati ya hizi mbili, utengaji na athari chache kwa watumiaji, kwa kutumia IsolateOrigins katika orodha ya tovuti ambazo ungependa kutenga. Mipangilio hii, SitePerProcess, hutenga tovuti zote.
-    Ikiwa sera imewashwa, kila tovuti itatumia mchakato wake.
-    Ikiwa sera imezimwa, hakuna Utengaji kwa kila Tovuti uliobainishwa wazi utakaotokea na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Watumaji bado wataweza kuwasha SitePerProcess wenyewe.
-     Ikiwa mipangilio ya sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      </translation>
 <translation id="7902255855035461275">Michoro katika orodha hii italinganishwa na ya asili ya usalama wa ombi la URL.  Ikilingana, idhini ya kufikia vifaa vya kurekodi video itatolewa bila ombi. KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika hali ya Skrini nzima pekee.</translation>
 <translation id="7912255076272890813">Sanidi aina za programu/viendelezi zinazoruhusiwa</translation>
 <translation id="7915236031252389808">Unaweza kubainisha URL ya seva mbadala ya faili ya .pac hapa.
@@ -2691,15 +2659,6 @@ KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye And
 <translation id="793473937901685727">Weka upatikanaji wa cheti kwa programu za ARC</translation>
 <translation id="7937766917976512374">Ruhusu au ukatae kurekodi video</translation>
 <translation id="7941975817681987555">Usibashiri vitendo vya mtandao kwenye muunganisho wa mtandao wowote</translation>
-<translation id="7952880400776676958">
-      Ikiwa mipangilio ya sera imewashwa, kila asili yenye jina kwenye orodha iliyotenganishwa kwa koma itajisimamia yenyewe. Hii pia itatenga asili zilizopewa jina kulingana na vijikoa; kwa mfano kubainisha https://example.com/ pia kutasababisha kutenganishwa kwa https://foo.example.com/ kama sehemu ya https://example.com/ site.
-      Ikiwa mipangilio ya sera imezimwa, hakuna Utengaji Wazi wa Tovuti utakaofanyika na majaribio ya IsolateOriginsAndroid na SitePerProcessAndroid yatazimwa. Watumiaji bado wataweza kuwasha IsolateOrigins wenyewe.
-      Ikiwa mipangilio ya sera haijawekwa, mtumiaji ataweza kubadilisha mpangilio huu.
-
-     KUMBUKA: Kwenye Android, Utengaji wa Tovuti unajaribiwa. Usaidizi utaendelea kuboreshwa lakini kwa sasa huenda ukasababisha matatizo ya utendaji.
-
-      KUMBUKA: Sera hii inatumika tu katika Chrome kwenye vifaa vya Android vyenye zaidi ya GB1 ya RAM. Ili kutumia sera kwenye mifumo isiyo ya Android, tumia IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Wapangishi wasiofuata kanuni za mwongozo wa mtumiaji uliodhibitiwa</translation>
 <translation id="7961779417826583251">Zima utekelezaji wa Uwazi wa Cheti katika orodha ya Mamlaka ya Vyeti Vilivyopitwa na Wakati</translation>
 <translation id="7974114691960514888">Sera hii haihimiliwi tena.

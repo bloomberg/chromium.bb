@@ -152,18 +152,6 @@
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
-<translation id="1372267489642113556">
-      Jika dasar didayakan, setiap asal yang dinamakan dalam
-      senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Ini turut akan mengasingkan
-      asal yang dinamakan oleh subdomain; mis. tindakan menentukan https://example.com/ turut
-      akan menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada
-      tapak https://example.com/.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang jelas akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
-      Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, adalah disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan. 
-
-     NOTA: Dasar ini tidak terpakai pada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Rujukan: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
@@ -1008,12 +996,6 @@
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3715569262675717862">Pengesahan berdasarkan sijil klien</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
-<translation id="3746590506846867985">
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain, mis. menyatakan https://example.com/ turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan IsolateOrigins secara manual.
-      Jika dasar ini tidak dikonfigurasi, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
-      </translation>
 <translation id="3748900290998155147">Menentukan sama ada wake lock dibenarkan. Wake lock boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa dan oleh apl ARC.
 
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, wake lock akan digunakan untuk pengurusan kuasa.
@@ -2663,15 +2645,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Halaman Tab Baharu</translation>
 <translation id="7788511847830146438">Setiap Profil</translation>
-<translation id="7788872453000173219">
-      Anda mungkin ingin meneliti tetapan dasar IsolateOrigins untuk memanfaatkan kedua-dua keadaan, pengasingan dan kesan terhad untuk pengguna dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess, mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan berjalan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
-      Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, kelewatan mungkin berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan.
-
-      NOTA: Dasar ini tidak digunakan pada Android. Untuk mendayakan SitePerProcess pada Android, gunakan tetapan dasar SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Melumpuhkan penguatkuasaan keperluan Ketelusan Sijil untuk cincangan subjectPublicKeyInfo yang disenaraikan.
 
       Dasar ini membenarkan keperluan pendedahan Ketelusan Sijil dilumpuhkan untuk rantaian sijil yang mengandungi sijil dengan salah satu cincangan subjectPublicKeyInfo yang dinyatakan. Langkah ini akan membenarkan sijil yang tidak dipercayai, disebabkan sijil tersebut tidak didedahkan dengan betul kepada orang ramai, untuk terus digunakan bagi hos Perusahaan.
@@ -2707,13 +2680,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
 <translation id="7882857838942884046">Melumpuhkan Google Sync akan menyebabkan ciri Sandaran dan Pemulihan Android tidak berfungsi dengan betul.</translation>
 <translation id="7882890448959833986">Sekat amaran OS yang tidak disokong</translation>
-<translation id="7892077286206685156">
-      Dasar ini digunakan pada skrin log masuk. Sila lihat juga dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang digunakan pada sesi pengguna. Anda disyorkan supaya menetapkan kedua-dua dasar kepada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk memanfaatkan kedua-dua keadaan, pengasingan dan kesan terhad untuk pengguna dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak diasingkan. Tetapan SitePerProcess ini mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan dijalankan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
-      Jika dasar ini tidak dikonfiguraskan, pengguna akan dapat mengubah tetapan ini.
-      </translation>
 <translation id="7902255855035461275">Pola dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
       yang merakam video akan diberi tanpa gesaan.
@@ -2733,20 +2699,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="793473937901685727">Tetapkan ketersediaan sijil untuk apl ARC</translation>
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="7941975817681987555">Jangan ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
-<translation id="7952880400776676958">
-      Jika dasar ini didayakan, setiap tempat asal yang dinamakan dalam
-      senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri.
-      Tindakan ini turut akan mengasingkan tempat asal yang dinamakan oleh
-      subdomain; mis. menentukan https://example.com/ akan turut menyebabkan
-      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOriginsAndroid serta SitePerProcessAndroid akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-
-      NOTA: Pada Android, Pengasingan Tapak bersifat percubaan. Sokongan akan ditingkatkan dari semasa ke semasa, tetapi ciri ini mungkin menyebabkan masalah prestasi pada masa ini.
-
-      NOTA: Dasar ini hanya digunakan pada Chrome di Android yang dijalankan pada peranti dengan 1GB RAM ke atas sahaja. Untuk menggunakan dasar ini pada platform bukan Android, gunakan IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hos pengecualian manual pengguna terurus</translation>
 <translation id="7961779417826583251">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk Sijil Kuasa Lama yang disenaraikan</translation>
 <translation id="7974114691960514888">Dasar ini tidak lagi disokong.

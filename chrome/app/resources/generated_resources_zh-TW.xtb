@@ -2584,7 +2584,6 @@
 <translation id="4941246025622441835">為企業管理服務註冊裝置時使用這個裝置申請單：</translation>
 <translation id="4941627891654116707">字型大小</translation>
 <translation id="494286511941020793">Proxy 設定說明</translation>
-<translation id="4945444280533270988">Smart Lock 已開啟</translation>
 <translation id="4953689047182316270">回應協助工具活動</translation>
 <translation id="4953808748584563296">預設的橘色顯示圖片</translation>
 <translation id="4955710816792587366">選擇 PIN 碼</translation>
@@ -4117,7 +4116,6 @@
 <translation id="7262004276116528033">這是由 <ph name="SAML_DOMAIN" /> 代管的登入服務。</translation>
 <translation id="7268365133021434339">關閉分頁</translation>
 <translation id="7268659760406822741">可用的服務</translation>
-<translation id="7269733644823798215">請確認手機的安全防護更完善，再與 Chromebook 連結。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">每當有網站要使用系統專用訊息存取 MIDI 裝置時詢問我</translation>
 <translation id="7272674038937250585">沒有任何說明</translation>
 <translation id="7273110280511444812">最後附加日期為 <ph name="DATE" /></translation>
@@ -4717,7 +4715,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />，<ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">建立新記事</translation>
 <translation id="8168435359814927499">內容</translation>
-<translation id="8170451533020515291">使用你的手機解鎖 <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">裝置資訊</translation>
 <translation id="8177196903785554304">網路詳細資料</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5422,7 +5419,6 @@
 <translation id="981121421437150478">離線</translation>
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>
 <translation id="984275831282074731">付款方式</translation>
-<translation id="984982042683741464">必須啟用螢幕鎖定</translation>
 <translation id="98515147261107953">橫向</translation>
 <translation id="987897973846887088">沒有可用的圖片</translation>
 <translation id="988978206646512040">通關密語欄位不得留空</translation>

@@ -2583,7 +2583,6 @@
 <translation id="4941246025622441835">השתמש במכשיר זה בעת הרשמת המכשיר לניהול ארגוני:</translation>
 <translation id="4941627891654116707">גודל גופן</translation>
 <translation id="494286511941020793">‏עזרה של תצורת שרת Proxy</translation>
-<translation id="4945444280533270988">נעילה חכמה מופעלת</translation>
 <translation id="4953689047182316270">להגיב לאירועי נגישות</translation>
 <translation id="4953808748584563296">דמות ברירת מחדל כתומה</translation>
 <translation id="4955710816792587366">בחירת קוד</translation>
@@ -4117,7 +4116,6 @@
 <translation id="7262004276116528033">שירות הכניסה הזה מתארח ב-<ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">סגור כרטיסיות</translation>
 <translation id="7268659760406822741">שירותים זמינים</translation>
-<translation id="7269733644823798215">‏צריך להגביר את אבטחת הטלפון לפני ההתחברות אל Chromebook. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">‏שאל כשאתר רוצה להשתמש בהודעות בלעדיות של המערכת כדי לגשת להתקני MIDI</translation>
 <translation id="7272674038937250585">לא סופק תיאור</translation>
 <translation id="7273110280511444812">חובר לאחרונה ב-<ph name="DATE" /></translation>
@@ -4716,7 +4714,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">צור פתק חדש</translation>
 <translation id="8168435359814927499">תוכן</translation>
-<translation id="8170451533020515291">שימוש בטלפון שלך כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">מידע מהמכשיר</translation>
 <translation id="8177196903785554304">פרטי הרשת</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5421,7 +5418,6 @@
 <translation id="981121421437150478">לא מקוון</translation>
 <translation id="983511809958454316">‏התכונה לא נתמכת ב-VR</translation>
 <translation id="984275831282074731">אמצעי תשלום</translation>
-<translation id="984982042683741464">נדרשת נעילת מסך</translation>
 <translation id="98515147261107953">לרוחב</translation>
 <translation id="987897973846887088">אין תמונות זמינות</translation>
 <translation id="988978206646512040">השדה של ביטוי הסיסמה לא יכול להישאר ריק</translation>

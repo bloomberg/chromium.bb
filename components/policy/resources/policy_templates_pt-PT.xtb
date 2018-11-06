@@ -154,19 +154,6 @@
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
 <translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
-<translation id="1372267489642113556">
-      Se a política estiver ativada, cada uma das origens nomeadas numa
-      lista separada por vírgulas é executada no seu próprio processo.
-      Deste modo, são também isoladas as origens nomeadas por
-      subdomínios. Por exemplo, ao especificar https://example.com/,
-      https://foo.example.com/ também é isolado como parte do site
-      https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-
-      NOTA: esta política não é aplicável no Android. Para ativar IsolateOrigins no Android, utilize a definição da política IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
@@ -989,12 +976,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
-<translation id="3746590506846867985">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios: por exemplo, ao especificar https://example.com/, também fará com que https://foo.example.com/ seja isolado como parte integrante do site https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores continuam a poder ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
-      </translation>
 <translation id="3748900290998155147">Especifica se são permitidos wake locks. Os wake locks podem ser solicitados por extensões através da API da extensão de gestão da alimentação e por aplicações ARC.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os wake locks serão cumpridos no que se refere à gestão da alimentação.
@@ -2579,15 +2560,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página Novo separador</translation>
 <translation id="7788511847830146438">Por Perfil</translation>
-<translation id="7788872453000173219">
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess são desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-
-      NOTA: esta política não é aplicável no Android. Para ativar SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos da Transparência de certificados numa lista de hashes de subjectPublicKeyInfo.
 
       Esta política permite desativar os requisitos de divulgação da Transparência de certificados para cadeias de certificados que contenham certificados com um dos hashes de subjectPublicKeyInfo especificados. Isto permite que os certificados que seriam de outra forma considerados não fidedignos, por não terem sido divulgados publicamente de forma correta, continuem a ser utilizados em anfitriões empresariais.
@@ -2623,13 +2595,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
 <translation id="7882857838942884046">Se desativar o Google Sync, fará com que as funções de cópia de segurança e restauro do Android não funcionem corretamente.</translation>
 <translation id="7882890448959833986">Suprimir o aviso de SO não suportado</translation>
-<translation id="7892077286206685156">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre um isolamento de sites explícito e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="7902255855035461275">Os padrões nesta lista vão ser comparados com a origem
       de segurança do URL que faz o pedido. Caso seja encontrada uma correspondência,
       o acesso a dispositivos de captura de vídeo é concedido imediatamente.
@@ -2649,21 +2614,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="793473937901685727">Definir a disponibilidade de certificados para aplicações ARC</translation>
 <translation id="7937766917976512374">Permitir ou impedir a captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações de rede em nenhuma ligação de rede</translation>
-<translation id="7952880400776676958">
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista
-      separada por vírgulas é executada no seu próprio processo. Deste
-      modo, são também isoladas as origens nomeadas por subdomínios.
-      Por exemplo, ao especificar https://example.com/,
-      https://foo.example.com/ também é isolado como parte
-      integrante do site https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOriginsAndroid e SitePerProcessAndroid serão desativados. Os utilizadores continuam a poder ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta
-      definição.
-
-      NOTA: no Android, o isolamento de site é experimental. O suporte será melhorado ao longo do tempo, mas atualmente pode causar problemas de desempenho.
-
-      NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política a plataformas não Android, utilize IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência de certificados para uma lista de autoridades de certificação antigas</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>

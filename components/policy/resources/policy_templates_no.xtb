@@ -138,19 +138,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
-<translation id="1372267489642113556">
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i sine egne prosesser. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/
-      angis, isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt. 
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. 
-Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-
-      MERK: Denne regelen gjelder ikke for Android. Bruk regelen IsolateOriginsAndroid for å aktivere IsolateOrigins på Android.
-      </translation>
 <translation id="1384459581748403878">Referanse: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
@@ -979,16 +966,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autentisering basert på klientsertifikater</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
-<translation id="3746590506846867985">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
-      navn basert på underdomener. Hvis for eksempel https://example.com/
-      angis, isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
-      </translation>
 <translation id="3748900290998155147">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om oppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
 
           Hvis denne regelen er angitt som «true» (sant) eller ikke angis, fungerer oppvekkingslåser under strømstyring.
@@ -2624,18 +2601,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Ny fane-siden</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7788872453000173219">
-      Det kan være lurt å endre innstillingen for IsolateOrigins-regelen for å få
-      det beste fra begge verdener – isolering og begrenset innvirkning for brukere – ved å bruke
-      IsolateOrigins sammen med en liste over nettstedene du vil isolere. Denne innstillingen
-      (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi enhetsinnstillingene for <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-
-      MERK: Denne regelen gjelder ikke for Android. Bruk SitePerProcessAndroid-regelen for å aktivere SitePerProcess på Android.
-      </translation>
 <translation id="780603170519840350">Deaktiverer håndheving av krav om sertifikatåpenhet for en liste med subjectPublicKeyInfo hash-koder.
 
       Denne regelen tillater at krav om sertifikatåpenhet deaktiveres for sertifikatkjeder som inneholder sertifikater med en av de angitte subjectPublicKeyInfo-hash-kodene. Dermed kan sertifikater som ellers hadde blitt vurdert som upålitelige (fordi de ikke er tilstrekkelig vist offentlig), fortsatt brukes for bedriftsverter.
@@ -2671,16 +2636,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
 <translation id="7882857838942884046">Hvis du slår av Google-synkronisering, fungerer ikke funksjonen for sikkerhetskopiering og gjenoppretting for Android som den skal.</translation>
 <translation id="7882890448959833986">Ignorer advarselen om at operativsystemet ikke støttes</translation>
-<translation id="7892077286206685156">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste
-      fra begge verdener – isolering og begrenset innvirkning for brukere – ved
-      å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
-      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      </translation>
 <translation id="7902255855035461275">Mønstrene i denne listen sammenlignes med sikkerhetskilden til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir tilgang til videoopptaksenheter gitt uten forespørsel på forhånd.
 
 MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</translation>
@@ -2698,20 +2653,6 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="793473937901685727">Angi sertifikattilgjengeligheten for ARC-apper</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
-<translation id="7952880400776676958">
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i sine egne prosesser. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis
-      for eksempel https://example.com/, angis, isoleres også
-      https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOriginsAndroid og SitePerProcessAndroid deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-
-      MERK: Nettstedsisolering er på forsøksstadiet på Android. Kvaliteten på støtten økes etterhvert, men foreløpig kan funksjonen forårsake ytelsesproblemer.
-
-      MERK: Denne regelen gjelder bare for Chrome på Android-enheter med mer enn 1 GB RAM. Bruk IsolateOrigins for å bruke regelen på andre plattformer.
-      </translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>

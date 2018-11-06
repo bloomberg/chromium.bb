@@ -135,18 +135,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
 <translation id="1363275621236827384">Attiva le query in Quirks Server per i profili hardware</translation>
-<translation id="1372267489642113556">
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori
-      separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
-      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
-      isolato anche https://foo.example.com/, perché fa parte del sito
-      https://example.com/.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non è configurata, l'utente potrà cambiare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> relativa ai dispositivi sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-
-      NOTA: questa norma non viene applicata su Android. Per attivare IsolateOrigins su Android, utilizza l'impostazione della norma IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -944,12 +932,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
-<translation id="3746590506846867985">
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente.
-      Se la norma non è configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
-      </translation>
 <translation id="3748900290998155147">Consente di specificare se consentire o meno i wakelock. I wakelock possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione e dalle app ARC.
 
           Se questa norma viene impostata su true o non viene impostata, i wakelock verranno rispettati per la gestione dell'alimentazione.
@@ -2514,15 +2496,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7788511847830146438">Per profilo</translation>
-<translation id="7788872453000173219">
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti, utilizzando IsolateOrigins con un elenco di siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
-      Se la norma viene disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-
-      NOTA: questa norma non viene applicata su Android. Per attivare SitePerProcess su Android, utilizza l'impostazione della norma SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
 
       Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.
@@ -2558,13 +2531,6 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
 <translation id="7882857838942884046">Se Google Sync viene disattivato, le funzioni di backup e ripristino di Android non funzionano correttamente.</translation>
 <translation id="7882890448959833986">Elimina l'avviso di sistema operativo non supportato</translation>
-<translation id="7892077286206685156">
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      </translation>
 <translation id="7902255855035461275">I pattern di questo elenco verranno confrontati con
       l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi
       di acquisizione video verrà concesso senza richieste.
@@ -2584,19 +2550,6 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="793473937901685727">Imposta la disponibilità dei certificati per le app ARC</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="7941975817681987555">Non prevedere le azioni di rete su qualsiasi connessione di rete</translation>
-<translation id="7952880400776676958">
-      Se la norma viene attivata, ogni origine indicata in un
-      elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
-      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/
-      viene isolato anche https://foo.example.com/, perché fa parte del sito 
-      https://example.com/.
-      Se la norma viene disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOriginsAndroid e SitePerProcessAndroid saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-
-      NOTA: su Android, l'isolamento dei siti è sperimentale. L'assistenza verrà migliorata, ma attualmente potrebbe causare problemi di prestazioni.
-
-      NOTA: questa norma viene applicata solo a Chrome su dispositivi Android con più di 1 GB di RAM. Per applicare la norma su piattaforme non Android, utilizza IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Host delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="7961779417826583251">Disattiva l'applicazione di Certificate Transparency per un elenco di autorità di certificazione precedenti</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>

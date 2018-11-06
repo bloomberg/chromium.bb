@@ -146,18 +146,6 @@
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
-<translation id="1372267489642113556">
-      Se a política estiver ativada, cada origem indicada em uma
-      lista separada por vírgulas será executada no próprio processo. Isso também isolará
-      as origens indicadas por subdomínios. Por exemplo, especificar https://example.com/ também
-      causará o isolamento de https://foo.example.com/ como parte do site
-      https://example.com/.
-      Se a política estiver desativada, não haverá nenhum isolamento explícito de sites, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda conseguirão ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o usuário poderá alterar essa configuração.
-      No <ph name="PRODUCT_OS_NAME" />, é recomendado definir também a política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não forem correspondentes, poderá haver um atraso ao iniciar uma sessão de usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
-
-      OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, use a configuração da política IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
@@ -970,12 +958,6 @@
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados do cliente</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
-<translation id="3746590506846867985">
-      Esta política se aplica à tela de login. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
-      Se a política estiver ativada, cada origem indicada em uma lista separada por vírgulas será executada no próprio processo. Isso também isolará as origens indicadas por subdomínios. Por exemplo, a especificação de https://example.com/ também isolará https://foo.example.com/ como parte do site https://example.com/.
-      Se a política estiver desativada, não haverá nenhum isolamento explícito de sites, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda poderão ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, as configurações de isolamento de sites padrão da plataforma serão usadas para a tela de login.
-      </translation>
 <translation id="3748900290998155147">Especifica se wake locks são permitidos. Os wake locks podem ser solicitados por extensões por meio da API da extensão de gerenciamento de energia e por apps ARC.
 
           Se esta política estiver definida como true ou não estiver definida, os wake locks serão respeitados para o gerenciamento de energia.
@@ -2553,15 +2535,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="7788872453000173219">
-      Veja a configuração da política IsolateOrigins para ter os melhores resultados do isolamento e impacto limitado para o usuário, utilizando IsolateOrigins com uma lista dos sites que você quer isolar. Esta configuração, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site será executado no próprio processo.
-      Se a política estiver desativada, não haverá nenhum isolamento explícito de sites, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda conseguirão ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o usuário poderá alterar essa configuração.
-      No <ph name="PRODUCT_OS_NAME" />, é recomendado definir também a política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não forem correspondentes, poderá haver um atraso ao entrar em uma sessão de usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
-
-      OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar SitePerProcess no Android, use a configuração da política SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de hashes subjectPublicKeyInfo.
 
       Esta política permite a desativação dos requisitos de divulgação da Transparência dos certificados para cadeias que contenham certificados com um dos hashes subjectPublicKeyInfo especificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados para hosts da empresa.
@@ -2597,13 +2570,6 @@
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
 <translation id="7882857838942884046">A desativação do Google Sync fará com que o recurso de backup e restauração do Android não funcione corretamente.</translation>
 <translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
-<translation id="7892077286206685156">
-      Esta política se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
-      Recomendamos que você consulte a configuração de política IsolateOrigins para ter os melhores resultados do isolamento e impacto limitado para os usuários, usando IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site será executado com o próprio processo.
-      Se a política estiver desativada, nenhum isolamento de sites ocorrerá, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda poderão ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o usuário conseguirá alterar essa configuração.
-      </translation>
 <translation id="7902255855035461275">Os padrões desta lista serão comparados com a origem de
       segurança do URL solicitante. Se uma correspondência for encontrada, o acesso aos
       dispositivos de captura de vídeo será concedido sem solicitação.
@@ -2623,19 +2589,6 @@
 <translation id="793473937901685727">Definir a disponibilidade do certificado para apps ARC</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
-<translation id="7952880400776676958">
-      Se a política estiver ativada, cada uma das origens nomeadas em uma
-      lista separada por vírgulas será executada no próprio processo. Isso também isolará
-      origens nomeadas por subdomínios. Por exemplo, a especificação de https://example.com/
-      também fará com que https://foo.example.com/ seja isolado como parte do site
-      https://example.com/.
-      Se a política estiver desativada, não haverá nenhum isolamento explícito de sites, e as versões de teste de IsolateOriginsAndroid e SitePerProcessAndroid serão desativadas. Os usuários ainda poderão ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o usuário poderá alterar esta configuração.
-
-      OBSERVAÇÃO: no Android, o isolamento de sites é experimental. A compatibilidade será aprimorada com o tempo, mas pode haver problemas de desempenho por enquanto.
-
-      OBSERVAÇÃO: esta política se aplica apenas ao Chrome no Android sendo executado estritamente em dispositivos com mais de 1 GB de RAM. Para aplicar a política em plataformas não Android, use IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência dos certificados para uma lista de Autoridades de certificação de legado</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>

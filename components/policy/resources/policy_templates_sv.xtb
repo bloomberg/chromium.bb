@@ -150,17 +150,6 @@
 
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
-<translation id="1372267489642113556">
-      Om principen aktiveras körs varje namngivet ursprung i
-      en kommaavgränsad lista som en egen process. Även underdomäner
-      isoleras. Om du exempelvis anger https://example.com/ isoleras även
-      https://foo.example.com/ som en del av webbplatsen https://example.com/.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-
-      OBS! Den här principen gäller inte Android. Om du vill aktivera IsolateOrigins på Android använder du principen IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referens: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
@@ -1008,12 +997,6 @@
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3715569262675717862">Autentisering utifrån klientcertifikat</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
-<translation id="3746590506846867985">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipens inställning tillämpas.
-      Om principen aktiveras körs varje namngivet ursprung i en kommaavgränsad lista som en egen process. Även underdomäner isoleras. Om du exempelvis anger https://example.com/ isoleras även https://foo.example.com/ som en del av webbplatsen https://example.com/.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
-      Om principen inte konfigureras används plattformens standardinställningar för webbplatsisolering på inloggningsskärmen.
-      </translation>
 <translation id="3748900290998155147">Anger om processlås är tillåtna. Tillägg kan begära processlås via tilläggs-API:et för energibesparing och via ARC-appar.
 
           Om principen är inställd på sant eller inte har någon inställning tillåts processlås för energibesparing.
@@ -2668,15 +2651,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Sidan Ny flik</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7788872453000173219">
-      Ta gärna en titt på principen IsolateOriginsAndroid också: du kan få det bästa av två världar, isolering och begränsad inverkan på användarna, genom att ange en lista med webbplatser som ska isoleras med IsolateOriginsAndroid. Med den här inställningen, SitePerProcessAndroid, isoleras alla webbplatser.
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOriginsAndroid och SitePerProcessAndroid inaktiveras. Användarna kan fortfarande aktivera SitePerProcess manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-
-      OBS! Den här principen gäller inte Android. Om du vill aktivera SitePerProcess på Android använder du principen SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Inaktiverar kraven för certifikattransparens för subjectPublicKeyInfo-hashvärden.
 
       Den här policyn tillåter att kraven på certifikattransparens inaktiveras för vissa certifikatkedjor som innehåller certifikat med något av de angivna subjectPublicKeyInfo-hashvärdena. Det tillåter att certifikat, som annars inte skulle vara betrodda eftersom de inte är offentligt tillkännagivna, fortfarande används för företagsvärdar.
@@ -2712,13 +2686,6 @@
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
 <translation id="7882857838942884046">Om du inaktiverar Google Sync kommer säkerhetskopiering och återställning i Android inte att fungera korrekt.</translation>
 <translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
-<translation id="7892077286206685156">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
-      Ta gärna en titt på principen IsolateOrigins också: du kan få det bästa av två världar, isolering och begränsad inverkan på användarna, genom att ange en lista med webbplatser som ska isoleras med IsolateOrigins. Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera SitePerProcess manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      </translation>
 <translation id="7902255855035461275">Mönster i den här listan matchas mot den begärande
       webbadressens säkerhetsursprung. Om det blir en träff får
       adressen åtkomst till videoinspelningsenheter utan meddelande.
@@ -2738,18 +2705,6 @@
 <translation id="793473937901685727">Ange om certifikat ska vara tillgängliga för ARC-appar</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
-<translation id="7952880400776676958">
-      Om principen aktiveras körs varje namngivet ursprung i
-       en kommaavgränsad lista som en egen process. Även underdomäner
-      isoleras. Om du exempelvis anger https://example.com/ isoleras även
-      https://foo.example.com/ som en del av webbplatsen https://example.com/.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOriginsAndroid och SitePerProcessAndroid inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-
-      OBS! På Android är webbplatsisolering en funktion på experimentstadiet. Stödet kommer att bli bättre med tiden, men för närvarande kan prestandaproblem uppstå.
-
-      OBS! Den här principen gäller bara Chrome på Android på enheter med mer än 1 GB RAM. Använd IsolateOrigins om du vill tillämpa principen på andra plattformar än Android.
-      </translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
 <translation id="7961779417826583251">Inaktivera tillämpning av certifikattransparens för en lista med äldre certifikatutfärdare</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.

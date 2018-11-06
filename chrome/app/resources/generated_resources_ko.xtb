@@ -2584,7 +2584,6 @@
 <translation id="4941246025622441835">다음과 같이 기기를 엔터프라이즈 관리용으로 등록할 때 이 기기 요청을 사용합니다.</translation>
 <translation id="4941627891654116707">글꼴 크기</translation>
 <translation id="494286511941020793">프록시 설정 도움말</translation>
-<translation id="4945444280533270988">Smart Lock 사용</translation>
 <translation id="4953689047182316270">접근성 이벤트에 응답</translation>
 <translation id="4953808748584563296">기본 주황색 아바타</translation>
 <translation id="4955710816792587366">PIN 선택</translation>
@@ -4117,7 +4116,6 @@
 <translation id="7262004276116528033">이 로그인 서비스는 <ph name="SAML_DOMAIN" />에서 호스팅됩니다.</translation>
 <translation id="7268365133021434339">탭 닫기</translation>
 <translation id="7268659760406822741">사용 가능한 서비스</translation>
-<translation id="7269733644823798215">Chromebook을 연결하기 전에 휴대 전화의 보안을 강화하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">사이트에서 시스템 전용 메시지를 사용하여 MIDI 기기에 액세스하려는 경우 확인</translation>
 <translation id="7272674038937250585">제공된 설명이 없음</translation>
 <translation id="7273110280511444812">최근 첨부 날짜: <ph name="DATE" /></translation>
@@ -4719,7 +4717,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">새 메모 만들기</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
-<translation id="8170451533020515291">휴대전화로 <ph name="DEVICE_TYPE" />(을)를 잠금 해제합니다.</translation>
 <translation id="8174047975335711832">기기 정보</translation>
 <translation id="8177196903785554304">네트워크 세부정보</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5424,7 +5421,6 @@
 <translation id="981121421437150478">오프라인</translation>
 <translation id="983511809958454316">이 기능은 VR에서 지원되지 않습니다</translation>
 <translation id="984275831282074731">결제 수단</translation>
-<translation id="984982042683741464">화면 잠금 필요</translation>
 <translation id="98515147261107953">가로 방향</translation>
 <translation id="987897973846887088">사용 가능한 이미지 없음</translation>
 <translation id="988978206646512040">암호를 빈칸으로 두어서는 안 됩니다.</translation>

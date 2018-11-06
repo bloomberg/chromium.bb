@@ -2586,7 +2586,6 @@
 <translation id="4941246025622441835">Воспользуйтесь этой заявкой при регистрации устройства в домене предприятия:</translation>
 <translation id="4941627891654116707">Размер шрифта</translation>
 <translation id="494286511941020793">Справка по конфигурации прокси-сервера</translation>
-<translation id="4945444280533270988">Функция Smart Lock включена</translation>
 <translation id="4953689047182316270">Использование специальных возможностей</translation>
 <translation id="4953808748584563296">Аватар по умолчанию (оранжевый)</translation>
 <translation id="4955710816792587366">Установите PIN-код</translation>
@@ -4119,7 +4118,6 @@
 <translation id="7262004276116528033">Сервис входа размещен в домене <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Закрыть вкладки</translation>
 <translation id="7268659760406822741">Доступные сервисы</translation>
-<translation id="7269733644823798215">Рекомендуем включить на телефоне дополнительную защиту, прежде чем подключить его к Chromebook. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Уведомлять меня о сайтах, пытающихся использовать системные сообщения для доступа к MIDI-устройствам</translation>
 <translation id="7272674038937250585">Описания нет</translation>
 <translation id="7273110280511444812">последнее подключение: <ph name="DATE" /></translation>
@@ -4720,7 +4718,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Создать заметку</translation>
 <translation id="8168435359814927499">Контент</translation>
-<translation id="8170451533020515291">Использовать телефон, чтобы разблокировать <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">Сведения об устройстве</translation>
 <translation id="8177196903785554304">Сведения о сети</translation>
 <translation id="8179976553408161302">ВВОД</translation>
@@ -5425,7 +5422,6 @@
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983511809958454316">Эта функция не поддерживается в режиме VR</translation>
 <translation id="984275831282074731">Способы оплаты</translation>
-<translation id="984982042683741464">Включите блокировку экрана</translation>
 <translation id="98515147261107953">Альбомная</translation>
 <translation id="987897973846887088">Нет изображений</translation>
 <translation id="988978206646512040">Поле с кодовой фразой не должно быть пустым</translation>

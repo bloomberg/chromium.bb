@@ -2582,7 +2582,6 @@
 <translation id="4941246025622441835">Користи овај захтев за уређај при регистрацији уређаја за управљање предузећем:</translation>
 <translation id="4941627891654116707">Величина фонта</translation>
 <translation id="494286511941020793">Помоћ за конфигурацију проксија</translation>
-<translation id="4945444280533270988">Smart Lock је укључен</translation>
 <translation id="4953689047182316270">одговара на догађаје приступачности</translation>
 <translation id="4953808748584563296">Подразумевани наранџасти аватар</translation>
 <translation id="4955710816792587366">Одаберите PIN</translation>
@@ -4117,7 +4116,6 @@
 <translation id="7262004276116528033">Ову услугу пријављивања хостује <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Затвори картице</translation>
 <translation id="7268659760406822741">Доступне услуге</translation>
-<translation id="7269733644823798215">Додатно заштите телефон пре повезивања са Chromebook-ом. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Питај када сајт жели да користи ексклузивне поруке система за приступ MIDI уређајима</translation>
 <translation id="7272674038937250585">Није наведен ниједан опис</translation>
 <translation id="7273110280511444812">последњи пут је прикључено <ph name="DATE" /></translation>
@@ -4719,7 +4717,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Направи нову белешку</translation>
 <translation id="8168435359814927499">Садржај</translation>
-<translation id="8170451533020515291">Откључајте <ph name="DEVICE_TYPE" /> помоћу телефона</translation>
 <translation id="8174047975335711832">Информације о уређају</translation>
 <translation id="8177196903785554304">Детаљи о мрежи</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5424,7 +5421,6 @@
 <translation id="981121421437150478">Офлајн</translation>
 <translation id="983511809958454316">Ова функција није подржана у ВР-у</translation>
 <translation id="984275831282074731">Начини плаћања</translation>
-<translation id="984982042683741464">Закључавање екрана је обавезно</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
 <translation id="987897973846887088">Нема доступних слика</translation>
 <translation id="988978206646512040">Поље за приступну фразу не може да буде празно</translation>

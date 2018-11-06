@@ -137,15 +137,6 @@
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
-<translation id="1372267489642113556">
-      如果启用了此政策，则以英文逗号分隔的列表中指定的每个来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
-      如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 
-设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-
-      注意：此政策不适用于 Android 设备。若要在 Android 设备上启用 IsolateOrigins，请改用 IsolateOriginsAndroid 政策设置。
-      </translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">是否信任赛门铁克公司的旧版 PKI 基础架构</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
@@ -938,12 +929,6 @@
 <translation id="3711895659073496551">暂停</translation>
 <translation id="3715569262675717862">基于客户端证书的身份验证</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
-<translation id="3746590506846867985">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-      如果启用了此政策，则以英文逗号分隔的列表中指定的每个来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
-      如果未配置此政策，系统将为登录屏幕使用平台默认的网站隔离设置。
-      </translation>
 <translation id="3748900290998155147">指定是否允许使用唤醒锁定。屏幕唤醒锁定可由扩展程序通过 Power Management Extension API 请求，也可由 ARC 应用请求。
 
           如果将此政策设为 true 或未进行设置，系统就会允许使用唤醒锁定，以便进行电源管理。
@@ -2512,15 +2497,6 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新标签页</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
-<translation id="7788872453000173219">
-      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，考虑使用  IsolateOrigins 政策来根据网站列表隔离一系列网站。SitePerProcess 这项设置会隔离所有网站。
-      如果启用了此政策，每个网站都会在自己的进程中运行。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
-      如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-
-      注意：此政策不适用于 Android 设备。若要在 Android 设备上启用 SitePerProcess，请改用 SitePerProcessAndroid 政策设置。
-      </translation>
 <translation id="780603170519840350">对于指定的一系列 subjectPublicKeyInfo 哈希，不强制执行证书透明化要求。
 
       如果证书链中的证书含有某个指定的 subjectPublicKeyInfo 哈希，则此政策允许针对此类证书链停用证书透明化披露要求。这样一来，本应不受信任的证书（因为并未适当地公开披露）将可以继续用于企业主机。
@@ -2556,13 +2532,6 @@
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
 <translation id="7882857838942884046">停用 Google 同步会导致 Android 的备份和恢复机制无法正常运行。</translation>
 <translation id="7882890448959833986">禁止显示“操作系统不受支持”警告</translation>
-<translation id="7892077286206685156">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，考虑使用 IsolateOrigins 政策来根据网站列表隔离一系列网站。SitePerProcess 这项设置会隔离所有网站。
-      如果启用了此政策，每个网站都会在自己的进程中运行。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
-      如果未配置此政策，用户将能够更改此设置。
-      </translation>
 <translation id="7902255855035461275">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址使用视频捕获设备，并且不会进行提示。
 
       请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
@@ -2580,15 +2549,6 @@
 <translation id="793473937901685727">为 ARC 应用设置证书可用性</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
-<translation id="7952880400776676958">
-      如果启用了此政策，则以英文逗号分隔的列表中指定的每个来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOriginsAndroid 和 SitePerProcessAndroid 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
-      如果未配置此政策，用户将能够更改此设置。
-
-      注意：在 Android 设备上，网站隔离尚处于实验阶段。随着时间的推移，相关支持将会不断得到完善，但目前它可能会导致性能问题。
-
-      注意：这项政策仅适用于 Android 版 Chrome，且 Chrome 运行所在的设备一定要有超过 1GB 的 RAM。若要在非 Android 平台上应用此政策，请改用 IsolateOrigins。
-      </translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>

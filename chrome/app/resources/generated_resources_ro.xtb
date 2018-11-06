@@ -2586,7 +2586,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4941246025622441835">Utilizați această solicitare pentru dispozitiv la înscrierea dispozitivului pentru gestionarea la nivel de întreprindere:</translation>
 <translation id="4941627891654116707">Dimensiunea fontului</translation>
 <translation id="494286511941020793">Ajutor de configurare pentru proxy</translation>
-<translation id="4945444280533270988">Smart Lock este activat</translation>
 <translation id="4953689047182316270">să răspundă evenimentelor de accesibilitate</translation>
 <translation id="4953808748584563296">Avatar portocaliu prestabilit</translation>
 <translation id="4955710816792587366">Alege codul PIN</translation>
@@ -4119,7 +4118,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7262004276116528033">Acest serviciu de conectare este găzduit de <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Închide filele</translation>
 <translation id="7268659760406822741">Servicii disponibile</translation>
-<translation id="7269733644823798215">Protejează-ți telefonul înainte să te conectezi la Chromebook. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Întreabă-mă când un site dorește să utilizeze mesajele rezervate sistemului ca să acceseze dispozitivele MIDI</translation>
 <translation id="7272674038937250585">Nu a fost oferită o descriere</translation>
 <translation id="7273110280511444812">conectat ultima dată pe <ph name="DATE" /></translation>
@@ -4721,7 +4719,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Creează o notă nouă</translation>
 <translation id="8168435359814927499">Conținut</translation>
-<translation id="8170451533020515291">Folosește telefonul pentru a debloca <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">Informații despre dispozitiv</translation>
 <translation id="8177196903785554304">Detalii privind rețeaua</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5426,7 +5423,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Această funcție nu este acceptată în RV</translation>
 <translation id="984275831282074731">Metode de plată</translation>
-<translation id="984982042683741464">Este necesară blocarea ecranului</translation>
 <translation id="98515147261107953">Peisaj</translation>
 <translation id="987897973846887088">Nu există imagini disponibile</translation>
 <translation id="988978206646512040">Trebuie să fie introdusă expresia de acces</translation>

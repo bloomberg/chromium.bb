@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
 <translation id="2865888419503095837">Võrguteave</translation>
-<translation id="287224423103674444">Vajutasite ekraanikuva pööramise otseteed. Kas soovite ekraanikuva pöörata?</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2878884018241093801">Hiljutisi üksusi pole</translation>
 <translation id="2903844815300039659">Ühendatud võrguga <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -190,7 +189,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Rakenduse puhul välja lülitatud}other{# rakenduse puhul välja lülitatud}}</translation>
 <translation id="4072264167173457037">Keskmine signaal</translation>
 <translation id="4146833061457621061">Esita muusikat</translation>
-<translation id="4200057768455216496">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="4217571870635786043">Dikteerimine</translation>
 <translation id="4261870227682513959">Kuvab märguandeseaded. Märguanded on välja lülitatud</translation>
 <translation id="4269883910223712419">Selle seadme administraator saab teha järgmist.</translation>
@@ -343,7 +341,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="698231206551913481">Kõik selle kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui see kasutaja eemaldatakse.</translation>
 <translation id="7015766095477679451">Tulge tagasi kell <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
-<translation id="7037152028959403492">Vajutasite suure kontrastsusega režiimi otseteed. Kas soovite režiimi sisse lülitada?</translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7067196344162293536">Automaatne pööramine</translation>
 <translation id="7068360136237591149">Ava failid</translation>
@@ -411,7 +408,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
-<translation id="8152119955266188852">Vajutasite täisekraani luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
 <translation id="8192202700944119416">Märguanded on peidetud.</translation>
 <translation id="8236042855478648955">Aeg pausi pidada</translation>

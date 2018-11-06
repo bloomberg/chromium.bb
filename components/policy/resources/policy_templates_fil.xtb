@@ -150,18 +150,6 @@
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
-<translation id="1372267489642113556">
-      Kung ie-enable ang patakaran, magpapatakbo ang bawat isa sa mga pinangalanang pinagmulan na nasa isang
-      comma-separated list ng sarili nitong proseso. Ia-isolate din nito ang
-      mga pinagmulang pinangalanan ng mga subdomain; hal. kapag isinaad ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung idi-disable ang patakaran, walang mangyayaring hayagang Pag-isolate ng Site, at madi-disable ang mga trial sa field ng IsolateOrigins at SitePerProcess. Mae-enable pa rin ng mga user ang IsolateOrigins sa manual na paraan.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomenda ring itakda ang patakaran sa device ng <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa iisang value. Kung hindi magkatugma ang mga value na isinaad ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na isinaad ng patakaran ng user.
-
-      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para ma-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakaran ng IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
@@ -1003,12 +991,6 @@
 <translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3715569262675717862">Pag-authenticate batay sa mga certificate ng kliyente</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
-<translation id="3746590506846867985">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magkatugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na natukoy ng patakaran ng user.
-      Kung ie-enable ang patakaran, ang bawat isa sa mga pinangalanang pinagmulan sa isang comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang mga pinagmulang pinangalanan ayon sa mga subdomain; hal. kapag tinukoy ang https://example.com/, maa-isolate din ang https://foo.example.com/ bilang bahagi ng site na https://example.com/.
-      Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang IsolateOrigins.
-      Kung hindi naka-configure ang patakaran, gagamitin ang mga setting ng platform na default na pag-isolate ng site para sa screen ng pag-sign in.
-      </translation>
 <translation id="3748900290998155147">Tumutukoy kung pinapayagan ang mga wake lock. Maaaring humiling ng mga wake lock ang mga extension sa pamamagitan ng power management extension API at sa pamamagitan ng mga ARC app.
 
           Kung nakatakda sa true o hahayaang hindi nakatakda ang patakarang ito, gagamitin ang mga wake lock para sa pamamahala ng power.
@@ -2661,15 +2643,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Page ng Bagong Tab</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
-<translation id="7788872453000173219">
-      Maaari mong tingnan ang setting ng patakarang IsolateOrigins para parehong masulit ang pag-isolate at ang limitadong epekto sa mga user sa pamamagitan ng paggamit ng IsolateOrigins, na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin ng mga user ang SitePerProcess sa manual na paraan.
-      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomenda ring itakda ang patakaran sa device ng <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa iisang value. Kung hindi magkatugma ang mga value na isinaad ng dalawang patakaran, maaaring magkaroon ng pagkaantala kapag pumasok sa isang session ng user habang inilalapat ang value na isinaad ng patakaran ng user.
-
-      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang SitePerProcess sa Android, gamitin ang setting ng patakarang SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate para sa isang listahan ng mga hash ng subjectPublicKeyInfo.
 
       Pinapayagan ng patakarang ito ang pag-disable ng mga kinakailangan sa paghahayag ng Transparency ng Certificate para sa mga chain ng certificate na naglalaman ng mga certificate na may isa sa mga natukoy na hash ng subjectPublicKeyInfo. Pinapayagan nito ang mga certificate na maaaring hindi pagkatiwalaan, dahil hindi wastong inihayag ang mga ito sa publiko, para patuloy na magamit para sa mga host ng Enterprise.
@@ -2705,13 +2678,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
 <translation id="7882857838942884046">Kapag na-disable ang Google Sync, hindi gagana nang maayos ang Pag-back up at Pag-restore sa Android.</translation>
 <translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
-<translation id="7892077286206685156">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magkatugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumasok sa session ng user habang inilalapat ang value na isinaad sa patakaran ng user.
-      Maaari mong tingnan ang setting ng patakarang IsolateOrigins para parehong masulit ang pag-isolate at ang limitadong epekto sa mga user, sa pamamagitan ng paggamit ng IsolateOrigins, na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin ng mga user ang SitePerProcess sa manual na paraan.
-      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="7902255855035461275">Itutugma ang mga pattern sa listahang ito sa security
       origin ng humihiling na URL.  Kung makakakita ng katugma, magbibigay ng access sa mga device na nagka-capture ng video
       nang walang prompt.
@@ -2731,19 +2697,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="793473937901685727">Itakda ang availability ng certificate para sa mga ARC app</translation>
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="7941975817681987555">Huwag hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
-<translation id="7952880400776676958">
-      Kung ie-enable ang patakaran, ang bawat isa sa mga pinangalanang pinagmulan sa isang
-      comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang
-      mga pinagmulang pinangalanan ayon sa mga subdomain; hal. kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOriginsAndroid at SitePerProcessAndroid. Mae-enable pa rin ng mga user ang IsolateOrigins sa manual na paraan.
-      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
-
-      TANDAAN: Sa Android, pang-eksperimento ang Pag-isolate ng Site. Huhusay ang suporta sa paglipas ng panahon, ngunit maaari itong magdulot ng mga problema sa performance sa kasalukuyan.
-
-      TANDAAN: Nalalapat lang ang patakarang ito sa Chrome sa Android na tumatakbo sa mga device na may mahigit lang sa 1GB ng RAM. Para ilapat ang patakaran sa mga platform na hindi Android, gamitin ang IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Mga pinapamahalaang host ng manu-manong exception ng user</translation>
 <translation id="7961779417826583251">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng Mga Legacy Certificate Authority</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.

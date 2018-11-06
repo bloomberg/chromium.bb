@@ -2586,7 +2586,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4941246025622441835">Utiliser cette réquisition pour l'enregistrement de l'appareil dans le cadre de la gestion d'entreprise :</translation>
 <translation id="4941627891654116707">Taille de police</translation>
 <translation id="494286511941020793">Aide pour la configuration de proxy</translation>
-<translation id="4945444280533270988">Smart Lock activé</translation>
 <translation id="4953689047182316270">Répondre aux événements d'accessibilité</translation>
 <translation id="4953808748584563296">Avatar orange par défaut</translation>
 <translation id="4955710816792587366">Sélectionner un code</translation>
@@ -4120,7 +4119,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7262004276116528033">Ce service de connexion est hébergé par <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Fermer les onglets</translation>
 <translation id="7268659760406822741">Services disponibles</translation>
-<translation id="7269733644823798215">Renforcez la sécurité de votre téléphone avant d'associer votre Chromebook. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">Demander lorsqu'un site souhaite utiliser des messages spécifiques au système pour accéder aux appareils MIDI</translation>
 <translation id="7272674038937250585">Aucune description fournie</translation>
 <translation id="7273110280511444812">date de la dernière connexion : <ph name="DATE" /></translation>
@@ -4722,7 +4720,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">Créer une note</translation>
 <translation id="8168435359814927499">Contenu</translation>
-<translation id="8170451533020515291">Déverrouillez votre <ph name="DEVICE_TYPE" /> à l'aide de votre téléphone</translation>
 <translation id="8174047975335711832">Informations sur l'appareil</translation>
 <translation id="8177196903785554304">Détails du réseau</translation>
 <translation id="8179976553408161302">Entrée</translation>
@@ -5427,7 +5424,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="981121421437150478">Hors connexion</translation>
 <translation id="983511809958454316">Cette fonctionnalité n'est pas compatible avec la RV</translation>
 <translation id="984275831282074731">Modes de paiement</translation>
-<translation id="984982042683741464">Verrouillage de l'écran requis</translation>
 <translation id="98515147261107953">Paysage</translation>
 <translation id="987897973846887088">Aucune image disponible</translation>
 <translation id="988978206646512040">Phrase secrète obligatoire</translation>

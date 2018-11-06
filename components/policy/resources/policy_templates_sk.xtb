@@ -137,14 +137,6 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
 <translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
-<translation id="1372267489642113556">
-      Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izolácia webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
-
-      POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo IsolateOrigins v Androide, použite nastavenie pravidla IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referenčná stránka: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
@@ -983,12 +975,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3711895659073496551">Režim spánku</translation>
 <translation id="3715569262675717862">Overenie totožnosti na základe certifikátov klienta</translation>
 <translation id="3736879847913515635">Povoliť pridanie osoby pomocou správcu používateľov</translation>
-<translation id="3746590506846867985">
-      Tieto pravidlá platia pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izolácia webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, pre prihlasovaciu obrazovku sa použijú nastavenia izolácie webov predvolené v rámci danej platformy.
-      </translation>
 <translation id="3748900290998155147">Určujte, či sú povolené zákazy režimu spánku. Zákazy režimu spánku je možné vyžiadať rozšíreniami prostredníctvom rozhrania API na správu napájania pre rozšírenia a aplikáciami ARC.
 
           Ak toto pravidlo nastavíte na hodnotu true alebo ho nenastavíte, zákazy režimu spánku sa budú pri správe napájania zohľadňovať.
@@ -2649,14 +2635,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Stránka na novej karte</translation>
 <translation id="7788511847830146438">Podľa profilu</translation>
-<translation id="7788872453000173219">
-      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
-
-      POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo SitePerProcess v Androide, použite nastavenie pravidla SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Zakáže presadzovanie požiadaviek pravidla transparentnosti certifikátov pre zoznam starých certifikačných autorít.
 
       Toto pravidlo umožňuje zakázať požiadavky zverejnenia transparentnosti certifikátov pre reťazce certifikátov, ktoré obsahujú certifikáty s niektorým zo špecifikovaných hašov subjectPublicKeyInfo. Pre podnikové hostiteľské servery je potom možné používať certifikáty, ktoré by inak boli považované za nedôveryhodné, pretože neboli zverejnené.
@@ -2692,14 +2670,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
 <translation id="7882857838942884046">V prípade zákazu synchronizácie Google nebudú funkcie zálohy a obnovy v Androide fungovať správne.</translation>
 <translation id="7882890448959833986">Zrušenie zobrazovania upozornenia na nepodporovaný operačný systém</translation>
-<translation id="7892077286206685156">
-      Tieto pravidlá platia pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      
-Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      </translation>
 <translation id="7902255855035461275">Vzory v tomto zozname sa porovnajú s pôvodom
       zabezpečenia webovej adresy, ktorá odoslala žiadosť. Ak sa nájde zhoda, prístup k zariadeniam
       na zaznamenávanie zvuku sa udelí bez výzvy.
@@ -2719,15 +2689,6 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 <translation id="793473937901685727">Nastaviť dostupnosť certifikátov pre aplikácie ARC</translation>
 <translation id="7937766917976512374">Povoliť alebo zakázať zaznamenávanie videa</translation>
 <translation id="7941975817681987555">Nepredpovedať akcie siete pri sieťovom pripojení</translation>
-<translation id="7952880400776676958">
-      Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, ak napríklad uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izolácia webu a skúšobné testy pravidiel IsolateOriginsAndroid a SitePerProcessAndroid budú zakázané. Používatelia budú môcť ale pravidlo IsolateOrigins ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-
-      POZNÁMKA: Funkcia Izolácia webov v Androide je experimentálna. Jej podpora sa časom zlepší, ale v súčasnosti môže spôsobovať problémy s výkonnosťou.
-
-      POZNÁMKA: Toto pravidlo platí len pre Chrome v Androide v zariadeniach s minimálne 1 GB pamäte RAM. Ak ho chcete použiť v iných platformách ako Android, použite pravidlo IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Spravované výnimky hostiteľov ručne nastavené používateľom</translation>
 <translation id="7961779417826583251">Zakázať presadzovanie pravidla transparentnosti certifikátov pre zoznam starých certifikačných autorít</translation>
 <translation id="7974114691960514888">Toto pravidlo už nie je podporované.

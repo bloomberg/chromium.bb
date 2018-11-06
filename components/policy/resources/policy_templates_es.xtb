@@ -149,18 +149,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
 <translation id="1363275621236827384">Habilitar consultas a Quirks Server para los perfiles de hardware</translation>
-<translation id="1372267489642113556">
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
-      se aislará https://foo.example.com/ como parte del
-      sitio web https://example.com/).
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-
-      NOTA: Esta política no se aplica a Android. Para habilitar IsolateOrigins en Android, utiliza la política IsolateOriginsAndroid.
-      </translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Confiar o no en la infraestructura de clave pública antigua de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
@@ -1006,12 +994,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autenticación basada en certificados de cliente</translation>
 <translation id="3736879847913515635">Habilitar Añadir persona en el administrador de usuarios</translation>
-<translation id="3746590506846867985">
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Si se habilita la política, cada uno de los orígenes especificados en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/, se aislará https://foo.example.com/ como parte del sitio web https://example.com/).
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
-      </translation>
 <translation id="3748900290998155147">Especifica si se permiten los wake locks. Las extensiones pueden solicitar los wake locks a través de la API de extensión de gestión de energía. Las aplicaciones de ARC también pueden solicitarlos.
 
           Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los wake locks son válidos para la gestión de energía.
@@ -2665,18 +2647,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página Nueva pestaña</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="7788872453000173219">
-      Para conseguir tanto aislamiento como
-      un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-
-      NOTA: Esta política no se aplica a Android. Para habilitar SitePerProcess en Android, utiliza la política SitePerProcessAndroid.
-      </translation>
 <translation id="780603170519840350">Inhabilita los requisitos de transparencia en los certificados en una lista de hashes subjectPublicKeyInfo.
 
       Esta política permite inhabilitar los requisitos de comunicación de transparencia en los certificados en cadenas que contienen certificados con uno de los hashes subjectPublicKeyInfo especificados. Esto permite que se sigan usando en hosts empresariales los certificados que, de otra forma, no serían de confianza por no haberse comunicado públicamente de forma correcta.
@@ -2712,16 +2682,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>
 <translation id="7882857838942884046">Inhabilitar Google Sync provocará que Android Backup and Restore no funcione correctamente.</translation>
 <translation id="7882890448959833986">Eliminar la advertencia de SO no admitido</translation>
-<translation id="7892077286206685156">
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Para conseguir tanto aislamiento como
-      un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, no se aplica ningún aislamiento de sitios web explícito y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      </translation>
 <translation id="7902255855035461275">Los patrones de esta lista se compararán con el origen de seguridad de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de vídeo sin solicitarlo.
 
 NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
@@ -2739,19 +2699,6 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="793473937901685727">Establecer la disponibilidad del certificado para las aplicaciones ARC</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
-<translation id="7952880400776676958">
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
-      se aislará https://foo.example.com/ como parte del sitio web 
-      https://example.com/).
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOriginsAndroid y SitePerProcessAndroid. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-
-      NOTA: En Android, el aislamiento de sitios web es experimental. La compatibilidad mejorará con el tiempo, pero es posible que actualmente provoque problemas de rendimiento. 
-
-      NOTA: Esta política solo se aplica a Chrome si se utiliza en dispositivos Android con más de 1 GB de RAM. Para aplicar esta política a plataformas distintas de Android, usa IsolateOrigins.
-      </translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7961779417826583251">Inhabilitar los requisitos de la transparencia en los certificados en una lista de autoridades de certificación antiguas</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.

@@ -117,7 +117,6 @@
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
 <translation id="2865888419503095837">Maelezo ya mtandao</translation>
-<translation id="287224423103674444">Umebofya njia ya mkato ya kuzungusha skrini. Ungependa kuzungusha skrini?</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="2878884018241093801">Hakuna vipengee vya hivi karibuni</translation>
 <translation id="2903844815300039659">Imeunganishwa kwenye <ph name="NAME" />, <ph name="STRENGTH" /></translation>
@@ -189,7 +188,6 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Imezimwa katika programu moja}other{Imezimwa katika programu #}}</translation>
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
 <translation id="4146833061457621061">Cheza muziki</translation>
-<translation id="4200057768455216496">Umebofya njia ya mkato ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
 <translation id="4261870227682513959">Onyesha mipangilio ya arifa. Umezima arifa</translation>
 <translation id="4269883910223712419">Msimamizi wa kifaa hiki ana uwezo wa:</translation>
@@ -342,7 +340,6 @@
 <translation id="698231206551913481">Faili na data zote zilizo kwenye kifaa zinazohusishwa na mtumiaji zitafutwa kabisa pindi tu mtumiaji huyu atakapoondolewa.</translation>
 <translation id="7015766095477679451">Rejea saa <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
-<translation id="7037152028959403492">Umebofya njia ya mkato ya utofautishaji wa juu. Ungependa kuuwasha?</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7067196344162293536">Zungusha kiotomatiki</translation>
 <translation id="7068360136237591149">Fungua faili</translation>
@@ -411,7 +408,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inaanzisha…</translation>
 <translation id="8142699993796781067">Mtandao binafsi</translation>
-<translation id="8152119955266188852">Umebofya njia ya mkato ya kikuzaji cha skrini nzima. Ungependa kukiwasha?</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8192202700944119416">Arifa zimefichwa.</translation>
 <translation id="8236042855478648955">Ni wakati wa kupumzika</translation>

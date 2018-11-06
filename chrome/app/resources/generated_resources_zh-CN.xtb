@@ -2578,7 +2578,6 @@
 <translation id="4941246025622441835">将设备登记到企业管理目录下时使用此设备前提条件：</translation>
 <translation id="4941627891654116707">字号</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
-<translation id="4945444280533270988">Smart Lock 已开启</translation>
 <translation id="4953689047182316270">对无障碍事件做出响应</translation>
 <translation id="4953808748584563296">默认的橙色头像</translation>
 <translation id="4955710816792587366">选择 PIN 码</translation>
@@ -4106,7 +4105,6 @@
 <translation id="7262004276116528033">此登录服务由 <ph name="SAML_DOMAIN" /> 托管</translation>
 <translation id="7268365133021434339">关闭标签页</translation>
 <translation id="7268659760406822741">可用服务</translation>
-<translation id="7269733644823798215">请先提升手机的安全系数，然后再连接您的 Chromebook。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="7270858098575133036">当网站想使用系统专有消息访问 MIDI 设备时询问您</translation>
 <translation id="7272674038937250585">未提供说明</translation>
 <translation id="7273110280511444812">上次连接日期：<ph name="DATE" /></translation>
@@ -4705,7 +4703,6 @@
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />，<ph name="TIME_REMAINING" /></translation>
 <translation id="8162857629993139764">创建新记事</translation>
 <translation id="8168435359814927499">内容</translation>
-<translation id="8170451533020515291">使用手机解锁您的 <ph name="DEVICE_TYPE" /></translation>
 <translation id="8174047975335711832">设备信息</translation>
 <translation id="8177196903785554304">网络详细信息</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -5410,7 +5407,6 @@
 <translation id="981121421437150478">离线</translation>
 <translation id="983511809958454316">此功能在虚拟实境中不受支持</translation>
 <translation id="984275831282074731">付款方式</translation>
-<translation id="984982042683741464">需要设置屏幕锁定</translation>
 <translation id="98515147261107953">横向</translation>
 <translation id="987897973846887088">没有可用的图片</translation>
 <translation id="988978206646512040">密码字段不能留空</translation>
