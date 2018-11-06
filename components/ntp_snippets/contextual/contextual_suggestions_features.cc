@@ -13,6 +13,6 @@ const base::Feature kContextualSuggestionsIPHReverseScroll{
     "ContextualSuggestionsIPHReverseScroll", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSuggestionsOptOut{
-    "ContextualSuggestionsOptOut", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ContextualSuggestionsOptOut", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace contextual_suggestions
