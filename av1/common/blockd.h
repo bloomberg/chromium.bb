@@ -649,19 +649,19 @@ static INLINE BLOCK_SIZE get_partition_subsize(BLOCK_SIZE bsize,
 static TX_TYPE intra_mode_to_tx_type(const MB_MODE_INFO *mbmi,
                                      PLANE_TYPE plane_type) {
   static const TX_TYPE _intra_mode_to_tx_type[INTRA_MODES] = {
-    DCT_DCT,    // DC
-    ADST_DCT,   // V
-    DCT_ADST,   // H
-    DCT_DCT,    // D45
-    ADST_ADST,  // D135
-    ADST_DCT,   // D117
-    DCT_ADST,   // D153
-    DCT_ADST,   // D207
-    ADST_DCT,   // D63
-    ADST_ADST,  // SMOOTH
-    ADST_DCT,   // SMOOTH_V
-    DCT_ADST,   // SMOOTH_H
-    ADST_ADST,  // PAETH
+    DCT_DCT,    // DC_PRED
+    ADST_DCT,   // V_PRED
+    DCT_ADST,   // H_PRED
+    DCT_DCT,    // D45_PRED
+    ADST_ADST,  // D135_PRED
+    ADST_DCT,   // D113_PRED
+    DCT_ADST,   // D157_PRED
+    DCT_ADST,   // D203_PRED
+    ADST_DCT,   // D67_PRED
+    ADST_ADST,  // SMOOTH_PRED
+    ADST_DCT,   // SMOOTH_V_PRED
+    DCT_ADST,   // SMOOTH_H_PRED
+    ADST_ADST,  // PAETH_PRED
   };
   const PREDICTION_MODE mode =
       (plane_type == PLANE_TYPE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
