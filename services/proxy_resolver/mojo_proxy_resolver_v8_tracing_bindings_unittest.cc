@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings.h"
+#include "services/proxy_resolver/mojo_proxy_resolver_v8_tracing_bindings.h"
 
 #include <string>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace proxy_resolver {
 
 class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
  public:
@@ -29,8 +29,8 @@ class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
     errors_.push_back(std::make_pair(line_number, message));
   }
 
-  void ResolveDns(std::unique_ptr<HostResolver::RequestInfo> request_info,
-                  interfaces::HostResolverRequestClientPtr client) {}
+  void ResolveDns(std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+                  mojom::HostResolverRequestClientPtr client) {}
 
  protected:
   std::unique_ptr<MojoProxyResolverV8TracingBindings<
@@ -58,4 +58,4 @@ TEST_F(MojoProxyResolverV8TracingBindingsTest, Basic) {
   EXPECT_EQ("error", errors_[0].second);
 }
 
-}  // namespace net
+}  // namespace proxy_resolver
