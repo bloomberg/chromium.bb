@@ -51,12 +51,6 @@ GpuFeatureInfo* InProcessGpuThreadHolder::GetGpuFeatureInfo() {
   return &gpu_feature_info_;
 }
 
-void InProcessGpuThreadHolder::SetGpuFeatureInfo(
-    const GpuFeatureInfo& gpu_feature_info) {
-  DCHECK(!task_executor_);
-  gpu_feature_info_ = gpu_feature_info;
-}
-
 scoped_refptr<CommandBufferTaskExecutor>
 InProcessGpuThreadHolder::GetTaskExecutor() {
   if (!task_executor_) {

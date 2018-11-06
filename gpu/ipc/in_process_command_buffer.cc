@@ -16,7 +16,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +64,6 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
-#include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
@@ -109,9 +107,6 @@ base::OnceClosure WrapTaskWithResult(base::OnceCallback<T(void)> task,
   return base::BindOnce(wrapper, std::move(task), result, completion);
 }
 
-base::LazyInstance<InProcessGpuThreadHolder>::DestructorAtExit
-    g_default_task_executer = LAZY_INSTANCE_INITIALIZER;
-
 class ScopedEvent {
  public:
   explicit ScopedEvent(base::WaitableEvent* event) : event_(event) {}
@@ -120,23 +115,6 @@ class ScopedEvent {
  private:
   base::WaitableEvent* event_;
 };
-
-// If |task_executer| is passed in then it will be returned, otherwise a default
-// task_executer will be constructed and returned.
-scoped_refptr<CommandBufferTaskExecutor> MaybeGetDefaultTaskExecutor(
-    scoped_refptr<CommandBufferTaskExecutor> task_executer) {
-  if (task_executer)
-    return task_executer;
-
-  // Call base::ThreadTaskRunnerHandle::IsSet() to ensure that it is
-  // instantiated before we create the GPU thread, otherwise shutdown order will
-  // delete the ThreadTaskRunnerHandle before the GPU thread's message loop,
-  // and when the message loop is shutdown, it will recreate
-  // ThreadTaskRunnerHandle, which will re-add a new task to the, AtExitManager,
-  // which causes a deadlock because it's already locked.
-  base::ThreadTaskRunnerHandle::IsSet();
-  return g_default_task_executer.Get().GetTaskExecutor();
-}
 
 }  // namespace
 
@@ -208,7 +186,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
     : command_buffer_id_(NextCommandBufferId()),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
-      task_executor_(MaybeGetDefaultTaskExecutor(std::move(task_executer))),
+      task_executor_(std::move(task_executer)),
       shared_image_interface_(new SharedImageInterface(this)),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -219,23 +197,11 @@ InProcessCommandBuffer::InProcessCommandBuffer(
   // Detach gpu sequence checker because we want to bind it to the gpu sequence,
   // and not the current (client) sequence except for webview (see Initialize).
   DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
+  DCHECK(task_executor_);
 }
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
   Destroy();
-}
-
-// static
-void InProcessCommandBuffer::InitializeDefaultServiceForTesting(
-    const GpuFeatureInfo& gpu_feature_info) {
-  // Call base::ThreadTaskRunnerHandle::IsSet() to ensure that it is
-  // instantiated before we create the GPU thread, otherwise shutdown order will
-  // delete the ThreadTaskRunnerHandle before the GPU thread's message loop,
-  // and when the message loop is shutdown, it will recreate
-  // ThreadTaskRunnerHandle, which will re-add a new task to the, AtExitManager,
-  // which causes a deadlock because it's already locked.
-  base::ThreadTaskRunnerHandle::IsSet();
-  g_default_task_executer.Get().SetGpuFeatureInfo(gpu_feature_info);
 }
 
 gpu::ServiceTransferCache* InProcessCommandBuffer::GetTransferCacheForTest()

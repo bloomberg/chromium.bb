@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/gl_in_process_context_export.h"
 
 namespace gpu {
 class CommandBufferTaskExecutor;
@@ -23,7 +23,7 @@ class SyncPointManager;
 // isn't a full GPU thread implementation and should only be used in tests. A
 // default GpuPreferences and GpuFeatureInfo will be constructed from the
 // command line when this class is first created.
-class GL_IN_PROCESS_CONTEXT_EXPORT InProcessGpuThreadHolder
+class COMPONENT_EXPORT(GPU_THREAD_HOLDER) InProcessGpuThreadHolder
     : public base::Thread {
  public:
   InProcessGpuThreadHolder();
@@ -36,11 +36,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessGpuThreadHolder
   // Returns GpuFeatureInfo that can be modified before GetTaskExecutor() is
   // called for the first time.
   GpuFeatureInfo* GetGpuFeatureInfo();
-
-  // Can only be called before GetTaskExecutor() is called for the first time.
-  // TODO(kylechar): Remove this and convert anything that uses it
-  // GetGpuFeatureInfo() instead.
-  void SetGpuFeatureInfo(const GpuFeatureInfo& gpu_feature_info);
 
   // Returns a task executor that runs commands on the GPU thread. The task
   // executor will be created the first time this is called.

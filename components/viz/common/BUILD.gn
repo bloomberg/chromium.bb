@@ -294,6 +294,7 @@ viz_test("viz_benchmark") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc:gpu_thread_holder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",

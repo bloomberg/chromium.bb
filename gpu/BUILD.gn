@@ -173,6 +173,7 @@ jumbo_static_library("test_support") {
     ":gpu",
     ":webgpu",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/ipc:gpu_thread_holder",
   ]
   deps = [
     "//base/test:test_support",
