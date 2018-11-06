@@ -695,6 +695,22 @@ void AssistantManagerServiceImpl::OnVoiceInteractionHotwordEnabled(
   platform_api_->OnHotwordEnabled(enabled);
 }
 
+void AssistantManagerServiceImpl::OnLocaleChanged(const std::string& locale) {
+  if (locale == locale_)
+    return;
+
+  locale_ = locale;
+
+  // When |locale_| changes we need to update our internal options to
+  // synchronize our LibAssistant locale configuration.
+  if (assistant_manager_internal_) {
+    background_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantManagerServiceImpl::UpdateInternalOptions,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
 void AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& access_token,
     const std::string& arc_version) {
@@ -770,7 +786,7 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   VLOG(1) << "Update assistant device locale: "
           << base::i18n::GetConfiguredLocale();
   device_settings_update->mutable_device_settings()->set_locale(
-      base::i18n::GetConfiguredLocale());
+      locale_.empty() ? base::i18n::GetConfiguredLocale() : locale_);
 
   // Enable personal readout to grant permission for personal features.
   device_settings_update->mutable_device_settings()->set_personal_readout(
@@ -790,7 +806,7 @@ void AssistantManagerServiceImpl::UpdateInternalOptions() {
   auto* internal_options =
       assistant_manager_internal_->CreateDefaultInternalOptions();
   SetAssistantOptions(internal_options, BuildUserAgent(arc_version_.value()),
-                      spoken_feedback_enabled_);
+                      locale_, spoken_feedback_enabled_);
   assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;
   });
