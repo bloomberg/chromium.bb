@@ -470,6 +470,9 @@ void AppsGridView::OnTabletModeChanged(bool started) {
     if (item_view->item()->is_folder())
       item_view->SetBackgroundBlurEnabled(started);
   }
+
+  // Prevent context menus from remaining open after a transition
+  CancelContextMenusOnCurrentPage();
 }
 
 void AppsGridView::SetModel(AppListModel* model) {
@@ -2463,6 +2466,8 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
 
 void AppsGridView::CancelContextMenusOnCurrentPage() {
   GridIndex start_index(pagination_model_.selected_page(), 0);
+  if (!IsValidIndex(start_index))
+    return;
   int start = GetModelIndexFromIndex(start_index);
   int end =
       std::min(view_model_.view_size(), start + TilesPerPage(start_index.page));
