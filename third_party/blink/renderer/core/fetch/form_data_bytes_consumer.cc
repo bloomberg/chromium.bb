@@ -512,7 +512,7 @@ FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
     : FormDataBytesConsumer(view->BaseAddress(), view->byteLength()) {}
 
-FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
+FormDataBytesConsumer::FormDataBytesConsumer(const void* data, size_t size)
     : impl_(new SimpleFormDataBytesConsumer(
           EncodedFormData::Create(data, size))) {}
 
