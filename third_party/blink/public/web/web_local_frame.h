@@ -347,6 +347,19 @@ class WebLocalFrame : public WebFrame {
   // in the other process.
   virtual void MarkAsLoading() = 0;
 
+  // Marks the frame as loading and creates a placeholder document loader.
+  // This placeholder informs Blink that the navigation is ongoing, while it
+  // is actually being handled by the client.
+  // TODO(dgozman): remove this together with placeholder document loader.
+  virtual bool CreatePlaceholderDocumentLoader(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      WebNavigationType,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebNavigationParams>,
+      std::unique_ptr<WebDocumentLoader::ExtraData>) = 0;
+
   // Orientation Changes ----------------------------------------------------
 
   // Notify the frame that the screen orientation has changed.

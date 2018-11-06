@@ -646,14 +646,12 @@ class CONTENT_EXPORT RenderFrameImpl
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override;
+      NavigationPolicyInfo& info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader,
-      blink::WebURLRequest& request,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
+                               blink::WebURLRequest& request) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(
@@ -1178,9 +1176,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
-  void BeginNavigation(
-      const NavigationPolicyInfo& info,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle);
+  void BeginNavigation(NavigationPolicyInfo& info);
 
   // Loads a data url.
   void LoadDataURL(
@@ -1568,33 +1564,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
-
-  // Contains information about a pending navigation to be sent to the browser.
-  // We save information about the navigation in decidePolicyForNavigation().
-  // The navigation is sent to the browser in didStartProvisionalLoad().
-  // Please see the BeginNavigation() for information.
-  struct PendingNavigationInfo {
-    blink::WebNavigationType navigation_type;
-    blink::WebNavigationPolicy policy;
-    bool replaces_current_history_item;
-    bool history_navigation_in_new_child_frame;
-    bool client_redirect;
-    blink::WebTriggeringEventInfo triggering_event_info;
-    blink::WebFormElement form;
-    blink::WebSourceLocation source_location;
-    blink::WebString devtools_initiator_info;
-    blink::mojom::BlobURLTokenPtr blob_url_token;
-    base::TimeTicks input_start;
-    blink::WebString href_translate;
-
-    explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
-    ~PendingNavigationInfo();
-  };
-
-  // Contains information about a pending navigation to be sent to the browser.
-  // This state is allocated in decidePolicyForNavigation() and is used and
-  // released in didStartProvisionalLoad().
-  std::unique_ptr<PendingNavigationInfo> pending_navigation_info_;
 
   service_manager::BindSourceInfo browser_info_;
 

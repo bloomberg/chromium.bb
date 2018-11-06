@@ -549,13 +549,8 @@ void WebFrameTestClient::DidAddMessageToConsole(
 }
 
 blink::WebNavigationPolicy WebFrameTestClient::DecidePolicyForNavigation(
-    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
-  // PlzNavigate
-  // Navigation requests initiated by the renderer have checked navigation
-  // policy when the navigation was sent to the browser. Some layout tests
-  // expect that navigation policy is only checked once.
-  if (delegate_->IsNavigationInitiatedByRenderer(info.url_request))
-    return info.default_policy;
+    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
+  DCHECK(!delegate_->IsNavigationInitiatedByRenderer(info.url_request));
 
   if (test_runner()->shouldDumpNavigationPolicy()) {
     delegate_->PrintMessage("Default policy for navigation to '" +

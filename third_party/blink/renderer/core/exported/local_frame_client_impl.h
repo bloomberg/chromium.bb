@@ -96,10 +96,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
-  void DispatchDidStartProvisionalLoad(
-      DocumentLoader*,
-      ResourceRequest&,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override;
+  void DispatchDidStartProvisionalLoad(DocumentLoader*,
+                                       const ResourceRequest&) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,
@@ -119,14 +117,15 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebNavigationType,
       NavigationPolicy,
       bool has_transient_activation,
-      bool should_replace_current_entry,
+      WebFrameLoadType,
       bool is_client_redirect,
       WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
       mojom::blink::BlobURLTokenPtr,
       base::TimeTicks input_start_time,
-      const String& href_translate) override;
+      const String& href_translate,
+      mojom::blink::NavigationInitiatorPtr) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;

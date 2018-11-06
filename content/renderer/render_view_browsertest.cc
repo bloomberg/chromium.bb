@@ -664,6 +664,8 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(
+      blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
   blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -671,7 +673,8 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       frame()->DecidePolicyForNavigation(policy_info);
   // If this is a renderer-initiated navigation that just begun, it should
   // stop and be sent to the browser.
-  EXPECT_EQ(blink::kWebNavigationPolicyHandledByClient, policy);
+  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   blink::WebURLRequest form_request(GURL("chrome://foo"));

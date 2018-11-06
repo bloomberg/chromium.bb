@@ -46,7 +46,6 @@ enum NavigationPolicy {
   kNavigationPolicyNewForegroundTab,
   kNavigationPolicyNewWindow,
   kNavigationPolicyNewPopup,
-  kNavigationPolicyHandledByClient,
 };
 
 // Returns a NavigationPolicy to use for starting a navigation

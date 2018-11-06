@@ -71,7 +71,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
+      blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;

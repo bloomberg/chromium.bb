@@ -132,6 +132,22 @@ class CORE_EXPORT FrameLoader final {
       bool has_event,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
+  // Called when the browser process is handling the navigation, to
+  // create a "placeholder" document loader and mark the frame as loading.
+  // This placeholder document loader will be later abandoned, and only
+  // lives temporarily so that the rest of Blink code knows the navigation
+  // is in place.
+  // See DocumentLoader::devtools_navigation_token_ for documentation on
+  // the token.
+  bool CreatePlaceholderDocumentLoader(
+      const ResourceRequest&,
+      ClientRedirectPolicy,
+      const base::UnguessableToken& devtools_navigation_token,
+      WebFrameLoadType,
+      WebNavigationType,
+      std::unique_ptr<WebNavigationParams>,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
+
   // This runs the "stop document loading" algorithm in HTML:
   // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
   // Note, this function only cancels ongoing navigation handled through

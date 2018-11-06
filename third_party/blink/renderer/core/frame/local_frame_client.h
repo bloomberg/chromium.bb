@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
@@ -131,10 +133,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                WebHistoryCommitType,
                                                bool content_initiated) {}
   virtual void DispatchWillCommitProvisionalLoad() = 0;
-  virtual void DispatchDidStartProvisionalLoad(
-      DocumentLoader*,
-      ResourceRequest&,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) = 0;
+  virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
+                                               const ResourceRequest&) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
@@ -155,7 +155,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       WebNavigationType,
       NavigationPolicy,
       bool has_transient_activation,
-      bool should_replace_current_entry,
+      WebFrameLoadType,
       bool is_client_redirect,
       WebTriggeringEventInfo,
       HTMLFormElement*,
@@ -163,7 +163,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
           should_check_main_world_content_security_policy,
       mojom::blink::BlobURLTokenPtr,
       base::TimeTicks input_start_time,
-      const String& href_translate) = 0;
+      const String& href_translate,
+      mojom::blink::NavigationInitiatorPtr) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 

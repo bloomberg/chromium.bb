@@ -247,7 +247,7 @@ void WebFrameTestProxy::DidReceiveResponse(
 }
 
 blink::WebNavigationPolicy WebFrameTestProxy::DecidePolicyForNavigation(
-    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
+    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
   blink::WebNavigationPolicy policy =
       test_client_->DecidePolicyForNavigation(info);
   if (policy == blink::kWebNavigationPolicyIgnore)

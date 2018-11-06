@@ -419,13 +419,11 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader,
-    ResourceRequest& request,
-    mojo::ScopedMessagePipeHandle navigation_initiator_handle) {
+    const ResourceRequest& request) {
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request,
-        std::move(navigation_initiator_handle));
+        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
   }
 }
 
@@ -493,7 +491,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     WebNavigationType type,
     NavigationPolicy policy,
     bool has_transient_activation,
-    bool replaces_current_history_item,
+    WebFrameLoadType frame_load_type,
     bool is_client_redirect,
     WebTriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
@@ -501,7 +499,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
         should_check_main_world_content_security_policy,
     mojom::blink::BlobURLTokenPtr blob_url_token,
     base::TimeTicks input_start_time,
-    const String& href_translate) {
+    const String& href_translate,
+    mojom::blink::NavigationInitiatorPtr navigation_initiator) {
   if (!web_frame_->Client())
     return kNavigationPolicyIgnore;
 
@@ -516,7 +515,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   // TODO(dgozman): remove this after some Canary coverage.
   CHECK(!web_document_loader || !web_document_loader->GetExtraData());
   navigation_info.has_user_gesture = has_transient_activation;
-  navigation_info.replaces_current_history_item = replaces_current_history_item;
+  navigation_info.frame_load_type = frame_load_type;
   navigation_info.is_client_redirect = is_client_redirect;
   navigation_info.triggering_event_info = triggering_event_info;
   navigation_info.should_check_main_world_content_security_policy =
@@ -526,6 +525,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
           : kWebContentSecurityPolicyDispositionDoNotCheck;
   navigation_info.blob_url_token = blob_url_token.PassInterface().PassHandle();
   navigation_info.input_start = input_start_time;
+  navigation_info.navigation_initiator_handle =
+      navigation_initiator.PassInterface().PassHandle();
 
   // Can be null.
   LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);

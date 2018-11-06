@@ -101,14 +101,15 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     WebNavigationType,
     NavigationPolicy,
     bool,
-    bool,
+    WebFrameLoadType,
     bool,
     WebTriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
     mojom::blink::BlobURLTokenPtr,
     base::TimeTicks,
-    const String&) {
+    const String&,
+    mojom::blink::NavigationInitiatorPtr) {
   return kNavigationPolicyIgnore;
 }
 

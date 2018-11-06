@@ -386,7 +386,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (!child_frame)
     return false;
 
-  ResourceRequest request(url);
+  ResourceRequest request(url.IsNull() ? BlankURL() : url);
   ReferrerPolicy policy = ReferrerPolicyAttribute();
   request.SetReferrerPolicy(policy);
 

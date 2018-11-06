@@ -2245,6 +2245,24 @@ void WebLocalFrameImpl::MarkAsLoading() {
   GetFrame()->Loader().MarkAsLoading();
 }
 
+bool WebLocalFrameImpl::CreatePlaceholderDocumentLoader(
+    const WebURLRequest& request,
+    WebFrameLoadType frame_load_type,
+    WebNavigationType navigation_type,
+    bool is_client_redirect,
+    const base::UnguessableToken& devtools_navigation_token,
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  DCHECK(!request.IsNull());
+  DCHECK(!request.Url().ProtocolIs("javascript"));
+  return GetFrame()->Loader().CreatePlaceholderDocumentLoader(
+      request.ToResourceRequest(),
+      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      devtools_navigation_token, frame_load_type, navigation_type,
+      std::move(navigation_params), std::move(extra_data));
+}
+
 void WebLocalFrameImpl::SendOrientationChangeEvent() {
   if (!GetFrame())
     return;
