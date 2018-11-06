@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 
 #include "base/bind.h"
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "ios/chrome/browser/application_context.h"
