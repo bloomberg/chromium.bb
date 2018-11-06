@@ -1913,7 +1913,6 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
 
   OverlayCandidateList candidate_list;
   OverlayCandidate candidate;
-  candidate.display_rect = gfx::RectF(pass->output_rect);
   candidate.use_output_surface_for_resource = true;
   candidate.is_opaque = true;
   candidate_list.push_back(candidate);
@@ -2212,7 +2211,6 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
 
   OverlayCandidateList candidate_list;
   OverlayCandidate candidate;
-  candidate.display_rect = gfx::RectF(pass->output_rect);
   candidate.use_output_surface_for_resource = true;
   candidate.is_opaque = true;
   candidate_list.push_back(candidate);
