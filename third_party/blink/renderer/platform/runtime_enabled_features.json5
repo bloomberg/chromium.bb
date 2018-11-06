@@ -1116,6 +1116,7 @@
     // Serialize and restore scroll anchors.
     {
       name: "ScrollAnchorSerialization",
+      status: "test",
     },
     {
       name: "ScrollCustomization",
