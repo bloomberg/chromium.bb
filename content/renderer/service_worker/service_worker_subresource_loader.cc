@@ -273,13 +273,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
-                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
-    base::TimeTicks request_dispatch_time,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks actual_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
                          this, TRACE_EVENT_FLAG_FLOW_IN, "status",

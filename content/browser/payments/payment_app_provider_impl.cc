@@ -125,8 +125,7 @@ class RespondWithCallbacks
   }
 
   void OnResponseForPaymentRequest(
-      payments::mojom::PaymentHandlerResponsePtr response,
-      base::TimeTicks dispatch_event_time) override {
+      payments::mojom::PaymentHandlerResponsePtr response) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
@@ -138,9 +137,7 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForCanMakePayment(
-      bool can_make_payment,
-      base::TimeTicks dispatch_event_time) override {
+  void OnResponseForCanMakePayment(bool can_make_payment) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
@@ -150,8 +147,7 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForAbortPayment(bool payment_aborted,
-                                 base::TimeTicks dispatch_event_time) override {
+  void OnResponseForAbortPayment(bool payment_aborted) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(

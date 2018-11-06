@@ -87,28 +87,19 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   void Focus(const String& client_uuid, FocusCallback);
   void Navigate(const String& client_uuid, const KURL&, ScriptPromiseResolver*);
 
-  void DidHandleActivateEvent(int event_id,
-                              mojom::ServiceWorkerEventStatus,
-                              base::TimeTicks event_dispatch_time);
+  void DidHandleActivateEvent(int event_id, mojom::ServiceWorkerEventStatus);
   void DidHandleBackgroundFetchAbortEvent(int event_id,
-                                          mojom::ServiceWorkerEventStatus,
-                                          base::TimeTicks event_dispatch_time);
+                                          mojom::ServiceWorkerEventStatus);
   void DidHandleBackgroundFetchClickEvent(int event_id,
-                                          mojom::ServiceWorkerEventStatus,
-                                          base::TimeTicks event_dispatch_time);
+                                          mojom::ServiceWorkerEventStatus);
   void DidHandleBackgroundFetchFailEvent(int event_id,
-                                         mojom::ServiceWorkerEventStatus,
-                                         base::TimeTicks event_dispatch_time);
-  void DidHandleBackgroundFetchSuccessEvent(
-      int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time);
+                                         mojom::ServiceWorkerEventStatus);
+  void DidHandleBackgroundFetchSuccessEvent(int event_id,
+                                            mojom::ServiceWorkerEventStatus);
   void DidHandleCookieChangeEvent(int event_id,
-                                  mojom::ServiceWorkerEventStatus,
-                                  base::TimeTicks event_dispatch_time);
+                                  mojom::ServiceWorkerEventStatus);
   void DidHandleExtendableMessageEvent(int event_id,
-                                       mojom::ServiceWorkerEventStatus,
-                                       base::TimeTicks event_dispatch_time);
+                                       mojom::ServiceWorkerEventStatus);
   void RespondToFetchEventWithNoResponse(
       int fetch_event_id,
       base::TimeTicks event_dispatch_time,
@@ -123,42 +114,25 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
       WebServiceWorkerStreamHandle*,
       base::TimeTicks event_dispatch_time,
       base::TimeTicks respond_with_settled_time);
-  void RespondToAbortPaymentEvent(int event_id,
-                                  bool abort_payment,
-                                  base::TimeTicks event_dispatch_time);
-  void RespondToCanMakePaymentEvent(int event_id,
-                                    bool can_make_payment,
-                                    base::TimeTicks event_dispatch_time);
+  void RespondToAbortPaymentEvent(int event_id, bool abort_payment);
+  void RespondToCanMakePaymentEvent(int event_id, bool can_make_payment);
   void RespondToPaymentRequestEvent(int event_id,
-                                    const WebPaymentHandlerResponse&,
-                                    base::TimeTicks event_dispatch_time);
-  void DidHandleFetchEvent(int fetch_event_id,
-                           mojom::ServiceWorkerEventStatus,
-                           base::TimeTicks event_dispatch_time);
+                                    const WebPaymentHandlerResponse&);
+  void DidHandleFetchEvent(int fetch_event_id, mojom::ServiceWorkerEventStatus);
   void DidHandleInstallEvent(int install_event_id,
-                             mojom::ServiceWorkerEventStatus,
-                             base::TimeTicks event_dispatch_time);
+                             mojom::ServiceWorkerEventStatus);
   void DidHandleNotificationClickEvent(int event_id,
-                                       mojom::ServiceWorkerEventStatus,
-                                       base::TimeTicks event_dispatch_time);
+                                       mojom::ServiceWorkerEventStatus);
   void DidHandleNotificationCloseEvent(int event_id,
-                                       mojom::ServiceWorkerEventStatus,
-                                       base::TimeTicks event_dispatch_time);
-  void DidHandlePushEvent(int push_event_id,
-                          mojom::ServiceWorkerEventStatus,
-                          base::TimeTicks event_dispatch_time);
-  void DidHandleSyncEvent(int sync_event_id,
-                          mojom::ServiceWorkerEventStatus,
-                          base::TimeTicks event_dispatch_time);
+                                       mojom::ServiceWorkerEventStatus);
+  void DidHandlePushEvent(int push_event_id, mojom::ServiceWorkerEventStatus);
+  void DidHandleSyncEvent(int sync_event_id, mojom::ServiceWorkerEventStatus);
   void DidHandleAbortPaymentEvent(int abort_payment_event_id,
-                                  mojom::ServiceWorkerEventStatus,
-                                  base::TimeTicks event_dispatch_time);
+                                  mojom::ServiceWorkerEventStatus);
   void DidHandleCanMakePaymentEvent(int payment_request_event_id,
-                                    mojom::ServiceWorkerEventStatus,
-                                    base::TimeTicks event_dispatch_time);
+                                    mojom::ServiceWorkerEventStatus);
   void DidHandlePaymentRequestEvent(int payment_request_event_id,
-                                    mojom::ServiceWorkerEventStatus,
-                                    base::TimeTicks event_dispatch_time);
+                                    mojom::ServiceWorkerEventStatus);
 
   void BindServiceWorkerHost(
       mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host);

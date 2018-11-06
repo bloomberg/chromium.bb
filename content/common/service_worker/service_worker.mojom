@@ -75,11 +75,9 @@ interface ServiceWorker {
 
   DispatchInstallEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
-          bool has_fetch_handler,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+          bool has_fetch_handler);
   DispatchActivateEvent()
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // These methods dispatch to the ServiceWorkerGlobalScope the events listed on
   // https://wicg.github.io/background-fetch/#service-worker-global-events.
@@ -88,20 +86,16 @@ interface ServiceWorker {
   // content::BackgroundFetchRegistrationId.
   DispatchBackgroundFetchAbortEvent(
       blink.mojom.BackgroundFetchRegistration registration)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchBackgroundFetchClickEvent(
       blink.mojom.BackgroundFetchRegistration registration)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
  DispatchBackgroundFetchFailEvent(
       blink.mojom.BackgroundFetchRegistration registration)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchBackgroundFetchSuccessEvent(
       blink.mojom.BackgroundFetchRegistration registration)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // Dispatches the cookie change events in the Async Cookie API specification.
   // https://github.com/WICG/cookie-store/
@@ -110,8 +104,7 @@ interface ServiceWorker {
   DispatchCookieChangeEvent(
       network.mojom.CanonicalCookie cookie,
       network.mojom.CookieChangeCause cause)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // The Dispatch*FetchEvent() callback is called once the event finishes,
   // which means the event handler ran and all outstanding respondWith() and
@@ -121,26 +114,22 @@ interface ServiceWorker {
   DispatchFetchEvent(
       blink.mojom.DispatchFetchEventParams params,
       blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   DispatchNotificationClickEvent(
       string notification_id,
       blink.mojom.NotificationData notification_data,
       int32 action_index,
       mojo_base.mojom.String16? reply)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchNotificationCloseEvent(
       string notification_id,
       blink.mojom.NotificationData notification_data)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   // The payload of a push message can be valid with content, valid with empty
   // content, or null.
   DispatchPushEvent(string? payload)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
   // S13nServiceWorker: |timeout| is the amount of time to allow this event to
@@ -149,32 +138,26 @@ interface ServiceWorker {
   DispatchSyncEvent(string id,
                     bool last_chance,
                     mojo_base.mojom.TimeDelta timeout)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchAbortPaymentEvent(
       payments.mojom.PaymentHandlerResponseCallback result_of_abort_payment)
-          => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.TimeTicks dispatch_event_time);
+          => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchCanMakePaymentEvent(
       payments.mojom.CanMakePaymentEventData event_data,
       payments.mojom.PaymentHandlerResponseCallback result_of_can_make_payment)
-          => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.TimeTicks dispatch_event_time);
+          => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchPaymentRequestEvent(
       payments.mojom.PaymentRequestEventData request_data,
       payments.mojom.PaymentHandlerResponseCallback response_callback)
-          => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.TimeTicks dispatch_event_time);
+          => (blink.mojom.ServiceWorkerEventStatus status);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // TODO(crbug.com/869714): Remove this code for long living service workers
   // when Android Messages no longer requires it.
   DispatchExtendableMessageEventWithCustomTimeout(ExtendableMessageEvent event,
                                  mojo_base.mojom.TimeDelta timeout)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // Pings the service worker to check if it is responsive. If the callback is
   // not called within a certain period of time, the browser will terminate the

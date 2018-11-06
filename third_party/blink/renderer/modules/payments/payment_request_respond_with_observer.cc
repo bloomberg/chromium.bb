@@ -33,7 +33,7 @@ void PaymentRequestRespondWithObserver::OnResponseRejected(
 
   WebPaymentHandlerResponse web_data;
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(event_id_, web_data, event_dispatch_time_);
+      ->RespondToPaymentRequestEvent(event_id_, web_data);
 }
 
 void PaymentRequestRespondWithObserver::OnResponseFulfilled(
@@ -80,14 +80,13 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   }
   web_data.stringified_details = ToCoreString(details_value);
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(event_id_, web_data, event_dispatch_time_);
+      ->RespondToPaymentRequestEvent(event_id_, web_data);
 }
 
 void PaymentRequestRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(event_id_, WebPaymentHandlerResponse(),
-                                     event_dispatch_time_);
+      ->RespondToPaymentRequestEvent(event_id_, WebPaymentHandlerResponse());
 }
 
 PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(

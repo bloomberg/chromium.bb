@@ -27,7 +27,7 @@ void AbortPaymentRespondWithObserver::OnResponseRejected(
                                            "AbortPaymentEvent", error);
 
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToAbortPaymentEvent(event_id_, false, event_dispatch_time_);
+      ->RespondToAbortPaymentEvent(event_id_, false);
 }
 
 void AbortPaymentRespondWithObserver::OnResponseFulfilled(
@@ -47,13 +47,13 @@ void AbortPaymentRespondWithObserver::OnResponseFulfilled(
   }
 
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToAbortPaymentEvent(event_id_, response, event_dispatch_time_);
+      ->RespondToAbortPaymentEvent(event_id_, response);
 }
 
 void AbortPaymentRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToAbortPaymentEvent(event_id_, false, event_dispatch_time_);
+      ->RespondToAbortPaymentEvent(event_id_, false);
 }
 
 void AbortPaymentRespondWithObserver::Trace(blink::Visitor* visitor) {

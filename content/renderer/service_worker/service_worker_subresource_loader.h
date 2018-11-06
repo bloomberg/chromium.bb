@@ -66,9 +66,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
-  void OnFetchEventFinished(base::TimeTicks request_dispatch_time,
-                            blink::mojom::ServiceWorkerEventStatus status,
-                            base::TimeTicks dispatch_event_time);
+  void OnFetchEventFinished(blink::mojom::ServiceWorkerEventStatus status);
   // Called when this loader no longer needs to restart dispatching the fetch
   // event on failure. Null |status| means the event dispatch was not attempted.
   void SettleFetchEventDispatch(

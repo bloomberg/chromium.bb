@@ -120,8 +120,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
-      base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus,
-                              base::TimeTicks)>;
+      base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -731,8 +730,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // mojom::ServiceWorker. Use CreateSimpleEventCallback() to
   // create a callback for a given |request_id|.
   void OnSimpleEventFinished(int request_id,
-                             blink::mojom::ServiceWorkerEventStatus status,
-                             base::TimeTicks dispatch_event_time);
+                             blink::mojom::ServiceWorkerEventStatus status);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

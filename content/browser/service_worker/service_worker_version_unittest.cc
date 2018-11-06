@@ -1012,7 +1012,7 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
   // Simulate the renderer aborting the inflight event.
   // This should not crash: https://crbug.com/676984.
   TakeExtendableMessageEventCallback().Run(
-      blink::mojom::ServiceWorkerEventStatus::ABORTED, base::TimeTicks::Now());
+      blink::mojom::ServiceWorkerEventStatus::ABORTED);
   base::RunLoop().RunUntilIdle();
 
   // Simulate the renderer stopping the worker.

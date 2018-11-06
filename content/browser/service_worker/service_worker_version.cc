@@ -1382,8 +1382,7 @@ bool ServiceWorkerVersion::HasWorkInBrowser() const {
 
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks /* dispatch_event_time */) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   // |request| will be null when the request has been timed out.
   if (!request)

@@ -150,8 +150,7 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          ServiceWorkerVersion::StatusCallback callback,
-                         blink::mojom::ServiceWorkerEventStatus status,
-                         base::TimeTicks /* dispatch_event_time */) {
+                         blink::mojom::ServiceWorkerEventStatus status) {
   if (!active_version->FinishRequest(
           request_id,
           status == blink::mojom::ServiceWorkerEventStatus::COMPLETED)) {

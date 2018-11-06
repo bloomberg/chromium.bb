@@ -493,8 +493,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     response_callback_->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  protected:
@@ -711,8 +710,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  private:
@@ -800,8 +798,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         std::move(response),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   std::string blob_uuid_;
@@ -896,8 +893,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
         std::move(response), std::move(stream_handle_),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -1276,8 +1272,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
       override {
     SimulateWorkerStopped(embedded_worker_id);
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
   }
 
  private:
@@ -1355,8 +1350,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
 
   void FinishWaitUntil() {
     std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  protected:

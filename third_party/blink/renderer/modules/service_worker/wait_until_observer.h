@@ -110,7 +110,6 @@ class MODULES_EXPORT WaitUntilObserver final
   int pending_promises_ = 0;
   EventDispatchState event_dispatch_state_ = EventDispatchState::kInitial;
   bool has_rejected_promise_ = false;
-  TimeTicks event_dispatch_time_;
   TaskRunnerTimer<WaitUntilObserver> consume_window_interaction_timer_;
 };
 
