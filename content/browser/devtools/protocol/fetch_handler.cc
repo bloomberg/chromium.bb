@@ -216,15 +216,10 @@ void FetchHandler::FulfillRequest(
     }
   }
   headers.append(1, '\0');
-  std::unique_ptr<std::string> body_ptr =
-      body.isJust() ? std::make_unique<std::string>(
-                          reinterpret_cast<const char*>(body.fromJust().data()),
-                          body.fromJust().size())
-                    : nullptr;
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           base::MakeRefCounted<net::HttpResponseHeaders>(headers),
-          std::move(body_ptr));
+          body.isJust() ? body.fromJust().bytes() : nullptr);
   interceptor_->ContinueInterceptedRequest(requestId, std::move(modifications),
                                            WrapCallback(std::move(callback)));
 }

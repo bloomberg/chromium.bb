@@ -1909,7 +1909,8 @@ void NetworkHandler::ContinueInterceptedRequest(
     Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   scoped_refptr<net::HttpResponseHeaders> response_headers;
-  std::unique_ptr<std::string> response_body;
+  scoped_refptr<base::RefCountedMemory> response_body;
+  size_t body_offset = 0;
 
   if (raw_response.isJust()) {
     const protocol::Binary& raw = raw_response.fromJust();
@@ -1927,8 +1928,8 @@ void NetworkHandler::ContinueInterceptedRequest(
     CHECK_LE(static_cast<size_t>(header_size), raw.size());
     response_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(std::move(raw_headers));
-    response_body = std::make_unique<std::string>(raw.data() + header_size,
-                                                  raw.data() + raw.size());
+    response_body = raw.bytes();
+    body_offset = header_size;
   }
 
   base::Optional<net::Error> error;
@@ -1987,8 +1988,8 @@ void NetworkHandler::ContinueInterceptedRequest(
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           std::move(error), std::move(response_headers),
-          std::move(response_body), std::move(url), std::move(method),
-          std::move(post_data), std::move(override_headers),
+          std::move(response_body), body_offset, std::move(url),
+          std::move(method), std::move(post_data), std::move(override_headers),
           std::move(override_auth));
 
   if (url_loader_interceptor_) {
