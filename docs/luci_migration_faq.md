@@ -1,5 +1,9 @@
 # LUCI Builder Migration - FAQ
 
+_**Buildbot end of life date is March 1, 2019**. As of March 1,
+all Chrome/Chromium builds hosted on [chromium.org](https://www.chromium.org)
+will be running on LUCI._
+
 LUCI which stands for Layered Universal Continuous Integration is a replacement
 for Buildbot (our existing single-threaded monolithic continuous integration
 system). Over time, we have been swapping out Buildbot responsibilities with
@@ -13,6 +17,16 @@ user expectations and how to contact us.
 [TOC]
 
 ## FAQ
+
+### **When will Buildbot builders be turned down?**
+_As of **March 1, 2019**, all Buildbot masters run by Chrome Operations will be
+permanently shut down. All existing builders will have been migrated to LUCI
+before this date._
+
+### **I am an owner of a builder, where can I find more info on migrations?**
+_A migration guide is available to help you with migrations. Please reach out
+to the Chrome Operations team at infra-dev@chromium.org for references and
+scheduling or timeframe info._
 
 ### **Why can't we keep using existing builders?**
 
