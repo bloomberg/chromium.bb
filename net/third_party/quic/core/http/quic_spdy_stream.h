@@ -105,7 +105,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
   void WriteOrBufferBody(
-      const QuicString& data,
+      QuicStringPiece data,
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
@@ -114,6 +114,16 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   virtual size_t WriteTrailers(
       spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+
+  // Does the same thing as WriteOrBufferBody except this method takes iovec
+  // as the data input. Right now it only calls WritevData.
+  // TODO(renjietang): Write data frame header before writing body.
+  QuicConsumedData WritevBody(const struct iovec* iov, int count, bool fin);
+
+  // Does the same thing as WriteOrBufferBody except this method takes
+  // memslicespan as the data input. Right now it only calls WriteMemSlices.
+  // TODO(renjietang): Write data frame header before writing body.
+  QuicConsumedData WriteBodySlices(QuicMemSliceSpan slices, bool fin);
 
   // Marks the trailers as consumed. This applies to the case where this object
   // receives headers and trailers as QuicHeaderLists via calls to

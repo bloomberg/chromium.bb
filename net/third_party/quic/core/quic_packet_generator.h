@@ -219,6 +219,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
     packet_creator_.set_debug_delegate(debug_delegate);
   }
 
+  bool should_send_ack() const { return should_send_ack_; }
+
  private:
   friend class test::QuicPacketGeneratorPeer;
 

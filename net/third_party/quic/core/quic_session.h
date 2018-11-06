@@ -347,6 +347,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     return supported_versions_;
   }
 
+  // Called when new outgoing streams are available to be opened. This occurs
+  // when an extant, open, stream is moved to draining or closed. The default
+  // implementation does nothing.
+  virtual void OnCanCreateNewOutgoingStream();
+
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 

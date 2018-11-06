@@ -158,7 +158,7 @@ ParsedQuicVersionVector FilterSupportedVersions(
   filtered_versions.reserve(versions.size());
   for (ParsedQuicVersion version : versions) {
     if (version.transport_version == QUIC_VERSION_99) {
-      if (GetQuicFlag(FLAGS_quic_enable_version_99) &&
+      if (GetQuicReloadableFlag(quic_enable_version_99) &&
           GetQuicReloadableFlag(quic_enable_version_46) &&
           GetQuicReloadableFlag(quic_enable_version_45) &&
           GetQuicReloadableFlag(quic_enable_version_44) &&

@@ -315,7 +315,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsAllVersions) {
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicReloadableFlag(quic_enable_version_45, true);
   SetQuicReloadableFlag(quic_enable_version_46, true);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, true);
+  SetQuicReloadableFlag(quic_enable_version_99, true);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -340,7 +340,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo99) {
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicReloadableFlag(quic_enable_version_45, true);
   SetQuicReloadableFlag(quic_enable_version_46, true);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -365,7 +365,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo46) {
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicReloadableFlag(quic_enable_version_45, true);
   SetQuicReloadableFlag(quic_enable_version_46, false);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -390,7 +390,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo45) {
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicReloadableFlag(quic_enable_version_45, false);
   SetQuicReloadableFlag(quic_enable_version_46, false);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -414,7 +414,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo44) {
   SetQuicReloadableFlag(quic_enable_version_44, false);
   SetQuicReloadableFlag(quic_enable_version_45, false);
   SetQuicReloadableFlag(quic_enable_version_46, false);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -438,7 +438,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo43) {
   SetQuicReloadableFlag(quic_enable_version_44, false);
   SetQuicReloadableFlag(quic_enable_version_45, false);
   SetQuicReloadableFlag(quic_enable_version_46, false);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));
@@ -462,7 +462,7 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo35) {
   SetQuicReloadableFlag(quic_enable_version_44, false);
   SetQuicReloadableFlag(quic_enable_version_45, false);
   SetQuicReloadableFlag(quic_enable_version_46, false);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
   for (QuicTransportVersion version : all_versions) {
     parsed_versions.push_back(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version));

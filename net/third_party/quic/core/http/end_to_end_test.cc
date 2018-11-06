@@ -126,7 +126,7 @@ std::vector<TestParams> GetTestParams(bool use_tls_handshake,
                                       bool test_stateless_rejects) {
   // Version 99 is default disabled, but should be exercised in EndToEnd tests
   QuicFlagSaver flags;
-  FLAGS_quic_enable_version_99 = true;
+  SetQuicReloadableFlag(quic_enable_version_99, true);
   // Divide the versions into buckets in which the intra-frame format
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
@@ -278,7 +278,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         stream_factory_(nullptr),
         support_server_push_(false) {
     // Version 99 is default disabled, but should be exercised in EndToEnd tests
-    FLAGS_quic_enable_version_99 = true;
+    SetQuicReloadableFlag(quic_enable_version_99, true);
     FLAGS_quic_supports_tls_handshake = true;
     SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, true);
     SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, true);

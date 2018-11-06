@@ -183,12 +183,6 @@ QuicAlarm* QuicConnectionPeer::GetMtuDiscoveryAlarm(
 }
 
 // static
-QuicAlarm* QuicConnectionPeer::GetRetransmittableOnWireAlarm(
-    QuicConnection* connection) {
-  return connection->retransmittable_on_wire_alarm_.get();
-}
-
-// static
 QuicAlarm* QuicConnectionPeer::GetPathDegradingAlarm(
     QuicConnection* connection) {
   return connection->path_degrading_alarm_.get();

@@ -539,10 +539,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
   const QuicTime::Delta ping_timeout() { return ping_timeout_; }
   // Used in Chromium, but not internally.
-  // Must only be called before retransmittable_on_wire_alarm_ is set.
+  // Sets a timeout for the ping alarm when there is no retransmittable data
+  // in flight, allowing for a more aggressive ping alarm in that case.
   void set_retransmittable_on_wire_timeout(
       QuicTime::Delta retransmittable_on_wire_timeout) {
-    DCHECK(!retransmittable_on_wire_alarm_->IsSet());
+    DCHECK(!ping_alarm_->IsSet());
     retransmittable_on_wire_timeout_ = retransmittable_on_wire_timeout;
   }
   const QuicTime::Delta retransmittable_on_wire_timeout() {
@@ -1041,6 +1042,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                                   const QuicSocketAddress& peer_address,
                                   bool is_response);
 
+  // Returns true if ack alarm is not set and there is no pending ack in the
+  // generator.
+  bool ShouldSetAckAlarm() const;
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -1205,9 +1210,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicArenaScopedPtr<QuicAlarm> ping_alarm_;
   // An alarm that fires when an MTU probe should be sent.
   QuicArenaScopedPtr<QuicAlarm> mtu_discovery_alarm_;
-  // An alarm that fires when there have been no retransmittable packets on the
-  // wire for some period.
-  QuicArenaScopedPtr<QuicAlarm> retransmittable_on_wire_alarm_;
   // An alarm that fires when this connection is considered degrading.
   QuicArenaScopedPtr<QuicAlarm> path_degrading_alarm_;
   // An alarm that fires to process undecryptable packets when new decyrption

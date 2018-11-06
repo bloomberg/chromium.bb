@@ -113,6 +113,11 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // time.
   bool HasBufferedFrames() const;
 
+  // Writes or buffers a control frame.  Frame is buffered if there already
+  // are frames waiting to be sent. If no others waiting, will try to send the
+  // frame.
+  void WriteOrBufferQuicFrame(QuicFrame frame);
+
   QuicDeque<QuicFrame> control_frames_;
 
   // Id of latest saved control frame. 0 if no control frame has been saved.

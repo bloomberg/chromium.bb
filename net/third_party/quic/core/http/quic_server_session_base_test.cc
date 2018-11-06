@@ -602,11 +602,10 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   SetQuicReloadableFlag(quic_use_cheap_stateless_rejects, true);
 
   const QuicClock* clock = helper_.GetClock();
-  ParsedQuicVersion version = AllSupportedVersions().front();
   CryptoHandshakeMessage chlo = crypto_test_utils::GenerateDefaultInchoateCHLO(
-      clock, version.transport_version, &crypto_config_);
+      clock, GetParam().transport_version, &crypto_config_);
   chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
-  std::vector<ParsedQuicVersion> packet_version_list = {version};
+  std::vector<ParsedQuicVersion> packet_version_list = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       1, 0, true, false, 1, QuicString(chlo.GetSerialized().AsStringPiece()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,

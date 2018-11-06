@@ -59,15 +59,16 @@ HttpEncoder::HttpEncoder() {}
 HttpEncoder::~HttpEncoder() {}
 
 QuicByteCount HttpEncoder::SerializeDataFrameHeader(
-    const DataFrame& data,
+    QuicByteCount length,
     std::unique_ptr<char[]>* output) {
+  DCHECK_NE(0u, length);
   QuicByteCount header_length =
-      QuicDataWriter::GetVarInt62Len(data.data.length()) + kFrameTypeLength;
+      QuicDataWriter::GetVarInt62Len(length) + kFrameTypeLength;
 
   output->reset(new char[header_length]);
   QuicDataWriter writer(header_length, output->get(), NETWORK_BYTE_ORDER);
 
-  if (WriteFrameHeader(data.data.length(), HttpFrameType::DATA, &writer)) {
+  if (WriteFrameHeader(length, HttpFrameType::DATA, &writer)) {
     return header_length;
   }
   return 0;

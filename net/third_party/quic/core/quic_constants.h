@@ -81,15 +81,9 @@ const size_t kDefaultMaxStreamsPerConnection = 100;
 const size_t kPublicFlagsSize = 1;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
-// Number of bytes reserved for path id in the packet header.
-const size_t kQuicPathIdSize = 1;
-// Number of bytes reserved for private flags in the packet header.
-const size_t kPrivateFlagsSize = 1;
 
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
-// Signifies that the QuicPacket will contain path id.
-const bool kIncludePathId = true;
 // Signifies that the QuicPacket will include a diversification nonce.
 const bool kIncludeDiversificationNonce = true;
 

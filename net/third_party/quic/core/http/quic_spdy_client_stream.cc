@@ -140,7 +140,7 @@ size_t QuicSpdyClientStream::SendRequest(SpdyHeaderBlock headers,
   bytes_sent += header_bytes_written_;
 
   if (!body.empty()) {
-    WriteOrBufferData(body, fin, nullptr);
+    WriteOrBufferBody(body, fin, nullptr);
   }
 
   return bytes_sent;
