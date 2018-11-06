@@ -33,6 +33,8 @@ struct BASE_EXPORT PostedTask {
   TimeDelta delay;
   Nestable nestable;
   int task_type;
+  // The time at which the task was queued.
+  TimeTicks queue_time;
 
   DISALLOW_COPY_AND_ASSIGN(PostedTask);
 };

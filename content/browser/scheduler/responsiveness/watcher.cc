@@ -207,10 +207,10 @@ void Watcher::DidRunTask(const base::PendingTask* task,
     // Tasks which were posted before the MessageLoopObserver was created will
     // not have a queue_time, and should be ignored. This doesn't affect delayed
     // tasks.
-    if (UNLIKELY(!task->queue_time))
+    if (UNLIKELY(task->queue_time.is_null()))
       return;
 
-    schedule_time = task->queue_time.value();
+    schedule_time = task->queue_time;
   } else {
     schedule_time = execution_start_time;
   }

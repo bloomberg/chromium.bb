@@ -209,6 +209,14 @@ SequenceManagerImpl::CreateTaskQueueImpl(const TaskQueue::Spec& spec) {
   return task_queue;
 }
 
+void SequenceManagerImpl::SetAddQueueTimeToTasks(bool enable) {
+  base::subtle::NoBarrier_Store(&add_queue_time_to_tasks_, enable ? 1 : 0);
+}
+
+bool SequenceManagerImpl::GetAddQueueTimeToTasks() {
+  return base::subtle::NoBarrier_Load(&add_queue_time_to_tasks_);
+}
+
 void SequenceManagerImpl::SetObserver(Observer* observer) {
   main_thread_only().observer = observer;
 }

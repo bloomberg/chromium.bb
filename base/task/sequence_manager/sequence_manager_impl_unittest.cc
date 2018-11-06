@@ -3672,6 +3672,51 @@ TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
 // TODO(altimin): Add a test that posts an infinite number of other tasks
 // from its destructor.
 
+class QueueTimeTaskObserver : public MessageLoop::TaskObserver {
+ public:
+  void WillProcessTask(const PendingTask& pending_task) override {
+    queue_time_ = pending_task.queue_time;
+  }
+  void DidProcessTask(const PendingTask& pending_task) override {}
+  TimeTicks queue_time() { return queue_time_; }
+
+ private:
+  TimeTicks queue_time_;
+};
+
+TEST_P(SequenceManagerTest, DoesNotRecordQueueTimeIfSettingFalse) {
+  CreateTaskQueues(1u);
+
+  QueueTimeTaskObserver observer;
+  manager_->AddTaskObserver(&observer);
+
+  // We do not record task queue time when the setting is false.
+  manager_->SetAddQueueTimeToTasks(false);
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(99));
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.queue_time().is_null());
+
+  manager_->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest, RecordsQueueTimeIfSettingTrue) {
+  CreateTaskQueues(1u);
+
+  QueueTimeTaskObserver observer;
+  manager_->AddTaskObserver(&observer);
+
+  // We correctly record task queue time when the setting is true.
+  manager_->SetAddQueueTimeToTasks(true);
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(99));
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ(observer.queue_time(),
+            start_time_ + TimeDelta::FromMilliseconds(99));
+
+  manager_->RemoveTaskObserver(&observer);
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager
