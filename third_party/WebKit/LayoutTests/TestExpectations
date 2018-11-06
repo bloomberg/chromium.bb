@@ -2548,7 +2548,6 @@ crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/percentage-heights-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
