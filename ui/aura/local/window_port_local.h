@@ -52,11 +52,9 @@ class AURA_EXPORT WindowPortLocal : public WindowPort,
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceId& embedded_client_local_surface_id,
-      base::TimeTicks embedded_client_local_surface_id_allocation_time)
-      override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() override;
-  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
+      const viz::LocalSurfaceIdAllocation&
+          embedded_client_local_surface_id_allocation) override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
   void TrackOcclusionState() override;
@@ -67,7 +65,8 @@ class AURA_EXPORT WindowPortLocal : public WindowPort,
 
  private:
   void UpdateLocalSurfaceId();
-  const viz::LocalSurfaceId& GetCurrentLocalSurfaceId() const;
+  const viz::LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation()
+      const;
   bool IsEmbeddingExternalContent() const;
 
   Window* const window_;

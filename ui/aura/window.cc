@@ -1116,17 +1116,15 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   auto sink = port_->CreateLayerTreeFrameSink();
   DCHECK(frame_sink_id_.is_valid());
   DCHECK(embeds_external_client_);
-  DCHECK(GetLocalSurfaceId().is_valid());
+  DCHECK(GetLocalSurfaceIdAllocation().local_surface_id().is_valid());
   created_layer_tree_frame_sink_ = true;
   return sink;
 }
 
 viz::SurfaceId Window::GetSurfaceId() const {
-  return viz::SurfaceId(GetFrameSinkId(), port_->GetLocalSurfaceId());
-}
-
-base::TimeTicks Window::GetLocalSurfaceIdAllocationTime() const {
-  return port_->GetLocalSurfaceIdAllocationTime();
+  return viz::SurfaceId(
+      GetFrameSinkId(),
+      port_->GetLocalSurfaceIdAllocation().local_surface_id());
 }
 
 void Window::AllocateLocalSurfaceId() {
@@ -1138,19 +1136,17 @@ viz::ScopedSurfaceIdAllocator Window::GetSurfaceIdAllocator(
   return port_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 
-const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
-  return port_->GetLocalSurfaceId();
+const viz::LocalSurfaceIdAllocation& Window::GetLocalSurfaceIdAllocation()
+    const {
+  return port_->GetLocalSurfaceIdAllocation();
 }
 
 void Window::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const base::Optional<viz::LocalSurfaceId>& embedded_client_local_surface_id,
-    const base::Optional<base::TimeTicks>&
-        embedded_client_local_surface_id_allocation_time) {
-  if (embedded_client_local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        embedded_client_local_surface_id_allocation) {
+  if (embedded_client_local_surface_id_allocation) {
     port_->UpdateLocalSurfaceIdFromEmbeddedClient(
-        *embedded_client_local_surface_id,
-        embedded_client_local_surface_id_allocation_time.value_or(
-            base::TimeTicks()));
+        *embedded_client_local_surface_id_allocation);
   } else {
     port_->AllocateLocalSurfaceId();
   }

@@ -553,6 +553,13 @@ const viz::LocalSurfaceId& RenderWidgetHostViewGuest::GetLocalSurfaceId()
   return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
 }
 
+base::TimeTicks RenderWidgetHostViewGuest::GetLocalSurfaceIdAllocationTime()
+    const {
+  if (guest_)
+    return guest_->local_surface_id_allocation_time();
+  return base::TimeTicks();
+}
+
 void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(

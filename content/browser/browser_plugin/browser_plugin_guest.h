@@ -185,6 +185,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
     return local_surface_id_;
   }
 
+  base::TimeTicks local_surface_id_allocation_time() const {
+    return local_surface_id_allocation_time_;
+  }
+
   bool is_in_destruction() { return is_in_destruction_; }
 
   void UpdateVisibility();
@@ -461,6 +465,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool can_use_cross_process_frames_;
 
   viz::LocalSurfaceId local_surface_id_;
+  base::TimeTicks local_surface_id_allocation_time_;
   ScreenInfo screen_info_;
   double zoom_level_ = 0.0;
   uint32_t capture_sequence_number_ = 0u;

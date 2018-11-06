@@ -2698,7 +2698,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id;
+    metadata.local_surface_id_allocation =
+        viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks());
     widget_host_->DidUpdateVisualProperties(metadata);
   }
 
@@ -2762,7 +2763,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id;
+    metadata.local_surface_id_allocation =
+        viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks());
     widget_host_->DidUpdateVisualProperties(metadata);
   }
 
@@ -2802,8 +2804,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1,
-                                   view_->GetLocalSurfaceIdAllocationTime());
+  child_allocator.UpdateFromParent(viz::LocalSurfaceIdAllocation(
+      local_surface_id1, view_->GetLocalSurfaceIdAllocationTime()));
   child_allocator.GenerateId();
   viz::LocalSurfaceId local_surface_id2 =
       child_allocator.GetCurrentLocalSurfaceId();
@@ -2811,7 +2813,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id2;
+    metadata.local_surface_id_allocation = viz::LocalSurfaceIdAllocation(
+        local_surface_id2, base::TimeTicks::Now());
     widget_host_->DidUpdateVisualProperties(metadata);
   }
 
@@ -2833,8 +2836,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1,
-                                   view_->GetLocalSurfaceIdAllocationTime());
+  child_allocator.UpdateFromParent(viz::LocalSurfaceIdAllocation(
+      local_surface_id1, view_->GetLocalSurfaceIdAllocationTime()));
   child_allocator.GenerateId();
   viz::LocalSurfaceId local_surface_id2 =
       child_allocator.GetCurrentLocalSurfaceId();
@@ -2842,7 +2845,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id2;
+    metadata.local_surface_id_allocation = viz::LocalSurfaceIdAllocation(
+        local_surface_id2, base::TimeTicks::Now());
     widget_host_->DidUpdateVisualProperties(metadata);
   }
 
@@ -3264,7 +3268,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size1;
-    metadata.local_surface_id = base::nullopt;
+    metadata.local_surface_id_allocation = base::nullopt;
     widget_host_->DidUpdateVisualProperties(metadata);
   }
   sink_->ClearMessages();
@@ -3287,7 +3291,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size2;
-    metadata.local_surface_id = base::nullopt;
+    metadata.local_surface_id_allocation = base::nullopt;
     widget_host_->DidUpdateVisualProperties(metadata);
   }
   sink_->ClearMessages();
@@ -3350,7 +3354,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size3;
-    metadata.local_surface_id = base::nullopt;
+    metadata.local_surface_id_allocation = base::nullopt;
     widget_host_->DidUpdateVisualProperties(metadata);
   }
   sink_->ClearMessages();

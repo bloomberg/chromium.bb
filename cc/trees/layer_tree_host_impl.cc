@@ -2058,10 +2058,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
     if (allocate_new_local_surface_id)
       child_local_surface_id_allocator_.GenerateId();
-    metadata.local_surface_id =
-        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    metadata.local_surface_id_allocation_time_from_child =
-        child_local_surface_id_allocator_.allocation_time();
+    metadata.local_surface_id_allocation =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   return metadata;
@@ -2908,8 +2906,9 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Update the child's LocalSurfaceId.
   if (active_tree()->local_surface_id_from_parent().is_valid()) {
     child_local_surface_id_allocator_.UpdateFromParent(
-        active_tree()->local_surface_id_from_parent(),
-        active_tree()->local_surface_id_allocation_time_from_parent());
+        viz::LocalSurfaceIdAllocation(
+            active_tree()->local_surface_id_from_parent(),
+            active_tree()->local_surface_id_allocation_time_from_parent()));
     if (active_tree()->TakeNewLocalSurfaceIdRequest())
       child_local_surface_id_allocator_.GenerateId();
   }

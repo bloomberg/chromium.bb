@@ -1004,7 +1004,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
       WidgetMsg_SynchronizeVisualProperties::ID));
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
 
@@ -1030,7 +1030,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // immediately send a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = original_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
@@ -1040,7 +1040,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // Send the visual properties ACK for the latest size.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = third_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
@@ -1216,7 +1216,7 @@ TEST_F(RenderWidgetHostTest, HideShowMessages) {
   process_->sink().ClearMessages();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(100, 100);
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
 
   // Now unhide.

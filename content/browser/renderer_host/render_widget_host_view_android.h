@@ -281,11 +281,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
 
-  bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
-                                   const base::Optional<viz::LocalSurfaceId>&
-                                       child_allocated_local_surface_id,
-                                   const base::Optional<base::TimeTicks>&
-                                       child_local_surface_id_allocation_time);
+  bool SynchronizeVisualProperties(
+      const cc::DeadlinePolicy& deadline_policy,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          child_local_surface_id_allocation);
 
   bool HasValidFrame() const;
 

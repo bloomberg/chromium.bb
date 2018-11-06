@@ -68,7 +68,8 @@ TEST_F(WindowPortMusTest,
   // correctly generates LocalSurfaceId.
   window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
 
-  viz::LocalSurfaceId local_surface_id = window.GetLocalSurfaceId();
+  viz::LocalSurfaceId local_surface_id =
+      window.GetLocalSurfaceIdAllocation().local_surface_id();
   ASSERT_TRUE(local_surface_id.is_valid());
 
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink(
@@ -95,7 +96,8 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   window.AllocateLocalSurfaceId();
 
   auto* window_mus = WindowPortMus::Get(&window);
-  viz::LocalSurfaceId local_surface_id = window.GetLocalSurfaceId();
+  viz::LocalSurfaceId local_surface_id =
+      window.GetLocalSurfaceIdAllocation().local_surface_id();
   viz::SurfaceId primary_surface_id =
       window_mus->client_surface_embedder()->GetSurfaceIdForTesting();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
@@ -122,11 +124,12 @@ TEST_F(WindowPortMusTest,
       WindowPortMusTestHelper(&window).GetParentLocalSurfaceIdAllocator();
   parent_allocator->Reset(current_id);
   parent_allocator->GenerateId();
-  viz::LocalSurfaceId updated_id = parent_allocator->GetCurrentLocalSurfaceId();
+  const viz::LocalSurfaceId& updated_id =
+      parent_allocator->GetCurrentLocalSurfaceId();
   ASSERT_TRUE(updated_id.is_valid());
   EXPECT_NE(updated_id, current_id);
   window.UpdateLocalSurfaceIdFromEmbeddedClient(
-      updated_id, parent_allocator->allocation_time());
+      parent_allocator->GetCurrentLocalSurfaceIdAllocation());
 
   // Updating the LocalSurfaceId should propagate to the ClientSurfaceEmbedder.
   auto* window_mus = WindowPortMus::Get(&window);

@@ -1005,8 +1005,8 @@ void DesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(
   if (compositor()) {
     compositor()->SetScaleAndSize(
         window_scale_factor, message_handler_->GetClientAreaBounds().size(),
-        window()->GetLocalSurfaceId(),
-        window()->GetLocalSurfaceIdAllocationTime());
+        window()->GetLocalSurfaceIdAllocation().local_surface_id(),
+        window()->GetLocalSurfaceIdAllocation().allocation_time());
   }
 }
 

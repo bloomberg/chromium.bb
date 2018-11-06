@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -264,8 +265,11 @@ void BrowserPlugin::SynchronizeVisualProperties() {
           pending_visual_properties_.screen_info ||
       capture_sequence_number_changed;
 
-  if (synchronized_props_changed)
+  if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
+    pending_visual_properties_.local_surface_id_allocation_time =
+        parent_local_surface_id_allocator_.allocation_time();
+  }
 
   if (frame_sink_id_.is_valid()) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
@@ -345,9 +349,8 @@ void BrowserPlugin::OnDidUpdateVisualProperties(
     int browser_plugin_instance_id,
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()),
-          metadata.local_surface_id_allocation_time_from_child.value_or(
-              base::TimeTicks()))) {
+          metadata.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()))) {
     return;
   }
 

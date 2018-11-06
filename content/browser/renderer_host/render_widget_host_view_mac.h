@@ -393,10 +393,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DestroyCompositorForShutdown() override;
   bool SynchronizeVisualProperties(
-      const base::Optional<viz::LocalSurfaceId>&
-          child_allocated_local_surface_id,
-      const base::Optional<base::TimeTicks>&
-          child_local_surface_id_allocation_time) override;
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          child_local_surface_id_allocation) override;
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
 
   // AcceleratedWidgetMacNSView implementation.

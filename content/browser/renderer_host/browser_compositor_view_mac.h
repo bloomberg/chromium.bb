@@ -35,10 +35,8 @@ class BrowserCompositorMacClient {
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DestroyCompositorForShutdown() = 0;
   virtual bool SynchronizeVisualProperties(
-      const base::Optional<viz::LocalSurfaceId>&
-          child_allocated_local_surface_id,
-      const base::Optional<base::TimeTicks>&
-          child_local_surface_id_allocation_time) = 0;
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          child_local_surface_id_allocation) = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
 
@@ -92,8 +90,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   void SynchronizeVisualProperties(
       float new_device_scale_factor,
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceId& child_allocated_local_surface_id,
-      base::TimeTicks child_local_surface_id_allocation_time);
+      const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.
@@ -120,8 +117,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   base::TimeTicks GetRendererLocalSurfaceIdAllocationTime() const;
   const viz::LocalSurfaceId& AllocateNewRendererLocalSurfaceId();
   bool UpdateRendererLocalSurfaceIdFromChild(
-      const viz::LocalSurfaceId& child_allocated_local_surface_id,
-      base::TimeTicks child_local_surface_id_allocation_time);
+      const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation);
   void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future
