@@ -367,7 +367,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * in the same task.
      */
     private void launchCustomTabActivity() {
-        boolean handled = BrowserSessionContentUtils.handleInActiveContentIfNeeded(mIntent);
+        boolean handled = BrowserSessionContentUtils.handleBrowserServicesIntent(mIntent);
         if (handled) return;
 
         maybePrefetchDnsInBackground();

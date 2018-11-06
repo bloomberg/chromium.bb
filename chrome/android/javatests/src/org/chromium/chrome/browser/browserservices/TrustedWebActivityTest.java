@@ -47,7 +47,7 @@ public class TrustedWebActivityTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
-    private static final String PACKAGE_NAME = "package.name";
+    private static final String PACKAGE_NAME = "org.chromium.chrome"; // Package name of test apk.
 
     private EmbeddedTestServer mTestServer;
     private String mTestPage;

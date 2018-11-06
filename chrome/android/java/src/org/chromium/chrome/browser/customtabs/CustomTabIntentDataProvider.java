@@ -786,4 +786,11 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     Pattern getExtraModuleManagedUrlsPattern() {
         return mModuleManagedUrlsPattern;
     }
+
+    /**
+     * @return the Intent this instance was created with.
+     */
+    public Intent getIntent() {
+        return mIntent;
+    }
 }

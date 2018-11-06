@@ -47,6 +47,7 @@ public class TrustedWebActivityUi
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final ActivityTabProvider mActivityTabProvider;
     private final CustomTabBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
+    private final PersistentNotificationController mNotificationController;
 
     private boolean mInTrustedWebActivity = true;
 
@@ -69,8 +70,7 @@ public class TrustedWebActivityUi
             Origin origin = new Origin(url);
             boolean verified =
                     OriginVerifier.isValidOrigin(packageName, origin, RELATIONSHIP);
-            if (verified) registerClientAppData(packageName, origin);
-            setTrustedWebActivityMode(verified);
+            handleVerificationResult(verified, packageName, origin);
         }
     };
 
@@ -81,7 +81,8 @@ public class TrustedWebActivityUi
             CustomTabsConnection customTabsConnection,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar, ActivityTabProvider activityTabProvider,
-            CustomTabBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
+            CustomTabBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
+            PersistentNotificationController notificationController) {
         mFullscreenManager = fullscreenManager;
         mClientAppDataRecorder = clientAppDataRecorder;
         mDisclosure = disclosure;
@@ -89,6 +90,7 @@ public class TrustedWebActivityUi
         mIntentDataProvider = intentDataProvider;
         mActivityTabProvider = activityTabProvider;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
+        mNotificationController = notificationController;
         tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
         lifecycleDispatcher.register(this);
     }
@@ -127,9 +129,16 @@ public class TrustedWebActivityUi
             if (!origin.equals(new Origin(tab.getUrl()))) return;
 
             BrowserServicesMetrics.recordTwaOpened();
-            if (verified) registerClientAppData(packageName, origin);
-            setTrustedWebActivityMode(verified);
+            handleVerificationResult(verified, packageName, origin);
         }, packageName, RELATIONSHIP).start(origin);
+    }
+
+    private void handleVerificationResult(boolean verified, String packageName, Origin origin) {
+        if (verified) {
+            registerClientAppData(packageName, origin);
+            mNotificationController.onOriginVerifiedForPackage(origin, packageName);
+        }
+        setTrustedWebActivityMode(verified);
     }
 
     @Override
