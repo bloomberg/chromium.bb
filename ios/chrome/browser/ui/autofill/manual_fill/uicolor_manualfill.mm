@@ -24,4 +24,9 @@
   return color;
 }
 
++ (UIColor*)cr_manualFillGrayLineColor {
+  static UIColor* color = [UIColor colorWithWhite:0.88 alpha:1];
+  return color;
+}
+
 @end

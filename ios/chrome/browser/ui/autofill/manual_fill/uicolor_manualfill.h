@@ -15,6 +15,9 @@
 // Color for the line separators in manual fill (0.66, 0.66, 0.66 RGB).
 @property(class, nonatomic, readonly) UIColor* cr_manualFillSeparatorColor;
 
+// Color for the gray line separators in manual fill.
+@property(class, nonatomic, readonly) UIColor* cr_manualFillGrayLineColor;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_UICOLOR_MANUALFILL_H_

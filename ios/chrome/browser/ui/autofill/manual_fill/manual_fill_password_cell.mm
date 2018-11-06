@@ -156,7 +156,7 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
   UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = [UIColor colorWithWhite:0.88 alpha:1];
+  grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:grayLine];
 
