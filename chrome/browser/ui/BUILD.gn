@@ -2336,8 +2336,6 @@ jumbo_split_static_library("ui") {
       "views/autofill/local_card_migration_dialog_view.h",
       "views/autofill/local_card_migration_icon_view.cc",
       "views/autofill/local_card_migration_icon_view.h",
-      "views/autofill/local_card_migration_offer_view.cc",
-      "views/autofill/local_card_migration_offer_view.h",
       "views/autofill/migratable_card_view.cc",
       "views/autofill/migratable_card_view.h",
       "views/autofill/save_card_bubble_views.cc",

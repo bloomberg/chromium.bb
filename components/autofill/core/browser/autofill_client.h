@@ -94,6 +94,9 @@ class AutofillClient : public RiskDataLoader {
   };
 
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
+  // Callback to run if user presses the Save button in the migration dialog.
+  // Will pass a vector of GUIDs of cards that the user selects to upload to
+  // LocalCardMigrationManager.
   typedef base::OnceCallback<void(const std::vector<std::string>&)>
       LocalCardMigrationCallback;
 
@@ -134,10 +137,6 @@ class AutofillClient : public RiskDataLoader {
   // is true, will show the credit card specific subpage.
   virtual void ShowAutofillSettings(bool show_credit_card_settings) = 0;
 
-  // Runs |callback| if the |profile| should be imported as personal data.
-  virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                          base::OnceClosure callback) = 0;
-
   // A user has attempted to use a masked card. Prompt them for further
   // information to proceed.
   virtual void ShowUnmaskPrompt(const CreditCard& card,
@@ -157,6 +156,10 @@ class AutofillClient : public RiskDataLoader {
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) = 0;
+
+  // Runs |callback| if the |profile| should be imported as personal data.
+  virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
+                                          base::OnceClosure callback) = 0;
 
   // Runs |callback| if the |card| should be imported as personal data. On
   // desktop, shows the offer-to-save bubble if |show_prompt| is true; otherwise

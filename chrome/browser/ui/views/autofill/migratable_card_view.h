@@ -13,7 +13,6 @@ namespace views {
 class ButtonListener;
 class Checkbox;
 class ImageButton;
-class ImageView;
 }  // namespace views
 
 namespace autofill {
@@ -45,9 +44,6 @@ class MigratableCardView : public views::View {
   // The checkbox_ can remain null if the card list in the local
   // card migration dialog contains only one card.
   views::Checkbox* checkbox_ = nullptr;
-
-  views::ImageView* migration_succeeded_image_ = nullptr;
-  views::ImageView* migration_failed_image_ = nullptr;
 
   views::ImageButton* delete_card_from_local_button_ = nullptr;
 

@@ -28,6 +28,7 @@ class LocalCardMigrationDialogController {
   virtual LocalCardMigrationDialogState GetViewState() const = 0;
   virtual const std::vector<MigratableCreditCard>& GetCardList() const = 0;
   virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
+  virtual const base::string16& GetTipMessage() const = 0;
   virtual void OnSaveButtonClicked(
       const std::vector<std::string>& selected_cards_guids) = 0;
   virtual void OnCancelButtonClicked() = 0;
