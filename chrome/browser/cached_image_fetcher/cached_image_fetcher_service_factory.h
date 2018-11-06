@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_SERVICE_FACTORY_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -12,6 +13,8 @@
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+class Profile;
 
 namespace image_fetcher {
 
@@ -21,6 +24,9 @@ class CachedImageFetcherService;
 class CachedImageFetcherServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
+  // Return the cache path for the given profile.
+  static base::FilePath GetCachePath(Profile* profile);
+
   static CachedImageFetcherService* GetForBrowserContext(
       content::BrowserContext* context);
   static CachedImageFetcherServiceFactory* GetInstance();
