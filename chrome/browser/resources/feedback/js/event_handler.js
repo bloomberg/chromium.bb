@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="data.js">
+// <include src="feedback_util.js">
 
 /**
  * @type {number}
@@ -187,7 +187,7 @@ class FeedbackRequest {
                       chrome.feedbackPrivate.LandingPageType.NORMAL ?
                   FEEDBACK_LANDING_PAGE :
                   FEEDBACK_LANDING_PAGE_TECHSTOP;
-              window.open(landingPage, '_blank');
+              openUrlInAppWindow(landingPage);
             }
           } else {
             console.log(
