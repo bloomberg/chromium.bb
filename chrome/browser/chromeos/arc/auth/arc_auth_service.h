@@ -96,8 +96,8 @@ class ArcAuthService : public KeyedService,
       const std::string& user_id);
 
   // Issues a request for fetching AccountInfo for the Device Account.
-  // |initial_signin| denotes whether this is the initial ARC++ provisioning
-  // flow or a subsequent sign-in.
+  // |initial_signin| denotes whether this is the initial ARC provisioning flow
+  // or a subsequent sign-in.
   // |callback| is completed with |ArcSignInStatus| and |AccountInfo| depending
   // on the success / failure of the operation.
   void FetchPrimaryAccountInfo(bool initial_signin,
@@ -119,6 +119,26 @@ class ArcAuthService : public KeyedService,
   // Called to let ARC container know the account info.
   void OnAccountInfoReadyDeprecated(mojom::ArcSignInStatus status,
                                     mojom::AccountInfoPtr account_info);
+
+  // Issues a request for fetching AccountInfo for a Secondary Account
+  // represented by |account_name|. |account_name| is the account identifier
+  // used by ARC/Android.
+  void FetchSecondaryAccountInfo(const std::string& account_name,
+                                 RequestAccountInfoCallback callback);
+
+  // Callback for |FetchSecondaryAccountInfo|, issued by
+  // |ArcBackgroundAuthCodeFetcher::Fetch|.
+  // |account_name| is the account identifier used by ARC/Android.
+  // |fetcher| is used to identify the |ArcBackgroundAuthCodeFetcher| instance
+  // that completed the request. |callback| is completed with |ArcSignInStatus|
+  // and |AccountInfo| depending on the success / failure of the operation.
+  // |success| and |auth_code| are arguments passed by
+  // |ArcBackgroundAuthCodeFetcher::Fetch| callback.
+  void OnSecondaryAccountAuthCodeFetched(const std::string& account_name,
+                                         ArcBackgroundAuthCodeFetcher* fetcher,
+                                         RequestAccountInfoCallback callback,
+                                         bool success,
+                                         const std::string& auth_code);
 
   // Callback for data removal confirmation.
   void OnDataRemovalAccepted(bool accepted);

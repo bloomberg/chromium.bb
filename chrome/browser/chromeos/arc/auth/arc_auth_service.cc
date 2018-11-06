@@ -148,6 +148,17 @@ mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
   return account_info;
 }
 
+bool IsPrimaryAccount(const chromeos::AccountManager::AccountKey& account_key) {
+  // |GetPrimaryUser| is fine because ARC is only available on the first
+  // (Primary) account that participates in multi-signin.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  DCHECK(user);
+  const AccountId& primary_account_id = user->GetAccountId();
+
+  return chromeos::AccountMapperUtil::IsEqual(account_key, primary_account_id);
+}
+
 }  // namespace
 
 // static
@@ -298,12 +309,27 @@ void ArcAuthService::RequestAccountInfoDeprecated(bool initial_signin) {
 
 void ArcAuthService::RequestPrimaryAccountInfo(
     RequestPrimaryAccountInfoCallback callback) {
+  // This is the provisioning flow.
   FetchPrimaryAccountInfo(true /* initial_signin */, std::move(callback));
 }
 
 void ArcAuthService::RequestAccountInfo(const std::string& account_name,
                                         RequestAccountInfoCallback callback) {
-  // TODO(sinhak): Check for Secondary Accounts.
+  // This is the post provisioning flow.
+  // This request could have come for re-authenticating an existing account in
+  // ARC, or for signing in a new Secondary Account.
+  const std::string gaia_id =
+      account_tracker_service_->FindAccountInfoByEmail(account_name).gaia;
+  DCHECK(!gaia_id.empty());
+
+  // Check if |account_name| points to a Secondary Account.
+  if (!IsPrimaryAccount(chromeos::AccountManager::AccountKey{
+          gaia_id,
+          chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
+    FetchSecondaryAccountInfo(account_name, std::move(callback));
+    return;
+  }
+
   FetchPrimaryAccountInfo(false /* initial_signin */, std::move(callback));
 }
 
@@ -403,8 +429,8 @@ void ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched(
     const std::string& enrollment_token,
     const std::string& user_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // |fetcher| will be invalid after this.
   DeletePendingTokenRequest(fetcher);
-  fetcher = nullptr;
 
   switch (status) {
     case ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS: {
@@ -441,8 +467,8 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
     bool success,
     const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // |fetcher| will be invalid after this.
   DeletePendingTokenRequest(fetcher);
-  fetcher = nullptr;
 
   if (success) {
     const SigninManagerBase* const signin_manager =
@@ -466,6 +492,51 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
                           true /* is_managed */));
   } else {
     // Send error to ARC.
+    std::move(callback).Run(
+        mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR, nullptr);
+  }
+}
+
+void ArcAuthService::FetchSecondaryAccountInfo(
+    const std::string& account_name,
+    RequestAccountInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const std::string account_id =
+      account_tracker_service_->FindAccountInfoByEmail(account_name).account_id;
+  DCHECK(!account_id.empty());
+
+  std::unique_ptr<ArcBackgroundAuthCodeFetcher> fetcher =
+      CreateArcBackgroundAuthCodeFetcher(account_id,
+                                         false /* initial_signin */);
+
+  // Add the request to |pending_token_requests_| first, before starting a
+  // token fetch. In case the callback is called immediately, we do not want
+  // to add an already completed request to |pending_token_requests_|.
+  auto* fetcher_ptr = fetcher.get();
+  pending_token_requests_.emplace_back(std::move(fetcher));
+  fetcher_ptr->Fetch(
+      base::BindOnce(&ArcAuthService::OnSecondaryAccountAuthCodeFetched,
+                     weak_ptr_factory_.GetWeakPtr(), account_name, fetcher_ptr,
+                     std::move(callback)));
+}
+
+void ArcAuthService::OnSecondaryAccountAuthCodeFetched(
+    const std::string& account_name,
+    ArcBackgroundAuthCodeFetcher* fetcher,
+    RequestAccountInfoCallback callback,
+    bool success,
+    const std::string& auth_code) {
+  // |fetcher| will be invalid after this.
+  DeletePendingTokenRequest(fetcher);
+
+  if (success) {
+    std::move(callback).Run(
+        mojom::ArcSignInStatus::SUCCESS,
+        CreateAccountInfo(true /* is_enforced */, auth_code, account_name,
+                          mojom::ChromeAccountType::USER_ACCOUNT,
+                          false /* is_managed */));
+  } else {
     std::move(callback).Run(
         mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR, nullptr);
   }
