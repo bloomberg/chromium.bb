@@ -32,9 +32,11 @@ void ProxyResolvingSocketFactoryMojo::CreateProxyResolvingSocket(
     CreateProxyResolvingSocketCallback callback) {
   std::unique_ptr<net::StreamSocket> net_socket =
       factory_impl_.CreateSocket(url, options && options->use_tls);
-  if (options && options->fake_tls_handshake)
+  if (options && options->fake_tls_handshake) {
+    DCHECK(!options->use_tls);
     net_socket = std::make_unique<jingle_glue::FakeSSLClientSocket>(
         std::move(net_socket));
+  }
 
   auto socket = std::make_unique<ProxyResolvingSocketMojo>(
       std::move(net_socket),
