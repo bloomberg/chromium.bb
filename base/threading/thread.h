@@ -344,9 +344,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Optionally stores a SequenceManager that manages Tasks on the MessageLoop.
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
 
-  // Stores Options::timer_slack_ until the message loop has been bound to
+  // Stores Options::timer_slack_ until the sequence manager has been bound to
   // a thread.
-  TimerSlack message_loop_timer_slack_ = TIMER_SLACK_NONE;
+  TimerSlack timer_slack_ = TIMER_SLACK_NONE;
 
   // The name of the thread.  Used for debugging purposes.
   const std::string name_;

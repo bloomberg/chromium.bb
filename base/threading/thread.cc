@@ -97,7 +97,7 @@ bool Thread::StartWithOptions(const Options& options) {
   if (!options.message_pump_factory.is_null())
     type = MessageLoop::TYPE_CUSTOM;
 
-  message_loop_timer_slack_ = options.timer_slack;
+  timer_slack_ = options.timer_slack;
   std::unique_ptr<MessageLoop> message_loop_owned =
       MessageLoop::CreateUnbound(type, options.message_pump_factory);
   message_loop_ = message_loop_owned.get();
@@ -313,9 +313,10 @@ void Thread::ThreadMain() {
   DCHECK(message_loop_);
   std::unique_ptr<MessageLoop> message_loop(message_loop_);
   message_loop_->BindToCurrentThread();
-  message_loop_->SetTimerSlack(message_loop_timer_slack_);
+  message_loop_->SetTimerSlack(timer_slack_);
 
   if (sequence_manager_) {
+    sequence_manager_->SetTimerSlack(timer_slack_);
     sequence_manager_->CompleteInitializationOnBoundThread();
   }
 
