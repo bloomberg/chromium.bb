@@ -15,6 +15,9 @@
 // Returns the toolbar view.
 @property(nonatomic, readonly) UIView* toolBarView;
 
+// Voice search button.
+@property(nonatomic, strong, readonly) UIButton* voiceSearchButton;
+
 // Adds the |toolbarView| to the view implementing this protocol.
 // Can only be added once.
 - (void)addToolbarView:(UIView*)toolbarView;
@@ -32,8 +35,6 @@
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
-                     hintLabel:(UILabel*)hintLabel
-            subviewConstraints:(NSArray*)constraints
                      forOffset:(CGFloat)offset
                    screenWidth:(CGFloat)screenWidth
                 safeAreaInsets:(UIEdgeInsets)safeAreaInsets;

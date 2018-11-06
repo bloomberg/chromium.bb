@@ -18,7 +18,6 @@ const CGFloat kAnimationDistance = 42;
 const CGFloat kToolbarHeight = 48;
 const CGFloat kScrolledToTopOmniboxBottomMargin = 4;
 const CGFloat kHintLabelSidePadding = 37;
-const CGFloat kHintLabelSidePaddingLegacy = 12;
 const CGFloat kMaxHorizontalMarginDiff = 5;
 const CGFloat kMaxTopMarginDiff = 4;
 

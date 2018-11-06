@@ -51,11 +51,11 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
 // added to |hintLabelContainer| with autoresizing.  This is done due to the
 // way searchHintLabel is later tranformed.
 void configureSearchHintLabel(UILabel* searchHintLabel,
-                              UIButton* searchTapTarget);
+                              UIView* searchTapTarget);
 // Configure the |voiceSearchButton|, adding it to the |searchTapTarget| and
 // constraining it.
 void configureVoiceSearchButton(UIButton* voiceSearchButton,
-                                UIButton* searchTapTarget);
+                                UIView* searchTapTarget);
 
 // Returns the nearest ancestor of |view| that is kind of |aClass|.
 UIView* nearestAncestor(UIView* view, Class aClass);

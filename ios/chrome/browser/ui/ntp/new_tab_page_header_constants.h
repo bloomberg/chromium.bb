@@ -22,7 +22,6 @@ CGFloat ToolbarHeight();
 extern const CGFloat kScrolledToTopOmniboxBottomMargin;
 
 extern const CGFloat kHintLabelSidePadding;
-extern const CGFloat kHintLabelSidePaddingLegacy;
 
 // The margin of the subviews of the fake omnibox when it is pinned to top.
 extern const CGFloat kMaxHorizontalMarginDiff;
