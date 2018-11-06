@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
+#include "device/fido/buildflags.h"
 #include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
 
 // HID is not supported on Android.
@@ -15,20 +17,47 @@
 #include "device/fido/hid/fido_hid_discovery.h"
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
+#include <Winuser.h>
+#include "device/fido/win/discovery.h"
+#include "device/fido/win/webauthn_api.h"
+#endif
+
 namespace device {
+
 namespace {
+
+std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
+    service_manager::Connector* connector) {
+#if defined(OS_ANDROID)
+  NOTREACHED() << "USB HID not supported on Android.";
+  return nullptr;
+#else
+
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
+  // On platforms where the Windows webauthn.dll is present, access to USB
+  // devices is blocked and we use a special authenticator that forwards
+  // requests to the Windows WebAuthn API instead.
+  if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+      WinWebAuthnApi::GetDefault()->IsAvailable()) {
+    return std::make_unique<WinNativeCrossPlatformAuthenticatorDiscovery>(
+        WinWebAuthnApi::GetDefault(),
+        // TODO(martinkr): Inject the window from which the request originated.
+        GetForegroundWindow());
+  }
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
+
+  DCHECK(connector);
+  return std::make_unique<FidoHidDiscovery>(connector);
+#endif  // !defined(OS_ANDROID)
+}
+
 std::unique_ptr<FidoDiscoveryBase> CreateFidoDiscoveryImpl(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   switch (transport) {
     case FidoTransportProtocol::kUsbHumanInterfaceDevice:
-#if !defined(OS_ANDROID)
-      DCHECK(connector);
-      return std::make_unique<FidoHidDiscovery>(connector);
-#else
-      NOTREACHED() << "USB HID not supported on Android.";
-      return nullptr;
-#endif  // !defined(OS_ANDROID)
+      return CreateUsbFidoDiscovery(connector);
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
@@ -45,6 +74,7 @@ std::unique_ptr<FidoDiscoveryBase> CreateFidoDiscoveryImpl(
   NOTREACHED() << "Unhandled transport type";
   return nullptr;
 }
+
 }  // namespace
 
 std::unique_ptr<FidoDiscoveryBase> CreateCableDiscoveryImpl(
