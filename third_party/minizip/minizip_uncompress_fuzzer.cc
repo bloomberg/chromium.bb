@@ -5,6 +5,7 @@
 #include <memory.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <vector>
 
 #include "third_party/minizip/src/mz.h"
 #include "third_party/minizip/src/mz_strm_mem.h"
@@ -14,6 +15,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   void* stream = mz_stream_mem_create(nullptr);
   mz_stream_mem_set_buffer(
       stream, reinterpret_cast<void*>(const_cast<uint8_t*>(data)), size);
+
+  constexpr int kReadBufferSize = 1024;
+  std::vector<char> read_buffer(kReadBufferSize);
 
   void* zip_file = mz_zip_create(nullptr);
   int result = mz_zip_open(zip_file, stream, MZ_OPEN_MODE_READ);
@@ -28,6 +32,25 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       mz_zip_file* file_info = nullptr;
       result = mz_zip_entry_get_info(zip_file, &file_info);
       if (result != MZ_OK) {
+        break;
+      }
+
+      result = mz_zip_entry_is_open(zip_file);
+      if (result != MZ_OK) {
+        break;
+      }
+
+      // Return value isn't checked here because we can't predict what the value
+      // will be.
+      mz_zip_entry_is_dir(zip_file);
+
+      result = mz_zip_get_entry(zip_file);
+      if (result < 0) {
+        break;
+      }
+
+      result = mz_zip_entry_read(zip_file, read_buffer.data(), kReadBufferSize);
+      if (result < 0) {
         break;
       }
 

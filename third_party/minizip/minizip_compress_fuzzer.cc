@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/scoped_generic.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "third_party/minizip/src/mz.h"
 #include "third_party/minizip/src/mz_strm_mem.h"
 #include "third_party/minizip/src/mz_zip.h"
@@ -35,6 +36,30 @@ typedef base::ScopedGeneric<void*, MzZipTraits> ScopedMzZip;
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  base::FuzzedDataProvider data_provider(data, size);
+
+  mz_zip_file file_info = {};
+  file_info.flag = MZ_ZIP_FLAG_UTF8;
+  if (data_provider.ConsumeUint8() < 0x08) {
+    file_info.flag = data_provider.ConsumeUint16();
+  }
+  file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+  if (data_provider.ConsumeUint8() < 0x08) {
+    file_info.compression_method = MZ_COMPRESS_METHOD_STORE;
+  } else if (data_provider.ConsumeUint8() < 0x08) {
+    file_info.compression_method = data_provider.ConsumeUint16();
+  }
+  if (data_provider.ConsumeUint8() < 0x08) {
+    file_info.zip64 = data_provider.ConsumeUint16();
+  }
+  file_info.filename = kTestFileName;
+  file_info.filename_size = sizeof(kTestFileName);
+
+  int16_t compress_level = MZ_COMPRESS_LEVEL_DEFAULT;
+  if (data_provider.ConsumeUint8() < 0x08) {
+    compress_level = static_cast<int16_t>(data_provider.ConsumeUint16());
+  }
+
   ScopedMzStreamMem out_stream(mz_stream_mem_create(nullptr));
 
   ScopedMzZip zip_file(mz_zip_create(nullptr));
@@ -44,17 +69,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  mz_zip_file file_info = {};
-  file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
-  file_info.filename = kTestFileName;
-  file_info.filename_size = sizeof(kTestFileName);
-  result = mz_zip_entry_write_open(zip_file.get(), &file_info,
-                                   MZ_COMPRESS_LEVEL_DEFAULT, 0, nullptr);
+  result = mz_zip_entry_write_open(zip_file.get(), &file_info, compress_level,
+                                   0, nullptr);
   if (result != MZ_OK) {
     return 0;
   }
 
-  result = mz_zip_entry_write(zip_file.get(), data, size);
+  std::string remaining_data = data_provider.ConsumeRemainingBytes();
+  result = mz_zip_entry_write(zip_file.get(), remaining_data.data(),
+                              remaining_data.size());
   if (result != MZ_OK) {
     return 0;
   }
