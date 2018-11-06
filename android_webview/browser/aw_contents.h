@@ -27,7 +27,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
-class TabContents;
 
 namespace autofill {
 class AutofillProvider;
@@ -39,7 +38,6 @@ class WebContents;
 
 namespace android_webview {
 
-class AwContentsContainer;
 class AwContentsClientBridge;
 class AwGLFunctor;
 class AwPdfExporter;
@@ -47,9 +45,6 @@ class AwWebContentsDelegate;
 class PermissionRequestHandler;
 
 // Native side of java-class of same name.
-// Provides the ownership of and access to browser components required for
-// WebView functionality; analogous to chrome's TabContents, but with a
-// level of indirection provided by the AwContentsContainer abstraction.
 //
 // Object lifetime:
 // For most purposes the java and native objects can be considered to have
