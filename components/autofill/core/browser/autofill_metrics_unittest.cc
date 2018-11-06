@@ -6317,8 +6317,12 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // of fields enforced.)
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(
-        kAutofillEnforceMinRequiredFieldsForHeuristics);
+    features.InitWithFeatures(
+        // Enabled
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery},
+        // Disabled
+        {});
     base::HistogramTester histogram_tester;
     base::UserActionTester user_action_tester;
     autofill_manager_->OnFormSubmitted(
