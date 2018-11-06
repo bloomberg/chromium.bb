@@ -29,11 +29,13 @@ enum CanvasColorSpace {
   kLinearRGBCanvasColorSpace,
   kRec2020CanvasColorSpace,
   kP3CanvasColorSpace,
+  kMaxCanvasColorSpace = kP3CanvasColorSpace
 };
 
 enum CanvasPixelFormat {
   kRGBA8CanvasPixelFormat,
   kF16CanvasPixelFormat,
+  kMaxCanvasPixelFormat = kF16CanvasPixelFormat
 };
 
 class PLATFORM_EXPORT CanvasColorParams {
@@ -72,6 +74,7 @@ class PLATFORM_EXPORT CanvasColorParams {
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;
+  static SkColorType PixelFormatToSkColorType(CanvasPixelFormat pixel_format);
   uint8_t BytesPerPixel() const;
 
   // The color space in which pixels read from the canvas via a shader will be
