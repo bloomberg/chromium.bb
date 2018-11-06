@@ -9,8 +9,12 @@
 namespace blink {
 
 P2PQuicStreamImpl::P2PQuicStreamImpl(quic::QuicStreamId id,
-                                     quic::QuicSession* session)
-    : quic::QuicStream(id, session, /*is_static=*/false, quic::BIDIRECTIONAL) {}
+                                     quic::QuicSession* session,
+                                     uint32_t write_buffer_size)
+    : quic::QuicStream(id, session, /*is_static=*/false, quic::BIDIRECTIONAL),
+      write_buffer_size_(write_buffer_size) {
+  DCHECK_GT(write_buffer_size_, 0u);
+}
 
 P2PQuicStreamImpl::~P2PQuicStreamImpl() {}
 
@@ -23,6 +27,17 @@ void P2PQuicStreamImpl::OnDataAvailable() {
   }
 }
 
+void P2PQuicStreamImpl::OnStreamDataConsumed(size_t bytes_consumed) {
+  DCHECK(delegate_);
+  // We should never consume more than has been written.
+  DCHECK_GE(write_buffered_amount_, bytes_consumed);
+  QuicStream::OnStreamDataConsumed(bytes_consumed);
+  if (bytes_consumed > 0) {
+    write_buffered_amount_ -= bytes_consumed;
+    delegate_->OnWriteDataConsumed(bytes_consumed);
+  }
+}
+
 void P2PQuicStreamImpl::Reset() {
   if (rst_sent()) {
     // No need to reset twice. This could have already been sent as consequence
@@ -32,10 +47,15 @@ void P2PQuicStreamImpl::Reset() {
   quic::QuicStream::Reset(quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
 }
 
-void P2PQuicStreamImpl::Finish() {
-  // Should never call Finish twice.
-  DCHECK(!fin_sent());
-  quic::QuicStream::WriteOrBufferData("", /*fin=*/true, nullptr);
+void P2PQuicStreamImpl::WriteData(std::vector<uint8_t> data, bool fin) {
+  // It is up to the delegate to not write more data than the
+  // |write_buffer_size_|.
+  DCHECK_GE(write_buffer_size_, data.size() + write_buffered_amount_);
+  write_buffered_amount_ += data.size();
+  QuicStream::WriteOrBufferData(
+      quic::QuicStringPiece(reinterpret_cast<const char*>(data.data()),
+                            data.size()),
+      fin, nullptr);
 }
 
 void P2PQuicStreamImpl::SetDelegate(P2PQuicStream::Delegate* delegate) {
@@ -43,8 +63,6 @@ void P2PQuicStreamImpl::SetDelegate(P2PQuicStream::Delegate* delegate) {
 }
 
 void P2PQuicStreamImpl::OnStreamReset(const quic::QuicRstStreamFrame& frame) {
-  // TODO(https://crbug.com/874296): If we get an incoming stream we need to
-  // make sure that the delegate is set before we have incoming data.
   DCHECK(delegate_);
   // Calling this on the QuicStream will ensure that the stream is closed
   // for reading and writing and we send a RST frame to the remote side if
