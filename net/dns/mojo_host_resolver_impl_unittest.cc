@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/mojo_host_resolver_impl.h"
+#include "net/dns/mojo_host_resolver_impl.h"
 
 #include <string>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -17,22 +16,21 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::IsError;
 using net::test::IsOk;
 
-namespace network {
+namespace net {
 
 namespace {
 
-class TestRequestClient
-    : public proxy_resolver::mojom::HostResolverRequestClient {
+class TestRequestClient : public interfaces::HostResolverRequestClient {
  public:
   explicit TestRequestClient(
-      mojo::InterfaceRequest<proxy_resolver::mojom::HostResolverRequestClient>
-          req)
+      mojo::InterfaceRequest<interfaces::HostResolverRequestClient> req)
       : done_(false), binding_(this, std::move(req)) {
     binding_.set_connection_error_handler(base::Bind(
         &TestRequestClient::OnConnectionError, base::Unretained(this)));
@@ -42,11 +40,11 @@ class TestRequestClient
   void WaitForConnectionError();
 
   int32_t error_;
-  net::AddressList results_;
+  AddressList results_;
 
  private:
-  // Overridden from proxy_resolver::mojom::HostResolverRequestClient.
-  void ReportResult(int32_t error, const net::AddressList& results) override;
+  // Overridden from interfaces::HostResolverRequestClient.
+  void ReportResult(int32_t error, const AddressList& results) override;
 
   // Mojo error handler.
   void OnConnectionError();
@@ -55,7 +53,7 @@ class TestRequestClient
   base::Closure run_loop_quit_closure_;
   base::Closure connection_error_quit_closure_;
 
-  mojo::Binding<proxy_resolver::mojom::HostResolverRequestClient> binding_;
+  mojo::Binding<interfaces::HostResolverRequestClient> binding_;
 };
 
 void TestRequestClient::WaitForResult() {
@@ -75,7 +73,7 @@ void TestRequestClient::WaitForConnectionError() {
 }
 
 void TestRequestClient::ReportResult(int32_t error,
-                                     const net::AddressList& results) {
+                                     const AddressList& results) {
   if (!run_loop_quit_closure_.is_null()) {
     run_loop_quit_closure_.Run();
   }
@@ -90,7 +88,7 @@ void TestRequestClient::OnConnectionError() {
     connection_error_quit_closure_.Run();
 }
 
-class CallbackMockHostResolver : public net::MockHostResolver {
+class CallbackMockHostResolver : public MockHostResolver {
  public:
   CallbackMockHostResolver() = default;
   ~CallbackMockHostResolver() override = default;
@@ -103,22 +101,22 @@ class CallbackMockHostResolver : public net::MockHostResolver {
 
   // Overridden from MockHostResolver.
   int Resolve(const RequestInfo& info,
-              net::RequestPriority priority,
-              net::AddressList* addresses,
-              net::CompletionOnceCallback callback,
+              RequestPriority priority,
+              AddressList* addresses,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* request,
-              const net::NetLogWithSource& net_log) override;
+              const NetLogWithSource& net_log) override;
 
  private:
   base::Closure resolve_callback_;
 };
 
 int CallbackMockHostResolver::Resolve(const RequestInfo& info,
-                                      net::RequestPriority priority,
-                                      net::AddressList* addresses,
-                                      net::CompletionOnceCallback callback,
+                                      RequestPriority priority,
+                                      AddressList* addresses,
+                                      CompletionOnceCallback callback,
                                       std::unique_ptr<Request>* request,
-                                      const net::NetLogWithSource& net_log) {
+                                      const NetLogWithSource& net_log) {
   int result = MockHostResolver::Resolve(info, priority, addresses,
                                          std::move(callback), request, net_log);
   if (!resolve_callback_.is_null()) {
@@ -129,24 +127,23 @@ int CallbackMockHostResolver::Resolve(const RequestInfo& info,
 
 }  // namespace
 
-class MojoHostResolverImplTest : public testing::Test {
+class MojoHostResolverImplTest : public TestWithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
     mock_host_resolver_.rules()->AddRule("chromium.org", "8.8.8.8");
     mock_host_resolver_.rules()->AddSimulatedFailure("failure.fail");
 
-    resolver_service_.reset(new MojoHostResolverImpl(&mock_host_resolver_,
-                                                     net::NetLogWithSource()));
+    resolver_service_.reset(
+        new MojoHostResolverImpl(&mock_host_resolver_, NetLogWithSource()));
   }
 
-  std::unique_ptr<net::HostResolver::RequestInfo>
+  std::unique_ptr<HostResolver::RequestInfo>
   CreateRequest(const std::string& host, uint16_t port, bool is_my_ip_address) {
-    std::unique_ptr<net::HostResolver::RequestInfo> request =
-        std::make_unique<net::HostResolver::RequestInfo>(
-            net::HostPortPair(host, port));
+    std::unique_ptr<HostResolver::RequestInfo> request =
+        std::make_unique<HostResolver::RequestInfo>(HostPortPair(host, port));
     request->set_is_my_ip_address(is_my_ip_address);
-    request->set_address_family(net::ADDRESS_FAMILY_IPV4);
+    request->set_address_family(ADDRESS_FAMILY_IPV4);
     return request;
   }
 
@@ -159,14 +156,12 @@ class MojoHostResolverImplTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   CallbackMockHostResolver mock_host_resolver_;
   std::unique_ptr<MojoHostResolverImpl> resolver_service_;
 };
 
 TEST_F(MojoHostResolverImplTest, Resolve) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
+  interfaces::HostResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   resolver_service_->Resolve(CreateRequest("example.com", 80, false),
@@ -174,13 +169,13 @@ TEST_F(MojoHostResolverImplTest, Resolve) {
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsOk());
-  net::AddressList& address_list = client.results_;
+  AddressList& address_list = client.results_;
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
+  interfaces::HostResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   mock_host_resolver_.set_synchronous_mode(true);
@@ -190,15 +185,15 @@ TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsOk());
-  net::AddressList& address_list = client.results_;
+  AddressList& address_list = client.results_;
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client1_ptr;
+  interfaces::HostResolverRequestClientPtr client1_ptr;
   TestRequestClient client1(mojo::MakeRequest(&client1_ptr));
-  proxy_resolver::mojom::HostResolverRequestClientPtr client2_ptr;
+  interfaces::HostResolverRequestClientPtr client2_ptr;
   TestRequestClient client2(mojo::MakeRequest(&client2_ptr));
 
   mock_host_resolver_.set_ondemand_mode(true);
@@ -214,19 +209,19 @@ TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
   client2.WaitForResult();
 
   EXPECT_THAT(client1.error_, IsOk());
-  net::AddressList& address_list1 = client1.results_;
+  AddressList& address_list1 = client1.results_;
   EXPECT_EQ(1U, address_list1.size());
   EXPECT_EQ("1.2.3.4:80", address_list1[0].ToString());
   EXPECT_THAT(client2.error_, IsOk());
-  net::AddressList& address_list2 = client2.results_;
+  AddressList& address_list2 = client2.results_;
   EXPECT_EQ(1U, address_list2.size());
   EXPECT_EQ("8.8.8.8:80", address_list2[0].ToString());
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client1_ptr;
+  interfaces::HostResolverRequestClientPtr client1_ptr;
   TestRequestClient client1(mojo::MakeRequest(&client1_ptr));
-  proxy_resolver::mojom::HostResolverRequestClientPtr client2_ptr;
+  interfaces::HostResolverRequestClientPtr client2_ptr;
   TestRequestClient client2(mojo::MakeRequest(&client2_ptr));
 
   mock_host_resolver_.set_ondemand_mode(true);
@@ -242,17 +237,17 @@ TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
   client2.WaitForResult();
 
   EXPECT_THAT(client1.error_, IsOk());
-  net::AddressList& address_list1 = client1.results_;
+  AddressList& address_list1 = client1.results_;
   EXPECT_EQ(1U, address_list1.size());
   EXPECT_EQ("1.2.3.4:80", address_list1[0].ToString());
   EXPECT_THAT(client2.error_, IsOk());
-  net::AddressList& address_list2 = client2.results_;
+  AddressList& address_list2 = client2.results_;
   EXPECT_EQ(1U, address_list2.size());
   EXPECT_EQ("1.2.3.4:80", address_list2[0].ToString());
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveFailure) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
+  interfaces::HostResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   resolver_service_->Resolve(CreateRequest("failure.fail", 80, false),
@@ -264,7 +259,7 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
 }
 
 TEST_F(MojoHostResolverImplTest, DestroyClient) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
+  interfaces::HostResolverRequestClientPtr client_ptr;
   std::unique_ptr<TestRequestClient> client(
       new TestRequestClient(mojo::MakeRequest(&client_ptr)));
 
@@ -281,4 +276,4 @@ TEST_F(MojoHostResolverImplTest, DestroyClient) {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace network
+}  // namespace net

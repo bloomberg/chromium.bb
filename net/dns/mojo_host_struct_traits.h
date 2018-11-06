@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
-#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
+#ifndef NET_DNS_MOJO_HOST_STRUCT_TRAITS_H_
+#define NET_DNS_MOJO_HOST_STRUCT_TRAITS_H_
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/dns/host_resolver.h"
 #include "net/interfaces/address_family.mojom.h"
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "net/interfaces/host_resolver_service.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<proxy_resolver::mojom::HostResolverRequestInfoDataView,
+struct StructTraits<net::interfaces::HostResolverRequestInfoDataView,
                     std::unique_ptr<net::HostResolver::RequestInfo>> {
   static base::StringPiece host(
       const std::unique_ptr<net::HostResolver::RequestInfo>& obj) {
@@ -37,10 +37,10 @@ struct StructTraits<proxy_resolver::mojom::HostResolverRequestInfoDataView,
     return obj->is_my_ip_address();
   }
 
-  static bool Read(proxy_resolver::mojom::HostResolverRequestInfoDataView obj,
+  static bool Read(net::interfaces::HostResolverRequestInfoDataView obj,
                    std::unique_ptr<net::HostResolver::RequestInfo>* output);
 };
 
 }  // namespace mojo
 
-#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
+#endif  // NET_DNS_MOJO_HOST_STRUCT_TRAITS_H_
