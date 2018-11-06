@@ -490,6 +490,19 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   EXPECT_EQ(160, sizes.max_size);
 }
 
+TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
+  SetBodyInnerHTML(
+      "<pre id=t style='-webkit-rtl-ordering:visual'>ab\nde</pre>");
+  LayoutText* const layout_text = ToLayoutText(
+      GetDocument().getElementById("t")->firstChild()->GetLayoutObject());
+  ASSERT_TRUE(layout_text->HasValidInlineItems());
+  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
+  ASSERT_EQ(3u, items.size());
+  TEST_ITEM_TYPE_OFFSET((*items[0]), kText, 1u, 3u);
+  TEST_ITEM_TYPE_OFFSET((*items[1]), kControl, 4u, 5u);
+  TEST_ITEM_TYPE_OFFSET((*items[2]), kText, 6u, 8u);
+}
+
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());

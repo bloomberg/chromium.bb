@@ -639,7 +639,9 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
   LayoutObject* last_object = nullptr;
   for (auto& item : data->items) {
     LayoutObject* object = item.GetLayoutObject();
-    if (object && object->IsText()) {
+    if (!object)
+      continue;
+    if (object->IsText()) {
       LayoutText* layout_text = ToLayoutText(object);
       if (object != last_object)
         layout_text->ClearInlineItems();
