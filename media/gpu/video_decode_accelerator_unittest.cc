@@ -122,11 +122,6 @@ double g_rendering_fps = 60;
 
 bool g_use_gl_renderer = true;
 
-// Validate each decoded frame on thumbnail test case.
-// TODO(crbug.com/856562): Enable VideoFrameValidator by default if
-// |g_test_import| is true.
-bool g_frame_validator = false;
-
 // The value is set by the switch "--num_play_throughs". The video will play
 // the specified number of times. In different test cases, we have different
 // values for |num_play_throughs|. This setting will override the value. A
@@ -139,6 +134,10 @@ bool g_fake_decoder = 0;
 // Test buffer import into VDA, providing buffers allocated by us, instead of
 // requesting the VDA itself to allocate buffers.
 bool g_test_import = false;
+
+// VideoFrameValidator flags.
+// If this is set to non-zero, g_test_import becomes true.
+uint32_t g_frame_validator_flags = 0;
 
 // This is the location of the test files. If empty, they're in the current
 // working directory.
@@ -1150,15 +1149,10 @@ static void AssertWaitForStateOrDeleted(
 std::unique_ptr<media::test::VideoFrameValidator>
 CreateAndInitializeVideoFrameValidator(
     const base::FilePath::StringType& video_file) {
-  // TODO(crbug.com/856562): Add a command line option to stand for outputting
-  // decoded yuv.
-  // Currently decoded yuv is not output.
-  constexpr bool output_yuv = false;
   // Initialize prefix of yuv files.
   base::FilePath prefix_output_yuv;
-
   base::FilePath filepath(video_file);
-  if (output_yuv) {
+  if (g_frame_validator_flags & test::VideoFrameValidator::OUTPUTYUV) {
     if (!g_thumbnail_output_dir.empty() &&
         base::DirectoryExists(g_thumbnail_output_dir)) {
       prefix_output_yuv = g_thumbnail_output_dir.Append(filepath.BaseName());
@@ -1167,7 +1161,7 @@ CreateAndInitializeVideoFrameValidator(
     }
   }
   return media::test::VideoFrameValidator::CreateVideoFrameValidator(
-      prefix_output_yuv,
+      g_frame_validator_flags, prefix_output_yuv,
       filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5")));
 }
 
@@ -1207,7 +1201,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
-  bool use_video_frame_validator = g_frame_validator && g_test_import;
+  bool use_video_frame_validator = g_frame_validator_flags != 0;
   if (use_video_frame_validator) {
     LOG(INFO) << "Using Frame Validator..";
 #if !defined(OS_CHROMEOS)
@@ -1653,6 +1647,40 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
   WaitUntilDecodeFinish(notes_[0].get());
 }
 
+#if defined(OS_CHROMEOS)
+// This is the case only for generating md5 values of video frames on stream.
+// This is disabled by default. To run this, you should run this test with
+// --gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 and
+// --gtest_also_run_disabled_tests
+TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
+  g_frame_validator_flags = test::VideoFrameValidator::GENMD5;
+  g_test_import = true;
+
+  ASSERT_EQ(test_video_files_.size(), 1u);
+  notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+  const TestVideoFile* video_file = test_video_files_[0].get();
+  GLRenderingVDAClient::Config config;
+  config.frame_size = gfx::Size(video_file->width, video_file->height);
+  config.profile = video_file->profile;
+  config.fake_decoder = g_fake_decoder;
+  config.num_frames = video_file->num_frames;
+  auto video_frame_validator =
+      CreateAndInitializeVideoFrameValidator(video_file->file_name);
+  clients_.push_back(std::make_unique<GLRenderingVDAClient>(
+      std::move(config), video_file->data_str, &rendering_helper_,
+      std::move(video_frame_validator), notes_[0].get()));
+  RenderingHelperParams helper_params;
+  helper_params.num_windows = 1;
+  InitializeRenderingHelper(helper_params);
+  CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
+  ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
+  EXPECT_NE(CS_ERROR, last_state);
+
+  g_test_import = false;
+  g_frame_validator_flags = 0;
+}
+#endif
+
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play for a single decoder.
 // - Test alternate configurations
@@ -1753,7 +1781,23 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "frame_validator") {
-      media::g_frame_validator = true;
+#if defined(OS_CHROMEOS)
+      auto flags = base::SplitString(it->second, ",", base::TRIM_WHITESPACE,
+                                     base::SPLIT_WANT_NONEMPTY);
+      for (auto& f : flags) {
+        if (f == "check") {
+          media::g_frame_validator_flags |=
+              media::test::VideoFrameValidator::CHECK;
+        } else if (f == "dump") {
+          media::g_frame_validator_flags |=
+              media::test::VideoFrameValidator::OUTPUTYUV;
+        } else {
+          LOG(FATAL) << "Unknown flag: " << f;
+        }
+      }
+
+      media::g_test_import = true;
+#endif
       continue;
     }
     if (it->first == "use-test-data-path") {

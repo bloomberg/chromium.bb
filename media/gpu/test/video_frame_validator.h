@@ -34,12 +34,23 @@ namespace test {
 // performance measurements.
 class VideoFrameValidator {
  public:
+  enum Flags : uint32_t {
+    // Checks soundness of video frames.
+    CHECK = 1 << 0,
+    // Writes out video frames to files.
+    OUTPUTYUV = 1 << 1,
+    // Writes out md5 values to a file.
+    GENMD5 = 1 << 2,
+  };
+
   struct MismatchedFrameInfo {
     size_t frame_index;
     std::string computed_md5;
     std::string expected_md5;
   };
 
+  // |flags| decides the behavior of created video frame validator. See the
+  // detail in Flags.
   // |prefix_output_yuv| is the prefix name of saved yuv files.
   // VideoFrameValidator saves all I420 video frames.
   // If |prefix_output_yuv_| is not specified, no yuv file will be saved.
@@ -47,6 +58,7 @@ class VideoFrameValidator {
   // The file contains one md5 value per line, listed in display order.
   // Returns nullptr on failure.
   static std::unique_ptr<VideoFrameValidator> CreateVideoFrameValidator(
+      uint32_t flags,
       const base::FilePath& prefix_output_yuv,
       const base::FilePath& md5_file_path);
 
@@ -64,8 +76,10 @@ class VideoFrameValidator {
   std::vector<MismatchedFrameInfo> GetMismatchedFramesInfo() const;
 
  private:
-  VideoFrameValidator(const base::FilePath& prefix_output_yuv,
+  VideoFrameValidator(uint32_t flags,
+                      const base::FilePath& prefix_output_yuv,
                       std::vector<std::string> md5_of_frames,
+                      base::File md5_file,
                       std::unique_ptr<VideoFrameMapper> video_frame_mapper);
 
   // This maps |video_frame|, converts it to I420 format.
@@ -89,11 +103,16 @@ class VideoFrameValidator {
   // The results of invalid frame data.
   std::vector<MismatchedFrameInfo> mismatched_frames_;
 
+  const uint32_t flags_;
+
   // Prefix of saved yuv files.
   const base::FilePath prefix_output_yuv_;
 
   // Golden MD5 values.
   const std::vector<std::string> md5_of_frames_;
+
+  // File to write md5 values if flags includes GENMD5.
+  base::File md5_file_;
 
   const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 

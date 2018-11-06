@@ -18,29 +18,59 @@ namespace test {
 // static
 std::unique_ptr<VideoFrameValidator>
 VideoFrameValidator::CreateVideoFrameValidator(
+    uint32_t flags,
     const base::FilePath& prefix_output_yuv,
     const base::FilePath& md5_file_path) {
+  if ((flags & VideoFrameValidator::OUTPUTYUV) && prefix_output_yuv.empty()) {
+    LOG(ERROR) << "Prefix of yuv files isn't specified with dump flags.";
+    return nullptr;
+  }
+
+  if ((flags & VideoFrameValidator::GENMD5) &&
+      (flags & VideoFrameValidator::CHECK)) {
+    LOG(ERROR) << "Generating and checking MD5 values at the same time is not "
+               << "supported.";
+  }
+
   auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
     return nullptr;
   }
-  auto md5_of_frames = ReadGoldenThumbnailMD5s(md5_file_path);
-  if (md5_of_frames.empty()) {
-    LOG(ERROR) << "Failed to read md5 values in " << md5_file_path;
-    return nullptr;
+
+  std::vector<std::string> md5_of_frames;
+  base::File md5_file;
+  if (flags & VideoFrameValidator::GENMD5) {
+    // Writes out computed md5 values to md5_file_path.
+    md5_file = base::File(md5_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                             base::File::FLAG_WRITE |
+                                             base::File::FLAG_APPEND);
+    if (!md5_file.IsValid()) {
+      LOG(ERROR) << "Failed to create md5 file to write " << md5_file_path;
+      return nullptr;
+    }
+  } else if (flags & VideoFrameValidator::CHECK) {
+    md5_of_frames = ReadGoldenThumbnailMD5s(md5_file_path);
+    if (md5_of_frames.empty()) {
+      LOG(ERROR) << "Failed to read md5 values in " << md5_file_path;
+      return nullptr;
+    }
   }
-  return base::WrapUnique(
-      new VideoFrameValidator(prefix_output_yuv, std::move(md5_of_frames),
-                              std::move(video_frame_mapper)));
+  return base::WrapUnique(new VideoFrameValidator(
+      flags, prefix_output_yuv, std::move(md5_of_frames), std::move(md5_file),
+      std::move(video_frame_mapper)));
 }
 
 VideoFrameValidator::VideoFrameValidator(
+    uint32_t flags,
     const base::FilePath& prefix_output_yuv,
     std::vector<std::string> md5_of_frames,
+    base::File md5_file,
     std::unique_ptr<VideoFrameMapper> video_frame_mapper)
-    : prefix_output_yuv_(prefix_output_yuv),
+    : flags_(flags),
+      prefix_output_yuv_(prefix_output_yuv),
       md5_of_frames_(std::move(md5_of_frames)),
+      md5_file_(std::move(md5_file)),
       video_frame_mapper_(std::move(video_frame_mapper)) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -51,23 +81,28 @@ void VideoFrameValidator::EvaluateVideoFrame(
     scoped_refptr<VideoFrame> video_frame,
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  std::string expected_md5;
-  LOG_IF(FATAL, frame_index >= md5_of_frames_.size())
-      << "Frame number is over than the number of read md5 values in file.";
-  expected_md5 = md5_of_frames_[frame_index];
-
   auto standard_frame = CreateStandardizedFrame(video_frame);
   if (!standard_frame) {
     LOG(ERROR) << "Failed to create standardized frame.";
     return;
   }
   std::string computed_md5 = ComputeMD5FromVideoFrame(standard_frame);
-  if (computed_md5 != expected_md5) {
-    mismatched_frames_.push_back(
-        MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
+  if (flags_ & Flags::GENMD5) {
+    md5_file_.Write(0, computed_md5.data(), computed_md5.size());
+    md5_file_.Write(0, "\n", 1);
   }
-  if (!prefix_output_yuv_.empty()) {
-    // Output yuv.
+
+  if (flags_ & Flags::CHECK) {
+    LOG_IF(FATAL, frame_index >= md5_of_frames_.size())
+        << "Frame number is over than the number of read md5 values in file.";
+    const auto& expected_md5 = md5_of_frames_[frame_index];
+    if (computed_md5 != expected_md5) {
+      mismatched_frames_.push_back(
+          MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
+    }
+  }
+
+  if (flags_ & Flags::OUTPUTYUV) {
     LOG_IF(WARNING, !WriteI420ToFile(frame_index, standard_frame.get()))
         << "Failed to write yuv into file.";
   }
