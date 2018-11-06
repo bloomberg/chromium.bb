@@ -1269,8 +1269,9 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   std::unique_ptr<quic::QuicEncryptedPacket> client_ping;
   std::unique_ptr<quic::QuicEncryptedPacket> ack_and_data_out;
   client_ping = client_maker_.MakeAckAndPingPacket(2, false, 1, 1, 1);
-  ack_and_data_out = client_maker_.MakeDataPacket(3, 5, false, false, 0,
-                                                  quic::QuicStringPiece(data));
+  ack_and_data_out =
+      client_maker_.MakeDataPacket(3, GetNthClientInitiatedStreamId(0), false,
+                                   false, 0, quic::QuicStringPiece(data));
   std::unique_ptr<quic::QuicEncryptedPacket> server_ping(
       server_maker_.MakePingPacket(1, /*include_version=*/false));
   MockRead reads[] = {

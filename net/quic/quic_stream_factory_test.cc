@@ -2691,7 +2691,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstAckAndConnectionClosePacket(
-          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          3, false, GetNthClientInitiatedStreamId(0),
+          quic::QUIC_STREAM_CANCELLED,
           quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
           quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
 
@@ -4374,7 +4375,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstAckAndConnectionClosePacket(
-          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          3, false, GetNthClientInitiatedStreamId(0),
+          quic::QUIC_STREAM_CANCELLED,
           quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
           quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
