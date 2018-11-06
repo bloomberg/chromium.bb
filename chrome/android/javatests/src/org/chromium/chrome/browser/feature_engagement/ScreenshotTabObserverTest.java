@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -57,8 +58,10 @@ public class ScreenshotTabObserverTest {
         });
     }
 
+    // Disabled due to flakiness. https://crbug.com/901856
     @Test
     @SmallTest
+    @DisabledTest
     public void testScreenshotNumberReportingOne() {
         MetricsUtils.HistogramDelta histogramDeltaZeroScreenshots =
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.ScreenshotsPerPage", 0);
@@ -77,8 +80,10 @@ public class ScreenshotTabObserverTest {
                 histogramDeltaTwoScreenshots.getDelta());
     }
 
+    // Disabled due to flakiness. https://crbug.com/901856
     @Test
     @SmallTest
+    @DisabledTest
     public void testScreenshotNumberReportingTwo() {
         MetricsUtils.HistogramDelta histogramDeltaTwoScreenshots =
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.ScreenshotsPerPage", 2);
@@ -89,8 +94,10 @@ public class ScreenshotTabObserverTest {
                 histogramDeltaTwoScreenshots.getDelta());
     }
 
+    // Disabled due to flakiness. https://crbug.com/901856
     @Test
     @SmallTest
+    @DisabledTest
     public void testScreenshotActionReporting() {
         MetricsUtils.HistogramDelta histogramDeltaScreenshotNoAction =
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.Action", 0);
