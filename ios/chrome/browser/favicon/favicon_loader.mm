@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_callback.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

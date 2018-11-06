@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 
 #include <memory>
 #include <string>
@@ -523,14 +523,15 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
     if (GetParam()) {
       large_icon_service_.GetLargeIconOrFallbackStyle(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
-          base::Bind(&LargeIconServiceGetterTest::RawBitmapResultCallback,
-                     base::Unretained(this)),
+          base::BindRepeating(
+              &LargeIconServiceGetterTest::RawBitmapResultCallback,
+              base::Unretained(this)),
           &cancelable_task_tracker_);
     } else {
       large_icon_service_.GetLargeIconImageOrFallbackStyle(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
-          base::Bind(&LargeIconServiceGetterTest::ImageResultCallback,
-                     base::Unretained(this)),
+          base::BindRepeating(&LargeIconServiceGetterTest::ImageResultCallback,
+                              base::Unretained(this)),
           &cancelable_task_tracker_);
     }
     scoped_task_environment_.RunUntilIdle();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_H_
-#define COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_H_
+#ifndef COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_IMPL_H_
+#define COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -32,9 +32,8 @@ class FaviconServerFetcherParams;
 // the favicon service.
 class LargeIconService : public KeyedService {
  public:
-  LargeIconService(
-      FaviconService* favicon_service,
-      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
+  LargeIconService(FaviconService* favicon_service,
+                   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
   ~LargeIconService() override;
 
   // Requests the best large icon for the page at |page_url|.
@@ -145,4 +144,4 @@ class LargeIconService : public KeyedService {
 
 }  // namespace favicon
 
-#endif  // COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_H_
+#endif  // COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -423,7 +423,8 @@ void OnFetchIconFromGoogleServerComplete(
     DLOG(WARNING) << "large icon server fetch empty " << server_request_url;
     favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
     callback.Run(
-        metadata.http_response_code == net::URLFetcher::RESPONSE_CODE_INVALID
+        metadata.http_response_code ==
+                image_fetcher::RequestMetadata::RESPONSE_CODE_INVALID
             ? GoogleFaviconServerRequestStatus::FAILURE_CONNECTION_ERROR
             : GoogleFaviconServerRequestStatus::FAILURE_HTTP_ERROR);
     ReportDownloadedSize(0);
@@ -592,7 +593,8 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
   //   a large icon is known but its bitmap is not available.
   return favicon_service_->GetLargestRawFaviconForPageURL(
       page_url, large_icon_types_, max_size_in_pixel,
-      base::Bind(&LargeIconWorker::OnIconLookupComplete, worker, page_url),
+      base::BindRepeating(&LargeIconWorker::OnIconLookupComplete, worker,
+                          page_url),
       tracker);
 }
 

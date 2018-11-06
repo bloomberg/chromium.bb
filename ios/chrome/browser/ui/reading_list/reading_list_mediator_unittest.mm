@@ -8,7 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/simple_test_clock.h"
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/url_formatter/url_formatter.h"
