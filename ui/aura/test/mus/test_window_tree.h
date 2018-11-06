@@ -120,6 +120,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
   const gfx::Rect& last_set_window_bounds() const {
     return last_set_window_bounds_;
   }
+  const gfx::Rect& second_last_set_window_bounds() const {
+    return second_last_set_window_bounds_;
+  }
 
   ws::Id last_not_cancelled_window_id() const {
     return last_not_cancelled_window_id_;
@@ -295,7 +298,11 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 
+  // Records the last *two* window bounds set, useful for top-level windows,
+  // where each client-side DesktopWindowTreeHostMus has two aura::Windows (for
+  // the frame and the content), and both set bounds during views::Widget::Init.
   gfx::Rect last_set_window_bounds_;
+  gfx::Rect second_last_set_window_bounds_;
 
   ws::Id last_not_cancelled_window_id_ = 0u;
   ws::Id last_cancelled_window_id_ = 0u;
