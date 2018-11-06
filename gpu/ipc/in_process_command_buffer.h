@@ -268,11 +268,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void GetGpuFenceOnGpuThread(
       uint32_t gpu_fence_id,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
+  void LazyCreateSharedImageFactory();
   void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     viz::ResourceFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,
+                                    const SyncToken& sync_token);
+  void CreateGMBSharedImageOnGpuThread(const Mailbox& mailbox,
+                                       gfx::GpuMemoryBufferHandle handle,
+                                       gfx::BufferFormat format,
+                                       const gfx::Size& size,
+                                       const gfx::ColorSpace& color_space,
+                                       uint32_t usage,
+                                       const SyncToken& sync_token);
+  void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
 

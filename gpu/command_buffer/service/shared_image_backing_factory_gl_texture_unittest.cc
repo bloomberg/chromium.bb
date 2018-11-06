@@ -22,19 +22,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_shared_memory.h"
+#include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
 namespace {
 
-class SharedImageBackingFactoryGLTextureTest
+class SharedImageBackingFactoryGLTextureTestBase
     : public testing::TestWithParam<bool> {
  public:
-  void SetUp() override {
+  void SetUpBase(const GpuDriverBugWorkarounds& workarounds,
+                 ImageFactory* factory) {
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     ASSERT_TRUE(surface_);
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
@@ -45,10 +49,8 @@ class SharedImageBackingFactoryGLTextureTest
 
     GpuPreferences preferences;
     preferences.use_passthrough_cmd_decoder = use_passthrough();
-    GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-        preferences, workarounds, GpuFeatureInfo(), &image_factory_);
+        preferences, workarounds, GpuFeatureInfo(), factory);
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = new raster::RasterDecoderContextState(
@@ -72,13 +74,25 @@ class SharedImageBackingFactoryGLTextureTest
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<raster::RasterDecoderContextState> context_state_;
-  TextureImageFactory image_factory_;
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+};
+
+class SharedImageBackingFactoryGLTextureTest
+    : public SharedImageBackingFactoryGLTextureTestBase {
+ public:
+  void SetUp() override {
+    GpuDriverBugWorkarounds workarounds;
+    workarounds.max_texture_size = INT_MAX - 1;
+    SetUpBase(workarounds, &image_factory_);
+  }
+
+ protected:
+  TextureImageFactory image_factory_;
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
@@ -330,8 +344,159 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
   shared_image.reset();
 }
 
+class StubImage : public gl::GLImageStub {
+ public:
+  StubImage(const gfx::Size& size, gfx::BufferFormat format)
+      : size_(size), format_(format) {}
+
+  gfx::Size GetSize() override { return size_; }
+  unsigned GetInternalFormat() override {
+    return InternalFormatForGpuMemoryBufferFormat(format_);
+  }
+
+  bool BindTexImage(unsigned target) override {
+    if (!bound_) {
+      bound_ = true;
+      ++update_counter_;
+    }
+    return true;
+  };
+
+  void ReleaseTexImage(unsigned target) override { bound_ = false; }
+
+  bool bound() const { return bound_; }
+  int update_counter() const { return update_counter_; }
+
+ private:
+  ~StubImage() override = default;
+
+  gfx::Size size_;
+  gfx::BufferFormat format_;
+  bool bound_ = false;
+  int update_counter_ = 0;
+};
+
+class SharedImageBackingFactoryGLTextureWithGMBTest
+    : public SharedImageBackingFactoryGLTextureTestBase,
+      public gpu::ImageFactory {
+ public:
+  void SetUp() override { SetUpBase(GpuDriverBugWorkarounds(), this); }
+
+  scoped_refptr<gl::GLImage> GetImageFromMailbox(Mailbox mailbox) {
+    if (!use_passthrough()) {
+      auto representation =
+          shared_image_representation_factory_->ProduceGLTexture(mailbox);
+      DCHECK(representation);
+      return representation->GetTexture()->GetLevelImage(GL_TEXTURE_2D, 0);
+    } else {
+      auto representation =
+          shared_image_representation_factory_->ProduceGLTexturePassthrough(
+              mailbox);
+      DCHECK(representation);
+      return representation->GetTexturePassthrough()->GetLevelImage(
+          GL_TEXTURE_2D, 0);
+    }
+  }
+
+ protected:
+  // gpu::ImageFactory implementation.
+  scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
+      gfx::GpuMemoryBufferHandle handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      int client_id,
+      gpu::SurfaceHandle surface_handle) override {
+    // pretend to handle NATIVE_PIXMAP types.
+    if (handle.type != gfx::NATIVE_PIXMAP)
+      return nullptr;
+    if (client_id != kClientId)
+      return nullptr;
+    return base::MakeRefCounted<StubImage>(size, format);
+  }
+
+  static constexpr int kClientId = 3;
+};
+
+TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
+       GpuMemoryBufferImportEmpty) {
+  auto mailbox = Mailbox::Generate();
+  gfx::Size size(256, 256);
+  gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+
+  gfx::GpuMemoryBufferHandle handle;
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
+      color_space, usage);
+  EXPECT_FALSE(backing);
+}
+
+TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
+       GpuMemoryBufferImportNative) {
+  auto mailbox = Mailbox::Generate();
+  gfx::Size size(256, 256);
+  gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::NATIVE_PIXMAP;
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
+      color_space, usage);
+  ASSERT_TRUE(backing);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
+  ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
+  auto* stub_image = static_cast<StubImage*>(image.get());
+  EXPECT_TRUE(stub_image->bound());
+  int update_counter = stub_image->update_counter();
+  ref->Update();
+  EXPECT_TRUE(stub_image->bound());
+  EXPECT_GT(stub_image->update_counter(), update_counter);
+}
+
+TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
+       GpuMemoryBufferImportSharedMemory) {
+  auto mailbox = Mailbox::Generate();
+  gfx::Size size(256, 256);
+  gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+
+  size_t shm_size = 0u;
+  ASSERT_TRUE(gfx::BufferSizeForBufferFormatChecked(size, format, &shm_size));
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::SHARED_MEMORY_BUFFER;
+  handle.region = base::UnsafeSharedMemoryRegion::Create(shm_size);
+  ASSERT_TRUE(handle.region.IsValid());
+  handle.offset = 0;
+  handle.stride = static_cast<int32_t>(
+      gfx::RowSizeForBufferFormat(size.width(), format, 0));
+
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
+      color_space, usage);
+  ASSERT_TRUE(backing);
+  std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
+  ASSERT_EQ(image->GetType(), gl::GLImage::Type::MEMORY);
+  auto* shm_image = static_cast<gl::GLImageSharedMemory*>(image.get());
+  EXPECT_EQ(size, shm_image->GetSize());
+  EXPECT_EQ(format, shm_image->format());
+}
+
 INSTANTIATE_TEST_CASE_P(Service,
                         SharedImageBackingFactoryGLTextureTest,
+                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(Service,
+                        SharedImageBackingFactoryGLTextureWithGMBTest,
                         ::testing::Bool());
 
 }  // anonymous namespace

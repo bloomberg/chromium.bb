@@ -14,7 +14,9 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_gles2_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -50,6 +52,15 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          uint32_t usage);
+  bool CreateSharedImage(const Mailbox& mailbox,
+                         int client_id,
+                         gfx::GpuMemoryBufferHandle handle,
+                         gfx::BufferFormat format,
+                         SurfaceHandle surface_handle,
+                         const gfx::Size& size,
+                         const gfx::ColorSpace& color_space,
+                         uint32_t usage);
+  bool UpdateSharedImage(const Mailbox& mailbox);
   bool DestroySharedImage(const Mailbox& mailbox);
   bool HasImages() const { return !shared_images_.empty(); }
   void DestroyAllSharedImages(bool have_context);
@@ -59,6 +70,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     uint64_t client_tracing_id);
 
  private:
+  bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
+                       bool legacy_mailbox);
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
