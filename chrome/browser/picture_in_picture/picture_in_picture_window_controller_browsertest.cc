@@ -1138,7 +1138,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 // Flaky, crbug.com/901235.
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #define MAYBE_EnterPictureInPictureThenFullscreen \
   DISABLED_EnterPictureInPictureThenFullscreen
 #else
