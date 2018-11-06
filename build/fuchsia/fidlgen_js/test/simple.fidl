@@ -81,4 +81,8 @@ interface Testola {
   9: ReceiveUnions(StructOfMultipleUnions somu);
 
   10: SendUnions() -> (StructOfMultipleUnions somu);
+
+  11: SendVectorsOfString(vector<string> unsized,
+                          vector<string?> nullable,
+                          vector<string:10> sized10);
 };

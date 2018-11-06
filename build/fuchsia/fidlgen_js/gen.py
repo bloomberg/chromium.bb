@@ -70,8 +70,10 @@ def _InlineSizeOfType(t):
         'uint64': 8,
         'uint8': 1,
     }[t.subtype]
+  elif t.kind == fidl.TypeKind.STRING:
+    return 16
   else:
-    raise NotImplementedError()
+    raise NotImplementedError(t.kind)
 
 
 def _CompileConstant(val, assignment_type):
@@ -223,10 +225,8 @@ const _kTT_%(name)s_Nullable = {
   enc: function(e, o, v) {
     e.data.setUint32(o, v ? 0xffffffff : 0, $fidl__kLE);
     e.data.setUint32(o + 4, v ? 0xffffffff : 0, $fidl__kLE);
-    e.outOfLine.push([function() {
-      var start = e.alloc(%(size)s);
-      _kTT_%(name)s.enc(e, start, v);
-    }]);
+    var start = e.alloc(%(size)s);
+    _kTT_%(name)s.enc(e, start, v);
   },
   dec: function(d, o) {
     if (d.data.getUint32(o, $fidl__kLE) === 0) {
@@ -344,7 +344,7 @@ function %(name)s(%(param_names)s) {
     if t.kind == fidl.TypeKind.PRIMITIVE:
       return t.subtype
     elif t.kind == fidl.TypeKind.STRING:
-      return 'String' + ('_Nullable' if t.nullable else '_Nonnull')
+      return 'String' + ('_Nullable' if t.nullable else '')
     elif t.kind == fidl.TypeKind.IDENTIFIER:
       compound = _ParseCompoundIdentifier(t.identifier)
       name = _CompileCompoundIdentifier(compound)
@@ -382,7 +382,7 @@ const _kTT_%(ttname)s = {
     elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
       ttname = (
-          'VEC_' + ('Nullable_' if t.nullable else 'Nonnull_') + element_ttname)
+          'VEC_' + ('Nullable_' if t.nullable else '') + element_ttname)
       pointer_set = '''    if (v === null || v === undefined) {
       e.data.setUint32(o + 8, 0, $fidl__kLE);
       e.data.setUint32(o + 12, 0, $fidl__kLE);
@@ -407,13 +407,10 @@ const _kTT_%(ttname)s = {
     e.data.setUint32(o, v.length, $fidl__kLE);
     e.data.setUint32(o + 4, 0, $fidl__kLE);
 %(pointer_set)s
-    e.outOfLine.push([function(e, body) {
-        var start = e.alloc(body.length * %(element_size)s);
-        for (var i = 0; i < body.length; i++) {
-          _kTT_%(element_ttname)s.enc(e, start + (i * %(element_size)s), body[i]);
-        }
-      },
-      v]);
+    var start = e.alloc(v.length * %(element_size)s);
+    for (var i = 0; i < v.length; i++) {
+      _kTT_%(element_ttname)s.enc(e, start + (i * %(element_size)s), v[i]);
+    }
   },
   dec: function(d, o) {
     var len = d.data.getUint32(o, $fidl__kLE);
