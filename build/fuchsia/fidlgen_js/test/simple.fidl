@@ -75,4 +75,6 @@ interface Testola {
   8: PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
 
   9: ReceiveUnions(StructOfMultipleUnions somu);
+
+  10: SendUnions() -> (StructOfMultipleUnions somu);
 };

@@ -236,6 +236,21 @@ class TestolaImpl : public fidljstest::Testola {
     did_receive_union_ = true;
   }
 
+  void SendUnions(SendUnionsCallback callback) override {
+    fidljstest::StructOfMultipleUnions resp;
+
+    resp.initial.set_swb(fidljstest::StructWithBool());
+    resp.initial.swb().some_bool = true;
+
+    resp.optional = std::make_unique<fidljstest::UnionOfStructs>();
+    resp.optional->set_swu(fidljstest::StructWithUint());
+    resp.optional->swu().length = 987654;
+
+    resp.trailing.set_lswa(fidljstest::LargerStructWithArray());
+
+    callback(std::move(resp));
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -646,6 +661,52 @@ TEST_F(FidlGenJsTest, UnionSend) {
   // Expectations on the contents of the union are checked in the body of
   // TestolaImpl::ReceiveAUnion().
   EXPECT_TRUE(testola_impl.did_receive_union());
+}
+
+TEST_F(FidlGenJsTest, UnionReceive) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+    proxy.SendUnions().then(resp => {
+      this.result_initial_is_swb = resp.initial.is_swb();
+      this.result_initial_is_swu = resp.initial.is_swu();
+      this.result_initial_is_lswa = resp.initial.is_lswa();
+      this.result_optional_is_swb = resp.optional.is_swb();
+      this.result_optional_is_swu = resp.optional.is_swu();
+      this.result_optional_is_lswa = resp.optional.is_lswa();
+      this.result_trailing_is_swb = resp.trailing.is_swb();
+      this.result_trailing_is_swu = resp.trailing.is_swu();
+      this.result_trailing_is_lswa = resp.trailing.is_lswa();
+
+      this.result_initial_some_bool = resp.initial.swb.some_bool;
+      this.result_length = resp.optional.swu.length;
+    }).catch((e) => log('FAILED: ' + e));
+  )";
+  helper.runner().Run(source, "test.js");
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(helper.Get<bool>("result_initial_is_swb"));
+  EXPECT_FALSE(helper.Get<bool>("result_initial_is_swu"));
+  EXPECT_FALSE(helper.Get<bool>("result_initial_is_lswa"));
+
+  EXPECT_FALSE(helper.Get<bool>("result_optional_is_swb"));
+  EXPECT_TRUE(helper.Get<bool>("result_optional_is_swu"));
+  EXPECT_FALSE(helper.Get<bool>("result_optional_is_lswa"));
+
+  EXPECT_FALSE(helper.Get<bool>("result_trailing_is_swb"));
+  EXPECT_FALSE(helper.Get<bool>("result_trailing_is_swu"));
+  EXPECT_TRUE(helper.Get<bool>("result_trailing_is_lswa"));
+
+  EXPECT_TRUE(helper.Get<bool>("result_initial_some_bool"));
+  EXPECT_EQ(helper.Get<uint32_t>("result_length"), 987654u);
 }
 
 int main(int argc, char** argv) {

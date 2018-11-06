@@ -168,6 +168,7 @@ const %(name)s = {
     name = _CompileCompoundIdentifier(compound)
     member_names = []
     enc_cases = []
+    dec_cases = []
     for i, m in enumerate(union.members):
       member_name = _ChangeIfReserved(m.name)
       member_names.append(member_name)
@@ -175,6 +176,14 @@ const %(name)s = {
       enc_cases.append('''\
       case %(index)s:
         _kTT_%(member_type)s.enc(e, o + 4, v.%(member_name)s);
+        break;''' % {
+          'index': i,
+          'member_type': member_type,
+          'member_name': member_name,
+      })
+      dec_cases.append('''\
+      case %(index)s:
+        result.set_%(member_name)s(_kTT_%(member_type)s.dec(d, o + 4));
         break;''' % {
           'index': i,
           'member_type': member_type,
@@ -191,7 +200,14 @@ const _kTT_%(name)s = {
     }
   },
   dec: function(d, o) {
-    throw 'not implemented crbug.com/883496'
+    var tag = d.data.getUint32(o, $fidl__kLE);
+    var result = new %(name)s();
+    switch (tag) {
+%(dec_cases)s
+      default:
+        throw "invalid tag";
+    }
+    return result;
   },
 };
 
@@ -205,7 +221,12 @@ const _kTT_%(name)s_Nullable = {
     }]);
   },
   dec: function(d, o) {
-    throw 'not implemented crbug.com/883496'
+    if (d.data.getUint32(o, $fidl__kLE) === 0) {
+      return new %(name)s();
+    }
+    var pointer = d.data.getUint32(o + 4, $fidl__kLE);
+    var dataOffset = d.claimMemory(%(size)s);
+    return _kTT_%(name)s.dec(d, dataOffset);
   },
 };
 
@@ -220,6 +241,7 @@ function %(name)s() { this.reset(); }
         'name': name,
         'size': union.size,
         'enc_cases': '\n'.join(enc_cases),
+        'dec_cases': '\n'.join(dec_cases),
     })
     for m in member_names:
       self.f.write('  this.%s = null;\n' % m)
