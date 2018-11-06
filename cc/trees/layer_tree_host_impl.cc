@@ -331,7 +331,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
       skipped_frame_tracker_(&frame_metrics_),
       is_animating_for_snap_(false),
-      paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()) {
+      paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
+      scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -4600,6 +4601,8 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
 }
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
+  scroll_gesture_did_end_ = true;
+
   if (should_snap && SnapAtScrollEnd())
     return;
 
@@ -4779,6 +4782,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   // Record and reset scroll source flags.
   scroll_info->has_scrolled_by_wheel = has_scrolled_by_wheel_;
   scroll_info->has_scrolled_by_touch = has_scrolled_by_touch_;
+  scroll_info->scroll_gesture_did_end = scroll_gesture_did_end_;
   has_scrolled_by_wheel_ = has_scrolled_by_touch_ = false;
 
   if (browser_controls_manager()) {
@@ -4787,6 +4791,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
             &scroll_info->browser_controls_constraint_changed);
   }
 
+  scroll_gesture_did_end_ = false;
   return scroll_info;
 }
 

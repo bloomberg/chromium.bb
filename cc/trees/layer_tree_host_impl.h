@@ -1110,6 +1110,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 
+  // Set to true when a scroll gesture being handled on the compositor has
+  // ended.
+  bool scroll_gesture_did_end_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
 

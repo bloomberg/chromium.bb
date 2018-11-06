@@ -1238,6 +1238,10 @@ void EventHandler::AnimateSnapFling(base::TimeTicks monotonic_time) {
   scroll_manager_->AnimateSnapFling(monotonic_time);
 }
 
+void EventHandler::RecomputeMouseHoverState() {
+  mouse_event_manager_->RecomputeMouseHoverState();
+}
+
 void EventHandler::SetCapturingMouseEventsNode(Node* n) {
   CaptureMouseEventsToWidget(n);
   capturing_mouse_events_node_ = n;
@@ -2028,6 +2032,11 @@ bool EventHandler::FakeMouseMovePending() const {
 
 void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
+  if (update_hover_reason ==
+          MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
+      RuntimeEnabledFeatures::NoHoverDuringScrollEnabled()) {
+    return;
+  }
   mouse_event_manager_->MayUpdateHoverWhenContentUnderMouseChanged(
       update_hover_reason);
 }

@@ -177,6 +177,10 @@ struct CC_EXPORT ScrollAndScaleSet {
   bool has_scrolled_by_wheel;
   bool has_scrolled_by_touch;
 
+  // Set to true when a scroll gesture being handled on the compositor has
+  // ended.
+  bool scroll_gesture_did_end;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);
 };
