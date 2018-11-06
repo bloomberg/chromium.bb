@@ -79,7 +79,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate_;
   DownloadRequestCore core_;
 
-  bool follow_cross_origin_redirects_;
+  const bool follow_cross_origin_redirects_;
 
   base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_;
 };

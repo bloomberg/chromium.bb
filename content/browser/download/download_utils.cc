@@ -20,6 +20,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -97,6 +98,17 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
   request->set_initiator(params->initiator());
 
   return request;
+}
+
+bool CanRequestURL(int render_process_id, const GURL& url) {
+  // Check if the renderer is permitted to request the requested URL.
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+          render_process_id, url)) {
+    DVLOG(1) << "Denied unauthorized download request for "
+             << url.possibly_invalid_spec();
+    return false;
+  }
+  return true;
 }
 
 }  // namespace content
