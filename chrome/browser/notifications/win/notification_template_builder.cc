@@ -334,15 +334,16 @@ void EnsureReminderHasButton(XmlWriter* xml_writer,
 const char kNotificationToastElement[] = "toast";
 const char kNotificationLaunchAttribute[] = "launch";
 
+// libXml was preferred (over WinXml, which the samples in the link below tend
+// to use) for building the XML template because it is used frequently in
+// Chrome, is nicer to use and has already been vetted.
+// https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-adaptive-interactive-toasts
 base::string16 BuildNotificationTemplate(
     NotificationImageRetainer* image_retainer,
     const NotificationLaunchId& launch_id,
     const message_center::Notification& notification) {
   DCHECK(image_retainer);
 
-  // libXml was preferred (over WinXml, which the samples tend to use) because
-  // it is used frequently in Chrome, is nicer to use and has already been
-  // vetted.
   XmlWriter xml_writer;
   xml_writer.StartWriting();
 
