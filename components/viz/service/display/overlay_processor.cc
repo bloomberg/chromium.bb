@@ -285,11 +285,9 @@ void OverlayProcessor::EliminateOrCropPrimary(
     // Sometimes the content quads extend past primary->display_rect, so first
     // clip the content_rect to that.
     content_rect.Intersect(primary->display_rect);
-    DCHECK_NE(0, primary->display_rect.width());
-    DCHECK_NE(0, primary->display_rect.height());
-    primary->uv_rect =
-        gfx::ScaleRect(content_rect, 1. / primary->display_rect.width(),
-                       1. / primary->display_rect.height());
+    primary->uv_rect = gfx::ScaleRect(content_rect,
+                                      primary->display_rect.width(),
+                                      primary->display_rect.height());
     primary->display_rect = content_rect;
 
     candidate_list->push_back(*primary);
