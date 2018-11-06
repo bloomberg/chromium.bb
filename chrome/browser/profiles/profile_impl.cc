@@ -185,8 +185,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_service.h"
 #else
-#include "chrome/browser/apps/foundation/app_service/app_service.h"
-#include "chrome/browser/apps/foundation/app_service/public/mojom/constants.mojom.h"
+#include "chrome/services/app_service/app_service.h"
+#include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/common/page_zoom.h"
 #endif

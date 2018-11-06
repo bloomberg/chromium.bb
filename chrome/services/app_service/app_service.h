@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_FOUNDATION_APP_SERVICE_APP_SERVICE_H_
-#define CHROME_BROWSER_APPS_FOUNDATION_APP_SERVICE_APP_SERVICE_H_
+#ifndef CHROME_SERVICES_APP_SERVICE_APP_SERVICE_H_
+#define CHROME_SERVICES_APP_SERVICE_APP_SERVICE_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/apps/foundation/app_service/public/mojom/app_registry.mojom.h"
+#include "chrome/services/app_service/public/mojom/app_registry.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -55,4 +55,4 @@ class AppService : public service_manager::Service {
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_APPS_FOUNDATION_APP_SERVICE_APP_SERVICE_H_
+#endif  // CHROME_SERVICES_APP_SERVICE_APP_SERVICE_H_
