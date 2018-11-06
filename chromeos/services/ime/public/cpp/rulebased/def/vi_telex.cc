@@ -61,58 +61,58 @@ const char* kTransforms[] = {
     u8"OO",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY])([aeiouyAEIOUY]?|["
     u8"bcdghklmnpqtvBCDGHKLMNPQTV]+)\u001d?[fF]",
-    u8"\\1\u0300$3",
+    u8"\\1\u0300\\3",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY])([aeiouyAEIOUY]?|["
     u8"bcdghklmnpqtvBCDGHKLMNPQTV]+)\u001d?[sS]",
-    u8"\\1\u0301$3",
+    u8"\\1\u0301\\3",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY])([aeiouyAEIOUY]?|["
     u8"bcdghklmnpqtvBCDGHKLMNPQTV]+)\u001d?[rR]",
-    u8"\\1\u0309$3",
+    u8"\\1\u0309\\3",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY])([aeiouyAEIOUY]?|["
     u8"bcdghklmnpqtvBCDGHKLMNPQTV]+)\u001d?[xX]",
-    u8"\\1\u0303$3",
+    u8"\\1\u0303\\3",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY])([aeiouyAEIOUY]?|["
     u8"bcdghklmnpqtvBCDGHKLMNPQTV]+)\u001d?[jJ]",
-    u8"\\1\u0323$3",
+    u8"\\1\u0323\\3",
     u8"(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z]*)[fF]",
-    u8"\\1\u0300$2",
+    u8"\\1\u0300\\2",
     u8"(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z]*)[sS]",
-    u8"\\1\u0301$2",
+    u8"\\1\u0301\\2",
     u8"(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z]*)[rR]",
-    u8"\\1\u0309$2",
+    u8"\\1\u0309\\2",
     u8"(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z]*)[xX]",
-    u8"\\1\u0303$2",
+    u8"\\1\u0303\\2",
     u8"(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z]*)[jJ]",
-    u8"\\1\u0323$2",
+    u8"\\1\u0323\\2",
     u8"([\u0300\u0301\u0309\u0303\u0323])([a-yA-Y\u001d]*)([zZ])",
     u8"\\2",
     u8"(\u0300)([a-zA-Z\u001d]*)([fF])",
-    u8"\\2$3",
+    u8"\\2\\3",
     u8"(\u0301)([a-zA-Z\u001d]*)([sS])",
-    u8"\\2$3",
+    u8"\\2\\3",
     u8"(\u0309)([a-zA-Z\u001d]*)([rR])",
-    u8"\\2$3",
+    u8"\\2\\3",
     u8"(\u0303)([a-zA-Z\u001d]*)([xX])",
-    u8"\\2$3",
+    u8"\\2\\3",
     u8"(\u0323)([a-zA-Z\u001d]*)([jJ])",
-    u8"\\2$3",
+    u8"\\2\\3",
     u8"(([qQ][uU]|[gG][iI])?[aeiouyAEIOUY]+)([\u0300\u0301\u0303\u0309\u0323])"
     u8"\u001d?([aeiouyAEIOUY])\u001d?([a-eg-ik-qtuvyA-EG-IK-QTUVY])",
-    u8"\\1$4$3$5",
+    u8"\\1\\4\\3\\5",
     u8"([\u0300\u0301\u0303\u0309\u0323])(["
     u8"\u0103\u00e2\u00ea\u00f4\u01a1\u01b0\u0102\u00c2\u00ca\u00d4\u01a0\u01af"
     u8"])\u001d?([a-zA-Z])",
-    u8"\\2$1$3"};
+    u8"\\2\\1\\3"};
 const unsigned int kTransformsLen = base::size(kTransforms);
 const char* kHistoryPrune = nullptr;
 
