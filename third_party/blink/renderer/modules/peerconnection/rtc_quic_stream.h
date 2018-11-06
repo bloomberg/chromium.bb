@@ -55,7 +55,8 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
 
   // QuicStreamProxy::Delegate overrides.
   void OnRemoteReset() override;
-  void OnRemoteFinish() override;
+  void OnDataReceived(std::vector<uint8_t> data, bool fin) override;
+  void OnWriteDataConsumed(uint32_t amount) override;
 
   Member<RTCQuicTransport> transport_;
   RTCQuicStreamState state_ = RTCQuicStreamState::kOpen;

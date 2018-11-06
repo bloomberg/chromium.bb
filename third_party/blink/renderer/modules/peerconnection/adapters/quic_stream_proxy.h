@@ -43,8 +43,10 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
 
     // Called when the remote side resets the stream.
     virtual void OnRemoteReset() {}
-    // Called when the remote side finishes the stream.
-    virtual void OnRemoteFinish() {}
+    // Called when the remote side receives data and/or the finish bit.
+    virtual void OnDataReceived(std::vector<uint8_t> data, bool fin) {}
+    // Called when data written with WriteData() has been consumed by QUIC.
+    virtual void OnWriteDataConsumed(uint32_t amount) {}
   };
 
   QuicStreamProxy();
@@ -67,7 +69,8 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
   void Reset();
-  void Finish();
+  void MarkReceivedDataConsumed(uint32_t amount);
+  void WriteData(std::vector<uint8_t> data, bool fin);
 
  private:
   // Instruct the QuicTransportProxy to remove and delete this stream proxy.
@@ -76,7 +79,8 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
   // Callbacks from QuicStreamHost.
   friend class QuicStreamHost;
   void OnRemoteReset();
-  void OnRemoteFinish();
+  void OnDataReceived(std::vector<uint8_t> data, bool fin);
+  void OnWriteDataConsumed(uint32_t amount);
 
   // Up reference. Owned by the QuicTransportProxy client.
   QuicTransportProxy* transport_proxy_ = nullptr;
@@ -85,10 +89,10 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
   // Back reference. Owned by the RTCQuicTransport.
   Delegate* delegate_ = nullptr;
 
-  // |readable_| transitions to false when OnRemoteFinish() is called.
+  // |readable_| transitions to false when OnDataReceived(_, true) is called.
   bool readable_ = true;
-  // |writeable_| transitions to false when Finish() is called.
-  bool writeable_ = true;
+  // |writable_| transitions to false when WriteData(_, true) is called.
+  bool writable_ = true;
 
   THREAD_CHECKER(thread_checker_);
 };

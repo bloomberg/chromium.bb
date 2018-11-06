@@ -53,7 +53,7 @@ void RTCQuicStream::finish() {
   if (!writeable_) {
     return;
   }
-  proxy_->Finish();
+  proxy_->WriteData({}, /*fin=*/true);
   writeable_ = false;
   if (readable_) {
     DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
@@ -92,7 +92,10 @@ void RTCQuicStream::OnRemoteReset() {
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
-void RTCQuicStream::OnRemoteFinish() {
+void RTCQuicStream::OnDataReceived(std::vector<uint8_t> data, bool fin) {
+  if (!fin) {
+    return;
+  }
   DCHECK_NE(state_, RTCQuicStreamState::kClosed);
   DCHECK(readable_);
   readable_ = false;
@@ -105,6 +108,8 @@ void RTCQuicStream::OnRemoteFinish() {
   }
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
+
+void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {}
 
 const AtomicString& RTCQuicStream::InterfaceName() const {
   return event_target_names::kRTCQuicStream;
