@@ -264,7 +264,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @implementation OverscrollActionsController
 
 @synthesize overscrollActionView = _overscrollActionView;
-@synthesize initialHeaderInset = _initialHeaderInset;
 @synthesize initialHeaderHeight = _initialHeaderHeight;
 @synthesize overscrollState = _overscrollState;
 @synthesize delegate = _delegate;
@@ -876,11 +875,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (CGFloat)initialHeaderInset {
-  if (_initialHeaderInset == 0) {
-    _initialHeaderInset =
-        [[self delegate] overscrollActionsControllerHeaderInset:self];
-  }
-  return _initialHeaderInset;
+  return [self.delegate overscrollActionsControllerHeaderInset:self];
 }
 
 #pragma mark - Bounce dynamic
