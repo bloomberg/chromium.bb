@@ -789,6 +789,23 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
   ExpectManualGenerationAvailable("second_password", false);
 }
 
+TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+  ExpectAutomaticGenerationAvailable("first_password", true);
+  // The browser may show a standard password dropdown with the "Generate"
+  // option. In this case manual generation is triggered.
+  password_generation_->UserTriggeredGeneratePassword();
+
+  // Move the focus away to somewhere.
+  FocusField("address");
+
+  // Moving the focus back should trigger the automatic generation again.
+  ExpectAutomaticGenerationAvailable("first_password", true);
+}
+
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
   const struct {
     const char* form;
