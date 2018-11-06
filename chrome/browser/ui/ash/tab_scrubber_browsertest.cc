@@ -224,11 +224,14 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   // TabStripModelObserver overrides.
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override {
-    activation_order_.push_back(index);
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (tab_strip_model->empty() || !selection.active_tab_changed())
+      return;
+
+    activation_order_.push_back(selection.new_model.active());
   }
 
   // History of tab activation. Scrub() resets it.

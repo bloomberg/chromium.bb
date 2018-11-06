@@ -9,8 +9,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class Browser;
-class ListSelectionModel;
-class TabStripModel;
 
 namespace arc {
 
@@ -23,8 +21,10 @@ class IntentPickerController : public TabStripModelObserver {
 
  private:
   // TabStripModelObserver:
-  void TabSelectionChanged(TabStripModel* model,
-                           const ui::ListSelectionModel& old_model) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   void ResetVisibility();
 

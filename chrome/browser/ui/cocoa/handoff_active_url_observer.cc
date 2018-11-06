@@ -40,13 +40,15 @@ void HandoffActiveURLObserver::OnBrowserRemoved(Browser* removed_browser) {
   delegate_->HandoffActiveURLChanged(GetActiveWebContents());
 }
 
-void HandoffActiveURLObserver::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  StartObservingWebContents(new_contents);
-  delegate_->HandoffActiveURLChanged(new_contents);
+void HandoffActiveURLObserver::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (tab_strip_model->empty() || !selection.active_tab_changed())
+    return;
+
+  StartObservingWebContents(selection.new_contents);
+  delegate_->HandoffActiveURLChanged(selection.new_contents);
 }
 
 void HandoffActiveURLObserver::DidFinishNavigation(

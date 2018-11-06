@@ -33,10 +33,10 @@ class HandoffActiveURLObserver : public BrowserListObserver,
   void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // content::WebContentsObserver
   void DidFinishNavigation(

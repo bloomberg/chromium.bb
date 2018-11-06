@@ -440,53 +440,44 @@ void TopControlsSlideControllerChromeOS::OnTabletModeToggled(
   OnEnabledStateChanged(CanEnable(base::nullopt));
 }
 
-void TopControlsSlideControllerChromeOS::TabInsertedAt(
+void TopControlsSlideControllerChromeOS::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
-    content::WebContents* contents,
-    int index,
-    bool foreground) {
-  DCHECK(contents);
-  observed_tabs_.emplace(
-      contents, std::make_unique<TopControlsSlideTabObserver>(contents, this));
-}
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas()) {
+      content::WebContents* contents = delta.insert.contents;
+      observed_tabs_.emplace(
+          contents,
+          std::make_unique<TopControlsSlideTabObserver>(contents, this));
+    }
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& delta : change.deltas())
+      observed_tabs_.erase(delta.remove.contents);
+  } else if (change.type() == TabStripModelChange::kReplaced) {
+    for (const auto& delta : change.deltas()) {
+      observed_tabs_.erase(delta.replace.old_contents);
 
-void TopControlsSlideControllerChromeOS::TabDetachedAt(
-    content::WebContents* contents,
-    int previous_index,
-    bool was_active) {
-  DCHECK(contents);
-  observed_tabs_.erase(contents);
-}
+      DCHECK(!observed_tabs_.count(delta.replace.new_contents));
 
-void TopControlsSlideControllerChromeOS::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  DCHECK(new_contents);
-  DCHECK(observed_tabs_.count(new_contents));
+      observed_tabs_.emplace(delta.replace.new_contents,
+                             std::make_unique<TopControlsSlideTabObserver>(
+                                 delta.replace.new_contents, this));
+    }
+  }
+
+  if (tab_strip_model->empty() || !selection.active_tab_changed())
+    return;
+
+  content::WebContents* new_active_contents = selection.new_contents;
+  DCHECK(observed_tabs_.count(new_active_contents));
   DCHECK(!is_gesture_scrolling_in_progress_);
 
   // Restore the newly-activated tab's shown ratio. If this is a newly inserted
   // tab, its |shown_ratio_| is 1.0f.
-  SetShownRatio(new_contents, observed_tabs_[new_contents]->shown_ratio());
-  UpdateBrowserControlsStateShown(new_contents, true /* animate */);
-}
-
-void TopControlsSlideControllerChromeOS::TabReplacedAt(
-    TabStripModel* tab_strip_model,
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index) {
-  DCHECK(old_contents);
-  DCHECK(new_contents);
-  observed_tabs_.erase(old_contents);
-
-  DCHECK(!observed_tabs_.count(new_contents));
-
-  observed_tabs_.emplace(
-      new_contents,
-      std::make_unique<TopControlsSlideTabObserver>(new_contents, this));
+  SetShownRatio(new_active_contents,
+                observed_tabs_[new_active_contents]->shown_ratio());
+  UpdateBrowserControlsStateShown(new_active_contents, true /* animate */);
 }
 
 void TopControlsSlideControllerChromeOS::SetTabNeedsAttentionAt(

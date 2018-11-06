@@ -136,61 +136,30 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
   UpdateBrowserItemState();
 }
 
-void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
-                                            content::WebContents* new_contents,
-                                            int index,
-                                            int reason) {
-  Browser* browser = NULL;
-  // Use |new_contents|. |old_contents| could be NULL.
-  DCHECK(new_contents);
-  browser = chrome::FindBrowserWithWebContents(new_contents);
-
-  // Update immediately on a tab change.
-  if (old_contents &&
-      (TabStripModel::kNoTab !=
-       browser->tab_strip_model()->GetIndexOfWebContents(old_contents))) {
-    UpdateAppItemState(old_contents, false /*remove*/);
+void BrowserStatusMonitor::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas())
+      OnTabInserted(delta.insert.contents);
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& delta : change.deltas()) {
+      if (delta.remove.will_be_deleted)
+        OnTabClosing(delta.remove.contents);
+    }
+  } else if (change.type() == TabStripModelChange::kReplaced) {
+    for (const auto& delta : change.deltas()) {
+      OnTabReplaced(tab_strip_model, delta.replace.old_contents,
+                    delta.replace.new_contents);
+    }
   }
 
-  if (new_contents) {
-    UpdateAppItemState(new_contents, false /*remove*/);
-    UpdateBrowserItemState();
-    SetShelfIDForBrowserWindowContents(browser, new_contents);
-  }
-}
+  if (tab_strip_model->empty())
+    return;
 
-void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* old_contents,
-                                         content::WebContents* new_contents,
-                                         int index) {
-  DCHECK(old_contents && new_contents);
-  Browser* browser = chrome::FindBrowserWithWebContents(new_contents);
-
-  UpdateAppItemState(old_contents, true /*remove*/);
-  RemoveWebContentsObserver(old_contents);
-
-  UpdateAppItemState(new_contents, false /*remove*/);
-  UpdateBrowserItemState();
-
-  if (tab_strip_model->GetActiveWebContents() == new_contents)
-    SetShelfIDForBrowserWindowContents(browser, new_contents);
-
-  AddWebContentsObserver(new_contents);
-}
-
-void BrowserStatusMonitor::TabInsertedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* contents,
-                                         int index,
-                                         bool foreground) {
-  UpdateAppItemState(contents, false /*remove*/);
-  AddWebContentsObserver(contents);
-}
-
-void BrowserStatusMonitor::TabClosingAt(TabStripModel* tab_strip_mode,
-                                        content::WebContents* contents,
-                                        int index) {
-  UpdateAppItemState(contents, true /*remove*/);
-  RemoveWebContentsObserver(contents);
+  if (selection.active_tab_changed())
+    OnActiveTabChanged(selection.old_contents, selection.new_contents);
 }
 
 void BrowserStatusMonitor::WebContentsDestroyed(
@@ -234,6 +203,56 @@ bool BrowserStatusMonitor::IsV1AppInShelfWithAppId(const std::string& app_id) {
       return true;
   }
   return false;
+}
+
+void BrowserStatusMonitor::OnActiveTabChanged(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents) {
+  Browser* browser = nullptr;
+  // Use |new_contents|. |old_contents| could be nullptr.
+  DCHECK(new_contents);
+  browser = chrome::FindBrowserWithWebContents(new_contents);
+
+  // Update immediately on a tab change.
+  if (old_contents &&
+      (TabStripModel::kNoTab !=
+       browser->tab_strip_model()->GetIndexOfWebContents(old_contents))) {
+    UpdateAppItemState(old_contents, false /*remove*/);
+  }
+
+  if (new_contents) {
+    UpdateAppItemState(new_contents, false /*remove*/);
+    UpdateBrowserItemState();
+    SetShelfIDForBrowserWindowContents(browser, new_contents);
+  }
+}
+
+void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
+                                         content::WebContents* old_contents,
+                                         content::WebContents* new_contents) {
+  DCHECK(old_contents && new_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(new_contents);
+
+  UpdateAppItemState(old_contents, true /*remove*/);
+  RemoveWebContentsObserver(old_contents);
+
+  UpdateAppItemState(new_contents, false /*remove*/);
+  UpdateBrowserItemState();
+
+  if (tab_strip_model->GetActiveWebContents() == new_contents)
+    SetShelfIDForBrowserWindowContents(browser, new_contents);
+
+  AddWebContentsObserver(new_contents);
+}
+
+void BrowserStatusMonitor::OnTabInserted(content::WebContents* contents) {
+  UpdateAppItemState(contents, false /*remove*/);
+  AddWebContentsObserver(contents);
+}
+
+void BrowserStatusMonitor::OnTabClosing(content::WebContents* contents) {
+  UpdateAppItemState(contents, true /*remove*/);
+  RemoveWebContentsObserver(contents);
 }
 
 void BrowserStatusMonitor::AddWebContentsObserver(
