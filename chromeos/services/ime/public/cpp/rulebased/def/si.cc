@@ -447,7 +447,7 @@ const char* kTransforms[] = {u8"\u0d85\u0dcf",
                              u8"\\1\u0dde",
                              u8"([\u0d9a-\u0dc6])(\u0dd9)\u001d((\u0dca\u200d["
                              u8"\u0dba\u0dbb])|(\u0dbb\u0dca\u200d))",
-                             u8"\\1$3$2",
+                             u8"\\1\\3\\2",
                              u8"([\u0d9a-\u0dc6](\u0dca\u200d[\u0dba\u0dbb])|("
                              u8"\u0dbb\u0dca\u200d))\u0dd9\u001d\u0dca",
                              u8"\\1\u0dda",
