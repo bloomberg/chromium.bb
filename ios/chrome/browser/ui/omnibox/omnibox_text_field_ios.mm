@@ -439,11 +439,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (UIFont*)largerFont {
-  return [UIFont systemFontOfSize:kLocationBarRegularRegularFontSize];
+  return PreferredFontForTextStyleWithMaxCategory(
+      UIFontTextStyleBody, self.traitCollection.preferredContentSizeCategory,
+      UIContentSizeCategoryAccessibilityExtraLarge);
 }
 
 - (UIFont*)normalFont {
-  return [UIFont systemFontOfSize:kLocationBarSteadyFontSize];
+  return PreferredFontForTextStyleWithMaxCategory(
+      UIFontTextStyleSubheadline,
+      self.traitCollection.preferredContentSizeCategory,
+      UIContentSizeCategoryAccessibilityExtraLarge);
 }
 
 - (UIFont*)currentFont {

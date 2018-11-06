@@ -60,15 +60,24 @@ extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito;
 extern const CGFloat kAdaptiveLocationBarVerticalMargin;
 extern const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen;
+// Additional margin, which should grow only when the preferred content size is
+// non-default.
+extern const CGFloat kLocationBarVerticalMarginDynamicType;
 // Extra margin for the location bar vertical margin.
 extern const CGFloat kAdaptiveLocationBarExtraVerticalMargin;
 
 // Top margin of the top toolbar when the adaptive toolbar is unsplit.
 extern const CGFloat kTopToolbarUnsplitMargin;
-// Height of the adaptive toolbars.
+// Height of the adaptive toolbars with default font size.
 extern const CGFloat kAdaptiveToolbarHeight;
+// Height of the part of the toolbar not scaling up when the user changes the
+// preferred font size.
+extern const CGFloat kNonDynamicToolbarHeight;
 // Height of the toolbar when in fullscreen.
 extern const CGFloat kToolbarHeightFullscreen;
+// Height of the part of the toolbar not scaling up when the user changes the
+// preferred font size.
+extern const CGFloat kNonDynamicToolbarHeightFullscreen;
 
 // Accessibility identifier of the tools menu button.
 extern NSString* const kToolbarToolsMenuButtonIdentifier;
@@ -89,7 +98,5 @@ extern const CGFloat kLocationBarTintBlue;
 
 // Font sizes used in omnibox and location bar.
 extern const CGFloat kLocationBarFontSize;
-extern const CGFloat kLocationBarRegularRegularFontSize;
-extern const CGFloat kLocationBarSteadyFontSize;
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_CONSTANTS_H_

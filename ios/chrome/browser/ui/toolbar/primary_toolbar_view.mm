@@ -14,6 +14,8 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_progress_bar.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
+#import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -167,7 +169,9 @@
 #pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
+  return CGSizeMake(
+      UIViewNoIntrinsicMetric,
+      ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory));
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -316,9 +320,8 @@
     [self.leadingStackView.leadingAnchor
         constraintEqualToAnchor:safeArea.leadingAnchor
                        constant:kAdaptiveToolbarMargin],
-    [self.leadingStackView.bottomAnchor
-        constraintEqualToAnchor:safeArea.bottomAnchor
-                       constant:-kTopButtonsBottomMargin],
+    [self.leadingStackView.centerYAnchor
+        constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
     [self.leadingStackView.heightAnchor
         constraintEqualToConstant:kAdaptiveToolbarButtonHeight],
   ]];
@@ -335,13 +338,11 @@
     minWidthConstraint.active = YES;
   }
 
-  // LocationBar constraints.
-  self.locationBarHeight = [self.locationBarContainer.heightAnchor
-      constraintEqualToConstant:kAdaptiveToolbarHeight -
-                                2 * kAdaptiveLocationBarVerticalMargin];
+  // LocationBar constraints. The constant value is set by the VC.
+  self.locationBarHeight =
+      [self.locationBarContainer.heightAnchor constraintEqualToConstant:0];
   self.locationBarBottomConstraint = [self.locationBarContainer.bottomAnchor
-      constraintEqualToAnchor:self.extraPaddingGuide.topAnchor
-                     constant:-kAdaptiveLocationBarVerticalMargin];
+      constraintEqualToAnchor:self.extraPaddingGuide.topAnchor];
   self.locationBarExtraBottomPadding =
       [self.extraPaddingGuide.heightAnchor constraintEqualToConstant:0];
 
@@ -384,9 +385,8 @@
     [self.trailingStackView.trailingAnchor
         constraintEqualToAnchor:safeArea.trailingAnchor
                        constant:-kAdaptiveToolbarMargin],
-    [self.trailingStackView.bottomAnchor
-        constraintEqualToAnchor:safeArea.bottomAnchor
-                       constant:-kTopButtonsBottomMargin],
+    [self.trailingStackView.centerYAnchor
+        constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
     [self.trailingStackView.heightAnchor
         constraintEqualToConstant:kAdaptiveToolbarButtonHeight],
   ]];

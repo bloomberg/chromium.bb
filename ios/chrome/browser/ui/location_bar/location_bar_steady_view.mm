@@ -160,6 +160,7 @@ const CGFloat kButtonTrailingSpacing = 10;
     [_locationLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:UILayoutConstraintAxisVertical];
+    _locationLabel.font = [self locationLabelFont];
 
     // Container for location label and icon.
     _locationContainerView = [[UIView alloc] init];
@@ -328,8 +329,10 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  self.locationLabel.font =
-      [UIFont systemFontOfSize:kLocationBarSteadyFontSize];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.locationLabel.font = [self locationLabelFont];
+  }
 }
 
 #pragma mark - UIAccessibilityContainer
@@ -361,6 +364,13 @@ const CGFloat kButtonTrailingSpacing = 10;
     self.locationButton.accessibilityValue =
         [NSString stringWithFormat:@"%@", self.locationLabel.text];
   }
+}
+
+// Returns the font size for the location label.
+- (UIFont*)locationLabelFont {
+  return PreferredFontForTextStyleWithMaxCategory(
+      UIFontTextStyleBody, self.traitCollection.preferredContentSizeCategory,
+      UIContentSizeCategoryAccessibilityExtraLarge);
 }
 
 @end

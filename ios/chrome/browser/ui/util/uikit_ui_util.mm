@@ -18,6 +18,7 @@
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/web_thread.h"
@@ -743,4 +744,21 @@ BOOL ContentSizeCategoryIsAccessibilityCategory(
         [category isEqual:UIContentSizeCategoryAccessibilityLarge] ||
         [category isEqual:UIContentSizeCategoryAccessibilityMedium];
   }
+}
+
+UIFont* PreferredFontForTextStyleWithMaxCategory(
+    UIFontTextStyle style,
+    UIContentSizeCategory currentCategory,
+    UIContentSizeCategory maxCategory) {
+  CGFloat maxMultiplier = SystemSuggestedFontSizeMultiplier(maxCategory);
+  CGFloat currentMultiplier =
+      SystemSuggestedFontSizeMultiplier(currentCategory);
+  if (currentMultiplier > maxMultiplier) {
+    return [UIFont
+            preferredFontForTextStyle:style
+        compatibleWithTraitCollection:
+            [UITraitCollection
+                traitCollectionWithPreferredContentSizeCategory:maxCategory]];
+  }
+  return [UIFont preferredFontForTextStyle:style];
 }

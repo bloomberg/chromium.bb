@@ -42,11 +42,14 @@ const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.09;
 const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito = 0.12;
 const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
 const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen = 3.0f;
+const CGFloat kLocationBarVerticalMarginDynamicType = 2.0f;
 const CGFloat kAdaptiveLocationBarExtraVerticalMargin = 1.0f;
 
 const CGFloat kTopToolbarUnsplitMargin = 2;
 const CGFloat kAdaptiveToolbarHeight = 48;
+const CGFloat kNonDynamicToolbarHeight = 14;
 const CGFloat kToolbarHeightFullscreen = 20;
+const CGFloat kNonDynamicToolbarHeightFullscreen = 7;
 
 NSString* const kToolbarToolsMenuButtonIdentifier =
     @"kToolbarToolsMenuButtonIdentifier";
@@ -63,5 +66,3 @@ const NSInteger kTabGridButtonFontSize = 13;
 
 const CGFloat kLocationBarTintBlue = 0x1A73E8;
 const CGFloat kLocationBarFontSize = 15.0f;
-const CGFloat kLocationBarRegularRegularFontSize = 17.0f;
-const CGFloat kLocationBarSteadyFontSize = 17.0f;

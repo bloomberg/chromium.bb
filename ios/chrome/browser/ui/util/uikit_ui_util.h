@@ -262,4 +262,9 @@ NSString* TextForTabCount(long count);
 // wrapper around UIContentSizeCategoryIsAccessibilityCategory.
 BOOL ContentSizeCategoryIsAccessibilityCategory(UIContentSizeCategory category);
 
+UIFont* PreferredFontForTextStyleWithMaxCategory(
+    UIFontTextStyle style,
+    UIContentSizeCategory currentCategory,
+    UIContentSizeCategory maxCategory);
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_
