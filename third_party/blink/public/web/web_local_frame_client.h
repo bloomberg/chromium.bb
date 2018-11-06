@@ -62,7 +62,6 @@
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
-#include "third_party/blink/public/web/web_file_chooser_params.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
@@ -97,7 +96,6 @@ class WebDocumentLoader;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
-class WebFileChooserCompletion;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
@@ -584,15 +582,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // means that it is okay to proceed with closing the view. Returns true if
   // the user selects 'OK' or false otherwise.
   virtual bool RunModalBeforeUnloadDialog(bool is_reload) { return true; }
-
-  // This method returns immediately after showing the dialog. When the
-  // dialog is closed, it should call the WebFileChooserCompletion to
-  // pass the results of the dialog. Returns false if
-  // WebFileChooseCompletion will never be called.
-  virtual bool RunFileChooser(const blink::WebFileChooserParams& params,
-                              WebFileChooserCompletion* chooser_completion) {
-    return false;
-  }
 
   // UI ------------------------------------------------------------------
 

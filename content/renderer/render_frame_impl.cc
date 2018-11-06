@@ -199,7 +199,6 @@
 #include "third_party/blink/public/web/web_context_features.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element_collection.h"
-#include "third_party/blink/public/web/web_file_chooser_completion.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
@@ -1691,12 +1690,6 @@ mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
-  // If file chooser is still waiting for answer, dispatch empty answer.
-  if (file_chooser_completion_) {
-    file_chooser_completion_->DidChooseFile(WebVector<WebString>());
-    file_chooser_completion_ = nullptr;
-  }
-
   for (auto& observer : observers_)
     observer.RenderFrameGone();
   for (auto& observer : observers_)
@@ -2102,7 +2095,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
-    IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
     IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
                         OnBlinkFeatureUsageReport)
@@ -4814,33 +4806,6 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
   return success;
 }
 
-bool RenderFrameImpl::RunFileChooser(
-    const blink::WebFileChooserParams& params,
-    blink::WebFileChooserCompletion* chooser_completion) {
-  blink::mojom::FileChooserParams ipc_params;
-  ipc_params.mode = params.mode;
-  ipc_params.title = params.title.Utf16();
-  ipc_params.accept_types.reserve(params.accept_types.size());
-  for (const auto& type : params.accept_types)
-    ipc_params.accept_types.push_back(type.Utf16());
-  ipc_params.need_local_path = params.need_local_path;
-  ipc_params.use_media_capture = params.use_media_capture;
-  ipc_params.requestor = params.requestor;
-  return RunFileChooser(ipc_params, chooser_completion);
-}
-
-bool RenderFrameImpl::RunFileChooser(
-    const blink::mojom::FileChooserParams& params,
-    blink::WebFileChooserCompletion* chooser_completion) {
-  // Do not open the file dialog in a hidden RenderFrame.
-  if (IsHidden())
-    return false;
-  DCHECK(!file_chooser_completion_);
-  file_chooser_completion_ = chooser_completion;
-  Send(new FrameHostMsg_RunFileChooser(routing_id_, params));
-  return true;
-}
-
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   blink::WebRect position_in_window(params.x, params.y, 0, 0);
@@ -6351,52 +6316,6 @@ void RenderFrameImpl::OnEnableViewSourceMode() {
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;
-}
-
-void RenderFrameImpl::OnFileChooserResponse(
-    const std::vector<blink::mojom::FileChooserFileInfoPtr>& files) {
-  // This could happen if we navigated to a different page before the user
-  // closed the chooser.
-  if (!file_chooser_completion_)
-    return;
-
-  // Convert Chrome's SelectedFileInfo list to WebKit's.
-  WebVector<blink::WebFileChooserCompletion::SelectedFileInfo> selected_files(
-      files.size());
-  size_t current_size = 0;
-  for (size_t i = 0; i < files.size(); ++i) {
-    blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
-    if (files[i]->is_file_system()) {
-      auto& fs_info = *files[i]->get_file_system();
-      selected_file.file_system_url = fs_info.url;
-      selected_file.length = fs_info.length;
-      selected_file.modification_time = fs_info.modification_time;
-    } else {
-      selected_file.file_path = files[i]->get_native_file()->file_path;
-
-      // Exclude files whose paths can't be converted into WebStrings. Blink
-      // won't be able to handle these, and the browser process would kill the
-      // renderer when it claims to have chosen an empty file path.
-      if (blink::FilePathToWebString(selected_file.file_path).IsEmpty())
-        continue;
-
-      selected_file.display_name =
-          WebString::FromUTF16(files[i]->get_native_file()->display_name);
-    }
-    selected_files[current_size] = selected_file;
-    current_size++;
-  }
-
-  // If not all files were included, truncate the WebVector.
-  if (current_size < selected_files.size()) {
-    WebVector<blink::WebFileChooserCompletion::SelectedFileInfo> truncated_list(
-        selected_files.Data(), current_size);
-    selected_files.Swap(truncated_list);
-  }
-
-  blink::WebFileChooserCompletion* completion = file_chooser_completion_;
-  file_chooser_completion_ = nullptr;
-  completion->DidChooseFile(selected_files);
 }
 
 void RenderFrameImpl::OnClearFocusedElement() {

@@ -503,6 +503,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RunFileChooser(RenderFrameHost* render_frame_host,
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
+  void EnumerateDirectory(RenderFrameHost* render_frame_host,
+                          std::unique_ptr<FileSelectListener> listener,
+                          const base::FilePath& directory_path) override;
   void DidCancelLoading() override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
@@ -1197,9 +1200,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           int maximum_percent);
   void OnPageScaleFactorChanged(RenderViewHostImpl* source,
                                 float page_scale_factor);
-  void OnEnumerateDirectory(RenderViewHostImpl* source,
-                            int request_id,
-                            const base::FilePath& path);
 
   void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
                                  const std::string& protocol,

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/mock_file_chooser.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -241,15 +242,6 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
   EXPECT_TRUE(CanOpenDateTimeChooser());
 }
 
-// A WebLocalFrameClient which makes FileChooser::OpenFileChooser() success.
-class FrameClientForFileChooser
-    : public frame_test_helpers::TestWebFrameClient {
-  bool RunFileChooser(const WebFileChooserParams& params,
-                      WebFileChooserCompletion* chooser_completion) override {
-    return true;
-  }
-};
-
 // A FileChooserClient which makes FileChooser::OpenFileChooser() success.
 class MockFileChooserClient
     : public GarbageCollectedFinalized<MockFileChooserClient>,
@@ -265,7 +257,7 @@ class MockFileChooserClient
 
  private:
   // FilesChosen() and WillOpenPopup() are never called in the test.
-  void FilesChosen(const FileChooserFileInfoList&) override {}
+  void FilesChosen(FileChooserFileInfoList) override {}
   void WillOpenPopup() override {}
 
   LocalFrame* FrameOrNull() const override { return frame_; }
@@ -276,30 +268,41 @@ class MockFileChooserClient
 class FileChooserQueueTest : public testing::Test {
  protected:
   void SetUp() override {
-    web_view_ = helper_.Initialize(&frame_client_);
+    web_view_ = helper_.Initialize();
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
   }
 
   frame_test_helpers::WebViewHelper helper_;
-  FrameClientForFileChooser frame_client_;
   WebViewImpl* web_view_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
 TEST_F(FileChooserQueueTest, DerefQueuedChooser) {
   LocalFrame* frame = helper_.LocalMainFrame()->GetFrame();
-  auto* client = new MockFileChooserClient(frame);
-  WebFileChooserParams params;
-  scoped_refptr<FileChooser> chooser1 = FileChooser::Create(client, params);
-  scoped_refptr<FileChooser> chooser2 = FileChooser::Create(client, params);
+  base::RunLoop run_loop;
+  MockFileChooser chooser(&frame->GetInterfaceProvider(),
+                          run_loop.QuitClosure());
+  auto* client1 = new MockFileChooserClient(frame);
+  auto* client2 = new MockFileChooserClient(frame);
+  mojom::blink::FileChooserParams params;
+  params.title = g_empty_string;
+  scoped_refptr<FileChooser> chooser1 = FileChooser::Create(client1, params);
+  scoped_refptr<FileChooser> chooser2 = FileChooser::Create(client2, params);
 
   chrome_client_impl_->OpenFileChooser(frame, chooser1);
   chrome_client_impl_->OpenFileChooser(frame, chooser2);
   EXPECT_EQ(2u, chrome_client_impl_->file_chooser_queue_.size());
   chooser2.reset();
-  chrome_client_impl_->DidCompleteFileChooser(*chooser1);
+
+  // Kicks ChromeClientImpl::DidCompleteFileChooser() for chooser1.
+  run_loop.Run();
+  chooser.ResponseOnOpenFileChooser(FileChooserFileInfoList());
+
   EXPECT_EQ(1u, chrome_client_impl_->file_chooser_queue_.size());
+
+  // Cleanup for the second OpenFileChooser request.
+  chooser.ResponseOnOpenFileChooser(FileChooserFileInfoList());
 }
 
 }  // namespace blink

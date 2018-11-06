@@ -290,10 +290,4 @@ void WebFrameTestProxy::DidClearWindowObject() {
   RenderFrameImpl::DidClearWindowObject();
 }
 
-bool WebFrameTestProxy::RunFileChooser(
-    const blink::WebFileChooserParams& params,
-    blink::WebFileChooserCompletion* completion) {
-  return test_client_->RunFileChooser(params, completion);
-}
-
 }  // namespace test_runner

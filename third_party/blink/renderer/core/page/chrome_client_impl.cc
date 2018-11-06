@@ -632,18 +632,6 @@ void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   DidCompleteFileChooser(*next_chooser);
 }
 
-void ChromeClientImpl::EnumerateChosenDirectory(FileChooser* file_chooser) {
-  WebViewClient* client = web_view_->Client();
-  if (!client)
-    return;
-
-  DCHECK(file_chooser);
-  DCHECK(file_chooser->Params().selected_files.size());
-  if (client->EnumerateChosenDirectory(file_chooser->Params().selected_files[0],
-                                       file_chooser))
-    file_chooser->AddRef();
-}
-
 Cursor ChromeClientImpl::LastSetCursorForTesting() const {
   return last_set_mouse_cursor_for_testing_;
 }

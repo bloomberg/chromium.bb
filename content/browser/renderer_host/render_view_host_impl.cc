@@ -723,19 +723,6 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
 }
 
-void RenderViewHostImpl::DirectoryEnumerationFinished(
-    int request_id,
-    const std::vector<base::FilePath>& files) {
-  // Grant the security access requested to the given files.
-  for (auto file = files.begin(); file != files.end(); ++file) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        GetProcess()->GetID(), *file);
-  }
-  Send(new ViewMsg_EnumerateDirectoryResponse(GetRoutingID(),
-                                              request_id,
-                                              files));
-}
-
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   if (ResourceDispatcherHostImpl::Get()) {
     base::PostTaskWithTraits(
