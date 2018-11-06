@@ -68,6 +68,36 @@ using content::NonNestable;
 
 namespace safe_browsing {
 
+#if defined(FULL_SAFE_BROWSING)
+namespace {
+
+// 50 was chosen as an arbitrary upper bound on the likely font sizes. For
+// reference, the "Font size" dropdown in settings lets you select between 9,
+// 12, 16, 20, or 24.
+const int kMaximumTrackedFontSize = 50;
+
+void RecordFontSizeMetrics(const PrefService& pref_service) {
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "SafeBrowsing.FontSize.Default",
+      pref_service.GetInteger(prefs::kWebKitDefaultFontSize),
+      kMaximumTrackedFontSize);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "SafeBrowsing.FontSize.DefaultFixed",
+      pref_service.GetInteger(prefs::kWebKitDefaultFixedFontSize),
+      kMaximumTrackedFontSize);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "SafeBrowsing.FontSize.Minimum",
+      pref_service.GetInteger(prefs::kWebKitMinimumFontSize),
+      kMaximumTrackedFontSize);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "SafeBrowsing.FontSize.MinimumLogical",
+      pref_service.GetInteger(prefs::kWebKitMinimumLogicalFontSize),
+      kMaximumTrackedFontSize);
+}
+
+}  // namespace
+#endif
+
 // static
 SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
 
@@ -462,6 +492,10 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
   // Extended Reporting metrics are handled together elsewhere.
   RecordExtendedReportingMetrics(*pref_service);
+
+#if defined(FULL_SAFE_BROWSING)
+  RecordFontSizeMetrics(*pref_service);
+#endif
 }
 
 void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
