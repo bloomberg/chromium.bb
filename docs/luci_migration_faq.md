@@ -33,7 +33,7 @@ ensure correctness and performance. Note that times can vary per builder set.*
 
 ### **Who is involved with the builder migrations?**
 
-*We have created a LUCI migration task force 
+*We have created a LUCI migration task force
 ([infra-dev@chromium.org](mailto:infra-dev@chromium.org)) comprised of Chrome
 Operations developers. Owners of Chromium builders are responsible for approvals
 for final go ahead to switch a LUCI builder to production.*
@@ -52,8 +52,8 @@ and CI systems effectively.*
 
 ### **What limitations does the migration have?**
 
-*While we're working to make the transition as seamless as possible, there can 
-be a few hiccups that may occur when a builder is migrated. Below are the 
+*While we're working to make the transition as seamless as possible, there can
+be a few hiccups that may occur when a builder is migrated. Below are the
 known limitations:*
 
 * *The blamelist will not be calculated correctly between the first LUCI build
@@ -90,16 +90,16 @@ main differences to expect are:*
 starts with `/p/chromium/builders/…`
 If the build is still running on Buildbot,
 "buildbot" will still be part of the URL path. Also, in
-the Code Review UI, try-builders running on LUCI are
-shown with a LUCI tag as shown below.*
+the Code Review UI, try-builders on Buildbot is shown
+with a "Buildbot" tag. The default with no tag represents
+a LUCI build.*
 
-![LUCI Code Review UI Tag](images/LUCI-CodeReview-Tag.png
-"linux%5chromium%5rel%5ng is a LUCI builder")
+![LUCI Code Review UI Tag](images/LUCI-CodeReview-Tag.png)
 
 *In some cases, builds on LUCI can also have the
 following URL
 `ci.chromium.org/p/chromium/builds/b<buildbucket_build_id>`.
-This occurs when the build does not have a build number 
+This occurs when the build does not have a build number
 which should not occur for any Chromium build*
 
 ### **When will Buildbot be turned down?**
