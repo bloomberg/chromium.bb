@@ -26,6 +26,10 @@ namespace network {
 class NetworkConnectionTracker;
 using NetworkConnectionTrackerGetter =
     base::RepeatingCallback<NetworkConnectionTracker*()>;
+// Defines the type of a callback that can be used to asynchronously get a
+// NetworkConnectionTracker instance.
+using NetworkConnectionTrackerAsyncGetter = base::RepeatingCallback<void(
+    base::OnceCallback<void(NetworkConnectionTracker*)>)>;
 
 // This class subscribes to network change events from
 // network::mojom::NetworkChangeManager and propogates these notifications to

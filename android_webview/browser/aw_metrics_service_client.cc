@@ -39,6 +39,7 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 
 namespace android_webview {
 
@@ -167,7 +168,8 @@ void AwMetricsServiceClient::InitializeWithClientId() {
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::NetworkMetricsProvider));
+          new metrics::NetworkMetricsProvider(
+              content::CreateNetworkConnectionTrackerAsyncGetter())));
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
