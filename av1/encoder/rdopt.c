@@ -8466,7 +8466,7 @@ static int64_t interpolation_filter_search(
       struct macroblockd_plane *const pd = &xd->plane[k];
       const int bw = pd->width;
       const int bh = pd->height;
-      const MV mv_q4 = clamp_mv_to_umv_border_sb(
+      const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
           xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
       const int sub_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
       const int sub_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;

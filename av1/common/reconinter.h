@@ -222,9 +222,9 @@ void av1_make_masked_inter_predictor(
     MACROBLOCKD *xd, int can_use_previous);
 
 // TODO(jkoleszar): yet another mv clamping function :-(
-static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
-                                           const MV *src_mv, int bw, int bh,
-                                           int ss_x, int ss_y) {
+static INLINE MV32 clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
+                                             const MV *src_mv, int bw, int bh,
+                                             int ss_x, int ss_y) {
   // If the MV points so far into the UMV border that no visible pixels
   // are used for reconstruction, the subpel part of the MV can be
   // discarded and the MV limited to 16 pixels with equivalent results.
@@ -232,15 +232,17 @@ static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
   const int spel_right = spel_left - SUBPEL_SHIFTS;
   const int spel_top = (AOM_INTERP_EXTEND + bh) << SUBPEL_BITS;
   const int spel_bottom = spel_top - SUBPEL_SHIFTS;
-  MV clamped_mv = { (int16_t)(src_mv->row * (1 << (1 - ss_y))),
-                    (int16_t)(src_mv->col * (1 << (1 - ss_x))) };
+  const int mv_row = src_mv->row * (1 << (1 - ss_y));
+  const int mv_col = src_mv->col * (1 << (1 - ss_x));
   assert(ss_x <= 1);
   assert(ss_y <= 1);
 
-  clamp_mv(&clamped_mv, xd->mb_to_left_edge * (1 << (1 - ss_x)) - spel_left,
-           xd->mb_to_right_edge * (1 << (1 - ss_x)) + spel_right,
-           xd->mb_to_top_edge * (1 << (1 - ss_y)) - spel_top,
-           xd->mb_to_bottom_edge * (1 << (1 - ss_y)) + spel_bottom);
+  MV32 clamped_mv = {
+    clamp(mv_row, xd->mb_to_top_edge * (1 << (1 - ss_y)) - spel_top,
+          xd->mb_to_bottom_edge * (1 << (1 - ss_y)) + spel_bottom),
+    clamp(mv_col, xd->mb_to_left_edge * (1 << (1 - ss_x)) - spel_left,
+          xd->mb_to_right_edge * (1 << (1 - ss_x)) + spel_right)
+  };
 
   return clamped_mv;
 }
