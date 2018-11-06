@@ -748,6 +748,14 @@ static inline const FilterOperations& BackgroundFilters(LayerImpl* layer) {
   return layer->test_properties()->background_filters;
 }
 
+static inline float BackdropFilterQuality(Layer* layer) {
+  return layer->backdrop_filter_quality();
+}
+
+static inline float BackdropFilterQuality(LayerImpl* layer) {
+  return layer->test_properties()->backdrop_filter_quality;
+}
+
 static inline bool HideLayerAndSubtree(Layer* layer) {
   return layer->hide_layer_and_subtree();
 }
@@ -984,6 +992,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->has_copy_request = HasCopyRequest(layer);
   node->filters = Filters(layer);
   node->background_filters = BackgroundFilters(layer);
+  node->backdrop_filter_quality = BackdropFilterQuality(layer);
   node->filters_origin = FiltersOrigin(layer);
   node->trilinear_filtering = TrilinearFiltering(layer);
   node->has_potential_opacity_animation = has_potential_opacity_animation;

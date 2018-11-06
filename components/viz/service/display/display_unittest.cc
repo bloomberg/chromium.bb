@@ -2522,7 +2522,8 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
     quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
     quad1->SetNew(shared_quad_state2, rect1, rect1, render_pass_id,
                   mask_resource_id, gfx::RectF(), gfx::Size(),
-                  gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+                  gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                  1.0f);
     EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
     EXPECT_EQ(1u, frame.render_pass_list.at(1)->quad_list.size());
     display_->RemoveOverdrawQuads(&frame);
@@ -2767,10 +2768,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect2, rect2, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect4, rect4, SK_ColorBLACK, false);
     EXPECT_EQ(4u, frame.render_pass_list.front()->quad_list.size());
@@ -2815,10 +2816,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect6, rect6, SK_ColorBLACK, false);
     EXPECT_EQ(4u, frame.render_pass_list.front()->quad_list.size());
@@ -2862,10 +2863,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
                mask_resource_id, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);
+               gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect7, rect7, SK_ColorBLACK, false);
     EXPECT_EQ(4u, frame.render_pass_list.front()->quad_list.size());

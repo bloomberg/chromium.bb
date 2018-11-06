@@ -428,6 +428,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void AddDeferredPaintRequest();
   void RemoveDeferredPaintRequest();
 
+  // |quality| is used as a multiplier to scale the temporary surface
+  // that might be created by the compositor to apply the backdrop filters.
+  // The filter will be applied on a surface |quality|^2 times the area of the
+  // original background.
+  // |quality| lower than one will decrease memory usage and increase
+  // performance.
+  void SetBackdropFilterQuality(const float quality);
+
   bool IsPaintDeferredForTesting() const { return deferred_paint_requests_; }
 
   // Request trilinear filtering for layer.
@@ -621,6 +629,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // value > 0, means we need to defer painting the layer. If the value == 0,
   // means we should paint the layer.
   unsigned deferred_paint_requests_;
+
+  float backdrop_filter_quality_;
 
   // The counter to maintain how many trilinear filtering requests we have. If
   // the value > 0, means we need to perform trilinear filtering on the layer.
