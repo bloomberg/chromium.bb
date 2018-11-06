@@ -627,12 +627,29 @@ typedef struct AV1_COMP {
 
   int last_show_frame_buf_idx;  // last show frame buffer index
 
+  // refresh_*_frame are boolean flags. If 'refresh_xyz_frame' is true, then
+  // after the current frame is encoded, the XYZ reference frame gets refreshed
+  // (updated) to be the current frame.
+  //
+  // Special case: 'refresh_last_frame' specifies that:
+  // - LAST_FRAME reference should be updated to be the current frame (as usual)
+  // - Also, LAST2_FRAME and LAST3_FRAME references are implicitly updated to be
+  // the two past reference frames just before LAST_FRAME that are available.
+  //
+  // Note: Usually at most one of these refresh flags is true at a time.
+  // But a key-frame is special, for which all the flags are true at once.
   int refresh_last_frame;
   int refresh_golden_frame;
   int refresh_bwd_ref_frame;
   int refresh_alt2_ref_frame;
   int refresh_alt_ref_frame;
+
 #if USE_SYMM_MULTI_LAYER
+  // When true, a new rule for backward (future) reference frames is in effect:
+  // - BWDREF_FRAME is always the closest future frame available
+  // - ALTREF2_FRAME is always the 2nd closest future frame available
+  // - 'refresh_bwd_ref_frame' flag is used for updating both the BWDREF_FRAME
+  // and ALTREF2_FRAME. ('refresh_alt2_ref_frame' flag is irrelevant).
   int new_bwdref_update_rule;
 #endif
 
