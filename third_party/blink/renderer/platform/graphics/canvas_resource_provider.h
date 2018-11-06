@@ -180,30 +180,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   cc::PaintImage MakeImageSnapshot();
 
  private:
-  class CanvasImageProvider : public cc::ImageProvider {
-   public:
-    CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
-                        cc::ImageDecodeCache* cache_f16,
-                        const gfx::ColorSpace& target_color_space,
-                        SkColorType target_color_type);
-    ~CanvasImageProvider() override;
-
-    // cc::ImageProvider implementation.
-    ScopedDecodedDrawImage GetDecodedDrawImage(const cc::DrawImage&) override;
-
-    void ReleaseLockedImages();
-
-   private:
-    void CanUnlockImage(ScopedDecodedDrawImage);
-    void CleanupLockedImages();
-
-    bool cleanup_task_pending_ = false;
-    std::vector<ScopedDecodedDrawImage> locked_images_;
-    cc::PlaybackImageProvider playback_image_provider_n32_;
-    base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
-
-    base::WeakPtrFactory<CanvasImageProvider> weak_factory_;
-  };
+  class CanvasImageProvider;
 
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
@@ -214,7 +191,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   IntSize size_;
   CanvasColorParams color_params_;
-  base::Optional<CanvasImageProvider> canvas_image_provider_;
+  std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   std::unique_ptr<SkCanvas> xform_canvas_;
