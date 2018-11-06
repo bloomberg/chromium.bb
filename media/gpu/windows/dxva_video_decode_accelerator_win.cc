@@ -770,11 +770,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       break;
     }
   }
-  if (!profile_supported) {
-    RETURN_AND_NOTIFY_ON_FAILURE(false,
-                                 "Unsupported h.264, vp8, or vp9 profile",
-                                 PLATFORM_FAILURE, false);
-  }
+  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264, vp8, or vp9 profile",
+                    false);
 
   if (config.profile == VP9PROFILE_PROFILE2 ||
       config.profile == VP9PROFILE_PROFILE3 ||
@@ -819,47 +816,38 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
         ::GetProcAddress(dxgi_manager_dll, "MFCreateDXGIDeviceManager"));
   }
 
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
-                               "Failed to make context current",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(make_context_current_cb_.Run(),
+                    "Failed to make context current", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
-      "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
-      PLATFORM_FAILURE, false);
+      "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(gl::GLFence::IsSupported(),
-                               "GL fences are unsupported", PLATFORM_FAILURE,
-                               false);
+  RETURN_ON_FAILURE(gl::GLFence::IsSupported(), "GL fences are unsupported",
+                    false);
 
   State state = GetState();
-  RETURN_AND_NOTIFY_ON_FAILURE((state == kUninitialized),
-                               "Initialize: invalid state: " << state,
-                               ILLEGAL_STATE, false);
+  RETURN_ON_FAILURE((state == kUninitialized),
+                    "Initialize: invalid state: " << state, false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(InitializeMediaFoundation(),
-                               "Could not initialize Media Foundartion",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(InitializeMediaFoundation(),
+                    "Could not initialize Media Foundartion", false);
 
   config_ = config;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(config.profile),
-                               "Failed to initialize decoder", PLATFORM_FAILURE,
-                               false);
+  RETURN_ON_FAILURE(InitDecoder(config.profile), "Failed to initialize decoder",
+                    false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(GetStreamsInfoAndBufferReqs(),
-                               "Failed to get input/output stream info.",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(GetStreamsInfoAndBufferReqs(),
+                    "Failed to get input/output stream info.", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0),
-      "Send MFT_MESSAGE_NOTIFY_BEGIN_STREAMING notification failed",
-      PLATFORM_FAILURE, false);
+      "Send MFT_MESSAGE_NOTIFY_BEGIN_STREAMING notification failed", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0),
-      "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
-      PLATFORM_FAILURE, false);
+      "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed", false);
 
   if (codec_ == kCodecH264)
     config_change_detector_.reset(new H264ConfigChangeDetector);
