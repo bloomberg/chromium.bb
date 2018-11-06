@@ -2779,7 +2779,8 @@ if (enable_java_templates) {
         # Each element is of length two, [ path_to_file, path_to_put_in_jar ]
         inputs += [ file_tuple[0] ]
         args +=
-            [ "--additional-jar-file=" + file_tuple[0] + ":" + file_tuple[1] ]
+            [ "--additional-jar-file=" +
+              rebase_path(file_tuple[0], root_build_dir) + ":" + file_tuple[1] ]
       }
       if (invoker.java_files != []) {
         args += [ "@" + rebase_path(invoker.java_sources_file, root_build_dir) ]

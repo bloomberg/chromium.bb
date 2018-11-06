@@ -119,9 +119,7 @@ java_library("robolectric_java") {
     "robolectric/robolectric/src/main/java/org/robolectric/util/FragmentTestUtil.java",
   ]
   additional_jar_files = [ [
-        rebase_path(
-            "local/robolectric/src/main/resources/robolectric-version.properties",
-            root_build_dir),
+        "local/robolectric/src/main/resources/robolectric-version.properties",
         "robolectric-version.properties",
       ] ]
 
@@ -375,34 +373,29 @@ java_library("shadows_core_java") {
   if (host_os == "linux") {
     additional_jar_files = [
       [
-        rebase_path("../sqlite4java/lib/linux-x86_64/libsqlite4java.so",
-                    root_build_dir),
+        "../sqlite4java/lib/linux-x86_64/libsqlite4java.so",
         "linux-x86_64/libsqlite4java.so",
       ],
       [
-        rebase_path("../sqlite4java/lib/linux-x86/libsqlite4java.so",
-                    root_build_dir),
+        "../sqlite4java/lib/linux-x86/libsqlite4java.so",
         "linux-x86/libsqlite4java.so",
       ],
     ]
   }
   if (host_os == "mac") {
     additional_jar_files = [ [
-          rebase_path("../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib",
-                      root_build_dir),
+          "../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib",
           "mac-x86_64/libsqlite4java.jnilib",
         ] ]
   }
   if (host_os == "win") {
     additional_jar_files = [
       [
-        rebase_path("../sqlite4java/lib/windows-x86/sqlite4java.dll",
-                    root_build_dir),
+        "../sqlite4java/lib/windows-x86/sqlite4java.dll",
         "windows-x86/sqlite4java.dll",
       ],
       [
-        rebase_path("../sqlite4java/lib/windows-x86_64/sqlite4java.dll",
-                    root_build_dir),
+        "../sqlite4java/lib/windows-x86_64/sqlite4java.dll",
         "windows-x86_64/sqlite4java.dll",
       ],
     ]
