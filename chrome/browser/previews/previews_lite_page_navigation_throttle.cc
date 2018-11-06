@@ -281,6 +281,13 @@ bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
+  std::string experiment_id =
+      previews::params::LitePageRedirectPreviewExperiment();
+  std::string experiment_query;
+  if (!experiment_id.empty()) {
+    experiment_query =
+        "&x=" + net::EscapeQueryParamValue(experiment_id, true /* use_plus */);
+  }
 
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
@@ -292,7 +299,8 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
       previews_host.scheme() + "://" + origin_hash + "." +
       previews_host.host() +
       (previews_host.has_port() ? (":" + previews_host.port()) : "") + "/p?u=" +
-      net::EscapeQueryParamValue(original_url.spec(), true /* use_plus */));
+      net::EscapeQueryParamValue(original_url.spec(), true /* use_plus */) +
+      experiment_query);
   DCHECK(previews_url.is_valid());
   DCHECK_EQ(previews_host.scheme(), previews_url.scheme());
   return previews_url;

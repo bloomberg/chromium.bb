@@ -201,6 +201,11 @@ GURL GetLitePagePreviewsDomainURL() {
   return GURL("https://litepages.googlezip.net/");
 }
 
+std::string LitePageRedirectPreviewExperiment() {
+  return GetFieldTrialParamValueByFeature(features::kLitePageServerPreviews,
+                                          "lite_page_preview_experiment");
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {

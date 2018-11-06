@@ -115,6 +115,9 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
+// The experimental config to send to the previews server.
+std::string LitePageRedirectPreviewExperiment();
+
 // The threshold of EffectiveConnectionType above which preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
