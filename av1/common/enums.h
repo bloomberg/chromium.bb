@@ -244,22 +244,22 @@ typedef enum ATTRIBUTE_PACKED {
 } TX_TYPE_1D;
 
 typedef enum ATTRIBUTE_PACKED {
-  DCT_DCT,    // DCT  in both horizontal and vertical
-  ADST_DCT,   // ADST in vertical, DCT in horizontal
-  DCT_ADST,   // DCT  in vertical, ADST in horizontal
-  ADST_ADST,  // ADST in both directions
-  FLIPADST_DCT,
-  DCT_FLIPADST,
-  FLIPADST_FLIPADST,
-  ADST_FLIPADST,
-  FLIPADST_ADST,
-  IDTX,
-  V_DCT,
-  H_DCT,
-  V_ADST,
-  H_ADST,
-  V_FLIPADST,
-  H_FLIPADST,
+  DCT_DCT,            // DCT in both horizontal and vertical
+  ADST_DCT,           // ADST in vertical, DCT in horizontal
+  DCT_ADST,           // DCT in vertical, ADST in horizontal
+  ADST_ADST,          // ADST in both directions
+  FLIPADST_DCT,       // FLIPADST in vertical, DCT in horizontal
+  DCT_FLIPADST,       // DCT in vertical, FLIPADST in horizontal
+  FLIPADST_FLIPADST,  // FLIPADST in both directions
+  ADST_FLIPADST,      // ADST in vertical, FLIPADST in horizontal
+  FLIPADST_ADST,      // FLIPADST in vertical, ADST in horizontal
+  IDTX,               // Identity in both directions
+  V_DCT,              // DCT in vertical, identity in horizontal
+  H_DCT,              // Identity in vertical, DCT in horizontal
+  V_ADST,             // ADST in vertical, identity in horizontal
+  H_ADST,             // Identity in vertical, ADST in horizontal
+  V_FLIPADST,         // FLIPADST in vertical, identity in horizontal
+  H_FLIPADST,         // Identity in vertical, FLIPADST in horizontal
   TX_TYPES,
 } TX_TYPE;
 
