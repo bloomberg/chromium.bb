@@ -38,7 +38,8 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
-      const std::set<blink::mojom::MediaSessionAction>& actions) override;
+      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      override;
 
   // MediaSession method wrappers.
   void Resume(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_obj);

@@ -12,6 +12,17 @@ enum MediaPlaybackState {
   kPlaying,
 };
 
+// Spec: https://wicg.github.io/mediasession/
+[Extensible]
+enum MediaSessionAction {
+  kPlay,
+  kPause,
+  kPreviousTrack,
+  kNextTrack,
+  kSeekBackward,
+  kSeekForward,
+};
+
 // Contains state information about a MediaSession.
 struct MediaSessionInfo {
   [Extensible]

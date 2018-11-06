@@ -46,7 +46,8 @@ class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
     return client;
   }
 
-  MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction action));
+  MOCK_METHOD1(DidReceiveAction,
+               void(media_session::mojom::MediaSessionAction action));
 
  private:
   mojo::Binding<blink::mojom::MediaSessionClient> binding_;
@@ -266,7 +267,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   services_[main_frame_]->SetMetadata(MediaMetadata());
-  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PLAY);
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -276,9 +278,9 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
 
-  std::set<blink::mojom::MediaSessionAction> empty_actions;
-  std::set<blink::mojom::MediaSessionAction> expected_actions;
-  expected_actions.insert(blink::mojom::MediaSessionAction::PLAY);
+  std::set<media_session::mojom::MediaSessionAction> empty_actions;
+  std::set<media_session::mojom::MediaSessionAction> expected_actions;
+  expected_actions.insert(media_session::mojom::MediaSessionAction::kPlay);
 
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionMetadataChanged(Eq(base::nullopt)))
@@ -298,7 +300,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   StartPlayerForFrame(main_frame_);
 
   services_[main_frame_]->SetMetadata(expected_metadata);
-  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PLAY);
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -308,8 +311,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
 
-  std::set<blink::mojom::MediaSessionAction> expected_actions;
-  expected_actions.insert(blink::mojom::MediaSessionAction::PLAY);
+  std::set<media_session::mojom::MediaSessionAction> expected_actions;
+  expected_actions.insert(media_session::mojom::MediaSessionAction::kPlay);
 
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionMetadataChanged(Eq(expected_metadata)))
@@ -321,7 +324,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   services_[main_frame_]->SetMetadata(expected_metadata);
-  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PLAY);
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
 
   StartPlayerForFrame(main_frame_);
 }
@@ -333,9 +337,9 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
 
-  std::set<blink::mojom::MediaSessionAction> empty_actions;
-  std::set<blink::mojom::MediaSessionAction> expected_actions;
-  expected_actions.insert(blink::mojom::MediaSessionAction::PLAY);
+  std::set<media_session::mojom::MediaSessionAction> empty_actions;
+  std::set<media_session::mojom::MediaSessionAction> expected_actions;
+  expected_actions.insert(media_session::mojom::MediaSessionAction::kPlay);
 
   EXPECT_CALL(*mock_media_session_observer(), MediaSessionMetadataChanged(_))
       .Times(AnyNumber());
@@ -351,7 +355,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   services_[main_frame_]->SetMetadata(expected_metadata);
-  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PLAY);
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
 
   StartPlayerForFrame(main_frame_);
   ClearPlayersForFrame(main_frame_);
@@ -367,14 +372,16 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   EXPECT_CALL(*GetPlayerForFrame(sub_frame_), OnSuspend(_));
-  EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE))
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PAUSE);
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPause);
 
   MediaSessionImpl::Get(contents())
-      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+      ->DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
 
   run_loop.Run();
 }
@@ -389,14 +396,16 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(sub_frame_);
 
   EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_));
-  EXPECT_CALL(*GetClientForFrame(sub_frame_),
-              DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE))
+  EXPECT_CALL(
+      *GetClientForFrame(sub_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  services_[sub_frame_]->EnableAction(blink::mojom::MediaSessionAction::PAUSE);
+  services_[sub_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPause);
 
   MediaSessionImpl::Get(contents())
-      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+      ->DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
 
   run_loop.Run();
 }
@@ -410,7 +419,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   // This should not crash.
   MediaSessionImpl::Get(contents())
-      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+      ->DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -422,13 +431,13 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  EXPECT_CALL(
-      *GetClientForFrame(main_frame_),
-      DidReceiveAction(blink::mojom::MediaSessionAction::PREVIOUS_TRACK))
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(
+                  media_session::mojom::MediaSessionAction::kPreviousTrack))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(
-      blink::mojom::MediaSessionAction::PREVIOUS_TRACK);
+      media_session::mojom::MediaSessionAction::kPreviousTrack);
 
   MediaSessionImpl::Get(contents())->PreviousTrack();
   run_loop.Run();
@@ -443,12 +452,13 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(blink::mojom::MediaSessionAction::NEXT_TRACK))
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kNextTrack))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(
-      blink::mojom::MediaSessionAction::NEXT_TRACK);
+      media_session::mojom::MediaSessionAction::kNextTrack);
 
   MediaSessionImpl::Get(contents())->NextTrack();
   run_loop.Run();

@@ -29,8 +29,8 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     kMaxValue = SystemTransientDuck,
   };
 
-  // Extended enum to blink::mojom::MediaSessionAction, distinguishing default
-  // action handling.
+  // Extended enum to media_session::mojom::MediaSessionAction, distinguishing
+  // default action handling.
   enum class MediaSessionUserAction {
     Play = 0,
     PlayDefault = 1,

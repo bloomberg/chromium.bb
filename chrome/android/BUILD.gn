@@ -309,6 +309,7 @@ android_library("chrome_java") {
     "//net/android:net_java",
     "//printing:printing_java",
     "//services/data_decoder/public/cpp/android:safe_json_java",
+    "//services/media_session/public/mojom:mojom_java",
     "//services/network/public/mojom:mojom_java",
     "//services/service_manager/public/java:service_manager_java",
     "//services/service_manager/public/mojom:mojom_java",

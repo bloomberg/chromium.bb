@@ -3,6 +3,7 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/media_session/public/mojom/media_session.mojom.js"></script>
 <script src="file:///gen/third_party/blink/public/platform/modules/mediasession/media_session.mojom.js"></script>
 <script src="resources/mediasessionservice-mock.js"></script>
 <script src="resources/utils.js"></script>
@@ -16,24 +17,24 @@ var nextExpectation = 0;
 function getExpectations() {
   if (!expectations) {
     expectations = [
-      [ MediaSessionAction.PLAY, true ],
-      [ MediaSessionAction.PAUSE, true ],
-      [ MediaSessionAction.PREVIOUS_TRACK, true ],
-      [ MediaSessionAction.NEXT_TRACK, true ],
-      [ MediaSessionAction.SEEK_BACKWARD, true ],
-      [ MediaSessionAction.SEEK_FORWARD, true ],
-      [ MediaSessionAction.PLAY, false ],
-      [ MediaSessionAction.PAUSE, false ],
-      [ MediaSessionAction.PREVIOUS_TRACK, false ],
-      [ MediaSessionAction.NEXT_TRACK, false ],
-      [ MediaSessionAction.SEEK_BACKWARD, false ],
-      [ MediaSessionAction.SEEK_FORWARD, false ],
-      [ MediaSessionAction.PLAY, true ],
-      [ MediaSessionAction.PAUSE, true ],
-      [ MediaSessionAction.PREVIOUS_TRACK, true ],
-      [ MediaSessionAction.NEXT_TRACK, true ],
-      [ MediaSessionAction.SEEK_BACKWARD, true ],
-      [ MediaSessionAction.SEEK_FORWARD, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPlay, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPause, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPreviousTrack, true ],
+      [ mediaSession.mojom.MediaSessionAction.kNextTrack, true ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekBackward, true ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekForward, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPlay, false ],
+      [ mediaSession.mojom.MediaSessionAction.kPause, false ],
+      [ mediaSession.mojom.MediaSessionAction.kPreviousTrack, false ],
+      [ mediaSession.mojom.MediaSessionAction.kNextTrack, false ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekBackward, false ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekForward, false ],
+      [ mediaSession.mojom.MediaSessionAction.kPlay, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPause, true ],
+      [ mediaSession.mojom.MediaSessionAction.kPreviousTrack, true ],
+      [ mediaSession.mojom.MediaSessionAction.kNextTrack, true ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekBackward, true ],
+      [ mediaSession.mojom.MediaSessionAction.kSeekForward, true ],
     ];
   }
   return expectations;

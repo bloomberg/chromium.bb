@@ -39,7 +39,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -49,6 +48,7 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.media_session.mojom.MediaSessionAction;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -69,7 +69,7 @@ public class MediaNotificationManager {
     static final int MINIMAL_MEDIA_IMAGE_SIZE_PX = 114;
 
     @VisibleForTesting
-    static final int CUSTOM_MEDIA_SESSION_ACTION_STOP = MediaSessionAction.LAST + 1;
+    static final int CUSTOM_MEDIA_SESSION_ACTION_STOP = MediaSessionAction.MAX_VALUE + 1;
 
     // The media artwork image resolution on high-end devices.
     private static final int HIGH_IMAGE_SIZE_PX = 512;
