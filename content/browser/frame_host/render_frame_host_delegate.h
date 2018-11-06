@@ -149,6 +149,15 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       std::unique_ptr<content::FileSelectListener> listener,
       const blink::mojom::FileChooserParams& params);
 
+  // Request to enumerate a directory.  This is equivalent to running the file
+  // chooser in directory-enumeration mode and having the user select the given
+  // directory.
+  // Overrides of this function must call either listener->FileSelected() or
+  // listener->FileSelectionCanceled().
+  virtual void EnumerateDirectory(RenderFrameHost* render_frame_host,
+                                  std::unique_ptr<FileSelectListener> listener,
+                                  const base::FilePath& directory_path);
+
   // The pending page load was canceled, so the address bar should be updated.
   virtual void DidCancelLoading() {}
 

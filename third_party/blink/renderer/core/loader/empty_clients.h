@@ -178,8 +178,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void PrintDelegate(LocalFrame*) override {}
 
-  void EnumerateChosenDirectory(FileChooser*) override {}
-
   ColorChooser* OpenColorChooser(LocalFrame*,
                                  ColorChooserClient*,
                                  const Color&) override;

@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_file_chooser_completion.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -148,8 +147,7 @@ WebFrameTestClient::WebFrameTestClient(
     WebFrameTestProxyBase* web_frame_test_proxy_base)
     : delegate_(delegate),
       web_view_test_proxy_base_(web_view_test_proxy_base),
-      web_frame_test_proxy_base_(web_frame_test_proxy_base),
-      weak_factory_(this) {
+      web_frame_test_proxy_base_(web_frame_test_proxy_base) {
   DCHECK(delegate_);
   DCHECK(web_frame_test_proxy_base_);
   DCHECK(web_view_test_proxy_base_);
@@ -604,56 +602,6 @@ void WebFrameTestClient::DidClearWindowObject() {
   web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
   web_view_test_proxy_base_->BindTo(frame);
   delegate_->GetWebWidgetTestProxyBase(frame)->BindTo(frame);
-}
-
-bool WebFrameTestClient::RunFileChooser(
-    const blink::WebFileChooserParams& params,
-    blink::WebFileChooserCompletion* completion) {
-  using Mode = blink::WebFileChooserParams::Mode;
-  bool is_multiple =
-      params.mode == Mode::kOpenMultiple || params.mode == Mode::kUploadFolder;
-  delegate_->PrintMessage(base::StringPrintf(
-      "FileChooser: opened; multiple=%s directory=%s\n",
-      is_multiple ? "true" : "false",
-      params.mode == Mode::kUploadFolder ? "true" : "false"));
-  if (params.mode == Mode::kUploadFolder) {
-    delegate_->PrintMessage(
-        "FileChooser: testRunner doesn't support directory selection yet.\n");
-    return false;
-  }
-  const base::Optional<std::vector<std::string>>& optional_paths =
-      test_runner()->file_chooser_paths();
-  if (!optional_paths) {
-    // setFileChooserPaths() has never been called.
-    return false;
-  }
-  std::vector<std::string> paths(optional_paths.value());
-  if (params.mode == Mode::kOpen && paths.size() > 1)
-    paths.resize(1);
-  delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
-                                     weak_factory_.GetWeakPtr(), completion,
-                                     paths));
-  return true;
-}
-
-void WebFrameTestClient::ChooseFiles(
-    blink::WebFileChooserCompletion* completion,
-    std::vector<std::string> paths) {
-  if (!test_runner()->file_chooser_paths()) {
-    // TestRunner was reset. However we need to call DidChooseFile() to
-    // avoid memory leak.
-    completion->DidChooseFile(blink::WebVector<blink::WebString>());
-    return;
-  }
-  if (paths.size() > 0)
-    delegate_->PrintMessage("FileChooser: selected\n");
-  else
-    delegate_->PrintMessage("FileChooser: canceled\n");
-  blink::WebVector<blink::WebString> web_paths(paths.size());
-  for (size_t i = 0; i < paths.size(); ++i)
-    web_paths[i] = delegate_->GetAbsoluteWebStringFromUTF8Path(paths[i]);
-  delegate_->RegisterIsolatedFileSystem(web_paths);
-  completion->DidChooseFile(web_paths);
 }
 
 blink::WebEffectiveConnectionType

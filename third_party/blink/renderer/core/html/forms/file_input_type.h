@@ -97,7 +97,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void HandleKeyupEvent(KeyboardEvent&) override;
 
   // FileChooserClient implementation.
-  void FilesChosen(const FileChooserFileInfoList&) override;
+  void FilesChosen(FileChooserFileInfoList files) override;
   LocalFrame* FrameOrNull() const override;
 
   // PopupOpeningObserver implementation.

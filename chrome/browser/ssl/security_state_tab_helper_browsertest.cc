@@ -213,11 +213,9 @@ class FileChooserDelegate : public content::WebContentsDelegate {
  public:
   // Constructs a WebContentsDelegate that mocks a file dialog.
   // The mocked file dialog will always reply that the user selected |file|.
-  explicit FileChooserDelegate(const base::FilePath& file)
-      : file_(file), file_chosen_(false) {}
-
-  // Whether the file dialog was shown.
-  bool file_chosen() const { return file_chosen_; }
+  explicit FileChooserDelegate(const base::FilePath& file,
+                               base::OnceClosure callback)
+      : file_(file), callback_(std::move(callback)) {}
 
   // Copy of the params passed to RunFileChooser.
   const blink::mojom::FileChooserParams& params() const { return *params_; }
@@ -233,13 +231,13 @@ class FileChooserDelegate : public content::WebContentsDelegate {
     listener->FileSelected(std::move(files),
                            blink::mojom::FileChooserParams::Mode::kOpen);
 
-    file_chosen_ = true;
     params_ = params.Clone();
+    std::move(callback_).Run();
   }
 
  private:
   base::FilePath file_;
-  bool file_chosen_;
+  base::OnceClosure callback_;
   blink::mojom::FileChooserParamsPtr params_;
 
   DISALLOW_COPY_AND_ASSIGN(FileChooserDelegate);
@@ -1649,14 +1647,15 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
 
+  base::RunLoop run_loop;
   // Fill out the form to refer to the test file.
   SecurityStyleTestObserver observer(contents);
   std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path));
+      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
   contents->SetDelegate(delegate.get());
   EXPECT_TRUE(
       ExecuteScript(contents, "document.getElementById('fileinput').click();"));
-  EXPECT_TRUE(delegate->file_chosen());
+  run_loop.Run();
   observer.WaitForDidChangeVisibleSecurityState();
 
   // Verify that the security state degrades as expected.
@@ -2739,14 +2738,14 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
 
+  base::RunLoop run_loop;
   // Fill out the form to refer to the test file.
   std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path));
+      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
   contents->SetDelegate(delegate.get());
   EXPECT_TRUE(
       ExecuteScript(contents, "document.getElementById('fileinput').click();"));
-  EXPECT_TRUE(delegate->file_chosen());
-
+  run_loop.Run();
   observer.WaitForDidChangeVisibleSecurityState();
 
   // Verify that the security state degrades as expected.

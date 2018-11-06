@@ -111,7 +111,8 @@ class FileChooserDelegate : public WebContentsDelegate {
  public:
   // Constructs a WebContentsDelegate that mocks a file dialog.
   // The mocked file dialog will always reply that the user selected |file|.
-  explicit FileChooserDelegate(const base::FilePath& file);
+  // |callback| is invoked when RunFileChooser() is called.
+  FileChooserDelegate(const base::FilePath& file, base::OnceClosure callback);
   ~FileChooserDelegate() override;
 
   // Implementation of WebContentsDelegate::RunFileChooser.
@@ -119,15 +120,12 @@ class FileChooserDelegate : public WebContentsDelegate {
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
 
-  // Whether the file dialog was shown.
-  bool file_chosen() const { return file_chosen_; }
-
   // The params passed to RunFileChooser.
   const blink::mojom::FileChooserParams& params() const { return *params_; }
 
  private:
   base::FilePath file_;
-  bool file_chosen_;
+  base::OnceClosure callback_;
   blink::mojom::FileChooserParamsPtr params_;
 };
 

@@ -799,6 +799,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
   }
+  blink::mojom::FileChooserPtr BindFileChooserForTesting();
 
   // Called when the WebAudio AudioContext given by |audio_context_id| has
   // started (or stopped) playing audible audio.
@@ -904,7 +905,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              JavaScriptDialogType dialog_type,
                              IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
-  void OnRunFileChooser(const blink::mojom::FileChooserParams& params);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           uint32_t start_offset,
                                           uint32_t end_offset);

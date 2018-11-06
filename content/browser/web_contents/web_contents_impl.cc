@@ -300,46 +300,6 @@ bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
   return a->frame_tree_node()->depth() < b->frame_tree_node()->depth();
 }
 
-// TODO(tkent): This will be merged into FileChooserImpl in
-// render_frame_host_impl.cc.
-class ViewFileSelectListener : public FileSelectListener,
-                               private WebContentsObserver {
- public:
-  ViewFileSelectListener(WebContents* web_contents, int request_id)
-      : web_contents_(web_contents), request_id_(request_id) {
-    Observe(web_contents);
-  }
-  ~ViewFileSelectListener() override = default;
-
- private:
-  // content::FileSelectListener overrides:
-
-  void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
-                    blink::mojom::FileChooserParams::Mode mode) override {
-    if (!web_contents_)
-      return;
-    std::vector<base::FilePath> file_path_list;
-    for (const auto& file_info : files) {
-      file_path_list.push_back(file_info->get_native_file()->file_path);
-    }
-    web_contents_->GetRenderViewHost()->DirectoryEnumerationFinished(
-        request_id_, file_path_list);
-  }
-
-  void FileSelectionCanceled() override {
-    if (!web_contents_)
-      return;
-    web_contents_->GetRenderViewHost()->DirectoryEnumerationFinished(
-        request_id_, std::vector<base::FilePath>());
-  }
-
-  // content::WebContentsObserver override:
-  void WebContentsDestroyed() override { web_contents_ = nullptr; }
-
-  WebContents* web_contents_;
-  int request_id_;
-};
-
 }  // namespace
 
 std::unique_ptr<WebContents> WebContents::Create(
@@ -873,7 +833,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
@@ -4651,19 +4610,14 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
     observer.OnPageScaleFactorChanged(page_scale_factor);
 }
 
-void WebContentsImpl::OnEnumerateDirectory(RenderViewHostImpl* source,
-                                           int request_id,
-                                           const base::FilePath& path) {
-  if (!delegate_)
-    return;
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadFile(source->GetProcess()->GetID(), path))
-    return;
-  auto listener = std::make_unique<ViewFileSelectListener>(this, request_id);
-  // TODO(nick): |this| param in the call below ought to be a RenderFrameHost.
-  delegate_->EnumerateDirectory(this, std::move(listener), path);
+void WebContentsImpl::EnumerateDirectory(
+    RenderFrameHost* render_frame_host,
+    std::unique_ptr<FileSelectListener> listener,
+    const base::FilePath& directory_path) {
+  if (delegate_)
+    delegate_->EnumerateDirectory(this, std::move(listener), directory_path);
+  else
+    listener->FileSelectionCanceled();
 }
 
 void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,

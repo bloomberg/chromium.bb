@@ -256,10 +256,6 @@ class CORE_EXPORT ChromeClient
 
   virtual void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) = 0;
 
-  // Asychronous request to enumerate all files in a directory chosen by the
-  // user.
-  virtual void EnumerateChosenDirectory(FileChooser*) = 0;
-
   // Pass nullptr as the GraphicsLayer to detach the root layer.
   // This sets the graphics layer for the LocalFrame's WebWidget, if it has
   // one. Otherwise it sets it for the WebViewImpl.

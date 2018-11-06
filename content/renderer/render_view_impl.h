@@ -218,9 +218,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator) override;
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
-  bool EnumerateChosenDirectory(
-      const blink::WebString& path,
-      blink::WebFileChooserCompletion* chooser_completion) override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
@@ -436,8 +433,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnEnablePreferredSizeChangedMode();
-  void OnEnumerateDirectoryResponse(int id,
-                                    const std::vector<base::FilePath>& paths);
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();
@@ -628,10 +623,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 #endif
 
   // Misc ----------------------------------------------------------------------
-
-  // The current directory enumeration callback
-  std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;
-  int enumeration_completion_id_ = 0;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and

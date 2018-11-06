@@ -163,11 +163,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 
-// Provides the results of directory enumeration.
-IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
-                    int /* request_id */,
-                    std::vector<base::FilePath> /* files_in_directory */)
-
 // Instructs the renderer to close the current page, including running the
 // onunload event handler.
 //
@@ -287,14 +282,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
                     GURL /* document_url */,
                     base::FilePath /* plugin_path */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-// Asks the browser to enumerate a directory.  This is equivalent to running
-// the file chooser in directory-enumeration mode and having the user select
-// the given directory.  The result is returned in a
-// ViewMsg_EnumerateDirectoryResponse message.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
-                    int /* request_id */,
-                    base::FilePath /* file_path */)
 
 // When the renderer needs the browser to transfer focus cross-process on its
 // behalf in the focus hierarchy. This may focus an element in the browser ui or

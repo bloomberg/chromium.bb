@@ -41,6 +41,13 @@ void RenderFrameHostDelegate::RunFileChooser(
   listener->FileSelectionCanceled();
 }
 
+void RenderFrameHostDelegate::EnumerateDirectory(
+    RenderFrameHost* render_frame_host,
+    std::unique_ptr<FileSelectListener> listener,
+    const base::FilePath& path) {
+  listener->FileSelectionCanceled();
+}
+
 WebContents* RenderFrameHostDelegate::GetAsWebContents() {
   return nullptr;
 }

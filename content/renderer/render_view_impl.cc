@@ -138,8 +138,6 @@
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_file_chooser_completion.h"
-#include "third_party/blink/public/web/web_file_chooser_params.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -203,7 +201,6 @@ using blink::WebData;
 using blink::WebDocument;
 using blink::WebDragOperation;
 using blink::WebElement;
-using blink::WebFileChooserCompletion;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
@@ -1285,8 +1282,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
-                        OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
@@ -1530,15 +1525,6 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
 
   RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
       GetWidget()->input_handler().handling_input_event());
-}
-
-bool RenderViewImpl::EnumerateChosenDirectory(
-    const WebString& path,
-    WebFileChooserCompletion* chooser_completion) {
-  int id = enumeration_completion_id_++;
-  enumeration_completions_[id] = chooser_completion;
-  return Send(new ViewHostMsg_EnumerateDirectory(
-      GetRoutingID(), id, blink::WebStringToFilePath(path)));
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
@@ -1887,20 +1873,6 @@ void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, webview());
-}
-
-void RenderViewImpl::OnEnumerateDirectoryResponse(
-    int id,
-    const std::vector<base::FilePath>& paths) {
-  if (!enumeration_completions_[id])
-    return;
-
-  WebVector<WebString> ws_file_names(paths.size());
-  for (size_t i = 0; i < paths.size(); ++i)
-    ws_file_names[i] = blink::FilePathToWebString(paths[i]);
-
-  enumeration_completions_[id]->DidChooseFile(ws_file_names);
-  enumeration_completions_.erase(id);
 }
 
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {

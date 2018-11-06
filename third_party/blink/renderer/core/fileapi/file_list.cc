@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 
+#include "third_party/blink/public/platform/file_path_conversion.h"
+
 namespace blink {
 
 FileList::FileList() = default;
@@ -35,14 +37,14 @@ File* FileList::item(unsigned index) const {
   return files_[index].Get();
 }
 
-Vector<String> FileList::PathsForUserVisibleFiles() const {
-  Vector<String> paths;
+Vector<base::FilePath> FileList::PathsForUserVisibleFiles() const {
+  Vector<base::FilePath> paths;
   for (unsigned i = 0; i < files_.size(); ++i) {
     if (files_[i]->GetUserVisibility() == File::kIsUserVisible) {
       if (files_[i]->HasBackingFile())
-        paths.push_back(files_[i]->GetPath());
+        paths.push_back(StringToFilePath(files_[i]->GetPath()));
       else
-        paths.push_back(files_[i]->name());
+        paths.push_back(StringToFilePath(files_[i]->name()));
     }
   }
 

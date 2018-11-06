@@ -134,9 +134,6 @@ class TestRunner : public WebTestRunner {
     return is_web_platform_tests_mode_;
   }
   void set_is_web_platform_tests_mode() { is_web_platform_tests_mode_ = true; }
-  const base::Optional<std::vector<std::string>>& file_chooser_paths() const {
-    return file_chooser_paths_;
-  }
   bool animation_requires_raster() const { return animation_requires_raster_; }
   void SetAnimationRequiresRaster(bool do_raster);
 
@@ -508,10 +505,6 @@ class TestRunner : public WebTestRunner {
   // flags.
   void OnLayoutTestRuntimeFlagsChanged();
 
-  // Sets a list of file paths to be selected in the next file chooser session.
-  // If an empty list is specified, the next file chooser will be canceled.
-  void SetFileChooserPaths(const std::vector<std::string>& paths);
-
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
@@ -607,8 +600,6 @@ class TestRunner : public WebTestRunner {
 
   // Forces v8 compilation cache to be disabled (used for inspector tests).
   bool disable_v8_cache_ = false;
-
-  base::Optional<std::vector<std::string>> file_chooser_paths_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

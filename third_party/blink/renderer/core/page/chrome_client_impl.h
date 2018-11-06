@@ -130,7 +130,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
-  void EnumerateChosenDirectory(FileChooser*) override;
   void SetCursor(const Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
   Cursor LastSetCursorForTesting() const override;

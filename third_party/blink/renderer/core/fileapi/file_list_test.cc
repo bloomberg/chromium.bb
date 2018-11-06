@@ -53,12 +53,12 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
                                                     File::kIsNotUserVisible));
   }
 
-  Vector<String> paths = file_list->PathsForUserVisibleFiles();
+  Vector<base::FilePath> paths = file_list->PathsForUserVisibleFiles();
 
   ASSERT_EQ(3u, paths.size());
-  EXPECT_EQ("/native/path", paths[0]);
-  EXPECT_EQ("/native/visible/snapshot", paths[1]);
-  EXPECT_EQ("visible-non-native-file", paths[2])
+  EXPECT_EQ(FILE_PATH_LITERAL("/native/path"), paths[0].value());
+  EXPECT_EQ(FILE_PATH_LITERAL("/native/visible/snapshot"), paths[1].value());
+  EXPECT_EQ(FILE_PATH_LITERAL("visible-non-native-file"), paths[2].value())
       << "Files not backed by a native file should return name.";
 }
 

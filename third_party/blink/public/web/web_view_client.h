@@ -43,7 +43,6 @@
 namespace blink {
 
 class WebDateTimeChooserCompletion;
-class WebFileChooserCompletion;
 class WebNode;
 class WebURL;
 class WebURLRequest;
@@ -94,15 +93,6 @@ class WebViewClient {
   // children, to print.  Otherwise, the main frame and its children
   // should be printed.
   virtual void PrintPage(WebLocalFrame*) {}
-
-  // This method enumerates all the files in the path. It returns immediately
-  // and asynchronously invokes the WebFileChooserCompletion with all the
-  // files in the directory. Returns false if the WebFileChooserCompletion
-  // will never be called.
-  virtual bool EnumerateChosenDirectory(const WebString& path,
-                                        WebFileChooserCompletion*) {
-    return false;
-  }
 
   // Called when PageImportanceSignals for the WebView is updated.
   virtual void PageImportanceSignalsChanged() {}

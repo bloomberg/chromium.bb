@@ -130,8 +130,6 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FileChooserParams::Mode,
-                          blink::mojom::FileChooserParams::Mode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
                           content::CSPDirective::NameLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
@@ -719,16 +717,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::mojom::FileChooserParams)
-  IPC_STRUCT_TRAITS_MEMBER(mode)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(default_file_name)
-  IPC_STRUCT_TRAITS_MEMBER(accept_types)
-  IPC_STRUCT_TRAITS_MEMBER(need_local_path)
-  IPC_STRUCT_TRAITS_MEMBER(use_media_capture)
-  IPC_STRUCT_TRAITS_MEMBER(requestor)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(GURL, main_resource_url)
   IPC_STRUCT_MEMBER(GURL, mixed_content_url)
@@ -1120,9 +1108,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateUserActivationState,
 // a user gesture on the same eTLD+1.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                     bool /* value */)
-
-IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
-                    std::vector<blink::mojom::FileChooserFileInfoPtr>)
 
 // Updates the renderer with a list of unique blink::UseCounter::Feature values
 // representing Blink features used, performed or encountered by the browser
@@ -1686,11 +1671,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 // Request that the host send its overlay routing token for this render frame
 // via SetOverlayRoutingToken.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
-
-// Asks the browser to display the file chooser.  The result is returned in a
-// FrameMsg_RunFileChooserResponse message.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser,
-                    blink::mojom::FileChooserParams)
 
 // Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,

@@ -131,10 +131,6 @@ struct WebNavigationParams;
 struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
-
-namespace mojom {
-class FileChooserParams;
-}
 }  // namespace blink
 
 namespace gfx {
@@ -702,9 +698,6 @@ class CONTENT_EXPORT RenderFrameImpl
                             const blink::WebString& default_value,
                             blink::WebString* actual_value) override;
   bool RunModalBeforeUnloadDialog(bool is_reload) override;
-  bool RunFileChooser(
-      const blink::WebFileChooserParams& params,
-      blink::WebFileChooserCompletion* chooser_completion) override;
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
   void SaveImageFromDataURL(const blink::WebString& data_url) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
@@ -824,12 +817,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // process; for layout tests, this allows the test to mock out services at
   // the Mojo IPC layer.
   void MaybeEnableMojoBindings();
-
-  // Another RunFileChooser() for content::FileChooserParams.
-  // Returns true if the chooser was successfully requested. False means we
-  // didn't request anything.
-  bool RunFileChooser(const blink::mojom::FileChooserParams& params,
-                      blink::WebFileChooserCompletion* completion);
 
   // Internal version of DidFailProvisionalLoad() that allows specifying
   // |error_page_content|.
@@ -1071,8 +1058,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
-  void OnFileChooserResponse(
-      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files);
   void OnClearFocusedElement();
   void OnBlinkFeatureUsageReport(const std::set<int>& features);
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
@@ -1520,9 +1505,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
   // stack that interferes with swapping out.
   bool suppress_further_dialogs_;
-
-  // The current file chooser completion object.
-  blink::WebFileChooserCompletion* file_chooser_completion_ = nullptr;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.
