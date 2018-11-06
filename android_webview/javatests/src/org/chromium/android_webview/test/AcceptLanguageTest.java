@@ -77,8 +77,32 @@ public class AcceptLanguageTest {
         return COMMA_AND_OPTIONAL_Q_VALUE.split(mActivityTestRule.maybeStripDoubleQuotes(raw));
     }
 
-    private boolean isEnUsLocale() {
-        return "en-US".equals(Locale.getDefault().toLanguageTag());
+    @SuppressLint("NewApi")
+    private boolean isSingleLocale(String lang, String country) {
+        String languageTag = String.format("%s-%s", lang, country);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // In N+, multiple locales can be set.
+            return languageTag.equals(LocaleList.getDefault().toLanguageTags());
+        } else {
+            return languageTag.equals(Locale.getDefault().toLanguageTag());
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private void setSingleLocale(String lang, String country) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            LocaleList.setDefault(new LocaleList(new Locale(lang, country)));
+        } else {
+            Locale.setDefault(new Locale(lang, country));
+        }
+    }
+
+    private void setLocaleForTesting(String lang, String country) {
+        if (!isSingleLocale(lang, country)) {
+            setSingleLocale(lang, country);
+            AwContents.updateDefaultLocale();
+            mAwContents.getSettings().updateAcceptLanguages();
+        }
     }
 
     /**
@@ -88,13 +112,7 @@ public class AcceptLanguageTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testAcceptLanguage() throws Throwable {
-        // Make sure that the current locale is en-US.
-        if (!isEnUsLocale()) {
-            Locale.setDefault(new Locale("en", "US"));
-            AwContents.updateDefaultLocale();
-            mAwContents.getSettings().updateAcceptLanguages();
-        }
-        Assert.assertTrue(isEnUsLocale());
+        setLocaleForTesting("en", "US");
 
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
 
@@ -117,15 +135,14 @@ public class AcceptLanguageTest {
         Assert.assertArrayEquals(new String[] {"en-US"}, acceptLanguagesJs);
 
         // Test locale change at run time
-        Locale.setDefault(new Locale("de", "DE"));
-        AwContents.updateDefaultLocale();
-        mAwContents.getSettings().updateAcceptLanguages();
+        setLocaleForTesting("de", "DE");
 
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
         acceptLanguages = getAcceptLanguages(
                 mActivityTestRule.getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
-        // Note that we extend the base language from language-region pair.
+        // Note that we extend the base language from language-region pair, and we put en-US and en
+        // at the end.
         Assert.assertArrayEquals(new String[] {"de-DE", "de", "en-US", "en"}, acceptLanguages);
     }
 
