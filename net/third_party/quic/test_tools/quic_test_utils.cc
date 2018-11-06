@@ -1085,12 +1085,12 @@ QuicStreamId NextStreamId(QuicTransportVersion version) {
 
 QuicStreamId GetNthClientInitiatedStreamId(QuicTransportVersion version,
                                            int n) {
-  return 5 + NextStreamId(version) * n;
+  return (version == QUIC_VERSION_99 ? 4 : 5) + NextStreamId(version) * n;
 }
 
 QuicStreamId GetNthServerInitiatedStreamId(QuicTransportVersion version,
                                            int n) {
-  return 2 + NextStreamId(version) * n;
+  return (version == QUIC_VERSION_99 ? 1 : 2) + NextStreamId(version) * n;
 }
 
 }  // namespace test

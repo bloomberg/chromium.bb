@@ -72,14 +72,18 @@ QuicStreamId QuicSpdySessionPeer::NextStreamId(const QuicSpdySession& session) {
 QuicStreamId QuicSpdySessionPeer::GetNthClientInitiatedStreamId(
     const QuicSpdySession& session,
     int n) {
-  return 5 + QuicSpdySessionPeer::NextStreamId(session) * n;
+  return (session.connection()->transport_version() == QUIC_VERSION_99 ? 4
+                                                                       : 5) +
+         QuicSpdySessionPeer::NextStreamId(session) * n;
 }
 
 //  static
 QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
     const QuicSpdySession& session,
     int n) {
-  return 2 + QuicSpdySessionPeer::NextStreamId(session) * n;
+  return (session.connection()->transport_version() == QUIC_VERSION_99 ? 1
+                                                                       : 2) +
+         QuicSpdySessionPeer::NextStreamId(session) * n;
 }
 
 }  // namespace test

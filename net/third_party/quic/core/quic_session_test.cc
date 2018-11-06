@@ -315,7 +315,10 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
            2 * n;
   }
 
-  QuicStreamId GetNthServerInitiatedId(int n) { return 2 + 2 * n; }
+  QuicStreamId GetNthServerInitiatedId(int n) {
+    return (connection_->transport_version() == QUIC_VERSION_99 ? 1 : 2) +
+           2 * n;
+  }
 
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;

@@ -42,6 +42,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -1252,7 +1253,8 @@ bool QuicChromiumClientSession::ShouldCreateIncomingStream(
   if (going_away_) {
     return false;
   }
-  if (id % 2 != 0) {
+  if (quic::QuicUtils::IsClientInitiatedStreamId(
+          connection()->transport_version(), id)) {
     LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
         quic::QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
@@ -1310,8 +1312,8 @@ void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
   if (stream) {
     logger_->UpdateReceivedFrameCounts(stream_id, stream->num_frames_received(),
                                        stream->num_duplicate_frames_received());
-    if (stream_id % 2 == 0) {
-      // Stream with even stream is initiated by server for PUSH.
+    if (quic::QuicUtils::IsServerInitiatedStreamId(
+            connection()->transport_version(), stream_id)) {
       bytes_pushed_count_ += stream->stream_bytes_read();
     }
   }
@@ -1325,7 +1327,8 @@ void QuicChromiumClientSession::SendRstStream(
     quic::QuicStreamOffset bytes_written) {
   quic::QuicStream* stream = GetOrCreateStream(id);
   if (stream) {
-    if (id % 2 == 0) {
+    if (quic::QuicUtils::IsServerInitiatedStreamId(
+            connection()->transport_version(), id)) {
       // Stream with even stream is initiated by server for PUSH.
       bytes_pushed_count_ += stream->stream_bytes_read();
     }

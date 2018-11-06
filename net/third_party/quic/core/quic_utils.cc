@@ -323,29 +323,35 @@ bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
 
 // static
 QuicStreamId QuicUtils::GetInvalidStreamId(QuicTransportVersion version) {
-  return 0;
+  return version == QUIC_VERSION_99 ? -1 : 0;
 }
 
 // static
 QuicStreamId QuicUtils::GetCryptoStreamId(QuicTransportVersion version) {
-  return 1;
+  return version == QUIC_VERSION_99 ? 0 : 1;
 }
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  return 3;
+  return version == QUIC_VERSION_99 ? 2 : 3;
 }
 
 // static
 bool QuicUtils::IsClientInitiatedStreamId(QuicTransportVersion version,
                                           QuicStreamId id) {
-  return id != GetInvalidStreamId(version) && id % 2 != 0;
+  if (id == GetInvalidStreamId(version)) {
+    return false;
+  }
+  return version == QUIC_VERSION_99 ? id % 2 == 0 : id % 2 != 0;
 }
 
 // static
 bool QuicUtils::IsServerInitiatedStreamId(QuicTransportVersion version,
                                           QuicStreamId id) {
-  return id != GetInvalidStreamId(version) && id % 2 == 0;
+  if (id == GetInvalidStreamId(version)) {
+    return false;
+  }
+  return version == QUIC_VERSION_99 ? id % 2 != 0 : id % 2 == 0;
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

@@ -280,6 +280,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     // Version 99 is default disabled, but should be exercised in EndToEnd tests
     FLAGS_quic_enable_version_99 = true;
     FLAGS_quic_supports_tls_handshake = true;
+    SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, true);
+    SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, true);
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;

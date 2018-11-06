@@ -54,7 +54,9 @@ QuicSession::QuicSession(QuicConnection* connection,
       config_(config),
       max_open_outgoing_streams_(kDefaultMaxStreamsPerConnection),
       max_open_incoming_streams_(config_.GetMaxIncomingDynamicStreamsToSend()),
-      next_outgoing_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 3),
+      next_outgoing_stream_id_(
+          QuicUtils::GetCryptoStreamId(connection_->transport_version()) +
+          (perspective() == Perspective::IS_SERVER ? 1 : 2)),
       largest_peer_created_stream_id_(
           perspective() == Perspective::IS_SERVER
               ? QuicUtils::GetCryptoStreamId(connection_->transport_version())

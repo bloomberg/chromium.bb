@@ -452,13 +452,12 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
     TestQuicSpdyServerSession* server_session = nullptr;
     CreateServerSessionForTest(
         server_id_, QuicTime::Delta::FromSeconds(100000),
-        ParsedVersionOfIndex(CurrentSupportedVersions(), 0), &helper_,
+        ParsedVersionOfIndex(AllSupportedVersions(), 0), &helper_,
         &alarm_factory_, &server_crypto_config_,
         &server_compressed_certs_cache_, &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
-    server_session_->OnSuccessfulVersionNegotiation(
-        CurrentSupportedVersions()[0]);
+    server_session_->OnSuccessfulVersionNegotiation(AllSupportedVersions()[0]);
     crypto_test_utils::FakeServerOptions options;
     crypto_test_utils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),
