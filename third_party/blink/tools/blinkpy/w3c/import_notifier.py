@@ -16,6 +16,7 @@ from collections import defaultdict
 import logging
 import re
 
+from blinkpy.common.net.luci_auth import LuciAuth
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.w3c.common import WPT_GH_URL
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
@@ -35,6 +36,7 @@ class ImportNotifier(object):
         self.git = chromium_git
         self.local_wpt = local_wpt
 
+        self._monorail_api = MonorailAPI
         self.default_port = host.port_factory.get()
         self.finder = PathFinder(host.filesystem)
         self.owners_extractor = DirectoryOwnersExtractor(host.filesystem)
@@ -56,9 +58,8 @@ class ImportNotifier(object):
             patchset: The patchset number of the import CL (a string).
             dry_run: If True, no bugs will be actually filed to crbug.com.
             service_account_key_json: The path to a JSON private key of a
-                service account for accessing Monorail. If None, try to load
-                from the default location, i.e. the path stored in the
-                environment variable GOOGLE_APPLICATION_CREDENTIALS.
+                service account for accessing Monorail. If None, try to get an
+                access token from luci-auth.
 
         Note: "test names" are paths of the tests relative to LayoutTests.
         """
@@ -265,7 +266,10 @@ class ImportNotifier(object):
             _log.info('[%d] Filed bug: %s', index, MonorailIssue.crbug_link(response['id']))
 
     def _get_monorail_api(self, service_account_key_json):
-        return MonorailAPI(service_account_key_json=service_account_key_json)
+        if service_account_key_json:
+            return self._monorail_api(service_account_key_json=service_account_key_json)
+        token = LuciAuth(self.host).get_access_token()
+        return self._monorail_api(access_token=token)
 
 
 class TestFailure(object):
