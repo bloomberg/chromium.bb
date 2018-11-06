@@ -230,6 +230,10 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
             ? render_thread->compositor_task_runner()
             : render_frame_->GetTaskRunner(
                   blink::TaskType::kInternalMediaRealTime);
+
+    // TODO(https://crbug/901513): Remove once kOnDemand is removed.
+    render_thread->SetVideoFrameCompositorTaskRunner(
+        *video_frame_compositor_task_runner);
   }
 
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;

@@ -504,6 +504,14 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner>
   CreateVideoFrameCompositorTaskRunner();
 
+  // In the case of kOnDemand, we wont be using the task_runner created in
+  // CreateVideoFrameCompositorTaskRunner.
+  // TODO(https://crbug/901513): Remove once kOnDemand is removed.
+  void SetVideoFrameCompositorTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    video_frame_compositor_task_runner_ = task_runner;
+  }
+
  private:
   void OnProcessFinalRelease() override;
   // IPC::Listener
