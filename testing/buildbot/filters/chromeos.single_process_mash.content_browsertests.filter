@@ -13,9 +13,3 @@
 -CaptureScreenshotTest.SetDefaultBackgroundColorOverride
 -CaptureScreenshotTest.TransparentScreenshots
 -CompositedScrollingBrowserTest.Scroll3DTransformedScroller
-
-
-# InputEventAckWaiter::Wait() times out,
-# or RenderWidgetHostMouseEventMonitor::EventWasReceived fails.
-# https://crbug.com/884360
--SitePerProcessHitTestBrowserTest.CrossProcessTooltipTest*
