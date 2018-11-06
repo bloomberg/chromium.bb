@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
+
 namespace blink {
 
 MutationEvent::MutationEvent() : attr_change_(0) {}

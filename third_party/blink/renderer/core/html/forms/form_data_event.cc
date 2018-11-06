@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/form_data_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 
 namespace blink {
