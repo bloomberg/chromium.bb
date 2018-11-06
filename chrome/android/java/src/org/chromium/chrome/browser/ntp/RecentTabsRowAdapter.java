@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
-import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -430,7 +429,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                         R.layout.personalized_signin_promo_view_recent_tabs, parent, false);
             }
             mRecentTabsManager.setupPersonalizedSigninPromo(
-                    (PersonalizedSigninPromoView) convertView);
+                    convertView.findViewById(R.id.signin_promo_view_container));
             return convertView;
         }
     }
