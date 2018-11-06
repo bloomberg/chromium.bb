@@ -227,7 +227,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierDisplayResolutionChange),
           data,
           base::MakeRefCounted<message_center::ThunkNotificationDelegate>(

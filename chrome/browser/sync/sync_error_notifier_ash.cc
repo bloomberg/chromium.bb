@@ -104,7 +104,8 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
          sync_ui_util::ShouldShowPassphraseError(sync_service_));
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kProfileSyncNotificationId);
+      message_center::NotifierType::SYSTEM_COMPONENT,
+      kProfileSyncNotificationId);
 
   // Set |profile_id| for multi-user notification blocker.
   notifier_id.profile_id =

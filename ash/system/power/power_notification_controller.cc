@@ -139,7 +139,7 @@ bool PowerNotificationController::MaybeShowUsbChargerNotification() {
                 IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
             base::string16(), GURL(),
             message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT, kNotifierPower),
+                message_center::NotifierType::SYSTEM_COMPONENT, kNotifierPower),
             message_center::RichNotificationData(),
             new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
             message_center::SystemNotificationWarningLevel::WARNING);

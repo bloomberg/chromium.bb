@@ -156,7 +156,8 @@ void EolNotification::Update() {
           GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
           GURL(kEolNotificationId),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kEolNotificationId),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kEolNotificationId),
           data, new EolNotificationDelegate(profile_),
           ash::kNotificationEndOfSupportIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);

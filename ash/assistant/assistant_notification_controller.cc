@@ -98,7 +98,7 @@ std::string GetNotificationId(const std::string& grouping_key) {
 
 message_center::NotifierId GetNotifierId() {
   return message_center::NotifierId(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierAssistant);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierAssistant);
 }
 
 }  // namespace

@@ -279,7 +279,8 @@ void BluetoothNotificationController::NotifyAdapterDiscoverable() {
                                      base::UTF8ToUTF16(adapter_->GetAddress())),
           base::string16() /* display source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierBluetooth),
           optional, nullptr, kNotificationBluetoothIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   MessageCenter::Get()->AddNotification(std::move(notification));
@@ -303,7 +304,8 @@ void BluetoothNotificationController::NotifyPairing(
           kBluetoothDevicePairingNotificationId, base::string16() /* title */,
           message, base::string16() /* display source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierBluetooth),
           optional,
           new BluetoothPairingNotificationDelegate(adapter_,
                                                    device->GetAddress()),
@@ -330,7 +332,8 @@ void BluetoothNotificationController::NotifyPairedDevice(
                                      device->GetNameForDisplay()),
           base::string16() /* display source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierBluetooth),
           optional, nullptr, kNotificationBluetoothIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   MessageCenter::Get()->AddNotification(std::move(notification));

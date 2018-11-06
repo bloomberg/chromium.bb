@@ -695,7 +695,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           l10n_util::GetStringUTF16(IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierScreenshot),
           optional_field,
           new ScreenshotGrabberNotificationDelegate(success, GetProfile(),

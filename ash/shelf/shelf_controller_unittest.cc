@@ -42,7 +42,7 @@ void BuildAndSendNotification(message_center::MessageCenter* message_center,
                               const std::string& app_id,
                               const std::string& notification_id) {
   const message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, app_id);
+      message_center::NotifierType::APPLICATION, app_id);
   std::unique_ptr<message_center::Notification> notification =
       std::make_unique<message_center::Notification>(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,

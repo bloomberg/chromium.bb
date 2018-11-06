@@ -98,7 +98,7 @@ std::unique_ptr<Notification> CreateNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
           base::string16(), message, base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBattery),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierBattery),
           message_center::RichNotificationData(), nullptr,
           GetBatteryImageMD(notification_state),
           GetWarningLevelMD(notification_state));

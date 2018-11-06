@@ -253,9 +253,8 @@ MultiDeviceNotificationPresenter::CreateNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId, title, message, base::string16() /* display_source */,
       GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierMultiDevice),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierMultiDevice),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &MultiDeviceNotificationPresenter::OnNotificationClicked,

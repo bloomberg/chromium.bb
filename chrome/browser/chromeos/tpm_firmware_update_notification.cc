@@ -76,7 +76,7 @@ void OnAvailableUpdateModes(Profile* profile,
               ui::GetChromeOSDeviceName()),
           base::string16(), GURL(kTPMFirmwareUpdateNotificationId),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kTPMFirmwareUpdateNotificationId),
           message_center::RichNotificationData(),
           base::MakeRefCounted<TPMFirmwareUpdateNotificationDelegate>(profile),

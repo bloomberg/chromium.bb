@@ -232,7 +232,7 @@ void WebUsbDetector::OnDeviceAdded(
       gfx::Image(gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64,
                                        gfx::kChromeIconGrey)),
       base::string16(), GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierWebUsb),
       rich_notification_data,
       base::MakeRefCounted<WebUsbNotificationDelegate>(landing_page,

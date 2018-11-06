@@ -286,7 +286,7 @@ void PrivetNotificationService::AddNotification(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
       product_name, GURL(kPrivetNotificationOriginUrl),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kPrivetNotificationID),
       rich_notification_data, CreateNotificationDelegate(profile));
 

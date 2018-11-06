@@ -289,8 +289,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
             base::ASCIIToUTF16("Test Shell Web Notification"),
             base::ASCIIToUTF16("Notification message body."), gfx::Image(),
             base::ASCIIToUTF16("www.testshell.org"), GURL(),
-            message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                       "test-id"),
+            message_center::NotifierId(
+                message_center::NotifierType::APPLICATION, "test-id"),
             message_center::RichNotificationData(), nullptr /* delegate */);
 
     message_center::MessageCenter::Get()->AddNotification(

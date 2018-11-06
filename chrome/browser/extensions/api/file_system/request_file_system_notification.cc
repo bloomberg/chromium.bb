@@ -108,7 +108,7 @@ void ShowNotificationForAutoGrantedRequestFileSystem(
       gfx::Image(),      // Updated asynchronously later.
       base::string16(),  // display_source
       GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  notification_id),
       data, base::MakeRefCounted<message_center::NotificationDelegate>()));
 

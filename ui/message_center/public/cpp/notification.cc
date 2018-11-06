@@ -166,7 +166,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
       base::string16() /* display_source */, GURL(),
-      NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
+      NotifierId(NotifierType::SYSTEM_COMPONENT, system_component_id),
       RichNotificationData(),
       new HandleNotificationClickDelegate(click_callback), gfx::kNoneIcon,
       SystemNotificationWarningLevel::CRITICAL_WARNING);
@@ -187,7 +187,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     scoped_refptr<NotificationDelegate> delegate,
     const gfx::VectorIcon& small_image,
     SystemNotificationWarningLevel color_type) {
-  DCHECK_EQ(NotifierId::SYSTEM_COMPONENT, notifier_id.type);
+  DCHECK_EQ(NotifierType::SYSTEM_COMPONENT, notifier_id.type);
   SkColor color = kSystemNotificationColorNormal;
   switch (color_type) {
     case SystemNotificationWarningLevel::NORMAL:

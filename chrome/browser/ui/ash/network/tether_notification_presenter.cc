@@ -214,9 +214,8 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_MESSAGE),
       base::string16() /* display_source */, GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierTether),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierTether),
       {} /* rich_notification_data */,
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &TetherNotificationPresenter::OnNotificationClicked,
@@ -296,9 +295,8 @@ TetherNotificationPresenter::CreateNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id, title,
       message, gfx::Image() /* image */, base::string16() /* display_source */,
       GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierTether),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierTether),
       rich_notification_data,
       new TetherNotificationDelegate(
           base::BindRepeating(

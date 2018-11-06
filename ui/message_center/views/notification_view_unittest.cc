@@ -217,8 +217,7 @@ void NotificationViewTest::SetUp() {
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
       CreateTestImage(80, 80), base::UTF8ToUTF16("display source"), GURL(),
-      NotifierId(NotifierId::APPLICATION, "extension_id"), *data_,
-      NULL));
+      NotifierId(NotifierType::APPLICATION, "extension_id"), *data_, NULL));
   notification_->set_small_image(CreateTestImage(16, 16));
   notification_->set_image(CreateTestImage(320, 240));
 
@@ -290,7 +289,7 @@ TEST_F(NotificationViewTest, CreateOrUpdateTestSettingsButton) {
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
       CreateTestImage(80, 80), base::UTF8ToUTF16("display source"),
       GURL("https://hello.com"),
-      NotifierId(NotifierId::APPLICATION, "extension_id"), *data(), nullptr);
+      NotifierId(NotifierType::APPLICATION, "extension_id"), *data(), nullptr);
 
   notification_view()->UpdateWithNotification(notification);
   EXPECT_TRUE(NULL != notification_view()->title_view_);
@@ -498,7 +497,7 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
       CreateTestImage(80, 80), base::UTF8ToUTF16("display source"),
       GURL("https://hello.com"),
-      NotifierId(NotifierId::APPLICATION, "extension_id"), *data(), nullptr);
+      NotifierId(NotifierType::APPLICATION, "extension_id"), *data(), nullptr);
   notification_view()->UpdateWithNotification(notf);
   widget()->Show();
 

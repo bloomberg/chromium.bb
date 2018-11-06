@@ -552,7 +552,7 @@ TEST_F(NotificationPermissionContextTest, ExtensionPermissionOverrideDenied) {
 
   // Disable the |extension|'s notification ability through the state tracker.
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, extension->id());
+      message_center::NotifierType::APPLICATION, extension->id());
   notifier_state_tracker->SetNotifierEnabled(notifier_id, /* enabled= */ false);
 
   ASSERT_EQ(CONTENT_SETTING_BLOCK,

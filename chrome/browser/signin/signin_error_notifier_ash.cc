@@ -87,7 +87,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL)));
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
 
   // Set |profile_id| for multi-user notification blocker.

@@ -54,7 +54,7 @@ void UpdateNotificationController::OnUpdateAvailable() {
           GetNotificationTitle(), GetNotificationMessage(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
           message_center::RichNotificationData(),
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
               base::BindRepeating(

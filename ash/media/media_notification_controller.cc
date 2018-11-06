@@ -70,7 +70,7 @@ void MediaNotificationController::OnFocusGained(
           kMediaSessionNotificationId, base::string16(), base::string16(),
           base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kMediaSessionNotifierId),
           message_center::RichNotificationData(),
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(

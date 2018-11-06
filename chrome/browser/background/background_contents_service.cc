@@ -160,7 +160,7 @@ void NotificationImageReady(const std::string extension_name,
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(), message,
       notification_icon, base::string16(), GURL("chrome://extension-crash"),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierId),
       {}, delegate);
 

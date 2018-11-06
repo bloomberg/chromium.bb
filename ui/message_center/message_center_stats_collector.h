@@ -63,7 +63,7 @@ class MessageCenterStatsCollector : public MessageCenterObserver {
   };
 
   // Sends notifier type to UMA. Called when a notification is added.
-  void RecordNotifierType(NotifierId::NotifierType type);
+  void RecordNotifierType(NotifierType type);
 
   // MessageCenterObserver
   void OnNotificationAdded(const std::string& notification_id) override;

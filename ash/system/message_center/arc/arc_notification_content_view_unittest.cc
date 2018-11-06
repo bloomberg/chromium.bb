@@ -215,8 +215,8 @@ class ArcNotificationContentViewTest : public AshTestBase {
         notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
         GURL(),
-        message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
-                                   "ARC_NOTIFICATION"),
+        message_center::NotifierId(
+            message_center::NotifierType::ARC_APPLICATION, "ARC_NOTIFICATION"),
         optional_fields,
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));
     notification.set_custom_view_type(kArcNotificationCustomViewType);
@@ -314,7 +314,7 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
       notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
       base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
       GURL(),
-      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+      message_center::NotifierId(message_center::NotifierType::ARC_APPLICATION,
                                  "ARC_NOTIFICATION"),
       message_center::RichNotificationData(), nullptr);
   MessageCenter::Get()->AddNotification(std::move(mc_notification));

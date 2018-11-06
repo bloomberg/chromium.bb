@@ -95,7 +95,7 @@ void CastNotificationController::ShowNotification(
             GetNotificationTitle(sink, route), GetNotificationMessage(route),
             base::string16() /* display_source */, GURL(),
             message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
+                message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
             data,
             base::MakeRefCounted<
                 message_center::HandleNotificationClickDelegate>(

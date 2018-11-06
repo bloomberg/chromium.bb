@@ -22,7 +22,7 @@ base::TimeDelta GetTimeoutForNotification(Notification* notification) {
 #else
   const bool use_high_priority_delay =
       notification->priority() > DEFAULT_PRIORITY ||
-      notification->notifier_id().type == NotifierId::WEB_PAGE;
+      notification->notifier_id().type == NotifierType::WEB_PAGE;
 #endif
 
   if (use_high_priority_delay)

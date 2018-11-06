@@ -197,7 +197,7 @@ void HatsNotificationController::OnPortalDetectionCompleted(
           l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierHats),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierHats),
           message_center::RichNotificationData(), this,
           ash::kNotificationGoogleIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

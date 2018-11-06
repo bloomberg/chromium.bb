@@ -82,7 +82,7 @@ void ShowErrorNotification(const std::string& service_path,
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierNetworkError),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(callback),
@@ -293,7 +293,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
                                      base::UTF8ToUTF16((cellular->name()))),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierNetwork),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierNetwork),
           {},
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
@@ -339,7 +339,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
                                      base::UTF8ToUTF16((cellular->name()))),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierNetworkError),
           {},
           new message_center::HandleNotificationClickDelegate(

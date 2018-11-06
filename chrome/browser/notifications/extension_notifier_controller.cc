@@ -50,7 +50,7 @@ ExtensionNotifierController::GetNotifierList(Profile* profile) {
       continue;
 
     message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION, extension->id());
+        message_center::NotifierType::APPLICATION, extension->id());
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
     ui_data.push_back(ash::mojom::NotifierUiData::New(
@@ -76,6 +76,6 @@ void ExtensionNotifierController::OnAppImageUpdated(
     const std::string& id,
     const gfx::ImageSkia& image) {
   observer_->OnIconImageUpdated(
-      message_center::NotifierId(message_center::NotifierId::APPLICATION, id),
+      message_center::NotifierId(message_center::NotifierType::APPLICATION, id),
       image);
 }

@@ -39,7 +39,8 @@ std::unique_ptr<Notification> CreateNotification() {
           l10n_util::GetStringUTF16(string_id),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierCapsLock),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierCapsLock),
           message_center::RichNotificationData(), nullptr,
           kNotificationCapslockIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
