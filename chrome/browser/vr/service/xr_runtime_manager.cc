@@ -150,20 +150,11 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
 BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
   // Examine options to determine which device provider we should use.
-
-  // AR requested.
-  if (options->environment_integration) {
-    if (options->immersive) {
-      // No support for immersive AR.
-      return nullptr;
-    }
-    // Return the ARCore device.
-    return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
-  }
-
-  if (options->immersive) {
+  if (options->immersive && !options->provide_passthrough_camera) {
     return GetImmersiveRuntime();
-  } else {
+  } else if (options->provide_passthrough_camera && !options->immersive) {
+    return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+  } else if (!options->provide_passthrough_camera && !options->immersive) {
     // Non immersive session.
     // Try the orientation provider if it exists.
     auto* orientation_runtime =
@@ -175,6 +166,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     // Otherwise fall back to immersive providers.
     return GetImmersiveRuntime();
   }
+  return nullptr;
 }
 
 BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
@@ -216,7 +208,7 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
 
   // Get an AR device if there is one.
   device::mojom::XRSessionOptions options = {};
-  options.environment_integration = true;
+  options.provide_passthrough_camera = true;
   auto* ar_runtime = GetRuntimeForOptions(&options);
   if (ar_runtime) {
     // Listen to  changes for this device.
@@ -238,10 +230,12 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
                                  : nullptr;
   }
 
-  // Use the immersive or AR device.
+  // Use the immersive or AR device. However, if we are using the immersive
+  // device's info, and AR is supported, reflect that in capabilities.
   device::mojom::VRDisplayInfoPtr device_info =
       immersive_runtime ? immersive_runtime->GetVRDisplayInfo()
                         : ar_runtime->GetVRDisplayInfo();
+  device_info->capabilities->can_provide_pass_through_images = !!ar_runtime;
 
   return device_info;
 }

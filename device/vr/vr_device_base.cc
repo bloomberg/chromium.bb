@@ -113,11 +113,16 @@ void VRDeviceBase::ReturnNonImmersiveSession(
   mojom::XRFrameDataProviderPtr data_provider;
   mojom::XREnvironmentIntegrationProviderPtr environment_provider;
   mojom::XRSessionControllerPtr controller;
-  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
-      this, mojo::MakeRequest(&data_provider), mojo::MakeRequest(&controller)));
+  magic_window_sessions_.push_back(
+      std::make_unique<VRDisplayImpl>(this, mojo::MakeRequest(&data_provider),
+                                      mojo::MakeRequest(&environment_provider),
+                                      mojo::MakeRequest(&controller)));
 
   auto session = mojom::XRSession::New();
   session->data_provider = data_provider.PassInterface();
+  // TODO(http://crbug.com/876135) Not all sessions want the environment
+  // provider. This should be refactored to only be passed when requested.
+  session->environment_provider = environment_provider.PassInterface();
   if (display_info_) {
     session->display_info = display_info_.Clone();
   }

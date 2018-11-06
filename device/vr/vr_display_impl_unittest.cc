@@ -33,8 +33,10 @@ class VRDisplayImplTest : public testing::Test {
   std::unique_ptr<VRDisplayImpl> MakeDisplay(
       mojom::XRSessionControllerPtr* controller) {
     mojom::XRFrameDataProviderPtr data_provider;
+    mojom::XREnvironmentIntegrationProviderPtr environment_provider;
     auto display = std::make_unique<VRDisplayImpl>(
         device(), mojo::MakeRequest(&data_provider),
+        mojo::MakeRequest(&environment_provider),
         mojo::MakeRequest(controller));
     static_cast<mojom::XRSessionController*>(display.get())
         ->SetFrameDataRestricted(true);
