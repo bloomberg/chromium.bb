@@ -6,6 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "content/public/test/fake_service_worker_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -28,8 +30,10 @@ class ConnectionEstablisherImplTest : public testing::Test {
 };
 
 TEST_F(ConnectionEstablisherImplTest, EstablishConnection) {
+  base::HistogramTester histogram_tester;
   content::FakeServiceWorkerContext fake_service_worker_context;
-  ConnectionEstablisherImpl connection_establisher;
+  base::SimpleTestClock test_clock;
+  ConnectionEstablisherImpl connection_establisher(&test_clock);
   auto& message_dispatch_calls =
       fake_service_worker_context
           .start_service_worker_and_dispatch_long_running_message_calls();
@@ -58,11 +62,20 @@ TEST_F(ConnectionEstablisherImplTest, EstablishConnection) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, message_dispatch_calls.size());
 
-  // Verify that message is dispatched again if previous result callback
-  // returns.
+  // Return the result callback and verify that the metrics are recorded
+  // properly.
+  base::TimeDelta clock_advance = base::TimeDelta::FromMilliseconds(10);
+  test_clock.Advance(clock_advance);
   std::move(std::get<content::ServiceWorkerContext::ResultCallback>(
                 message_dispatch_calls[0]))
       .Run(true);
+  histogram_tester.ExpectUniqueSample("AndroidSms.ServiceWorkerLifetime",
+                                      clock_advance.InMilliseconds(), 1);
+  histogram_tester.ExpectBucketCount(
+      "AndroidSms.ServiceWorkerMessageDispatchStatus", true, 1);
+
+  // Verify that message is dispatched again if previous result callback already
+  // returns.
   connection_establisher.EstablishConnection(
       &fake_service_worker_context,
       ConnectionEstablisher::ConnectionMode::kStartConnection);

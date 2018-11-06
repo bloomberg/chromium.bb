@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
@@ -75,6 +76,7 @@ class AndroidSmsAppHelperDelegateImplTest : public testing::Test {
 };
 
 TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
+  base::HistogramTester histogram_tester;
   EXPECT_NE(ContentSetting::CONTENT_SETTING_ALLOW, GetNotificationSetting());
   InstallApp();
 
@@ -88,6 +90,8 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   EXPECT_EQ(expected_apps_to_install,
             test_pending_app_manager()->install_requests());
   EXPECT_EQ(ContentSetting::CONTENT_SETTING_ALLOW, GetNotificationSetting());
+  histogram_tester.ExpectBucketCount("AndroidSms.PWAInstallationResult",
+                                     web_app::InstallResultCode::kSuccess, 1);
 }
 
 TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallAndLaunchMessagesApp) {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/android_sms/android_sms_service.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -51,7 +52,9 @@ void AndroidSmsService::OnSessionStateChanged() {
   DCHECK(multidevice_setup_client);
 
   connection_manager_ = std::make_unique<ConnectionManager>(
-      service_worker_context, std::make_unique<ConnectionEstablisherImpl>(),
+      service_worker_context,
+      std::make_unique<ConnectionEstablisherImpl>(
+          base::DefaultClock::GetInstance()),
       multidevice_setup_client);
 }
 

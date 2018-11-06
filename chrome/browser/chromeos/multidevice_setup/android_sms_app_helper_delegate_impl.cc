@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -97,6 +98,8 @@ void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
     bool launch_on_install,
     const GURL& app_url,
     web_app::InstallResultCode code) {
+  UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", code);
+
   if (code == web_app::InstallResultCode::kSuccess) {
     // Pre-Grant notification permission for Messages.
     host_content_settings_map_->SetWebsiteSettingDefaultScope(
