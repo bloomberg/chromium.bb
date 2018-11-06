@@ -86,6 +86,7 @@ class WMHelperChromeOS : public WMHelper {
   aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
   aura::Window* GetFocusedWindow() const override;
+  aura::Window* GetRootWindowForNewWindows() const override;
   aura::client::CursorClient* GetCursorClient() override;
   void AddPreTargetHandler(ui::EventHandler* handler) override;
   void PrependPreTargetHandler(ui::EventHandler* handler) override;
