@@ -87,7 +87,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
                                   int width,
                                   const ClientHintsPreferences& preferences) {
     if (!url) {
-      EXPECT_FALSE(preload_request_);
+      EXPECT_FALSE(preload_request_) << preload_request_->ResourceURL();
       return;
     }
     EXPECT_NE(nullptr, preload_request_.get());
@@ -249,6 +249,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
   }
 
   void Test(PreloadScannerTestCase test_case) {
+    SCOPED_TRACE(test_case.input_html);
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
@@ -1111,6 +1112,25 @@ TEST_F(HTMLPreloadScannerTest, Integrity) {
       {0,
        "<script src=bla.js integrity=sha257-XXX "
        "integrity=sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=>"},
+  };
+
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+// Regression test for http://crbug.com/898795 where preloads after a
+// dynamically inserted meta csp tag are dispatched on subsequent calls to the
+// HTMLPreloadScanner, after they had been parsed.
+TEST_F(HTMLPreloadScannerTest, MetaCsp_NoPreloadsAfter) {
+  PreloadScannerTestCase test_cases[] = {
+      {"http://example.test",
+       "<meta http-equiv='Content-Security-Policy'><link rel=preload href=bla "
+       "as=SCRIPT>",
+       nullptr, "http://example.test/", ResourceType::kScript, 0},
+      // The buffered text referring to the preload above should be cleared, so
+      // make sure it is not preloaded on subsequent calls to Scan.
+      {"http://example.test", "", nullptr, "http://example.test/",
+       ResourceType::kScript, 0},
   };
 
   for (const auto& test_case : test_cases)

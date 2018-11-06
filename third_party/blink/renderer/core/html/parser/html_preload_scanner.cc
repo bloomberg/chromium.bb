@@ -969,11 +969,16 @@ PreloadRequestStream HTMLPreloadScanner::Scan(
     bool is_csp_meta_tag = false;
     scanner_.Scan(token_, source_, requests, viewport, &is_csp_meta_tag);
     token_.Clear();
-    // Don't preload anything if a CSP meta tag is found. We should never really
-    // find them here because the HTMLPreloadScanner is only used for
-    // dynamically added markup.
-    if (is_csp_meta_tag)
+    // Don't preload anything if a CSP meta tag is found. We should rarely find
+    // them here because the HTMLPreloadScanner is only used for the synchronous
+    // parsing path.
+    if (is_csp_meta_tag) {
+      // Reset the tokenizer, to avoid re-scanning tokens that we are about to
+      // start parsing.
+      source_.Clear();
+      tokenizer_->Reset();
       return requests;
+    }
   }
 
   return requests;
