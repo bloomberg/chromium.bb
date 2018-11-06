@@ -185,6 +185,8 @@ jumbo_source_set("common_sources") {
     "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",
+    "referrer_type_converters.cc",
+    "referrer_type_converters.h",
     "renderer_preferences.cc",
     "renderer_preferences.h",
     "resource_request_body_android.cc",

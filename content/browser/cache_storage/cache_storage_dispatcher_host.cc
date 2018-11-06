@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
@@ -79,7 +80,7 @@ class CacheStorageDispatcherHost::CacheImpl
     auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
         request->url, request->method,
         ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-        request->referrer, request->is_reload);
+        request->referrer.To<Referrer>(), request->is_reload);
 
     cache->Match(
         std::move(scoped_request), std::move(match_params),
@@ -116,7 +117,7 @@ class CacheStorageDispatcherHost::CacheImpl
       request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
           request->url, request->method,
           ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-          request->referrer, request->is_reload);
+          request->referrer.To<Referrer>(), request->is_reload);
     }
 
     cache->MatchAll(
@@ -154,7 +155,7 @@ class CacheStorageDispatcherHost::CacheImpl
       request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
           request->url, request->method,
           ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-          request->referrer, request->is_reload);
+          request->referrer.To<Referrer>(), request->is_reload);
     }
 
     cache->Keys(
@@ -323,7 +324,7 @@ void CacheStorageDispatcherHost::Match(
   auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
       request->url, request->method,
       ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-      request->referrer, request->is_reload);
+      request->referrer.To<Referrer>(), request->is_reload);
 
   if (!match_params->cache_name) {
     context_->cache_manager()->MatchAllCaches(

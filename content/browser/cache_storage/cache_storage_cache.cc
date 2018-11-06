@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
 #include "net/base/completion_callback.h"
@@ -1836,7 +1837,8 @@ void CacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
           operation->request->url, operation->request->method,
           ServiceWorkerUtils::ToServiceWorkerHeaderMap(
               operation->request->headers),
-          operation->request->referrer, operation->request->is_reload));
+          operation->request->referrer.To<Referrer>(),
+          operation->request->is_reload));
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),

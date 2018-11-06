@@ -137,6 +137,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -3413,8 +3414,8 @@ void RenderFrameHostImpl::CreateNewWindow(
           this, GetLastCommittedURL(),
           frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
           last_committed_origin_.GetURL(), params->window_container_type,
-          params->target_url, params->referrer, params->frame_name,
-          params->disposition, *params->features,
+          params->target_url, params->referrer.To<Referrer>(),
+          params->frame_name, params->disposition, *params->features,
           effective_transient_activation_state, params->opener_suppressed,
           &no_javascript_access);
 
