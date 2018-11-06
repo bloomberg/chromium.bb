@@ -557,9 +557,6 @@ typedef enum ATTRIBUTE_PACKED {
   // - updated from ALTREF2_FRAME ref (see rshift_bwd_ref_frames()).
   EXTREF_FRAME = REF_FRAMES,
 
-  // Number of LAST* reference types.
-  LAST_REF_FRAMES = LAST3_FRAME - LAST_FRAME + 1,
-
   // Number of inter (non-intra) reference types.
   INTER_REFS_PER_FRAME = ALTREF_FRAME - LAST_FRAME + 1,
 

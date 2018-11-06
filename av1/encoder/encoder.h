@@ -707,9 +707,10 @@ typedef struct AV1_COMP {
   RATE_CONTROL rc;
   double framerate;
 
-  // NOTE(zoeliu): Any inter frame allows maximum of REF_FRAMES inter
-  // references; Plus the currently coded frame itself, it is needed to allocate
-  // sufficient space to the size of the maximum possible number of frames.
+  // Relevant for an inter frame.
+  // - Index '0' corresponds to the values for the currently coded frame.
+  // - Indices 1 ... REF_FRAMES are used to store values for all the possible
+  // reference frames.
   int interp_filter_selected[REF_FRAMES + 1][SWITCHABLE];
 
   struct aom_codec_pkt_list *output_pkt_list;

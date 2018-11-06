@@ -3425,16 +3425,14 @@ static void dump_ref_frame_images(AV1_COMP *cpi) {
 // when the LAST_FRAME is updated.
 static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
   // TODO(isbs): shift the scaled indices as well
-  int ref_frame;
-  for (ref_frame = LAST_REF_FRAMES - 1; ref_frame > 0; --ref_frame) {
-    cpi->remapped_ref_idx[ref_frame] = cpi->remapped_ref_idx[ref_frame - 1];
+  for (int ref_frame = LAST3_FRAME; ref_frame > LAST_FRAME; --ref_frame) {
+    const int ref_idx = ref_frame - LAST_FRAME;
+    cpi->remapped_ref_idx[ref_idx] = cpi->remapped_ref_idx[ref_idx - 1];
 
-    // [0] is allocated to the current coded frame. The statistics for the
-    // reference frames start at [LAST_FRAME], i.e. [1].
     if (!cpi->rc.is_src_frame_alt_ref) {
-      memcpy(cpi->interp_filter_selected[ref_frame + LAST_FRAME],
-             cpi->interp_filter_selected[ref_frame - 1 + LAST_FRAME],
-             sizeof(cpi->interp_filter_selected[ref_frame - 1 + LAST_FRAME]));
+      memcpy(cpi->interp_filter_selected[ref_frame],
+             cpi->interp_filter_selected[ref_frame - 1],
+             sizeof(cpi->interp_filter_selected[ref_frame - 1]));
     }
   }
 }
@@ -3568,7 +3566,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // Deal with the special case for showing existing internal ALTREF_FRAME
     // Refresh the LAST_FRAME with the ALTREF_FRAME and retire the LAST3_FRAME
     // by updating the virtual indices.
-    const int tmp = cpi->remapped_ref_idx[LAST_REF_FRAMES - 1];
+    const int last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
     shift_last_ref_frames(cpi);
 
     cpi->remapped_ref_idx[LAST_FRAME - 1] =
@@ -3582,10 +3580,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
       lshift_bwd_ref_frames(cpi);
       // pass outdated forward reference frame (previous LAST3) to the
       // spared space
-      cpi->remapped_ref_idx[EXTREF_FRAME - 1] = tmp;
+      cpi->remapped_ref_idx[EXTREF_FRAME - 1] = last3_remapped_idx;
     } else {
 #endif
-      cpi->remapped_ref_idx[bwdref_to_show - 1] = tmp;
+      cpi->remapped_ref_idx[bwdref_to_show - 1] = last3_remapped_idx;
 #if USE_SYMM_MULTI_LAYER
     }
 #endif
@@ -3685,17 +3683,15 @@ static void update_reference_frames(AV1_COMP *cpi) {
     //      |                      |                        |
     //      v                      v                        v
     // remapped_ref_idx[2],   remapped_ref_idx[0],     remapped_ref_idx[1]
-    int tmp;
-
     assign_frame_buffer(
         pool->frame_bufs,
-        &cm->ref_frame_map[cpi->remapped_ref_idx[LAST_REF_FRAMES - 1]],
+        &cm->ref_frame_map[cpi->remapped_ref_idx[LAST3_FRAME - 1]],
         cm->new_fb_idx);
 
-    tmp = cpi->remapped_ref_idx[LAST_REF_FRAMES - 1];
+    int last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
 
     shift_last_ref_frames(cpi);
-    cpi->remapped_ref_idx[0] = tmp;
+    cpi->remapped_ref_idx[LAST_FRAME - 1] = last3_remapped_idx;
 
     assert(!encode_show_existing_frame(cm));
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
@@ -3718,11 +3714,12 @@ static void update_reference_frames(AV1_COMP *cpi) {
       //       virtual index reshuffling for BWDREF, the encoder always
       //       specifies a LAST_BIPRED right before BWDREF and completes the
       //       reshuffling job accordingly.
-      tmp = cpi->remapped_ref_idx[LAST_REF_FRAMES - 1];
+      last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
 
       shift_last_ref_frames(cpi);
-      cpi->remapped_ref_idx[0] = cpi->remapped_ref_idx[BWDREF_FRAME - 1];
-      cpi->remapped_ref_idx[BWDREF_FRAME - 1] = tmp;
+      cpi->remapped_ref_idx[LAST_FRAME - 1] =
+          cpi->remapped_ref_idx[BWDREF_FRAME - 1];
+      cpi->remapped_ref_idx[BWDREF_FRAME - 1] = last3_remapped_idx;
 
       memcpy(cpi->interp_filter_selected[LAST_FRAME],
              cpi->interp_filter_selected[BWDREF_FRAME],
