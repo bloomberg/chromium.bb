@@ -30,7 +30,7 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
   size_t column_count = 0;
 
   while (range.Peek().GetType() == kStringToken) {
-    if (!CSSParsingUtils::ParseGridTemplateAreasRow(
+    if (!css_parsing_utils::ParseGridTemplateAreasRow(
             range.ConsumeIncludingWhitespace().Value().ToString(),
             grid_area_map, row_count, column_count))
       return nullptr;

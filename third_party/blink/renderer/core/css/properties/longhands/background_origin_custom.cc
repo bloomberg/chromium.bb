@@ -14,8 +14,8 @@ const CSSValue* BackgroundOrigin::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundBox(
-      range, local_context, CSSParsingUtils::AllowTextValue::kForbid);
+  return css_parsing_utils::ParseBackgroundBox(
+      range, local_context, css_parsing_utils::AllowTextValue::kForbid);
 }
 
 const CSSValue* BackgroundOrigin::CSSValueFromComputedStyleInternal(

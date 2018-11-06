@@ -52,7 +52,7 @@ bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
   CSSTokenizer tokenizer(scroll_offset);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
-  CSSValue* value = CSSParsingUtils::ConsumeScrollOffset(range);
+  CSSValue* value = css_parsing_utils::ConsumeScrollOffset(range);
   if (!value)
     return false;
 

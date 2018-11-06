@@ -24,8 +24,8 @@ bool WebkitMaskRepeat::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   bool implicit = false;
-  if (!CSSParsingUtils::ConsumeRepeatStyle(range, result_x, result_y,
-                                           implicit) ||
+  if (!css_parsing_utils::ConsumeRepeatStyle(range, result_x, result_y,
+                                             implicit) ||
       !range.AtEnd())
     return false;
 

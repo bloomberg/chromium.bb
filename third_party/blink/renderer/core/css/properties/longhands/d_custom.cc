@@ -13,7 +13,7 @@ namespace CSSLonghand {
 const CSSValue* D::ParseSingleValue(CSSParserTokenRange& range,
                                     const CSSParserContext&,
                                     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumePathOrNone(range);
+  return css_parsing_utils::ConsumePathOrNone(range);
 }
 
 const CSSValue* D::CSSValueFromComputedStyleInternal(

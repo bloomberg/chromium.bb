@@ -15,7 +15,7 @@ const CSSValue* GridRowEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeGridLine(range);
+  return css_parsing_utils::ConsumeGridLine(range);
 }
 
 const CSSValue* GridRowEnd::CSSValueFromComputedStyleInternal(

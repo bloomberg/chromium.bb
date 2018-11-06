@@ -15,7 +15,7 @@ const CSSValue* LetterSpacing::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ParseSpacing(range, context);
+  return css_parsing_utils::ParseSpacing(range, context);
 }
 
 const CSSValue* LetterSpacing::CSSValueFromComputedStyleInternal(

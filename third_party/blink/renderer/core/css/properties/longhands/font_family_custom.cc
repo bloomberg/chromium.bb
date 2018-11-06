@@ -16,7 +16,7 @@ const CSSValue* FontFamily::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeFontFamily(range);
+  return css_parsing_utils::ConsumeFontFamily(range);
 }
 
 const CSSValue* FontFamily::CSSValueFromComputedStyleInternal(

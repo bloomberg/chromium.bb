@@ -14,7 +14,7 @@ const CSSValue* MinInlineSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeWidthOrHeight(range, context);
+  return css_parsing_utils::ConsumeWidthOrHeight(range, context);
 }
 
 }  // namespace CSSLonghand

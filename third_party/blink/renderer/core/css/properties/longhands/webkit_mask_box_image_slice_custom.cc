@@ -15,8 +15,8 @@ const CSSValue* WebkitMaskBoxImageSlice::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeBorderImageSlice(
-      range, CSSParsingUtils::DefaultFill::kNoFill);
+  return css_parsing_utils::ConsumeBorderImageSlice(
+      range, css_parsing_utils::DefaultFill::kNoFill);
 }
 
 const CSSValue* WebkitMaskBoxImageSlice::CSSValueFromComputedStyleInternal(

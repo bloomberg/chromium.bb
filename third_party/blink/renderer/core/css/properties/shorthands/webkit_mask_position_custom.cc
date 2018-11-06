@@ -22,7 +22,7 @@ bool WebkitMaskPosition::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
 
-  if (!CSSParsingUtils::ConsumeBackgroundPosition(
+  if (!css_parsing_utils::ConsumeBackgroundPosition(
           range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow,
           result_x, result_y) ||
       !range.AtEnd())

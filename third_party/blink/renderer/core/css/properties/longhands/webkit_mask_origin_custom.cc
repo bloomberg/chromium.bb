@@ -17,8 +17,8 @@ const CSSValue* WebkitMaskOrigin::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumePrefixedBackgroundBox, range,
-      CSSParsingUtils::AllowTextValue::kForbid);
+      css_parsing_utils::ConsumePrefixedBackgroundBox, range,
+      css_parsing_utils::AllowTextValue::kForbid);
 }
 
 const CSSValue* WebkitMaskOrigin::CSSValueFromComputedStyleInternal(

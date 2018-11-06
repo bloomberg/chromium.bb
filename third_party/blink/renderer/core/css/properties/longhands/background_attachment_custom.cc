@@ -15,7 +15,7 @@ const CSSValue* BackgroundAttachment::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeBackgroundAttachment, range);
+      css_parsing_utils::ConsumeBackgroundAttachment, range);
 }
 
 const CSSValue* BackgroundAttachment::CSSValueFromComputedStyleInternal(

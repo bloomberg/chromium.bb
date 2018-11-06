@@ -15,7 +15,7 @@ const CSSValue* FontFeatureSettings::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeFontFeatureSettings(range);
+  return css_parsing_utils::ConsumeFontFeatureSettings(range);
 }
 
 const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(

@@ -19,8 +19,8 @@ bool Gap::ParseShorthand(bool important,
                          const CSSParserLocalContext&,
                          HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyGap).length(), 2u);
-  CSSValue* row_gap = CSSParsingUtils::ConsumeGapLength(range, context);
-  CSSValue* column_gap = CSSParsingUtils::ConsumeGapLength(range, context);
+  CSSValue* row_gap = css_parsing_utils::ConsumeGapLength(range, context);
+  CSSValue* column_gap = css_parsing_utils::ConsumeGapLength(range, context);
   if (!row_gap || !range.AtEnd())
     return false;
   if (!column_gap)

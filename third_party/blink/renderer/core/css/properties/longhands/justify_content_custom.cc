@@ -20,8 +20,8 @@ const CSSValue* JustifyContent::ParseSingleValue(
                                              CSSValueBaseline>(
           range.Peek().Id()))
     return nullptr;
-  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(
-      range, CSSParsingUtils::IsContentPositionOrLeftOrRightKeyword);
+  return css_parsing_utils::ConsumeContentDistributionOverflowPosition(
+      range, css_parsing_utils::IsContentPositionOrLeftOrRightKeyword);
 }
 
 const CSSValue* JustifyContent::CSSValueFromComputedStyleInternal(

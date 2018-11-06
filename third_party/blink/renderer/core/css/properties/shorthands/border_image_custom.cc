@@ -27,9 +27,9 @@ bool BorderImage::ParseShorthand(
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
 
-  if (!CSSParsingUtils::ConsumeBorderImageComponents(
+  if (!css_parsing_utils::ConsumeBorderImageComponents(
           range, context, source, slice, width, outset, repeat,
-          CSSParsingUtils::DefaultFill::kNoFill)) {
+          css_parsing_utils::DefaultFill::kNoFill)) {
     return false;
   }
 

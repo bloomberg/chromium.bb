@@ -14,7 +14,7 @@ const CSSValue* BorderTopWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBorderWidthSide(range, context, local_context);
+  return css_parsing_utils::ParseBorderWidthSide(range, context, local_context);
 }
 
 const CSSValue* BorderTopWidth::CSSValueFromComputedStyleInternal(

@@ -26,9 +26,9 @@ bool WebkitMaskBoxImage::ParseShorthand(
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
 
-  if (!CSSParsingUtils::ConsumeBorderImageComponents(
+  if (!css_parsing_utils::ConsumeBorderImageComponents(
           range, context, source, slice, width, outset, repeat,
-          CSSParsingUtils::DefaultFill::kFill)) {
+          css_parsing_utils::DefaultFill::kFill)) {
     return false;
   }
 

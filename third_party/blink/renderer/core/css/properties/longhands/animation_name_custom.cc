@@ -18,7 +18,7 @@ const CSSValue* AnimationName::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   // Allow quoted name if this is an alias property.
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeAnimationName, range, context,
+      css_parsing_utils::ConsumeAnimationName, range, context,
       local_context.UseAliasParsing());
 }
 

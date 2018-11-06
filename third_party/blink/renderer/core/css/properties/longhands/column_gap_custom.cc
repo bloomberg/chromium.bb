@@ -17,7 +17,7 @@ const CSSValue* ColumnGap::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeGapLength(range, context);
+  return css_parsing_utils::ConsumeGapLength(range, context);
 }
 
 const CSSValue* ColumnGap::CSSValueFromComputedStyleInternal(

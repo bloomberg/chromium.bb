@@ -13,7 +13,7 @@ const CSSValue* OffsetRotate::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeOffsetRotate(range, context);
+  return css_parsing_utils::ConsumeOffsetRotate(range, context);
 }
 const CSSValue* OffsetRotate::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,

@@ -15,7 +15,7 @@ const CSSValue* MaxHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeMaxWidthOrHeight(
+  return css_parsing_utils::ConsumeMaxWidthOrHeight(
       range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

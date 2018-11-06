@@ -16,7 +16,7 @@ namespace CSSLonghand {
 const CSSValue* FontSize::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeFontSize(
+  return css_parsing_utils::ConsumeFontSize(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

@@ -15,7 +15,7 @@ const CSSValue* BorderImageWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeBorderImageWidth(range);
+  return css_parsing_utils::ConsumeBorderImageWidth(range);
 }
 
 const CSSValue* BorderImageWidth::CSSValueFromComputedStyleInternal(

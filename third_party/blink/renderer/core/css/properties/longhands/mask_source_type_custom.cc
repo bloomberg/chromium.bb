@@ -15,7 +15,7 @@ const CSSValue* MaskSourceType::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumeMaskSourceType, range);
+      css_parsing_utils::ConsumeMaskSourceType, range);
 }
 
 static CSSValue* ValueForFillSourceType(EMaskSourceType type) {

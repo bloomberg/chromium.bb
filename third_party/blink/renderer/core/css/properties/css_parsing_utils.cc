@@ -50,7 +50,7 @@ namespace blink {
 
 using namespace cssvalue;
 
-namespace CSSParsingUtils {
+namespace css_parsing_utils {
 namespace {
 
 bool IsLeftOrRightKeyword(CSSValueID id) {
@@ -2569,5 +2569,5 @@ CSSValue* ParsePaintStroke(CSSParserTokenRange& range,
   return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
-}  // namespace CSSParsingUtils
+}  // namespace css_parsing_utils
 }  // namespace blink

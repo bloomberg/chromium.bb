@@ -20,7 +20,7 @@ const CSSValue* Transform::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ConsumeTransformList(range, context, local_context);
+  return css_parsing_utils::ConsumeTransformList(range, context, local_context);
 }
 
 bool Transform::IsLayoutDependent(const ComputedStyle* style,

@@ -22,7 +22,7 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   if (CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context))
     return url;
-  return CSSParsingUtils::ConsumeBasicShape(range, context);
+  return css_parsing_utils::ConsumeBasicShape(range, context);
 }
 
 const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
