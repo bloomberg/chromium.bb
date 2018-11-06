@@ -3094,7 +3094,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   view_->renderer_compositor_frame_sink_->Reset();
   viz::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
   EXPECT_TRUE(surface);
-  surface->RunDrawCallback();
+  surface->SendAckToClient();
   view_->renderer_compositor_frame_sink_->Flush();
   EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
 
