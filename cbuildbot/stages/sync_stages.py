@@ -2106,7 +2106,7 @@ class PreCQLauncherStage(SyncStage):
     for (is_mergable, status), count in sorted(status_counts.items()):
       subtype = 'mergeable' if is_mergable else 'speculative'
       metrics.Gauge('chromeos/cbuildbot/pre-cq/cl-count').set(
-          count, {'status': str(status), 'subtype': subtype})
+          count, fields={'status': str(status), 'subtype': subtype})
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
