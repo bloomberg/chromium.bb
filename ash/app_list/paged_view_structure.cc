@@ -94,9 +94,14 @@ void PagedViewStructure::SaveToMetadata() {
 
     if (item_index < item_list->item_count() &&
         !item_list->item_at(item_index)->is_page_break()) {
+      // Remove AppListItemListObserver temporarily to avoid |pages_| being
+      // reloaded.
+      item_list->RemoveObserver(apps_grid_view_);
+
       // There's no "page break" item at the end of current page, so add one to
       // push overflowing items to next page.
       model->AddPageBreakItemAfter(item_list->item_at(item_index - 1));
+      item_list->AddObserver(apps_grid_view_);
     }
   }
 
