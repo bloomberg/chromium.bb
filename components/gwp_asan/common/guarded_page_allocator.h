@@ -83,16 +83,16 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
     // having them be statically allocated in the SlotMetadata itself.)
     void Init();
 
-    // Update slot metadata on an allocation with the given size and offset.
-    void RecordAllocation(size_t size, size_t offset);
+    // Update slot metadata on an allocation with the given size and pointer.
+    void RecordAllocation(size_t size, void* ptr);
 
     // Update slot metadata on a deallocation.
     void RecordDeallocation();
 
     // Size of the allocation
     size_t alloc_size = 0;
-    // How far into the page is the returned allocation.
-    size_t alloc_offset = 0;
+    // The allocation address.
+    void* alloc_ptr = nullptr;
 
     // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
     // occurred.

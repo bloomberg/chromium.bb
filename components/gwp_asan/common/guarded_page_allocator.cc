@@ -82,10 +82,12 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
     // Return left-aligned allocation to detect underflows.
     offset = 0;
 
-  // Initialize slot metadata.
-  data_[free_slot].RecordAllocation(size, offset);
+  void* alloc = reinterpret_cast<void*>(free_page + offset);
 
-  return reinterpret_cast<void*>(free_page + offset);
+  // Initialize slot metadata.
+  data_[free_slot].RecordAllocation(size, alloc);
+
+  return alloc;
 }
 
 void GuardedPageAllocator::Deallocate(void* ptr) {
@@ -95,7 +97,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   MarkPageInaccessible(reinterpret_cast<void*>(GetPageAddr(addr)));
 
   size_t slot = AddrToSlot(GetPageAddr(addr));
-  DCHECK_EQ(addr, GetPageAddr(addr) + data_[slot].alloc_offset);
+  DCHECK_EQ(ptr, data_[slot].alloc_ptr);
   // Check for double free.
   if (data_[slot].dealloc_trace_addr) {
     double_free_detected_ = true;
@@ -113,7 +115,7 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   DCHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = AddrToSlot(GetPageAddr(addr));
-  DCHECK_EQ(addr, GetPageAddr(addr) + data_[slot].alloc_offset);
+  DCHECK_EQ(ptr, data_[slot].alloc_ptr);
   return data_[slot].alloc_size;
 }
 
@@ -257,11 +259,11 @@ void GuardedPageAllocator::SlotMetadata::Reset() {
 }
 
 void GuardedPageAllocator::SlotMetadata::RecordAllocation(size_t size,
-                                                          size_t offset) {
+                                                          void* ptr) {
   Reset();
 
   alloc_size = size;
-  alloc_offset = offset;
+  alloc_ptr = ptr;
 
   alloc_tid = base::PlatformThread::CurrentId();
   new (stacktrace_alloc) StackTrace();
