@@ -27,7 +27,6 @@
 # ChromeVox and Select-to-Speak not yet supported. https://crbug.com/594887
 -ChromeVox*
 -SelectToSpeak*
--SwitchAccess*
 
 # Viz hit testing not supported with Mash https://crbug.com/879308
 -PDFExtensionHitTestTest.MouseLeave/1
