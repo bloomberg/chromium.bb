@@ -115,12 +115,12 @@ class MockChromeClientForOrientationLockDelegate final
   // The real ChromeClient::EnterFullscreen/ExitFullscreen implementation is
   // async due to IPC, emulate that by posting tasks:
   void EnterFullscreen(LocalFrame& frame, const FullscreenOptions*) override {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(DidEnterFullscreen, WrapPersistent(frame.GetDocument())));
   }
   void ExitFullscreen(LocalFrame& frame) override {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(DidExitFullscreen, WrapPersistent(frame.GetDocument())));
   }

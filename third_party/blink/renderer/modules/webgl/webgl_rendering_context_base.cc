@@ -644,7 +644,7 @@ CreateContextProviderOnWorkerThread(
   creation_info.url = url.Copy();
   creation_info.using_gpu_compositing = using_gpu_compositing;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Platform::Current()->MainThread()->GetTaskRunner();
+      Thread::MainThread()->GetTaskRunner();
   PostCrossThreadTask(*task_runner, FROM_HERE,
                       CrossThreadBind(&CreateContextProviderOnMainThread,
                                       CrossThreadUnretained(&creation_info),
