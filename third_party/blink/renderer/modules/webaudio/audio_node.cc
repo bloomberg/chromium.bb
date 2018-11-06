@@ -76,8 +76,6 @@ AudioHandler::AudioHandler(NodeType node_type,
 
 AudioHandler::~AudioHandler() {
   DCHECK(IsMainThread());
-  // dispose() should be called.
-  DCHECK(!GetNode());
   InstanceCounters::DecrementCounter(InstanceCounters::kAudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
   --node_count_[GetNodeType()];
@@ -111,7 +109,6 @@ void AudioHandler::Dispose() {
   Context()->GetDeferredTaskHandler().RemoveAutomaticPullNode(this);
   for (auto& output : outputs_)
     output->Dispose();
-  node_ = nullptr;
 }
 
 AudioNode* AudioHandler::GetNode() const {
