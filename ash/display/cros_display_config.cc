@@ -618,8 +618,10 @@ void CrosDisplayConfig::GetDisplayUnitInfoList(
     primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   } else {
     displays = display_manager->software_mirroring_display_list();
-    primary_id =
-        display_manager->GetPrimaryMirroringDisplayForUnifiedDesktop()->id();
+    primary_id = Shell::Get()
+                     ->display_configuration_controller()
+                     ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                     .id();
   }
 
   for (const display::Display& display : displays)

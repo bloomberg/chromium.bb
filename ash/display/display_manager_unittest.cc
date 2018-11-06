@@ -15,7 +15,9 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
@@ -2718,10 +2720,12 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout2x1) {
     display_manager()->SetUnifiedDesktopMatrix(matrix);
     // 500 + 400 * 200 / 300 ~= 766.
     EXPECT_EQ(gfx::Size(400, 766), screen->GetPrimaryDisplay().size());
-    // Display in top-left cell is considered primary.
-    EXPECT_EQ(
-        list[0],
-        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+    // Default shelf alignment is bottom. Display in bottom-left cell is
+    // considered the primary mirroring display.
+    EXPECT_EQ(list[1], Shell::Get()
+                           ->display_configuration_controller()
+                           ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                           .id());
 
     // Validate display rows and max heights.
     EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2747,10 +2751,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout2x1) {
     // 200 + 300 * 500 / 400 ~= 574 (Note that we actually scale the max unified
     // bounds).
     EXPECT_EQ(gfx::Size(300, 574), screen->GetPrimaryDisplay().size());
-    // Display in top-left cell is considered primary.
-    EXPECT_EQ(
-        list[1],
-        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+    // Display in bottom-left cell is considered primary.
+    EXPECT_EQ(list[0], Shell::Get()
+                           ->display_configuration_controller()
+                           ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                           .id());
 
     // Validate display rows and max heights.
     EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2781,10 +2786,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout2x1) {
                                                            list[1]);
     display_manager()->OnNativeDisplaysChanged(display_info_list);
     EXPECT_EQ(gfx::Size(300, 574), screen->GetPrimaryDisplay().size());
-    // Display in top-left cell is considered primary.
-    EXPECT_EQ(
-        list[0],
-        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+    // Display in bottom-left cell is considered primary.
+    EXPECT_EQ(list[1], Shell::Get()
+                           ->display_configuration_controller()
+                           ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                           .id());
 
     // Validate display rows and max heights.
     EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2820,10 +2826,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout3x1) {
     matrix[2].emplace_back(list[2]);
     display_manager()->SetUnifiedDesktopMatrix(matrix);
     EXPECT_EQ(gfx::Size(500, 1225), screen->GetPrimaryDisplay().size());
-    // Display in top-left cell is considered primary.
-    EXPECT_EQ(
-        list[0],
-        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+    // Display in bottom-left cell is considered primary.
+    EXPECT_EQ(list[2], Shell::Get()
+                           ->display_configuration_controller()
+                           ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                           .id());
 
     // Validate display rows and max heights.
     EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2851,10 +2858,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout3x1) {
     matrix[2].emplace_back(list[2]);
     display_manager()->SetUnifiedDesktopMatrix(matrix);
     EXPECT_EQ(gfx::Size(400, 980), screen->GetPrimaryDisplay().size());
-    // Display in top-left cell is considered primary.
-    EXPECT_EQ(
-        list[1],
-        display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+    // Display in bottom-left cell is considered primary.
+    EXPECT_EQ(list[2], Shell::Get()
+                           ->display_configuration_controller()
+                           ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                           .id());
 
     // Validate display rows and max heights.
     EXPECT_EQ(1, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2892,10 +2900,16 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
   matrix[1].emplace_back(list[3]);
   display_manager()->SetUnifiedDesktopMatrix(matrix);
   EXPECT_EQ(gfx::Size(739, 933), screen->GetPrimaryDisplay().size());
-  // Display in top-left cell is considered primary.
-  EXPECT_EQ(
-      list[0],
-      display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+  // Default shelf alignment is bottom.
+  Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  EXPECT_EQ(shelf->alignment(), SHELF_ALIGNMENT_BOTTOM);
+
+  // Display in bottom-left cell is considered the primary mirroring display.
+  EXPECT_EQ(list[2], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
 
   // Validate display rows and max heights.
   EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2909,6 +2923,22 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
   EXPECT_EQ(300, display_manager()->GetUnifiedDesktopRowMaxHeight(0));
   EXPECT_EQ(633, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
   EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+
+  // Change the shelf alignment to left, and expect that the primary mirroring
+  // display in the top-left display in the matrix.
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  EXPECT_EQ(list[0], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
+
+  // Change the shelf alignment to right, and expect that the primary mirroring
+  // display in the top-right display in the matrix.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  EXPECT_EQ(list[1], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
 }
 
 TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
@@ -2935,10 +2965,16 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
   matrix[2].emplace_back(list[5]);
   display_manager()->SetUnifiedDesktopMatrix(matrix);
   EXPECT_EQ(gfx::Size(739, 1108), screen->GetPrimaryDisplay().size());
-  // Display in top-left cell is considered primary.
-  EXPECT_EQ(
-      list[0],
-      display_manager()->GetPrimaryMirroringDisplayForUnifiedDesktop()->id());
+
+  // Default shelf alignment is bottom.
+  Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  EXPECT_EQ(shelf->alignment(), SHELF_ALIGNMENT_BOTTOM);
+
+  // Display in bottom-left cell is considered the primary mirroring display.
+  EXPECT_EQ(list[4], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
 
   // Validate display rows and max heights.
   EXPECT_EQ(0, display_manager()->GetMirroringDisplayRowIndexInUnifiedMatrix(
@@ -2957,6 +2993,22 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
   EXPECT_EQ(633, display_manager()->GetUnifiedDesktopRowMaxHeight(1));
   EXPECT_EQ(175, display_manager()->GetUnifiedDesktopRowMaxHeight(2));
   EXPECT_FALSE(OverlappingMirroringDisplaysExist());
+
+  // Change the shelf alignment to left, and expect that the primary mirroring
+  // display in the top-left display in the matrix.
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  EXPECT_EQ(list[0], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
+
+  // Change the shelf alignment to right, and expect that the primary mirroring
+  // display in the top-right display in the matrix.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  EXPECT_EQ(list[1], Shell::Get()
+                         ->display_configuration_controller()
+                         ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                         .id());
 }
 
 TEST_F(DisplayManagerTest, DockMode) {
