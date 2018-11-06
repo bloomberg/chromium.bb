@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -108,10 +109,11 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // Do not release resources used by an audio rendering thread in dispose().
   virtual void Dispose();
 
-  // GetNode() returns a valid object until dispose() is called.  This returns
-  // nullptr after dispose().  We must not call GetNode() in an audio rendering
-  // thread.
+  // GetNode() returns a valid object until the AudioNode is collected on the
+  // main thread, and nullptr thereafter. We must not call GetNode() in an audio
+  // rendering thread.
   AudioNode* GetNode() const;
+
   // context() returns a valid object until the BaseAudioContext dies, and
   // returns nullptr otherwise.  This always returns a valid object in an audio
   // rendering thread, and inside dispose().  We must not call context() in the
@@ -264,11 +266,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   volatile bool is_initialized_;
   NodeType node_type_;
 
-  // The owner AudioNode.  This untraced member is safe because dispose() is
-  // called before the AudioNode death, and it clears |node_|.  Do not access
-  // |node_| directly, use GetNode() instead.
-  // See http://crbug.com/404527 for the detail.
-  UntracedMember<AudioNode> node_;
+  // The owner AudioNode. Accessed only on the main thread.
+  const WeakPersistent<AudioNode> node_;
 
   // This untraced member is safe because this is cleared for all of live
   // AudioHandlers when the BaseAudioContext dies.  Do not access m_context
