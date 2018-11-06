@@ -86,6 +86,18 @@ The remaining instructions assume you have switched to the `src` directory:
 $ cd src
 ```
 
+### (Linux-only) Install any required host packages
+
+Chromium relies on some platform packages to be present in order to build.
+You can install the current set of required packages with:
+
+```shell
+$ build/install-build-deps.sh
+```
+
+Note that you need to do this only once, and thereafter only if new dependencies
+are added - these will be announced to the chromium-dev@ group.
+
 ### Update your checkout
 
 To update an existing checkout, you can run
@@ -145,7 +157,24 @@ arguments passed to `ninja`.)
 
 ## Run
 
-Once it is built, you can run by:
+Once you've built a package, you'll want to run it!
+
+### (Recommended)(Linux-only) Enable KVM acceleration
+
+Under Linux, if your host and target CPU architectures are the same (e.g. you're
+building for Fuchsia/x64 on a Linux/x64 host) then you can benefit from QEMU's
+support for the KVM hypervisor:
+
+1. Install the KVM module for your kernel, to get a /dev/kvm device.
+2. Ensure that your system has a "kvm" group, and it owns /dev/kvm.
+You can do that by installing the QEMU system common package:
+```shell
+$ sudo apt-get install qemu-system-common
+```
+3. Add users to the "kvm" group, and have them login again, to pick-up the new
+group.
+
+### Run test target
 
 ```shell
 $ out/fuchsia/bin/run_base_unittests
