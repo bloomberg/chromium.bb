@@ -2412,6 +2412,20 @@ TEST_F(WindowTreeClientTestHighDPI, NewTopLevelWindowBounds) {
             top_level->GetHost()->GetBoundsInPixels());
 }
 
+TEST_F(WindowTreeClientTestHighDPI, HostCtorInitializesDisplayScale) {
+  // WindowTreeHost's ctor attempts to initialize the display scale factor.
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  EXPECT_EQ(2.0f, window_tree_host.device_scale_factor());
+  // This test sets pixel bounds before calling WindowTreeHost::InitHost() to
+  // simulate circumstances similar to <http://crbug.com/899084>. Pixel bounds
+  // should still be scaled to DIP bounds for the window tree before InitHost.
+  gfx::Rect bounds(2, 4, 60, 80);
+  gfx::Rect pixel_bounds = gfx::ConvertRectToPixel(2.0f, bounds);
+  window_tree_host.SetBoundsInPixels(pixel_bounds);
+  EXPECT_EQ(bounds, window_tree()->last_set_window_bounds());
+}
+
 TEST_F(WindowTreeClientTestHighDPI, ObservedInputEventsInDip) {
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display primary_display = screen->GetPrimaryDisplay();

@@ -348,6 +348,8 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
   if (!window_)
     window_ = new Window(nullptr);
   display::Screen::GetScreen()->AddObserver(this);
+  auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+  device_scale_factor_ = display.device_scale_factor();
 }
 
 void WindowTreeHost::IntializeDeviceScaleFactor(float device_scale_factor) {
