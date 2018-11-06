@@ -709,6 +709,20 @@ TEST_F(FidlGenJsTest, UnionReceive) {
   EXPECT_EQ(helper.Get<uint32_t>("result_length"), 987654u);
 }
 
+TEST_F(FidlGenJsTest, DefaultUsingIdentifier) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  std::string source = R"(
+    var temp = new DefaultUsingIdentifier();
+    this.result = temp.blorp_defaulting_to_beta;
+  )";
+  helper.runner().Run(source, "test.js");
+
+  EXPECT_EQ(helper.Get<int>("result"),
+            static_cast<int>(fidljstest::Blorp::BETA));
+}
+
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 

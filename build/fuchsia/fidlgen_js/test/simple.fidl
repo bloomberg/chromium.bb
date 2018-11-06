@@ -57,6 +57,10 @@ struct StructOfMultipleUnions {
   UnionOfStructs trailing;
 };
 
+struct DefaultUsingIdentifier {
+  Blorp blorp_defaulting_to_beta = BETA;
+};
+
 interface Testola {
   1: DoSomething();
 
