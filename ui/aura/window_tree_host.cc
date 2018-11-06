@@ -348,6 +348,11 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
   display::Screen::GetScreen()->AddObserver(this);
 }
 
+void WindowTreeHost::IntializeDeviceScaleFactor(float device_scale_factor) {
+  DCHECK(!compositor_->root_layer()) << "Only call this before InitHost()";
+  device_scale_factor_ = device_scale_factor;
+}
+
 void WindowTreeHost::DestroyCompositor() {
   if (compositor_) {
     compositor_->RemoveObserver(this);

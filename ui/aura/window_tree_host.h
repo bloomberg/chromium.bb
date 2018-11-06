@@ -248,6 +248,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   explicit WindowTreeHost(std::unique_ptr<Window> window = nullptr);
 
+  // Set the cached display device scale factor. This should only be called
+  // during subclass initialization, when the value is needed before InitHost().
+  void IntializeDeviceScaleFactor(float device_scale_factor);
+
   void DestroyCompositor();
   void DestroyDispatcher();
 
