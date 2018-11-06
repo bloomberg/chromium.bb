@@ -4146,6 +4146,10 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
                        vertex_opacity, flipped, nearest_neighbor, false);
 
   EXPECT_CALL(overlay_scheduler,
+              Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
+                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
+      .Times(1);
+  EXPECT_CALL(overlay_scheduler,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
                        gfx::Rect(viewport_size), _, _, kGpuFenceId))
       .Times(1);
