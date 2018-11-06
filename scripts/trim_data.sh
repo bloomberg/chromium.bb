@@ -18,6 +18,13 @@ function filter_locale_data {
        /^    ExemplarCharacters\{.*\}$/d
        /^    ExemplarCharacters\{$/, /^    \}$/d
        /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/v8/8414 .
+    sed -r -i \
+      '/^    fields\{$/ {
+         N
+         /^    fields\{\n    \}/ d
+      }' "${langpath}"
   done
 }
 
@@ -217,8 +224,6 @@ dataroot="${treeroot}/source/data"
 scriptdir="${treeroot}/scripts"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
-
-
 
 filter_locale_data
 filter_display_language_names
