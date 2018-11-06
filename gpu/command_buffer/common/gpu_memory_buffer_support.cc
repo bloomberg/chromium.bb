@@ -8,6 +8,7 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 
@@ -54,35 +55,7 @@ unsigned InternalFormatForGpuMemoryBufferFormat(gfx::BufferFormat format) {
 bool IsImageFromGpuMemoryBufferFormatSupported(
     gfx::BufferFormat format,
     const gpu::Capabilities& capabilities) {
-  switch (format) {
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-      return capabilities.texture_format_bgra8888;
-    case gfx::BufferFormat::R_16:
-      return capabilities.texture_norm16;
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RG_88:
-      return capabilities.texture_rg;
-    case gfx::BufferFormat::UYVY_422:
-      return capabilities.image_ycbcr_422;
-    case gfx::BufferFormat::BGRX_1010102:
-      return capabilities.image_xr30;
-    case gfx::BufferFormat::RGBX_1010102:
-      return capabilities.image_xb30;
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::YVU_420:
-      return true;
-    case gfx::BufferFormat::RGBA_F16:
-      return capabilities.texture_half_float_linear;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return capabilities.image_ycbcr_420v;
-  }
-
-  NOTREACHED();
-  return false;
+  return capabilities.gpu_memory_buffer_formats.Has(format);
 }
 
 bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,

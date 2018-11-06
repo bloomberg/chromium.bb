@@ -4174,8 +4174,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.unpremultiply_and_dither_copy =
       feature_info_->feature_flags().unpremultiply_and_dither_copy;
-  caps.texture_target_exception_list =
-      group_->gpu_preferences().texture_target_exception_list;
   caps.separate_stencil_ref_mask_writemask =
       feature_info_->feature_flags().separate_stencil_ref_mask_writemask;
   caps.chromium_nonblocking_readback =
@@ -4183,6 +4181,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.num_surface_buffers = surface_->GetBufferCount();
   caps.mesa_framebuffer_flip_y =
       feature_info_->feature_flags().mesa_framebuffer_flip_y;
+
+  caps.gpu_memory_buffer_formats =
+      feature_info_->feature_flags().gpu_memory_buffer_formats;
+  caps.texture_target_exception_list =
+      group_->gpu_preferences().texture_target_exception_list;
 
   return caps;
 }

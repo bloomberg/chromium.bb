@@ -157,6 +157,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
 
+  IPC_STRUCT_TRAITS_MEMBER(gpu_memory_buffer_formats)
   IPC_STRUCT_TRAITS_MEMBER(texture_target_exception_list)
 IPC_STRUCT_TRAITS_END()
 
@@ -194,4 +195,8 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::ContextCreationAttribs)
   IPC_STRUCT_TRAITS_MEMBER(enable_raster_interface)
   IPC_STRUCT_TRAITS_MEMBER(enable_oop_rasterization)
   IPC_STRUCT_TRAITS_MEMBER(enable_swap_timestamps_if_supported)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(gpu::GpuMemoryBufferFormatSet)
+  IPC_STRUCT_TRAITS_MEMBER(bitfield)
 IPC_STRUCT_TRAITS_END()

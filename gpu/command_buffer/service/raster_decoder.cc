@@ -1187,6 +1187,8 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
           .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
       kGpuFeatureStatusEnabled;
   caps.supports_oop_raster = supports_oop_raster_;
+  caps.gpu_memory_buffer_formats =
+      feature_info_->feature_flags().gpu_memory_buffer_formats;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
   caps.texture_format_bgra8888 =
