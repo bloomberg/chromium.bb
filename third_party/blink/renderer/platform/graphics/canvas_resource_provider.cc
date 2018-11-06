@@ -754,7 +754,6 @@ void CanvasResourceProvider::InvalidateSurface() {
   canvas_image_provider_.reset();
   xform_canvas_ = nullptr;
   surface_ = nullptr;
-  single_buffer_ = nullptr;
 }
 
 uint32_t CanvasResourceProvider::ContentUniqueID() const {
@@ -790,7 +789,7 @@ void CanvasResourceProvider::RecycleResource(
   // Need to check HasOneRef() because if there are outstanding references to
   // the resource, it cannot be safely recycled.
   if (resource->HasOneRef() && resource_recycling_enabled_)
-    recycled_resources_.push_back(std::move(resource));
+    canvas_resources_.push_back(std::move(resource));
 }
 
 void CanvasResourceProvider::SetResourceRecyclingEnabled(bool value) {
@@ -800,29 +799,27 @@ void CanvasResourceProvider::SetResourceRecyclingEnabled(bool value) {
 }
 
 void CanvasResourceProvider::ClearRecycledResources() {
-  recycled_resources_.clear();
+  canvas_resources_.clear();
 }
 
 scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
+  if (canvas_resources_.IsEmpty())
+    canvas_resources_.push_back(CreateResource());
+
   if (IsSingleBuffered()) {
-    if (!single_buffer_)
-      single_buffer_ = CreateResource();
-    return single_buffer_;
+    DCHECK_EQ(canvas_resources_.size(), 1u);
+    return canvas_resources_.back();
   }
-  if (recycled_resources_.size()) {
-    scoped_refptr<CanvasResource> resource =
-        std::move(recycled_resources_.back());
-    recycled_resources_.pop_back();
-    return resource;
-  }
-  return CreateResource();
+
+  scoped_refptr<CanvasResource> resource = std::move(canvas_resources_.back());
+  canvas_resources_.pop_back();
+  return resource;
 }
 
 void CanvasResourceProvider::TryEnableSingleBuffering() {
   if (IsSingleBuffered() || !SupportsSingleBuffering())
     return;
   SetResourceRecyclingEnabled(false);
-  is_single_buffered_ = true;
 }
 
 }  // namespace blink

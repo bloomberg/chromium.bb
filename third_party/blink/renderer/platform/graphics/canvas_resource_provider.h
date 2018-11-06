@@ -92,9 +92,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
-  // Use this method for capturing a frame that is intended to be displayed via
-  // the compositor. Cases that need to acquire a snaptshot that is not destined
-  // to be transfered via TransferableResource should call Snapshot() instead.
+  // Use Snapshot() for capturing a frame that is intended to be displayed via
+  // the compositor. Cases that are destined to be transferred via a
+  // TransferableResource should call ProduceFrame() instead.
   virtual scoped_refptr<CanvasResource> ProduceFrame() = 0;
   scoped_refptr<StaticBitmapImage> Snapshot();
 
@@ -119,11 +119,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // Indicates that the compositing path is single buffered, meaning that
   // ProduceFrame() return a reference to the same resource each time, which
   // implies that Producing an animation frame may overwrite the resource used
-  // by the previous frame. This results in graphics updates skipping the
-  // queue, thus reducing latency, but with the possible side effects of
-  // tearring (in cases where the resource is scanned out directly) and
-  // irregular frame rate.
-  bool IsSingleBuffered() { return is_single_buffered_; }
+  // by the previous frame. This results in graphics updates skipping the queue,
+  // thus reducing latency, but with the possible side effects of tearing (in
+  // cases where the resource is scanned out directly) and irregular frame rate.
+  bool IsSingleBuffered() { return !resource_recycling_enabled_; }
 
   // Attempt to enable single buffering mode on this resource provider.  May
   // fail if the CanvasResourcePRovider subclass does not support this mode of
@@ -226,11 +225,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
       cc::PaintImage::kInvalidContentId;
   uint32_t snapshot_sk_image_id_ = 0u;
 
-  WTF::Vector<scoped_refptr<CanvasResource>> recycled_resources_;
+  // When and if |resource_recycling_enabled_| is false, |canvas_resources_|
+  // will only hold one CanvasResource at most.
+  WTF::Vector<scoped_refptr<CanvasResource>> canvas_resources_;
   bool resource_recycling_enabled_ = true;
-
-  bool is_single_buffered_ = false;
-  scoped_refptr<CanvasResource> single_buffer_;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
 
