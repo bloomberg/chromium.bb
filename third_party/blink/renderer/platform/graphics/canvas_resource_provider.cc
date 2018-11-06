@@ -512,6 +512,33 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   return nullptr;
 }
 
+class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
+ public:
+  CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
+                      cc::ImageDecodeCache* cache_f16,
+                      const gfx::ColorSpace& target_color_space,
+                      SkColorType target_color_type);
+  ~CanvasImageProvider() override = default;
+
+  // cc::ImageProvider implementation.
+  ScopedDecodedDrawImage GetDecodedDrawImage(const cc::DrawImage&) override;
+
+  void ReleaseLockedImages() { locked_images_.clear(); }
+
+ private:
+  void CanUnlockImage(ScopedDecodedDrawImage);
+  void CleanupLockedImages();
+
+  bool cleanup_task_pending_ = false;
+  std::vector<ScopedDecodedDrawImage> locked_images_;
+  cc::PlaybackImageProvider playback_image_provider_n32_;
+  base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
+
+  base::WeakPtrFactory<CanvasImageProvider> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CanvasImageProvider);
+};
+
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_n32,
     cc::ImageDecodeCache* cache_f16,
@@ -529,8 +556,6 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
                                          cc::PlaybackImageProvider::Settings());
   }
 }
-
-CanvasResourceProvider::CanvasImageProvider::~CanvasImageProvider() = default;
 
 cc::ImageProvider::ScopedDecodedDrawImage
 CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
@@ -557,17 +582,11 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
     ReleaseLockedImages();
   }
 
-  // It is safe to use base::Unretained, since decodes acquired from a provider
-  // must not exceed the provider's lifetime.
   auto decoded_draw_image = scoped_decoded_image.decoded_image();
   return ScopedDecodedDrawImage(
-      decoded_draw_image,
-      base::BindOnce(&CanvasImageProvider::CanUnlockImage,
-                     base::Unretained(this), std::move(scoped_decoded_image)));
-}
-
-void CanvasResourceProvider::CanvasImageProvider::ReleaseLockedImages() {
-  locked_images_.clear();
+      decoded_draw_image, base::BindOnce(&CanvasImageProvider::CanUnlockImage,
+                                         weak_factory_.GetWeakPtr(),
+                                         std::move(scoped_decoded_image)));
 }
 
 void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
@@ -629,10 +648,9 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
     cc::ImageDecodeCache* cache_f16 = nullptr;
     if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
       cache_f16 = ImageDecodeCacheF16();
-    canvas_image_provider_.emplace(ImageDecodeCacheRGBA8(), cache_f16,
-                                   target_color_space,
-                                   color_params_.GetSkColorType());
-    cc::ImageProvider* image_provider = &*canvas_image_provider_;
+    canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
+        ImageDecodeCacheRGBA8(), cache_f16, target_color_space,
+        color_params_.GetSkColorType());
 
     cc::SkiaPaintCanvas::ContextFlushes context_flushes;
     if (IsAccelerated() &&
@@ -648,10 +666,11 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
     if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
           GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace(),
-          image_provider, context_flushes);
+          canvas_image_provider_.get(), context_flushes);
     } else {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
-          GetSkSurface()->getCanvas(), image_provider, context_flushes);
+          GetSkSurface()->getCanvas(), canvas_image_provider_.get(),
+          context_flushes);
     }
   }
 
