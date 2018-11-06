@@ -19,6 +19,7 @@ using testing::Invoke;
 using testing::InvokeWithoutArgs;
 
 const uint32_t kWriteBufferSize = 1024;
+const uint32_t kDelegateReadBufferSize = 1024;
 const quic::QuicStreamId kStreamId = 5;
 const std::string kSomeData = "howdy";
 
@@ -35,15 +36,21 @@ class P2PQuicStreamTest : public testing::Test {
                                                quic::Perspective::IS_CLIENT)),
         session_(connection_) {
     session_.Initialize();
-    stream_ = new P2PQuicStreamImpl(kStreamId, &session_, kWriteBufferSize);
-    stream_->SetDelegate(&delegate_);
-    // The session takes the ownership of the stream.
-    session_.ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream_));
     // DCHECKS get hit when the clock is at 0.
     connection_helper_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
   }
 
   ~P2PQuicStreamTest() override {}
+
+  void InitializeStream(
+      uint32_t delegate_read_buffer_size = kDelegateReadBufferSize,
+      uint32_t write_buffer_size = kWriteBufferSize) {
+    stream_ = new P2PQuicStreamImpl(
+        kStreamId, &session_, delegate_read_buffer_size, write_buffer_size);
+    stream_->SetDelegate(&delegate_);
+    // The session takes the ownership of the stream.
+    session_.ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream_));
+  }
 
   quic::test::MockQuicConnectionHelper connection_helper_;
   quic::test::MockAlarmFactory alarm_factory_;
@@ -58,6 +65,7 @@ class P2PQuicStreamTest : public testing::Test {
 };
 
 TEST_F(P2PQuicStreamTest, StreamSendsFinAndCanNoLongerWrite) {
+  InitializeStream();
   EXPECT_CALL(session_, WritevData(stream_, kStreamId, _, _, _))
       .WillOnce(Invoke(quic::test::MockQuicSession::ConsumeData));
 
@@ -69,6 +77,7 @@ TEST_F(P2PQuicStreamTest, StreamSendsFinAndCanNoLongerWrite) {
 }
 
 TEST_F(P2PQuicStreamTest, StreamResetSendsRst) {
+  InitializeStream();
   EXPECT_CALL(session_, SendRstStream(kStreamId, _, _));
   stream_->Reset();
   EXPECT_TRUE(stream_->rst_sent());
@@ -77,7 +86,8 @@ TEST_F(P2PQuicStreamTest, StreamResetSendsRst) {
 // Tests that when a stream receives a stream frame with the FIN bit set it
 // will fire the appropriate callback and close the stream for reading.
 TEST_F(P2PQuicStreamTest, StreamOnStreamFrameWithFin) {
-  EXPECT_CALL(delegate_, OnRemoteFinish());
+  InitializeStream();
+  EXPECT_CALL(delegate_, OnDataReceived(_, /*fin=*/true));
 
   quic::QuicStreamFrame fin_frame(kStreamId, /*fin=*/true, 0, 0);
   stream_->OnStreamFrame(fin_frame);
@@ -89,6 +99,7 @@ TEST_F(P2PQuicStreamTest, StreamOnStreamFrameWithFin) {
 // Tests that when a stream receives a stream frame with the FIN bit set after
 // it has written the FIN bit, then the stream will close.
 TEST_F(P2PQuicStreamTest, StreamClosedAfterSendingThenReceivingFin) {
+  InitializeStream();
   EXPECT_CALL(session_, WritevData(stream_, kStreamId, _, _, _))
       .WillOnce(Invoke(quic::test::MockQuicSession::ConsumeData));
   stream_->WriteData({}, /*fin=*/true);
@@ -105,6 +116,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterSendingThenReceivingFin) {
 // Tests that when a stream writes a FIN bit after receiving a stream frame with
 // the FIN bit then the stream will close.
 TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingThenSendingFin) {
+  InitializeStream();
   quic::QuicStreamFrame fin_frame(stream_->id(), /*fin=*/true, 0, 0);
   stream_->OnStreamFrame(fin_frame);
   EXPECT_FALSE(stream_->IsClosedForTesting());
@@ -120,6 +132,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingThenSendingFin) {
 // Tests that when a stream writes some data with the FIN bit set, and receives
 // data with the FIN bit set it will become closed.
 TEST_F(P2PQuicStreamTest, StreamClosedAfterWritingAndReceivingDataWithFin) {
+  InitializeStream();
   EXPECT_CALL(session_, WritevData(stream_, kStreamId,
                                    /*write_length=*/kSomeData.size(), _, _))
       .WillOnce(Invoke(quic::test::MockQuicSession::ConsumeData));
@@ -139,6 +152,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterWritingAndReceivingDataWithFin) {
 // Tests that when a stream receives a RST_STREAM frame it will fire the
 // appropriate callback and the stream will become closed.
 TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingReset) {
+  InitializeStream();
   EXPECT_CALL(delegate_, OnRemoteReset());
 
   quic::QuicRstStreamFrame rst_frame(quic::kInvalidControlFrameId, kStreamId,
@@ -151,6 +165,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingReset) {
 // Tests that data written to the P2PQuicStream will appropriately get written
 // to the underlying QUIC library.
 TEST_F(P2PQuicStreamTest, StreamWritesData) {
+  InitializeStream();
   EXPECT_CALL(session_, WritevData(stream_, kStreamId,
                                    /*write_length=*/kSomeData.size(), _, _))
       .WillOnce(Invoke([](quic::QuicStream* stream, quic::QuicStreamId id,
@@ -178,6 +193,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesData) {
 // Tests that data written to the P2PQuicStream will appropriately get written
 // to the underlying QUIC library with the FIN bit set.
 TEST_F(P2PQuicStreamTest, StreamWritesDataWithFin) {
+  InitializeStream();
   EXPECT_CALL(session_, WritevData(stream_, kStreamId,
                                    /*write_length=*/kSomeData.size(), _, _))
       .WillOnce(Invoke([](quic::QuicStream* stream, quic::QuicStreamId id,
@@ -205,6 +221,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataWithFin) {
 // Tests that when written data is not consumed by QUIC (due to buffering),
 // the OnWriteDataConsumed will not get fired.
 TEST_F(P2PQuicStreamTest, StreamWritesDataAndNotConsumedByQuic) {
+  InitializeStream();
   EXPECT_CALL(delegate_, OnWriteDataConsumed(_)).Times(0);
   EXPECT_CALL(session_, WritevData(stream_, kStreamId,
                                    /*write_length=*/kSomeData.size(), _, _))
@@ -228,6 +245,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataAndNotConsumedByQuic) {
 // pressure from the receive side, and its "send window" is smaller than the
 // amount attempted to be written.
 TEST_F(P2PQuicStreamTest, StreamWritesDataAndPartiallyConsumedByQuic) {
+  InitializeStream();
   size_t amount_consumed_by_quic = 2;
   EXPECT_CALL(delegate_, OnWriteDataConsumed(amount_consumed_by_quic));
   EXPECT_CALL(session_, WritevData(stream_, kStreamId,
@@ -247,4 +265,162 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataAndPartiallyConsumedByQuic) {
                      /*fin=*/true);
 }
 
+// Tests if a P2PQuicStream receives data it will appropriately fire the
+// OnDataReceived callback to the delegate.
+TEST_F(P2PQuicStreamTest, StreamReceivesData) {
+  InitializeStream();
+  std::string data = "some_data";
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/false, 0, data);
+
+  EXPECT_CALL(delegate_,
+              OnDataReceived(std::vector<uint8_t>(data.begin(), data.end()),
+                             /*fin=*/false));
+
+  stream_->OnStreamFrame(stream_frame);
+}
+
+// Tests that when received data is marked consumed it is appropriately
+// reflected in the P2PQuicStream's view of the delegate read buffer size.
+TEST_F(P2PQuicStreamTest, MarkConsumedData) {
+  InitializeStream();
+  std::string data = "some_data";
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/false, 0, data);
+
+  EXPECT_CALL(delegate_, OnDataReceived(_, _));
+  stream_->OnStreamFrame(stream_frame);
+  // At this point the application has received data but not marked is as
+  // consumed, so from the P2PQuicStream perspective that data has been
+  // buffered.
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+
+  stream_->MarkReceivedDataConsumed(data.size());
+  EXPECT_EQ(0u, stream_->DelegateReadBufferedAmountForTesting());
+}
+
+// Tests that if the delegate's read buffer is "full" from the
+// P2PQuicStream's perspective, then getting more data will not fire the
+// OnDataReceived callback.
+TEST_F(P2PQuicStreamTest, StreamReceivesDataWithFullReadBuffer) {
+  std::string data = "some_data";
+  // The P2PQuicStream is created with a delegate read buffer size equal
+  // to the size of the data that is being received.
+  InitializeStream(/*delegate_read_buffer_size=*/data.size());
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/false, 0, data);
+
+  EXPECT_CALL(delegate_, OnDataReceived(_, _)).Times(1);
+  stream_->OnStreamFrame(stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+
+  // Delegate read buffer is now full. Receiving more data should not fire the
+  // callback.
+  std::string more_data = "data2";
+  quic::QuicStreamFrame new_stream_frame(stream_->id(), /*fin=*/false,
+                                         /*offset=*/data.size(), more_data);
+  stream_->OnStreamFrame(new_stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+}
+
+// Tests that if the delegate's read buffer is "full" from the
+// P2PQuicStream's perspective, and then getting an empty STREAM frame with the
+// FIN bit set, will fire Delegate::OnDataReceived with fin set to true.
+TEST_F(P2PQuicStreamTest, StreamReceivesFinWithFullReadBuffer) {
+  std::string data = "some_data";
+  // The P2PQuicStream is created with a delegate read buffer size equal
+  // to the size of the data that is being received.
+  InitializeStream(/*delegate_read_buffer_size=*/data.size());
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/false, 0, data);
+
+  EXPECT_CALL(delegate_,
+              OnDataReceived(std::vector<uint8_t>(data.begin(), data.end()),
+                             /*fin=*/false))
+      .Times(1);
+  stream_->OnStreamFrame(stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+
+  // Delegate read buffer is now full, but because the STREAM frame with the FIN
+  // bit doesn't contain any data, it means that all data has been consumed from
+  // the sequencer up to the FIN bit. This fires OnDataReceived with the
+  // fin=true.
+  EXPECT_CALL(delegate_, OnDataReceived(_, true)).Times(1);
+  std::string more_data = "data2";
+  quic::QuicStreamFrame new_stream_frame(stream_->id(), /*fin=*/true,
+                                         /*offset=*/data.size(), 0);
+  stream_->OnStreamFrame(new_stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+}
+
+// Tests that when the delegate's read buffer is "full" from the
+// P2PQuicStream's perspective, the Delegate::OnDataReceived callback is
+// fired after the received data is marked as consumed by the delegate.
+TEST_F(P2PQuicStreamTest, StreamDataConsumedWithFullDelegateReadBuffer) {
+  std::string data = "some_data";
+  // The P2PQuicStream is created with a delegate read buffer size equal
+  // to the size of the data that is being received.
+  InitializeStream(/*delegate_read_buffer_size=*/data.size());
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/false, 0, data);
+
+  EXPECT_CALL(delegate_,
+              OnDataReceived(std::vector<uint8_t>(data.begin(), data.end()),
+                             /*fin=*/false))
+      .Times(1);
+  stream_->OnStreamFrame(stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+
+  // Delegate read buffer is now full. Receiving more data should not fire the
+  // callback.
+  std::string more_data = "data2";
+  quic::QuicStreamFrame new_stream_frame(stream_->id(), /*fin=*/true,
+                                         /*offset=*/data.size(), more_data);
+  stream_->OnStreamFrame(new_stream_frame);
+  EXPECT_EQ(data.size(), stream_->DelegateReadBufferedAmountForTesting());
+
+  // Marking the original data as consumed should fire the new data to be
+  // received.
+  EXPECT_CALL(delegate_, OnDataReceived(std::vector<uint8_t>(more_data.begin(),
+                                                             more_data.end()),
+                                        /*fin=*/true))
+      .Times(1);
+  stream_->MarkReceivedDataConsumed(data.size());
+  EXPECT_EQ(more_data.size(), stream_->DelegateReadBufferedAmountForTesting());
+}
+
+// Tests that when receiving more data than available in the delegate read
+// buffer, that the delegate will get an OnDataReceived callback for the amount
+// available in its buffer. Then later when the delegate marks the data as
+// consumed it will get another OnDataReceived callback.
+TEST_F(P2PQuicStreamTest, StreamReceivesMoreDataThanDelegateReadBufferSize) {
+  std::string data = "somedata";
+  // The P2PQuicStream is created with a delegate read buffer size equal
+  // to half of the data being sent.
+  InitializeStream(/*delegate_read_buffer_size=*/4);
+  quic::QuicStreamFrame stream_frame(stream_->id(), /*fin=*/true, 0, data);
+
+  // Upon receiving the stream frame the Delegate should receive "some", because
+  // that's all it has space to buffer.
+  EXPECT_CALL(delegate_, OnDataReceived(std::vector<uint8_t>(data.begin(),
+                                                             data.begin() + 4),
+                                        /*fin=*/false))
+      .Times(1);
+  stream_->OnStreamFrame(stream_frame);
+  EXPECT_EQ(4u, stream_->DelegateReadBufferedAmountForTesting());
+
+  // Upon consuming 2 bytes of data, the delegate should receive the next part
+  // of the message - "da".
+  EXPECT_CALL(delegate_, OnDataReceived(std::vector<uint8_t>(data.begin() + 4,
+                                                             data.begin() + 6),
+                                        /*fin=*/false))
+      .Times(1);
+  stream_->MarkReceivedDataConsumed(2);
+  EXPECT_EQ(4u, stream_->DelegateReadBufferedAmountForTesting());
+
+  // After consuming 4 bytes of data (all received data thus far), the delegate
+  // should receive the next part of the message - "ta" and the FIN bit.
+  EXPECT_CALL(delegate_,
+              OnDataReceived(std::vector<uint8_t>(data.begin() + 6, data.end()),
+                             /*fin=*/true))
+      .Times(1);
+  stream_->MarkReceivedDataConsumed(4);
+  // Just the last data received ("ta") is held in the delegate's read buffer.
+  EXPECT_EQ(2u, stream_->DelegateReadBufferedAmountForTesting());
+}
 }  // namespace blink

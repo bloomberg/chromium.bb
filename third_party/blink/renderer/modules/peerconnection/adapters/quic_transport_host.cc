@@ -50,7 +50,8 @@ void QuicTransportHost::Initialize(
   uint32_t stream_buffer_size = 24 * 1024 * 1024;
   P2PQuicTransportConfig config(
       this, ice_transport_host->ConnectConsumer(this)->packet_transport(),
-      certificates, stream_buffer_size);
+      certificates, /*stream_delegate_read_buffer_size_in=*/stream_buffer_size,
+      /*stream_write_buffer_size_in=*/stream_buffer_size);
   config.is_server = (perspective == quic::Perspective::IS_SERVER);
   quic_transport_ =
       quic_transport_factory_->CreateQuicTransport(std::move(config));

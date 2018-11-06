@@ -16,10 +16,9 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
  public:
   P2PQuicStreamImpl(quic::QuicStreamId id,
                     quic::QuicSession* session,
+                    uint32_t delegate_read_buffer_size,
                     uint32_t write_buffer_size);
   ~P2PQuicStreamImpl() override;
-
-
   // P2PQuicStream overrides
   void SetDelegate(P2PQuicStream::Delegate* delegate) override;
 
@@ -27,8 +26,14 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
 
   void WriteData(std::vector<uint8_t> data, bool fin) override;
 
+  void MarkReceivedDataConsumed(uint32_t amount) override;
+
   // For testing purposes. This is returns true after quic::QuicStream::OnClose
   bool IsClosedForTesting();
+
+  // For testing purposes. This exposes the amount of received data that the
+  // P2PQuicStream is aware is buffered by the delegate.
+  uint32_t DelegateReadBufferedAmountForTesting();
 
   // quic::QuicStream overrides.
   //
@@ -46,12 +51,6 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
   //  reading
   // and writing, and can now be deleted by the quic::QuicSession.
   void OnClose() override;
-  // Called when the stream has finished consumed data up to the FIN bit from
-  // the quic::QuicStreamSequencer. This will close the underlying QuicStream
-  // for reading. This can be called either by the P2PQuicStreamImpl when
-  // reading data, or by the quic::QuicStreamSequencer if we're done reading &
-  // receive a stream frame with the FIN bit.
-  void OnFinRead() override;
 
  protected:
   // quic::QuicStream overrides.
@@ -67,17 +66,31 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
   // Outlives the P2PQuicStreamImpl.
   Delegate* delegate_;
 
-  // The maximum size allowed to be from due to writing data. The
+  // The read buffer size of the delegate. The |delegate_read_buffered_amount_|
+  // must never exceed this value (enforced by the P2PQuicStreamImpl).
+  const uint32_t delegate_read_buffer_size_;
+  // The maximum size allowed to be buffered write side. The
   // |write_buffered_amount_| must never exceed this value, and it is up
-  // to the application to enforce this.
+  // to the delegate to enforce this.
   const uint32_t write_buffer_size_;
+  // How much total data has been received and given to the delegate,
+  // but not yet consumed by the delegate. This value gets increased when data
+  // is received from the QUIC library in OnDataAvailable() and and decreased
+  // when the delegate updates that data has been read with
+  // MarkReceivedDataConsumed().
+  uint32_t delegate_read_buffered_amount_ = 0;
   // How much data is buffered by the QUIC library, but has not yet
-  // been consumed. This value gets increased when WriteData() is called
-  // and decreased when OnDataConsumed() gets fired.
+  // been sent. This value gets increased when WriteData() is called
+  // and decreased when OnDataConsumed() gets called by the QUIC library,
+  // due to the data being sent.
   uint32_t write_buffered_amount_ = 0;
 
-  // Set after OnClose gets called. Used for testing purposes.
+  // Set after OnClose gets called.
   bool closed_ = false;
+
+  // This is set after the sequencer is closed due to the P2PQuicStream
+  // consuming all of the sequencer's data up to the FIN bit.
+  bool consumed_fin_ = false;
 };
 
 }  // namespace blink
