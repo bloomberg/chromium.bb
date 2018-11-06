@@ -14,43 +14,38 @@ Identity::Identity() : Identity("") {}
 Identity::Identity(const std::string& name)
     : Identity(name, mojom::kInheritUserID) {}
 
-Identity::Identity(const std::string& name, const std::string& user_id)
-    : Identity(name, user_id, "") {}
+Identity::Identity(const std::string& name, const std::string& instance_group)
+    : Identity(name, instance_group, "") {}
 
 Identity::Identity(const std::string& name,
-                   const std::string& user_id,
-                   const std::string& instance)
-    : name_(name), user_id_(user_id), instance_(instance) {
-  DCHECK(!user_id.empty());
-  DCHECK(base::IsValidGUID(user_id));
+                   const std::string& instance_group,
+                   const std::string& instance_id)
+    : name_(name), instance_group_(instance_group), instance_id_(instance_id) {
+  DCHECK(!instance_group_.empty());
+  DCHECK(base::IsValidGUID(instance_group_));
 }
 
 Identity::Identity(const Identity& other) = default;
 
-Identity::~Identity() {}
+Identity::~Identity() = default;
 
-Identity& Identity::operator=(const Identity& other) {
-  name_ = other.name_;
-  user_id_ = other.user_id_;
-  instance_ = other.instance_;
-  return *this;
-}
+Identity& Identity::operator=(const Identity& other) = default;
 
 bool Identity::operator<(const Identity& other) const {
   if (name_ != other.name_)
     return name_ < other.name_;
-  if (instance_ != other.instance_)
-    return instance_ < other.instance_;
-  return user_id_ < other.user_id_;
+  if (instance_group_ != other.instance_group_)
+    return instance_group_ < other.instance_group_;
+  return instance_id_ < other.instance_id_;
 }
 
 bool Identity::operator==(const Identity& other) const {
-  return other.name_ == name_ && other.instance_ == instance_ &&
-         other.user_id_ == user_id_;
+  return name_ == other.name_ && instance_group_ == other.instance_group_ &&
+         instance_id_ == other.instance_id_;
 }
 
 bool Identity::IsValid() const {
-  return !name_.empty() && base::IsValidGUID(user_id_);
+  return !name_.empty() && base::IsValidGUID(instance_group_);
 }
 
 }  // namespace service_manager

@@ -93,9 +93,11 @@ class ProvidedService : public Service,
     bindings_.AddBinding(this, std::move(request));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
-    state->connection_remote_userid = source_info.identity.user_id();
+    state->connection_remote_instance_group =
+        source_info.identity.instance_group();
     state->initialize_local_name = service_binding_.identity().name();
-    state->initialize_userid = service_binding_.identity().user_id();
+    state->initialize_local_instance_group =
+        service_binding_.identity().instance_group();
 
     service_binding_.GetConnector()->BindInterface(source_info.identity,
                                                    &caller_);
@@ -118,7 +120,7 @@ class ProvidedService : public Service,
   }
 
   void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(service_binding_.identity().instance());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
   // test::mojom::BlockedInterface:
@@ -244,7 +246,7 @@ class ConnectTestService : public Service,
   }
 
   void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(service_binding_.identity().instance());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
   void OnConnectionError() {

@@ -211,13 +211,13 @@ void Catalog::LoadDefaultCatalogManifest(const base::FilePath& path) {
   catalog::Catalog::SetDefaultCatalogManifest(std::move(manifest_value));
 }
 
-Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
-  auto it = instances_.find(user_id);
+Instance* Catalog::GetInstanceForGroup(const std::string& instance_group) {
+  auto it = instances_.find(instance_group);
   if (it != instances_.end())
     return it->second.get();
 
   auto result = instances_.insert(std::make_pair(
-      user_id,
+      instance_group,
       std::make_unique<Instance>(&system_cache_, service_manifest_provider_)));
   return result.first->second.get();
 }
@@ -225,7 +225,8 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
 void Catalog::BindCatalogRequest(
     mojom::CatalogRequest request,
     const service_manager::BindSourceInfo& source_info) {
-  Instance* instance = GetInstanceForUserId(source_info.identity.user_id());
+  Instance* instance =
+      GetInstanceForGroup(source_info.identity.instance_group());
   instance->BindCatalog(std::move(request));
 }
 

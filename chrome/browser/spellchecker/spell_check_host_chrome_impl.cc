@@ -82,7 +82,7 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   // service, calls CallSpellingServiceDone.
   content::BrowserContext* context =
       content::BrowserContext::GetBrowserContextForServiceUserId(
-          renderer_identity_.user_id());
+          renderer_identity_.instance_group());
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
       base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,

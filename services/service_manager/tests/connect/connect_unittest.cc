@@ -105,15 +105,16 @@ class ConnectTest : public test::ServiceTest,
   void CompareConnectionState(
       const std::string& connection_local_name,
       const std::string& connection_remote_name,
-      const std::string& connection_remote_userid,
+      const std::string& connection_remote_instance_group,
       const std::string& initialize_local_name,
-      const std::string& initialize_userid) {
+      const std::string& initialize_local_instance_group) {
     EXPECT_EQ(connection_remote_name,
               connection_state_->connection_remote_name);
-    EXPECT_EQ(connection_remote_userid,
-              connection_state_->connection_remote_userid);
+    EXPECT_EQ(connection_remote_instance_group,
+              connection_state_->connection_remote_instance_group);
     EXPECT_EQ(initialize_local_name, connection_state_->initialize_local_name);
-    EXPECT_EQ(initialize_userid, connection_state_->initialize_userid);
+    EXPECT_EQ(initialize_local_instance_group,
+              connection_state_->initialize_local_instance_group);
   }
 
  private:
@@ -448,8 +449,8 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   // Connect to an instance with an explicitly different user_id. This supplied
   // user id should be ignored by the service manager (which will generate its
   // own synthetic user id for all-user singleton instances).
-  const std::string singleton_userid = base::GenerateGUID();
-  Identity singleton_id(kTestSingletonAppName, singleton_userid);
+  const std::string singleton_instance_group = base::GenerateGUID();
+  Identity singleton_id(kTestSingletonAppName, singleton_instance_group);
   connector()->StartService(singleton_id);
   Identity first_resolved_identity;
   {
@@ -458,7 +459,8 @@ TEST_F(ConnectTest, AllUsersSingleton) {
     test_api.SetStartServiceCallback(base::Bind(
         &StartServiceResponse, &loop, nullptr, &first_resolved_identity));
     loop.Run();
-    EXPECT_NE(first_resolved_identity.user_id(), singleton_userid);
+    EXPECT_NE(first_resolved_identity.instance_group(),
+              singleton_instance_group);
   }
   // This connects using the current client's user_id. It should be bound to the
   // same service started above, with the same service manager-generated user
@@ -471,7 +473,8 @@ TEST_F(ConnectTest, AllUsersSingleton) {
     test_api.SetStartServiceCallback(
         base::Bind(&StartServiceResponse, &loop, nullptr, &resolved_identity));
     loop.Run();
-    EXPECT_EQ(resolved_identity.user_id(), first_resolved_identity.user_id());
+    EXPECT_EQ(resolved_identity.instance_group(),
+              first_resolved_identity.instance_group());
   }
 }
 

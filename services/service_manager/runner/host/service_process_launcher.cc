@@ -106,7 +106,7 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
   child_command_line->AppendArguments(parent_command_line, false);
   child_command_line->AppendSwitchASCII(switches::kServiceName, target.name());
 #ifndef NDEBUG
-  child_command_line->AppendSwitchASCII("u", target.user_id());
+  child_command_line->AppendSwitchASCII("u", target.instance_group());
 #endif
 
   if (!IsUnsandboxedSandboxType(sandbox_type)) {
@@ -222,8 +222,8 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
   DVLOG(0)
 #endif
       << "Launched child process pid=" << child_process_.Pid()
-      << ", instance=" << target.instance() << ", name=" << target.name()
-      << ", user_id=" << target.user_id();
+      << ", instance_id=" << target.instance_id() << ", name=" << target.name()
+      << ", instance_group=" << target.instance_group();
 
   mojo::OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
                                  channel.TakeLocalEndpoint());

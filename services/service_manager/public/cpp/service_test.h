@@ -73,7 +73,6 @@ class ServiceTest : public testing::Test {
 
   // Instance information received from the Service Manager during OnStart().
   const std::string& test_name() const { return initialize_name_; }
-  const std::string& test_userid() const { return initialize_userid_; }
   uint32_t test_instance_id() const { return initialize_instance_id_; }
 
   // By default, creates a simple Service that captures the metadata sent
@@ -89,7 +88,7 @@ class ServiceTest : public testing::Test {
   // Call to set OnStart() metadata when GetService() is overridden.
   void OnStartCalled(Connector* connector,
                      const std::string& name,
-                     const std::string& userid);
+                     const std::string& instance_group);
 
   // Explicitly shuts down the ServiceManager and |context_|. This is called
   // from TearDown(), but may be called explicitly to test shutdown behavior.
@@ -118,7 +117,6 @@ class ServiceTest : public testing::Test {
 
   Connector* connector_ = nullptr;
   std::string initialize_name_;
-  std::string initialize_userid_ = service_manager::mojom::kInheritUserID;
   uint32_t initialize_instance_id_ = service_manager::mojom::kInvalidInstanceID;
 
   base::Closure initialize_called_;

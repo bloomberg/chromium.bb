@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(CATALOG) Catalog {
   // to be relative to the current executable's path.
   static void LoadDefaultCatalogManifest(const base::FilePath& path);
 
-  Instance* GetInstanceForUserId(const std::string& user_id);
+  Instance* GetInstanceForGroup(const std::string& instance_group);
 
  private:
   class DirectoryThreadState;

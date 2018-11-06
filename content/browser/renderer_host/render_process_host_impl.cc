@@ -1374,7 +1374,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // We only fulfill connections from the renderer we host.
     if (child_identity_.name() != source_info.identity.name() ||
-        child_identity_.instance() != source_info.identity.instance()) {
+        child_identity_.instance_id() != source_info.identity.instance_id()) {
       return;
     }
 
