@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"

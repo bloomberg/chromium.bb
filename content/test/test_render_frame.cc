@@ -14,7 +14,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"

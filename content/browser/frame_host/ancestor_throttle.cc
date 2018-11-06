@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/console_message_level.h"
 #include "net/http/http_response_headers.h"
 #include "url/origin.h"

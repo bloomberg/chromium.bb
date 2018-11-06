@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_request.h"
 

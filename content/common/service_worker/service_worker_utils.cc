@@ -10,7 +10,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "content/common/service_worker/service_worker_types.pb.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_BROWSER_SIDE_NAVIGATION_POLICY_H_
-#define CONTENT_PUBLIC_COMMON_BROWSER_SIDE_NAVIGATION_POLICY_H_
+#ifndef CONTENT_PUBLIC_COMMON_NAVIGATION_POLICY_H_
+#define CONTENT_PUBLIC_COMMON_NAVIGATION_POLICY_H_
 
 #include "content/common/content_export.h"
 
-// A centralized file for base helper methods and policy decisions about browser
-// side navigation (aka PlzNavigate).
+// A centralized file for base helper methods and policy decisions about
+// navigations.
 
 namespace content {
 
@@ -17,4 +17,4 @@ CONTENT_EXPORT bool IsPerNavigationMojoInterfaceEnabled();
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_BROWSER_SIDE_NAVIGATION_POLICY_H_
+#endif  // CONTENT_PUBLIC_COMMON_NAVIGATION_POLICY_H_

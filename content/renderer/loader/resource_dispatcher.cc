@@ -26,7 +26,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"

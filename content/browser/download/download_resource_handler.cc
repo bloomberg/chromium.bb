@@ -31,7 +31,6 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "services/network/public/cpp/resource_response.h"
 
 namespace content {

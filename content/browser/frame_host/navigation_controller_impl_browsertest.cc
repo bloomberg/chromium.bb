@@ -48,7 +48,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"

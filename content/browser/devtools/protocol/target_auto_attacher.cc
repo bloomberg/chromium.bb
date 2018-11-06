@@ -12,7 +12,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 namespace protocol {

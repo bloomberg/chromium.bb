@@ -17,7 +17,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"

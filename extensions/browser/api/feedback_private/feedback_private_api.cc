@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
