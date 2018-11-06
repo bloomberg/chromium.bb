@@ -49,11 +49,19 @@ bool IsBefore(base::Time a, base::Time b) {
   return b.is_null() || a < b;
 }
 
+// Implements the modulo operation. E.g. modulo(10, 7) == 3, modulo(-1, 7) == 6.
+int Modulo(int dividend, int divisor) {
+  int remainder = dividend % divisor;
+  if (remainder < 0)
+    remainder += divisor;
+  return remainder;
+}
+
 // Shifts the current weekday, if the value is positive shifts forward and if
 // negative backwards.
 Weekday WeekdayShift(Weekday current_day, int shift) {
-  return static_cast<Weekday>((static_cast<int>(current_day) + shift) %
-                              static_cast<int>(Weekday::kCount));
+  return static_cast<Weekday>(Modulo(static_cast<int>(current_day) + shift,
+                                     static_cast<int>(Weekday::kCount)));
 }
 
 // Returns usage limit reset time or default value if |time_usage_limit| is
