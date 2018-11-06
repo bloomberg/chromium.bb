@@ -39,8 +39,6 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -65,10 +63,6 @@ const char kJsApiResultOK[] = "ok";
 
 const char kJsDeviceStatusChangedCallback[] =
     "mobile.MobileSetup.deviceStateChanged";
-const char kJsPortalFrameLoadFailedCallback[] =
-    "mobile.MobileSetup.portalFrameLoadError";
-const char kJsPortalFrameLoadCompletedCallback[] =
-    "mobile.MobileSetup.portalFrameLoadCompleted";
 const char kJsGetDeviceInfoCallback[] =
     "mobile.MobileSetupPortal.onGotDeviceInfo";
 const char kJsConnectivityChangedCallback[] =
@@ -631,33 +625,8 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui) : ui::WebDialogUI(web_ui) {
   // Set up the chrome://mobilesetup/ source.
   content::URLDataSource::Add(Profile::FromWebUI(web_ui),
                               std::make_unique<MobileSetupUIHTMLSource>());
-
-  content::WebContentsObserver::Observe(web_ui->GetWebContents());
 }
 
 MobileSetupUI::~MobileSetupUI() = default;
-
-void MobileSetupUI::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  NET_LOG(EVENT) << "MobileSetupUI: DidFinishNavigation. Committed: "
-                 << navigation_handle->HasCommitted() << " Frame: "
-                 << navigation_handle->GetRenderFrameHost()->GetFrameName();
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->GetRenderFrameHost()->GetFrameName() !=
-          "paymentForm") {
-    return;
-  }
-
-  if (navigation_handle->IsErrorPage()) {
-    NET_LOG(ERROR) << "MobileSetupUI: Error: "
-                   << navigation_handle->GetNetErrorCode();
-    base::Value result_value(-navigation_handle->GetNetErrorCode());
-    web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadFailedCallback,
-                                           result_value);
-    return;
-  }
-
-  web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadCompletedCallback);
-}
 
 }  // namespace chromeos
