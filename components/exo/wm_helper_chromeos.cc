@@ -170,6 +170,10 @@ aura::Window* WMHelperChromeOS::GetFocusedWindow() const {
   return focus_client->GetFocusedWindow();
 }
 
+aura::Window* WMHelperChromeOS::GetRootWindowForNewWindows() const {
+  return ash::Shell::GetRootWindowForNewWindows();
+}
+
 aura::client::CursorClient* WMHelperChromeOS::GetCursorClient() {
   return aura::client::GetCursorClient(ash::Shell::GetPrimaryRootWindow());
 }

@@ -960,7 +960,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   params.parent =
       parent_ ? parent_
               : ash::Shell::GetContainer(
-                    ash::Shell::GetRootWindowForNewWindows(), container_);
+                    WMHelper::GetInstance()->GetRootWindowForNewWindows(),
+                    container_);
   params.bounds = gfx::Rect(origin_, gfx::Size());
   bool activatable = activatable_;
   // ShellSurfaces in system modal container are only activatable if input

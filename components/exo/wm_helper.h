@@ -91,6 +91,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   virtual aura::Window* GetPrimaryDisplayContainer(int container_id) = 0;
   virtual aura::Window* GetActiveWindow() const = 0;
   virtual aura::Window* GetFocusedWindow() const = 0;
+  virtual aura::Window* GetRootWindowForNewWindows() const = 0;
   virtual aura::client::CursorClient* GetCursorClient() = 0;
   virtual void AddPreTargetHandler(ui::EventHandler* handler) = 0;
   virtual void PrependPreTargetHandler(ui::EventHandler* handler) = 0;
