@@ -37,7 +37,7 @@ void V8Element::innerHTMLAttributeSetterCustom(
   if (value->IsNull()) {
     cpp_value.SetString(String());
   } else {
-    V8StringOrTrustedHTML::ToImpl(info.GetIsolate(), value, cpp_value,
+    V8StringOrTrustedHTML::ToImpl(isolate, value, cpp_value,
                                   UnionTypeConversionMode::kNotNullable,
                                   exception_state);
   }
@@ -70,7 +70,7 @@ void V8Element::outerHTMLAttributeSetterCustom(
   if (value->IsNull()) {
     cpp_value.SetString(String());
   } else {
-    V8StringOrTrustedHTML::ToImpl(info.GetIsolate(), value, cpp_value,
+    V8StringOrTrustedHTML::ToImpl(isolate, value, cpp_value,
                                   UnionTypeConversionMode::kNotNullable,
                                   exception_state);
   }

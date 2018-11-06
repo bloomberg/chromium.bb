@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -27,6 +28,15 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
                                    TrustedTypePolicyOptions*,
                                    bool exposed);
 
+  TrustedHTML* CreateHTML(v8::Isolate*, const String&, ExceptionState&);
+  TrustedScript* CreateScript(v8::Isolate*, const String&, ExceptionState&);
+  TrustedScriptURL* CreateScriptURL(v8::Isolate*,
+                                    const String&,
+                                    ExceptionState&);
+  TrustedURL* CreateURL(v8::Isolate*, const String&, ExceptionState&);
+
+  // IDL generates calls with ScriptState*, which contains the Isolate*.
+  // These methods all call the Isolate* variant.
   TrustedHTML* createHTML(ScriptState*, const String&, ExceptionState&);
   TrustedScript* createScript(ScriptState*, const String&, ExceptionState&);
   TrustedScriptURL* createScriptURL(ScriptState*,

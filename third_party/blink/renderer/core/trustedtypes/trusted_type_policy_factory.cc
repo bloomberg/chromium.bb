@@ -34,8 +34,13 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
   // TODO(orsibatiz): After policy naming rules are estabilished, check for the
   // policy_name to be according to them.
   if (policy_map_.Contains(policy_name)) {
-    exception_state.ThrowTypeError("Policy with name" + policy_name +
+    exception_state.ThrowTypeError("Policy with name " + policy_name +
                                    " already exists.");
+    return nullptr;
+  }
+  if (policy_name == "default" && !exposed) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The default policy must be exposed.");
     return nullptr;
   }
   TrustedTypePolicy* policy = TrustedTypePolicy::Create(
