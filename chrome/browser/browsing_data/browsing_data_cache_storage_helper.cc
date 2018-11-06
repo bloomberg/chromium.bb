@@ -13,21 +13,22 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
+#include "content/public/browser/storage_usage_info.h"
 
 using content::BrowserThread;
 using content::CacheStorageContext;
-using content::CacheStorageUsageInfo;
+using content::StorageUsageInfo;
 
 namespace {
 
 void GetAllOriginsInfoForCacheStorageCallback(
     BrowsingDataCacheStorageHelper::FetchCallback callback,
-    const std::vector<CacheStorageUsageInfo>& origins) {
+    const std::vector<StorageUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  std::list<content::CacheStorageUsageInfo> result;
-  for (const CacheStorageUsageInfo& origin : origins) {
+  std::list<content::StorageUsageInfo> result;
+  for (const StorageUsageInfo& origin : origins) {
     if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
@@ -133,12 +134,11 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<CacheStorageUsageInfo> result;
+  std::list<StorageUsageInfo> result;
   for (const PendingCacheStorageUsageInfo& pending_info :
        pending_cache_storage_info_) {
-    CacheStorageUsageInfo info(pending_info.origin,
-                               pending_info.total_size_bytes,
-                               pending_info.last_modified);
+    StorageUsageInfo info(pending_info.origin, pending_info.total_size_bytes,
+                          pending_info.last_modified);
     result.push_back(info);
   }
 

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context_observer.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -389,8 +390,7 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfo(
   if (!context_core_) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback),
-                       std::vector<ServiceWorkerUsageInfo>()));
+        base::BindOnce(std::move(callback), std::vector<StorageUsageInfo>()));
     return;
   }
   context()->storage()->GetAllRegistrationsInfos(base::BindOnce(
@@ -1119,17 +1119,20 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::vector<ServiceWorkerUsageInfo> usage_infos;
+  std::vector<StorageUsageInfo> usage_infos;
 
-  std::map<GURL, ServiceWorkerUsageInfo> origins;
+  std::map<GURL, StorageUsageInfo> origins;
   for (const auto& registration_info : registrations) {
     GURL origin = registration_info.scope.GetOrigin();
 
-    ServiceWorkerUsageInfo& usage_info = origins[origin];
-    if (usage_info.origin.is_empty())
-      usage_info.origin = origin;
-    usage_info.scopes.push_back(registration_info.scope);
-    usage_info.total_size_bytes += registration_info.stored_version_size_bytes;
+    auto it = origins.find(origin);
+    if (it == origins.end()) {
+      origins[origin] = StorageUsageInfo(
+          origin, registration_info.stored_version_size_bytes, base::Time());
+    } else {
+      it->second.total_size_bytes +=
+          registration_info.stored_version_size_bytes;
+    }
   }
 
   for (const auto& origin_info_pair : origins) {

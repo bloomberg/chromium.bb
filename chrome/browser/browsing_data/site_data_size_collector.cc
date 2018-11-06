@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_constants.h"
 
 namespace {
@@ -172,11 +173,11 @@ void SiteDataSizeCollector::OnLocalStorageModelInfoLoaded(
 }
 
 void SiteDataSizeCollector::OnIndexedDBModelInfoLoaded(
-    const std::list<content::IndexedDBInfo>& indexed_db_info_list) {
+    const std::list<content::StorageUsageInfo>& indexed_db_info_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
   for (const auto& indexed_db_info : indexed_db_info_list)
-    total_size += indexed_db_info.size;
+    total_size += indexed_db_info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 

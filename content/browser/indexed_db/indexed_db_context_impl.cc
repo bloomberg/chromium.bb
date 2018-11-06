@@ -31,7 +31,7 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/indexed_db_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_switches.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
@@ -147,15 +147,14 @@ bool IndexedDBContextImpl::HasOrigin(const Origin& origin) {
   return set->find(origin) != set->end();
 }
 
-std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
+std::vector<StorageUsageInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   std::vector<Origin> origins = GetAllOrigins();
-  std::vector<IndexedDBInfo> result;
+  std::vector<StorageUsageInfo> result;
   for (const auto& origin : origins) {
-    size_t connection_count = GetConnectionCount(origin);
-    result.push_back(IndexedDBInfo(origin.GetURL(), GetOriginDiskUsage(origin),
-                                   GetOriginLastModified(origin),
-                                   connection_count));
+    result.push_back(StorageUsageInfo(origin.GetURL(),
+                                      GetOriginDiskUsage(origin),
+                                      GetOriginLastModified(origin)));
   }
   return result;
 }

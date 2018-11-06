@@ -34,8 +34,8 @@
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -571,12 +571,12 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  std::vector<CacheStorageUsageInfo> GetAllOriginsUsage(
+  std::vector<StorageUsageInfo> GetAllOriginsUsage(
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::RunLoop loop;
     cache_manager_->GetAllOriginsUsage(
         owner, base::BindLambdaForTesting(
-                   [&](const std::vector<CacheStorageUsageInfo>& usage) {
+                   [&](const std::vector<StorageUsageInfo>& usage) {
                      callback_all_origins_usage_ = usage;
                      loop.Quit();
                    }));
@@ -651,7 +651,7 @@ class CacheStorageManagerTest : public testing::Test {
   const url::Origin origin2_;
 
   int64_t callback_usage_;
-  std::vector<CacheStorageUsageInfo> callback_all_origins_usage_;
+  std::vector<StorageUsageInfo> callback_all_origins_usage_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageManagerTest);
@@ -1343,7 +1343,7 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   EXPECT_TRUE(
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/bar")));
 
-  std::vector<CacheStorageUsageInfo> usage = GetAllOriginsUsage();
+  std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   EXPECT_EQ(2ULL, usage.size());
 
   int origin1_index = url::Origin::Create(usage[0].origin) == origin1_ ? 0 : 1;
@@ -1381,10 +1381,10 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
   EXPECT_TRUE(
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/bar")));
 
-  std::vector<CacheStorageUsageInfo> usage_cache =
+  std::vector<StorageUsageInfo> usage_cache =
       GetAllOriginsUsage(CacheStorageOwner::kCacheAPI);
   EXPECT_EQ(1ULL, usage_cache.size());
-  std::vector<CacheStorageUsageInfo> usage_bgf =
+  std::vector<StorageUsageInfo> usage_bgf =
       GetAllOriginsUsage(CacheStorageOwner::kBackgroundFetch);
   EXPECT_EQ(2ULL, usage_bgf.size());
 
@@ -1448,7 +1448,7 @@ TEST_F(CacheStorageManagerTest, GetAllOriginsUsageWithOldIndex) {
   EXPECT_TRUE(CachePut(original_handle.value(), kBarURL));
   original_handle = CacheStorageCacheHandle();
 
-  std::vector<CacheStorageUsageInfo> usage = GetAllOriginsUsage();
+  std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   ASSERT_EQ(1ULL, usage.size());
   int64_t usage_before_close = usage[0].total_size_bytes;
   EXPECT_GT(usage_before_close, 0);

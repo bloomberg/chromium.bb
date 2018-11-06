@@ -12,7 +12,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 
 namespace base {
 class FilePath;

@@ -25,6 +25,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -301,13 +302,13 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   // Retrieves the list of all service workers. Used in the storage integration
   // tests.
-  std::vector<ServiceWorkerUsageInfo> GetServiceWorkers() {
+  std::vector<StorageUsageInfo> GetServiceWorkers() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
             storage_partition()->GetServiceWorkerContext());
 
-    std::vector<ServiceWorkerUsageInfo> service_workers;
+    std::vector<StorageUsageInfo> service_workers;
     base::RunLoop run_loop;
 
     base::PostTaskWithTraits(
@@ -479,8 +480,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   // Callback handler for GetServiceWorkers().
   void GetServiceWorkersCallback(
       const base::Closure& callback,
-      std::vector<ServiceWorkerUsageInfo>* out_service_workers,
-      const std::vector<ServiceWorkerUsageInfo>& service_workers) {
+      std::vector<StorageUsageInfo>* out_service_workers,
+      const std::vector<StorageUsageInfo>& service_workers) {
     *out_service_workers = service_workers;
     callback.Run();
   }
@@ -899,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   AddServiceWorker("origin2.com");
 
   // There are two service workers installed on two origins.
-  std::vector<ServiceWorkerUsageInfo> service_workers = GetServiceWorkers();
+  std::vector<StorageUsageInfo> service_workers = GetServiceWorkers();
   EXPECT_EQ(2u, service_workers.size());
 
   // Navigate to a URL within the scope of "origin1.com" which responds with

@@ -3285,9 +3285,6 @@
   <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
     Service Workers
   </message>
-  <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER_SCOPES_LABEL" desc="Label for list of Service Worker (name of an HTML standard) patterns">
-    Scopes
-  </message>
   <message name="IDS_SETTINGS_COOKIES_SHARED_WORKER" desc="The text shown when there is data for Shared Workers within an origin (name of a Web standard) in the Cookies table">
     Shared Workers
   </message>

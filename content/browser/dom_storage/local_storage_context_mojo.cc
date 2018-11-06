@@ -29,7 +29,7 @@
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "sql/database.h"
@@ -939,14 +939,10 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
   if (!database_) {
     // If for whatever reason no leveldb database is available, no storage is
     // used, so return an array only containing the current areas.
-    std::vector<LocalStorageUsageInfo> result;
+    std::vector<StorageUsageInfo> result;
     base::Time now = base::Time::Now();
-    for (const auto& it : areas_) {
-      LocalStorageUsageInfo info;
-      info.origin = it.first.GetURL();
-      info.last_modified = now;
-      result.push_back(std::move(info));
-    }
+    for (const auto& it : areas_)
+      result.emplace_back(it.first.GetURL(), 0, now);
     std::move(callback).Run(std::move(result));
     return;
   }
@@ -961,15 +957,15 @@ void LocalStorageContextMojo::OnGotMetaData(
     GetStorageUsageCallback callback,
     leveldb::mojom::DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
-  std::vector<LocalStorageUsageInfo> result;
+  std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
   for (const auto& row : data) {
     DCHECK_GT(row->key.size(), arraysize(kMetaPrefix));
-    LocalStorageUsageInfo info;
-    info.origin = GURL(leveldb::Uint8VectorToStdString(row->key).substr(
+    GURL origin(leveldb::Uint8VectorToStdString(row->key).substr(
         arraysize(kMetaPrefix)));
-    origins.insert(url::Origin::Create(info.origin));
-    if (!info.origin.is_valid()) {
+
+    origins.insert(url::Origin::Create(origin));
+    if (!origin.is_valid()) {
       // TODO(mek): Deal with database corruption.
       continue;
     }
@@ -979,10 +975,9 @@ void LocalStorageContextMojo::OnGotMetaData(
       // TODO(mek): Deal with database corruption.
       continue;
     }
-    info.data_size = row_data.size_bytes();
-    info.last_modified =
-        base::Time::FromInternalValue(row_data.last_modified());
-    result.push_back(std::move(info));
+    result.emplace_back(
+        origin, row_data.size_bytes(),
+        base::Time::FromInternalValue(row_data.last_modified()));
   }
   // Add any origins for which StorageAreas exist, but which haven't
   // committed any data to disk yet.
@@ -995,16 +990,13 @@ void LocalStorageContextMojo::OnGotMetaData(
         it.second->storage_area()->empty()) {
       continue;
     }
-    LocalStorageUsageInfo info;
-    info.origin = it.first.GetURL();
-    info.last_modified = now;
-    result.push_back(std::move(info));
+    result.emplace_back(it.first.GetURL(), 0, now);
   }
   std::move(callback).Run(std::move(result));
 }
 
 void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
-    std::vector<LocalStorageUsageInfo> usage) {
+    std::vector<StorageUsageInfo> usage) {
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   for (const auto& info : usage) {
     if (special_storage_policy_->IsStorageProtected(info.origin))

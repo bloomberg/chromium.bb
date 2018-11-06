@@ -21,8 +21,8 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -62,14 +62,14 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     }
   }
 
-  std::vector<LocalStorageUsageInfo> GetUsage() {
+  std::vector<StorageUsageInfo> GetUsage() {
     auto* context = BrowserContext::GetDefaultStoragePartition(
                         shell()->web_contents()->GetBrowserContext())
                         ->GetDOMStorageContext();
     base::RunLoop loop;
-    std::vector<LocalStorageUsageInfo> usage;
-    context->GetLocalStorageUsage(base::BindLambdaForTesting(
-        [&](const std::vector<LocalStorageUsageInfo>& u) {
+    std::vector<StorageUsageInfo> usage;
+    context->GetLocalStorageUsage(
+        base::BindLambdaForTesting([&](const std::vector<StorageUsageInfo>& u) {
           usage = u;
           loop.Quit();
         }));
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_DataPersists) {
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DeletePhysicalOrigin) {
   EXPECT_EQ(0U, GetUsage().size());
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
-  std::vector<LocalStorageUsageInfo> usage = GetUsage();
+  std::vector<StorageUsageInfo> usage = GetUsage();
   ASSERT_EQ(1U, usage.size());
   DeletePhysicalOrigin(usage[0].origin);
   EXPECT_EQ(0U, GetUsage().size());
@@ -206,14 +206,14 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
     db.CommitChanges(false, data);
     EXPECT_TRUE(base::PathExists(db_path));
   }
-  std::vector<LocalStorageUsageInfo> usage = GetUsage();
+  std::vector<StorageUsageInfo> usage = GetUsage();
   ASSERT_EQ(1U, usage.size());
-  EXPECT_GT(usage[0].data_size, 6u);
+  EXPECT_GT(usage[0].total_size_bytes, 6u);
 
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
   usage = GetUsage();
   ASSERT_EQ(1U, usage.size());
-  EXPECT_GT(usage[0].data_size, 6u);
+  EXPECT_GT(usage[0].total_size_bytes, 6u);
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_FALSE(base::PathExists(db_path));

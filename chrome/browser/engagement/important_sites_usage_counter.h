@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/engagement/important_sites_util.h"
-#include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "storage/browser/quota/quota_manager.h"
 
 namespace content {
@@ -61,7 +61,7 @@ class ImportantSitesUsageCounter {
   void ReceiveQuotaUsage(std::vector<storage::UsageInfo> usage_infos);
 
   void ReceiveLocalStorageUsage(
-      const std::vector<content::LocalStorageUsageInfo>& storage_infos);
+      const std::vector<content::StorageUsageInfo>& storage_infos);
 
   // Look up the corresponding ImportantDomainInfo for |url| and increase its
   // usage by |size|.

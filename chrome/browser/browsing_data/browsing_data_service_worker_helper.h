@@ -15,8 +15,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/service_worker_context.h"
-#include "content/public/browser/service_worker_usage_info.h"
 #include "url/gurl.h"
+
+namespace content {
+struct StorageUsageInfo;
+}
 
 // BrowsingDataServiceWorkerHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored for Service Workers -
@@ -28,7 +31,7 @@ class BrowsingDataServiceWorkerHelper
     : public base::RefCountedThreadSafe<BrowsingDataServiceWorkerHelper> {
  public:
   using FetchCallback =
-      base::Callback<void(const std::list<content::ServiceWorkerUsageInfo>&)>;
+      base::Callback<void(const std::list<content::StorageUsageInfo>&)>;
 
   // Create a BrowsingDataServiceWorkerHelper instance for the Service Workers
   // stored in |context|'s associated profile's user data directory.

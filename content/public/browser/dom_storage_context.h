@@ -15,7 +15,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-struct LocalStorageUsageInfo;
+struct StorageUsageInfo;
 class SessionStorageNamespace;
 struct SessionStorageUsageInfo;
 
@@ -23,7 +23,7 @@ struct SessionStorageUsageInfo;
 class DOMStorageContext {
  public:
   using GetLocalStorageUsageCallback =
-      base::OnceCallback<void(const std::vector<LocalStorageUsageInfo>&)>;
+      base::OnceCallback<void(const std::vector<StorageUsageInfo>&)>;
 
   using GetSessionStorageUsageCallback =
       base::OnceCallback<void(const std::vector<SessionStorageUsageInfo>&)>;

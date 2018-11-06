@@ -43,10 +43,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
-#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -153,7 +153,7 @@ void OnLocalStorageUsageInfo(
     const base::Time delete_begin,
     const base::Time delete_end,
     base::OnceClosure callback,
-    const std::vector<LocalStorageUsageInfo>& infos) {
+    const std::vector<StorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::OnceClosure done_callback =

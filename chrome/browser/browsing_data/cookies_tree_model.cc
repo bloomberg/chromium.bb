@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -221,7 +222,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitIndexedDB(
-    const content::IndexedDBInfo* indexed_db_info) {
+    const content::StorageUsageInfo* indexed_db_info) {
   Init(TYPE_INDEXED_DB);
   this->indexed_db_info = indexed_db_info;
   this->origin = indexed_db_info->origin;
@@ -251,7 +252,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitChannelID(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitServiceWorker(
-    const content::ServiceWorkerUsageInfo* service_worker_info) {
+    const content::StorageUsageInfo* service_worker_info) {
   Init(TYPE_SERVICE_WORKER);
   this->service_worker_info = service_worker_info;
   this->origin = service_worker_info->origin;
@@ -268,7 +269,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSharedWorker(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitCacheStorage(
-    const content::CacheStorageUsageInfo* cache_storage_info) {
+    const content::StorageUsageInfo* cache_storage_info) {
   Init(TYPE_CACHE_STORAGE);
   this->cache_storage_info = cache_storage_info;
   this->origin = cache_storage_info->origin;
@@ -443,7 +444,7 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
 // CookieTreeIndexedDBNode, public:
 
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
-    std::list<content::IndexedDBInfo>::iterator indexed_db_info)
+    std::list<content::StorageUsageInfo>::iterator indexed_db_info)
     : CookieTreeNode(base::UTF8ToUTF16(indexed_db_info->origin.spec())),
       indexed_db_info_(indexed_db_info) {}
 
@@ -545,10 +546,9 @@ CookieTreeChannelIDNode::GetDetailedInfo() const {
 // CookieTreeServiceWorkerNode, public:
 
 CookieTreeServiceWorkerNode::CookieTreeServiceWorkerNode(
-    std::list<content::ServiceWorkerUsageInfo>::iterator service_worker_info)
+    std::list<content::StorageUsageInfo>::iterator service_worker_info)
     : CookieTreeNode(base::UTF8ToUTF16(service_worker_info->origin.spec())),
-      service_worker_info_(service_worker_info) {
-}
+      service_worker_info_(service_worker_info) {}
 
 CookieTreeServiceWorkerNode::~CookieTreeServiceWorkerNode() {
 }
@@ -599,7 +599,7 @@ CookieTreeNode::DetailedInfo CookieTreeSharedWorkerNode::GetDetailedInfo()
 // CookieTreeCacheStorageNode, public:
 
 CookieTreeCacheStorageNode::CookieTreeCacheStorageNode(
-    std::list<content::CacheStorageUsageInfo>::iterator cache_storage_info)
+    std::list<content::StorageUsageInfo>::iterator cache_storage_info)
     : CookieTreeNode(base::UTF8ToUTF16(cache_storage_info->origin.spec())),
       cache_storage_info_(cache_storage_info) {}
 

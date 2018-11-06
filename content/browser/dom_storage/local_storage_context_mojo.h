@@ -34,7 +34,7 @@ class SpecialStoragePolicy;
 namespace content {
 
 class DOMStorageTaskRunner;
-struct LocalStorageUsageInfo;
+struct StorageUsageInfo;
 
 // Used for mojo-based LocalStorage implementation (can be disabled with
 // --disable-mojo-local-storage for now).
@@ -46,7 +46,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
     : public base::trace_event::MemoryDumpProvider {
  public:
   using GetStorageUsageCallback =
-      base::OnceCallback<void(std::vector<LocalStorageUsageInfo>)>;
+      base::OnceCallback<void(std::vector<StorageUsageInfo>)>;
 
   LocalStorageContextMojo(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -133,7 +133,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
                      leveldb::mojom::DatabaseError status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
 
-  void OnGotStorageUsageForShutdown(std::vector<LocalStorageUsageInfo> usage);
+  void OnGotStorageUsageForShutdown(std::vector<StorageUsageInfo> usage);
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);

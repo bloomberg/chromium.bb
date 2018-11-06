@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -41,7 +41,7 @@ class SessionDataDeleter
   // session-only.
   void ClearSessionOnlyLocalStorage(
       content::StoragePartition* storage_partition,
-      const std::vector<content::LocalStorageUsageInfo>& usages);
+      const std::vector<content::StorageUsageInfo>& usages);
 
   // Takes the result of a CookieManager::GetAllCookies() method, and
   // initiates deletion of all cookies that are session only by the
@@ -121,11 +121,11 @@ SessionDataDeleter::~SessionDataDeleter() {}
 
 void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     content::StoragePartition* storage_partition,
-    const std::vector<content::LocalStorageUsageInfo>& usages) {
+    const std::vector<content::StorageUsageInfo>& usages) {
   DCHECK(storage_policy_.get());
   DCHECK(storage_policy_->HasSessionOnlyOrigins());
   for (size_t i = 0; i < usages.size(); ++i) {
-    const content::LocalStorageUsageInfo& usage = usages[i];
+    const content::StorageUsageInfo& usage = usages[i];
     if (!storage_policy_->IsStorageSessionOnly(usage.origin))
       continue;
     storage_partition->GetDOMStorageContext()->DeleteLocalStorage(

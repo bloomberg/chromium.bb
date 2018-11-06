@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_usage_info.h"
 
 using blink::mojom::StorageType;
 using storage::QuotaClient;
@@ -15,9 +16,9 @@ namespace {
 void ReportOrigins(QuotaClient::GetOriginsCallback callback,
                    bool restrict_on_host,
                    const std::string host,
-                   const std::vector<ServiceWorkerUsageInfo>& usage_info) {
+                   const std::vector<StorageUsageInfo>& usage_info) {
   std::set<url::Origin> origins;
-  for (const ServiceWorkerUsageInfo& info : usage_info) {
+  for (const StorageUsageInfo& info : usage_info) {
     if (restrict_on_host && info.origin.host() != host) {
       continue;
     }
@@ -33,7 +34,7 @@ void ReportToQuotaStatus(QuotaClient::DeletionCallback callback, bool status) {
 
 void FindUsageForOrigin(QuotaClient::GetUsageCallback callback,
                         const GURL& origin,
-                        const std::vector<ServiceWorkerUsageInfo>& usage_info) {
+                        const std::vector<StorageUsageInfo>& usage_info) {
   for (const auto& info : usage_info) {
     if (info.origin == origin) {
       std::move(callback).Run(info.total_size_bytes);
