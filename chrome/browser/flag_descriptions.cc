@@ -237,11 +237,6 @@ const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "
     "layer compositing.";
 
-const char kContextualSuggestionsAlternateCardLayoutName[] =
-    "Contextual Suggestions Alternate Card Layout";
-const char kContextualSuggestionsAlternateCardLayoutDescription[] =
-    "If enabled, use an alternate card layout for contextual suggestions.";
-
 const char kContextualSuggestionsButtonName[] = "Contextual Suggestions Button";
 const char kContextualSuggestionsButtonDescription[] =
     "If enabled, shows a button to trigger contextual suggestions.";

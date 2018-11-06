@@ -6,10 +6,6 @@
 
 namespace contextual_suggestions {
 
-const base::Feature kContextualSuggestionsAlternateCardLayout{
-    "ContextualSuggestionsAlternateCardLayout",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextualSuggestionsButton{
     "ContextualSuggestionsButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
