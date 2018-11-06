@@ -36,7 +36,6 @@ function $fidl_Encoder(ordinal) {
   this.data = new DataView(buf);
   this.extent = 0;
   this.handles = [];
-  this.outOfLine = [];
   this._encodeMessageHeader(ordinal);
 }
 
@@ -88,13 +87,6 @@ $fidl_Encoder.prototype.addHandle = function(handle) {
 };
 
 $fidl_Encoder.prototype.messageData = function() {
-  // Add all out of line data.
-  var len = this.outOfLine.length;
-  for (var i = 0; i < len; i++) {
-    this.outOfLine[i][0](this, this.outOfLine[i][1]);
-  }
-
-  // Return final result.
   return new DataView(this.data.buffer, 0, this.extent);
 };
 
@@ -189,17 +181,21 @@ const _kTT_Handle = {
   },
 };
 
-const _kTT_String_Nonnull = {
+const _kTT_String = {
   enc: function(e, o, v) {
     if (v === null || v === undefined) throw "non-null string required";
     // Both size and data are uint64, but that's awkward in JS, so for now only
-    // support a maximum of 32b lengths.
+    // support a maximum of 32b lengths. The maximum length of a FIDL message is
+    // shorter than 32b in any case.
     var asUtf8 = $FidlJsStrToUtf8Array(v);
     e.data.setUint32(o, asUtf8.length, $fidl__kLE);
     e.data.setUint32(o + 4, 0, $fidl__kLE);
     e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
     e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);
-    e.outOfLine.push([$fidl_OutOfLineStringEnc, asUtf8]);
+    var body = e.alloc(asUtf8.length);
+    for (var i = 0; i < asUtf8.length; i++) {
+      e.data.setUint8(body + i, asUtf8[i], $fidl__kLE);
+    }
   },
   dec: function(d, o) {
     var len = d.data.getUint32(o, $fidl__kLE);
@@ -210,9 +206,25 @@ const _kTT_String_Nonnull = {
   }
 };
 
-function $fidl_OutOfLineStringEnc(e, strAsUtf8Array) {
-  var start = e.alloc(strAsUtf8Array.length);
-  for (var i = 0; i < strAsUtf8Array.length; i++) {
-    e.data.setUint8(start + i, strAsUtf8Array[i], $fidl__kLE);
+const _kTT_String_Nullable = {
+  enc: function(e, o, v) {
+    if (v === null || v === undefined) {
+      e.data.setUint32(o, 0, $fidl__kLE);
+      e.data.setUint32(o + 4, 0, $fidl__kLE);
+      e.data.setUint32(o + 8, 0, $fidl__kLE);
+      e.data.setUint32(o + 12, 0, $fidl__kLE);
+    } else {
+      _kTT_String.enc(e, o, v);
+    }
+  },
+  dec: function(d, o) {
+    if (v === null || v === undefined) {
+      var pointer = d.data.getUint32(o + 8, $fidl__kLE);
+      if (pointer === 0) {
+        return null;
+      }
+    } else {
+      return _kTT_String.dec(e, o, v);
+    }
   }
-}
+};

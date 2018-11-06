@@ -251,6 +251,27 @@ class TestolaImpl : public fidljstest::Testola {
     callback(std::move(resp));
   }
 
+  void SendVectorsOfString(fidl::VectorPtr<fidl::StringPtr> unsized,
+                           fidl::VectorPtr<fidl::StringPtr> nullable,
+                           fidl::VectorPtr<fidl::StringPtr> sized10) override {
+    ASSERT_EQ(unsized->size(), 3u);
+    EXPECT_EQ((*unsized)[0], "str0");
+    EXPECT_EQ((*unsized)[1], "str1");
+    EXPECT_EQ((*unsized)[2], "str2");
+
+    ASSERT_EQ(nullable->size(), 5u);
+    EXPECT_EQ((*nullable)[0], "str3");
+    EXPECT_TRUE((*nullable)[1].is_null());
+    EXPECT_TRUE((*nullable)[2].is_null());
+    EXPECT_TRUE((*nullable)[3].is_null());
+    EXPECT_EQ((*nullable)[4], "str4");
+
+    ASSERT_EQ(sized10->size(), 1u);
+    EXPECT_EQ((*sized10)[0], "0123456789");
+
+    did_get_vectors_of_string_ = true;
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -264,6 +285,8 @@ class TestolaImpl : public fidljstest::Testola {
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
 
   bool did_receive_union() const { return did_receive_union_; }
+
+  bool did_get_vectors_of_string() const { return did_get_vectors_of_string_; }
 
   void CallResponseCallbacks() {
     for (auto& cb : response_callbacks_) {
@@ -283,6 +306,7 @@ class TestolaImpl : public fidljstest::Testola {
   std::vector<base::OnceClosure> response_callbacks_;
   zx_handle_t unowned_log_handle_;
   bool did_receive_union_ = false;
+  bool did_get_vectors_of_string_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -721,6 +745,52 @@ TEST_F(FidlGenJsTest, DefaultUsingIdentifier) {
 
   EXPECT_EQ(helper.Get<int>("result"),
             static_cast<int>(fidljstest::Blorp::BETA));
+}
+
+TEST_F(FidlGenJsTest, VectorOfStrings) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    var v1 = ['str0', 'str1', 'str2'];
+    var v2 = ['str3', null, null, null, 'str4'];
+    var v3 = ['0123456789'];  // This is the maximum allowed length.
+    proxy.SendVectorsOfString(v1, v2, v3);
+  )";
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(testola_impl.did_get_vectors_of_string());
+}
+
+TEST_F(FidlGenJsTest, VectorOfStringsTooLongString) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    var too_long = ['this string is longer than allowed'];
+    proxy.SendVectorsOfString([], [], too_long);
+    this.tried_to_send = true;
+  )";
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(helper.Get<bool>("tried_to_send"));
+  EXPECT_FALSE(testola_impl.did_get_vectors_of_string());
 }
 
 int main(int argc, char** argv) {
