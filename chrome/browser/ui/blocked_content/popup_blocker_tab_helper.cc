@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
@@ -102,6 +104,12 @@ void PopupBlockerTabHelper::AddBlockedPopup(
       OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
   for (auto& observer : observers_)
     observer.BlockedPopupAdded(id, blocked_popups_[id]->params.url);
+
+#if defined(OS_ANDROID)
+  // Should replace existing popup infobars, with an updated count of how many
+  // popups have been blocked.
+  PopupBlockedInfoBarDelegate::Create(web_contents(), GetBlockedPopupsCount());
+#endif
 }
 
 void PopupBlockerTabHelper::ShowBlockedPopup(
