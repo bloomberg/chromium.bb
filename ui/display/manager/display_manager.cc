@@ -1214,12 +1214,40 @@ void DisplayManager::SetUnifiedDesktopMatrix(
   SetDefaultMultiDisplayModeForCurrentDisplays(UNIFIED);
 }
 
-const Display* DisplayManager::GetPrimaryMirroringDisplayForUnifiedDesktop()
-    const {
+Display DisplayManager::GetMirroringDisplayForUnifiedDesktop(
+    DisplayPositionInUnifiedMatrix cell_position) const {
   if (!IsInUnifiedMode())
-    return nullptr;
+    return Display();
 
-  return &software_mirroring_display_list_[0];
+  DCHECK(!current_unified_desktop_matrix_.empty());
+
+  const size_t rows = current_unified_desktop_matrix_.size();
+  const size_t columns = current_unified_desktop_matrix_[0].size();
+
+  int64_t display_id = kInvalidDisplayId;
+  switch (cell_position) {
+    case DisplayPositionInUnifiedMatrix::kTopLeft:
+      display_id = current_unified_desktop_matrix_[0][0];
+      break;
+
+    case DisplayPositionInUnifiedMatrix::kTopRight:
+      display_id = current_unified_desktop_matrix_[0][columns - 1];
+      break;
+
+    case DisplayPositionInUnifiedMatrix::kBottomLeft:
+      display_id = current_unified_desktop_matrix_[rows - 1][0];
+      break;
+  }
+
+  DCHECK_NE(display_id, kInvalidDisplayId);
+
+  for (auto& display : software_mirroring_display_list_) {
+    if (display.id() == display_id)
+      return display;
+  }
+
+  NOTREACHED();
+  return Display();
 }
 
 int DisplayManager::GetMirroringDisplayRowIndexInUnifiedMatrix(

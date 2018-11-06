@@ -75,6 +75,16 @@ class ASH_EXPORT DisplayConfigurationController
   // called within the throttle time.
   void SetPrimaryDisplayId(int64_t display_id, bool throttle);
 
+  // In Unified Desktop mode, we consider the display in which the shelf will be
+  // placed to be the "primary mirroring display". Note that this is different
+  // from the "normal" primary display, which is just the single unified display
+  // in unified mode. This display will be:
+  //   - The bottom-left in the matrix if the shelf alignment is "bottom",
+  //   - The top-left in the matrix if the shelf alignment is "left",
+  //   - The top-right in the matrix if the shelf alignment is "right".
+  // This should only be called when Unified Desktop mode is active.
+  display::Display GetPrimaryMirroringDisplayForUnifiedDesktop() const;
+
   // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
