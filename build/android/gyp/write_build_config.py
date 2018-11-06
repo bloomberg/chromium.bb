@@ -706,7 +706,9 @@ def _DepsFromPaths(dep_paths, target_type, filter_root_targets=True):
   include the .apk as a resource/asset, not to have the apk's classpath added.
   """
   configs = [GetDepConfig(p) for p in dep_paths]
+  groups = DepsOfType('group', configs)
   configs = _ResolveGroups(configs)
+  configs += groups
   # Don't allow root targets to be considered as a dep.
   if filter_root_targets:
     configs = [c for c in configs if c['type'] not in _ROOT_TYPES]
@@ -714,6 +716,7 @@ def _DepsFromPaths(dep_paths, target_type, filter_root_targets=True):
   # Don't allow java libraries to cross through assets/resources.
   if target_type in _RESOURCE_TYPES:
     configs = [c for c in configs if c['type'] in _RESOURCE_TYPES]
+
   return Deps([c['path'] for c in configs])
 
 
@@ -971,6 +974,7 @@ def main(argv):
 
   system_library_deps = deps.Direct('system_java_library')
   direct_library_deps = deps.Direct('java_library')
+  group_deps = deps.All('group')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
 
@@ -1168,6 +1172,12 @@ def main(argv):
   if is_apk_or_module_target:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
+  if options.type == 'group':
+    if options.extra_classpath_jars:
+      # These are .jars to add to javac classpath but not to runtime classpath.
+      extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
+      deps_info['extra_classpath_jars'] = extra_jars
+
   if is_java_target:
     # The classpath used to compile this target when annotation processors are
     # present.
@@ -1184,6 +1194,12 @@ def main(argv):
     # The classpath used for bytecode-rewritting.
     javac_full_classpath = [
         c['unprocessed_jar_path'] for c in all_library_deps]
+
+    for dep in group_deps:
+      javac_classpath.extend(dep.get('extra_classpath_jars', []))
+      javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
+      javac_interface_classpath.extend(dep.get('extra_classpath_jars', []))
+      javac_full_interface_classpath.extend(dep.get('extra_classpath_jars', []))
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
@@ -1240,6 +1256,9 @@ def main(argv):
     for c in all_library_deps:
       all_configs.extend(
           p for p in c.get('proguard_configs', []) if p not in all_configs)
+      extra_jars.extend(
+          p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
+    for c in group_deps:
       extra_jars.extend(
           p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
     if options.type == 'android_app_bundle':
@@ -1347,7 +1366,6 @@ def main(argv):
     dex_config['path'] = options.final_dex_path
 
   if is_java_target:
-    config['javac']['bootclasspath'] = system_jars
     config['javac']['classpath'] = javac_classpath
     config['javac']['interface_classpath'] = javac_interface_classpath
     # Direct() will be of type 'java_annotation_processor'.

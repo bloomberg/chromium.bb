@@ -39,14 +39,14 @@ if (enable_java_templates) {
   # and are linked by default on O and below. Starting in P, they
   # exist in their own libraries that are present on device and are
   # available to be linked against but aren't linked by default.
-  android_system_java_prebuilt("android_test_base_java") {
-    jar_path = "${android_sdk}/optional/android.test.base.jar"
+  java_group("android_test_base_java") {
+    input_jars_paths = [ "${android_sdk}/optional/android.test.base.jar" ]
   }
-  android_system_java_prebuilt("android_test_mock_java") {
-    jar_path = "${android_sdk}/optional/android.test.mock.jar"
+  java_group("android_test_mock_java") {
+    input_jars_paths = [ "${android_sdk}/optional/android.test.mock.jar" ]
   }
-  android_system_java_prebuilt("android_test_runner_java") {
-    jar_path = "${android_sdk}/optional/android.test.runner.jar"
+  java_group("android_test_runner_java") {
+    input_jars_paths = [ "${android_sdk}/optional/android.test.runner.jar" ]
   }
 
   android_library("android_support_chromium_java") {
