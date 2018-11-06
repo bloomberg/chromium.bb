@@ -810,8 +810,7 @@ Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/ver
 
 # Many of these tests are currently failing or crashing, and the tests change
 # quickly, so just tolerate the whole directory until we start to work on them.
-Bug(none) fast/events/touch [ Failure Pass ]
-Bug(none) virtual/paint-touchaction-rects/fast/events/touch [ Failure Pass Crash ]
+Bug(none) fast/events/touch [ Failure Pass Crash ]
 
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-fake-mouse-wheel.html [ Pass Failure Crash ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Pass Failure Crash ]
