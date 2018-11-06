@@ -85,6 +85,15 @@ class UnitTest(unittest.TestCase):
     self.assertEqual(gn_helpers.FromGNArgs('foo="bar baz"'),
                      {'foo': 'bar baz'})
 
+    # Comments should work (and be ignored).
+    gn_args_lines = [
+        '# Top-level comment.',
+        'foo = true',
+        'bar = 1  # In-line comment.',
+    ]
+    self.assertEqual(gn_helpers.FromGNArgs('\n'.join(gn_args_lines)),
+                     {'foo': True, 'bar': 1})
+
     # Lists should work.
     self.assertEqual(gn_helpers.FromGNArgs('foo=[1, 2, 3]'),
                      {'foo': [1, 2, 3]})
