@@ -62,6 +62,7 @@ void WindowTreeBinding::CreateBinding(
   binding_ = std::make_unique<mojo::Binding<mojom::WindowTree>>(
       window_tree_.get(), std::move(window_tree_request));
   binding_->set_connection_error_handler(std::move(connection_lost_callback));
+  window_tree_client_->OnClientId(window_tree_->client_id());
   window_tree_client_->GetScreenProviderObserver(
       MakeRequest(&screen_provider_observer_));
   window_service_->screen_provider()->AddObserver(

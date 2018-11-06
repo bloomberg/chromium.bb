@@ -83,6 +83,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnChangeAdded() override;
 
   // mojom::WindowTreeClient:
+  void OnClientId(uint32_t client_id) override;
   void OnEmbed(
       mojom::WindowDataPtr root,
       mojom::WindowTreePtr tree,

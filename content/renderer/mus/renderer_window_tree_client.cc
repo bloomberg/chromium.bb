@@ -188,6 +188,8 @@ void RendererWindowTreeClient::DestroyFrame(uint32_t frame_routing_id) {
   pending_frames_.erase(frame_routing_id);
 }
 
+void RendererWindowTreeClient::OnClientId(uint32_t client_id) {}
+
 void RendererWindowTreeClient::OnEmbed(
     ws::mojom::WindowDataPtr root,
     ws::mojom::WindowTreePtr tree,

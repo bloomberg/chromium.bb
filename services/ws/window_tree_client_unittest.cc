@@ -162,6 +162,8 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     binding_.Bind(std::move(request));
   }
 
+  ClientSpecificId client_id() const { return client_id_; }
+
   // Runs a nested MessageLoop until |count| changes (calls to
   // WindowTreeClient functions) have been received.
   void WaitForChangeCount(size_t count) {
@@ -277,6 +279,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   };
 
   // TestWindowTreeClient:
+  void OnClientId(ClientSpecificId id) override { client_id_ = id; }
   void OnChangeAdded() override {
     if (wait_state_.get() &&
         tracker_.changes()->size() >= wait_state_->change_count) {
@@ -438,6 +441,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
   std::unique_ptr<base::RunLoop> change_completed_run_loop_;
+  ClientSpecificId client_id_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient2);
 };
@@ -634,6 +638,10 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTest);
 };
+
+TEST_F(WindowTreeClientTest, GotClientId) {
+  EXPECT_NE(0u, wt_client1_->client_id());
+}
 
 // Verifies two clients get different ids.
 TEST_F(WindowTreeClientTest, TwoClientsGetDifferentClientIds) {
