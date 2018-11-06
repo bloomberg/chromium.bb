@@ -1418,7 +1418,7 @@ if (enable_java_templates) {
     _enable_bytecode_rewriter =
         _enable_assert || _enable_custom_resources || _enable_thread_annotations
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
-    _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
+    _enable_bytecode_checks = defined(invoker.enable_bytecode_checks) &&
                               invoker.enable_bytecode_checks
 
     # Release builds don't have asserts enabled, so they often will not run the
