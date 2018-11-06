@@ -296,6 +296,8 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
+  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
