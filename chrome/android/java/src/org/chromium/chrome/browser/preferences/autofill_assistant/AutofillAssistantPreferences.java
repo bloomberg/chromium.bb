@@ -23,11 +23,6 @@ public class AutofillAssistantPreferences extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         getActivity().setTitle(R.string.prefs_autofill_assistant_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         createAutofillAssistantSwitch();
     }
 
