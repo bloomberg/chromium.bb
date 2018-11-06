@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
@@ -141,8 +140,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
         return;
       if (result == BytesConsumer::Result::kOk) {
         if (available > 0) {
-          unsigned bytes_appended =
-              raw_data_->Append(buffer, SafeCast<wtf_size_t>(available));
+          unsigned bytes_appended = raw_data_->Append(buffer, available);
           if (!bytes_appended) {
             auto unused = consumer_->EndRead(0);
             ALLOW_UNUSED_LOCAL(unused);
@@ -563,7 +561,7 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
         if (available == 0) {
           result = consumer_->EndRead(0);
         } else {
-          uint32_t num_bytes = SafeCast<uint32_t>(available);
+          uint32_t num_bytes = available;
           MojoResult mojo_result = out_data_pipe_->WriteData(
               buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
           if (mojo_result == MOJO_RESULT_OK) {

@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 #include <string.h>
 #include <algorithm>
@@ -40,16 +39,16 @@ class MockMultipartParserClient final
     parts_.push_back(header_fields);
   }
   void PartDataInMultipartReceived(const char* bytes, size_t size) override {
-    parts_.back().data.Append(bytes, SafeCast<wtf_size_t>(size));
+    parts_.back().data.Append(bytes, size);
   }
   void PartDataInMultipartFullyReceived() override {
     parts_.back().data_fully_received = true;
   }
-  const Part& GetPart(wtf_size_t part_index) const {
+  const Part& GetPart(size_t part_index) const {
     EXPECT_LT(part_index, NumberOfParts());
     return part_index < NumberOfParts() ? parts_[part_index] : empty_part_;
   }
-  wtf_size_t NumberOfParts() const { return parts_.size(); }
+  size_t NumberOfParts() const { return parts_.size(); }
 
  private:
   Part empty_part_;
