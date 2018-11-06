@@ -45,6 +45,60 @@ static_library("signin_metrics") {
   ]
 }
 
+# This target contains what will become the core of the Identity Service
+# implementation. It currently forms the core of the IdentityManager
+# implementation (//services/identity/public/cpp/identity_manager.*). We are
+# actively converting the codebase away from using the code in this target
+# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
+# not add code to this target without consulting with blundell@chromium.org.
+static_library("internals") {
+  sources = [
+    "account_tracker_service.cc",
+    "account_tracker_service.h",
+    "device_id_helper.cc",
+    "device_id_helper.h",
+    "gaia_cookie_manager_service.cc",
+    "gaia_cookie_manager_service.h",
+    "profile_management_switches.cc",
+    "profile_management_switches.h",
+    "profile_oauth2_token_service.cc",
+    "profile_oauth2_token_service.h",
+    "signin_client.cc",
+    "signin_client.h",
+    "signin_error_controller.cc",
+    "signin_error_controller.h",
+    "signin_internals_util.cc",
+    "signin_internals_util.h",
+    "signin_manager.cc",
+    "signin_manager.h",
+    "signin_manager_base.cc",
+    "signin_manager_base.h",
+    "signin_pref_names.cc",
+    "signin_pref_names.h",
+    "signin_switches.cc",
+    "signin_switches.h",
+  ]
+
+  if (is_chromeos) {
+    sources -= [ "signin_manager.cc" ]
+  }
+
+  deps = [
+    ":account_info",
+    ":signin_buildflags",
+    ":signin_metrics",
+    "//base",
+    "//components/data_use_measurement/core",
+    "//components/keyed_service/core",
+    "//components/prefs",
+    "//google_apis",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//ui/gfx",
+  ]
+}
+
 static_library("browser") {
   sources = [
     "about_signin_internals.cc",
@@ -59,8 +113,6 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_reconcilor_delegate.cc",
     "account_reconcilor_delegate.h",
-    "account_tracker_service.cc",
-    "account_tracker_service.h",
     "avatar_icon_util.cc",
     "avatar_icon_util.h",
     "child_account_info_fetcher.cc",
@@ -73,44 +125,22 @@ static_library("browser") {
     "chrome_connected_header_helper.h",
     "cookie_settings_util.cc",
     "cookie_settings_util.h",
-    "device_id_helper.cc",
-    "device_id_helper.h",
     "dice_account_reconcilor_delegate.cc",
     "dice_account_reconcilor_delegate.h",
     "dice_header_helper.cc",
     "dice_header_helper.h",
-    "gaia_cookie_manager_service.cc",
-    "gaia_cookie_manager_service.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
-    "profile_management_switches.cc",
-    "profile_management_switches.h",
-    "profile_oauth2_token_service.cc",
-    "profile_oauth2_token_service.h",
-    "signin_client.cc",
-    "signin_client.h",
-    "signin_error_controller.cc",
-    "signin_error_controller.h",
     "signin_header_helper.cc",
     "signin_header_helper.h",
-    "signin_internals_util.cc",
-    "signin_internals_util.h",
     "signin_investigator.cc",
     "signin_investigator.h",
-    "signin_manager.cc",
-    "signin_manager.h",
-    "signin_manager_base.cc",
-    "signin_manager_base.h",
-    "signin_pref_names.cc",
-    "signin_pref_names.h",
     "signin_status_metrics_provider.cc",
     "signin_status_metrics_provider.h",
     "signin_status_metrics_provider_base.cc",
     "signin_status_metrics_provider_base.h",
     "signin_status_metrics_provider_delegate.cc",
     "signin_status_metrics_provider_delegate.h",
-    "signin_switches.cc",
-    "signin_switches.h",
     "signin_tracker.cc",
     "signin_tracker.h",
     "webdata/token_service_table.cc",
@@ -123,6 +153,7 @@ static_library("browser") {
 
   public_deps = [
     ":account_info",
+    ":internals",
     ":signin_buildflags",
     ":signin_metrics",
     "//base",
@@ -156,7 +187,6 @@ static_library("browser") {
 
   if (is_chromeos) {
     sources -= [
-      "signin_manager.cc",
       "signin_status_metrics_provider.cc",
       "signin_status_metrics_provider_delegate.cc",
     ]
