@@ -33,6 +33,7 @@
 
 #include <cstdint>
 #include "base/callback_forward.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class GrContext;
@@ -77,7 +78,11 @@ class WebGraphicsContext3DProvider {
   virtual void SetLostContextCallback(base::RepeatingClosure) = 0;
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char* msg, int32_t id)>) = 0;
-  virtual cc::ImageDecodeCache* ImageDecodeCache(SkColorType) = 0;
+  // Return a static software image decode cache that matches this color
+  // space and pixel format.
+  virtual cc::ImageDecodeCache* ImageDecodeCache(
+      CanvasColorSpace color_space,
+      CanvasPixelFormat pixel_format) = 0;
 };
 
 }  // namespace blink

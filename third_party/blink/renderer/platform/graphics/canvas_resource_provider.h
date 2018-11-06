@@ -208,7 +208,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
-  cc::ImageDecodeCache* ImageDecodeCache();
+  cc::ImageDecodeCache* ImageDecodeCacheRGBA8();
   cc::ImageDecodeCache* ImageDecodeCacheF16();
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;

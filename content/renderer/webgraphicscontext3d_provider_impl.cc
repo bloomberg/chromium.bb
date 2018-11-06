@@ -77,9 +77,14 @@ void WebGraphicsContext3DProviderImpl::OnContextLost() {
 }
 
 cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
-    SkColorType color_type) {
+    blink::CanvasColorSpace color_space,
+    blink::CanvasPixelFormat pixel_format) {
+  SkColorType color_type =
+      blink::CanvasColorParams::PixelFormatToSkColorType(pixel_format);
+
   DCHECK(GetGrContext()->colorTypeSupportedAsImage(color_type));
-  auto cache_iterator = image_decode_cache_map_.find(color_type);
+  auto key = std::make_pair(color_space, pixel_format);
+  auto cache_iterator = image_decode_cache_map_.find(key);
   if (cache_iterator != image_decode_cache_map_.end())
     return cache_iterator->second.get();
 
@@ -91,13 +96,12 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
   // TransferCache is used only with OOP raster.
   const bool use_transfer_cache = false;
 
-  auto insertion_result = image_decode_cache_map_.insert(
-      std::pair<SkColorType, std::unique_ptr<cc::ImageDecodeCache>>(
-          color_type, std::make_unique<cc::GpuImageDecodeCache>(
-                          provider_.get(), use_transfer_cache, color_type,
-                          kMaxWorkingSetBytes,
-                          provider_->ContextCapabilities().max_texture_size,
-                          cc::PaintImage::kDefaultGeneratorClientId)));
+  auto insertion_result = image_decode_cache_map_.emplace(
+      key,
+      std::make_unique<cc::GpuImageDecodeCache>(
+          provider_.get(), use_transfer_cache, color_type, kMaxWorkingSetBytes,
+          provider_->ContextCapabilities().max_texture_size,
+          cc::PaintImage::kDefaultGeneratorClientId));
   DCHECK(insertion_result.second);
   cache_iterator = insertion_result.first;
   return cache_iterator->second.get();

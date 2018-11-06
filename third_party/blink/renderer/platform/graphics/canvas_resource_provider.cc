@@ -627,9 +627,9 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
     // Create an ImageDecodeCache for half float images only if the canvas is
     // using half float back storage.
     cc::ImageDecodeCache* cache_f16 = nullptr;
-    if (ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
+    if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
       cache_f16 = ImageDecodeCacheF16();
-    canvas_image_provider_.emplace(ImageDecodeCache(), cache_f16,
+    canvas_image_provider_.emplace(ImageDecodeCacheRGBA8(), cache_f16,
                                    target_color_space,
                                    color_params_.GetSkColorType());
     cc::ImageProvider* image_provider = &*canvas_image_provider_;
@@ -767,20 +767,22 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
   return nullptr;
 }
 
-cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
+cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
   if (IsAccelerated() && context_provider_wrapper_) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kN32_SkColorType);
+        ColorParams().ColorSpace(), kRGBA8CanvasPixelFormat);
   }
-  return &Image::SharedCCDecodeCache(kN32_SkColorType);
+  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
+                                    kRGBA8CanvasPixelFormat);
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
   if (IsAccelerated() && context_provider_wrapper_) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kRGBA_F16_SkColorType);
+        ColorParams().ColorSpace(), kF16CanvasPixelFormat);
   }
-  return &Image::SharedCCDecodeCache(kRGBA_F16_SkColorType);
+  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
+                                    kF16CanvasPixelFormat);
 }
 
 void CanvasResourceProvider::RecycleResource(
