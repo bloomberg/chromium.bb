@@ -997,6 +997,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IsEffectiveRootScroller();
   }
 
+  // Returns true if the given object is the global root scroller. See
+  // |global root scroller| in page/scrolling/README.md.
+  bool IsGlobalRootScroller() const {
+    return bitfields_.IsGlobalRootScroller();
+  }
+
   // Return true if this is the "rendered legend" of a fieldset. They get
   // special treatment, in that they establish a new formatting context, and
   // shrink to fit if no logical width is specified.
@@ -1233,6 +1239,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetIsEffectiveRootScroller(bool is_effective_root_scroller) {
     bitfields_.SetIsEffectiveRootScroller(is_effective_root_scroller);
+  }
+  void SetIsGlobalRootScroller(bool is_global_root_scroller) {
+    bitfields_.SetIsGlobalRootScroller(is_global_root_scroller);
   }
 
   virtual void Paint(const PaintInfo&) const;
@@ -2536,6 +2545,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           effective_whitelisted_touch_action_changed_(true),
           descendant_effective_whitelisted_touch_action_changed_(false),
           is_effective_root_scroller_(false),
+          is_global_root_scroller_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2772,7 +2782,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(descendant_effective_whitelisted_touch_action_changed_,
                          DescendantEffectiveWhitelistedTouchActionChanged);
 
+    // See page/scrolling/README.md for an explanation of root scroller and how
+    // it works.
     ADD_BOOLEAN_BITFIELD(is_effective_root_scroller_, IsEffectiveRootScroller);
+    ADD_BOOLEAN_BITFIELD(is_global_root_scroller_, IsGlobalRootScroller);
 
    private:
     // This is the cached 'position' value of this object
