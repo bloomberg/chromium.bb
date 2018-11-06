@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/network_change_notifier.h"
+#include "build/build_config.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -21,14 +21,26 @@
 #include "chromeos/network/network_handler.h"
 #endif  // OS_CHROMEOS
 
+#if defined(OS_IOS)
+#include "base/test/scoped_task_environment.h"
+#else  // !defined(OS_IOS)
+#include "content/public/test/test_browser_thread_bundle.h"
+#endif  // defined(OS_IOS)
+
 namespace metrics {
 
 class NetworkMetricsProviderTest : public testing::Test {
  public:
  protected:
   NetworkMetricsProviderTest()
+#if defined(OS_IOS)
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO)
+#else   // !defined(OS_IOS)
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP)
+#endif  // defined(OS_IOS)
+  {
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
@@ -36,13 +48,17 @@ class NetworkMetricsProviderTest : public testing::Test {
   }
 
  private:
+#if defined(OS_IOS)
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+#else   // !defined(OS_IOS)
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+#endif  // defined(OS_IOS)
 };
 
 // Verifies that the effective connection type is correctly set.
 TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
-  SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
+  NetworkMetricsProvider network_metrics_provider(
+      network::TestNetworkConnectionTracker::CreateAsyncGetter());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
@@ -51,6 +67,7 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
             network_metrics_provider.min_effective_connection_type_);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.max_effective_connection_type_);
+  SystemProfileProto system_profile;
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             system_profile.network().min_effective_connection_type());
@@ -99,8 +116,8 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
 // Verifies that the effective connection type is not set to UNKNOWN when there
 // is a change in the connection type.
 TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
-  SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
+  NetworkMetricsProvider network_metrics_provider(
+      network::TestNetworkConnectionTracker::CreateAsyncGetter());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
@@ -121,6 +138,7 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
 
   // There is no change in the connection type. Effective connection types
   // should be reported as 2G.
+  SystemProfileProto system_profile;
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
             system_profile.network().min_effective_connection_type());
@@ -129,8 +147,8 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
 
   // Even with change in the connection type, effective connection types
   // should be reported as 2G.
-  network_metrics_provider.OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_2G);
+  network_metrics_provider.OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_2G);
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
             system_profile.network().min_effective_connection_type());
@@ -144,13 +162,14 @@ TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnUnknownOrOffline) {
   for (net::EffectiveConnectionType force_ect :
        {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE}) {
-    NetworkMetricsProvider network_metrics_provider;
+    NetworkMetricsProvider network_metrics_provider(
+        network::TestNetworkConnectionTracker::CreateAsyncGetter());
     base::RunLoop().RunUntilIdle();
 
-    SystemProfileProto system_profile;
     network_metrics_provider.OnEffectiveConnectionTypeChanged(
         net::EFFECTIVE_CONNECTION_TYPE_2G);
 
+    SystemProfileProto system_profile;
     network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
 
     network_metrics_provider.OnEffectiveConnectionTypeChanged(force_ect);
@@ -173,46 +192,49 @@ TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnUnknownOrOffline) {
 
 // Verifies that the connection type is ambiguous boolean is correctly set.
 TEST_F(NetworkMetricsProviderTest, ConnectionTypeIsAmbiguous) {
-  SystemProfileProto system_profile;
-  NetworkMetricsProvider network_metrics_provider;
+  NetworkMetricsProvider network_metrics_provider(
+      network::TestNetworkConnectionTracker::CreateAsyncGetter());
 
-  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+  EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_UNKNOWN,
             network_metrics_provider.connection_type_);
   EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
-  EXPECT_FALSE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_FALSE(
+      network_metrics_provider.network_connection_tracker_initialized_);
 
   // When a connection type change callback is received, network change notifier
   // should be marked as initialized.
-  network_metrics_provider.OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_2G);
-  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_2G,
+  network_metrics_provider.OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_2G);
+  EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_2G,
             network_metrics_provider.connection_type_);
   // Connection type should not be marked as ambiguous when a delayed connection
   // type change callback is received due to delayed initialization of the
   // network change notifier.
   EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
-  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_TRUE(network_metrics_provider.network_connection_tracker_initialized_);
 
   // On collection of the system profile, |connection_type_is_ambiguous_| should
-  // stay false, and |network_change_notifier_initialized_| should remain true.
+  // stay false, and |network_connection_tracker_initialized_| should remain
+  // true.
+  SystemProfileProto system_profile;
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
-  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_TRUE(network_metrics_provider.network_connection_tracker_initialized_);
   EXPECT_FALSE(system_profile.network().connection_type_is_ambiguous());
   EXPECT_EQ(SystemProfileProto::Network::CONNECTION_2G,
             system_profile.network().connection_type());
 
-  network_metrics_provider.OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_3G);
+  network_metrics_provider.OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_3G);
   EXPECT_TRUE(network_metrics_provider.connection_type_is_ambiguous_);
-  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_TRUE(network_metrics_provider.network_connection_tracker_initialized_);
 
   // On collection of the system profile, |connection_type_is_ambiguous_| should
-  // be reset to false, and |network_change_notifier_initialized_| should remain
-  // true.
+  // be reset to false, and |network_connection_tracker_initialized_| should
+  // remain true.
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
-  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_TRUE(network_metrics_provider.network_connection_tracker_initialized_);
   EXPECT_TRUE(system_profile.network().connection_type_is_ambiguous());
   EXPECT_EQ(SystemProfileProto::Network::CONNECTION_3G,
             system_profile.network().connection_type());
