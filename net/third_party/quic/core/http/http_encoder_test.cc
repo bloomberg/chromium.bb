@@ -21,7 +21,8 @@ TEST_F(HttpEncoderTest, SerializeDataFrameHeader) {
   DataFrame data;
   data.data = "Data!";
   std::unique_ptr<char[]> buffer;
-  uint64_t length = encoder_.SerializeDataFrameHeader(data, &buffer);
+  uint64_t length =
+      encoder_.SerializeDataFrameHeader(data.data.length(), &buffer);
   char output[] = {// length
                    0x05,
                    // type (DATA)

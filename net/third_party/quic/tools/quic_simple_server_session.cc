@@ -49,13 +49,6 @@ QuicSimpleServerSession::CreateQuicCryptoServerStream(
       stream_helper());
 }
 
-void QuicSimpleServerSession::StreamDraining(QuicStreamId id) {
-  QuicSpdySession::StreamDraining(id);
-  if (!IsIncomingStream(id)) {
-    HandlePromisedPushRequests();
-  }
-}
-
 void QuicSimpleServerSession::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!IsIncomingStream(frame.stream_id)) {
     QUIC_LOG(WARNING) << "Client shouldn't send data on server push stream";
@@ -118,12 +111,6 @@ QuicSimpleServerSession::CreateOutgoingUnidirectionalStream() {
       quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
-}
-
-void QuicSimpleServerSession::CloseStreamInner(QuicStreamId stream_id,
-                                               bool locally_reset) {
-  QuicSpdySession::CloseStreamInner(stream_id, locally_reset);
-  HandlePromisedPushRequests();
 }
 
 void QuicSimpleServerSession::HandleFrameOnNonexistentOutgoingStream(
@@ -219,4 +206,7 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
   }
 }
 
+void QuicSimpleServerSession::OnCanCreateNewOutgoingStream() {
+  HandlePromisedPushRequests();
+}
 }  // namespace quic

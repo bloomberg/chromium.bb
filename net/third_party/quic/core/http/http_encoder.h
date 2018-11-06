@@ -26,7 +26,7 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
 
   // Serializes the header of a DATA frame into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.
-  QuicByteCount SerializeDataFrameHeader(const DataFrame& data,
+  QuicByteCount SerializeDataFrameHeader(QuicByteCount length,
                                          std::unique_ptr<char[]>* output);
 
   // Serializes the header of a HEADERS frame into a new buffer stored in

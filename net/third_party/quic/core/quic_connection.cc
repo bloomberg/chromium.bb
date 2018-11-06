@@ -297,9 +297,6 @@ QuicConnection::QuicConnection(
       mtu_discovery_alarm_(alarm_factory_->CreateAlarm(
           arena_.New<MtuDiscoveryAlarmDelegate>(this),
           &arena_)),
-      retransmittable_on_wire_alarm_(alarm_factory_->CreateAlarm(
-          arena_.New<RetransmittableOnWireAlarmDelegate>(this),
-          &arena_)),
       path_degrading_alarm_(alarm_factory_->CreateAlarm(
           arena_.New<PathDegradingAlarmDelegate>(this),
           &arena_)),
@@ -1452,7 +1449,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
           num_retransmittable_packets_received_since_last_ack_sent_ >=
               kMaxRetransmittablePacketsBeforeAck) {
         ack_queued_ = true;
-      } else if (!ack_alarm_->IsSet()) {
+      } else if (ShouldSetAckAlarm()) {
         // Wait for the minimum of the ack decimation delay or the delayed ack
         // time before sending an ack.
         QuicTime::Delta ack_delay =
@@ -1475,7 +1472,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
       if (num_retransmittable_packets_received_since_last_ack_sent_ >=
           kDefaultRetransmittablePacketsBeforeAck) {
         ack_queued_ = true;
-      } else if (!ack_alarm_->IsSet()) {
+      } else if (ShouldSetAckAlarm()) {
         const QuicTime approximate_now = clock_->ApproximateNow();
         if (fast_ack_after_quiescence_ &&
             (approximate_now - time_of_previous_received_packet_) >
@@ -1500,7 +1497,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
         QuicTime ack_time =
             clock_->ApproximateNow() +
             0.125 * sent_packet_manager_.GetRttStats()->min_rtt();
-        if (!ack_alarm_->IsSet() || ack_alarm_->deadline() > ack_time) {
+        if (ShouldSetAckAlarm() || ack_alarm_->deadline() > ack_time) {
           ack_alarm_->Update(ack_time, QuicTime::Delta::Zero());
         }
       } else {
@@ -2242,9 +2239,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
                                  packet->transmission_type, packet_send_time);
   }
   if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA) {
-    // A retransmittable packet has been put on the wire, so no need for the
-    // |retransmittable_on_wire_alarm_| to possibly send a PING.
-    retransmittable_on_wire_alarm_->Cancel();
     if (!is_path_degrading_ && !path_degrading_alarm_->IsSet()) {
       // This is the first retransmittable packet on the working path.
       // Start the path degrading alarm to detect new path degrading.
@@ -2274,7 +2268,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       }
     }
   }
-  SetPingAlarm();
+
   MaybeSetMtuAlarm(packet_number);
   QUIC_DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
                 << packet_send_time.ToDebuggingValue();
@@ -2286,6 +2280,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     SetRetransmissionAlarm();
   }
+  SetPingAlarm();
 
   // The packet number length must be updated after OnPacketSent, because it
   // may change the packet number length in packet.
@@ -2711,7 +2706,6 @@ void QuicConnection::CancelAllAlarms() {
   send_alarm_->Cancel();
   timeout_alarm_->Cancel();
   mtu_discovery_alarm_->Cancel();
-  retransmittable_on_wire_alarm_->Cancel();
   path_degrading_alarm_->Cancel();
 }
 
@@ -2840,8 +2834,24 @@ void QuicConnection::SetPingAlarm() {
     // Don't send a ping unless there are open streams.
     return;
   }
-  ping_alarm_->Update(clock_->ApproximateNow() + ping_timeout_,
-                      QuicTime::Delta::FromSeconds(1));
+  if (retransmittable_on_wire_timeout_.IsInfinite() ||
+      sent_packet_manager_.HasInFlightPackets()) {
+    // Extend the ping alarm.
+    ping_alarm_->Update(clock_->ApproximateNow() + ping_timeout_,
+                        QuicTime::Delta::FromSeconds(1));
+    return;
+  }
+  DCHECK_LT(retransmittable_on_wire_timeout_, ping_timeout_);
+  // If it's already set to an earlier time, then don't update it.
+  if (ping_alarm_->IsSet() &&
+      ping_alarm_->deadline() <
+          clock_->ApproximateNow() + retransmittable_on_wire_timeout_) {
+    return;
+  }
+  // Use a shorter timeout if there are open streams, but nothing on the wire.
+  ping_alarm_->Update(
+      clock_->ApproximateNow() + retransmittable_on_wire_timeout_,
+      QuicTime::Delta::FromMilliseconds(1));
 }
 
 void QuicConnection::SetRetransmissionAlarm() {
@@ -3395,11 +3405,6 @@ void QuicConnection::MaybeSetPathDegradingAlarm(bool acked_new_packet) {
     has_unacked_packets = sent_packet_manager_.HasInFlightPackets();
   }
   if (!has_unacked_packets) {
-    // There are no retransmittable packets on the wire, so it may be
-    // necessary to send a PING to keep a retransmittable packet on the wire.
-    if (!retransmittable_on_wire_alarm_->IsSet()) {
-      SetRetransmittableOnWireAlarm();
-    }
     // There are no retransmittable packets on the wire, so it's impossible to
     // say if the connection has degraded.
     path_degrading_alarm_->Cancel();
@@ -3434,25 +3439,6 @@ bool QuicConnection::session_decides_what_to_write() const {
   return sent_packet_manager_.session_decides_what_to_write();
 }
 
-void QuicConnection::SetRetransmittableOnWireAlarm() {
-  // TODO(ianswett): Merge the RetransmittableOnWireAlarm and PingAlarm.
-  if (perspective_ == Perspective::IS_SERVER) {
-    // Only clients send pings.
-    return;
-  }
-  if (retransmittable_on_wire_timeout_.IsInfinite()) {
-    return;
-  }
-  if (!visitor_->HasOpenDynamicStreams()) {
-    retransmittable_on_wire_alarm_->Cancel();
-    // Don't send a ping unless there are open streams.
-    return;
-  }
-  retransmittable_on_wire_alarm_->Update(
-      clock_->ApproximateNow() + retransmittable_on_wire_timeout_,
-      QuicTime::Delta::Zero());
-}
-
 void QuicConnection::UpdateReleaseTimeIntoFuture() {
   DCHECK(supports_release_time_);
 
@@ -3484,6 +3470,23 @@ MessageStatus QuicConnection::SendMessage(QuicMessageId message_id,
 
 QuicPacketLength QuicConnection::GetLargestMessagePayload() const {
   return packet_generator_.GetLargestMessagePayload();
+}
+
+bool QuicConnection::ShouldSetAckAlarm() const {
+  DCHECK(ack_frame_updated());
+  if (ack_alarm_->IsSet()) {
+    // ACK alarm has been set.
+    return false;
+  }
+  if (GetQuicReloadableFlag(quic_fix_spurious_ack_alarm) &&
+      packet_generator_.should_send_ack()) {
+    // If the generator is already configured to send an ACK, then there is no
+    // need to schedule the ACK alarm. The updated ACK information will be sent
+    // when the generator flushes.
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_spurious_ack_alarm);
+    return false;
+  }
+  return true;
 }
 
 #undef ENDPOINT  // undef for jumbo builds

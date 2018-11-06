@@ -60,7 +60,7 @@ size_t QuicSpdyStream::WriteHeaders(
 }
 
 void QuicSpdyStream::WriteOrBufferBody(
-    const QuicString& data,
+    QuicStringPiece data,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   WriteOrBufferData(data, fin, std::move(ack_listener));
@@ -98,6 +98,17 @@ size_t QuicSpdyStream::WriteTrailers(
   }
 
   return bytes_written;
+}
+
+QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
+                                            int count,
+                                            bool fin) {
+  return WritevData(iov, count, fin);
+}
+
+QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
+                                                 bool fin) {
+  return WriteMemSlices(slices, fin);
 }
 
 size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {

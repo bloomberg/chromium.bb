@@ -631,7 +631,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicReloadableFlag(quic_enable_version_45, true);
   SetQuicReloadableFlag(quic_enable_version_46, true);
-  SetQuicFlag(&FLAGS_quic_enable_version_99, true);
+  SetQuicReloadableFlag(quic_enable_version_99, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId connection_id = 1;
@@ -1831,6 +1831,9 @@ TEST_P(BufferedPacketStoreTest, ReceiveCHLOForBufferedConnection) {
 
 // Regression test for b/117874922.
 TEST_P(BufferedPacketStoreTest, ProcessBufferedChloWithDifferentVersion) {
+  // Turn off version 99, such that the preferred version is not supported by
+  // the server.
+  SetQuicReloadableFlag(quic_enable_version_99, false);
   QuicConnectionId last_connection_id = kMaxNumSessionsToCreate + 5;
   ParsedQuicVersionVector supported_versions = CurrentSupportedVersions();
   for (QuicConnectionId conn_id = 1; conn_id <= last_connection_id; ++conn_id) {
@@ -1962,13 +1965,13 @@ class AsyncGetProofTest : public QuicDispatcherTest {
  protected:
   const QuicSocketAddress client_addr_;
   const QuicSocketAddress client_addr_2_;
+  CryptoHandshakeMessage chlo_;
 
  private:
   QuicCryptoServerConfigPeer crypto_config_peer_;
   QuicSocketAddress server_addr_;
   QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   const QuicClock* clock_;
-  CryptoHandshakeMessage chlo_;
   CryptoHandshakeMessage full_chlo_;    // CHLO for client_addr_
   CryptoHandshakeMessage full_chlo_2_;  // CHLO for client_addr_2_
 
@@ -2485,18 +2488,19 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
   // because of QUIC_INVALID_STREAM_DATA.
 
   SetQuicReloadableFlag(quic_disable_version_35, false);
-
+  ParsedQuicVersion chlo_version(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_39);
+  chlo_.SetVersion(kVER, chlo_version);
   // Send a CHLO with v39. Dispatcher framer's version is set to v39.
-  ProcessPacket(client_addr_, 1, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_39),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
+  ProcessPacket(client_addr_, 1, true, chlo_version, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
 
   // Send another CHLO with v35. Dispatcher framer's version is set to v35.
-  ProcessPacket(client_addr_, 2, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_35),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
+  chlo_version.transport_version = QUIC_VERSION_35;
+  chlo_.SetVersion(kVER, chlo_version);
+  // Invalidate the cached serialized form.
+  chlo_.MarkDirty();
+  ProcessPacket(client_addr_, 2, true, chlo_version, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
 
   // Complete the ProofSource::GetProof call for v39. This would cause the
@@ -2510,17 +2514,19 @@ TEST_F(AsyncGetProofTest, DispatcherHasWrongLastPacketIsIetfQuic) {
   SetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic, true);
 
   // Process a packet of v44.
-  ProcessPacket(client_addr_, 1, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_44),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
+  ParsedQuicVersion chlo_version(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_44);
+  chlo_.SetVersion(kVER, chlo_version);
+  ProcessPacket(client_addr_, 1, true, chlo_version, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
   EXPECT_NE(GOOGLE_QUIC_PACKET, dispatcher_->GetLastPacketFormat());
 
   // Process another packet of v43.
-  ProcessPacket(client_addr_, 2, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43),
-                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
-                PACKET_4BYTE_PACKET_NUMBER, 1);
+  chlo_version.transport_version = QUIC_VERSION_43;
+  chlo_.SetVersion(kVER, chlo_version);
+  // Invalidate the cached serialized form.
+  chlo_.MarkDirty();
+  ProcessPacket(client_addr_, 2, true, chlo_version, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
   EXPECT_EQ(GOOGLE_QUIC_PACKET, dispatcher_->GetLastPacketFormat());
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
 

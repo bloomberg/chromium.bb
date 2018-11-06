@@ -1527,8 +1527,7 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
       QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get()));
 
   quic::QuicAlarm* alarm =
-      quic::test::QuicConnectionPeer::GetRetransmittableOnWireAlarm(
-          session_->connection());
+      quic::test::QuicConnectionPeer::GetPingAlarm(session_->connection());
   EXPECT_FALSE(alarm->IsSet());
 
   // Send PING, which will be ACKed by the server. After the ACK, there will be

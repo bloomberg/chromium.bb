@@ -28,18 +28,22 @@ QuicControlFrameManager::~QuicControlFrameManager() {
   }
 }
 
+void QuicControlFrameManager::WriteOrBufferQuicFrame(QuicFrame frame) {
+  const bool had_buffered_frames = HasBufferedFrames();
+  control_frames_.emplace_back(frame);
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
+}
+
 void QuicControlFrameManager::WriteOrBufferRstStream(
     QuicStreamId id,
     QuicRstStreamErrorCode error,
     QuicStreamOffset bytes_written) {
   QUIC_DVLOG(1) << "Writing RST_STREAM_FRAME";
-  const bool had_buffered_frames = HasBufferedFrames();
-  control_frames_.emplace_back((QuicFrame(new QuicRstStreamFrame(
+  WriteOrBufferQuicFrame((QuicFrame(new QuicRstStreamFrame(
       ++last_control_frame_id_, id, error, bytes_written))));
-  if (had_buffered_frames) {
-    return;
-  }
-  WriteBufferedFrames();
 }
 
 void QuicControlFrameManager::WriteOrBufferGoAway(
@@ -47,37 +51,22 @@ void QuicControlFrameManager::WriteOrBufferGoAway(
     QuicStreamId last_good_stream_id,
     const QuicString& reason) {
   QUIC_DVLOG(1) << "Writing GOAWAY_FRAME";
-  const bool had_buffered_frames = HasBufferedFrames();
-  control_frames_.emplace_back(QuicFrame(new QuicGoAwayFrame(
+  WriteOrBufferQuicFrame(QuicFrame(new QuicGoAwayFrame(
       ++last_control_frame_id_, error, last_good_stream_id, reason)));
-  if (had_buffered_frames) {
-    return;
-  }
-  WriteBufferedFrames();
 }
 
 void QuicControlFrameManager::WriteOrBufferWindowUpdate(
     QuicStreamId id,
     QuicStreamOffset byte_offset) {
   QUIC_DVLOG(1) << "Writing WINDOW_UPDATE_FRAME";
-  const bool had_buffered_frames = HasBufferedFrames();
-  control_frames_.emplace_back(QuicFrame(
+  WriteOrBufferQuicFrame(QuicFrame(
       new QuicWindowUpdateFrame(++last_control_frame_id_, id, byte_offset)));
-  if (had_buffered_frames) {
-    return;
-  }
-  WriteBufferedFrames();
 }
 
 void QuicControlFrameManager::WriteOrBufferBlocked(QuicStreamId id) {
   QUIC_DVLOG(1) << "Writing BLOCKED_FRAME";
-  const bool had_buffered_frames = HasBufferedFrames();
-  control_frames_.emplace_back(
+  WriteOrBufferQuicFrame(
       QuicFrame(new QuicBlockedFrame(++last_control_frame_id_, id)));
-  if (had_buffered_frames) {
-    return;
-  }
-  WriteBufferedFrames();
 }
 
 void QuicControlFrameManager::WritePing() {

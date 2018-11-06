@@ -583,15 +583,24 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     --num_dynamic_incoming_streams_;
   }
 
-  if (draining_streams_.find(stream_id) != draining_streams_.end() &&
-      IsIncomingStream(stream_id)) {
-    --num_draining_incoming_streams_;
+  bool stream_was_draining = false;
+  if (draining_streams_.find(stream_id) != draining_streams_.end()) {
+    if (IsIncomingStream(stream_id)) {
+      --num_draining_incoming_streams_;
+    }
+    stream_was_draining = true;
+    draining_streams_.erase(stream_id);
   }
-  draining_streams_.erase(stream_id);
 
   stream->OnClose();
   // Decrease the number of streams being emulated when a new one is opened.
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
+
+  if (!stream_was_draining && !IsIncomingStream(stream_id)) {
+    // Streams that first became draining already called OnCanCreate...
+    // This covers the case where the stream went directly to being closed.
+    OnCanCreateNewOutgoingStream();
+  }
 }
 
 void QuicSession::OnFinalByteOffsetReceived(
@@ -882,6 +891,10 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
     if (IsIncomingStream(stream_id)) {
       ++num_draining_incoming_streams_;
     }
+  }
+  if (!IsIncomingStream(stream_id)) {
+    // Inform application that a stream is available.
+    OnCanCreateNewOutgoingStream();
   }
 }
 
@@ -1400,6 +1413,8 @@ QuicPacketLength QuicSession::GetLargestMessagePayload() const {
 bool QuicSession::deprecate_post_process_after_data() const {
   return connection_->deprecate_post_process_after_data();
 }
+
+void QuicSession::OnCanCreateNewOutgoingStream() {}
 
 #undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

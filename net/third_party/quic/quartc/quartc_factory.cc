@@ -38,6 +38,9 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // fixes it.
   SetQuicReloadableFlag(quic_fix_reset_zombie_streams, true);
 
+  // Fix b/110259444.
+  SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
+
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 

@@ -66,11 +66,6 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
 
   ~QuicSimpleServerSession() override;
 
-  // When a stream is marked draining, it will decrease the number of open
-  // streams. If it is an outgoing stream, try to open a new stream to send
-  // remaing push responses.
-  void StreamDraining(QuicStreamId id) override;
-
   // Override base class to detact client sending data on server push stream.
   void OnStreamFrame(const QuicStreamFrame& frame) override;
 
@@ -84,14 +79,13 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
       QuicStreamId original_stream_id,
       const spdy::SpdyHeaderBlock& original_request_headers);
 
+  void OnCanCreateNewOutgoingStream() override;
+
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
   QuicSimpleServerStream* CreateOutgoingBidirectionalStream() override;
   QuicSimpleServerStream* CreateOutgoingUnidirectionalStream() override;
-  // Closing an outgoing stream can reduce open outgoing stream count, try
-  // to handle queued promised streams right now.
-  void CloseStreamInner(QuicStreamId stream_id, bool locally_reset) override;
   // Override to return true for locally preserved server push stream.
   void HandleFrameOnNonexistentOutgoingStream(QuicStreamId stream_id) override;
   // Override to handle reseting locally preserved streams.
