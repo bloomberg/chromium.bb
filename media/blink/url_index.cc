@@ -316,29 +316,33 @@ void UrlData::WaitToLoad(base::OnceClosure cb) {
   } else {
     waiting_load_callbacks_.emplace_back(std::move(cb));
     if (waiting_load_callbacks_.size() == 1)
-      url_index_->WaitToLoad(this);
+      url_index_->WaitToLoad(this, true);
   }
 }
 
-void UrlData::LoadNow() {
+void UrlData::LoadNow(bool immediate) {
   // Move the callbacks into local variables in case
   // any of the callbacks decide to call WaitToLoad().
   std::vector<base::OnceClosure> waiting_load_callbacks;
   std::swap(waiting_load_callbacks, waiting_load_callbacks_);
-  for (auto& i : waiting_load_callbacks)
-    std::move(i).Run();
+  for (auto& i : waiting_load_callbacks) {
+    if (immediate) {
+      std::move(i).Run();
+    } else {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(i));
+    }
+  }
 }
 
-
-void UrlIndex::WaitToLoad(UrlData* url_data) {
+void UrlIndex::WaitToLoad(UrlData* url_data, bool immediate) {
   if (loading_.find(url_data) != loading_.end()) {
     // Already loading
-    url_data->LoadNow();
+    url_data->LoadNow(immediate);
     return;
   }
   if (loading_.size() < GetMaxParallelPreload()) {
     loading_.insert(url_data);
-    url_data->LoadNow();
+    url_data->LoadNow(immediate);
     return;
   }
   loading_queue_.push_back(url_data);
@@ -353,9 +357,9 @@ void UrlIndex::RemoveLoading(UrlData* url_data) {
     auto url_data = loading_queue_.front();
     loading_queue_.pop_front();
     if (url_data->IsPreloading()) {
-      WaitToLoad(url_data.get());
+      WaitToLoad(url_data.get(), false);
     } else {
-      url_data->LoadNow();
+      url_data->LoadNow(false);
     }
   }
 }

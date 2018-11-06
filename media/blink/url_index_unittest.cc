@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -178,13 +179,16 @@ TEST_F(UrlIndexTest, SetLoadingState) {
   AddToLoadQueue(a.get(), base::BindOnce(&SetBoolWhenCalled, &called));
   UrlData::UrlDataWithLoadingState url_data_with_loading_state;
   url_data_with_loading_state.SetUrlData(a);
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
   url_data_with_loading_state.SetLoadingState(
       UrlData::UrlDataWithLoadingState::LoadingState::kPreload);
   AddToLoading(a.get());
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
   url_data_with_loading_state.SetLoadingState(
       UrlData::UrlDataWithLoadingState::LoadingState::kHasPlayed);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 }
 
