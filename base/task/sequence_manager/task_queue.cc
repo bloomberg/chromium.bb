@@ -49,6 +49,7 @@ TaskQueue::~TaskQueue() {
 
   // If we've not been unregistered then this must occur on the main thread.
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
   impl_->sequence_manager()->ShutdownTaskQueueGracefully(TakeTaskQueueImpl());
 }
 

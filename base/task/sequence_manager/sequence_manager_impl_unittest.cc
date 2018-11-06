@@ -3064,6 +3064,20 @@ TEST_P(SequenceManagerTest, ProcessTasksWithTaskTimeObservers) {
   UnsetOnTaskHandlers(runners_[0]);
 }
 
+TEST_P(SequenceManagerTest, ObserverNotFiredAfterTaskQueueDestructed) {
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+
+  MockTaskQueueObserver observer;
+  main_tq->SetObserver(&observer);
+
+  // We don't expect the observer to fire if the TaskQueue gets destructed.
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
+  main_tq->PostTask(FROM_HERE, BindOnce(&NopTask));
+
+  main_tq = nullptr;
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+}
+
 TEST_P(SequenceManagerTest, GracefulShutdown) {
   std::vector<TimeTicks> run_times;
   scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
