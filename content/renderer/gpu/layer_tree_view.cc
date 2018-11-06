@@ -270,11 +270,9 @@ bool LayerTreeView::SendMessageToMicroBenchmark(
 void LayerTreeView::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks allocation_time) {
-  layer_tree_host_->SetViewportSizeAndScale(device_viewport_size,
-                                            device_scale_factor,
-                                            local_surface_id, allocation_time);
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  layer_tree_host_->SetViewportSizeAndScale(
+      device_viewport_size, device_scale_factor, local_surface_id_allocation);
 }
 
 void LayerTreeView::RequestNewLocalSurfaceId() {

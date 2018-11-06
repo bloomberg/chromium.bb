@@ -32,8 +32,8 @@ class AshWindowTreeHostUnified : public AshWindowTreeHostPlatform,
 
   // aura::WindowTreeHost:
   void SetBoundsInPixels(const gfx::Rect& bounds,
-                         const viz::LocalSurfaceId& local_surface_id,
-                         base::TimeTicks allocation_time) override;
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 

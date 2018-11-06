@@ -77,7 +77,7 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
   DCHECK_NE(0, device_scale_factor());
   SetBoundsInPixels(
       gfx::ConvertRectToPixel(device_scale_factor(), bounds_in_dip),
-      viz::LocalSurfaceId(), base::TimeTicks());
+      viz::LocalSurfaceIdAllocation());
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {

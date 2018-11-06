@@ -438,9 +438,10 @@ void LayerTreeHost::WillCommit() {
 
 
 void LayerTreeHost::UpdateDeferCommitsInternal() {
-  proxy_->SetDeferCommits(defer_commits_count_ > 0 ||
-                          (settings_.enable_surface_synchronization &&
-                           !local_surface_id_from_parent_.is_valid()));
+  proxy_->SetDeferCommits(
+      defer_commits_count_ > 0 ||
+      (settings_.enable_surface_synchronization &&
+       !local_surface_id_allocation_from_parent_.IsValid()));
 }
 
 bool LayerTreeHost::IsUsingLayerLists() const {
@@ -1126,10 +1127,10 @@ void LayerTreeHost::SetEventListenerProperties(
 void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id_from_parent,
-    base::TimeTicks local_surface_id_allocation_time_from_parent) {
-  SetLocalSurfaceIdFromParent(local_surface_id_from_parent,
-                              local_surface_id_allocation_time_from_parent);
+    const viz::LocalSurfaceIdAllocation&
+        local_surface_id_allocation_from_parent) {
+  SetLocalSurfaceIdAllocationFromParent(
+      local_surface_id_allocation_from_parent);
 
   bool changed = false;
   if (device_viewport_size_ != device_viewport_size) {
@@ -1158,7 +1159,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
     // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
-          !local_surface_id_from_parent_.is_valid());
+          !local_surface_id_allocation_from_parent_.IsValid());
 #endif
   }
 }
@@ -1267,26 +1268,34 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
   content_source_id_ = id;
 }
 
-void LayerTreeHost::SetLocalSurfaceIdFromParent(
-    const viz::LocalSurfaceId& local_surface_id_from_parent,
-    base::TimeTicks local_surface_id_allocation_time_from_parent) {
-  if (local_surface_id_from_parent_.parent_sequence_number() ==
+void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
+    const viz::LocalSurfaceIdAllocation&
+        local_surface_id_allocation_from_parent) {
+  const viz::LocalSurfaceId& local_surface_id_from_parent =
+      local_surface_id_allocation_from_parent.local_surface_id();
+  const viz::LocalSurfaceId& current_local_surface_id_from_parent =
+      local_surface_id_allocation_from_parent_.local_surface_id();
+  if (current_local_surface_id_from_parent.parent_sequence_number() ==
           local_surface_id_from_parent.parent_sequence_number() &&
-      local_surface_id_from_parent_.embed_token() ==
+      current_local_surface_id_from_parent.embed_token() ==
           local_surface_id_from_parent.embed_token()) {
     return;
   }
+
+  // If the viz::LocalSurfaceId is valid but the allocation time is invalid then
+  // this API is not being used correctly.
+  DCHECK_EQ(local_surface_id_from_parent.is_valid(),
+            local_surface_id_allocation_from_parent.IsValid());
 
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Submission.Flow",
       TRACE_ID_GLOBAL(local_surface_id_from_parent.submission_trace_id()),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SetLocalSurfaceIdFromParent", "local_surface_id",
-      local_surface_id_from_parent.ToString());
-  local_surface_id_from_parent_ = local_surface_id_from_parent;
-  local_surface_id_allocation_time_from_parent_ =
-      local_surface_id_allocation_time_from_parent;
+      "SetLocalSurfaceAllocationIdFromParent", "local_surface_id_allocation",
+      local_surface_id_allocation_from_parent.ToString());
+  local_surface_id_allocation_from_parent_ =
+      local_surface_id_allocation_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
   UpdateDeferCommitsInternal();
   SetNeedsCommit();
@@ -1301,7 +1310,7 @@ void LayerTreeHost::RequestNewLocalSurfaceId() {
   // viz::LocalSurfaceId but that request will be deferred until we have a valid
   // viz::LocalSurfaceId from the parent.
   DCHECK(settings_.enable_surface_synchronization ||
-         local_surface_id_from_parent_.is_valid());
+         local_surface_id_allocation_from_parent_.IsValid());
   if (new_local_surface_id_request_)
     return;
   new_local_surface_id_request_ = true;
@@ -1506,9 +1515,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();
 
-  tree_impl->SetLocalSurfaceIdFromParent(
-      local_surface_id_from_parent_,
-      local_surface_id_allocation_time_from_parent_);
+  tree_impl->SetLocalSurfaceIdAllocationFromParent(
+      local_surface_id_allocation_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
 
   if (pending_page_scale_animation_) {

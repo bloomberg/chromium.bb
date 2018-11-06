@@ -30,8 +30,8 @@ class TestCompositorHostWin : public TestCompositorHost,
         false /* enable_surface_synchronization */,
         false /* enable_pixel_canvas */));
     compositor_->SetAcceleratedWidget(hwnd());
-    compositor_->SetScaleAndSize(1.0f, GetSize(), viz::LocalSurfaceId(),
-                                 base::TimeTicks());
+    compositor_->SetScaleAndSize(1.0f, GetSize(),
+                                 viz::LocalSurfaceIdAllocation());
   }
 
   ~TestCompositorHostWin() override { DestroyWindow(hwnd()); }

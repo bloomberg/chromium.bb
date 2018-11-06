@@ -193,9 +193,10 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void DidActivateSyncTree() override {
     // Make sure the active tree always has a valid LocalSurfaceId.
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
-        base::TimeTicks());
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
@@ -256,9 +257,10 @@ class LayerTreeHostImplTest : public testing::Test,
     bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
     host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
-        base::TimeTicks());
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
         BEGINFRAME_FROM_HERE, 0, 1,
@@ -3582,9 +3584,10 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
-        base::TimeTicks());
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
     DrawFrame();
 
     // SetScrollElementId will initialize the scrollbar which will cause it to
@@ -9320,9 +9323,10 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   root->test_properties()->AddChild(std::move(child));
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
-  layer_tree_host_impl->active_tree()->SetLocalSurfaceIdFromParent(
-      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
-      base::TimeTicks());
+  layer_tree_host_impl->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+      viz::LocalSurfaceIdAllocation(
+          viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+          base::TimeTicks::Now()));
 
   TestFrameData frame;
 

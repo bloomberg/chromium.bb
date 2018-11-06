@@ -110,10 +110,10 @@ class CONTENT_EXPORT LayerTreeView
   void SetExternalPageScaleFactor(float page_scale_factor);
   void ClearCachesOnNextCommit();
   void SetContentSourceId(uint32_t source_id);
-  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
-                               float device_scale_factor,
-                               const viz::LocalSurfaceId& local_surface_id,
-                               base::TimeTicks allocation_time);
+  void SetViewportSizeAndScale(
+      const gfx::Size& device_viewport_size,
+      float device_scale_factor,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void RequestNewLocalSurfaceId();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);

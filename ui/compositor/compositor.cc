@@ -275,13 +275,6 @@ void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   child_frame_sinks_.erase(it);
 }
 
-void Compositor::SetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks local_surface_id_allocation_time) {
-  host_->SetLocalSurfaceIdFromParent(local_surface_id,
-                                     local_surface_id_allocation_time);
-}
-
 void Compositor::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   layer_tree_frame_sink_requested_ = false;
@@ -362,22 +355,25 @@ void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
 void Compositor::SetScaleAndSize(
     float scale,
     const gfx::Size& size_in_pixel,
-    const viz::LocalSurfaceId& local_surface_id,
-    base::TimeTicks local_surface_id_allocation_time) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   DCHECK_GT(scale, 0);
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
 
-  if (size_ != size_in_pixel && local_surface_id.is_valid()) {
+  if (size_ != size_in_pixel && local_surface_id_allocation.IsValid()) {
     // A new LocalSurfaceId must be set when the compositor size changes.
-    DCHECK_NE(local_surface_id, host_->local_surface_id_from_parent());
+    DCHECK_NE(
+        local_surface_id_allocation.local_surface_id(),
+        host_->local_surface_id_allocation_from_parent().local_surface_id());
+    DCHECK_NE(local_surface_id_allocation,
+              host_->local_surface_id_allocation_from_parent());
   }
 
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;
     size_ = size_in_pixel;
-    host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id,
-                                   local_surface_id_allocation_time);
+    host_->SetViewportSizeAndScale(size_in_pixel, scale,
+                                   local_surface_id_allocation);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
     if (context_factory_private_ &&

@@ -2221,7 +2221,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     // LocalSurfaceId might slip through, but single-thread-without-scheduler
     // mode is only used in tests so it doesn't matter.
     CHECK(!settings_.single_thread_proxy_scheduler ||
-          active_tree()->local_surface_id_from_parent().is_valid());
+          active_tree()->local_surface_id_allocation_from_parent().IsValid());
     layer_tree_frame_sink_->SetLocalSurfaceId(
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
   }
@@ -2904,11 +2904,9 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   UpdateRootLayerStateForSynchronousInputHandler();
 
   // Update the child's LocalSurfaceId.
-  if (active_tree()->local_surface_id_from_parent().is_valid()) {
+  if (active_tree()->local_surface_id_allocation_from_parent().IsValid()) {
     child_local_surface_id_allocator_.UpdateFromParent(
-        viz::LocalSurfaceIdAllocation(
-            active_tree()->local_surface_id_from_parent(),
-            active_tree()->local_surface_id_allocation_time_from_parent()));
+        active_tree()->local_surface_id_allocation_from_parent());
     if (active_tree()->TakeNewLocalSurfaceIdRequest())
       child_local_surface_id_allocator_.GenerateId();
   }

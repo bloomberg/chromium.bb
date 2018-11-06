@@ -130,9 +130,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   gfx::Rect GetBoundsInPixels() const override;
   void SetBoundsInPixels(
       const gfx::Rect& bounds,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId(),
-      base::TimeTicks local_surface_id_allocation_time =
-          base::TimeTicks()) override;
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation()) override;
   gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;

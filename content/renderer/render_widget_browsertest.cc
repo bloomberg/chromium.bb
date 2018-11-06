@@ -72,6 +72,8 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   gfx::Size size(100, 100);
   visual_properties.local_surface_id =
       local_surface_id_allocator.GetCurrentLocalSurfaceId();
+  visual_properties.local_surface_id_allocation_time =
+      local_surface_id_allocator.allocation_time();
   visual_properties.new_size = size;
   visual_properties.compositor_viewport_pixel_size = size;
   OnSynchronizeVisualProperties(visual_properties);
@@ -107,6 +109,8 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
     initial_visual_properties->compositor_viewport_pixel_size = initial_size_;
     initial_visual_properties->local_surface_id =
         local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+    initial_visual_properties->local_surface_id_allocation_time =
+        local_surface_id_allocator_.allocation_time();
     return initial_visual_properties;
   }
 

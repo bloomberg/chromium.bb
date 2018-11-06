@@ -320,15 +320,12 @@ class CC_EXPORT LayerTreeImpl {
   void set_content_source_id(uint32_t id) { content_source_id_ = id; }
   uint32_t content_source_id() { return content_source_id_; }
 
-  void SetLocalSurfaceIdFromParent(
-      const viz::LocalSurfaceId& local_surface_id_from_parent,
-      base::TimeTicks local_surface_id_allocation_time_from_parent);
-  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
-    return local_surface_id_from_parent_;
-  }
-
-  base::TimeTicks local_surface_id_allocation_time_from_parent() const {
-    return local_surface_id_allocation_time_from_parent_;
+  void SetLocalSurfaceIdAllocationFromParent(
+      const viz::LocalSurfaceIdAllocation&
+          local_surface_id_allocation_from_parent);
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
+      const {
+    return local_surface_id_allocation_from_parent_;
   }
 
   void RequestNewLocalSurfaceId();
@@ -657,8 +654,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
-  viz::LocalSurfaceId local_surface_id_from_parent_;
-  base::TimeTicks local_surface_id_allocation_time_from_parent_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
   gfx::Size device_viewport_size_;
 
