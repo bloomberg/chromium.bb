@@ -74,6 +74,7 @@ fuzzer_test("profiling_fuzzer") {
   ]
   deps = [
     ":heap_profiling",
+    "//base",
   ]
   libfuzzer_options = [ "max_len = 64000" ]
   dict = "stream_fuzzer.dict"
