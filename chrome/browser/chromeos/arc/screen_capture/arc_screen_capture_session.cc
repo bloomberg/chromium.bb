@@ -361,6 +361,8 @@ void ArcScreenCaptureSession::OnAnimationStep(base::TimeTicks timestamp) {
           viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
           base::BindOnce(&ArcScreenCaptureSession::OnDesktopCaptured,
                          weak_ptr_factory_.GetWeakPtr()));
+  // Clip the requested area to the desktop area. See b/118675936.
+  request->set_area(gfx::Rect(desktop_window_->bounds().size()));
   layer->RequestCopyOfOutput(std::move(request));
 }
 
