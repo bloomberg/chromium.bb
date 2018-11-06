@@ -2394,7 +2394,7 @@ TouchEmulator* RenderWidgetHostImpl::GetExistingTouchEmulator() {
 
 void RenderWidgetHostImpl::OnTextInputStateChanged(
     const TextInputState& params) {
-  if (delegate_->GetInputEventShim()) {
+  if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidTextInputStateChange(params);
     return;
   }
@@ -2443,7 +2443,7 @@ void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
                                        bool privileged) {
-  if (delegate_->GetInputEventShim()) {
+  if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidLockMouse(user_gesture, privileged);
     return;
   }
@@ -2474,7 +2474,7 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
 }
 
 void RenderWidgetHostImpl::OnUnlockMouse() {
-  if (delegate_->GetInputEventShim()) {
+  if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidUnlockMouse();
     return;
   }
@@ -2595,7 +2595,7 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount(
 }
 
 void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
-  if (delegate_->GetInputEventShim()) {
+  if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidSetHasTouchEventHandlers(has_handlers);
     return;
   }
