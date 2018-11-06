@@ -51,4 +51,15 @@ enum class SadTabViewMode {
 
 @end
 
+// All UI elements present in view.
+@interface SadTabView (UIElements)
+
+// Displays the Sad Tab message.
+@property(nonatomic, readonly) UITextView* messageTextView;
+
+// Triggers a reload or feedback action.
+@property(nonatomic, readonly) UIButton* actionButton;
+
+@end
+
 #endif  // IOS_CHROME_BROWSER_UI_SAD_TAB_SAD_TAB_VIEW_H_
