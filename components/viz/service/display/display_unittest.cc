@@ -93,6 +93,25 @@ class TestDisplayScheduler : public DisplayScheduler {
   bool swapped;
 };
 
+class StubDisplayClient : public DisplayClient {
+ public:
+  void DisplayOutputSurfaceLost() override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              const RenderPassList& render_passes) override {}
+  void DisplayDidDrawAndSwap() override {}
+  void DisplayDidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override{};
+  void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
+  void DidSwapAfterSnapshotRequestReceived(
+      const std::vector<ui::LatencyInfo>& latency_info) override {}
+};
+
+void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
+  *called = true;
+}
+
+}  // namespace
+
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
@@ -168,6 +187,10 @@ class DisplayTest : public testing::Test {
       manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
   }
 
+  bool ShouldThrottleBeginFrame(CompositorFrameSinkSupport* support) {
+    return support->ShouldThrottleBeginFrame();
+  }
+
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
@@ -197,23 +220,6 @@ class DisplayTest : public testing::Test {
   FakeOutputSurface* output_surface_ = nullptr;
   TestDisplayScheduler* scheduler_ = nullptr;
 };
-
-class StubDisplayClient : public DisplayClient {
- public:
-  void DisplayOutputSurfaceLost() override {}
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override {}
-  void DisplayDidDrawAndSwap() override {}
-  void DisplayDidReceiveCALayerParams(
-      const gfx::CALayerParams& ca_layer_params) override{};
-  void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
-  void DidSwapAfterSnapshotRequestReceived(
-      const std::vector<ui::LatencyInfo>& latency_info) override {}
-};
-
-void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
-  *called = true;
-}
 
 // Check that frame is damaged and swapped only under correct conditions.
 TEST_F(DisplayTest, DisplayDamaged) {
@@ -3336,5 +3342,48 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   TearDownDisplay();
 }
 
-}  // namespace
+TEST_F(DisplayTest, BeginFrameThrottling) {
+  id_allocator_.GenerateId();
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
+
+  // BeginFrame should not be throttled when the client has not submitted any
+  // compositor frames.
+  EXPECT_FALSE(ShouldThrottleBeginFrame(support_.get()));
+
+  // Submit the first frame for the client. Begin-frame should still not be
+  // throttled since it has not been embedded yet.
+  RenderPassList pass_list;
+  auto pass = RenderPass::Create();
+  pass->output_rect = gfx::Rect(0, 0, 100, 100);
+  pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+  pass->id = 1u;
+  pass_list.push_back(std::move(pass));
+
+  SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
+  EXPECT_FALSE(ShouldThrottleBeginFrame(support_.get()));
+
+  display_->DrawAndSwap();
+  EXPECT_FALSE(ShouldThrottleBeginFrame(support_.get()));
+
+  // Submit a second frame. This time, begin-frame should be throttled, until
+  // the next draw happens.
+  pass = RenderPass::Create();
+  pass->output_rect = gfx::Rect(0, 0, 100, 100);
+  pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+  pass->id = 1u;
+  pass_list.push_back(std::move(pass));
+  SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
+  EXPECT_TRUE(ShouldThrottleBeginFrame(support_.get()));
+
+  // Drawing should unthrottle begin-frames.
+  display_->DrawAndSwap();
+  EXPECT_FALSE(ShouldThrottleBeginFrame(support_.get()));
+
+  TearDownDisplay();
+}
+
 }  // namespace viz

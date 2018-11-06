@@ -182,9 +182,9 @@ bool DisplayScheduler::UpdateHasPendingSurfaces() {
       continue;
     }
 
-    // Surface is ready if there is an undrawn active CompositorFrame, because
+    // Surface is ready if there is an unacked active CompositorFrame, because
     // its producer is CompositorFrameAck throttled.
-    if (client_->SurfaceHasUndrawnFrame(entry.first))
+    if (client_->SurfaceHasUnackedFrame(entry.first))
       continue;
 
     has_pending_surfaces_ = true;
