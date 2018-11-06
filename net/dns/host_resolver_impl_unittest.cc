@@ -6179,4 +6179,50 @@ TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides_NoOverrides) {
   EXPECT_THAT(response.result_error(), IsOk());
 }
 
+// Test HostResolverImpl::UpdateModeForHistogram.
+TEST_F(HostResolverImplDnsTest, ModeForHistogram) {
+  // Test Async resolver is detected.
+  ChangeDnsConfig(CreateValidDnsConfig());
+  EXPECT_EQ(resolver_->mode_for_histogram_,
+            HostResolverImpl::MODE_FOR_HISTOGRAM_ASYNC_DNS);
+
+  // Test upgradability is detected for async DNS.
+  const static std::vector<const char*> upgradable_servers(
+      {// Google Public DNS
+       "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844",
+       // Cloudflare DNS
+       "1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001",
+       // Quad9 DNS
+       "9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"});
+  for (const char* upgradable_server : upgradable_servers) {
+    IPAddress ip_address;
+    ASSERT_TRUE(ip_address.AssignFromIPLiteral(upgradable_server));
+    DnsConfig dns_config;
+    dns_config.nameservers.push_back(
+        IPEndPoint(ip_address, dns_protocol::kDefaultPort));
+    ChangeDnsConfig(dns_config);
+    EXPECT_EQ(
+        resolver_->mode_for_histogram_,
+        HostResolverImpl::MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH);
+  }
+
+  // Test system resolver is detected.
+  resolver_->SetDnsClient(nullptr);
+  ChangeDnsConfig(CreateValidDnsConfig());
+  EXPECT_EQ(resolver_->mode_for_histogram_,
+            HostResolverImpl::MODE_FOR_HISTOGRAM_SYSTEM);
+
+  // Test upgradability is detected for system resolver.
+  for (const char* upgradable_server : upgradable_servers) {
+    IPAddress ip_address;
+    ASSERT_TRUE(ip_address.AssignFromIPLiteral(upgradable_server));
+    DnsConfig dns_config;
+    dns_config.nameservers.push_back(
+        IPEndPoint(ip_address, dns_protocol::kDefaultPort));
+    ChangeDnsConfig(dns_config);
+    EXPECT_EQ(resolver_->mode_for_histogram_,
+              HostResolverImpl::MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH);
+  }
+}
+
 }  // namespace net

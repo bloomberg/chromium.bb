@@ -205,6 +205,7 @@ class NET_EXPORT HostResolverImpl
 
  private:
   friend class HostResolverImplTest;
+  FRIEND_TEST_ALL_PREFIXES(HostResolverImplDnsTest, ModeForHistogram);
   class Job;
   class ProcTask;
   class LoopbackProbeJob;
@@ -213,6 +214,22 @@ class NET_EXPORT HostResolverImpl
   class LegacyRequestImpl;
   using Key = HostCache::Key;
   using JobMap = std::map<Key, std::unique_ptr<Job>>;
+
+  // Current resolver mode, useful for breaking down histograms.
+  enum ModeForHistogram {
+    // Using the system (i.e. O/S's) resolver.
+    MODE_FOR_HISTOGRAM_SYSTEM,
+    // Using the system resolver, which is in turn using private DNS.
+    MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS,
+    // Using the system resolver, which is using DNS servers which offer
+    // DNS-over-HTTPS service.
+    MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH,
+    // Using Chromium DNS resolver.
+    MODE_FOR_HISTOGRAM_ASYNC_DNS,
+    // Using Chromium DNS resolver which is using DNS servers which offer
+    // DNS-over-HTTPS service.
+    MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH,
+  };
 
   // Number of consecutive failures of DnsTask (with successful fallback to
   // ProcTask) before the DnsClient is disabled until the next DNS change.
@@ -318,6 +335,11 @@ class NET_EXPORT HostResolverImpl
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
+  // Record time from Request creation until a valid DNS response.
+  void RecordTotalTime(bool speculative,
+                       bool from_cache,
+                       base::TimeDelta duration) const;
+
   // Removes |job| from |jobs_| and return, only if it exists.
   std::unique_ptr<Job> RemoveJob(Job* job);
 
@@ -367,6 +389,9 @@ class NET_EXPORT HostResolverImpl
   size_t num_running_dispatcher_jobs_for_tests() const {
     return dispatcher_->num_running_jobs();
   }
+
+  // Update |mode_for_histogram_|. Called when DNS config changes.
+  void UpdateModeForHistogram(const DnsConfig& dns_config);
 
   // Cache of host resolution results.
   std::unique_ptr<HostCache> cache_;
@@ -435,6 +460,9 @@ class NET_EXPORT HostResolverImpl
   // Task runner used for DNS lookups using the system resolver. Normally a
   // TaskScheduler task runner, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> proc_task_runner_;
+
+  // Current resolver mode, useful for breaking down histogram data.
+  ModeForHistogram mode_for_histogram_;
 
   URLRequestContext* url_request_context_;
 
